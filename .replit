@@ -1,6 +1,6 @@
 run = "npm run dev"
 entrypoint = "server/index.ts"
-modules = ["nodejs-20", "postgresql-15"]
+modules = ["nodejs-20", "postgresql-16"]
 
 hidden = [".config", "package-lock.json", "tsconfig.json", ".gitignore"]
 
