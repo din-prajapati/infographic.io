@@ -1,0 +1,28 @@
+run = "npm run dev"
+entrypoint = "server/index.ts"
+modules = ["nodejs-20", "postgresql-15"]
+
+hidden = [".config", "package-lock.json", "tsconfig.json", ".gitignore"]
+
+[nix]
+channel = "stable-24_05"
+
+[deployment]
+run = ["sh", "-c", "npm run start"]
+deploymentTarget = "cloudrun"
+
+[[ports]]
+localPort = 5000
+externalPort = 80
+
+[[ports]]
+localPort = 3001
+externalPort = 3001
+
+[env]
+NODE_ENV = "development"
+PORT = "5000"
+API_PORT = "3001"
+JWT_SECRET = "infographic-jwt-secret"
+DEMO_MODE = "false"
+

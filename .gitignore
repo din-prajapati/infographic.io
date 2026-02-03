@@ -1,0 +1,35 @@
+
+# Environment variables
+# Note: .env.example files are committed (templates)
+# Actual .env files are ignored (contain secrets)
+
+.env
+.env.local
+.env.production
+.env.development
+.env.*.local
+.env.backup
+.env.example.backup
+
+# Frontend env files
+client/.env
+client/.env.local
+client/.env.production
+client/.env.development
+client/.env.*.local
+
+# Backend env files (api/.env removed to avoid conflicts - use root .env instead)
+# api/.env files are NOT needed - backend uses root .env
+api/.env
+api/.env.local
+api/.env.production
+api/.env.*.local
+
+#Ignore cursor AI rules
+.cursor\rules\codacy.mdc
+
+# Dependencies and build output
+node_modules
+**/node_modules
+dist
+**/dist

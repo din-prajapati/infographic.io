@@ -1,0 +1,299 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  // @ts-ignore - Prisma 6 requires url in schema; Prisma 7 linter rule can be ignored until upgrade
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                 String         @id @default(cuid())
+  email              String         @unique
+  password           String
+  name               String?
+  organizationId     String?
+  organization       Organization?  @relation(fields: [organizationId], references: [id])
+  razorpayCustomerId String?        @unique
+  stripeCustomerId   String?        @unique
+  paddleCustomerId   String?        @unique
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+  infographics       Infographic[]
+  usageRecords       UsageRecord[]
+  conversations      Conversation[]
+  extractions        Extraction[]
+  subscriptions      Subscription[]
+  payments           Payment[]
+  invoices           Invoice[]
+
+  @@index([email])
+  @@index([organizationId])
+  @@index([razorpayCustomerId])
+  @@index([stripeCustomerId])
+}
+
+model Organization {
+  id                   String         @id @default(cuid())
+  name                 String
+  planTier             String         @default("free") // free, solo, team, brokerage, api_starter, api_growth, api_enterprise
+  monthlyLimit         Int            @default(3)
+  razorpayCustomerId   String?        @unique
+  stripeCustomerId     String?        @unique
+  paddleCustomerId     String?        @unique
+  activeSubscriptionId String?
+  brandColors          String[]       @default([])
+  logoUrl              String?
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+  users                User[]
+  apiKeys              ApiKey[]
+  infographics         Infographic[]
+  usageRecords         UsageRecord[]
+  subscriptions        Subscription[]
+
+  @@index([planTier])
+  @@index([activeSubscriptionId])
+}
+
+model ApiKey {
+  id             String       @id @default(cuid())
+  key            String       @unique
+  name           String
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  isActive       Boolean      @default(true)
+  lastUsedAt     DateTime?
+  createdAt      DateTime     @default(now())
+
+  @@index([key])
+  @@index([organizationId])
+}
+
+model Template {
+  id           String        @id @default(cuid())
+  name         String
+  category     String // listing, sold, open_house, market_report, agent_card
+  propertyType String // residential, commercial, land, any
+  priceRange   String // luxury, mid, starter, any
+  layout       Json // Template layout configuration
+  previewUrl   String?
+  isActive     Boolean       @default(true)
+  createdAt    DateTime      @default(now())
+  infographics Infographic[]
+
+  @@index([category])
+  @@index([propertyType])
+}
+
+model Infographic {
+  id             String       @id @default(cuid())
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  templateId     String
+  template       Template     @relation(fields: [templateId], references: [id])
+  propertyData   Json // Original property input
+  imageUrl       String
+  aiModel        String // ideogram-turbo, flux-pro, sdxl, etc
+  status         String       @default("pending") // pending, processing, completed, failed
+  errorMessage   String?
+  createdAt      DateTime     @default(now())
+  usageRecord    UsageRecord?
+
+  @@index([userId])
+  @@index([organizationId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model UsageRecord {
+  id             String       @id @default(cuid())
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  infographicId  String       @unique
+  infographic    Infographic  @relation(fields: [infographicId], references: [id], onDelete: Cascade)
+  aiModel        String
+  costUsd        Float // Actual cost in USD
+  creditsUsed    Int          @default(1)
+  createdAt      DateTime     @default(now())
+
+  @@index([userId])
+  @@index([organizationId])
+  @@index([createdAt])
+}
+
+model Conversation {
+  id           String       @id @default(cuid())
+  userId       String
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title        String
+  propertyType String?
+  priceRange   String?
+  isFavorite   Boolean      @default(false)
+  messages     Message[]
+  extractions  Extraction[]
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model Message {
+  id              String       @id @default(cuid())
+  conversationId  String
+  conversation    Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  type            String // 'user' | 'ai'
+  content         String
+  templateId      String?
+  resultPreviews  Json? // Array of result previews: [{ id, thumbnail, title }]
+  generationSteps Json? // Array of generation steps: [{ id, label, status }]
+  currentStep     Int?
+  timestamp       DateTime     @default(now())
+
+  @@index([conversationId])
+  @@index([timestamp])
+}
+
+model Extraction {
+  id             String        @id @default(cuid())
+  userId         String
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversationId String?
+  conversation   Conversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+  prompt         String
+  extractedData  Json // ExtractedPropertyData object
+  confidence     Float
+  missingFields  String[]      @default([])
+  suggestions    String[]      @default([])
+  createdAt      DateTime      @default(now())
+
+  @@index([userId])
+  @@index([conversationId])
+  @@index([createdAt])
+}
+
+enum PaymentProvider {
+  RAZORPAY
+  STRIPE
+  PADDLE
+  PAYPAL
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAST_DUE
+  CANCELLED
+  HALTED
+  PAUSED
+  EXPIRED
+}
+
+enum PaymentStatus {
+  PENDING
+  AUTHORIZED
+  CAPTURED
+  REFUNDED
+  FAILED
+}
+
+enum PlanTier {
+  FREE
+  SOLO
+  TEAM
+  BROKERAGE
+  API_STARTER
+  API_GROWTH
+  API_ENTERPRISE
+}
+
+model Subscription {
+  id                     String             @id @default(cuid())
+  userId                 String
+  user                   User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organizationId         String?
+  organization           Organization?      @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  paymentProvider        PaymentProvider    @default(RAZORPAY)
+  externalSubscriptionId String             @unique
+  externalPlanId         String
+  externalCustomerId     String?
+  planTier               PlanTier
+  status                 SubscriptionStatus @default(ACTIVE)
+  currentPeriodStart     DateTime
+  currentPeriodEnd       DateTime
+  cancelledAt            DateTime?
+  cancelAtPeriodEnd      Boolean            @default(false)
+  amount                 Int // Amount in paise/cents
+  currency               String             @default("INR")
+  createdAt              DateTime           @default(now())
+  updatedAt              DateTime           @updatedAt
+  payments               Payment[]
+
+  @@index([userId])
+  @@index([organizationId])
+  @@index([externalSubscriptionId])
+  @@index([status])
+  @@index([paymentProvider])
+  @@index([planTier])
+}
+
+model Payment {
+  id                String          @id @default(cuid())
+  userId            String
+  user              User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subscriptionId    String?
+  subscription      Subscription?   @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+  paymentProvider   PaymentProvider @default(RAZORPAY)
+  externalPaymentId String          @unique
+  externalOrderId   String?
+  externalInvoiceId String?
+  signature         String?
+  amount            Int // Amount in paise/cents
+  currency          String
+  status            PaymentStatus   @default(PENDING)
+  method            String?
+  errorCode         String?
+  errorDescription  String?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  @@index([userId])
+  @@index([subscriptionId])
+  @@index([externalPaymentId])
+  @@index([status])
+  @@index([paymentProvider])
+  @@index([createdAt])
+}
+
+model Invoice {
+  id                     String          @id @default(cuid())
+  userId                 String
+  user                   User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  paymentProvider        PaymentProvider @default(RAZORPAY)
+  externalInvoiceId      String          @unique
+  externalSubscriptionId String?
+  amount                 Int // Amount in paise/cents
+  amountPaid             Int?
+  amountDue              Int?
+  currency               String
+  status                 String
+  issuedAt               DateTime
+  paidAt                 DateTime?
+  expiredAt              DateTime?
+  invoiceUrl             String?
+  receiptUrl             String?
+  createdAt              DateTime        @default(now())
+  updatedAt              DateTime        @updatedAt
+
+  @@index([userId])
+  @@index([externalInvoiceId])
+  @@index([externalSubscriptionId])
+  @@index([status])
+  @@index([paymentProvider])
+  @@index([issuedAt])
+}

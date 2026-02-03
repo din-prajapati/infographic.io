@@ -1,0 +1,93 @@
+export const REAL_ESTATE_TEMPLATES = [
+  {
+    name: 'Luxury Listing',
+    category: 'listing',
+    propertyType: 'residential',
+    priceRange: 'luxury',
+    layout: {
+      type: 'luxury_card',
+      sections: [
+        { type: 'hero_image', height: '60%', overlay: 'gradient' },
+        { type: 'price', position: 'top_right', fontSize: 'xl', bold: true },
+        { type: 'headline', position: 'bottom_left', maxLength: 50 },
+        { type: 'features', position: 'bottom', maxItems: 4, icons: true },
+        { type: 'agent', position: 'bottom_right', size: 'small' },
+      ],
+      colorZones: ['primary', 'background', 'accent', 'text'],
+    },
+    isActive: true,
+  },
+  {
+    name: 'Standard Listing',
+    category: 'listing',
+    propertyType: 'any',
+    priceRange: 'any',
+    layout: {
+      type: 'standard_card',
+      sections: [
+        { type: 'image_grid', height: '50%', images: 2 },
+        { type: 'price', position: 'center', fontSize: 'lg' },
+        { type: 'address', position: 'top', fontSize: 'md' },
+        { type: 'specs', position: 'middle', layout: 'horizontal' },
+        { type: 'agent', position: 'footer', size: 'medium' },
+      ],
+      colorZones: ['primary', 'secondary', 'background', 'text'],
+    },
+    isActive: true,
+  },
+  {
+    name: 'Just Sold Banner',
+    category: 'sold',
+    propertyType: 'any',
+    priceRange: 'any',
+    layout: {
+      type: 'sold_celebration',
+      sections: [
+        { type: 'sold_banner', position: 'diagonal', text: 'SOLD' },
+        { type: 'property_image', height: '70%' },
+        { type: 'address', position: 'top', fontSize: 'lg' },
+        { type: 'sold_price', position: 'center', highlight: true },
+        { type: 'agent', position: 'bottom', size: 'large', cta: true },
+      ],
+      colorZones: ['primary', 'accent', 'celebration'],
+    },
+    isActive: true,
+  },
+  {
+    name: 'Open House Event',
+    category: 'open_house',
+    propertyType: 'any',
+    priceRange: 'any',
+    layout: {
+      type: 'event_poster',
+      sections: [
+        { type: 'event_header', text: 'OPEN HOUSE', fontSize: 'xxl' },
+        { type: 'datetime', position: 'top', prominent: true },
+        { type: 'property_image', height: '50%' },
+        { type: 'address', position: 'center', fontSize: 'xl' },
+        { type: 'key_features', position: 'bottom', maxItems: 3 },
+        { type: 'agent_contact', position: 'footer', qr_code: true },
+      ],
+      colorZones: ['primary', 'accent', 'background'],
+    },
+    isActive: true,
+  },
+  {
+    name: 'Market Report',
+    category: 'market_report',
+    propertyType: 'any',
+    priceRange: 'any',
+    layout: {
+      type: 'data_infographic',
+      sections: [
+        { type: 'title', text: 'Market Update', position: 'top' },
+        { type: 'stats_grid', metrics: ['avg_price', 'sales_volume', 'days_on_market'] },
+        { type: 'chart', chartType: 'bar', position: 'center' },
+        { type: 'neighborhood', position: 'header' },
+        { type: 'agent_branding', position: 'footer' },
+      ],
+      colorZones: ['primary', 'data_viz', 'background'],
+    },
+    isActive: true,
+  },
+];
