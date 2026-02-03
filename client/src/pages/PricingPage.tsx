@@ -290,9 +290,12 @@ export default function PricingPage() {
             >
               Features
             </a>
-            <Link href="/pricing" className="text-sm font-medium text-black">
+            <a
+              href="/pricing"
+              className="text-sm font-medium text-black"
+            >
               Pricing
-            </Link>
+            </a>
             <a
               href="/#faqs"
               className="text-sm font-medium text-gray-600 hover:text-black"
@@ -376,11 +379,11 @@ export default function PricingPage() {
                   </div>
                   {showAnnualToggle && (
                     <div className="flex items-center gap-2">
-                      <span className="text-xs text-gray-500">Annual</span>
+                      <span className="text-xs text-gray-500 font-medium">Annual</span>
                       <Switch
                         checked={isAnnual}
                         onCheckedChange={() => toggleAnnual(plan.tier)}
-                        className="data-[state=checked]:bg-blue-500"
+                        className="data-[state=checked]:bg-blue-600 border-2"
                       />
                     </div>
                   )}
