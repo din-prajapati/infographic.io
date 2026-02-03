@@ -77,41 +77,43 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
-### February 2026 - Landing & Pricing Page Redesign
-- **UI Style**: Redesigned LandingPage.tsx and PricingPage.tsx following Emergent.sh aesthetic
-- **Landing Page Features**:
-  - Split-screen hero: Left side with floating typography background + auth buttons, right side with showcase carousel
-  - Product video section with dark background and floating decorative letters
-  - FAQ accordion with dark background, real estate-focused questions
-  - Sky/clouds CTA section with gradient background
-  - Multi-column footer (Product, Solutions, Resources, Company) with social icons
-- **Pricing Page Features**:
-  - Per-card Annual toggle switches (not global toggle)
-  - Savings badges showing "Save 17%" on annual billing
-  - 3-column card layout matching Emergent.sh style
-  - Dark FAQ section with accordion
-- **Content Policy**: Removed inappropriate marketing claims (GPT references, profit margins, specific user counts) and replaced with neutral, feature-focused language
-- **Auth Types**: Updated LegacyUser type for auth context compatibility
-
-### February 2026 - Full Landing Page Redesign (Video Hero)
+### February 2026 - Landing Page Unified Redesign with MagicUI Marquee
 - **Hero Section**: Full-screen video background with:
   - Navigation bar overlay (logo, links, Get Started button)
   - Centered headline and auth buttons (Google/Email)
   - Logo reveal transition at video end (fade/scale effect)
   - Scroll indicator at bottom
-- **Product Highlights**: Trust badges section (2024 Launch, Purpose-Built, 50+ Templates, MLS Ready)
-- **Showcase Carousel**: 
-  - Split layout with content left, carousel right
-  - Auto-slides every 4 seconds, pauses on hover
-  - Smooth slide transitions with controls
-- **Pain Point Cards**: 4 cards solving real estate marketing challenges
-- **USP Features**: Built for Teams & Brokerages with visual grid
-- **Template Gallery**: Auto-sliding multi-format templates (Social, Web, Print, MLS)
+- **Unified Showcase Section**: Merged multiple sections into one cohesive section
+  - Trust badges bar (2024 Launch, Purpose-Built, 50+ Templates, MLS Ready)
+  - Format icons (Social, Web, Print, MLS)
+  - **MagicUI-style Marquee**: Dual-row infinite horizontal scroll with template cards
+    - Component: `client/src/components/ui/marquee.tsx`
+    - Tailwind animations in `tailwind.config.ts` (marquee, marquee-reverse keyframes)
+    - 6 template cards with images, badges, titles
+    - Pause on hover, edge fade gradients
+  - Pain point cards (4 cards solving real estate challenges)
+- **Embedded Pricing Section**: 3-tier pricing on landing page
+  - Free (₹0), Solo (₹999), Team (₹2499)
+  - Per-card Annual toggle switches (not global)
+  - 15% annual discount with savings badges
+- **Features Section**: Built for Teams & Brokerages grid
 - **FAQ Section**: Dark accordion with floating typography
 - **CTA Section**: Sky background with call-to-action
 - **Footer**: Multi-column with social icons
-- **Asset Organization**:
-  - `client/src/assets/images/carousel/` - Carousel property images
-  - `client/src/assets/images/logo/` - Product logos
-  - `client/src/assets/videos/` - Background videos
-  - All assets imported at top of LandingPage.tsx for easy replacement
+
+### Switch Component Styling
+- High visibility styling: `bg-blue-600` (checked), `bg-gray-200` (unchecked)
+- 2px borders for clear visibility
+- Location: `client/src/components/ui/switch.tsx`
+
+### Pricing Page (Standalone)
+- Per-card Annual toggle switches
+- Different pricing: Free ₹0, Solo ₹2,999, Team ₹6,999
+- Individual/Enterprise tab toggle
+- Savings badges showing annual discount
+
+### Asset Organization
+- `client/src/assets/images/carousel/` - Property images for marquee/carousel
+- `client/src/assets/images/logo/` - Product logos
+- `client/src/assets/videos/` - Hero background video
+- All assets imported at top of LandingPage.tsx for easy replacement
