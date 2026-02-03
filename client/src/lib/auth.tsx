@@ -1,10 +1,10 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import type { User } from '@shared/schema';
+import type { LegacyUser } from '@shared/schema';
 
 interface AuthContextType {
-  user: User | null;
+  user: LegacyUser | null;
   token: string | null;
-  login: (user: User, token: string) => void;
+  login: (user: LegacyUser, token: string) => void;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -12,7 +12,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<LegacyUser | null>(null);
   const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
@@ -25,7 +25,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const login = (newUser: User, newToken: string) => {
+  const login = (newUser: LegacyUser, newToken: string) => {
     setUser(newUser);
     setToken(newToken);
     localStorage.setItem('auth_token', newToken);
