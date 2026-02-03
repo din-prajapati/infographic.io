@@ -92,3 +92,18 @@ Preferred communication style: Simple, everyday language.
   - Dark FAQ section with accordion
 - **Content Policy**: Removed inappropriate marketing claims (GPT references, profit margins, specific user counts) and replaced with neutral, feature-focused language
 - **Auth Types**: Updated LegacyUser type for auth context compatibility
+
+### February 2026 - Carousel & Video Enhancements
+- **Carousel Behavior**:
+  - Auto-slides every 4 seconds with smooth transitions
+  - Pauses on hover, resumes when mouse leaves
+  - Uses local stock images from `client/src/assets/images/carousel/`
+- **Background Video Section**:
+  - Full-screen looping video with dark overlay
+  - Real estate themed AI-generated video (`client/src/assets/videos/hero-background.mp4`)
+  - Logo reveal transition at end: fade/scale effect showing InfographicAI logo
+- **Asset Organization**:
+  - `client/src/assets/images/carousel/` - Carousel property images
+  - `client/src/assets/images/logo/` - Product logos
+  - `client/src/assets/videos/` - Background videos
+  - All assets are imported at top of LandingPage.tsx for easy replacement
