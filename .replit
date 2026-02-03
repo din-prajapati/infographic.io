@@ -1,11 +1,11 @@
 run = "npm run dev"
 entrypoint = "server/index.ts"
-modules = ["nodejs-20", "postgresql-15"]
+modules = ["nodejs-20", "web", "bash"]
 
 hidden = [".config", "package-lock.json", "tsconfig.json", ".gitignore"]
 
 [nix]
-channel = "stable-24_05"
+channel = "stable-25_05"
 
 [deployment]
 run = ["sh", "-c", "npm run start"]
