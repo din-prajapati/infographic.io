@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,6 +19,12 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+
+// Asset imports for easy replacement
+import carouselImage1 from "@/assets/images/carousel/property-1.jpg";
+import carouselImage2 from "@/assets/images/carousel/property-2.jpg";
+import carouselImage3 from "@/assets/images/carousel/property-3.jpg";
+import heroVideo from "@/assets/videos/hero-background.mp4";
 
 // Floating typography characters for background effect
 const floatingChars = [
@@ -74,24 +80,24 @@ const darkFloatingChars = [
   { char: "S", top: "82%", left: "86%", opacity: 0.1 },
 ];
 
-// Showcase images for carousel
+// Showcase images for carousel - update these imports to change images
 const showcaseImages = [
   {
     id: 1,
     title: "Modern Property Listing",
-    image: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=600&h=400&fit=crop",
+    image: carouselImage1,
     badge: "Featured Template",
   },
   {
     id: 2,
     title: "Luxury Home Showcase",
-    image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600&h=400&fit=crop",
+    image: carouselImage2,
     badge: "Most Popular",
   },
   {
     id: 3,
     title: "Commercial Property",
-    image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=600&h=400&fit=crop",
+    image: carouselImage3,
     badge: "New",
   },
 ];
@@ -132,6 +138,9 @@ const faqs = [
 
 export default function LandingPage() {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [isCarouselPaused, setIsCarouselPaused] = useState(false);
+  const [showLogoReveal, setShowLogoReveal] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev + 1) % showcaseImages.length);
@@ -139,6 +148,29 @@ export default function LandingPage() {
 
   const prevSlide = () => {
     setCurrentSlide((prev) => (prev - 1 + showcaseImages.length) % showcaseImages.length);
+  };
+
+  // Auto-slide carousel with pause on hover
+  useEffect(() => {
+    if (isCarouselPaused) return;
+    
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % showcaseImages.length);
+    }, 4000); // Slide every 4 seconds
+
+    return () => clearInterval(interval);
+  }, [isCarouselPaused]);
+
+  // Video logo reveal handler
+  const handleVideoTimeUpdate = () => {
+    if (videoRef.current) {
+      const timeRemaining = videoRef.current.duration - videoRef.current.currentTime;
+      if (timeRemaining <= 2) {
+        setShowLogoReveal(true);
+      } else {
+        setShowLogoReveal(false);
+      }
+    }
   };
 
   return (
@@ -273,25 +305,45 @@ export default function LandingPage() {
           </div>
 
           {/* Showcase Carousel */}
-          <div className="relative z-10 w-full max-w-lg">
+          <div 
+            className="relative z-10 w-full max-w-lg"
+            onMouseEnter={() => setIsCarouselPaused(true)}
+            onMouseLeave={() => setIsCarouselPaused(false)}
+          >
             <div className="relative rounded-2xl overflow-hidden shadow-2xl bg-white">
-              <img
-                src={showcaseImages[currentSlide].image}
-                alt={showcaseImages[currentSlide].title}
-                className="w-full h-64 md:h-80 object-cover"
-              />
-              <div className="absolute top-4 left-4">
-                <span className="px-3 py-1 bg-teal-500 text-white text-xs font-medium rounded-full">
-                  {showcaseImages[currentSlide].badge}
-                </span>
-              </div>
-              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-6">
-                <h3 className="text-white text-lg font-semibold">
-                  {showcaseImages[currentSlide].title}
-                </h3>
-                <p className="text-white/80 text-sm">
-                  Professional real estate infographic template
-                </p>
+              {/* Slide Container with smooth transition */}
+              <div className="relative w-full h-64 md:h-80">
+                {showcaseImages.map((slide, index) => (
+                  <div
+                    key={slide.id}
+                    className={`absolute inset-0 transition-all duration-700 ease-in-out ${
+                      index === currentSlide 
+                        ? "opacity-100 translate-x-0" 
+                        : index < currentSlide 
+                          ? "opacity-0 -translate-x-full" 
+                          : "opacity-0 translate-x-full"
+                    }`}
+                  >
+                    <img
+                      src={slide.image}
+                      alt={slide.title}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute top-4 left-4">
+                      <span className="px-3 py-1 bg-teal-500 text-white text-xs font-medium rounded-full">
+                        {slide.badge}
+                      </span>
+                    </div>
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-6">
+                      <h3 className="text-white text-lg font-semibold">
+                        {slide.title}
+                      </h3>
+                      <p className="text-white/80 text-sm">
+                        Professional real estate infographic template
+                      </p>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
 
@@ -371,14 +423,26 @@ export default function LandingPage() {
             </h2>
           </div>
 
-          {/* Video Placeholder */}
+          {/* Background Video with Logo Reveal */}
           <div className="relative rounded-2xl overflow-hidden shadow-2xl bg-gray-900 aspect-video max-w-3xl mx-auto">
-            <img
-              src="https://images.unsplash.com/photo-1560520653-9e0e4c89eb11?w=1200&h=675&fit=crop"
-              alt="Product demo"
-              className="w-full h-full object-cover opacity-80"
-            />
-            <div className="absolute inset-0 flex items-center justify-center">
+            {/* Video Player */}
+            <video
+              ref={videoRef}
+              className="w-full h-full object-cover"
+              autoPlay
+              muted
+              loop
+              playsInline
+              onTimeUpdate={handleVideoTimeUpdate}
+            >
+              <source src={heroVideo} type="video/mp4" />
+            </video>
+            
+            {/* Dark Overlay */}
+            <div className="absolute inset-0 bg-black/30" />
+            
+            {/* Text Overlay */}
+            <div className={`absolute inset-0 flex items-center justify-center transition-opacity duration-700 ${showLogoReveal ? 'opacity-0' : 'opacity-100'}`}>
               <div className="absolute right-8 top-1/2 -translate-y-1/2 text-right">
                 <p className="text-3xl md:text-5xl font-bold text-white">
                   Ever seen
@@ -391,10 +455,25 @@ export default function LandingPage() {
                 </p>
               </div>
             </div>
-            {/* Play Button */}
-            <button className="absolute bottom-6 left-6 w-14 h-14 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center backdrop-blur-sm transition-colors">
-              <Play className="h-6 w-6 text-white fill-white" />
-            </button>
+            
+            {/* Logo Reveal - Modern Fade/Scale/Blur Transition */}
+            <div 
+              className={`absolute inset-0 flex items-center justify-center bg-gradient-to-br from-black/80 via-gray-900/90 to-black/80 backdrop-blur-sm transition-all duration-1000 ease-out ${
+                showLogoReveal 
+                  ? 'opacity-100 scale-100' 
+                  : 'opacity-0 scale-95 pointer-events-none'
+              }`}
+            >
+              <div className={`flex flex-col items-center gap-4 transition-all duration-700 delay-300 ${showLogoReveal ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
+                <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center shadow-2xl shadow-teal-500/30">
+                  <Building2 className="h-10 w-10 md:h-12 md:w-12 text-white" />
+                </div>
+                <div className="text-center">
+                  <h3 className="text-2xl md:text-3xl font-bold text-white">InfographicAI</h3>
+                  <p className="text-gray-400 text-sm md:text-base mt-1">Real Estate Marketing Made Easy</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
