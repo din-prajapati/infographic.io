@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useState, useEffect, useRef } from 'react';
 import { X, PlusCircle, Clock, Edit } from 'lucide-react';
 import { Button } from '../ui/button';
-import { AIChatState, Template, CategoryChip, PromptSuggestion, Conversation, Message, SmartSuggestion } from './types';
+import { AIChatState, Template, CategoryChip, PromptSuggestion, Conversation, Message, SmartSuggestion, HistoryItem } from './types';
 import { categoryChips } from './categoryChipsData';
 import { getPromptsByCategoryId } from './promptSuggestionsData';
 import { AIChatInputField } from './AIChatInputField';

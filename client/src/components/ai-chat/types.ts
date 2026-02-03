@@ -127,3 +127,12 @@ export interface SmartSuggestion {
   propertyTypes: string[];
   priceRanges?: string[];
 }
+
+// History Item Types
+export interface HistoryItem {
+  id: string;
+  prompt: string;
+  timestamp: Date;
+  isFavorite: boolean;
+  categoryId?: string;
+}
