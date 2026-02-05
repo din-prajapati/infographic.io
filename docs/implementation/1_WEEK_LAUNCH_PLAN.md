@@ -28,7 +28,7 @@
 
 ### Task 1.1: User Limit Enforcement ⚠️ **CRITICAL**
 
-**Status:** ❌ Not Implemented  
+**Status:** ✅ **COMPLETED** (February 2026)  
 **Priority:** 🔴 **HIGHEST**  
 **Effort:** 4-6 hours
 
@@ -123,6 +123,40 @@
 - ✅ BROKERAGE plan organizations can add unlimited users
 - ✅ Clear error messages when limit exceeded
 - ✅ Upgrade prompts displayed appropriately
+
+**Implementation Completed:**
+- ✅ `PLAN_USER_LIMITS` config added to `shared/schema.ts` (FREE=1, SOLO=1, TEAM=5, BROKERAGE=unlimited)
+- ✅ `UsersService` created at `api/src/modules/users/users.service.ts` with:
+  - `getUserLimit(planTier)` - Get user limit for a plan tier
+  - `canAddUser(organizationId)` - Check if organization can add more users
+  - `getRemainingUserSlots(organizationId)` - Get available user slots
+  - `addUserToOrganization(organizationId, userId)` - Add user with limit validation
+- ✅ `UsersController` created at `api/src/modules/users/users.controller.ts` with endpoints:
+  - `GET /api/v1/users/organization` - Get current user's organization
+  - `GET /api/v1/users/organization/members` - List organization members
+  - `GET /api/v1/users/organization/slots` - Get available user slots
+  - `POST /api/v1/users/organization/members/:userId` - Add member to organization
+  - `DELETE /api/v1/users/organization/members/:userId` - Remove member
+- ✅ Auth registration enforces limits when joining existing organization via `organizationId` parameter
+- ✅ Frontend `usersApi` added to `client/src/lib/api.ts` for organization management
+
+---
+
+### Task 1.1b: Usage Analytics Dashboard (Bonus Feature)
+
+**Status:** ✅ **COMPLETED** (February 2026)  
+**Priority:** 🟡 **MEDIUM**  
+**Effort:** 2-3 hours
+
+**Implementation Completed:**
+- ✅ New page at `/usage` route (`client/src/pages/UsageDashboardPage.tsx`)
+- ✅ Summary cards showing: Current Plan, Monthly Usage, Total Generated, Total Cost
+- ✅ Monthly usage bar chart with visual representation
+- ✅ Cost breakdown by AI model (pie chart)
+- ✅ Recent activity table with detailed generation history
+- ✅ Export functionality (CSV and JSON formats)
+- ✅ Connected to existing backend endpoints at `/api/v1/payments/usage/*`
+- ✅ Protected route (requires authentication)
 
 ---
 
@@ -835,7 +869,7 @@
 ## ✅ MVP Launch Checklist
 
 ### Pre-Launch (4 Tasks)
-- [ ] User Limit Enforcement implemented
+- [x] User Limit Enforcement implemented ✅ (February 2026)
 - [ ] RazorPay Account Setup & Testing complete
 - [ ] End-to-End Payment Testing passed
 - [ ] Production Deployment & Monitoring configured
@@ -852,4 +886,4 @@
 
 ---
 
-*Last Updated: January 2025*
+*Last Updated: February 2026*
