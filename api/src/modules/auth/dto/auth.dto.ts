@@ -16,10 +16,15 @@ export class RegisterDto {
   @IsOptional()
   name?: string;
 
-  @ApiProperty({ example: 'ABC Realty', required: false })
+  @ApiProperty({ example: 'ABC Realty', required: false, description: 'Create new organization' })
   @IsString()
   @IsOptional()
   organizationName?: string;
+
+  @ApiProperty({ example: 'org_abc123', required: false, description: 'Join existing organization (invite flow)' })
+  @IsString()
+  @IsOptional()
+  organizationId?: string;
 }
 
 export class LoginDto {

@@ -1,14 +1,35 @@
-import { Injectable, UnauthorizedException, ConflictException, Inject } from '@nestjs/common';
+import { Injectable, UnauthorizedException, ConflictException, Inject, BadRequestException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { prisma } from '../../../database/prisma.client';
 import { RegisterDto, LoginDto } from '../dto/auth.dto';
+import { PLAN_USER_LIMITS } from '../../users/users.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     @Inject(JwtService) private readonly jwtService: JwtService,
   ) {}
+
+  private getUserLimit(planTier: string): number {
+    const config = PLAN_USER_LIMITS[planTier.toLowerCase()];
+    return config?.userLimit ?? 1;
+  }
+
+  private async canAddUserToOrganization(organizationId: string): Promise<boolean> {
+    const organization = await prisma.organization.findUnique({
+      where: { id: organizationId },
+    });
+    if (!organization) return false;
+
+    const userLimit = this.getUserLimit(organization.planTier);
+    if (userLimit === -1) return true; // unlimited
+
+    const currentCount = await prisma.user.count({
+      where: { organizationId },
+    });
+    return currentCount < userLimit;
+  }
 
   async register(registerDto: RegisterDto) {
     // #region agent log
@@ -27,15 +48,32 @@ export class AuthService {
 
     const hashedPassword = await bcrypt.hash(registerDto.password, 10);
 
-    let organization = null;
-    if (registerDto.organizationName) {
-      organization = await prisma.organization.create({
+    let organizationId: string | null = null;
+
+    // Option 1: Join existing organization (invite flow) - CHECK USER LIMITS
+    if (registerDto.organizationId) {
+      const canJoin = await this.canAddUserToOrganization(registerDto.organizationId);
+      if (!canJoin) {
+        const org = await prisma.organization.findUnique({
+          where: { id: registerDto.organizationId },
+        });
+        const limit = this.getUserLimit(org?.planTier || 'free');
+        throw new BadRequestException(
+          `User limit of ${limit} reached for ${org?.planTier || 'free'} plan. The organization needs to upgrade to add more users.`
+        );
+      }
+      organizationId = registerDto.organizationId;
+    }
+    // Option 2: Create new organization
+    else if (registerDto.organizationName) {
+      const organization = await prisma.organization.create({
         data: {
           name: registerDto.organizationName,
           planTier: 'free', // Free tier activation
           monthlyLimit: 3, // Free tier limit
         },
       });
+      organizationId = organization.id;
     }
 
     const user = await prisma.user.create({
@@ -43,7 +81,7 @@ export class AuthService {
         email: registerDto.email,
         password: hashedPassword,
         name: registerDto.name,
-        organizationId: organization?.id,
+        organizationId,
       },
       select: {
         id: true,

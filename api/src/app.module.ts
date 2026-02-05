@@ -10,6 +10,7 @@ import { AiGenerationModule } from './modules/ai-generation/ai-generation.module
 import { DesignsModule } from './modules/designs/designs.module';
 import { ConversationsModule } from './modules/conversations/conversations.module';
 import { PaymentsModule } from './modules/payments/payments.module';
+import { UsersModule } from './modules/users/users.module';
 import { DatabaseModule } from './database/database.module';
 
 
@@ -39,6 +40,7 @@ import { DatabaseModule } from './database/database.module';
     DesignsModule,
     ConversationsModule,
     PaymentsModule,
+    UsersModule,
   ],
   providers: [
     Reflector,

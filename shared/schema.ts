@@ -137,6 +137,7 @@ export const PLAN_CONFIG: Record<PlanTier, {
   price: number;
   currency: string;
   limit: number;
+  userLimit: number; // -1 = unlimited
   features: string[];
   popular?: boolean;
 }> = {
@@ -145,49 +146,56 @@ export const PLAN_CONFIG: Record<PlanTier, {
     price: 0,
     currency: 'INR',
     limit: 3,
+    userLimit: 1,
     features: ['3 infographics/month', 'Basic templates', 'Email support'],
   },
   SOLO: {
     name: 'Solo',
-    price: 2999, // Updated from 2399 for better margin (45% at $0.033/infographic)
+    price: 2999,
     currency: 'INR',
     limit: 50,
+    userLimit: 1,
     features: ['50 infographics/month', 'All templates', 'Priority support', 'Custom branding'],
     popular: true,
   },
   TEAM: {
     name: 'Team',
-    price: 6999, // Updated from 4999 for profitability (6% margin at $0.033/infographic)
+    price: 6999,
     currency: 'INR',
     limit: 200,
+    userLimit: 5,
     features: ['200 infographics/month', 'Team collaboration', '5 users', 'Advanced analytics'],
   },
   BROKERAGE: {
     name: 'Brokerage',
-    price: 24999, // Updated from 16499 for 20% margin at $0.033/infographic
+    price: 24999,
     currency: 'INR',
     limit: 1000,
+    userLimit: -1, // unlimited
     features: ['1000 infographics/month', 'Unlimited users', 'White-label', 'Dedicated support'],
   },
   API_STARTER: {
     name: 'API Starter',
-    price: 82999, // Updated from 41499 for 50% margin at $0.033/infographic
+    price: 82999,
     currency: 'INR',
     limit: 5000,
+    userLimit: 1,
     features: ['5000 API calls/month', 'REST API access', 'Webhook support', 'Technical support'],
   },
   API_GROWTH: {
     name: 'API Growth',
-    price: 249999, // Updated from 124999 for 62% margin at $0.033/infographic
+    price: 249999,
     currency: 'INR',
     limit: 20000,
+    userLimit: 3,
     features: ['20000 API calls/month', 'Priority API access', 'SLA guarantee', 'Dedicated account manager'],
   },
   API_ENTERPRISE: {
     name: 'API Enterprise',
     price: 0,
     currency: 'INR',
-    limit: -1,
+    limit: -1, // unlimited
+    userLimit: -1, // unlimited
     features: ['Unlimited API calls', 'Custom SLA', 'On-premise option', '24/7 support', 'Custom integrations'],
   },
 };

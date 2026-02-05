@@ -117,3 +117,18 @@ Preferred communication style: Simple, everyday language.
 - `client/src/assets/images/logo/` - Product logos
 - `client/src/assets/videos/` - Hero background video
 - All assets imported at top of LandingPage.tsx for easy replacement
+
+### February 2026 - User Limit Enforcement & Usage Analytics
+- **User Limit Enforcement**: 
+  - New `UsersService` (`api/src/modules/users/`) with user limit checking
+  - `PLAN_USER_LIMITS` config defines userLimit per plan tier (FREE=1, SOLO=1, TEAM=5, BROKERAGE=unlimited)
+  - Auth registration enforces limits when joining existing organizations via `organizationId`
+  - New API endpoints: `/api/v1/users/organization`, `/api/v1/users/organization/members`, `/api/v1/users/organization/slots`
+- **Usage Analytics Dashboard**:
+  - New page at `/usage` route (`client/src/pages/UsageDashboardPage.tsx`)
+  - Displays current plan, monthly usage, total generated, total cost
+  - Monthly usage bar chart, cost breakdown by AI model
+  - Recent activity table with detailed history
+  - CSV/JSON export functionality
+  - Links to existing backend endpoints: `/api/v1/payments/usage/*`
+- **PLAN_CONFIG Update**: Added `userLimit` field to all plan tiers in `shared/schema.ts`

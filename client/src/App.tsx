@@ -12,6 +12,7 @@ import { AppHeader } from "./components/navigation/AppHeader";
 import AuthPage from "./pages/AuthPage";
 import PricingPage from "./pages/PricingPage";
 import LandingPage from "./pages/LandingPage";
+import UsageDashboardPage from "./pages/UsageDashboardPage";
 import { ErrorBoundary } from "./components/ui/error-boundary";
 
 function ProtectedRoute({ component: Component }: { component: () => JSX.Element }) {
@@ -86,6 +87,7 @@ function Router() {
       <Route path="/templates" component={() => <ProtectedRoute component={() => <AppLayoutWithHeader component={TemplatesPageWrapper} />} />} />
       <Route path="/my-designs" component={() => <ProtectedRoute component={() => <AppLayoutWithHeader component={MyDesignsPageWrapper} />} />} />
       <Route path="/account" component={() => <ProtectedRoute component={() => <AppLayoutWithHeader component={AccountPage} />} />} />
+      <Route path="/usage" component={() => <ProtectedRoute component={() => <UsageDashboardPage />} />} />
       <Route path="/editor" component={EditorRoute} />
       <Route path="/" component={HomeRoute} />
       <Route component={() => <div className="min-h-screen flex items-center justify-center"><div>404 - Page Not Found</div></div>} />

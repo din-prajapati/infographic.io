@@ -510,3 +510,52 @@ export const canvasTemplatesApi = {
     }
   },
 };
+
+// Users API - Organization management and user limits
+export interface OrganizationInfo {
+  organization: {
+    id: string;
+    name: string;
+    planTier: string;
+    monthlyLimit: number;
+  };
+  userSlots: {
+    current: number;
+    limit: number;
+    remaining: number;
+  };
+  planLimits: {
+    userLimit: number;
+    monthlyLimit: number;
+  };
+}
+
+export interface OrganizationMember {
+  id: string;
+  email: string;
+  name: string | null;
+  createdAt: string;
+}
+
+export const usersApi = {
+  getOrganizationInfo: () =>
+    apiRequest<{ data: OrganizationInfo | null }>(getApiUrl('/users/organization')),
+
+  getOrganizationMembers: () =>
+    apiRequest<{ data: OrganizationMember[] }>(getApiUrl('/users/organization/members')),
+
+  getRemainingSlots: () =>
+    apiRequest<{ data: { current: number; limit: number; remaining: number } }>(getApiUrl('/users/organization/slots')),
+
+  addMember: (userId: string) =>
+    apiRequest<{ success: boolean; message: string }>(
+      getApiUrl(`/users/organization/members/${userId}`),
+      { method: 'POST' }
+    ),
+
+  removeMember: (userId: string) =>
+    apiRequest<{ success: boolean; message: string }>(
+      getApiUrl(`/users/organization/members/${userId}`),
+      { method: 'DELETE' }
+    ),
+};
