@@ -44,3 +44,5 @@
 {"location":"payments.service.ts:constructor","message":"PaymentsService constructed","data":{"hasStorage":true,"storageType":"object"},"timestamp":1770975268303,"sessionId":"debug-session","hypothesisId":"A"}
 {"location":"payments.service.ts:constructor","message":"PaymentsService constructed","data":{"hasStorage":true,"storageType":"object"},"timestamp":1770975599840,"sessionId":"debug-session","hypothesisId":"A"}
 {"location":"payments.service.ts:constructor","message":"PaymentsService constructed","data":{"hasStorage":true,"storageType":"object"},"timestamp":1770975676471,"sessionId":"debug-session","hypothesisId":"A"}
+{"location":"payments.service.ts:constructor","message":"PaymentsService constructed","data":{"hasStorage":true,"storageType":"object"},"timestamp":1770978373675,"sessionId":"debug-session","hypothesisId":"A"}
+{"location":"payments.service.ts:constructor","message":"PaymentsService constructed","data":{"hasStorage":true,"storageType":"object"},"timestamp":1770978548252,"sessionId":"debug-session","hypothesisId":"A"}
