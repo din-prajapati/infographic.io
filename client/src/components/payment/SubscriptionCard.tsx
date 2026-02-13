@@ -65,7 +65,7 @@ export function SubscriptionCard({ organization }: SubscriptionCardProps) {
 
   if (isLoading) {
     return (
-      <Card className="animate-pulse h-64" data-testid="card-subscription-loading">
+      <Card className="animate-pulse h-64 bg-white/5 backdrop-blur-xl border-white/10" data-testid="card-subscription-loading">
         <CardContent className="flex items-center justify-center h-full">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </CardContent>
@@ -95,15 +95,15 @@ export function SubscriptionCard({ organization }: SubscriptionCardProps) {
 
   return (
     <>
-      <Card data-testid="card-subscription">
+      <Card className="bg-white/5 backdrop-blur-xl border-white/10" data-testid="card-subscription">
         <CardHeader>
           <div className="flex items-center justify-between gap-2 flex-wrap">
-            <CardTitle>Current Plan</CardTitle>
+            <CardTitle className="text-white">Current Plan</CardTitle>
             <Badge variant={getStatusBadgeVariant(subscription?.status)} data-testid="badge-subscription-status">
               {subscription?.status || 'FREE'}
             </Badge>
           </div>
-          <CardDescription>Manage your subscription and billing</CardDescription>
+          <CardDescription className="text-gray-400">Manage your subscription and billing</CardDescription>
         </CardHeader>
 
         <CardContent className="space-y-6">
@@ -111,9 +111,9 @@ export function SubscriptionCard({ organization }: SubscriptionCardProps) {
           <div className="flex items-center justify-between gap-2 flex-wrap">
             <div className="flex items-center gap-2">
               <CreditCard className="w-5 h-5 text-muted-foreground" />
-              <span className="font-medium" data-testid="text-plan-name">{planConfig.name} Plan</span>
+              <span className="font-medium text-white" data-testid="text-plan-name">{planConfig.name} Plan</span>
             </div>
-            <span className="text-2xl font-bold" data-testid="text-amount">
+            <span className="text-2xl font-bold text-white" data-testid="text-amount">
               {planConfig.price === 0 ? (
                 'Free'
               ) : (
@@ -172,7 +172,7 @@ export function SubscriptionCard({ organization }: SubscriptionCardProps) {
 
         <CardFooter className="flex gap-2 flex-wrap">
           <Link href="/pricing" className="flex-1">
-            <Button variant="outline" className="w-full" data-testid="button-upgrade">
+            <Button variant="outline" className="w-full border-white/20 text-white hover:bg-white/5" data-testid="button-upgrade">
               <TrendingUp className="w-4 h-4 mr-2" />
               {currentPlan === 'FREE' ? 'Upgrade Plan' : 'Change Plan'}
             </Button>
@@ -197,10 +197,10 @@ export function SubscriptionCard({ organization }: SubscriptionCardProps) {
 
       {/* Cancel Confirmation Dialog */}
       <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
-        <AlertDialogContent>
+        <AlertDialogContent className="bg-[#1a1a1a] border-white/10">
           <AlertDialogHeader>
-            <AlertDialogTitle>Cancel Subscription</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogTitle className="text-white">Cancel Subscription</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-400">
               Are you sure you want to cancel your subscription? You'll continue to have access 
               until the end of your current billing period.
             </AlertDialogDescription>

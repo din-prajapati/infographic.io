@@ -562,13 +562,34 @@ export function AIChatBox({ isExpanded, onClose, onTemplateLoad }: AIChatBoxProp
   };
 
   const handleEditVariation = (id: string) => {
-    console.log('Edit variation:', id);
-    // Open editor with selected variation
+    const variation = resultVariations.find(v => v.id === id);
+    if (variation) {
+      const template: Template = {
+        id: variation.id,
+        name: variation.title || 'AI Generated Design',
+        category: 'listing-announcements',
+        description: variation.description || 'AI-generated infographic design',
+        previewImage: variation.previewUrl,
+        emoji: '🎨',
+      };
+      onTemplateLoad(template);
+    }
+    handleClose();
   };
 
   const handleUseVariation = (id: string) => {
-    console.log('Use variation:', id);
-    // Load variation into canvas
+    const variation = resultVariations.find(v => v.id === id);
+    if (variation) {
+      const template: Template = {
+        id: variation.id,
+        name: variation.title || 'AI Generated Design',
+        category: 'listing-announcements',
+        description: variation.description || 'AI-generated infographic design',
+        previewImage: variation.previewUrl,
+        emoji: '🎨',
+      };
+      onTemplateLoad(template);
+    }
     handleClose();
   };
 

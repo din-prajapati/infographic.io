@@ -143,6 +143,18 @@ Preferred communication style: Simple, everyday language.
   - Black "Continue with Google" and "Login" buttons
   - Responsive layout: side-by-side on desktop, stacked on mobile
 
+### February 2026 - Premium Dark Theme Redesign
+- **Global Dark Theme**: All authenticated pages updated to premium dark aesthetic
+  - Background: `bg-[#0a0a0a]` across all pages
+  - Cards: `bg-white/5 backdrop-blur-xl border border-white/10` (frosted glass)
+  - Text: `text-white` headings, `text-gray-400` descriptions, `text-gray-300` body
+  - Buttons: `bg-white text-black hover:bg-gray-100` for primary actions
+  - Check marks: `text-emerald-400`
+- **Pages Updated**: PricingPage, AppHeader, TemplatesPage, MyDesignsPage, AccountPage, UsageDashboardPage
+- **Payment Components**: SubscriptionCard, PaymentHistory updated to dark glass styling
+- **AppHeader**: Dark navigation bar (`bg-[#0a0a0a] border-white/10`), white active tabs, gray-400 inactive
+- **AI Chatbox Fix**: `handleUseVariation` and `handleEditVariation` now properly call `onTemplateLoad` with valid Template objects (was previously a no-op stub)
+
 ### February 2026 - User Limit Enforcement & Usage Analytics
 - **User Limit Enforcement**: 
   - New `UsersService` (`api/src/modules/users/`) with user limit checking
