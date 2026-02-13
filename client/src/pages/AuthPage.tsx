@@ -138,10 +138,9 @@ export default function AuthPage() {
             type="button"
             className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl text-sm font-medium transition-all duration-200 hover:shadow-lg mb-4"
             style={{
-              background: 'rgba(255,255,255,0.15)',
-              border: '1px solid rgba(255,255,255,0.3)',
+              background: '#000000',
+              border: '1px solid rgba(255,255,255,0.15)',
               color: 'white',
-              backdropFilter: 'blur(10px)',
             }}
           >
             <svg width="20" height="20" viewBox="0 0 24 24">
@@ -232,8 +231,8 @@ export default function AuthPage() {
                   type="submit"
                   className="w-full h-12 rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transition-all duration-200 mt-2"
                   style={{
-                    background: 'linear-gradient(135deg, #3d2b4f 0%, #2d1f3d 100%)',
-                    border: '1px solid rgba(255,255,255,0.1)',
+                    background: '#000000',
+                    border: '1px solid rgba(255,255,255,0.15)',
                   }}
                   disabled={loginMutation.isPending}
                   data-testid="button-login"
@@ -349,8 +348,8 @@ export default function AuthPage() {
                   type="submit"
                   className="w-full h-12 rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transition-all duration-200 mt-2"
                   style={{
-                    background: 'linear-gradient(135deg, #3d2b4f 0%, #2d1f3d 100%)',
-                    border: '1px solid rgba(255,255,255,0.1)',
+                    background: '#000000',
+                    border: '1px solid rgba(255,255,255,0.15)',
                   }}
                   disabled={registerMutation.isPending}
                   data-testid="button-register"
