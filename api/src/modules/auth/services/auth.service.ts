@@ -147,6 +147,84 @@ export class AuthService {
     };
   }
 
+  private oauthCodes = new Map<string, { token: string; user: any; expiresAt: number }>();
+
+  async googleLogin(googleUser: { googleId: string; email: string; name: string; avatarUrl?: string }) {
+    if (!googleUser.email) {
+      throw new BadRequestException('Google account must have a verified email address');
+    }
+
+    let user = await prisma.user.findUnique({
+      where: { googleId: googleUser.googleId },
+    });
+
+    if (!user) {
+      user = await prisma.user.findUnique({
+        where: { email: googleUser.email },
+      });
+
+      if (user) {
+        user = await prisma.user.update({
+          where: { id: user.id },
+          data: {
+            googleId: googleUser.googleId,
+            avatarUrl: googleUser.avatarUrl || user.avatarUrl,
+            provider: 'google',
+          },
+        });
+      } else {
+        const organization = await prisma.organization.create({
+          data: {
+            name: `${googleUser.name}'s Organization`,
+            planTier: 'free',
+            monthlyLimit: 3,
+          },
+        });
+
+        user = await prisma.user.create({
+          data: {
+            email: googleUser.email,
+            password: '',
+            name: googleUser.name,
+            googleId: googleUser.googleId,
+            avatarUrl: googleUser.avatarUrl,
+            provider: 'google',
+            organizationId: organization.id,
+          },
+        });
+      }
+    }
+
+    const token = this.jwtService.sign({ sub: user.id, email: user.email });
+    const userData = {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      organizationId: user.organizationId,
+    };
+
+    const code = require('crypto').randomBytes(32).toString('hex');
+    this.oauthCodes.set(code, {
+      token,
+      user: userData,
+      expiresAt: Date.now() + 60000,
+    });
+
+    setTimeout(() => this.oauthCodes.delete(code), 60000);
+
+    return { code };
+  }
+
+  exchangeOAuthCode(code: string) {
+    const data = this.oauthCodes.get(code);
+    if (!data || data.expiresAt < Date.now()) {
+      this.oauthCodes.delete(code);
+      throw new UnauthorizedException('Invalid or expired OAuth code');
+    }
+    this.oauthCodes.delete(code);
+    return { user: data.user, token: data.token };
+  }
+
   async validateApiKey(apiKey: string) {
     // #region agent log
     fetch('http://127.0.0.1:7244/ingest/8efc90dd-6123-4218-ac73-6942740927b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'auth.service.ts:107',message:'validateApiKey called',data:{apiKeyLength:apiKey?.length,apiKeyPrefix:apiKey?.substring(0,8)+'...'},timestamp:Date.now(),sessionId:'debug-session',runId:'debug1',hypothesisId:'C'})}).catch(()=>{});

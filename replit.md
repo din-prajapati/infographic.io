@@ -44,6 +44,14 @@ Preferred communication style: Simple, everyday language.
 - AuthProvider context wrapping the application
 - Protected routes using Wouter with redirect to `/auth`
 - Dual auth support: JWT for web users, API keys for B2B access
+- **Google OAuth**: Passport.js Google strategy (`passport-google-oauth20`)
+  - Strategy: `api/src/modules/auth/strategies/google.strategy.ts`
+  - Routes: `GET /api/v1/auth/google` (initiate), `GET /api/v1/auth/google/callback` (callback)
+  - Callback redirects to `/auth/callback` with token in URL params
+  - Frontend callback handler: `client/src/pages/AuthCallbackPage.tsx`
+  - User fields: `googleId`, `avatarUrl`, `provider` added to User model
+  - Auto-creates organization for new Google users, links existing accounts by email
+  - Requires secrets: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`
 
 ## External Dependencies
 
@@ -117,6 +125,23 @@ Preferred communication style: Simple, everyday language.
 - `client/src/assets/images/logo/` - Product logos
 - `client/src/assets/videos/` - Hero background video
 - All assets imported at top of LandingPage.tsx for easy replacement
+
+### February 2026 - Google OAuth Backend Integration
+- **Passport.js Google Strategy**: Full OAuth 2.0 flow with `passport-google-oauth20`
+  - New strategy file: `api/src/modules/auth/strategies/google.strategy.ts`
+  - GoogleStrategy registered in AuthModule providers
+  - AuthService `googleLogin()` method: finds/creates user by googleId or email
+  - Auto-creates organization with free tier for new Google sign-ups
+  - Links existing email accounts to Google if user signs in with same email
+- **Database Schema**: Added `googleId` (unique), `avatarUrl`, `provider` fields to User model
+- **Auth Routes**: `GET /api/v1/auth/google` and `GET /api/v1/auth/google/callback`
+- **Frontend Callback**: `AuthCallbackPage.tsx` at `/auth/callback` route
+  - Parses token and user from URL params after Google redirect
+  - Stores in AuthProvider context and localStorage
+  - Redirects to `/templates` on success
+- **Auth Page**: Frosted glass split-panel design with property image carousel
+  - Black "Continue with Google" and "Login" buttons
+  - Responsive layout: side-by-side on desktop, stacked on mobile
 
 ### February 2026 - User Limit Enforcement & Usage Analytics
 - **User Limit Enforcement**: 
