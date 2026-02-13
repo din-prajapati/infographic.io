@@ -19,7 +19,19 @@ interface TemplatesPageProps {
   onOpenEditor?: (templateId?: string) => void;
 }
 
-const templates = [
+interface TemplateItem {
+  id: string | number;
+  title: string;
+  description: string;
+  uses: string;
+  badge: string;
+  badgeColor: string;
+  image: string;
+  isCustom?: boolean;
+  isApiTemplate?: boolean;
+}
+
+const templates: TemplateItem[] = [
   {
     id: 1,
     title: "Modern Real Estate",
@@ -166,18 +178,18 @@ export function TemplatesPage({ onOpenEditor }: TemplatesPageProps) {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#0a0a0a]">
       <div className="max-w-[1440px] mx-auto px-6 py-8">
         {/* Header Section */}
         <div className="mb-8">
           <div className="flex items-start justify-between mb-6">
             <div>
-              <h1 className="mb-2">Template Gallery</h1>
-              <p className="text-muted-foreground">
+              <h1 className="mb-2 text-white">Template Gallery</h1>
+              <p className="text-gray-400">
                 Choose from our curated collection of professional infographic templates
               </p>
             </div>
-            <Button className="gap-2" onClick={onOpenEditor}>
+            <Button className="gap-2 bg-white text-black hover:bg-gray-100" onClick={() => onOpenEditor?.()}>
               <Plus className="w-4 h-4" />
               Create Blank
             </Button>
@@ -186,16 +198,16 @@ export function TemplatesPage({ onOpenEditor }: TemplatesPageProps) {
           {/* Search and Filters */}
           <div className="flex items-center gap-3">
             <div className="flex-1 relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
               <Input
                 placeholder="Search templates..."
-                className="pl-11 h-11 bg-white"
+                className="pl-11 h-11 bg-white/5 border-white/10 text-white placeholder:text-gray-500"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
             <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger className="w-[180px] h-11 bg-white">
+              <SelectTrigger className="w-[180px] h-11 bg-white/5 border-white/10 text-white">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -207,7 +219,7 @@ export function TemplatesPage({ onOpenEditor }: TemplatesPageProps) {
               </SelectContent>
             </Select>
             <Select value={selectedStyle} onValueChange={setSelectedStyle}>
-              <SelectTrigger className="w-[140px] h-11 bg-white">
+              <SelectTrigger className="w-[140px] h-11 bg-white/5 border-white/10 text-white">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -222,7 +234,7 @@ export function TemplatesPage({ onOpenEditor }: TemplatesPageProps) {
               <Button
                 variant={showCustomOnly ? "default" : "outline"}
                 onClick={() => setShowCustomOnly(!showCustomOnly)}
-                className="h-11"
+                className="h-11 border-white/20 text-white"
               >
                 My Templates ({customTemplates.length})
               </Button>
@@ -236,7 +248,7 @@ export function TemplatesPage({ onOpenEditor }: TemplatesPageProps) {
             filteredTemplates.map((template) => (
               <div
                 key={template.id}
-                className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow"
+                className="bg-white/5 backdrop-blur-xl rounded-xl border border-white/10 overflow-hidden hover:shadow-lg transition-shadow"
               >
                 {/* Template Image */}
                 <div className="relative aspect-[4/3] overflow-hidden">
@@ -269,19 +281,19 @@ export function TemplatesPage({ onOpenEditor }: TemplatesPageProps) {
 
                 {/* Template Info */}
                 <div className="p-4">
-                  <h3 className="mb-1">{template.title}</h3>
-                  <p className="text-xs text-muted-foreground mb-3">
+                  <h3 className="mb-1 text-white">{template.title}</h3>
+                  <p className="text-xs text-gray-400 mb-3">
                     {template.description}
                   </p>
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-xs text-gray-400">
                       {template.uses} {template.isCustom ? '' : 'uses'}
                     </span>
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="text-blue-600 h-8"
-                      onClick={() => onOpenEditor?.(template.isCustom ? template.id : undefined)}
+                      className="text-emerald-400 hover:text-emerald-300 h-8"
+                      onClick={() => onOpenEditor?.(template.isCustom ? String(template.id) : undefined)}
                     >
                       Use Template
                     </Button>
@@ -291,7 +303,7 @@ export function TemplatesPage({ onOpenEditor }: TemplatesPageProps) {
             ))
           ) : (
             <div className="col-span-full flex flex-col items-center justify-center py-16">
-              <p className="text-muted-foreground mb-4">
+              <p className="text-gray-400 mb-4">
                 {showCustomOnly && customTemplates.length === 0
                   ? "No custom templates yet. Save a design as template!"
                   : "No templates found matching your criteria"}

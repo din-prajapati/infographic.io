@@ -118,23 +118,23 @@ export function MyDesignsPage({ onOpenEditor }: MyDesignsPageProps) {
     });
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#0a0a0a]">
       <div className="max-w-[1440px] mx-auto px-6 py-8">
         {/* Header Section */}
         <div className="mb-8">
           <div className="flex items-start justify-between mb-6">
             <div>
-              <h1 className="mb-2">My Designs</h1>
-              <p className="text-muted-foreground">
+              <h1 className="mb-2 text-white">My Designs</h1>
+              <p className="text-gray-400">
                 Manage and access your design projects efficiently
               </p>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" className="gap-2">
+              <Button variant="outline" className="gap-2 border-white/20 text-white hover:bg-white/10">
                 <Download className="w-4 h-4" />
                 Export All
               </Button>
-              <Button className="gap-2" onClick={onOpenEditor}>
+              <Button className="gap-2 bg-white text-black hover:bg-gray-100" onClick={() => onOpenEditor?.()}>
                 <Plus className="w-4 h-4" />
                 New Design
               </Button>
@@ -144,16 +144,16 @@ export function MyDesignsPage({ onOpenEditor }: MyDesignsPageProps) {
           {/* Search and Filters */}
           <div className="flex items-center gap-3 mb-6">
             <div className="flex-1 relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
               <Input
                 placeholder="Search designs..."
-                className="pl-11 h-11 bg-white"
+                className="pl-11 h-11 bg-white/5 border-white/10 text-white placeholder:text-gray-500"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
             <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger className="w-[180px] h-11 bg-white">
+              <SelectTrigger className="w-[180px] h-11 bg-white/5 border-white/10 text-white">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -164,7 +164,7 @@ export function MyDesignsPage({ onOpenEditor }: MyDesignsPageProps) {
               </SelectContent>
             </Select>
             <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-[180px] h-11 bg-white">
+              <SelectTrigger className="w-[180px] h-11 bg-white/5 border-white/10 text-white">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -176,7 +176,7 @@ export function MyDesignsPage({ onOpenEditor }: MyDesignsPageProps) {
             <Button 
               variant={viewMode === "grid" ? "default" : "outline"}
               size="icon" 
-              className="h-11 w-11"
+              className={`h-11 w-11 ${viewMode === "grid" ? "bg-white text-black" : "border-white/20 text-gray-400 hover:text-white"}`}
               onClick={() => setViewMode("grid")}
             >
               <Grid3x3 className="w-4 h-4" />
@@ -184,7 +184,7 @@ export function MyDesignsPage({ onOpenEditor }: MyDesignsPageProps) {
             <Button 
               variant={viewMode === "list" ? "default" : "outline"}
               size="icon" 
-              className="h-11 w-11"
+              className={`h-11 w-11 ${viewMode === "list" ? "bg-white text-black" : "border-white/20 text-gray-400 hover:text-white"}`}
               onClick={() => setViewMode("list")}
             >
               <List className="w-4 h-4" />
@@ -194,33 +194,29 @@ export function MyDesignsPage({ onOpenEditor }: MyDesignsPageProps) {
           {/* Filter Tabs */}
           <div className="flex gap-2">
             <Button
-              variant={filterTab === "all" ? "default" : "ghost"}
               size="sm"
-              className="rounded-full h-8"
+              className={`rounded-full h-8 ${filterTab === "all" ? "bg-white text-black" : "text-gray-400 hover:text-white hover:bg-white/5"}`}
               onClick={() => setFilterTab("all")}
             >
               All Designs
             </Button>
             <Button
-              variant={filterTab === "recent" ? "default" : "ghost"}
               size="sm"
-              className="rounded-full h-8"
+              className={`rounded-full h-8 ${filterTab === "recent" ? "bg-white text-black" : "text-gray-400 hover:text-white hover:bg-white/5"}`}
               onClick={() => setFilterTab("recent")}
             >
               Recent
             </Button>
             <Button
-              variant={filterTab === "favorites" ? "default" : "ghost"}
               size="sm"
-              className="rounded-full h-8"
+              className={`rounded-full h-8 ${filterTab === "favorites" ? "bg-white text-black" : "text-gray-400 hover:text-white hover:bg-white/5"}`}
               onClick={() => setFilterTab("favorites")}
             >
               Favorites
             </Button>
             <Button
-              variant={filterTab === "archived" ? "default" : "ghost"}
               size="sm"
-              className="rounded-full h-8"
+              className={`rounded-full h-8 ${filterTab === "archived" ? "bg-white text-black" : "text-gray-400 hover:text-white hover:bg-white/5"}`}
               onClick={() => setFilterTab("archived")}
             >
               Archived
@@ -234,7 +230,7 @@ export function MyDesignsPage({ onOpenEditor }: MyDesignsPageProps) {
             filteredDesigns.map((design) => (
               <div
                 key={design.id}
-                className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+                className="bg-white/5 backdrop-blur-xl rounded-xl border border-white/10 overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
                 onClick={() => onOpenEditor?.(design.id)}
               >
                 {/* Design Image */}
@@ -254,7 +250,7 @@ export function MyDesignsPage({ onOpenEditor }: MyDesignsPageProps) {
                 {/* Design Info */}
                 <div className="p-4">
                   <div className="flex items-start justify-between mb-2">
-                    <h3 className="flex-1">{design.name}</h3>
+                    <h3 className="flex-1 text-white">{design.name}</h3>
                     <div className="flex items-center gap-1">
                       <Button
                         variant="ghost"
@@ -266,7 +262,7 @@ export function MyDesignsPage({ onOpenEditor }: MyDesignsPageProps) {
                           className={`w-3.5 h-3.5 ${
                             favoriteIds.includes(design.id)
                               ? "fill-yellow-400 text-yellow-400"
-                              : "text-gray-400"
+                              : "text-gray-500"
                           }`}
                         />
                       </Button>
@@ -278,7 +274,7 @@ export function MyDesignsPage({ onOpenEditor }: MyDesignsPageProps) {
                             className="h-6 w-6"
                             onClick={(e) => e.stopPropagation()}
                           >
-                            <MoreVertical className="w-3.5 h-3.5" />
+                            <MoreVertical className="w-3.5 h-3.5 text-gray-400" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
@@ -304,11 +300,11 @@ export function MyDesignsPage({ onOpenEditor }: MyDesignsPageProps) {
                       </DropdownMenu>
                     </div>
                   </div>
-                  <p className="text-xs text-muted-foreground mb-2">
+                  <p className="text-xs text-gray-400 mb-2">
                     Modified {formatDate(design.updatedAt)} • Created {formatDate(design.createdAt)}
                   </p>
                   <div className="flex items-center justify-between">
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-gray-400">
                       {design.category || 'No category'}
                     </p>
                     {design.tags && design.tags.length > 0 && (
@@ -322,13 +318,14 @@ export function MyDesignsPage({ onOpenEditor }: MyDesignsPageProps) {
             ))
           ) : (
             <div className="col-span-full flex flex-col items-center justify-center py-16">
-              <p className="text-muted-foreground mb-4">
+              <p className="text-gray-400 mb-4">
                 {savedDesigns.length === 0 
                   ? "No saved designs yet. Create your first design!" 
                   : "No designs found matching your criteria"}
               </p>
               <Button 
                 variant="outline" 
+                className="border-white/20 text-white hover:bg-white/10"
                 onClick={() => {
                   if (savedDesigns.length === 0) {
                     onOpenEditor?.();

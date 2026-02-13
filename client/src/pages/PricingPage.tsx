@@ -272,45 +272,45 @@ export default function PricingPage() {
       : allPlans.filter((p) => p.tier === "TEAM" || p.tier === "BROKERAGE");
 
   return (
-    <div className="min-h-screen bg-[#f5f5f0]">
-      {/* Nav - Emergent-style */}
-      <nav className="border-b border-gray-200 bg-white sticky top-0 z-50">
+    <div className="min-h-screen bg-[#0a0a0a]">
+      {/* Nav - Dark glass style */}
+      <nav className="border-b border-white/10 bg-black/80 backdrop-blur-xl sticky top-0 z-50">
         <div className="container flex h-16 items-center justify-between px-6 max-w-6xl mx-auto">
           <Link
             href="/"
-            className="flex items-center gap-2 font-bold text-lg text-black"
+            className="flex items-center gap-2 font-bold text-lg text-white"
           >
-            <Building2 className="h-7 w-7 text-black" />
+            <Building2 className="h-7 w-7 text-white" />
             <span>InfographicAI</span>
           </Link>
           <div className="flex items-center gap-8">
             <a
               href="/#features"
-              className="text-sm font-medium text-gray-600 hover:text-black"
+              className="text-sm font-medium text-gray-400 hover:text-white"
             >
               Features
             </a>
             <a
               href="/pricing"
-              className="text-sm font-medium text-black"
+              className="text-sm font-medium text-white"
             >
               Pricing
             </a>
             <a
               href="/#faqs"
-              className="text-sm font-medium text-gray-600 hover:text-black"
+              className="text-sm font-medium text-gray-400 hover:text-white"
             >
               FAQs
             </a>
             <a
               href="#enterprise"
-              className="text-sm font-medium text-gray-600 hover:text-black"
+              className="text-sm font-medium text-gray-400 hover:text-white"
             >
               Enterprise
             </a>
             <Link href="/auth">
               <Button
-                className="gap-2 bg-black hover:bg-gray-800 text-white rounded-full font-medium px-5"
+                className="gap-2 bg-white hover:bg-gray-100 text-black rounded-full font-medium px-5"
               >
                 Get Started <ArrowRight className="h-4 w-4" />
               </Button>
@@ -322,14 +322,14 @@ export default function PricingPage() {
       {/* Header - Segment Toggle */}
       <section className="container px-6 pt-10 pb-6 text-center max-w-6xl mx-auto">
         <div className="flex justify-center mb-6">
-          <div className="inline-flex rounded-full bg-gray-200 p-1">
+          <div className="inline-flex rounded-full bg-white/5 border border-white/10 p-1">
             <button
               type="button"
               onClick={() => setPlanSegment("individual")}
               className={`rounded-full px-6 py-2.5 text-sm font-medium transition-all ${
                 planSegment === "individual"
                   ? "bg-white text-black shadow-sm"
-                  : "text-gray-500 hover:text-gray-700"
+                  : "text-gray-400 hover:text-gray-200"
               }`}
             >
               Individual
@@ -340,7 +340,7 @@ export default function PricingPage() {
               className={`rounded-full px-6 py-2.5 text-sm font-medium transition-all ${
                 planSegment === "enterprise"
                   ? "bg-white text-black shadow-sm"
-                  : "text-gray-500 hover:text-gray-700"
+                  : "text-gray-400 hover:text-gray-200"
               }`}
             >
               Enterprise
@@ -369,17 +369,17 @@ export default function PricingPage() {
             return (
               <div
                 key={plan.tier}
-                className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 flex flex-col"
+                className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8 flex flex-col"
               >
                 {/* Header with Annual Toggle */}
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
-                    <h3 className="text-xl font-bold text-black">{plan.name}</h3>
+                    <h3 className="text-xl font-bold text-white">{plan.name}</h3>
                     <PlanIcon className="h-5 w-5 text-gray-400" />
                   </div>
                   {showAnnualToggle && (
                     <div className="flex items-center gap-2">
-                      <span className="text-xs text-gray-500 font-medium">Annual</span>
+                      <span className="text-xs text-gray-400 font-medium">Annual</span>
                       <Switch
                         checked={isAnnual}
                         onCheckedChange={() => toggleAnnual(plan.tier)}
@@ -389,14 +389,14 @@ export default function PricingPage() {
                   )}
                 </div>
 
-                <p className="text-sm text-gray-500 mb-6">
+                <p className="text-sm text-gray-400 mb-6">
                   {planDescriptions[plan.tier]}
                 </p>
 
                 {/* Price */}
                 <div className="mb-6">
                   <div className="flex items-baseline gap-2">
-                    <span className="text-4xl font-bold text-black">
+                    <span className="text-4xl font-bold text-white">
                       {selectedCurrency === "INR" ? "₹" : "$"}
                       {selectedCurrency === "INR"
                         ? displayPrice.toLocaleString()
@@ -404,7 +404,7 @@ export default function PricingPage() {
                     </span>
                     <span className="text-base text-gray-500">/ month</span>
                     {isAnnual && plan.price > 0 && (
-                      <span className="text-sm text-teal-600 font-medium bg-teal-50 px-2 py-0.5 rounded-full">
+                      <span className="text-sm text-teal-400 font-medium bg-teal-400/10 px-2 py-0.5 rounded-full">
                         Save{" "}
                         {selectedCurrency === "INR" ? "₹" : "$"}
                         {selectedCurrency === "INR"
@@ -423,9 +423,9 @@ export default function PricingPage() {
                   {plan.features.map((feature) => (
                     <li
                       key={feature}
-                      className="flex items-start gap-2 text-sm text-gray-700"
+                      className="flex items-start gap-2 text-sm text-gray-300"
                     >
-                      <Check className="h-4 w-4 text-black shrink-0 mt-0.5" />
+                      <Check className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
                       <span>{feature}</span>
                     </li>
                   ))}
@@ -433,7 +433,11 @@ export default function PricingPage() {
 
                 {/* CTA Button */}
                 <Button
-                  className="w-full h-12 bg-black hover:bg-gray-800 text-white rounded-full font-medium"
+                  className={`w-full h-12 rounded-full font-medium ${
+                    isCurrentPlan
+                      ? "bg-white/10 text-gray-400"
+                      : "bg-white hover:bg-gray-100 text-black"
+                  }`}
                   disabled={isCurrentPlan || isPlanLoading}
                   onClick={() => handleSubscribe(plan.tier)}
                 >
@@ -531,41 +535,41 @@ export default function PricingPage() {
             </Button>
           </Link>
         </div>
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#f5f5f0] to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#0a0a0a] to-transparent" />
       </section>
 
       {/* Footer */}
-      <footer className="bg-[#f5f5f0] border-t border-gray-200 py-16">
+      <footer className="bg-[#0a0a0a] border-t border-white/10 py-16">
         <div className="container px-6 max-w-6xl mx-auto">
           <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
             <div className="col-span-2 md:col-span-1">
               <Link
                 href="/"
-                className="flex items-center gap-2 font-bold text-xl text-black mb-4"
+                className="flex items-center gap-2 font-bold text-xl text-white mb-4"
               >
                 <Building2 className="h-6 w-6" />
                 <span>InfographicAI</span>
               </Link>
-              <p className="text-sm text-gray-600 leading-relaxed">
+              <p className="text-sm text-gray-400 leading-relaxed">
                 Create stunning property infographics for your listings.
               </p>
             </div>
 
             <div>
-              <h4 className="font-semibold text-black mb-4">Product</h4>
-              <ul className="space-y-3 text-sm text-gray-600">
+              <h4 className="font-semibold text-white mb-4">Product</h4>
+              <ul className="space-y-3 text-sm text-gray-400">
                 <li>
-                  <Link href="/templates" className="hover:text-black">
+                  <Link href="/templates" className="hover:text-white">
                     Templates
                   </Link>
                 </li>
                 <li>
-                  <Link href="/pricing" className="hover:text-black">
+                  <Link href="/pricing" className="hover:text-white">
                     Pricing
                   </Link>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-black">
+                  <a href="#" className="hover:text-white">
                     Integrations
                   </a>
                 </li>
@@ -573,25 +577,25 @@ export default function PricingPage() {
             </div>
 
             <div>
-              <h4 className="font-semibold text-black mb-4">Solutions</h4>
-              <ul className="space-y-3 text-sm text-gray-600">
+              <h4 className="font-semibold text-white mb-4">Solutions</h4>
+              <ul className="space-y-3 text-sm text-gray-400">
                 <li>
-                  <a href="#" className="hover:text-black">
+                  <a href="#" className="hover:text-white">
                     For Agents
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-black">
+                  <a href="#" className="hover:text-white">
                     For Teams
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-black">
+                  <a href="#" className="hover:text-white">
                     For Brokerages
                   </a>
                 </li>
                 <li>
-                  <a href="#enterprise" className="hover:text-black">
+                  <a href="#enterprise" className="hover:text-white">
                     Enterprise
                   </a>
                 </li>
@@ -599,20 +603,20 @@ export default function PricingPage() {
             </div>
 
             <div>
-              <h4 className="font-semibold text-black mb-4">Resources</h4>
-              <ul className="space-y-3 text-sm text-gray-600">
+              <h4 className="font-semibold text-white mb-4">Resources</h4>
+              <ul className="space-y-3 text-sm text-gray-400">
                 <li>
-                  <a href="#" className="hover:text-black">
+                  <a href="#" className="hover:text-white">
                     Help Center
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-black">
+                  <a href="#" className="hover:text-white">
                     Tutorials
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-black">
+                  <a href="#" className="hover:text-white">
                     Blog
                   </a>
                 </li>
@@ -620,25 +624,25 @@ export default function PricingPage() {
             </div>
 
             <div>
-              <h4 className="font-semibold text-black mb-4">Company</h4>
-              <ul className="space-y-3 text-sm text-gray-600">
+              <h4 className="font-semibold text-white mb-4">Company</h4>
+              <ul className="space-y-3 text-sm text-gray-400">
                 <li>
-                  <a href="#" className="hover:text-black">
+                  <a href="#" className="hover:text-white">
                     About
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-black">
+                  <a href="#" className="hover:text-white">
                     Careers
                   </a>
                 </li>
                 <li>
-                  <a href="/terms" className="hover:text-black">
+                  <a href="/terms" className="hover:text-white">
                     Terms of Service
                   </a>
                 </li>
                 <li>
-                  <a href="/privacy" className="hover:text-black">
+                  <a href="/privacy" className="hover:text-white">
                     Privacy Policy
                   </a>
                 </li>
@@ -646,7 +650,7 @@ export default function PricingPage() {
             </div>
           </div>
 
-          <div className="pt-8 border-t border-gray-200 flex flex-col md:flex-row justify-between items-center gap-4">
+          <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-sm text-gray-500">COPYRIGHT InfographicAI 2025</p>
             <p className="text-sm text-gray-500">
               DESIGNED FOR REAL ESTATE PROFESSIONALS
@@ -654,25 +658,25 @@ export default function PricingPage() {
             <div className="flex items-center gap-4">
               <a
                 href="#"
-                className="text-gray-500 hover:text-black transition-colors"
+                className="text-gray-500 hover:text-white transition-colors"
               >
                 <Linkedin className="h-5 w-5" />
               </a>
               <a
                 href="#"
-                className="text-gray-500 hover:text-black transition-colors"
+                className="text-gray-500 hover:text-white transition-colors"
               >
                 <Twitter className="h-5 w-5" />
               </a>
               <a
                 href="#"
-                className="text-gray-500 hover:text-black transition-colors"
+                className="text-gray-500 hover:text-white transition-colors"
               >
                 <Youtube className="h-5 w-5" />
               </a>
               <a
                 href="#"
-                className="text-gray-500 hover:text-black transition-colors"
+                className="text-gray-500 hover:text-white transition-colors"
               >
                 <Instagram className="h-5 w-5" />
               </a>

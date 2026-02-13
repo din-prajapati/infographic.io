@@ -35,3 +35,10 @@
 {"location":"payments.service.ts:constructor","message":"PaymentsService constructed","data":{"hasStorage":true,"storageType":"object"},"timestamp":1770969526440,"sessionId":"debug-session","hypothesisId":"A"}
 {"location":"payments.service.ts:constructor","message":"PaymentsService constructed","data":{"hasStorage":true,"storageType":"object"},"timestamp":1770969736645,"sessionId":"debug-session","hypothesisId":"A"}
 {"location":"payments.service.ts:constructor","message":"PaymentsService constructed","data":{"hasStorage":true,"storageType":"object"},"timestamp":1770969806039,"sessionId":"debug-session","hypothesisId":"A"}
+{"location":"payments.service.ts:constructor","message":"PaymentsService constructed","data":{"hasStorage":true,"storageType":"object"},"timestamp":1770974730595,"sessionId":"debug-session","hypothesisId":"A"}
+{"location":"payments.service.ts:constructor","message":"PaymentsService constructed","data":{"hasStorage":true,"storageType":"object"},"timestamp":1770974798078,"sessionId":"debug-session","hypothesisId":"A"}
+{"location":"payments.service.ts:constructor","message":"PaymentsService constructed","data":{"hasStorage":true,"storageType":"object"},"timestamp":1770974893440,"sessionId":"debug-session","hypothesisId":"A"}
+{"location":"payments.service.ts:constructor","message":"PaymentsService constructed","data":{"hasStorage":true,"storageType":"object"},"timestamp":1770974996310,"sessionId":"debug-session","hypothesisId":"A"}
+{"location":"payments.service.ts:constructor","message":"PaymentsService constructed","data":{"hasStorage":true,"storageType":"object"},"timestamp":1770975075474,"sessionId":"debug-session","hypothesisId":"A"}
+{"location":"payments.service.ts:constructor","message":"PaymentsService constructed","data":{"hasStorage":true,"storageType":"object"},"timestamp":1770975175757,"sessionId":"debug-session","hypothesisId":"A"}
+{"location":"payments.service.ts:constructor","message":"PaymentsService constructed","data":{"hasStorage":true,"storageType":"object"},"timestamp":1770975268303,"sessionId":"debug-session","hypothesisId":"A"}

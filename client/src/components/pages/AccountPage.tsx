@@ -23,12 +23,12 @@ export function AccountPage() {
   const initials = displayName.split(" ").map((name) => name.charAt(0).toUpperCase()).slice(0, 2).join("");
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#0a0a0a]">
       <div className="max-w-[1200px] mx-auto px-6 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="mb-2">Account Settings</h1>
-          <p className="text-muted-foreground">
+          <h1 className="mb-2 text-white">Account Settings</h1>
+          <p className="text-gray-400">
             Manage your account settings and preferences
           </p>
         </div>
@@ -36,74 +36,74 @@ export function AccountPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Sidebar */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-xl border p-6">
+            <div className="bg-white/5 backdrop-blur-xl rounded-xl border border-white/10 p-6">
               <div className="flex flex-col items-center text-center mb-6">
                 <Avatar className="w-20 h-20 mb-4">
-                  <AvatarFallback className="text-xl">{initials}</AvatarFallback>
+                  <AvatarFallback className="bg-white/10 text-white text-xl">{initials}</AvatarFallback>
                 </Avatar>
-                <h3 className="mb-1">{displayName}</h3>
-                <p className="text-sm text-muted-foreground">{displayEmail}</p>
+                <h3 className="mb-1 text-white">{displayName}</h3>
+                <p className="text-sm text-gray-400">{displayEmail}</p>
               </div>
-              <Separator className="mb-4" />
+              <Separator className="mb-4 bg-white/10" />
               <nav className="space-y-1">
                 <button 
                   onClick={() => setActiveSection("profile")}
                   className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
                     activeSection === "profile" 
-                      ? "bg-muted text-foreground font-medium" 
-                      : "hover:bg-muted text-muted-foreground hover:text-foreground"
+                      ? "bg-white/10 text-white font-medium" 
+                      : "hover:bg-white/5 text-gray-400 hover:text-white"
                   }`}
                 >
-                  <User className="w-4 h-4" />
+                  <User className={`w-4 h-4 ${activeSection === "profile" ? "text-white" : "text-gray-400"}`} />
                   <span className="text-sm">Profile</span>
                 </button>
                 <button 
                   onClick={() => setActiveSection("notifications")}
                   className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
                     activeSection === "notifications" 
-                      ? "bg-muted text-foreground font-medium" 
-                      : "hover:bg-muted text-muted-foreground hover:text-foreground"
+                      ? "bg-white/10 text-white font-medium" 
+                      : "hover:bg-white/5 text-gray-400 hover:text-white"
                   }`}
                 >
-                  <Bell className="w-4 h-4" />
+                  <Bell className={`w-4 h-4 ${activeSection === "notifications" ? "text-white" : "text-gray-400"}`} />
                   <span className="text-sm">Notifications</span>
                 </button>
                 <button 
                   onClick={() => setActiveSection("security")}
                   className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
                     activeSection === "security" 
-                      ? "bg-muted text-foreground font-medium" 
-                      : "hover:bg-muted text-muted-foreground hover:text-foreground"
+                      ? "bg-white/10 text-white font-medium" 
+                      : "hover:bg-white/5 text-gray-400 hover:text-white"
                   }`}
                 >
-                  <Lock className="w-4 h-4" />
+                  <Lock className={`w-4 h-4 ${activeSection === "security" ? "text-white" : "text-gray-400"}`} />
                   <span className="text-sm">Security</span>
                 </button>
                 <button 
                   onClick={() => setActiveSection("billing")}
                   className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
                     activeSection === "billing" 
-                      ? "bg-muted text-foreground font-medium" 
-                      : "hover:bg-muted text-muted-foreground hover:text-foreground"
+                      ? "bg-white/10 text-white font-medium" 
+                      : "hover:bg-white/5 text-gray-400 hover:text-white"
                   }`}
                 >
-                  <CreditCard className="w-4 h-4" />
+                  <CreditCard className={`w-4 h-4 ${activeSection === "billing" ? "text-white" : "text-gray-400"}`} />
                   <span className="text-sm">Billing</span>
                 </button>
                 <button 
                   onClick={() => setActiveSection("usage")}
                   className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
                     activeSection === "usage" 
-                      ? "bg-muted text-foreground font-medium" 
-                      : "hover:bg-muted text-muted-foreground hover:text-foreground"
+                      ? "bg-white/10 text-white font-medium" 
+                      : "hover:bg-white/5 text-gray-400 hover:text-white"
                   }`}
                 >
-                  <BarChart3 className="w-4 h-4" />
+                  <BarChart3 className={`w-4 h-4 ${activeSection === "usage" ? "text-white" : "text-gray-400"}`} />
                   <span className="text-sm">Usage</span>
                 </button>
               </nav>
-              <Separator className="my-4" />
-              <Button variant="ghost" className="w-full justify-start gap-3 text-destructive hover:text-destructive hover:bg-destructive/10">
+              <Separator className="my-4 bg-white/10" />
+              <Button variant="ghost" className="w-full justify-start gap-3 text-destructive hover:text-destructive hover:bg-red-500/10">
                 <LogOut className="w-4 h-4" />
                 Sign Out
               </Button>
@@ -115,47 +115,47 @@ export function AccountPage() {
             {activeSection === "profile" && (
               <div className="space-y-6">
                 {/* Profile Information */}
-                <div className="bg-white rounded-xl border p-6">
-                  <h2 className="mb-4">Profile Information</h2>
+                <div className="bg-white/5 backdrop-blur-xl rounded-xl border border-white/10 p-6">
+                  <h2 className="mb-4 text-white font-medium">Profile Information</h2>
                   <div className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="firstName">First Name</Label>
-                        <Input id="firstName" defaultValue="John" />
+                        <Label htmlFor="firstName" className="text-gray-300">First Name</Label>
+                        <Input id="firstName" defaultValue="John" className="bg-white/5 border-white/10 text-white" />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="lastName">Last Name</Label>
-                        <Input id="lastName" defaultValue="Doe" />
+                        <Label htmlFor="lastName" className="text-gray-300">Last Name</Label>
+                        <Input id="lastName" defaultValue="Doe" className="bg-white/5 border-white/10 text-white" />
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="email">Email Address</Label>
-                      <Input id="email" type="email" defaultValue="john.doe@example.com" />
+                      <Label htmlFor="email" className="text-gray-300">Email Address</Label>
+                      <Input id="email" type="email" defaultValue="john.doe@example.com" className="bg-white/5 border-white/10 text-white" />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="bio">Bio</Label>
+                      <Label htmlFor="bio" className="text-gray-300">Bio</Label>
                       <textarea
                         id="bio"
                         rows={3}
-                        className="w-full px-3 py-2 rounded-lg border bg-background resize-none"
+                        className="w-full px-3 py-2 rounded-lg border bg-white/5 border-white/10 text-white placeholder:text-gray-500 resize-none"
                         placeholder="Tell us about yourself..."
                       />
                     </div>
-                    <Button>Save Changes</Button>
+                    <Button className="bg-white text-black hover:bg-gray-100">Save Changes</Button>
                   </div>
                 </div>
 
                 {/* Danger Zone */}
-                <div className="bg-white rounded-xl border border-destructive/20 p-6">
-                  <h2 className="mb-2 text-destructive">Danger Zone</h2>
-                  <p className="text-sm text-muted-foreground mb-4">
+                <div className="bg-white/5 backdrop-blur-xl rounded-xl border border-red-500/20 p-6">
+                  <h2 className="mb-2 text-destructive font-medium">Danger Zone</h2>
+                  <p className="text-sm text-gray-400 mb-4">
                     Irreversible actions that will affect your account
                   </p>
                   <div className="space-y-3">
-                    <Button variant="outline" className="w-full justify-start text-destructive border-destructive/20 hover:bg-destructive/10">
+                    <Button variant="outline" className="w-full justify-start text-red-400 border-red-500/20 hover:bg-red-500/10">
                       Delete All Designs
                     </Button>
-                    <Button variant="outline" className="w-full justify-start text-destructive border-destructive/20 hover:bg-destructive/10">
+                    <Button variant="outline" className="w-full justify-start text-red-400 border-red-500/20 hover:bg-red-500/10">
                       Delete Account
                     </Button>
                   </div>
@@ -164,43 +164,43 @@ export function AccountPage() {
             )}
 
             {activeSection === "notifications" && (
-              <div className="bg-white rounded-xl border p-6">
-                <h2 className="mb-4">Notification Preferences</h2>
+              <div className="bg-white/5 backdrop-blur-xl rounded-xl border border-white/10 p-6">
+                <h2 className="mb-4 text-white font-medium">Notification Preferences</h2>
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium">Email Notifications</p>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="font-medium text-white">Email Notifications</p>
+                      <p className="text-sm text-gray-400">
                         Receive email updates about your projects
                       </p>
                     </div>
                     <Switch defaultChecked />
                   </div>
-                  <Separator />
+                  <Separator className="bg-white/10" />
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium">Marketing Emails</p>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="font-medium text-white">Marketing Emails</p>
+                      <p className="text-sm text-gray-400">
                         Receive tips, updates, and special offers
                       </p>
                     </div>
                     <Switch />
                   </div>
-                  <Separator />
+                  <Separator className="bg-white/10" />
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium">Push Notifications</p>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="font-medium text-white">Push Notifications</p>
+                      <p className="text-sm text-gray-400">
                         Get notified about important updates
                       </p>
                     </div>
                     <Switch defaultChecked />
                   </div>
-                  <Separator />
+                  <Separator className="bg-white/10" />
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium">Auto-save Notifications</p>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="font-medium text-white">Auto-save Notifications</p>
+                      <p className="text-sm text-gray-400">
                         Show notification when work is auto-saved
                       </p>
                     </div>
