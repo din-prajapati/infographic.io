@@ -158,9 +158,8 @@ export default function PricingPage() {
     onSuccess: (data) => {
       if (data.provider === "STRIPE" && data.checkoutUrl) {
         window.location.href = data.checkoutUrl;
-      } else if (data.shortUrl) {
-        window.open(data.shortUrl, "_blank");
       } else {
+        // Always use Razorpay JS checkout widget — shortUrl (hosted page) is unreliable in test mode
         openRazorpayCheckout(data);
       }
       queryClient.invalidateQueries({ queryKey: ["/api/v1/payments/subscription"] });
@@ -193,11 +192,13 @@ export default function PricingPage() {
       return;
     }
 
+    const planTierLabel = data.subscription?.planTier || "Paid";
+
     const options = {
       key: import.meta.env.VITE_RAZORPAY_KEY_ID,
       subscription_id: data.providerSubscription?.id,
       name: "InfographicAI",
-      description: `${data.subscription?.planTier} Plan Subscription`,
+      description: `${planTierLabel} Plan Subscription`,
       handler: async (response: any) => {
         try {
           await paymentsApi.verifyPayment({
@@ -222,6 +223,20 @@ export default function PricingPage() {
             variant: "destructive",
           });
         }
+      },
+      modal: {
+        ondismiss: () => {
+          toast({
+            title: "Payment Cancelled",
+            description:
+              "Checkout was closed before payment completed. Your plan has not been changed.",
+            variant: "destructive",
+          });
+          // Refresh subscription to reflect true DB state (PT-04: subscription may already be ACTIVE)
+          queryClient.invalidateQueries({
+            queryKey: ["/api/v1/payments/subscription"],
+          });
+        },
       },
       prefill: {
         email: "",

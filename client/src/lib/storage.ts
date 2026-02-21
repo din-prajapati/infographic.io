@@ -43,30 +43,21 @@ export function generateId(): string {
 /**
  * Save a design - tries API first, falls back to LocalStorage
  */
-export async function saveDesign(design: DesignMetadata): Promise<boolean> {
+export async function saveDesign(design: DesignMetadata): Promise<{ success: boolean; savedDesign: DesignMetadata }> {
   try {
     if (isAuthenticated()) {
       try {
-        await designsApi.save(design);
-        // Also save to LocalStorage as cache
+        const savedDesign = await designsApi.save(design);
+        // API may return a new DB-assigned ID — use it
+        const designToCache = { ...design, ...savedDesign };
+        
+        // Also save to LocalStorage as cache (with potentially updated ID)
         const designs = loadDesignsFromLocalStorage();
-        const existingIndex = designs.findIndex((d) => d.id === design.id);
-        
-        if (existingIndex >= 0) {
-          designs[existingIndex] = {
-            ...design,
-            updatedAt: new Date().toISOString(),
-          };
-        } else {
-          designs.push({
-            ...design,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          });
-        }
-        
-        localStorage.setItem(DESIGNS_KEY, JSON.stringify(designs));
-        return true;
+        // Remove old entry if ID changed (LocalStorage → DB ID)
+        const filteredDesigns = designs.filter((d) => d.id !== design.id && d.id !== designToCache.id);
+        filteredDesigns.push({ ...designToCache, updatedAt: new Date().toISOString() });
+        localStorage.setItem(DESIGNS_KEY, JSON.stringify(filteredDesigns));
+        return { success: true, savedDesign: designToCache };
       } catch (apiError) {
         console.warn('API save failed, falling back to LocalStorage:', apiError);
         // Fall through to LocalStorage
@@ -74,40 +65,29 @@ export async function saveDesign(design: DesignMetadata): Promise<boolean> {
     }
     
     // Fallback to LocalStorage
-    return saveDesignToLocalStorage(design);
+    const success = saveDesignToLocalStorage(design);
+    return { success, savedDesign: design };
   } catch (error) {
     console.error("Error saving design:", error);
-    return false;
+    return { success: false, savedDesign: design };
   }
 }
 
 /**
  * Save a template - tries API first, falls back to LocalStorage
  */
-export async function saveTemplate(template: DesignMetadata): Promise<boolean> {
+export async function saveTemplate(template: DesignMetadata): Promise<{ success: boolean; savedDesign: DesignMetadata }> {
   try {
     if (isAuthenticated()) {
       try {
-        await canvasTemplatesApi.save(template);
-        // Also save to LocalStorage as cache
+        const savedTemplate = await canvasTemplatesApi.save(template);
+        const templateToCache = { ...template, ...savedTemplate };
+        
         const templates = loadTemplatesFromLocalStorage();
-        const existingIndex = templates.findIndex((t) => t.id === template.id);
-        
-        if (existingIndex >= 0) {
-          templates[existingIndex] = {
-            ...template,
-            updatedAt: new Date().toISOString(),
-          };
-        } else {
-          templates.push({
-            ...template,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          });
-        }
-        
-        localStorage.setItem(TEMPLATES_KEY, JSON.stringify(templates));
-        return true;
+        const filteredTemplates = templates.filter((t) => t.id !== template.id && t.id !== templateToCache.id);
+        filteredTemplates.push({ ...templateToCache, updatedAt: new Date().toISOString() });
+        localStorage.setItem(TEMPLATES_KEY, JSON.stringify(filteredTemplates));
+        return { success: true, savedDesign: templateToCache };
       } catch (apiError) {
         console.warn('API save failed, falling back to LocalStorage:', apiError);
         // Fall through to LocalStorage
@@ -115,10 +95,11 @@ export async function saveTemplate(template: DesignMetadata): Promise<boolean> {
     }
     
     // Fallback to LocalStorage
-    return saveTemplateToLocalStorage(template);
+    const success = saveTemplateToLocalStorage(template);
+    return { success, savedDesign: template };
   } catch (error) {
     console.error("Error saving template:", error);
-    return false;
+    return { success: false, savedDesign: template };
   }
 }
 
@@ -130,9 +111,13 @@ export async function loadDesigns(): Promise<DesignMetadata[]> {
     if (isAuthenticated()) {
       try {
         const apiDesigns = await designsApi.getAll();
-        // Update LocalStorage cache
-        localStorage.setItem(DESIGNS_KEY, JSON.stringify(apiDesigns));
-        return apiDesigns;
+        const localDesigns = loadDesignsFromLocalStorage();
+        // Merge: API is source of truth, but keep local-only designs not yet synced
+        const apiIds = new Set(apiDesigns.map((d) => d.id));
+        const localOnlyDesigns = localDesigns.filter((d) => !apiIds.has(d.id));
+        const merged = [...apiDesigns, ...localOnlyDesigns];
+        localStorage.setItem(DESIGNS_KEY, JSON.stringify(merged));
+        return merged;
       } catch (apiError) {
         console.warn('API load failed, using LocalStorage cache:', apiError);
         // Fall through to LocalStorage
@@ -177,18 +162,34 @@ export async function loadTemplates(): Promise<DesignMetadata[]> {
  */
 export async function loadDesignById(id: string): Promise<DesignMetadata | null> {
   try {
+    // Check localStorage first for immediate, no-latency result
+    const localDesigns = loadDesignsFromLocalStorage();
+    const localDesign = localDesigns.find((d) => d.id === id) || null;
+
+    if (localDesign) {
+      // Return cached version immediately; API sync can happen in the background
+      return localDesign;
+    }
+
+    // Not in localStorage — try API with a timeout to prevent hangs (e.g. cold DB)
     if (isAuthenticated()) {
       try {
-        return await designsApi.getOne(id);
+        const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 5000));
+        const apiResult = await Promise.race([designsApi.getOne(id), timeoutPromise]);
+        if (apiResult) {
+          // Cache the result locally for subsequent loads
+          const designs = loadDesignsFromLocalStorage();
+          const filtered = designs.filter((d) => d.id !== apiResult.id);
+          filtered.push({ ...apiResult, updatedAt: new Date().toISOString() });
+          localStorage.setItem(DESIGNS_KEY, JSON.stringify(filtered));
+          return apiResult;
+        }
       } catch (apiError) {
-        console.warn('API load failed, using LocalStorage cache:', apiError);
-        // Fall through to LocalStorage
+        console.warn('API load failed, design not found locally either:', apiError);
       }
     }
     
-    // Fallback to LocalStorage
-    const designs = loadDesignsFromLocalStorage();
-    return designs.find((d) => d.id === id) || null;
+    return null;
   } catch (error) {
     console.error("Error loading design:", error);
     return null;

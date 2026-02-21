@@ -590,9 +590,13 @@ export function RightSidebar() {
             </div>
           </ScrollArea>
         ) : activeTab === "property-details" ? (
-          <PropertyDetailsForm />
+          <ScrollArea className="h-full">
+            <PropertyDetailsForm />
+          </ScrollArea>
         ) : (
-          <AgentInfoForm />
+          <ScrollArea className="h-full">
+            <AgentInfoForm />
+          </ScrollArea>
         )}
       </div>
 

@@ -107,7 +107,7 @@ export interface CanvasActions {
   // History
   undo: () => void;
   redo: () => void;
-  pushToHistory: () => void;
+  pushToHistory: (snapshot?: CanvasElement[]) => void;
   
   // Tools
   setActiveTool: (tool: CanvasState['activeTool']) => void;

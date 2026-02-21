@@ -55,9 +55,6 @@ export async function setupVite(app: Express, server: Server) {
       const page = await vite.transformIndexHtml(url, template);
       res.status(200).set({ "Content-Type": "text/html" }).end(page);
     } catch (e) {
-      // #region agent log
-      console.error(`[VITE ERROR] Failed to process ${url}:`, e);
-      // #endregion
       vite.ssrFixStacktrace(e as Error);
       next(e);
     }

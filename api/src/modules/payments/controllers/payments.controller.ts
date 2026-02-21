@@ -14,15 +14,6 @@ import {
   BadRequestException,
   NotFoundException,
 } from '@nestjs/common';
-import * as fs from 'fs';
-import * as path from 'path';
-
-const DEBUG_LOG_PATH = path.join(__dirname, '../../../../..', '.cursor', 'debug.log');
-function debugLog(location: string, message: string, data: Record<string, unknown>) {
-  try {
-    fs.appendFileSync(DEBUG_LOG_PATH, JSON.stringify({ location, message, data, timestamp: Date.now() }) + '\n');
-  } catch (_) {}
-}
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiSecurity, ApiQuery } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { PaymentsService } from '../services/payments.service';
@@ -80,35 +71,6 @@ export class PaymentsController {
         checkoutUrl: result.checkoutUrl,
       };
     } catch (err: any) {
-      // #region agent log
-      const safeErrPayload: Record<string, unknown> = {
-        errorMessage: err?.message,
-        errorName: err?.name,
-        errorStack: err?.stack?.slice(0, 800),
-        responseMessage: err?.response?.message,
-        errorDescription: err?.error?.description ?? err?.description,
-      };
-      if (err?.response?.data && typeof err.response.data === 'object') {
-        safeErrPayload.responseData = err.response.data;
-      }
-      if (err?.code) safeErrPayload.code = err.code;
-      if (err?.statusCode) safeErrPayload.statusCode = err.statusCode;
-      try {
-        fetch('http://127.0.0.1:7244/ingest/8efc90dd-6123-4218-ac73-6942740927b9', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            location: 'PaymentsController.createSubscription',
-            message: 'create-subscription failed',
-            data: safeErrPayload,
-            timestamp: Date.now(),
-            sessionId: 'debug-session',
-            hypothesisId: 'A',
-          }),
-        }).catch(() => {});
-      } catch (_) {}
-      debugLog('PaymentsController.createSubscription', 'create-subscription failed', safeErrPayload);
-      // #endregion
       let logMessage: string;
       try {
         logMessage =

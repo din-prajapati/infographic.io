@@ -32,16 +32,20 @@ export function MyDesignsPage({ onOpenEditor }: MyDesignsPageProps) {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
   const [savedDesigns, setSavedDesigns] = useState<DesignMetadata[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Load designs on mount
   useEffect(() => {
     const loadDesignsData = async () => {
+      setIsLoading(true);
       try {
         const designs = await loadDesigns();
         setSavedDesigns(designs);
       } catch (error) {
         console.error('Error loading designs:', error);
         toast.error('Failed to load designs');
+      } finally {
+        setIsLoading(false);
       }
     };
     loadDesignsData();
@@ -75,8 +79,10 @@ export function MyDesignsPage({ onOpenEditor }: MyDesignsPageProps) {
   };
 
   // Format date
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string | undefined | null) => {
+    if (!dateString) return "unknown date";
     const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "unknown date";
     const now = new Date();
     const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
     
@@ -226,7 +232,12 @@ export function MyDesignsPage({ onOpenEditor }: MyDesignsPageProps) {
 
         {/* Designs Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredDesigns.length > 0 ? (
+          {isLoading ? (
+            <div className="col-span-4 flex flex-col items-center justify-center py-16 text-center">
+              <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin mb-4" />
+              <p className="text-white/60">Loading your designs...</p>
+            </div>
+          ) : filteredDesigns.length > 0 ? (
             filteredDesigns.map((design) => (
               <div
                 key={design.id}

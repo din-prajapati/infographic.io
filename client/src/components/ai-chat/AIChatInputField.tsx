@@ -226,7 +226,8 @@ export function AIChatInputField({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === 'Enter' && e.metaKey && canGenerate) {
+            if (e.key === 'Enter' && (e.metaKey || e.ctrlKey) && canGenerate) {
+              e.preventDefault();
               onGenerate();
             }
           }}

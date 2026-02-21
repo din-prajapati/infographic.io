@@ -7,18 +7,6 @@ import {
   Logger,
 } from '@nestjs/common';
 import { Response } from 'express';
-import * as fs from 'fs';
-import * as path from 'path';
-
-const DEBUG_LOG_PATH = path.join(__dirname, '../../../../..', '.cursor', 'debug.log');
-function debugLog(location: string, message: string, data: Record<string, unknown>) {
-  try {
-    fs.appendFileSync(
-      DEBUG_LOG_PATH,
-      JSON.stringify({ location, message, data, timestamp: Date.now() }) + '\n',
-    );
-  } catch (_) {}
-}
 
 /**
  * Catches all exceptions. For non-HttpException (e.g. from Prisma, Razorpay),
@@ -33,14 +21,19 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
 
-    const isHttpException = exception instanceof HttpException;
+    // Use duck typing to detect HttpException (avoids instanceof issues with multiple module instances)
+    const isHttpException = exception instanceof HttpException ||
+      (exception !== null && typeof exception === 'object' &&
+       typeof (exception as any).getStatus === 'function' &&
+       typeof (exception as any).getResponse === 'function');
+
     const status = isHttpException
-      ? exception.getStatus()
+      ? (exception as HttpException).getStatus()
       : HttpStatus.INTERNAL_SERVER_ERROR;
 
     let message: string;
     if (isHttpException) {
-      const res = exception.getResponse();
+      const res = (exception as HttpException).getResponse();
       message = typeof res === 'object' && res !== null && 'message' in res
         ? (Array.isArray((res as any).message) ? (res as any).message[0] : (res as any).message)
         : String(res);
@@ -53,15 +46,6 @@ export class AllExceptionsFilter implements ExceptionFilter {
         exception instanceof Error ? exception.stack : undefined,
       );
     }
-
-    // Runtime evidence: write every exception to debug.log for diagnosis
-    debugLog('AllExceptionsFilter.catch', 'exception captured', {
-      status,
-      message: message || 'Internal server error',
-      isHttpException,
-      errorName: exception instanceof Error ? exception.name : undefined,
-      stack: exception instanceof Error ? exception.stack?.slice(0, 800) : undefined,
-    });
 
     response.status(status).json({
       statusCode: status,

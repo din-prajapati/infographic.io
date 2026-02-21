@@ -135,7 +135,7 @@ export class AiOrchestrator {
         });
         
         console.log(`💾 [Orchestrator] Updating infographic ${infographicId} with imageUrl and status=completed...`);
-        await prisma.infographic.update({
+        await this.prisma.infographic.update({
           where: { id: infographicId },
           data: {
             imageUrl,
@@ -201,7 +201,7 @@ export class AiOrchestrator {
       };
 
       // Update infographic with variations data
-      await prisma.infographic.update({
+      await this.prisma.infographic.update({
         where: { id: infographicId },
         data: {
           propertyData: updatedPropertyData as any,

@@ -1,17 +1,9 @@
 import { Injectable, BadRequestException, NotFoundException, Inject } from '@nestjs/common';
 import { randomUUID } from 'crypto';
-import * as fs from 'fs';
-import * as path from 'path';
 import { PaymentProvider, SubscriptionStatus, PaymentStatus, PlanTier } from '@prisma/client';
 import { SubscriptionStorageService } from './subscription-storage.service';
 import { PLAN_CONFIG } from '@shared/schema';
 
-const DEBUG_LOG_PATH = path.join(__dirname, '../../../../..', '.cursor', 'debug.log');
-function debugLog(location: string, message: string, data: object, hypothesisId: string) {
-  try {
-    fs.appendFileSync(DEBUG_LOG_PATH, JSON.stringify({ location, message, data, timestamp: Date.now(), sessionId: 'debug-session', hypothesisId }) + '\n');
-  } catch (_) {}
-}
 // Import payment provider factory from server directory
 import { paymentProviderFactory } from '../../../../../server/payments/providers/payment-provider.factory';
 import type { PaymentProviderType } from '../../../../../server/payments/interfaces/payment-provider.interface';
@@ -159,11 +151,7 @@ export class PaymentsService {
 
   constructor(
     @Inject(SubscriptionStorageService) private readonly storage: SubscriptionStorageService,
-  ) {
-    // #region agent log
-    debugLog('payments.service.ts:constructor', 'PaymentsService constructed', { hasStorage: !!this.storage, storageType: typeof this.storage }, 'A');
-    // #endregion
-  }
+  ) {}
 
   /**
    * Calculate annual price with 15% discount
@@ -191,22 +179,13 @@ export class PaymentsService {
     shortUrl?: string;
     checkoutUrl?: string;
   }> {
-    // #region agent log
-    debugLog('payments.service.ts:createSubscription', 'createSubscription entry', { userId, planTier, hasStorage: !!this.storage, storageType: typeof this.storage }, 'B');
-    // #endregion
     if (!this.storage) {
       throw new BadRequestException(
         'PaymentsService: SubscriptionStorageService not injected. Check PaymentsModule providers.',
       );
     }
-    // #region agent log
-    debugLog('payments.service.ts:beforeGetUser', 'about to call storage.getUser', { hasStorage: !!this.storage, userId }, 'C');
-    // #endregion
     // Get user from database
     let user = await this.storage.getUser(userId);
-    // #region agent log
-    debugLog('payments.service.ts:afterGetUser', 'storage.getUser returned', { hasUser: !!user, userId }, 'C');
-    // #endregion
     if (!user) {
       throw new NotFoundException('User not found');
     }
@@ -225,15 +204,9 @@ export class PaymentsService {
     // Get appropriate provider based on currency/region
     const provider = paymentProviderFactory.getProviderByCurrency(currency) || paymentProviderFactory.getProvider(region);
     const providerName = provider.getProviderName() as PaymentProviderType;
-    // #region agent log
-    debugLog('payments.service.ts:afterGetProvider', 'provider resolved', { providerName, currency, region }, 'B');
-    // #endregion
 
     // Get provider-specific plan ID (for Razorpay: use _MONTHLY/_ANNUAL when set, else default)
     const externalPlanId = this.getExternalPlanId(planTier, providerName, billingPeriod);
-    // #region agent log
-    debugLog('payments.service.ts:externalPlanId', 'external plan id', { externalPlanId, planTier, billingPeriod }, 'B');
-    // #endregion
     if (!externalPlanId) {
       throw new BadRequestException(`Plan ${planTier} not configured for ${providerName}`);
     }
@@ -249,18 +222,10 @@ export class PaymentsService {
     }
 
     if (!externalCustomerId) {
-      // #region agent log
-      debugLog('payments.service.ts:beforeCreateCustomer', 'calling provider.createCustomer', { email: user.email }, 'C');
-      // #endregion
       let customer: { id: string };
       try {
         customer = await provider.createCustomer(user.email, user.name || user.email);
       } catch (createCustomerErr: any) {
-        debugLog('payments.service.ts:createCustomerFailed', 'provider.createCustomer threw', {
-          errorMessage: createCustomerErr?.message,
-          errorDescription: createCustomerErr?.error?.description ?? createCustomerErr?.description,
-          responseData: createCustomerErr?.response?.data,
-        }, 'C');
         throw createCustomerErr;
       }
       externalCustomerId = customer.id;
@@ -287,9 +252,6 @@ export class PaymentsService {
     let providerSubscription: any;
 
     if (providerName === 'STRIPE') {
-      // #region agent log
-      debugLog('payments.service.ts:beforeStripeCheckout', 'calling createCheckoutSession', { externalPlanId, externalCustomerId }, 'D');
-      // #endregion
       // Import StripeProvider to use createCheckoutSession
       const { StripeProvider } = await import('../../../../../server/payments/providers/stripe.provider');
       const stripeProvider = new StripeProvider();
@@ -305,11 +267,6 @@ export class PaymentsService {
           cancelUrl: cancelUrl || `${baseUrl}/pricing?payment=cancelled`,
         });
       } catch (stripeErr: any) {
-        debugLog('payments.service.ts:stripeCheckoutFailed', 'createCheckoutSession threw', {
-          errorMessage: stripeErr?.message,
-          code: stripeErr?.code,
-          raw: stripeErr?.raw?.message,
-        }, 'D');
         throw stripeErr;
       }
 
@@ -328,9 +285,6 @@ export class PaymentsService {
         provider: 'STRIPE',
       };
     } else {
-      // #region agent log
-      debugLog('payments.service.ts:beforeRazorpaySubscription', 'calling provider.createSubscription', { externalPlanId, externalCustomerId }, 'D');
-      // #endregion
       try {
         providerSubscription = await provider.createSubscription({
           planId: externalPlanId,
@@ -340,11 +294,6 @@ export class PaymentsService {
           notify: true,
         });
       } catch (razorpayErr: any) {
-        debugLog('payments.service.ts:razorpaySubscriptionFailed', 'provider.createSubscription threw', {
-          errorMessage: razorpayErr?.message,
-          errorDescription: razorpayErr?.error?.description ?? razorpayErr?.description,
-          responseData: razorpayErr?.response?.data,
-        }, 'D');
         throw razorpayErr;
       }
     }
@@ -352,13 +301,6 @@ export class PaymentsService {
     // Create subscription record in database
     const subscriptionId = randomUUID();
     const now = new Date();
-    // #region agent log
-    debugLog('payments.service.ts:beforeStorageCreate', 'calling storage.createSubscription', {
-      subscriptionId,
-      externalSubscriptionId: providerSubscription.id,
-      providerName,
-    }, 'E');
-    // #endregion
     let subscription: any;
     try {
       subscription = await this.storage.createSubscription({
@@ -379,10 +321,6 @@ export class PaymentsService {
       cancelledAt: null,
     });
     } catch (storageErr: any) {
-      debugLog('payments.service.ts:storageCreateFailed', 'storage.createSubscription threw', {
-        errorMessage: storageErr?.message,
-        code: storageErr?.code,
-      }, 'E');
       throw storageErr;
     }
 
@@ -640,6 +578,13 @@ export class PaymentsService {
 
     if (!subscription) return;
 
+    // Idempotency: skip if this payment failure was already recorded
+    const existingPayment = await this.storage.getPaymentByExternalId(paymentData.id, provider as PaymentProvider);
+    if (existingPayment) {
+      console.log('Payment failure already processed, skipping');
+      return;
+    }
+
     // Record failed payment
     const paymentId = randomUUID();
     await this.storage.createPayment({
@@ -699,7 +644,7 @@ export class PaymentsService {
         return {
           id: payment.id,
           orderId: payment.order_id,
-          subscriptionId: subscription.id,
+          subscriptionId: subscription?.id || payment?.subscription_id,
           amount: payment.amount,
           currency: payment.currency,
           method: payment.method,

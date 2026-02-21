@@ -162,38 +162,38 @@
 
 ### Task 1.2: RazorPay Account Setup & Testing
 
-**Status:** ⏳ Pending  
+**Status:** Setup ✅ **DONE** \| Checkout & E2E Testing ⏳ **PENDING**  
 **Priority:** 🔴 **HIGHEST**  
-**Effort:** 2-3 hours
+**Effort:** 2-3 hours (setup complete; testing remaining)
 
 **Location:** `client/src/pages/PricingPage.tsx`, `api/src/modules/payments/`
 
 **Requirements:**
-- Complete RazorPay test account setup
-- Generate API keys (test mode)
-- Create subscription plans (FREE, SOLO, TEAM, BROKERAGE)
-- Configure webhooks
+- ~~Complete RazorPay test account setup~~ ✅
+- ~~Generate API keys (test mode)~~ ✅
+- ~~Create subscription plans (FREE, SOLO, TEAM, BROKERAGE)~~ ✅ (SOLO & TEAM configured)
+- ~~Configure webhooks~~ ✅ (webhook secret set in `.env`)
 
 **Implementation Steps:**
 
-#### 1. Set up RazorPay Test Account
+#### 1. Set up RazorPay Test Account ✅ **DONE**
 
 > **📖 Detailed Guide:** See **[RazorPay Setup Guide](../payments/RAZORPAY_SETUP_GUIDE.md)** for complete step-by-step instructions with screenshots guidance, troubleshooting, and all details.
 
 **Quick Checklist:**
-- [ ] Create RazorPay account at https://dashboard.razorpay.com/signup
-- [ ] Enable Test Mode (toggle in top-right)
-- [ ] Generate API Keys (Settings → API Keys → Generate Keys)
+- [x] Create RazorPay account at https://dashboard.razorpay.com/signup
+- [x] Enable Test Mode (toggle in top-right)
+- [x] Generate API Keys (Settings → API Keys → Generate Keys)
   - Copy Key ID (`rzp_test_...`)
   - Copy Key Secret (shown only once!)
-- [ ] Create Subscription Plans (Products → Plans → Create Plan):
-  - SOLO Monthly: ₹2,999 (`RAZORPAY_PLAN_SOLO`)
-  - TEAM Monthly: ₹6,999 (`RAZORPAY_PLAN_TEAM`)
-  - BROKERAGE Monthly: ₹24,999 (`RAZORPAY_PLAN_BROKERAGE`)
-- [ ] Configure Environment Variables:
-  - Backend `.env`: `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, Plan IDs
-  - Frontend `.env`: `VITE_RAZORPAY_KEY_ID`
-- [ ] Restart server and verify no errors
+- [x] Create Subscription Plans (Products → Plans → Create Plan):
+  - SOLO Monthly & Annual (`RAZORPAY_PLAN_SOLO_MONTHLY`, `RAZORPAY_PLAN_SOLO_ANNUAL`)
+  - TEAM Monthly & Annual (`RAZORPAY_PLAN_TEAM_MONTHLY`, `RAZORPAY_PLAN_TEAM_ANNUAL`)
+  - BROKERAGE: add when needed
+- [x] Configure Environment Variables:
+  - Backend `.env`: `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET`, Plan IDs
+  - Frontend `.env`: `VITE_RAZORPAY_KEY_ID` (if used)
+- [x] Restart server and verify no errors
 
 **For detailed instructions, troubleshooting, and verification checklist, see:**  
 👉 **[docs/payments/RAZORPAY_SETUP_GUIDE.md](../payments/RAZORPAY_SETUP_GUIDE.md)**
@@ -249,11 +249,21 @@
 
 ### Task 1.3: Verify RazorPay Webhook Handling
 
-**Status:** ⏳ Pending  
+**Status:** Implementation ✅ **VERIFIED** \| Manual testing ⏳ **PENDING**  
 **Priority:** 🔴 **HIGHEST**  
-**Effort:** 2-3 hours
+**Effort:** 2-3 hours (implementation done; manual tests remaining)
 
-**Location:** `server/routes.ts`, `api/src/modules/payments/services/payments.service.ts`
+**Location:** `server/routes.ts`, `api/src/modules/payments/services/payments.service.ts`, `server/payments/providers/razorpay.provider.ts`
+
+**Implementation verified (code complete):**
+- **Endpoint:** `POST /api/webhooks/razorpay` (Express, raw body preserved in `server/index.ts` for signature verification).
+- **Signature:** `X-Razorpay-Signature` + `RAZORPAY_WEBHOOK_SECRET`; verified via HMAC SHA256 in `razorpay.provider.ts` → `verifyWebhookSignature()`.
+- **Events handled in NestJS** (`payments.controller.ts` → `payments.service.ts`):
+  - `subscription.activated` → subscription status set to ACTIVE
+  - `subscription.charged` → payment record created, subscription period updated, idempotency by external payment ID
+  - `subscription.cancelled` → subscription CANCELLED, organization downgraded to FREE (3/month)
+  - `payment.failed` → failed payment recorded, subscription set to PAST_DUE; idempotency by external payment ID
+- **Razorpay payload:** Subscription ID from `event.payload.subscription.entity` or `payment.subscription_id`; payment data from `event.payload.payment.entity`.
 
 #### 1. Configure Webhook Endpoint in RazorPay Dashboard
 
@@ -263,26 +273,27 @@
 - [ ] Log in to RazorPay Dashboard (Test Mode)
 - [ ] Navigate to Settings → Webhooks
 - [ ] Add webhook URL: `https://your-app.com/api/webhooks/razorpay`
-  - **For local testing:** Use ngrok: `ngrok http 5000` → Use ngrok HTTPS URL
+  - **For local testing:** Razorpay blacklists ngrok; use **zrok** or a staging URL (see [Razorpay validate webhooks](https://razorpay.com/docs/webhooks/validate-test/)).
 - [ ] Select events:
   - `subscription.activated`
   - `subscription.charged`
   - `subscription.cancelled`
   - `payment.failed`
-- [ ] Copy webhook secret (starts with `whsec_`)
-- [ ] Add to environment variable: `RAZORPAY_WEBHOOK_SECRET=whsec_xxxxxxxxxxxxxx`
+- [ ] Copy webhook secret (from Dashboard after creating the webhook)
+- [ ] Add to environment: `RAZORPAY_WEBHOOK_SECRET=<your-secret>`
 - [ ] Restart server and send test webhook from RazorPay Dashboard
 
 **For detailed instructions, troubleshooting, and event details, see:**  
 👉 **[docs/payments/RAZORPAY_WEBHOOK_SETUP_GUIDE.md](../payments/RAZORPAY_WEBHOOK_SETUP_GUIDE.md)**
 
 #### 2. Test Webhook Signature Verification
+- [x] **Code:** Signature verification implemented (raw body + HMAC SHA256)
 - [ ] Verify webhook secret is set: `RAZORPAY_WEBHOOK_SECRET`
-- [ ] Test webhook endpoint receives requests
+- [ ] Test webhook endpoint receives requests (e.g. Send Test Webhook from Dashboard)
 - [ ] Verify signature verification works:
   - Valid signature → Process webhook
-  - Invalid signature → Reject webhook
-- [ ] Check logs for signature verification results
+  - Invalid signature → Reject with 401
+- [ ] Check logs for webhook processing
 
 #### 3. Test Subscription Activated Webhook
 - [ ] Trigger subscription activation (complete test payment)
@@ -323,22 +334,23 @@
   - User notified (if notification system exists)
 
 **Acceptance Criteria:**
-- ✅ Webhook endpoint receives requests
-- ✅ Signature verification works correctly
-- ✅ All webhook events processed correctly
-- ✅ Database updates match webhook events
-- ✅ No duplicate processing (idempotency)
-- ✅ Error handling for invalid webhooks
+- ✅ Webhook endpoint implemented: `POST /api/webhooks/razorpay`
+- ✅ Signature verification (HMAC SHA256, raw body)
+- ✅ All four events handled: subscription.activated, subscription.charged, subscription.cancelled, payment.failed
+- ✅ Database updates in place (subscription status, payments, organization downgrade on cancel)
+- ✅ Idempotency: subscription.charged and payment.failed skip when payment already recorded by external ID
+- ✅ Invalid signature returns 401
+- [ ] **Manual:** End-to-end tests with real webhooks (Dashboard or test payment)
 
 **Testing Tools:**
-- Use RazorPay Dashboard → Webhooks → Send Test Webhook
-- Use ngrok for local testing: `ngrok http 5000`
-- Check application logs for webhook processing
+- RazorPay Dashboard → Webhooks → Send Test Webhook
+- For local testing: use **zrok** (ngrok is blacklisted by Razorpay) or deploy to staging
+- Check application logs for "Webhook received from RAZORPAY"
 
 **Documentation:**
-- [ ] Document webhook event flow
-- [ ] Note any webhook processing delays
-- [ ] Record webhook secret location
+- [x] Implementation summary added above
+- [ ] Document webhook event flow (after manual test)
+- [ ] Record webhook secret location (secure storage)
 
 ---
 
@@ -870,8 +882,8 @@
 
 ### Pre-Launch (4 Tasks)
 - [x] User Limit Enforcement implemented ✅ (February 2026)
-- [ ] RazorPay Account Setup & Testing complete
-- [ ] End-to-End Payment Testing passed
+- [x] RazorPay Account Setup complete ✅ (env: KEY_ID, KEY_SECRET, WEBHOOK_SECRET, SOLO/TEAM plan IDs)
+- [ ] RazorPay Checkout & E2E Payment Testing passed
 - [ ] Production Deployment & Monitoring configured
 
 ### Launch Day

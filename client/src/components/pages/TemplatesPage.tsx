@@ -293,7 +293,7 @@ export function TemplatesPage({ onOpenEditor }: TemplatesPageProps) {
                       variant="ghost"
                       size="sm"
                       className="text-emerald-400 hover:text-emerald-300 h-8"
-                      onClick={() => onOpenEditor?.(template.isCustom ? String(template.id) : undefined)}
+                      onClick={() => onOpenEditor?.((template.isCustom || (template as { isApiTemplate?: boolean }).isApiTemplate) ? String(template.id) : undefined)}
                     >
                       Use Template
                     </Button>

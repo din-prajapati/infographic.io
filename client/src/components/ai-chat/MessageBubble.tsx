@@ -5,7 +5,7 @@
 
 import { motion } from 'motion/react';
 import { Message } from './types';
-import { Sparkles, Check, Loader2, RefreshCw, Image as ImageIcon } from 'lucide-react';
+import { Sparkles, Check, Loader2, RefreshCw, Image as ImageIcon, AlertCircle, MapPin, DollarSign } from 'lucide-react';
 import { Button } from '../ui/button';
 import {
   Tooltip,
@@ -17,16 +17,20 @@ interface MessageBubbleProps {
   message: Message;
   index: number;
   onRegenerateAll?: () => void;
+  selectedPreviewId?: string | null;
+  onSelectPreview?: (id: string) => void;
 }
 
-export function MessageBubble({ message, index, onRegenerateAll }: MessageBubbleProps) {
+export function MessageBubble({ message, index, onRegenerateAll, selectedPreviewId, onSelectPreview }: MessageBubbleProps) {
   const isUser = message.type === 'user';
   const isLoading = message.isLoading;
   const isGenerating = message.isGenerating;
+  const isValidationHint = message.isValidationHint;
+  const isError = !isValidationHint && !isUser && message.content.startsWith('Error:');
 
-  // Format timestamp
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString('en-US', { 
+  const formatTime = (date: Date | string) => {
+    const d = date instanceof Date ? date : new Date(date);
+    return d.toLocaleTimeString('en-US', { 
       hour: 'numeric', 
       minute: '2-digit',
       hour12: true 
@@ -44,19 +48,28 @@ export function MessageBubble({ message, index, onRegenerateAll }: MessageBubble
         {/* Tool/Model Tag for AI messages */}
         {!isUser && (
           <div className="flex items-center gap-2 mb-2 px-1">
-            <div className="flex items-center gap-1.5 px-2 py-0.5 bg-purple-100 rounded-full">
-              <Sparkles className="w-3 h-3 text-purple-600" />
-              <span className="text-xs text-purple-700 font-medium">Real Estate Template Generator</span>
-            </div>
-            {isGenerating && (
-              <div className="px-2 py-0.5 bg-blue-100 rounded-full">
-                <span className="text-xs text-blue-700 font-medium">Executing</span>
+            {isValidationHint ? (
+              <div className="flex items-center gap-1.5 px-2 py-0.5 bg-amber-100 rounded-full">
+                <AlertCircle className="w-3 h-3 text-amber-600" />
+                <span className="text-xs text-amber-700 font-medium">Missing Information</span>
               </div>
-            )}
-            {!isGenerating && message.resultPreviews && (
-              <div className="px-2 py-0.5 bg-green-100 rounded-full">
-                <span className="text-xs text-green-700 font-medium">Complete</span>
-              </div>
+            ) : (
+              <>
+                <div className="flex items-center gap-1.5 px-2 py-0.5 bg-purple-100 rounded-full">
+                  <Sparkles className="w-3 h-3 text-purple-600" />
+                  <span className="text-xs text-purple-700 font-medium">Real Estate Template Generator</span>
+                </div>
+                {isGenerating && (
+                  <div className="px-2 py-0.5 bg-blue-100 rounded-full">
+                    <span className="text-xs text-blue-700 font-medium">Executing</span>
+                  </div>
+                )}
+                {!isGenerating && message.resultPreviews && (
+                  <div className="px-2 py-0.5 bg-green-100 rounded-full">
+                    <span className="text-xs text-green-700 font-medium">Complete</span>
+                  </div>
+                )}
+              </>
             )}
           </div>
         )}
@@ -66,9 +79,13 @@ export function MessageBubble({ message, index, onRegenerateAll }: MessageBubble
           className={`px-4 py-3 rounded-2xl ${
             isUser
               ? 'bg-gray-100 text-gray-900 rounded-br-md'
-              : isGenerating 
-                ? 'bg-gradient-to-br from-gray-50 to-purple-50 border border-purple-200 text-gray-900 rounded-bl-md min-w-[320px]'
-                : 'bg-white border border-gray-200 text-gray-900 rounded-bl-md'
+              : isValidationHint
+                ? 'bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 text-gray-900 rounded-bl-md'
+                : isError
+                  ? 'bg-gradient-to-br from-red-50 to-rose-50 border border-red-200 text-gray-900 rounded-bl-md'
+                  : isGenerating 
+                    ? 'bg-gradient-to-br from-gray-50 to-purple-50 border border-purple-200 text-gray-900 rounded-bl-md min-w-[320px]'
+                    : 'bg-white border border-gray-200 text-gray-900 rounded-bl-md'
           }`}
         >
           {/* User Message Icon Badge */}
@@ -85,6 +102,38 @@ export function MessageBubble({ message, index, onRegenerateAll }: MessageBubble
             <div className="flex items-center gap-2">
               <Sparkles className="w-4 h-4 animate-pulse" />
               <span className="text-sm">Thinking...</span>
+            </div>
+          ) : isValidationHint ? (
+            // Validation guidance message
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+                <p className="text-sm font-medium text-amber-800">{message.content}</p>
+              </div>
+              
+              {message.missingFields && message.missingFields.length > 0 && (
+                <div className="space-y-2 pl-1">
+                  <p className="text-xs text-amber-700 font-medium">Please include:</p>
+                  {message.missingFields.map((field) => (
+                    <div key={field} className="flex items-center gap-2 text-sm text-amber-900">
+                      {field === 'address' ? (
+                        <MapPin className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                      ) : (
+                        <DollarSign className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                      )}
+                      <span>
+                        {field === 'address' 
+                          ? 'Property address (e.g., "123 Oak Street, Austin TX")'
+                          : 'Price (e.g., "$450,000" or "450k")'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <p className="text-xs text-amber-600 italic">
+                Example: "3BR house at 123 Oak St, Austin TX for $450k with pool"
+              </p>
             </div>
           ) : isGenerating && message.generationSteps ? (
             // Generation Progress inside AI bubble
@@ -131,7 +180,18 @@ export function MessageBubble({ message, index, onRegenerateAll }: MessageBubble
                   <p className="text-xs text-gray-600 mb-2">Generated {message.resultPreviews.length} variations:</p>
                   <div className="flex gap-2">
                     {message.resultPreviews.map((preview) => (
-                      <div key={preview.id} className="flex-1">
+                      <div
+                        key={preview.id}
+                        className={`flex-1 cursor-pointer rounded-lg transition-all ${
+                          selectedPreviewId === preview.id
+                            ? 'ring-2 ring-blue-500'
+                            : 'hover:ring-2 hover:ring-blue-300'
+                        }`}
+                        onClick={() => onSelectPreview?.(preview.id)}
+                        role="button"
+                        aria-label={`Select ${preview.title}`}
+                        aria-pressed={selectedPreviewId === preview.id}
+                      >
                         <img 
                           src={preview.thumbnail} 
                           alt={preview.title}

@@ -30,12 +30,15 @@ async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
     const text = await res.text();
     let errorMessage = res.statusText || "Unknown error";
+    // Only treat as unauthorized if the HTTP status code itself is 401
+    // Avoid false positives where 500 errors contain "Unauthorized" in the message
     let isUnauthorized = res.status === 401;
 
     try {
       const json = JSON.parse(text);
       errorMessage = json.message || json.error || errorMessage;
-      if (json.statusCode === 401 || (typeof json.message === "string" && json.message.toLowerCase() === "unauthorized")) {
+      // Also check json.statusCode === 401 in case of non-standard responses
+      if (json.statusCode === 401) {
         isUnauthorized = true;
       }
     } catch {

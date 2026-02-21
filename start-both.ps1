@@ -18,10 +18,14 @@ while ($retryCount -lt $maxRetries -and -not $portFreed) {
         $pidToKill = $port5000.OwningProcess
         Write-Host "⚠️  Port 5000 is already in use by PID: $pidToKill (Attempt $retryCount/$maxRetries)" -ForegroundColor Yellow
         
-        # Get process info before killing
-        $processInfo = Get-Process -Id $pidToKill -ErrorAction SilentlyContinue
         if ($processInfo) {
             Write-Host "   Process: $($processInfo.ProcessName) (PID: $pidToKill)" -ForegroundColor Gray
+        }
+
+        if ($pidToKill -eq 0) {
+            Write-Host "⏳ Port 5000 is in TIME_WAIT state (PID 0). Waiting for it to release..." -ForegroundColor Yellow
+            Start-Sleep -Seconds 5
+            continue
         }
         
         try {

@@ -27,9 +27,18 @@ api/.env.*.local
 
 #Ignore cursor AI rules
 .cursor\rules\codacy.mdc
+.cursor/debug.log
+
+# Temporary work files (vibe coding artifacts)
+.work_temporary/
+
+# Design metadata
+.dm/
 
 # Dependencies and build output
 node_modules
 **/node_modules
 dist
 **/dist
+__generated__
+**/__generated__

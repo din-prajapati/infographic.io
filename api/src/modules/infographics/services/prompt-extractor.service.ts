@@ -26,6 +26,7 @@ export interface ExtractionResult {
   missingFields: string[];
   suggestions: string[];
   createdAt: Date;
+  conversationId?: string | null;
 }
 
 @Injectable()
@@ -42,13 +43,6 @@ export class PromptExtractorService {
     organizationId?: string,
     conversationId?: string,
   ): Promise<ExtractionResult> {
-    // #region agent log
-    try {
-      fetch('http://127.0.0.1:7244/ingest/8efc90dd-6123-4218-ac73-6942740927b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'prompt-extractor.service.ts:38',message:'extractPropertyData called',data:{hasPrompt:!!prompt,promptLength:prompt?.length,hasUserId:!!userId,hasPrisma:!!this.prisma,hasExtractionModel:!!this.prisma?.extraction,prismaType:typeof this.prisma},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-    } catch (logError) {
-      // Ignore logging errors
-    }
-    // #endregion
     console.log(`🔍 [Extractor] Extracting property data from prompt: "${prompt.substring(0, 100)}..."`);
 
     const isDemoMode = process.env.DEMO_MODE === 'true';
@@ -140,46 +134,53 @@ Return the extracted data as JSON.`;
 
       // Persist extraction to database if userId provided
       if (userId) {
-        // #region agent log
-        fetch('http://127.0.0.1:7244/ingest/8efc90dd-6123-4218-ac73-6942740927b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'prompt-extractor.service.ts:137',message:'About to create extraction',data:{hasUserId:!!userId,hasPrisma:!!this.prisma,hasExtractionModel:!!this.prisma?.extraction,prismaType:typeof this.prisma,prismaKeys:this.prisma ? Object.keys(this.prisma).slice(0,10) : []},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-        // #endregion
-        
         if (!this.prisma) {
           console.error('❌ [Extractor] PrismaService is undefined');
           throw new Error('PrismaService is not available - database module may not be initialized');
         }
         
-        // Check if extraction model exists in Prisma client
-        // If not available, fall back to in-memory result (graceful degradation)
-        // Use optional chaining to safely check if extraction model exists
         if (!this.prisma || typeof (this.prisma as any).extraction === 'undefined') {
           const availableModels = this.prisma ? Object.keys(this.prisma).filter(k => !k.startsWith('$') && !k.startsWith('_')).join(', ') : 'none (PrismaService undefined)';
           console.warn('⚠️ [Extractor] Prisma client missing extraction model. Falling back to in-memory result. Available models:', availableModels);
-          console.warn('⚠️ [Extractor] To enable database persistence, run: npm run prisma:generate');
-          // Fall through to in-memory result below
         } else {
-          // Extraction model exists, persist to database
+          // Validate conversationId exists in DB before using as FK
+          let validConversationId: string | null = null;
+          if (conversationId) {
+            const conversation = await this.prisma.conversation.findUnique({
+              where: { id: conversationId },
+              select: { id: true },
+            }).catch(() => null);
+
+            if (conversation) {
+              validConversationId = conversation.id;
+            } else {
+              console.warn(`⚠️ [Extractor] Conversation ${conversationId} not found in DB, storing extraction without conversation link`);
+            }
+          }
+
           const persisted = await this.prisma.extraction.create({
-          data: {
-            userId,
-            conversationId: conversationId || null,
-            prompt,
-            extractedData: extractedData as any, // Prisma Json type
-            confidence,
-            missingFields,
-            suggestions,
-          },
+            data: {
+              userId,
+              conversationId: validConversationId,
+              prompt,
+              extractedData: extractedData as any,
+              confidence,
+              missingFields,
+              suggestions,
+            },
           });
 
           console.log(`💾 [Extractor] Extraction persisted: ${persisted.id}`);
 
+
           return {
-            id: persisted.id, // Use database ID
+            id: persisted.id,
             extractedData,
             confidence,
             missingFields,
             suggestions,
             createdAt: persisted.createdAt,
+            conversationId: persisted.conversationId,
           };
         }
       }
@@ -193,11 +194,9 @@ Return the extracted data as JSON.`;
         missingFields,
         suggestions,
         createdAt: new Date(),
+        conversationId,
       };
     } catch (error: any) {
-      // #region agent log
-      fetch('http://127.0.0.1:7244/ingest/8efc90dd-6123-4218-ac73-6942740927b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'prompt-extractor.service.ts:170',message:'Extraction error caught',data:{errorMessage:error?.message,errorName:error?.name,errorStack:error?.stack?.substring(0,500),hasPrisma:!!this.prisma,hasExtractionModel:!!this.prisma?.extraction},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-      // #endregion
       console.error(`❌ [Extractor] Extraction failed:`, error?.message || error);
       throw new Error(`Failed to extract property data: ${error?.message || 'Unknown error'}`);
     }
@@ -255,10 +254,23 @@ Return the extracted data as JSON.`;
 
     // Persist demo extraction if userId provided
     if (userId && this.prisma && typeof (this.prisma as any).extraction !== 'undefined') {
+      // Validate conversationId exists in DB before using as FK
+      let validConversationId: string | null = null;
+      if (conversationId) {
+        const conversation = await this.prisma.conversation.findUnique({
+          where: { id: conversationId },
+          select: { id: true },
+        }).catch(() => null);
+
+        if (conversation) {
+          validConversationId = conversation.id;
+        }
+      }
+
       const persisted = await this.prisma.extraction.create({
         data: {
           userId,
-          conversationId: conversationId || null,
+          conversationId: validConversationId,
           prompt,
           extractedData: extractedData as any,
           confidence,
@@ -274,6 +286,7 @@ Return the extracted data as JSON.`;
         missingFields,
         suggestions,
         createdAt: persisted.createdAt,
+        conversationId: persisted.conversationId,
       };
     }
 
@@ -284,6 +297,7 @@ Return the extracted data as JSON.`;
       missingFields,
       suggestions,
       createdAt: new Date(),
+      conversationId,
     };
   }
 
@@ -342,6 +356,7 @@ Return the extracted data as JSON.`;
       missingFields: extraction.missingFields,
       suggestions: extraction.suggestions,
       createdAt: extraction.createdAt,
+      conversationId: extraction.conversationId,
     };
   }
 }

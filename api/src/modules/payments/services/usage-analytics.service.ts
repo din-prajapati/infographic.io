@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { PrismaService } from '../../../common/services/prisma.service';
 
 export interface MonthlyUsageData {
@@ -23,7 +23,7 @@ export interface UsageHistoryItem {
 
 @Injectable()
 export class UsageAnalyticsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(@Inject(PrismaService) private prisma: PrismaService) {}
 
   /**
    * Get monthly usage chart data

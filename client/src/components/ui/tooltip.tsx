@@ -57,15 +57,16 @@ function TooltipContent({
         align={align}
         side={side}
         className={cn(
-          // Geist-style: Dark background with white text (default)
-          "bg-gray-900 text-white",
-          // Light mode support
-          "dark:bg-gray-100 dark:text-gray-900",
+          // Vision Pro: frosted dark tooltip
+          "bg-gray-900/80 text-white",
+          "dark:bg-white/80 dark:text-gray-900",
+          // Glassmorphism
+          "backdrop-blur-xl",
           // Spacing and typography
-          "px-2 py-1.5 rounded-md text-xs font-medium",
-          // Shadow for depth
+          "px-2.5 py-1.5 rounded-lg text-xs font-medium",
+          // Shadow
           "shadow-lg",
-          // Animations - Geist style subtle fade + slide
+          // Animations
           "animate-in fade-in-0 zoom-in-95",
           "data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95",
           "data-[side=bottom]:slide-in-from-top-2",
@@ -82,8 +83,8 @@ function TooltipContent({
         {showArrow && (
           <TooltipPrimitive.Arrow 
             className={cn(
-              "fill-gray-900",
-              "dark:fill-gray-100",
+              "fill-gray-900/80",
+              "dark:fill-white/80",
               "w-2.5 h-2.5"
             )} 
           />

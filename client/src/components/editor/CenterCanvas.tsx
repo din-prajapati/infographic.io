@@ -30,6 +30,7 @@ export function CenterCanvas() {
   const selectedElementIds = useCanvasStore((state) => state.selectedElementIds);
   const selectElement = useCanvasStore((state) => state.selectElement);
   const clearSelection = useCanvasStore((state) => state.clearSelection);
+  const addElement = useCanvasStore((state) => state.addElement);
   const canvasWidth = useCanvasStore((state) => state.canvasWidth);
   const canvasHeight = useCanvasStore((state) => state.canvasHeight);
   const backgroundColor = useCanvasStore((state) => state.backgroundColor);
@@ -56,18 +57,9 @@ export function CenterCanvas() {
     try {
       // Load the full template data (including canvasData) from storage/API
       const fullTemplate = await loadTemplateById(template.id);
-      
-      if (!fullTemplate) {
-        toast({
-          title: "Template not found",
-          description: `Could not load template "${template.name}"`,
-          variant: "destructive",
-        });
-        return;
-      }
 
-      // Restore canvas data if available
-      if (fullTemplate.canvasData) {
+      if (fullTemplate?.canvasData) {
+        // Canvas template with JSON data - restore it
         const success = restoreCanvasData(fullTemplate.canvasData);
         
         if (success) {
@@ -75,7 +67,6 @@ export function CenterCanvas() {
             title: "Template loaded",
             description: `"${template.name}" has been loaded into the canvas`,
           });
-          // Close AI chat after successful load
           setIsAIChatExpanded(false);
         } else {
           toast({
@@ -84,10 +75,54 @@ export function CenterCanvas() {
             variant: "destructive",
           });
         }
+      } else if (template.previewImage) {
+        // AI-generated image variation - convert to base64 via proxy to avoid CORS issues
+        let imageSrc = template.previewImage;
+        try {
+          const proxyUrl = `/api/proxy-image?url=${encodeURIComponent(template.previewImage)}`;
+          const imgResponse = await fetch(proxyUrl);
+          if (imgResponse.ok) {
+            const blob = await imgResponse.blob();
+            imageSrc = await new Promise<string>((resolve) => {
+              const reader = new FileReader();
+              reader.onloadend = () => resolve(reader.result as string);
+              reader.readAsDataURL(blob);
+            });
+          }
+        } catch {
+          // If proxy fetch fails, fall back to original URL
+        }
+
+        const imageElement: ImageElementType = {
+          id: `ai-gen-${Date.now()}`,
+          type: 'image',
+          src: imageSrc,
+          x: 0,
+          y: 0,
+          width: canvasWidth,
+          height: canvasHeight,
+          rotation: 0,
+          opacity: 1,
+          locked: false,
+          visible: true,
+          zIndex: 0,
+          name: template.name,
+          cornerRadius: 0,
+          flipHorizontal: false,
+          flipVertical: false,
+          colorOverlay: null,
+          filters: { brightness: 100, contrast: 100, saturation: 100 },
+        };
+        addElement(imageElement);
+        toast({
+          title: "AI design loaded",
+          description: `"${template.name}" has been added to the canvas`,
+        });
+        setIsAIChatExpanded(false);
       } else {
         toast({
-          title: "Template has no canvas data",
-          description: `Template "${template.name}" does not contain canvas data`,
+          title: "Template not found",
+          description: `Could not load template "${template.name}"`,
           variant: "destructive",
         });
       }
@@ -154,7 +189,7 @@ export function CenterCanvas() {
     <div className="flex-1 flex flex-col bg-gray-100 relative overflow-hidden">
       {/* Canvas Area with Dot Grid */}
       <div 
-        className="flex-1 dot-grid overflow-auto flex items-center justify-center p-12 relative"
+        className="flex-1 dot-grid overflow-hidden flex items-center justify-center p-12 relative"
         onMouseDown={handlePanStart}
         onMouseMove={handlePanMove}
         onMouseUp={handlePanEnd}
@@ -724,6 +759,7 @@ export function CenterCanvas() {
       <div className="absolute bottom-6 right-6">
         <Button
           onClick={handleAIButtonClick}
+          aria-label="Open AI Chat"
           className="h-14 w-14 rounded-full bg-gradient-to-br from-purple-500 to-purple-700 hover:from-purple-600 hover:to-purple-800 shadow-lg hover:shadow-xl transition-all"
         >
           <Sparkles className="w-10 h-10 animate-pulse" />

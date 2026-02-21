@@ -87,6 +87,13 @@
   --shadow-lg: 0px 8px 16px -4px rgba(0, 0, 0, 0.10), 0px 16px 32px -4px rgba(0, 0, 0, 0.15);
   --shadow-2xl: 0px 32px 64px -16px rgba(0, 0, 0, 0.25);
   
+  /* Apple Vision Pro Glassmorphism */
+  --glass-bg: rgba(255, 255, 255, 0.72);
+  --glass-border: rgba(255, 255, 255, 0.5);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  --glass-blur: 24px;
+  --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  
   /* Font Weights */
   --font-weight-medium: 500;
   --font-weight-normal: 400;
@@ -138,6 +145,13 @@
   /* Input */
   --input-background: 0 0% 16%;
   --switch-background: 0 0% 30%;
+  
+  /* Apple Vision Pro Glassmorphism - Dark */
+  --glass-bg: rgba(30, 30, 30, 0.72);
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  --glass-blur: 24px;
+  --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 @theme inline {
@@ -191,6 +205,15 @@
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-sans);
+  }
+
+  /* Apple Vision Pro Glass Utility */
+  .glass {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow), var(--glass-highlight);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
   }
 }
 

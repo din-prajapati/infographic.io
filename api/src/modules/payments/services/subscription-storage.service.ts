@@ -1,15 +1,6 @@
 import { Injectable, Inject, InternalServerErrorException } from '@nestjs/common';
-import * as fs from 'fs';
-import * as path from 'path';
 import { PrismaService } from '../../../common/services/prisma.service';
 import { PaymentProvider, SubscriptionStatus, PaymentStatus, PlanTier } from '@prisma/client';
-
-const DEBUG_LOG_PATH = path.join(__dirname, '../../../../..', '.cursor', 'debug.log');
-function debugLog(location: string, message: string, data: object, hypothesisId: string) {
-  try {
-    fs.appendFileSync(DEBUG_LOG_PATH, JSON.stringify({ location, message, data, timestamp: Date.now(), sessionId: 'debug-session', hypothesisId }) + '\n');
-  } catch (_) {}
-}
 
 @Injectable()
 export class SubscriptionStorageService {
@@ -17,9 +8,6 @@ export class SubscriptionStorageService {
 
   // User operations
   async getUser(id: string) {
-    // #region agent log
-    debugLog('subscription-storage.service.ts:getUser', 'getUser called', { id, hasPrisma: !!this.prisma }, 'D');
-    // #endregion
     if (!this.prisma) {
       throw new InternalServerErrorException(
         'SubscriptionStorageService: PrismaService not injected. Check PaymentsModule providers.',

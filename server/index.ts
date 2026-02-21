@@ -31,22 +31,12 @@ try {
 } catch (_) { /* ignore */ }
 
 
-// #region agent log
-const debugLog = (location: string, message: string, data: any, hypothesisId: string) => {
-  const logEntry = {location,message,data,timestamp:Date.now(),sessionId:'debug-session',runId:'run3',hypothesisId};
-  const logPath = 'd:\\Dinesh\\DCloud\\GITDrive\\Work\\Products\\InfographicEditor-Unified\\.cursor\\debug.log';
-  try { fs.appendFileSync(logPath, JSON.stringify(logEntry) + '\n'); } catch(e) { console.error('Log error:', e); }
-  fetch('http://127.0.0.1:7244/ingest/8efc90dd-6123-4218-ac73-6942740927b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(logEntry)}).catch(()=>{});
-};
-// #endregion
-
 // Set up error handlers IMMEDIATELY, before anything else
 let nestServer: ReturnType<typeof spawn> | null = null;
+let isShuttingDown = false;
 
 const cleanup = () => {
-  // #region agent log
-  debugLog('server/index.ts:cleanup', 'Cleanup called', {nestServerExists:!!nestServer}, 'E');
-  // #endregion
+  isShuttingDown = true;
   console.log('Shutting down servers...');
   if (nestServer) {
     nestServer.kill();
@@ -54,30 +44,27 @@ const cleanup = () => {
   process.exit(0);
 };
 
-// Handle uncaught errors
+// Handle uncaught errors - only exit on truly fatal issues
 process.on('uncaughtException', (err: Error) => {
-  console.error('Uncaught Exception:', err);
-  if (err.message.includes('EADDRINUSE') || (err as any).code === 'EADDRINUSE') {
+  if ((err as any).code === 'EADDRINUSE' || err.message.includes('EADDRINUSE')) {
     const portMatch = err.message.match(/:(\d+)/);
     const port = portMatch ? portMatch[1] : '5000';
     console.error(`❌ Port ${port} is already in use.`);
-    console.error(`💡 To fix this, run:`);
-    console.error(`   Get-NetTCPConnection -LocalPort ${port} | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force }`);
-    console.error(`   Or use a different port: PORT=5001 npm run dev`);
+    cleanup();
+    return;
   }
-  cleanup();
+  console.error('Uncaught Exception (non-fatal):', err.message);
 });
 
-process.on('unhandledRejection', (reason: any, promise: Promise<any>) => {
-  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+process.on('unhandledRejection', (reason: any) => {
+  console.error('Unhandled Rejection:', reason?.message || reason);
 });
 
 process.on('SIGINT', cleanup);
 process.on('SIGTERM', cleanup);
 
-// Start NestJS API server as a child process
+// Start NestJS API server as a child process with auto-restart
 const startNestJSServer = () => {
-  // Use npx tsx for cross-platform compatibility (Windows/Linux/Mac)
   const isWindows = process.platform === 'win32';
   const command = isWindows ? 'npx.cmd' : 'npx';
   
@@ -104,11 +91,27 @@ const startNestJSServer = () => {
   });
 
   nestProcess.stderr?.on('data', (data) => {
-    console.error(`[NestJS Error] ${data.toString().trim()}`);
+    const msg = data.toString().trim();
+    // Suppress Neon auto-pause reconnection noise
+    if (msg.includes('E57P01') || msg.includes('terminating connection due to administrator command')) {
+      return;
+    }
+    if (msg.length > 0) {
+      console.error(`[NestJS] ${msg}`);
+    }
   });
 
   nestProcess.on('close', (code) => {
     console.log(`[NestJS] Process exited with code ${code}`);
+    nestServer = null;
+    if (!isShuttingDown && code !== 0) {
+      console.log('[NestJS] Auto-restarting in 3 seconds...');
+      setTimeout(() => {
+        if (!isShuttingDown) {
+          nestServer = startNestJSServer();
+        }
+      }, 3000);
+    }
   });
 
   return nestProcess;
@@ -122,22 +125,47 @@ log('🚀 Starting NestJS API server on port 3001...');
 
 const app = express();
 
+// Image proxy route - fetches external images server-side to bypass browser CORS
+app.get('/api/proxy-image', async (req: Request, res: Response) => {
+  const url = req.query.url as string;
+  if (!url) {
+    return res.status(400).json({ error: 'Missing url parameter' });
+  }
+  // Only allow Ideogram AI and other known image hosts
+  const allowedHosts = ['ideogram.ai', 'ideogram.com', 'openai.com', 'oaidalleapiprodscus.blob.core.windows.net'];
+  try {
+    const parsed = new URL(url);
+    if (!allowedHosts.some(h => parsed.hostname.endsWith(h))) {
+      return res.status(403).json({ error: 'Host not allowed' });
+    }
+  } catch {
+    return res.status(400).json({ error: 'Invalid URL' });
+  }
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      return res.status(response.status).json({ error: `Upstream error: ${response.statusText}` });
+    }
+    const contentType = response.headers.get('content-type') || 'image/png';
+    const buffer = await response.arrayBuffer();
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    return res.send(Buffer.from(buffer));
+  } catch (error) {
+    return res.status(502).json({ error: 'Failed to fetch image' });
+  }
+});
+
 // Proxy middleware MUST come before body parsers to avoid consuming request body
 app.use('/api/v1', createProxyMiddleware({
   target: 'http://localhost:3001/api/v1',
   changeOrigin: true,
   pathRewrite: { '^/api/v1': '' },
   onProxyReq: (proxyReq: any, req: any) => {
-    // #region agent log
-    const logData = {method:req.method,url:req.url,path:req.path,bodySize:req.body?.length,hasBody:!!req.body};
-    fetch('http://127.0.0.1:7244/ingest/8efc90dd-6123-4218-ac73-6942740927b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'server/index.ts:72',message:'Proxy request',data:logData,timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-    // #endregion
     log(`Proxying: ${req.method} ${req.url} -> http://localhost:3001/api/v1${req.url}`);
   },
   onError: (err: any, req: any, res: any) => {
-    // #region agent log
-    fetch('http://127.0.0.1:7244/ingest/8efc90dd-6123-4218-ac73-6942740927b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'server/index.ts:75',message:'Proxy error',data:{errorMessage:err?.message,errorCode:err?.code,url:req?.url,method:req?.method},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
-    // #endregion
     log(`Proxy error: ${err.message}`);
     res.status(502).json({ 
       error: 'Backend API unavailable', 
@@ -188,15 +216,7 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  // #region agent log
-  debugLog('server/index.ts:132', 'Server initialization started', {processId:process.pid,port:process.env.PORT}, 'A');
-  // #endregion
-  
   const server = await registerRoutes(app);
-  
-  // #region agent log
-  debugLog('server/index.ts:137', 'Routes registered, setting up server', {processId:process.pid}, 'A');
-  // #endregion
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
@@ -221,16 +241,8 @@ app.use((req, res, next) => {
   // It is the only port that is not firewalled.
   const port = parseInt(process.env.PORT || '5000', 10);
   
-  // #region agent log
-  debugLog('server/index.ts:156', 'Attempting to bind port', {port,host:'0.0.0.0',reusePort:true,processId:process.pid}, 'B');
-  // #endregion
-  
   // Attach error handler BEFORE calling listen() to catch synchronous errors
   server.on('error', (err: NodeJS.ErrnoException) => {
-    // #region agent log
-    debugLog('server/index.ts:162', 'Port bind error', {port,errorCode:err.code,errorMessage:err.message,errno:err.errno,syscall:err.syscall,processId:process.pid}, 'B');
-    // #endregion
-    
     if (err.code === 'EADDRINUSE') {
       log(`❌ Port ${port} is already in use.`);
       log(`💡 To fix this, run one of the following:`);
@@ -251,22 +263,13 @@ app.use((req, res, next) => {
       host: "0.0.0.0",
       reusePort: true,
     }, () => {
-      // #region agent log
-      debugLog('server/index.ts:177', 'Port bound successfully', {port,processId:process.pid}, 'B');
-      // #endregion
       log(`serving on port ${port}`);
     });
   } catch (err: any) {
-    // #region agent log
-    debugLog('server/index.ts:183', 'Listen call exception', {port,errorMessage:err?.message,errorName:err?.name,processId:process.pid}, 'B');
-    // #endregion
     log(`❌ Failed to start server: ${err?.message || err}`);
     cleanup();
   }
 })().catch((err) => {
-  // #region agent log
-  debugLog('server/index.ts:189', 'Async function error', {errorMessage:err?.message,errorName:err?.name,errorStack:err?.stack?.substring(0,500),processId:process.pid}, 'D');
-  // #endregion
   console.error('Failed to start server:', err);
   cleanup();
 });

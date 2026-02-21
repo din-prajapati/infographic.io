@@ -196,7 +196,7 @@ export default function AuthPage() {
                             type={showPassword ? 'text' : 'password'}
                             placeholder="••••••••"
                             data-testid="input-password"
-                            className="h-11 rounded-xl border-0 text-white placeholder:text-white/40 pr-10 focus-visible:ring-1 focus-visible:ring-white/40"
+                            className="h-11 rounded-xl border-0 text-white placeholder:text-white/40 pr-12 focus-visible:ring-1 focus-visible:ring-white/40"
                             style={{
                               background: 'rgba(255,255,255,0.12)',
                               backdropFilter: 'blur(10px)',
@@ -206,9 +206,9 @@ export default function AuthPage() {
                           <button
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 hover:text-white/80 transition-colors"
+                            className="absolute right-3 top-0 bottom-0 flex items-center justify-center text-black/70 hover:text-black transition-colors"
                           >
-                            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                            {showPassword ? <EyeOff size={22} /> : <Eye size={22} />}
                           </button>
                         </div>
                       </FormControl>
@@ -301,7 +301,7 @@ export default function AuthPage() {
                             type={showPassword ? 'text' : 'password'}
                             placeholder="••••••••"
                             data-testid="input-register-password"
-                            className="h-11 rounded-xl border-0 text-white placeholder:text-white/40 pr-10 focus-visible:ring-1 focus-visible:ring-white/40"
+                            className="h-11 rounded-xl border-0 text-white placeholder:text-white/40 pr-12 focus-visible:ring-1 focus-visible:ring-white/40"
                             style={{
                               background: 'rgba(255,255,255,0.12)',
                               backdropFilter: 'blur(10px)',
@@ -311,9 +311,9 @@ export default function AuthPage() {
                           <button
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 hover:text-white/80 transition-colors"
+                            className="absolute right-3 top-0 bottom-0 flex items-center justify-center text-black/70 hover:text-black transition-colors"
                           >
-                            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                            {showPassword ? <EyeOff size={22} /> : <Eye size={22} />}
                           </button>
                         </div>
                       </FormControl>
