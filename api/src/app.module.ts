@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { APP_GUARD, Reflector } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD, Reflector } from '@nestjs/core';
+import { SentryModule, SentryGlobalFilter } from '@sentry/nestjs/setup';
 import { ThrottlerModule, ThrottlerGuard, ThrottlerStorage } from '@nestjs/throttler';
 import { resolve } from 'path';
 import { AuthModule } from './modules/auth/auth.module';
@@ -12,10 +13,12 @@ import { ConversationsModule } from './modules/conversations/conversations.modul
 import { PaymentsModule } from './modules/payments/payments.module';
 import { UsersModule } from './modules/users/users.module';
 import { DatabaseModule } from './database/database.module';
+import { HealthModule } from './modules/health/health.module';
 
 
 @Module({
   imports: [
+    SentryModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: [
@@ -41,9 +44,14 @@ import { DatabaseModule } from './database/database.module';
     ConversationsModule,
     PaymentsModule,
     UsersModule,
+    HealthModule,
   ],
   providers: [
     Reflector,
+    {
+      provide: APP_FILTER,
+      useClass: SentryGlobalFilter,
+    },
     {
       provide: APP_GUARD,
       useFactory: (options, storage, reflector) => {

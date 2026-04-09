@@ -157,6 +157,17 @@ app.get('/api/proxy-image', async (req: Request, res: Response) => {
   }
 });
 
+// Health check — proxies to NestJS; returns 503 if NestJS is down
+app.get('/api/health', async (req: Request, res: Response) => {
+  try {
+    const resp = await fetch('http://localhost:3001/api/v1/health');
+    const body = await resp.json();
+    res.status(resp.ok ? 200 : 503).json(body);
+  } catch {
+    res.status(503).json({ status: 'error', db: 'unreachable' });
+  }
+});
+
 // Proxy middleware MUST come before body parsers to avoid consuming request body
 app.use('/api/v1', createProxyMiddleware({
   target: 'http://localhost:3001/api/v1',

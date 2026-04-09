@@ -77,6 +77,35 @@ export class UsageAnalyticsService {
   }
 
   /**
+   * Get current month usage count for billing display
+   */
+  async getCurrentMonthUsage(
+    userId: string,
+    organizationId: string,
+  ): Promise<{ count: number }> {
+    if (!this.prisma?.usageRecord) {
+      return { count: 0 };
+    }
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+
+    const records = await this.prisma.usageRecord.findMany({
+      where: {
+        userId,
+        organizationId,
+        createdAt: {
+          gte: startOfMonth,
+          lte: endOfMonth,
+        },
+      },
+    });
+
+    const count = records.reduce((sum, r) => sum + (r.creditsUsed || 1), 0);
+    return { count };
+  }
+
+  /**
    * Get cost breakdown by AI model
    */
   async getCostBreakdown(userId: string, organizationId: string): Promise<CostBreakdown[]> {

@@ -94,11 +94,11 @@ function SheetContent({
           className,
         )}
         style={{
-          background: "var(--glass-bg)",
-          borderColor: "var(--glass-border)",
-          boxShadow: "var(--glass-shadow), var(--glass-highlight)",
-          backdropFilter: "blur(var(--glass-blur))",
-          WebkitBackdropFilter: "blur(var(--glass-blur))",
+          background: "var(--glass-bg, rgba(255, 255, 255, 0.92))",
+          borderColor: "var(--glass-border, rgba(180, 200, 220, 0.55))",
+          boxShadow: "var(--glass-shadow, 0 8px 32px rgba(0, 0, 0, 0.08)), var(--glass-highlight, inset 0 1px 0 rgba(255, 255, 255, 0.6))",
+          backdropFilter: "blur(var(--glass-blur, 28px))",
+          WebkitBackdropFilter: "blur(var(--glass-blur, 28px))",
         }}
         {...props}
       >

@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { getApiUrl } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -12,7 +12,7 @@ interface PaymentHistoryProps {
 
 export function PaymentHistory({ limit }: PaymentHistoryProps) {
   const { data, isLoading, error } = useQuery<{ payments: Payment[] }>({
-    queryKey: ['/api/payments/history'],
+    queryKey: [getApiUrl('/payments/history')],
   });
 
   const payments = limit ? data?.payments?.slice(0, limit) : data?.payments;
@@ -20,13 +20,13 @@ export function PaymentHistory({ limit }: PaymentHistoryProps) {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'CAPTURED':
-        return <CheckCircle className="h-4 w-4 text-green-500" />;
+        return <CheckCircle className="h-4 w-4 text-success" />;
       case 'FAILED':
         return <XCircle className="h-4 w-4 text-destructive" />;
       case 'PENDING':
-        return <Clock className="h-4 w-4 text-yellow-500" />;
+        return <Clock className="h-4 w-4 text-muted-foreground" />;
       case 'REFUNDED':
-        return <Receipt className="h-4 w-4 text-blue-500" />;
+        return <Receipt className="h-4 w-4 text-muted-foreground" />;
       default:
         return <CreditCard className="h-4 w-4 text-muted-foreground" />;
     }
@@ -65,79 +65,79 @@ export function PaymentHistory({ limit }: PaymentHistoryProps) {
 
   if (isLoading) {
     return (
-      <Card className="bg-white/5 backdrop-blur-xl border-white/10" data-testid="card-payment-history-loading">
-        <CardHeader>
-          <CardTitle className="text-white">Payment History</CardTitle>
-          <CardDescription className="text-gray-400">Your recent transactions</CardDescription>
-        </CardHeader>
-        <CardContent>
+      <div className="glass overflow-hidden rounded-xl border border-border" data-testid="card-payment-history-loading">
+        <div className="border-b border-border px-6 py-4">
+          <h2 className="font-semibold text-foreground">Payment History</h2>
+          <p className="mt-1 text-sm text-muted-foreground">Your recent transactions</p>
+        </div>
+        <div className="p-6">
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (
               <Skeleton key={i} className="h-12 w-full" />
             ))}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     );
   }
 
   if (error) {
     return (
-      <Card className="bg-white/5 backdrop-blur-xl border-white/10" data-testid="card-payment-history-error">
-        <CardHeader>
-          <CardTitle className="text-white">Payment History</CardTitle>
-          <CardDescription className="text-gray-400">Unable to load payment history</CardDescription>
-        </CardHeader>
-        <CardContent>
+      <div className="glass overflow-hidden rounded-xl border border-border" data-testid="card-payment-history-error">
+        <div className="border-b border-border px-6 py-4">
+          <h2 className="font-semibold text-foreground">Payment History</h2>
+          <p className="mt-1 text-sm text-muted-foreground">Unable to load payment history</p>
+        </div>
+        <div className="p-6">
           <p className="text-sm text-muted-foreground">
             There was an error loading your payment history. Please try again later.
           </p>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     );
   }
 
   if (!payments || payments.length === 0) {
     return (
-      <Card className="bg-white/5 backdrop-blur-xl border-white/10" data-testid="card-payment-history-empty">
-        <CardHeader>
-          <CardTitle className="text-white">Payment History</CardTitle>
-          <CardDescription className="text-gray-400">Your recent transactions</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-8">
-            <Receipt className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <p className="text-gray-400">No payments yet</p>
-            <p className="text-sm text-gray-400 mt-1">
+      <div className="glass overflow-hidden rounded-xl border border-border" data-testid="card-payment-history-empty">
+        <div className="border-b border-border px-6 py-4">
+          <h2 className="font-semibold text-foreground">Payment History</h2>
+          <p className="mt-1 text-sm text-muted-foreground">Your recent transactions</p>
+        </div>
+        <div className="p-6">
+          <div className="py-8 text-center">
+            <Receipt className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+            <p className="text-muted-foreground">No payments yet</p>
+            <p className="mt-1 text-sm text-muted-foreground">
               Your payment history will appear here after your first transaction.
             </p>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Card className="bg-white/5 backdrop-blur-xl border-white/10" data-testid="card-payment-history">
-      <CardHeader>
-        <CardTitle className="text-white">Payment History</CardTitle>
-        <CardDescription className="text-gray-400">Your recent transactions</CardDescription>
-      </CardHeader>
-      <CardContent>
+    <div className="glass overflow-hidden rounded-xl border border-border" data-testid="card-payment-history">
+      <div className="border-b border-border px-6 py-4">
+        <h2 className="font-semibold text-foreground">Payment History</h2>
+        <p className="mt-1 text-sm text-muted-foreground">Your recent transactions</p>
+      </div>
+      <div className="overflow-x-auto">
         <Table>
           <TableHeader>
-            <TableRow className="border-white/10">
-              <TableHead className="text-gray-400">Date</TableHead>
-              <TableHead className="text-gray-400">Amount</TableHead>
-              <TableHead className="text-gray-400">Method</TableHead>
-              <TableHead className="text-gray-400">Status</TableHead>
-              <TableHead className="text-right text-gray-400">Transaction ID</TableHead>
+            <TableRow>
+              <TableHead className="text-muted-foreground">Date</TableHead>
+              <TableHead className="text-muted-foreground">Amount</TableHead>
+              <TableHead className="text-muted-foreground">Method</TableHead>
+              <TableHead className="text-muted-foreground">Status</TableHead>
+              <TableHead className="text-right text-muted-foreground">Transaction ID</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {payments.map((payment) => (
-              <TableRow key={payment.id} className="border-white/10" data-testid={`row-payment-${payment.id}`}>
-                <TableCell className="text-gray-300">
+              <TableRow key={payment.id} data-testid={`row-payment-${payment.id}`}>
+                <TableCell className="text-foreground">
                   <div className="flex items-center gap-2">
                     {getStatusIcon(payment.status)}
                     <span className="text-sm">
@@ -145,10 +145,10 @@ export function PaymentHistory({ limit }: PaymentHistoryProps) {
                     </span>
                   </div>
                 </TableCell>
-                <TableCell className="font-medium text-white" data-testid={`text-payment-amount-${payment.id}`}>
+                <TableCell className="font-medium text-foreground" data-testid={`text-payment-amount-${payment.id}`}>
                   {formatAmount(payment.amount, payment.currency)}
                 </TableCell>
-                <TableCell className="text-gray-400">
+                <TableCell className="text-muted-foreground">
                   <span className="text-sm">
                     {formatPaymentMethod(payment.method)}
                   </span>
@@ -159,7 +159,7 @@ export function PaymentHistory({ limit }: PaymentHistoryProps) {
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right">
-                  <span className="text-xs text-gray-400 font-mono">
+                  <span className="font-mono text-xs text-muted-foreground">
                     {payment.externalPaymentId?.slice(-12) || payment.id.slice(-8)}
                   </span>
                 </TableCell>
@@ -167,8 +167,8 @@ export function PaymentHistory({ limit }: PaymentHistoryProps) {
             ))}
           </TableBody>
         </Table>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
 

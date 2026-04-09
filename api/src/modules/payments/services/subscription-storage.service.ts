@@ -62,6 +62,18 @@ export class SubscriptionStorageService {
     });
   }
 
+  /** Returns the most recent ACTIVE or PENDING subscription (for billing display). */
+  async getCurrentSubscriptionByUserId(userId: string) {
+    return this.prisma.subscription.findFirst({
+      where: {
+        userId,
+        status: { in: [SubscriptionStatus.ACTIVE, SubscriptionStatus.PENDING] },
+      },
+      orderBy: { createdAt: 'desc' },
+      include: { user: true, organization: true },
+    });
+  }
+
   async getSubscriptionByExternalId(
     externalId: string,
     provider: PaymentProvider,
@@ -85,6 +97,7 @@ export class SubscriptionStorageService {
     externalCustomerId?: string | null;
     planTier: PlanTier;
     status: SubscriptionStatus;
+    billingPeriod?: string;
     currentPeriodStart: Date;
     currentPeriodEnd: Date;
     amount: number;
@@ -103,6 +116,7 @@ export class SubscriptionStorageService {
         externalCustomerId: data.externalCustomerId,
         planTier: data.planTier,
         status: data.status,
+        billingPeriod: data.billingPeriod ?? 'MONTHLY',
         currentPeriodStart: data.currentPeriodStart,
         currentPeriodEnd: data.currentPeriodEnd,
         amount: data.amount,

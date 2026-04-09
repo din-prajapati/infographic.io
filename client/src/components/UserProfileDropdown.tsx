@@ -8,6 +8,7 @@ import { Settings, LogOut } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/lib/auth";
+import { useTheme } from "@/lib/theme-provider";
 import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
 
 interface UserProfileDropdownProps {
@@ -33,6 +34,7 @@ export function UserProfileDropdown({
   onSignOutClick,
 }: UserProfileDropdownProps) {
   const { user, logout } = useAuth();
+  const { resolvedTheme } = useTheme();
   // Support profile image from props or from user object (e.g. user.imageUrl when API adds it)
   const profileImageUrl = profileImageUrlProp ?? (user as { imageUrl?: string })?.imageUrl ?? (user as { picture?: string })?.picture;
   const [, setLocation] = useLocation();
@@ -114,7 +116,7 @@ export function UserProfileDropdown({
       <button
         ref={triggerRef}
         onClick={() => setIsOpen(!isOpen)}
-        className="rounded-full overflow-hidden hover:opacity-90 transition-opacity focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300"
+        className="rounded-full overflow-hidden hover:opacity-90 transition-opacity focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring"
         aria-label="Open profile menu"
       >
         <Avatar className="w-10 h-10">
@@ -136,10 +138,23 @@ export function UserProfileDropdown({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.15 }}
-            className="absolute right-0 top-full mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50"
+            className="absolute right-0 top-full mt-2 w-64 rounded-xl py-2 z-50"
+            style={{
+              background: resolvedTheme === 'dark' 
+                ? 'rgba(15, 23, 32, 0.92)' 
+                : 'rgba(255, 255, 255, 0.92)',
+              border: resolvedTheme === 'dark'
+                ? '1px solid rgba(56, 189, 178, 0.28)'
+                : '1px solid rgba(180, 200, 220, 0.55)',
+              boxShadow: resolvedTheme === 'dark'
+                ? '0 8px 32px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.12)'
+                : '0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.6)',
+              backdropFilter: 'blur(28px)',
+              WebkitBackdropFilter: 'blur(28px)',
+            }}
           >
             {/* User Info Section */}
-            <div className="px-4 py-3 border-b border-gray-200">
+            <div className="px-4 py-3 border-b border-border">
               <div className="flex items-start gap-3">
                 {/* Avatar - profile image when available, otherwise initials */}
                 <Avatar className={`w-10 h-10 flex-shrink-0`}>
@@ -153,16 +168,16 @@ export function UserProfileDropdown({
 
                 {/* User Details */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-gray-900 truncate">
+                  <p className="text-foreground truncate">
                     {displayName}
                   </p>
-                  <p className="text-gray-500 text-sm truncate">
+                  <p className="text-muted-foreground text-sm truncate">
                     {displayEmail}
                   </p>
 
                   {/* Current Plan Badge */}
                   <div className="mt-1.5">
-                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs bg-gray-100 text-gray-700">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs bg-accent text-accent-foreground">
                       {currentPlan}
                     </span>
                   </div>
@@ -175,19 +190,19 @@ export function UserProfileDropdown({
               {/* Account Settings */}
               <button
                 onClick={handleAccountSettingsClick}
-                className="w-full flex items-center gap-3 px-4 py-2.5 text-gray-700 hover:bg-gray-50 transition-colors"
+                className="w-full flex items-center gap-3 px-4 py-2.5 text-foreground hover:bg-accent transition-colors"
               >
-                <Settings className="w-4 h-4 text-gray-500" />
+                <Settings className="w-4 h-4 text-muted-foreground" />
                 <span>Account settings</span>
               </button>
 
               {/* Divider */}
-              <div className="my-1 border-t border-gray-200" />
+              <div className="my-1 border-t border-border" />
 
               {/* Log Out */}
               <button
                 onClick={handleSignOutClick}
-                className="w-full flex items-center gap-3 px-4 py-2.5 text-red-600 hover:bg-red-50 transition-colors"
+                className="w-full flex items-center gap-3 px-4 py-2.5 text-destructive hover:bg-destructive/10 transition-colors"
               >
                 <LogOut className="w-4 h-4" />
                 <span>Sign out</span>

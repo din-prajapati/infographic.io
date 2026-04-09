@@ -15,6 +15,7 @@ import LandingPage from "./pages/LandingPage";
 import UsageDashboardPage from "./pages/UsageDashboardPage";
 import AuthCallbackPage from "./pages/AuthCallbackPage";
 import { ErrorBoundary } from "./components/ui/error-boundary";
+import { ThemeProvider } from "./lib/theme-provider";
 
 function ProtectedRoute({ component: Component }: { component: () => JSX.Element }) {
   const { isAuthenticated, isLoading } = useAuth();
@@ -49,7 +50,9 @@ function EditorRoute() {
 function TemplatesPageWrapper() {
   const [, navigate] = useLocation();
   const handleOpenTemplate = (templateId?: string) => {
-    const url = templateId ? `/editor?templateId=${templateId}` : '/editor';
+    const url = templateId
+      ? `/editor?templateId=${encodeURIComponent(templateId)}`
+      : "/editor";
     navigate(url);
   };
   return <TemplatesPage onOpenEditor={handleOpenTemplate} />;
@@ -112,16 +115,18 @@ export default function App() {
   useRedirectToAuthOnLoad();
   return (
     <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <TooltipProvider delayDuration={300}>
-            <div className="min-h-screen bg-background flex flex-col">
-              <Router />
-            </div>
-            <Toaster />
-          </TooltipProvider>
-        </AuthProvider>
-      </QueryClientProvider>
+      <ThemeProvider defaultTheme="system">
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider>
+            <TooltipProvider delayDuration={300}>
+              <div className="min-h-screen bg-background flex flex-col">
+                <Router />
+              </div>
+              <Toaster />
+            </TooltipProvider>
+          </AuthProvider>
+        </QueryClientProvider>
+      </ThemeProvider>
     </ErrorBoundary>
   );
 }

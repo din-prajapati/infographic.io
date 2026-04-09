@@ -10,7 +10,19 @@
     "start": "cross-env NODE_ENV=production node dist/index.js",
     "check": "tsc",
     "db:push": "drizzle-kit push",
-    "prisma:generate": "prisma generate --schema=api/prisma/schema.prisma"
+    "prisma:generate": "prisma generate --schema=api/prisma/schema.prisma",
+    "list-active-subscriptions": "cd api && npx tsx scripts/list-active-subscriptions.ts",
+    "clean-dev-db": "cd api && npx tsx scripts/clean-dev-db.ts",
+    "verify:payment-prereqs": "node scripts/verify-payment-prerequisites.js",
+    "test:payment": "node scripts/run-payment-automated-tests.js",
+    "test:payment:ensure-user": "node scripts/ensure-payment-test-user.mjs",
+    "test:payments:unit": "cd api && npx vitest run tests/payments/payments.service.spec.ts --reporter=verbose",
+    "test": "npm run test:unit && npm run test:integration",
+    "test:unit": "cd api && npx vitest run --config vitest.config.ts --reporter=verbose",
+    "test:integration": "cd api && npx vitest run --config vitest.integration.config.ts --reporter=verbose",
+    "test:watch": "cd api && npx vitest --config vitest.config.ts",
+    "test:e2e": "playwright test",
+    "test:e2e:editor": "playwright test e2e/editor-ai-chatbox.spec.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -56,6 +68,9 @@
     "@radix-ui/react-toggle": "^1.1.3",
     "@radix-ui/react-toggle-group": "^1.1.3",
     "@radix-ui/react-tooltip": "^1.2.0",
+    "@sentry/nestjs": "^10.40.0",
+    "@sentry/profiling-node": "^10.40.0",
+    "@sentry/react": "^10.40.0",
     "@tanstack/react-query": "^5.60.5",
     "@types/passport-google-oauth20": "^2.0.17",
     "axios": "^1.12.2",
@@ -113,6 +128,7 @@
     "zustand": "^5.0.2"
   },
   "devDependencies": {
+    "@playwright/test": "^1.51.0",
     "@replit/vite-plugin-cartographer": "^0.3.1",
     "@replit/vite-plugin-dev-banner": "^0.1.1",
     "@replit/vite-plugin-runtime-error-modal": "^0.0.3",
@@ -129,15 +145,18 @@
     "@types/ws": "^8.5.13",
     "@vitejs/plugin-react": "^4.7.0",
     "@vitejs/plugin-react-swc": "^3.10.2",
+    "@vitest/coverage-v8": "^2.1.9",
     "autoprefixer": "^10.4.20",
     "cross-env": "^10.1.0",
+    "dotenv": "^16.4.7",
     "drizzle-kit": "^0.31.4",
     "esbuild": "^0.25.0",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.17",
     "tsx": "^4.20.5",
     "typescript": "5.6.3",
-    "vite": "^6.4.1"
+    "vite": "^6.4.1",
+    "vitest": "^2.1.9"
   },
   "optionalDependencies": {
     "bufferutil": "^4.0.8"

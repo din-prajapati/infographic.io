@@ -40,7 +40,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     } else {
       message = exception instanceof Error
         ? exception.message
-        : String(exception);
+        : this.stringifyUnknownException(exception);
       this.logger.error(
         `Unhandled exception: ${message}`,
         exception instanceof Error ? exception.stack : undefined,
@@ -51,5 +51,24 @@ export class AllExceptionsFilter implements ExceptionFilter {
       statusCode: status,
       message: message || 'Internal server error',
     });
+  }
+
+  /** Razorpay SDK and some clients throw plain objects — avoid "[object Object]" in logs and API responses. */
+  private stringifyUnknownException(exception: unknown): string {
+    if (exception == null) return String(exception);
+    if (typeof exception === 'string') return exception;
+    if (typeof exception !== 'object') return String(exception);
+    const rec = exception as Record<string, unknown>;
+    const inner = rec.error as Record<string, unknown> | undefined;
+    const fromInner =
+      typeof inner?.description === 'string' ? inner.description : '';
+    const fromMsg = typeof rec.message === 'string' ? rec.message : '';
+    if (fromInner) return fromInner;
+    if (fromMsg) return fromMsg;
+    try {
+      return JSON.stringify(exception);
+    } catch {
+      return String(exception);
+    }
   }
 }

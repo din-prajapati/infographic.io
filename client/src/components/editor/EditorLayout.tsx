@@ -15,6 +15,7 @@ import {
   loadTemplateById,
   generateId,
 } from "../../lib/storage";
+import { getGalleryTemplateDisplayName } from "../../lib/galleryTemplateCatalog";
 import { captureCanvasData, generateThumbnailSync, restoreCanvasData } from "../../lib/canvasState";
 import { downloadCanvas } from "../../lib/canvasExport";
 import { useCanvasStore } from "../../hooks/useCanvasStore";
@@ -78,10 +79,14 @@ export function EditorLayout({ onBackClick, designId, templateId }: EditorLayout
           const template = await loadTemplateById(templateId);
           if (template) {
             setDesignName(`${template.name} (Copy)`);
-            
-            // Restore canvas data from template (don't set currentDesignId)
+
             if (template.canvasData) {
               restoreCanvasData(template.canvasData);
+            }
+          } else {
+            const galleryName = getGalleryTemplateDisplayName(templateId);
+            if (galleryName) {
+              setDesignName(`${galleryName} (Template)`);
             }
           }
         } catch (error) {

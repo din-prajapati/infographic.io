@@ -38,7 +38,7 @@ const templates: TemplateItem[] = [
     description: "Luxury property showcase",
     uses: "2.4k",
     badge: "Luxury",
-    badgeColor: "bg-black text-white",
+    badgeColor: "bg-foreground/90 text-background",
     image: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBpbnRlcmlvciUyMGRlc2lnbnxlbnwxfHx8fDE3NjQyMzU0NzB8MA&ixlib=rb-4.1.0&q=80&w=1080",
   },
   {
@@ -47,7 +47,7 @@ const templates: TemplateItem[] = [
     description: "Contemporary apartment layout",
     uses: "1.8k",
     badge: "Standard",
-    badgeColor: "bg-gray-800 text-white",
+    badgeColor: "bg-muted-foreground/80 text-background",
     image: "https://images.unsplash.com/photo-1718893389568-22a2a039998c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBhcmNoaXRlY3R1cmUlMjBob3VzZXxlbnwxfHx8fDE3NjQyMjQyODZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
   },
   {
@@ -56,7 +56,7 @@ const templates: TemplateItem[] = [
     description: "Affordable housing design",
     uses: "3.1k",
     badge: "Budget",
-    badgeColor: "bg-blue-600 text-white",
+    badgeColor: "bg-primary/80 text-primary-foreground",
     image: "https://images.unsplash.com/photo-1605191353027-d21e534a419a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb3p5JTIwaG9tZSUyMGludGVyaW9yfGVufDF8fHx8MTc2NDI2NzYzOXww&ixlib=rb-4.1.0&q=80&w=1080",
   },
   {
@@ -65,7 +65,7 @@ const templates: TemplateItem[] = [
     description: "Premium property template",
     uses: "1.5k",
     badge: "Luxury",
-    badgeColor: "bg-black text-white",
+    badgeColor: "bg-foreground/90 text-background",
     image: "https://images.unsplash.com/photo-1686056040370-b5e5c06c4273?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxsdXh1cnklMjBhcGFydG1lbnR8ZW58MXx8fHwxNzY0MjkxODMyfDA&ixlib=rb-4.1.0&q=80&w=1080",
   },
   {
@@ -74,7 +74,7 @@ const templates: TemplateItem[] = [
     description: "Spacious family home",
     uses: "2.7k",
     badge: "Standard",
-    badgeColor: "bg-gray-800 text-white",
+    badgeColor: "bg-muted-foreground/80 text-background",
     image: "https://images.unsplash.com/photo-1720247520862-7e4b14176fa8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb250ZW1wb3JhcnklMjBsaXZpbmclMjByb29tfGVufDF8fHx8MTc2NDIzMzI4NXww&ixlib=rb-4.1.0&q=80&w=1080",
   },
   {
@@ -83,7 +83,7 @@ const templates: TemplateItem[] = [
     description: "Exclusive coastal property",
     uses: "1.8k",
     badge: "Luxury",
-    badgeColor: "bg-black text-white",
+    badgeColor: "bg-foreground/90 text-background",
     image: "https://images.unsplash.com/photo-1704428382583-c9c7c1e55d94?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBiZWRyb29tJTIwZGVzaWdufGVufDF8fHx8MTc2NDIzMzQ4N3ww&ixlib=rb-4.1.0&q=80&w=1080",
   },
   {
@@ -92,7 +92,7 @@ const templates: TemplateItem[] = [
     description: "Compact living space",
     uses: "4.2k",
     badge: "Budget",
-    badgeColor: "bg-blue-600 text-white",
+    badgeColor: "bg-primary/80 text-primary-foreground",
     image: "https://images.unsplash.com/photo-1713420560043-cc218e86cc86?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx1cmJhbiUyMGFwYXJ0bWVudCUyMGRlc2lnbnxlbnwxfHx8fDE3NjQzMjM2ODF8MA&ixlib=rb-4.1.0&q=80&w=1080",
   },
   {
@@ -101,7 +101,7 @@ const templates: TemplateItem[] = [
     description: "City center residence",
     uses: "2.3k",
     badge: "Standard",
-    badgeColor: "bg-gray-800 text-white",
+    badgeColor: "bg-muted-foreground/80 text-background",
     image: "https://images.unsplash.com/photo-1567016376408-0226e4d0c1ea?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtaW5pbWFsaXN0JTIwaW50ZXJpb3J8ZW58MXx8fHwxNzY0MjQwMTk4fDA&ixlib=rb-4.1.0&q=80&w=1080",
   },
 ];
@@ -178,18 +178,18 @@ export function TemplatesPage({ onOpenEditor }: TemplatesPageProps) {
   });
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a]">
+    <div className="min-h-screen" style={{ background: 'var(--page-bg)' }}>
       <div className="max-w-[1440px] mx-auto px-6 py-8">
         {/* Header Section */}
         <div className="mb-8">
           <div className="flex items-start justify-between mb-6">
             <div>
-              <h1 className="mb-2 text-white">Template Gallery</h1>
-              <p className="text-gray-400">
+              <h1 className="mb-2 text-foreground">Template Gallery</h1>
+              <p className="text-muted-foreground">
                 Choose from our curated collection of professional infographic templates
               </p>
             </div>
-            <Button className="gap-2 bg-white text-black hover:bg-gray-100" onClick={() => onOpenEditor?.()}>
+            <Button className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => onOpenEditor?.()}>
               <Plus className="w-4 h-4" />
               Create Blank
             </Button>
@@ -201,13 +201,13 @@ export function TemplatesPage({ onOpenEditor }: TemplatesPageProps) {
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
               <Input
                 placeholder="Search templates..."
-                className="pl-11 h-11 bg-white/5 border-white/10 text-white placeholder:text-gray-500"
+                className="pl-11 h-11 bg-input-background border-border text-foreground placeholder:text-muted-foreground"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
             <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger className="w-[180px] h-11 bg-white/5 border-white/10 text-white">
+              <SelectTrigger className="w-[180px] h-11 bg-input-background border-border text-foreground">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -219,7 +219,7 @@ export function TemplatesPage({ onOpenEditor }: TemplatesPageProps) {
               </SelectContent>
             </Select>
             <Select value={selectedStyle} onValueChange={setSelectedStyle}>
-              <SelectTrigger className="w-[140px] h-11 bg-white/5 border-white/10 text-white">
+              <SelectTrigger className="w-[140px] h-11 bg-input-background border-border text-foreground">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -234,7 +234,7 @@ export function TemplatesPage({ onOpenEditor }: TemplatesPageProps) {
               <Button
                 variant={showCustomOnly ? "default" : "outline"}
                 onClick={() => setShowCustomOnly(!showCustomOnly)}
-                className="h-11 border-white/20 text-white"
+                className="h-11 border-border text-foreground"
               >
                 My Templates ({customTemplates.length})
               </Button>
@@ -248,7 +248,7 @@ export function TemplatesPage({ onOpenEditor }: TemplatesPageProps) {
             filteredTemplates.map((template) => (
               <div
                 key={template.id}
-                className="bg-white/5 backdrop-blur-xl rounded-xl border border-white/10 overflow-hidden hover:shadow-lg transition-shadow"
+                className="glass rounded-2xl border border-border overflow-hidden hover:shadow-lg transition-shadow"
               >
                 {/* Template Image */}
                 <div className="relative aspect-[4/3] overflow-hidden">
@@ -281,19 +281,19 @@ export function TemplatesPage({ onOpenEditor }: TemplatesPageProps) {
 
                 {/* Template Info */}
                 <div className="p-4">
-                  <h3 className="mb-1 text-white">{template.title}</h3>
-                  <p className="text-xs text-gray-400 mb-3">
+                  <h3 className="mb-1 text-foreground">{template.title}</h3>
+                  <p className="text-xs text-muted-foreground mb-3">
                     {template.description}
                   </p>
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-400">
+                    <span className="text-xs text-muted-foreground">
                       {template.uses} {template.isCustom ? '' : 'uses'}
                     </span>
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="text-emerald-400 hover:text-emerald-300 h-8"
-                      onClick={() => onOpenEditor?.((template.isCustom || (template as { isApiTemplate?: boolean }).isApiTemplate) ? String(template.id) : undefined)}
+                      className="text-primary hover:text-primary/80 h-8"
+                      onClick={() => onOpenEditor?.(String(template.id))}
                     >
                       Use Template
                     </Button>
@@ -303,7 +303,7 @@ export function TemplatesPage({ onOpenEditor }: TemplatesPageProps) {
             ))
           ) : (
             <div className="col-span-full flex flex-col items-center justify-center py-16">
-              <p className="text-gray-400 mb-4">
+              <p className="text-muted-foreground mb-4">
                 {showCustomOnly && customTemplates.length === 0
                   ? "No custom templates yet. Save a design as template!"
                   : "No templates found matching your criteria"}

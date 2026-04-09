@@ -159,7 +159,7 @@ export function FloatingToolbar({
     <>
       <div 
         ref={toolbarRef}
-        className="fixed top-1/2 left-4 z-50 flex flex-col items-center gap-2"
+        className="fixed top-1/2 left-4 z-[10050] flex flex-col items-center gap-2"
         style={{
           transform: `translateY(-50%) translateX(${toolbarOffset}px)`,
           transition: 'transform 300ms',
@@ -234,11 +234,16 @@ export function FloatingToolbar({
           {!showContextualToolbar && (
             <>
               <ToolDivider />
-              <DropdownMenu>
+              <DropdownMenu modal={false}>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <DropdownMenuTrigger asChild>
-                      <button className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-gray-100 text-gray-600 transition-colors">
+                      <button
+                        type="button"
+                        aria-label="Add element"
+                        aria-haspopup="menu"
+                        className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-gray-100 text-gray-600 transition-colors"
+                      >
                         <Plus className="w-5 h-5" strokeWidth={2} />
                       </button>
                     </DropdownMenuTrigger>
@@ -247,15 +252,29 @@ export function FloatingToolbar({
                     Add Element
                   </TooltipContent>
                 </Tooltip>
-                <DropdownMenuContent side="right" align="start" sideOffset={8} className="w-56 rounded-xl p-1.5 shadow-xl max-h-[80vh] overflow-y-auto">
+                <DropdownMenuContent
+                  side="right"
+                  align="start"
+                  sideOffset={8}
+                  className="z-[10060] w-56 rounded-xl p-1.5 shadow-xl max-h-[80vh] overflow-y-auto"
+                  aria-label="Add element menu"
+                >
                   <DropdownMenuLabel className="px-2 py-1.5 text-xs font-semibold text-gray-500 uppercase">
                     Basic
                   </DropdownMenuLabel>
-                  <DropdownMenuItem onClick={handleAddText} className="rounded-lg py-2 px-2.5 cursor-pointer">
+                  <DropdownMenuItem
+                    onClick={handleAddText}
+                    className="rounded-lg py-2 px-2.5 cursor-pointer"
+                    textValue="Text"
+                  >
                     <Type className="w-4 h-4 mr-2 text-blue-500" strokeWidth={2} />
                     <span className="text-sm">Text</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleAddImageClick} className="rounded-lg py-2 px-2.5 cursor-pointer">
+                  <DropdownMenuItem
+                    onClick={handleAddImageClick}
+                    className="rounded-lg py-2 px-2.5 cursor-pointer"
+                    textValue="Image"
+                  >
                     <ImageIcon className="w-4 h-4 mr-2 text-green-500" strokeWidth={2} />
                     <span className="text-sm">Image</span>
                   </DropdownMenuItem>
@@ -265,30 +284,34 @@ export function FloatingToolbar({
                   <DropdownMenuLabel className="px-2 py-1.5 text-xs font-semibold text-gray-500 uppercase">
                     Shapes
                   </DropdownMenuLabel>
-                  <DropdownMenuItem 
-                    onClick={() => handleAddShape('rectangle')} 
+                  <DropdownMenuItem
+                    onClick={() => handleAddShape('rectangle')}
                     className="rounded-lg py-2 px-2.5 cursor-pointer"
+                    textValue="Square"
                   >
                     <Square className="w-4 h-4 mr-2 text-orange-500" strokeWidth={2} />
                     <span className="text-sm">Square</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem 
-                    onClick={() => handleAddShape('circle')} 
+                  <DropdownMenuItem
+                    onClick={() => handleAddShape('circle')}
                     className="rounded-lg py-2 px-2.5 cursor-pointer"
+                    textValue="Circle"
                   >
                     <Circle className="w-4 h-4 mr-2 text-pink-500" strokeWidth={2} />
                     <span className="text-sm">Circle</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem 
-                    onClick={() => handleAddShape('triangle')} 
+                  <DropdownMenuItem
+                    onClick={() => handleAddShape('triangle')}
                     className="rounded-lg py-2 px-2.5 cursor-pointer"
+                    textValue="Triangle"
                   >
                     <Triangle className="w-4 h-4 mr-2 text-purple-500" strokeWidth={2} />
                     <span className="text-sm">Triangle</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem 
-                    onClick={() => handleAddShape('star')} 
+                  <DropdownMenuItem
+                    onClick={() => handleAddShape('star')}
                     className="rounded-lg py-2 px-2.5 cursor-pointer"
+                    textValue="Star"
                   >
                     <Star className="w-4 h-4 mr-2 text-yellow-500" strokeWidth={2} />
                     <span className="text-sm">Star</span>

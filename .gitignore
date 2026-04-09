@@ -4,6 +4,7 @@
 # Actual .env files are ignored (contain secrets)
 
 .env
+.env.test
 .env.local
 .env.production
 .env.development
@@ -30,7 +31,7 @@ api/.env.*.local
 .cursor/debug.log
 
 # Temporary work files (vibe coding artifacts)
-.work_temporary/
+.vibe_temporary/
 
 # Design metadata
 .dm/
@@ -42,3 +43,9 @@ dist
 **/dist
 __generated__
 **/__generated__
+
+# Playwright
+/playwright-report/
+/test-results/
+/blob-report/
+/playwright/.cache/

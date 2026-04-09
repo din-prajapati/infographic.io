@@ -30,7 +30,7 @@ function getEffectiveApiBaseUrl(): string {
 const API_URL = getEffectiveApiBaseUrl();
 
 // Helper function to build API URLs
-const getApiUrl = (path: string): string => {
+export const getApiUrl = (path: string): string => {
   if (API_URL) {
     // Cross-origin: use full URL
     return `${API_URL}${API_BASE}${path}`;
@@ -116,6 +116,7 @@ export interface Subscription {
   currentPeriodEnd: string;
   amount: number;
   currency: string;
+  createdAt?: string;
 }
 
 export interface Payment {
@@ -152,13 +153,16 @@ export const paymentsApi = {
     apiRequest<{ plans: any[] }>(getApiUrl('/payments/plans')),
 
   createSubscription: (data: CreateSubscriptionInput) =>
-    apiRequest<{ success: boolean; subscription: Subscription; provider: string; shortUrl?: string; checkoutUrl?: string }>(
+    apiRequest<{ success: boolean; subscription: Subscription; provider: string; providerSubscription?: { id: string }; shortUrl?: string; checkoutUrl?: string }>(
       getApiUrl('/payments/create-subscription'),
       { method: 'POST', body: JSON.stringify(data) }
     ),
 
   getSubscription: () =>
-    apiRequest<{ subscription: Subscription | null }>(getApiUrl('/payments/subscription')),
+    apiRequest<{
+      subscription: Subscription | null;
+      usage?: { current: number; limit: number };
+    }>(getApiUrl('/payments/subscription')),
 
   updatePlan: (planTier: string) =>
     apiRequest<{ success: boolean; subscription: Subscription }>(
@@ -562,4 +566,11 @@ export const usersApi = {
       getApiUrl(`/users/organization/members/${userId}`),
       { method: 'DELETE' }
     ),
+
+  /** Add an existing account to the org by email (backend: POST .../members/invite). */
+  inviteMemberByEmail: (email: string) =>
+    apiRequest<{ success: boolean; message: string }>(getApiUrl('/users/organization/members/invite'), {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    }),
 };

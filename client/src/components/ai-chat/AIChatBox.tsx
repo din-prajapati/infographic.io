@@ -695,8 +695,8 @@ export function AIChatBox({
   };
 
   const handleClose = () => {
-    setState({
-      isExpanded: false,
+    setState(prev => ({
+      ...prev,
       inputValue: "",
       selectedTemplate: null,
       selectedCategory: null,
@@ -707,7 +707,7 @@ export function AIChatBox({
       selectedChips: [],
       showPromptGrid: false,
       activeChipId: null,
-    });
+    }));
     setGenerationSteps([]);
     setResultVariations([]);
     setShowSuggestionsPanel(false);
@@ -869,20 +869,20 @@ export function AIChatBox({
   const shouldExpandHeight = hasActiveConversation || showHistoryView;
 
   return (
-    <AnimatePresence>
+    <>
       {isExpanded && (
         <motion.div
-          initial={{ height: 0, opacity: 0 }}
-          animate={{ height: "auto", opacity: 1 }}
-          exit={{ height: 0, opacity: 0 }}
-          transition={{
-            type: "spring",
-            stiffness: 300,
-            damping: 25,
-            duration: 0.5,
-          }}
-          className="absolute bottom-20 right-6 w-[800px] bg-white rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] overflow-hidden z-50 flex flex-col max-h-[calc(100vh-140px)]"
+          key="ai-chat-panel-shell"
+          id="ai-chat-panel"
+          role="dialog"
+          aria-modal={true}
+          aria-label="AI assistant"
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.2, ease: "easeOut" }}
+          className="absolute bottom-20 right-6 w-[800px] max-w-[calc(100vw-3rem)] bg-white rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] overflow-hidden z-[100] flex flex-col max-h-[min(560px,calc(100vh-140px))] min-h-0"
         >
+          <div className="flex flex-col flex-1 min-h-0">
           {/* Header */}
           <div className="px-4 pt-4 pb-2 shrink-0 border-b border-gray-200">
             <div className="flex items-center justify-between">
@@ -954,7 +954,7 @@ export function AIChatBox({
 
           {/* Main Content Area - Scrollable */}
           {showHistoryView ? (
-            <div className="flex-1 overflow-y-auto scrollbar-visible">
+            <div className="flex-1 min-h-0 overflow-y-auto scrollbar-visible">
               <ConversationHistoryView
                 conversations={conversations}
                 onSelectConversation={handleSelectConversationFromHistory}
@@ -1014,73 +1014,78 @@ export function AIChatBox({
               </div>
             </>
           ) : (
-            /* Default View - Not in active conversation */
-            <div className="flex-1 overflow-y-auto scrollbar-visible overflow-x-visible">
-              {/* Input Field */}
-              <AIChatInputField
-                value={state.inputValue}
-                onChange={handleInputChange}
-                onGenerate={handleGenerate}
-                selectedChips={state.selectedChips}
-                onRemoveChip={handleRemoveChip}
-                isGenerating={state.isGenerating}
-                onSuggestionsClick={() => setShowSuggestionsPanel(true)}
-                onQuickActionsClick={() => setShowQuickActionsPanel(true)}
-                onStylePresetsClick={() => setShowStylePresetsPanel(true)}
-                onUploadClick={() => setShowImageUploadPanel(true)}
-                lightbulbRef={lightbulbRef}
-                zapRef={zapRef}
-                paletteRef={paletteRef}
-                paperclipRef={paperclipRef}
-                conversationHistory={conversationHistory}
-                propertyType={propertyType}
-                priceRange={priceRange}
-                onMoreSuggestionsClick={() => setShowEnhancedSuggestions(true)}
-              />
+            /* Default View — scrollable middle, input pinned bottom so chips stay in reach on short viewports */
+            <div className="flex flex-col flex-1 min-h-0">
+              <div className="flex-1 min-h-0 overflow-y-auto overflow-x-visible scrollbar-visible">
+                {/* Category Chips (above fold before prompt) */}
+                {!state.isGenerating &&
+                  resultVariations.length === 0 &&
+                  state.selectedChips.length === 0 && (
+                    <div className="px-4 pt-3 pb-2">
+                      <CategoryChipList
+                        chips={categoryChips}
+                        selectedChips={state.selectedChips}
+                        onChipClick={handleChipClick}
+                      />
+                    </div>
+                  )}
 
-              {/* Category Chips */}
-              {!state.isGenerating &&
-                resultVariations.length === 0 &&
-                state.selectedChips.length === 0 && (
-                  <CategoryChipList
-                    chips={categoryChips}
-                    selectedChips={state.selectedChips}
-                    onChipClick={handleChipClick}
+                {/* Prompt Suggestion Grid */}
+                {!state.isGenerating &&
+                  resultVariations.length === 0 &&
+                  state.showPromptGrid &&
+                  currentSuggestions.length > 0 && (
+                    <PromptSuggestionGrid
+                      suggestions={currentSuggestions}
+                      onSuggestionClick={handleSuggestionClick}
+                    />
+                  )}
+
+                {/* Result Variations */}
+                {!state.isGenerating && resultVariations.length > 0 && (
+                  <ResultsVariations
+                    variations={resultVariations}
+                    selectedVariationId={selectedVariationId}
+                    onSelectVariation={setSelectedVariationId}
+                    onRegenerateAll={handleRegenerateAll}
+                    onEditVariation={handleEditVariation}
+                    onUseVariation={handleUseVariation}
                   />
                 )}
 
-              {/* Prompt Suggestion Grid */}
-              {!state.isGenerating &&
-                resultVariations.length === 0 &&
-                state.showPromptGrid &&
-                currentSuggestions.length > 0 && (
-                  <PromptSuggestionGrid
-                    suggestions={currentSuggestions}
-                    onSuggestionClick={handleSuggestionClick}
-                  />
-                )}
-
-              {/* Result Variations */}
-              {!state.isGenerating && resultVariations.length > 0 && (
-                <ResultsVariations
-                  variations={resultVariations}
-                  selectedVariationId={selectedVariationId}
-                  onSelectVariation={setSelectedVariationId}
-                  onRegenerateAll={handleRegenerateAll}
-                  onEditVariation={handleEditVariation}
-                  onUseVariation={handleUseVariation}
-                />
-              )}
-
-              {/* Error Message - only for system errors, not validation */}
-              {state.error && (
-                <div className="px-4 pb-3">
-                  <div className="p-2.5 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700 flex items-start gap-2">
-                    <span className="shrink-0 mt-0.5">&#9888;</span>
-                    <span>{state.error}</span>
+                {/* Error Message - only for system errors, not validation */}
+                {state.error && (
+                  <div className="px-4 pb-3">
+                    <div className="p-2.5 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700 flex items-start gap-2">
+                      <span className="shrink-0 mt-0.5">&#9888;</span>
+                      <span>{state.error}</span>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
+
+              <div className="shrink-0 border-t border-gray-200 bg-white">
+                <AIChatInputField
+                  value={state.inputValue}
+                  onChange={handleInputChange}
+                  onGenerate={handleGenerate}
+                  selectedChips={state.selectedChips}
+                  onRemoveChip={handleRemoveChip}
+                  isGenerating={state.isGenerating}
+                  onSuggestionsClick={() => setShowSuggestionsPanel(true)}
+                  onQuickActionsClick={() => setShowQuickActionsPanel(true)}
+                  onStylePresetsClick={() => setShowStylePresetsPanel(true)}
+                  onUploadClick={() => setShowImageUploadPanel(true)}
+                  lightbulbRef={lightbulbRef}
+                  zapRef={zapRef}
+                  paletteRef={paletteRef}
+                  paperclipRef={paperclipRef}
+                  conversationHistory={conversationHistory}
+                  propertyType={propertyType}
+                  priceRange={priceRange}
+                  onMoreSuggestionsClick={() => setShowEnhancedSuggestions(true)}
+                />
+              </div>
             </div>
           )}
 
@@ -1116,8 +1121,9 @@ export function AIChatBox({
             propertyType={propertyType}
             priceRange={priceRange}
           />
+          </div>
         </motion.div>
       )}
-    </AnimatePresence>
+    </>
   );
 }

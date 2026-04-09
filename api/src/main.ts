@@ -1,3 +1,11 @@
+// Load env and build DATABASE_URL from PG* vars (must run before any DB code)
+import { config } from 'dotenv';
+import { resolve } from 'path';
+import { ensureDatabaseUrlFromPgEnv } from './common/ensure-database-url';
+
+[resolve(process.cwd(), '.env'), resolve(process.cwd(), '../.env')].forEach((p) => config({ path: p }));
+ensureDatabaseUrlFromPgEnv();
+
 // Suppress Prisma Rust engine E57P01 stderr output (Neon auto-pause reconnections)
 if (typeof process !== 'undefined' && process.stderr) {
   const originalStderrWrite = process.stderr.write.bind(process.stderr);
@@ -22,6 +30,7 @@ if (typeof process !== 'undefined' && process.stderr) {
   };
 }
 
+import './instrument';
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';

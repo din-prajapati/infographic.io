@@ -20,16 +20,16 @@ export function AppHeader({ activeTab, onTabChange }: AppHeaderProps) {
   };
 
   return (
-    <div className="h-16 border-b border-white/10 bg-[#0a0a0a]">
+    <div className="h-16 border-b border-border glass">
       <div className="flex items-center justify-between h-full px-6">
         {/* Logo & Brand */}
         <Link href="/templates" className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-white/10 border border-white/20 flex items-center justify-center">
-            <Sparkles className="w-4 h-4 text-white" />
+          <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center">
+            <Sparkles className="w-4 h-4 text-primary" />
           </div>
           <div className="text-lg">
-            <span className="font-semibold text-white">Infograph</span>
-            <span className="text-gray-500">.ai</span>
+            <span className="font-semibold text-foreground">Infograph</span>
+            <span className="text-muted-foreground">.ai</span>
           </div>
         </Link>
 
@@ -42,8 +42,8 @@ export function AppHeader({ activeTab, onTabChange }: AppHeaderProps) {
                 px-1 py-1 border-b-2 transition-colors text-sm
                 ${
                   currentTab === "templates"
-                    ? "border-white text-white font-medium"
-                    : "border-transparent text-gray-400 hover:text-white"
+                    ? "border-primary text-foreground font-medium"
+                    : "border-transparent text-muted-foreground hover:text-foreground"
                 }
               `}
             >
@@ -57,8 +57,8 @@ export function AppHeader({ activeTab, onTabChange }: AppHeaderProps) {
                 px-1 py-1 border-b-2 transition-colors text-sm
                 ${
                   currentTab === "my-designs"
-                    ? "border-white text-white font-medium"
-                    : "border-transparent text-gray-400 hover:text-white"
+                    ? "border-primary text-foreground font-medium"
+                    : "border-transparent text-muted-foreground hover:text-foreground"
                 }
               `}
             >
@@ -72,8 +72,8 @@ export function AppHeader({ activeTab, onTabChange }: AppHeaderProps) {
                 px-1 py-1 border-b-2 transition-colors text-sm
                 ${
                   currentTab === "account"
-                    ? "border-white text-white font-medium"
-                    : "border-transparent text-gray-400 hover:text-white"
+                    ? "border-primary text-foreground font-medium"
+                    : "border-transparent text-muted-foreground hover:text-foreground"
                 }
               `}
             >

@@ -17,6 +17,8 @@ import {
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiSecurity, ApiQuery } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { PaymentsService } from '../services/payments.service';
+import { UsageAnalyticsService } from '../services/usage-analytics.service';
+import { PLAN_CONFIG } from '@shared/schema';
 import {
   CreateSubscriptionDto,
   CancelSubscriptionDto,
@@ -31,7 +33,10 @@ import { PlanTier } from '@prisma/client';
 export class PaymentsController {
   private readonly logger = new Logger(PaymentsController.name);
 
-  constructor(@Inject(PaymentsService) private readonly paymentsService: PaymentsService) {}
+  constructor(
+    @Inject(PaymentsService) private readonly paymentsService: PaymentsService,
+    @Inject(UsageAnalyticsService) private readonly usageAnalyticsService: UsageAnalyticsService,
+  ) {}
 
   @Get('provider-info')
   @ApiOperation({ summary: 'Get payment provider configuration for frontend' })
@@ -67,6 +72,7 @@ export class PaymentsController {
         success: true,
         subscription: result.subscription,
         provider: result.provider,
+        providerSubscription: result.providerSubscription,
         shortUrl: result.shortUrl,
         checkoutUrl: result.checkoutUrl,
       };
@@ -103,8 +109,21 @@ export class PaymentsController {
   @ApiOperation({ summary: 'Get current subscription for authenticated user' })
   async getSubscription(@Req() req: any) {
     const userId = req.user.id;
+    const organizationId = req.user.organizationId || userId;
     const subscription = await this.paymentsService.getCurrentSubscription(userId);
-    return { subscription };
+
+    // Include monthly usage for billing display
+    let usage: { current: number; limit: number } | undefined;
+    try {
+      const { count } = await this.usageAnalyticsService.getCurrentMonthUsage(userId, organizationId);
+      const planTier = (subscription?.planTier || 'FREE') as keyof typeof PLAN_CONFIG;
+      const planConfig = PLAN_CONFIG[planTier] || PLAN_CONFIG.FREE;
+      usage = { current: count, limit: planConfig.limit };
+    } catch {
+      usage = undefined;
+    }
+
+    return { subscription, usage };
   }
 
   @Post('update-plan')
@@ -176,11 +195,14 @@ export class PaymentsController {
       internalEvent = stripeEventMap[event.type] || event.type;
     }
 
-    console.log(`Webhook received from ${providerType}:`, event.type || event.event, `-> ${internalEvent}`);
+    this.logger.log(
+      `Webhook received from ${providerType}: ${event.type || event.event} -> ${internalEvent}`,
+    );
 
     // Handle events based on internal event type
     switch (internalEvent) {
       case 'subscription.activated':
+      case 'subscription.authenticated': // RazorPay test mode: fired instead of subscription.activated
         await this.paymentsService.handleSubscriptionActivated(event, providerType);
         break;
       case 'subscription.charged':
@@ -192,8 +214,14 @@ export class PaymentsController {
       case 'payment.failed':
         await this.paymentsService.handlePaymentFailed(event, providerType);
         break;
+      case 'payment.authorized':
+      case 'payment.captured':
+        // Razorpay sends these for mandate / token flows (e.g. ₹5 card step). Billing truth is
+        // subscription.charged (first invoice + ACTIVE + org); subscription.authenticated is logged only.
+        this.logger.debug(`Webhook acknowledged: ${internalEvent} (no handler required)`);
+        break;
       default:
-        console.log(`Unhandled webhook event: ${internalEvent}`);
+        this.logger.log(`Unhandled webhook event: ${internalEvent}`);
     }
 
     return {

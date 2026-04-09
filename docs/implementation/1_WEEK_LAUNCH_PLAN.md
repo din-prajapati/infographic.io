@@ -4,6 +4,17 @@
 > **Focus:** Core user journey - Create → Edit → Save → Export  
 > **Status:** Ready to execute
 
+### Related documents
+
+| Document | Purpose |
+|----------|---------|
+| [1_WEEK_LAUNCH_TRACKER.md](./1_WEEK_LAUNCH_TRACKER.md) | Day-by-day **verification** and test steps vs this plan |
+| [MVP_LAUNCH_TRACKER.md](../MVP_LAUNCH_TRACKER.md) | Executive MVP + phase tracker |
+| [NEXT_PHASE_DEVELOPMENT.md](../NEXT_PHASE_DEVELOPMENT.md) | Post-MVP backlog (includes **§6 Organization invite flow**) |
+| [ORGANIZATION_INVITE_FLOW.md](../ORGANIZATION_INVITE_FLOW.md) | Draft **full** org invite (token/email) — builds on Account → Organization |
+| [PAYMENT_TEST_CHECKLIST.md](../PAYMENT_TEST_CHECKLIST.md) | RazorPay checkout & webhooks |
+| [PAYMENT_AUTOMATED_TESTING.md](../PAYMENT_AUTOMATED_TESTING.md) | Unit / integration / API smoke / E2E runbook |
+
 ---
 
 ## 📋 Pre-Launch Setup (Before Day 1)

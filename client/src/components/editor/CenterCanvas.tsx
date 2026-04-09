@@ -15,7 +15,7 @@ import { ImageElement as ImageElementType } from "../../lib/canvasTypes";
 import { usePanelState } from "../../lib/panelState";
 import { loadTemplateById } from "../../lib/storage";
 import { restoreCanvasData } from "../../lib/canvasState";
-import { useToast } from "../../hooks/use-toast";
+import { toast } from "sonner";
 
 export function CenterCanvas() {
   
@@ -24,8 +24,6 @@ export function CenterCanvas() {
   const [isPanning, setIsPanning] = useState(false);
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
   const { closePanel } = usePanelState();
-  const { toast } = useToast();
-  
   const elements = useCanvasStore((state) => state.elements);
   const selectedElementIds = useCanvasStore((state) => state.selectedElementIds);
   const selectElement = useCanvasStore((state) => state.selectElement);
@@ -46,7 +44,7 @@ export function CenterCanvas() {
   const isPreviewMode = false;
 
   const handleAIButtonClick = () => {
-    setIsAIChatExpanded(!isAIChatExpanded);
+    setIsAIChatExpanded(prev => !prev);
   };
 
   const handleAIChatClose = () => {
@@ -63,16 +61,13 @@ export function CenterCanvas() {
         const success = restoreCanvasData(fullTemplate.canvasData);
         
         if (success) {
-          toast({
-            title: "Template loaded",
+          toast.success("Template loaded", {
             description: `"${template.name}" has been loaded into the canvas`,
           });
           setIsAIChatExpanded(false);
         } else {
-          toast({
-            title: "Failed to load template",
+          toast.error("Failed to load template", {
             description: "The template data could not be restored",
-            variant: "destructive",
           });
         }
       } else if (template.previewImage) {
@@ -114,36 +109,28 @@ export function CenterCanvas() {
           filters: { brightness: 100, contrast: 100, saturation: 100 },
         };
         addElement(imageElement);
-        toast({
-          title: "AI design loaded",
+        toast.success("AI design loaded", {
           description: `"${template.name}" has been added to the canvas`,
         });
         setIsAIChatExpanded(false);
       } else {
-        toast({
-          title: "Template not found",
+        toast.error("Template not found", {
           description: `Could not load template "${template.name}"`,
-          variant: "destructive",
         });
       }
     } catch (error) {
       console.error("Error loading template:", error);
-      toast({
-        title: "Error loading template",
+      toast.error("Error loading template", {
         description: error instanceof Error ? error.message : "An unexpected error occurred",
-        variant: "destructive",
       });
     }
   };
 
   const handleCanvasClick = (e: React.MouseEvent) => {
-    // Clear selection when clicking on empty canvas area
-    const target = e.target as HTMLElement;
-    if (target.getAttribute('data-canvas-content') === 'true') {
-      clearSelection();
-      // Close any open left panels when clicking on empty canvas
-      // closePanel();
-    }
+    const root = e.currentTarget as HTMLElement;
+    if (root.getAttribute("data-canvas-content") !== "true") return;
+    // Bubbled clicks from empty canvas clear selection; element selects use stopPropagation.
+    clearSelection();
   };
 
   const handleElementSelect = (elementId: string, event: React.MouseEvent) => {
@@ -198,10 +185,10 @@ export function CenterCanvas() {
           cursor: activeTool === 'hand' ? (isPanning ? 'grabbing' : 'grab') : 'default'
         }}
       >
-        {/* Canvas Container with Shadow */}
+        {/* Canvas Container with Shadow - z-index ensures it stays behind AI ChatBox */}
         <div
           data-canvas-container
-          className="bg-white rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] relative"
+          className="bg-white rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] relative z-0"
           style={{
             width: `${canvasWidth}px`,
             height: `${canvasHeight}px`,
@@ -245,6 +232,9 @@ export function CenterCanvas() {
               height: '100%',
             }}
             data-canvas-content="true"
+            data-testid="design-canvas"
+            role="application"
+            aria-label="Design canvas"
             onClick={handleCanvasClick}
           >
             {/* Render all canvas elements */}
@@ -759,7 +749,13 @@ export function CenterCanvas() {
       <div className="absolute bottom-6 right-6">
         <Button
           onClick={handleAIButtonClick}
-          aria-label="Open AI Chat"
+          aria-label={
+            isAIChatExpanded ? "Close AI Chat" : "Open AI Chat"
+          }
+          aria-expanded={isAIChatExpanded}
+          aria-controls={
+            isAIChatExpanded ? "ai-chat-panel" : undefined
+          }
           className="h-14 w-14 rounded-full bg-gradient-to-br from-purple-500 to-purple-700 hover:from-purple-600 hover:to-purple-800 shadow-lg hover:shadow-xl transition-all"
         >
           <Sparkles className="w-10 h-10 animate-pulse" />
