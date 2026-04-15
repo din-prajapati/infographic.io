@@ -69,12 +69,12 @@ export function ZoomControls() {
   }, []);
 
   return (
-    <div className="flex items-center gap-1 bg-gray-800 rounded-lg px-2 py-1 border border-gray-700">
+    <div className="flex items-center gap-1 bg-muted rounded-lg px-2 py-1 border border-border">
       {/* Zoom Out Button */}
       <Button
         variant="ghost"
         size="icon"
-        className="h-7 w-7 text-gray-300 hover:text-white hover:bg-gray-700"
+        className="h-7 w-7 text-foreground hover:text-foreground hover:bg-accent"
         onClick={handleZoomOut}
         disabled={zoomPercentage <= 10}
       >
@@ -86,7 +86,7 @@ export function ZoomControls() {
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
-            className="h-7 px-3 text-gray-300 hover:text-white hover:bg-gray-700 text-sm font-medium gap-1"
+            className="h-7 px-3 text-foreground hover:text-foreground hover:bg-accent text-sm font-medium gap-1"
           >
             <span>{zoomPercentage}%</span>
             <ChevronDown className="w-3 h-3" />
@@ -121,7 +121,7 @@ export function ZoomControls() {
       <Button
         variant="ghost"
         size="icon"
-        className="h-7 w-7 text-gray-300 hover:text-white hover:bg-gray-700"
+        className="h-7 w-7 text-foreground hover:text-foreground hover:bg-accent"
         onClick={handleZoomIn}
         disabled={zoomPercentage >= 400}
       >
