@@ -61,14 +61,14 @@ function ToolButton({
   let classes = "w-10 h-10 flex items-center justify-center rounded-xl transition-all duration-150 ";
   
   if (disabled) {
-    classes += "opacity-40 cursor-not-allowed text-gray-400";
+    classes += "opacity-40 cursor-not-allowed text-muted-foreground";
   } else if (variant === 'danger') {
-    classes += "hover:bg-red-50 text-gray-500 hover:text-red-500 cursor-pointer";
+    classes += "hover:bg-red-50 text-muted-foreground hover:text-red-500 cursor-pointer";
   } else if (isActive) {
-    // Selected: slightly darker than hover (bg-gray-200 vs bg-gray-100)
-    classes += "bg-gray-200 text-black shadow-md cursor-pointer";
+    // Selected: slightly darker than hover
+    classes += "bg-accent text-foreground shadow-md cursor-pointer";
   } else {
-    classes += "hover:bg-gray-100 text-gray-600 cursor-pointer";
+    classes += "hover:bg-muted text-muted-foreground cursor-pointer";
   }
 
   return (
@@ -91,7 +91,7 @@ function ToolButton({
 
 // Divider
 function ToolDivider() {
-  return <div className="w-6 h-px bg-gray-200 my-1" />;
+  return <div className="w-6 h-px bg-border my-1" />;
 }
 
 export function FloatingToolbar({ 
@@ -174,9 +174,9 @@ export function FloatingToolbar({
             <button
               onClick={() => togglePanel('layers')}
               className={`w-10 h-10 flex items-center justify-center rounded-xl shadow-lg transition-all duration-150 ${
-                isLayersActive 
-                  ? 'bg-gray-200 text-black' 
-                  : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'
+                isLayersActive
+                  ? 'bg-accent text-foreground'
+                  : 'bg-background text-muted-foreground hover:bg-muted border border-border'
               }`}
             >
               <Layers className="w-5 h-5" strokeWidth={1.8} />
@@ -188,7 +188,7 @@ export function FloatingToolbar({
         </Tooltip>
 
         {/* Main Toolbar */}
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-1.5 flex flex-col items-center">
+        <div className="bg-background rounded-2xl shadow-lg border border-border p-1.5 flex flex-col items-center">
           {/* Selection Tools */}
           <ToolButton
             onClick={() => setActiveTool("select")}
@@ -242,7 +242,7 @@ export function FloatingToolbar({
                         type="button"
                         aria-label="Add element"
                         aria-haspopup="menu"
-                        className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-gray-100 text-gray-600 transition-colors"
+                        className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-muted text-muted-foreground transition-colors"
                       >
                         <Plus className="w-5 h-5" strokeWidth={2} />
                       </button>
@@ -259,7 +259,7 @@ export function FloatingToolbar({
                   className="z-[10060] w-56 rounded-xl p-1.5 shadow-xl max-h-[80vh] overflow-y-auto"
                   aria-label="Add element menu"
                 >
-                  <DropdownMenuLabel className="px-2 py-1.5 text-xs font-semibold text-gray-500 uppercase">
+                  <DropdownMenuLabel className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase">
                     Basic
                   </DropdownMenuLabel>
                   <DropdownMenuItem
@@ -281,7 +281,7 @@ export function FloatingToolbar({
 
                   <DropdownMenuSeparator className="my-1" />
 
-                  <DropdownMenuLabel className="px-2 py-1.5 text-xs font-semibold text-gray-500 uppercase">
+                  <DropdownMenuLabel className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase">
                     Shapes
                   </DropdownMenuLabel>
                   <DropdownMenuItem
