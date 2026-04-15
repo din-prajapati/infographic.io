@@ -1,7 +1,9 @@
 # Issues Report — Single Source of Truth
 
-**Last Updated:** April 5, 2026  
+**Last Updated:** April 10, 2026  
 **Scope:** AI Chat Box, RazorPay Integration, Editor & AI ChatBox
+
+**Payment QA (2026-04-10):** [PAYMENT_TEST_CHECKLIST.md](./PAYMENT_TEST_CHECKLIST.md) **TC-X-CLOSE-02** — no new **PT-xx** rows required this session; **PT-06** (BROKERAGE plan IDs) remains **Deferred**.
 
 ---
 

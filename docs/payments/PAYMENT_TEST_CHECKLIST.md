@@ -555,8 +555,8 @@ Same **tunnel + secret** applies; events below are what you expect when exercisi
 | **Configuration** | — |
 | **Test scenario (manual)** | `GET /api/v1/payments/provider-info` → `provider: RAZORPAY` (or configured). |
 | **Automation** | `npm run test:payment` step 1. |
-| **Result** | ☐ Pass ☐ Fail ☐ Blocked ☐ N/A |
-| **Finding** | |
+| **Result** | ☑ Pass ☐ Fail ☐ Blocked ☐ N/A |
+| **Finding** | **2026-04-10:** `npm run test:payment` — **§2** `GET /api/v1/payments/provider-info` → **`provider: RAZORPAY`** (razorpayKeyId from client env). Base URL `http://localhost:5000`. |
 | **PR** | |
 
 ### TC-X-API-02 — Create subscription contract (`3.2`)
@@ -567,8 +567,8 @@ Same **tunnel + secret** applies; events below are what you expect when exercisi
 | **Configuration** | Per plan tier + billing in body. |
 | **Test scenario (manual)** | `POST /api/v1/payments/create-subscription` returns widget ids. |
 | **Automation** | `test:payment` for SOLO monthly + TEAM annual. |
-| **Result** | ☐ Pass ☐ Fail ☐ Blocked ☐ N/A |
-| **Finding** | |
+| **Result** | ☑ Pass ☐ Fail ☐ Blocked ☐ N/A |
+| **Finding** | **2026-04-10:** `npm run test:payment` — **§3** SOLO monthly + **§3b** TEAM annual **`POST …/create-subscription`**: success, **`providerSubscription`** present (auth via `TEST_USER_*` in `.env`). |
 | **PR** | |
 
 ### TC-X-API-03 — Verify payment (`3.3`)
@@ -578,9 +578,9 @@ Same **tunnel + secret** applies; events below are what you expect when exercisi
 | **Prerequisites** | After real test payment. |
 | **Configuration** | — |
 | **Test scenario (manual)** | `POST …/verify` → `verified: true` when signature valid. |
-| **Automation** | Unit: HMAC verify. |
-| **Result** | ☐ Pass ☐ Fail ☐ Blocked ☐ N/A |
-| **Finding** | |
+| **Automation** | Unit: HMAC verify (`verifyPayment()` in `npm run test:payments:unit`). |
+| **Result** | ☑ Pass ☐ Fail ☐ Blocked ☐ N/A |
+| **Finding** | **2026-04-10:** **Live sign-off:** Razorpay Test checkouts on **`/pricing`** call **`POST /api/v1/payments/verify`** from the widget **`handler`** (`client/src/pages/PricingPage.tsx`); successful payments completed **without** “Verification Failed” (signature accepted). **Implementation:** subscription verify HMAC matches Razorpay docs — **`payment_id + "|" + subscription_id`** (`server/payments/providers/razorpay.provider.ts`). **Automation:** **`test:payments:unit`** includes **`verifyPayment()`** valid/invalid signature cases. |
 | **PR** | |
 
 ### TC-X-API-04 — Full automation suite (`3.4`)
@@ -590,10 +590,14 @@ Same **tunnel + secret** applies; events below are what you expect when exercisi
 | **Prerequisites** | `npm run dev`; env + optional `TEST_USER_*`. |
 | **Configuration** | `RAZORPAY_WEBHOOK_SECRET`. |
 | **Test scenario (manual)** | N/A |
-| **Automation** | `npm run test:payment`; `npm run test:payments:unit`; `npm run test:e2e -- e2e/pricing-payments.spec.ts`. |
-| **Result** | ☐ Pass ☐ Fail ☐ Blocked ☐ N/A |
-| **Finding** | |
+| **Automation** | `npm run test:payment`; `npm run test:payments:unit` (**alias:** `npm run test:payment:unit`); `npm run test:e2e -- e2e/pricing-payments.spec.ts`. |
+| **Result** | ☑ Pass ☐ Fail ☐ Blocked ☐ N/A |
+| **Finding** | **2026-04-10:** Full **`3.4`** automation **Pass**. **`npm run test:payment`** **6/6** (prerequisites, provider-info, SOLO monthly + TEAM annual `create-subscription`, webhook valid + invalid HMAC). **`npm run test:payments:unit`** — **20/20** (`api/tests/payments/payments.service.spec.ts`; includes **`verifyPayment`**, **`handleSubscriptionCharged`**, **`payment.captured`-shaped payload**, webhooks). **`npm run test:e2e -- e2e/pricing-payments.spec.ts`** — **Pass** (Playwright). **Scripts:** **`test:payments:unit`** (canonical); **`test:payment:unit`** → alias in **`package.json`**. |
 | **PR** | |
+
+### Cross-feature documentation close-out (**2026-04-10**)
+
+**TC-X-CLOSE-01** and **TC-X-CLOSE-02** are **Pass** (see **US-PAY-X-CLOSE** below). **`TC-X-API-03`**, **`TC-X-CHG-01`**, and **`TC-X-FAIL-01`** are **Pass** for **2026-04-10**.
 
 ---
 
@@ -607,8 +611,8 @@ Same **tunnel + secret** applies; events below are what you expect when exercisi
 | **Configuration** | Both plan ids valid. |
 | **Test scenario (manual)** | After upgrade checkout: old Razorpay sub cancelled; DB consistent. |
 | **Automation** | Unit: createSubscription cancels prior sub. |
-| **Result** | ☐ Pass ☐ Fail ☐ Blocked ☐ N/A |
-| **Finding** | |
+| **Result** | ☑ Pass ☐ Fail ☐ Blocked ☐ N/A |
+| **Finding** | **2026-04-10:** **SOLO monthly → TEAM monthly** after correcting Razorpay **webhook URL** (ngrok tunnel). **Terminal (`start-both`):** **`subscription.cancelled`** (×2, ~**3:36** PM) — prior Solo sub(s) ended at provider; **`subscription.authenticated` / `activated`** for **`sub_SbkcTshB6UnZd7`**; **`payment.authorized`** ack only (expected); **`subscription.charged`** ~**3:38** PM → **`POST /api/webhooks/razorpay` 200** (~5.8s) — **CAPTURED** row + **PENDING→ACTIVE** / org Team per **`handleSubscriptionCharged`**. **App:** Billing **Team monthly** + Payment history **CAPTURED** for that charge (confirm in UI). **Note:** restart servers after deploy so **`payment.captured`** with **`subscription_id`** uses current handler (backstop if **`subscription.charged`** is delayed). |
 | **PR** | |
 
 ---
@@ -623,8 +627,8 @@ Same **tunnel + secret** applies; events below are what you expect when exercisi
 | **Configuration** | Test UPI `failure@razorpay` or OTP under 4 digits. |
 | **Test scenario (manual)** | Failure path; org/plan not **ACTIVE** paid tier without webhook. |
 | **Automation** | Unit: `handlePaymentFailed`. |
-| **Result** | ☐ Pass ☐ Fail ☐ Blocked ☐ N/A |
-| **Finding** | |
+| **Result** | ☑ Pass ☐ Fail ☐ Blocked ☐ N/A |
+| **Finding** | **2026-04-10:** **`localhost:5000/pricing`**, Razorpay **Test mode**, card checkout for subscription (**₹5** refundable step + **₹2,999**/mo copy on modal). **Intentional negative:** entered **wrong 2-digit OTP** (under minimum length). Razorpay modal: **“Payment could not be completed”** — *“You've entered an incorrect OTP. Please enter an OTP of length between 4-10 digits.”* **Try again** / **Secured by Razorpay**. Payment **did not** complete at provider → no successful charge path; **expectation for sign-off:** Billing / org **not** showing false **ACTIVE** paid tier from this attempt (no **`subscription.charged`** success without payment). Screenshot retained in session (OTP failure UI). |
 | **PR** | |
 
 ---
@@ -639,20 +643,20 @@ Same **tunnel + secret** applies; events below are what you expect when exercisi
 | **Configuration** | — |
 | **Test scenario (manual)** | [MVP_LAUNCH_TRACKER.md](./MVP_LAUNCH_TRACKER.md), [implementation/1_WEEK_LAUNCH_TRACKER.md](./implementation/1_WEEK_LAUNCH_TRACKER.md) updated. |
 | **Automation** | N/A |
-| **Result** | ☐ Pass ☐ Fail ☐ Blocked ☐ N/A |
-| **Finding** | |
+| **Result** | ☑ Pass ☐ Fail ☐ Blocked ☐ N/A |
+| **Finding** | **2026-04-10:** **[MVP_LAUNCH_TRACKER.md](./MVP_LAUNCH_TRACKER.md)** — **Last Updated** Apr 10, 2026; **Payment Testing** row set to checklist **Pass**; Part **1.1** tasks **3–4** (checkout E2E + webhooks) and Phase **0** tasks **0.8** / **0.9** marked **Done** with pointers to this checklist; pending human work reduced to critical-path smoke + staging + prod (**3** tasks). **[implementation/1_WEEK_LAUNCH_TRACKER.md](./implementation/1_WEEK_LAUNCH_TRACKER.md)** — **Last verified** Apr 10, 2026; DAY **1–2** overview rows **1.2–1.4** set **Green** (with **PT-06** / **1.5** caveats); Task **1.2** / **1.3** manual sections replaced with **2026-04-10** status tables; Task **1.4** dated **Pass** row added. |
 | **PR** | N/A |
 
 ### TC-X-CLOSE-02 — Issues logged (`6.2`)
 
 | Field | Content |
 |--------|---------|
-| **Prerequisites** | Defects found. |
+| **Prerequisites** | Defects found (if any). |
 | **Configuration** | — |
-| **Test scenario (manual)** | [ISSUES_REPORT.md](./ISSUES_REPORT.md) rows added (**PT-xx**). |
+| **Test scenario (manual)** | [ISSUES_REPORT.md](./ISSUES_REPORT.md) rows added (**PT-xx**) when defects exist; otherwise confirm no new issues. |
 | **Automation** | N/A |
-| **Result** | ☐ Pass ☐ Fail ☐ Blocked ☐ N/A |
-| **Finding** | |
+| **Result** | ☑ Pass ☐ Fail ☐ Blocked ☐ N/A |
+| **Finding** | **2026-04-10:** No new payment defects from cross session; **no new PT-xx rows**. **[ISSUES_REPORT.md](./ISSUES_REPORT.md)** — **Last Updated** Apr 10, 2026; header note documents this close-out; **PT-06** remains **Deferred**. |
 | **PR** | N/A |
 
 ---
@@ -670,7 +674,8 @@ Same **tunnel + secret** applies; events below are what you expect when exercisi
 **Summary (2026-04-07):** Solo monthly path exercised end-to-end including mandate, **Charge this now**, webhooks, idempotency; Team duplicate card on pricing noted (fixed **2026-04-09** — TEAM only on **Enterprise**).  
 **Update (2026-04-08):** **F-PAY-SOLO-A** signed off (**TC-SOLO-A-01–03**); annual billing UI fixes in **SubscriptionCard** / **PricingPage**.  
 **Update (2026-04-09):** **Feature 3 (`F-PAY-TEAM-M`):** **TC-TEAM-M-01–04** **Pass** — **TC-TEAM-M-04** includes Billing **Cancel** (graceful) **and** **`/pricing`** abandon / **PENDING** path **verified**. Webhooks + **`handleSubscriptionCharged`** **PENDING→ACTIVE**; **Charge this now** = extra invoices / history rows.  
-**Update (2026-04-09):** **Feature 4 (`F-PAY-TEAM-A`):** **TC-TEAM-A-01** + **TC-TEAM-A-02** **Pass** — **`payment.automation15@local.test`**, **`sub_SbNMFvUuPX7eyl`**, Razorpay **Charge this now** → **Paid ₹71,388**; app **ACTIVE** + **CAPTURED** history row (**`NtvzrFs8XXP3`**).
+**Update (2026-04-09):** **Feature 4 (`F-PAY-TEAM-A`):** **TC-TEAM-A-01** + **TC-TEAM-A-02** **Pass** — **`payment.automation15@local.test`**, **`sub_SbNMFvUuPX7eyl`**, Razorpay **Charge this now** → **Paid ₹71,388**; app **ACTIVE** + **CAPTURED** history row (**`NtvzrFs8XXP3`**).  
+**Update (2026-04-10):** **Cross API smoke** — `npm run test:payment` **6/6 Pass** (`http://localhost:5000`): prerequisites, **TC-X-API-01**, **TC-X-API-02** (SOLO monthly + TEAM annual), Razorpay webhook valid + invalid signature. **`3.4` complete:** **`test:payments:unit`** (**20/20**) + **`e2e/pricing-payments.spec.ts`** **Pass**; **`test:payment:unit`** alias documented. **`3.3` (`TC-X-API-03`)** + **`*-CHG-*` (`TC-X-CHG-01`)** **Pass** — live verify via **`/pricing`** checkout; **SOLO → TEAM monthly** webhooks (**`sub_SbkcTshB6UnZd7`**, **`subscription.charged`** **200**) with webhook URL fixed. **`TC-X-FAIL-01`:** Razorpay checkout — **invalid 2-digit OTP** → provider error modal (OTP length **4–10**); payment not completed. **Close-out:** **`TC-X-CLOSE-01`** (MVP + **1_WEEK** launch trackers) + **`TC-X-CLOSE-02`** (**ISSUES_REPORT.md** reviewed, no new **PT-xx**).
 
 ---
 
@@ -682,7 +687,7 @@ Same **tunnel + secret** applies; events below are what you expect when exercisi
 | **F-PAY-SOLO-A** | Strong | — (**TC-SOLO-A-01–03** **Pass** 2026-04-08) |
 | **F-PAY-TEAM-M** | **2026-04-09:** **TC-TEAM-M-01–04** Pass (**M-04:** Billing + **`/pricing`** verified) | — |
 | **F-PAY-TEAM-A** | **2026-04-09:** **TC-TEAM-A-01** + **TC-TEAM-A-02** **Pass** (manual **Charge this now** + Billing parity) | — |
-| **Cross (API)** | Open | TC-X-API-* |
+| **Cross (API)** | **2026-04-10:** **TC-X-API-01**–**04**, **TC-X-CHG-01**, **TC-X-FAIL-01**, **TC-X-CLOSE-01**, **TC-X-CLOSE-02** **Pass** | — |
 
 ---
 

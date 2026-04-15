@@ -1,8 +1,19 @@
 # 1 Week Launch Tracker — Verification & Status
 
 > **Purpose:** Code-verified status for [1_WEEK_LAUNCH_PLAN.md](./1_WEEK_LAUNCH_PLAN.md), starting with **DAY 1–2: Critical Feature Completion**  
-> **Last verified:** April 6, 2026 (repository scan)  
-> **Method:** Tasks marked “completed” in the launch plan were **re-checked** against the codebase; gaps are called out explicitly.
+> **Last verified:** April 10, 2026 (repository scan + [PAYMENT_TEST_CHECKLIST.md](../PAYMENT_TEST_CHECKLIST.md) **TC-X-CLOSE-01**)  
+> **Method:** Tasks marked “completed” in the launch plan were **re-checked** against the codebase; gaps are called out explicitly. Payment rows refreshed against checklist session **2026-04-10**.
+
+### Testing document status (April 10, 2026)
+
+| Document | Role | Status |
+|----------|------|--------|
+| [PAYMENT_TEST_CHECKLIST.md](../PAYMENT_TEST_CHECKLIST.md) | Razorpay MVP manual + cross TCs | **40** / **40** **Result** rows **Pass**; **TC-X-CLOSE-01/02** **Pass** |
+| [PAYMENT_AUTOMATED_TESTING.md](../PAYMENT_AUTOMATED_TESTING.md) | `test:payment`, `test:payments:unit`, Playwright | Recorded **Pass** in checklist session log **2026-04-10** |
+| [MVP_LAUNCH_TRACKER.md](../MVP_LAUNCH_TRACKER.md) | Executive MVP + Part 3 testing tracker | Aligned with checklist **2026-04-10** |
+| [1_WEEK_LAUNCH_PLAN.md](./1_WEEK_LAUNCH_PLAN.md) | Daily checklist (historical detail) | **Header + Tasks 1.2–1.4** updated **2026-04-10** to match this tracker |
+
+**Still open for MVP:** **1.5** staging/prod smoke; launch plan **Day 3–4 Task 2.1** (10 critical-path flows); **PT-06** BROKERAGE deferred.
 
 ---
 
@@ -22,9 +33,9 @@
 |------|-------------------|---------------|-----------|---------|
 | **1.1** User limit enforcement | ✅ Completed | **Yes** — backend ✅; **Account → Organization** (`OrganizationScreen`) | ⏳ Smoke QA | **Green** |
 | **1.1b** Usage analytics dashboard | ✅ Completed | **Yes** | ⏳ Smoke recommended | **Green** |
-| **1.2** Razorpay setup & testing | Setup ✅ / Testing ⏳ | **Partial** — code ✅ + **unit / API smoke / E2E pricing** ([runbook](../PAYMENT_AUTOMATED_TESTING.md)) | ⏳ Manual widget + Dashboard | **Yellow** |
-| **1.3** Webhook handling | Impl ✅ / Manual ⏳ | **Yes** — handlers covered in **unit** tests; **HMAC** in `npm run test:payment` | ⏳ Real delivery from Razorpay | **Yellow** |
-| **1.4** End-to-end payment testing | ⏳ Pending | **Partial** — `test:payment` + Playwright smoke; **not** full card E2E | ⏳ Blocking for prod sign-off | **Yellow** |
+| **1.2** Razorpay setup & testing | Setup ✅ / Testing ✅ | **Yes** — code ✅ + **unit / API smoke / E2E** ([runbook](../PAYMENT_AUTOMATED_TESTING.md)); manual SOLO/TEAM M+A per checklist **Pass** **2026-04-10** | ✅ Widget + dashboard paths exercised | **Green** (BROKERAGE **PT-06** still deferred) |
+| **1.3** Webhook handling | Impl ✅ / Manual ✅ | **Yes** — unit + `npm run test:payment` HMAC; **live** tunnel delivery (`subscription.*`, verify) per checklist **2026-04-10** | ✅ | **Green** |
+| **1.4** End-to-end payment testing | ✅ Checklist pass | **Yes** — automation + manual rows in [PAYMENT_TEST_CHECKLIST.md](../PAYMENT_TEST_CHECKLIST.md) thru **2026-04-10** (incl. plan change + failure path) | ✅ MVP-scope paths signed off | **Green** (staging/prod smoke still **1.5**) |
 | **1.5** Production deployment & monitoring | ⏳ Pending | **Partial** — CI/CD + Sentry wiring present | ⏳ Staging/prod smoke | **Yellow** |
 
 ---
@@ -35,7 +46,7 @@
 
 - `PLAN_USER_LIMITS` / plan `userLimit`, `UsersService`, registration guard when joining org via `organizationId`, API for org/members/slots, `usersApi` on client.
 
-### Code verification (April 6, 2026)
+### Code verification (last structural review April 2026; payment QA sign-off **2026-04-10**)
 
 | Item | Result | Evidence |
 |------|--------|----------|
@@ -92,18 +103,18 @@ Token-based invites, transactional email, and `/invite/accept` are **not** in MV
 | Prereq script | ✅ | `scripts/verify-payment-prerequisites.js`, `npm run verify:payment-prereqs` (per root `package.json` if present) |
 | Automated payment script | ✅ | `scripts/run-payment-automated-tests.js` — `npm run test:payment` when API + DB up |
 
-### Pending (manual — launch blocking)
+### Manual checkout (launch plan §2) — **2026-04-10**
 
-Aligned with [PAYMENT_TEST_CHECKLIST.md](../PAYMENT_TEST_CHECKLIST.md) and **§2 Test Checkout** in the launch plan:
+Signed off in [PAYMENT_TEST_CHECKLIST.md](../PAYMENT_TEST_CHECKLIST.md) (**F-PAY-SOLO-M/A**, **F-PAY-TEAM-M/A**). Remaining gap: **BROKERAGE** only if plan IDs exist ([PT-06](../ISSUES_REPORT.md) deferred).
 
-| # | Step |
-|---|------|
-| 1 | `/pricing` → **SOLO** — open widget, pay test card `4111 1111 1111 1111`, confirm DB subscription + org tier + monthly limit. |
-| 2 | **TEAM** — same. |
-| 3 | **Annual** toggle — confirm amount/discount, complete payment, verify billing period in DB. |
-| 4 | **BROKERAGE** — only if plan IDs exist in env ([PT-06](../ISSUES_REPORT.md) may defer). |
-| 5 | Failure card `4000 0000 0000 0002` — no subscription, user stays FREE. |
-| 6 | Document issues, test IDs, and any Razorpay quirks. |
+| # | Step | Status |
+|---|------|--------|
+| 1 | `/pricing` → **SOLO** — widget, test pay, DB + org tier | ✅ Per checklist |
+| 2 | **TEAM** — same | ✅ Per checklist |
+| 3 | **Annual** toggle — amount / billing period | ✅ Per checklist |
+| 4 | **BROKERAGE** | ⏳ Deferred (**PT-06**) |
+| 5 | Failure path — no false **ACTIVE** without webhook | ✅ **TC-X-FAIL-01** + unit `handlePaymentFailed` |
+| 6 | Document issues (**PT-xx**) | ✅ **TC-X-CLOSE-02** — no new defects **2026-04-10** |
 
 ---
 
@@ -118,22 +129,22 @@ Aligned with [PAYMENT_TEST_CHECKLIST.md](../PAYMENT_TEST_CHECKLIST.md) and **§2
 | Events (design intent) | ✅ | Launch plan: `subscription.activated`, `subscription.charged`, `subscription.cancelled`, `payment.failed` — confirm handlers in `payments.service.ts` / controller |
 | Automated signature tests | ✅ | `npm run test:payment` includes valid/invalid webhook posts (when server running) |
 
-### Pending (manual — launch blocking)
+### Manual webhook verification — **2026-04-10**
 
-| # | Step |
-|---|------|
-| 1 | Razorpay Dashboard → Webhooks → URL `https://<staging-or-tunnel>/api/webhooks/razorpay` (see [RAZORPAY_WEBHOOK_SETUP_GUIDE.md](../payments/RAZORPAY_WEBHOOK_SETUP_GUIDE.md)). |
-| 2 | Set `RAZORPAY_WEBHOOK_SECRET` to match the **active** webhook. |
-| 3 | Send test webhook / complete real payment; confirm logs and DB (`subscriptions`, `payments`, org tier on cancel). |
-| 4 | Invalid signature → **401** (already covered by automation when API is up). |
+| # | Step | Status |
+|---|------|--------|
+| 1 | Dashboard URL → `https://<tunnel>/api/webhooks/razorpay` | ✅ Session (ngrok) |
+| 2 | `RAZORPAY_WEBHOOK_SECRET` matches active webhook | ✅ |
+| 3 | Real payment / events → logs + DB | ✅ e.g. **`subscription.charged`**, cancel on upgrade |
+| 4 | Invalid signature → **401** | ✅ `npm run test:payment` |
 
-**Note:** Launch plan mentions tunnel providers; follow current doc ([PAYMENT_TEST_CHECKLIST.md](../PAYMENT_TEST_CHECKLIST.md), `scripts/ngrok-webhook.ps1`) for your environment.
+**Note:** For new environments, repeat steps 1–2 using [RAZORPAY_WEBHOOK_SETUP_GUIDE.md](../payments/RAZORPAY_WEBHOOK_SETUP_GUIDE.md) and [PAYMENT_TEST_CHECKLIST.md](../PAYMENT_TEST_CHECKLIST.md).
 
 ---
 
 ## Task 1.4: End-to-end payment testing — Status
 
-**Status:** ⏳ Not executed as a single signed-off cycle in tracker.
+**Status:** ✅ **MVP-scope paths signed off** — detail in [PAYMENT_TEST_CHECKLIST.md](../PAYMENT_TEST_CHECKLIST.md) (**2026-04-07** through **2026-04-10**).
 
 Consolidates **1.2 + 1.3** plus cross-flows:
 
@@ -144,11 +155,9 @@ Consolidates **1.2 + 1.3** plus cross-flows:
 | Downgrade / cancel | Cancel in Razorpay → webhook → org downgraded (see handler behavior) |
 | Payment failure | Failed charge → `payment.failed` / PAST_DUE behavior per implementation |
 
-Record pass/fail in a dated row below when run:
-
 | Date | Runner | Result | Notes |
 |------|--------|--------|-------|
-| | | | |
+| **2026-04-10** | Local QA | **Pass** | Cross API **TC-X-API-01–04**, **TC-X-CHG-01**, **TC-X-FAIL-01**; trackers updated (**TC-X-CLOSE-01**). |
 
 ---
 
@@ -189,4 +198,6 @@ Record pass/fail in a dated row below when run:
 
 ---
 
-*Next update: after Day 1–2 manual QA passes, fill Task 1.4 table; track full invite implementation under NEXT_PHASE §6 + ORGANIZATION_INVITE_FLOW.*
+*Next update: append **Task 1.5** staging/prod smoke rows when run; optional **Task 2.1** critical-path results in [1_WEEK_LAUNCH_PLAN.md](./1_WEEK_LAUNCH_PLAN.md). Post-MVP invite: NEXT_PHASE §6 + ORGANIZATION_INVITE_FLOW.*
+
+*Footer: Last reviewed April 10, 2026.*

@@ -1,0 +1,62 @@
+%% EPIC-DESIGN-01 — UI Design Consistency & Theme Correctness
+%% Shows: theme data flow from ThemeProvider → CSS tokens → components
+%% Problems identified: editor uses hardcoded grays (bypasses token system)
+%% Goal: ALL components flow through the CSS variable system
+
+flowchart TB
+
+  subgraph Input["User Input"]
+    TOGGLE["Theme toggle\n(Account → Appearance)\nLight | Dark | System"]:::input
+    OS["OS color scheme\n(matchMedia)"]:::input
+  end
+
+  subgraph Token["Token System (client/src/index.css)"]
+    TP["ThemeProvider\n(lib/theme-provider.tsx)\nlocalStorage + matchMedia listener"]:::good
+    CSS[":root vars\n--background, --foreground\n--muted, --border, --sidebar-*\n(light mode)"]:::good
+    CSSDARK[".dark vars\n(dark mode overrides)"]:::good
+  end
+
+  subgraph NonEditor["Non-Editor Pages (✅ token-compliant)"]
+    NAV["AppHeader\nbg-background text-foreground"]:::good
+    PRICING["Pricing page\nbg-card border-border"]:::good
+    ACCOUNT["Account page\nbg-background"]:::good
+    TEMPLATES["Templates page\nbg-card"]:::good
+    USAGE["Usage Dashboard\nbg-background"]:::good
+  end
+
+  subgraph EditorProblematic["Editor Components (❌ hardcoded — US-DESIGN-002 target)"]
+    TOOLBAR["EditorToolbar.tsx\nbg-gray-900 ← WRONG"]:::bad
+    FLOAT["FloatingToolbar.tsx\nbg-gray-800 ← WRONG"]:::bad
+    ZOOM["ZoomControls.tsx\nbg-gray-800 ← WRONG"]:::bad
+    LAYERS["LayersPanel.tsx\nbg-gray-900 ← WRONG"]:::bad
+    ADJ["AdjustmentsPanel.tsx\n23 hardcoded refs ← WORST"]:::bad
+    PROP["PropertyPanel.tsx\nbg-gray-900 ← WRONG"]:::bad
+    TEXT["TextControls.tsx\nbg-gray-800 ← WRONG"]:::bad
+    SHAPE["ShapeToolbar.tsx\nbg-gray-800 ← WRONG"]:::bad
+  end
+
+  subgraph AIChat["AI Chat Components (❌ hardcoded — US-DESIGN-002 target)"]
+    CHATBOX["AIChatBox.tsx\nbg-white lines 991, 1067 ← WRONG"]:::bad
+    INPUT["AIChatInputField.tsx\nbg-white line 224 ← WRONG"]:::bad
+    PROGBAR["GenerationProgressBar.tsx\nbg-white lines 55,59,73,75 ← WRONG"]:::bad
+    PROG["GenerationProgress.tsx\nbg-gray-200 lines 28,44,57... ← WRONG"]:::bad
+  end
+
+  subgraph Canvas["Canvas (✅ intentionally neutral)"]
+    ARTBOARD["CenterCanvas.tsx\nwhite art-board — do NOT change"]:::neutral
+  end
+
+  TOGGLE --> TP
+  OS --> TP
+  TP -->|"adds/removes .dark on html"| CSS
+  TP --> CSSDARK
+
+  CSS -->|"var(--background) etc."| NonEditor
+  CSS -.->|"bypassed → hardcoded"| EditorProblematic
+  CSS -.->|"bypassed → hardcoded"| AIChat
+  CSS -->|"neutral — intentional"| Canvas
+
+  classDef good    fill:#0b3b2e,stroke:#14532d,color:#ecfdf5;
+  classDef bad     fill:#3b0b0b,stroke:#7f1d1d,color:#fef2f2;
+  classDef neutral fill:#1e293b,stroke:#334155,color:#e2e8f0;
+  classDef input   fill:#111827,stroke:#4b5563,color:#f9fafb;

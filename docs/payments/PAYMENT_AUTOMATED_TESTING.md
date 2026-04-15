@@ -35,6 +35,12 @@ Payments only:
 npm run test:payments:unit
 ```
 
+Same command (alias — use if you typed `test:payment:unit` by mistake):
+
+```bash
+npm run test:payment:unit
+```
+
 ### 2. Integration tests (PostgreSQL)
 
 **Requires** `TEST_DATABASE_URL` (e.g. in `api/.env` or shell). CI uses a disposable Postgres service.

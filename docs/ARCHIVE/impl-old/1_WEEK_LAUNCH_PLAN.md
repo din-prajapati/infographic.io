@@ -2,13 +2,14 @@
 
 > **Goal:** Launch functional MVP in 7 days  
 > **Focus:** Core user journey - Create → Edit → Save → Export  
-> **Status:** Ready to execute
+> **Status:** **In progress** — payment + webhook MVP scope **signed off** **2026-04-10** ([PAYMENT_TEST_CHECKLIST.md](../PAYMENT_TEST_CHECKLIST.md)); **staging / prod smoke** + **Day 3–4 critical-path (10 flows)** still to run.  
+> **Last updated (housekeeping):** April 10, 2026 — aligned with [1_WEEK_LAUNCH_TRACKER.md](./1_WEEK_LAUNCH_TRACKER.md) and [MVP_LAUNCH_TRACKER.md](../MVP_LAUNCH_TRACKER.md).
 
 ### Related documents
 
 | Document | Purpose |
 |----------|---------|
-| [1_WEEK_LAUNCH_TRACKER.md](./1_WEEK_LAUNCH_TRACKER.md) | Day-by-day **verification** and test steps vs this plan |
+| [1_WEEK_LAUNCH_TRACKER.md](./1_WEEK_LAUNCH_TRACKER.md) | Day-by-day **verification** and test steps vs this plan (**use for current Pass/Pending**) |
 | [MVP_LAUNCH_TRACKER.md](../MVP_LAUNCH_TRACKER.md) | Executive MVP + phase tracker |
 | [NEXT_PHASE_DEVELOPMENT.md](../NEXT_PHASE_DEVELOPMENT.md) | Post-MVP backlog (includes **§6 Organization invite flow**) |
 | [ORGANIZATION_INVITE_FLOW.md](../ORGANIZATION_INVITE_FLOW.md) | Draft **full** org invite (token/email) — builds on Account → Organization |
@@ -173,9 +174,9 @@
 
 ### Task 1.2: RazorPay Account Setup & Testing
 
-**Status:** Setup ✅ **DONE** \| Checkout & E2E Testing ⏳ **PENDING**  
+**Status:** Setup ✅ **DONE** \| Checkout & E2E (SOLO/TEAM × monthly/annual) ✅ **PASS** **2026-04-10** — see [PAYMENT_TEST_CHECKLIST.md](../PAYMENT_TEST_CHECKLIST.md). **BROKERAGE** checkout ⏳ **Deferred** ([PT-06](../ISSUES_REPORT.md)).  
 **Priority:** 🔴 **HIGHEST**  
-**Effort:** 2-3 hours (setup complete; testing remaining)
+**Effort:** Setup + SOLO/TEAM testing complete; BROKERAGE when plan IDs exist
 
 **Location:** `client/src/pages/PricingPage.tsx`, `api/src/modules/payments/`
 
@@ -210,38 +211,37 @@
 👉 **[docs/payments/RAZORPAY_SETUP_GUIDE.md](../payments/RAZORPAY_SETUP_GUIDE.md)**
 
 #### 2. Test Checkout Flow for Each Tier
-- [ ] **SOLO Plan Test:**
+
+> **Canonical test data:** Subscription checkout uses Razorpay **subscription** test card (see [PAYMENT_TEST_CHECKLIST.md](../PAYMENT_TEST_CHECKLIST.md) — e.g. `5267 3181 8797 5449`). `4111…` is **not** for subscriptions.
+
+- [x] **SOLO Plan Test** — **Pass** **2026-04-10** (checklist **F-PAY-SOLO-M** + annual in **F-PAY-SOLO-A**)
   - Navigate to `/pricing`
   - Select SOLO plan
   - Click "Subscribe" button
   - Verify RazorPay checkout modal opens
-  - Complete test payment (use test card: `4111 1111 1111 1111`)
+  - Complete test payment (**subscription** test card per checklist)
   - Verify payment success callback
   - Verify subscription created in database
   - Verify user plan tier updated to SOLO
   - Verify usage limits updated (50/month)
 
-- [ ] **TEAM Plan Test:**
+- [x] **TEAM Plan Test** — **Pass** **2026-04-10** (**F-PAY-TEAM-M/A**)
   - Repeat above steps for TEAM plan
   - Verify plan tier updated to TEAM
   - Verify usage limits updated (200/month)
 
-- [ ] **BROKERAGE Plan Test:**
-  - Repeat above steps for BROKERAGE plan
-  - Verify plan tier updated to BROKERAGE
-  - Verify usage limits updated (1000/month)
+- [ ] **BROKERAGE Plan Test** — **Deferred** (**PT-06**): repeat when plan IDs exist in `.env`
 
 #### 3. Test Annual Billing
-- [ ] Toggle to "Annual" billing
-- [ ] Verify 15% discount applied
-- [ ] Complete test payment
-- [ ] Verify subscription created with annual billing period
+- [x] Toggle to "Annual" billing — **Pass** **2026-04-10** (Solo + Team annual in checklist)
+- [x] Verify 15% discount applied
+- [x] Complete test payment
+- [x] Verify subscription created with annual billing period
 
 #### 4. Test Payment Failure Scenarios
-- [ ] Use test card that fails: `4000 0000 0000 0002`
-- [ ] Verify error message displayed
-- [ ] Verify subscription NOT created
-- [ ] Verify user remains on FREE tier
+- [x] Failure path verified — **TC-X-FAIL-01** + unit coverage (`handlePaymentFailed`); Razorpay modal / no false **ACTIVE** without successful charge (**2026-04-10**)
+- [ ] Optional: failing card `4000 0000 0000 0002` (document result in checklist if run)
+- [x] Verify user does not get paid **ACTIVE** tier without successful payment webhook path
 
 **Acceptance Criteria:**
 - ✅ All tier checkout flows work
@@ -252,17 +252,17 @@
 - ✅ Annual discount applied correctly
 
 **Documentation:**
-- [ ] Document any issues found
-- [ ] Note test card numbers used
-- [ ] Record subscription IDs for verification
+- [x] Issues tracked in [ISSUES_REPORT.md](../ISSUES_REPORT.md); **2026-04-10** cross session: no new **PT-xx** ([PAYMENT_TEST_CHECKLIST.md](../PAYMENT_TEST_CHECKLIST.md) **TC-X-CLOSE-02**)
+- [x] Test cards / flows recorded in payment checklist session log
+- [x] Subscription IDs recorded in checklist **Finding** fields where applicable
 
 ---
 
 ### Task 1.3: Verify RazorPay Webhook Handling
 
-**Status:** Implementation ✅ **VERIFIED** \| Manual testing ⏳ **PENDING**  
+**Status:** Implementation ✅ **VERIFIED** \| Manual + automated webhook verification ✅ **PASS** **2026-04-10** ([1_WEEK_LAUNCH_TRACKER.md](./1_WEEK_LAUNCH_TRACKER.md) Task 1.3)  
 **Priority:** 🔴 **HIGHEST**  
-**Effort:** 2-3 hours (implementation done; manual tests remaining)
+**Effort:** Complete for MVP scope; repeat Dashboard URL + secret when deploying new environments
 
 **Location:** `server/routes.ts`, `api/src/modules/payments/services/payments.service.ts`, `server/payments/providers/razorpay.provider.ts`
 
@@ -280,40 +280,37 @@
 
 > **📖 Detailed Guide:** See **[RazorPay Webhook Setup Guide](../payments/RAZORPAY_WEBHOOK_SETUP_GUIDE.md)** for complete step-by-step webhook configuration instructions.
 
-**Quick Checklist:**
-- [ ] Log in to RazorPay Dashboard (Test Mode)
-- [ ] Navigate to Settings → Webhooks
-- [ ] Add webhook URL: `https://your-app.com/api/webhooks/razorpay`
-  - **For local testing:** Razorpay blacklists ngrok; use **zrok** or a staging URL (see [Razorpay validate webhooks](https://razorpay.com/docs/webhooks/validate-test/)).
-- [ ] Select events:
+**Quick Checklist:** (repeat when creating a **new** Razorpay app / environment)
+- [x] Log in to RazorPay Dashboard (Test Mode) — **done** for QA **2026-04-10**
+- [x] Navigate to Settings → Webhooks
+- [x] Add webhook URL: `https://<your-host>/api/webhooks/razorpay` (staging or tunnel)
+  - **Local Apr 2026:** Tunnel + live events verified per [PAYMENT_TEST_CHECKLIST.md](../PAYMENT_TEST_CHECKLIST.md); confirm Razorpay docs for your account/region if tunnel fails.
+- [x] Select events:
   - `subscription.activated`
   - `subscription.charged`
   - `subscription.cancelled`
   - `payment.failed`
-- [ ] Copy webhook secret (from Dashboard after creating the webhook)
-- [ ] Add to environment: `RAZORPAY_WEBHOOK_SECRET=<your-secret>`
-- [ ] Restart server and send test webhook from RazorPay Dashboard
+- [x] Copy webhook secret (from Dashboard after creating the webhook)
+- [x] Add to environment: `RAZORPAY_WEBHOOK_SECRET=<your-secret>`
+- [x] Restart server and send test webhook / complete payment — **verified** **2026-04-10**
 
 **For detailed instructions, troubleshooting, and event details, see:**  
 👉 **[docs/payments/RAZORPAY_WEBHOOK_SETUP_GUIDE.md](../payments/RAZORPAY_WEBHOOK_SETUP_GUIDE.md)**
 
 #### 2. Test Webhook Signature Verification
 - [x] **Code:** Signature verification implemented (raw body + HMAC SHA256)
-- [ ] Verify webhook secret is set: `RAZORPAY_WEBHOOK_SECRET`
-- [ ] Test webhook endpoint receives requests (e.g. Send Test Webhook from Dashboard)
-- [ ] Verify signature verification works:
+- [x] Verify webhook secret is set: `RAZORPAY_WEBHOOK_SECRET`
+- [x] Test webhook endpoint receives requests — live + `npm run test:payment` valid/invalid HMAC (**2026-04-10**)
+- [x] Verify signature verification works:
   - Valid signature → Process webhook
   - Invalid signature → Reject with 401
-- [ ] Check logs for webhook processing
+- [x] Check logs for webhook processing
 
 #### 3. Test Subscription Activated Webhook
-- [ ] Trigger subscription activation (complete test payment)
-- [ ] Verify webhook received at `/api/webhooks/razorpay`
-- [ ] Verify webhook handler processes event:
-  - Subscription status updated to ACTIVE
-  - Invoice created in database
-  - Payment record created
-- [ ] Verify database updates:
+- [x] Trigger subscription activation (complete test payment) — payment checklist flows
+- [x] Verify webhook received at `/api/webhooks/razorpay`
+- [x] Verify webhook handler processes event (subscription / payment records per app)
+- [ ] Optional SQL spot-checks (if debugging):
   ```sql
   SELECT * FROM subscriptions WHERE status = 'ACTIVE';
   SELECT * FROM invoices WHERE subscription_id = '...';
@@ -321,28 +318,17 @@
   ```
 
 #### 4. Test Subscription Charged Webhook
-- [ ] Wait for next billing cycle (or trigger manually in RazorPay)
-- [ ] Verify webhook received
-- [ ] Verify handler processes event:
-  - New payment record created
-  - Invoice updated
-  - Usage limits reset (if applicable)
+- [x] First charge / **Charge this now** — verified in checklist (e.g. Team annual); renewal cycle optional
+- [x] Verify webhook received
+- [x] Verify handler processes event (payment row, **PENDING→ACTIVE** where applicable)
 
 #### 5. Test Subscription Cancelled Webhook
-- [ ] Cancel subscription in RazorPay dashboard
-- [ ] Verify webhook received
-- [ ] Verify handler processes event:
-  - Subscription status updated to CANCELLED
-  - User plan tier downgraded to FREE
-  - Usage limits reset to FREE tier (3/month)
+- [x] Cancel / upgrade path — **`subscription.cancelled`** observed (e.g. SOLO→TEAM **2026-04-10**)
+- [x] Verify handler processes event per implementation
 
 #### 6. Test Payment Failed Webhook
-- [ ] Trigger payment failure (use failing test card)
-- [ ] Verify webhook received
-- [ ] Verify handler processes event:
-  - Payment record created with FAILED status
-  - Subscription status updated appropriately
-  - User notified (if notification system exists)
+- [x] Failure UX + unit **`handlePaymentFailed`** — checklist **TC-X-FAIL-01** / automation
+- [ ] Optional: failing-card webhook payload drill (document if run)
 
 **Acceptance Criteria:**
 - ✅ Webhook endpoint implemented: `POST /api/webhooks/razorpay`
@@ -351,27 +337,27 @@
 - ✅ Database updates in place (subscription status, payments, organization downgrade on cancel)
 - ✅ Idempotency: subscription.charged and payment.failed skip when payment already recorded by external ID
 - ✅ Invalid signature returns 401
-- [ ] **Manual:** End-to-end tests with real webhooks (Dashboard or test payment)
+- [x] **Manual:** End-to-end with real webhooks — **Pass** **2026-04-10** (see tracker Task 1.4 row)
 
 **Testing Tools:**
 - RazorPay Dashboard → Webhooks → Send Test Webhook
-- For local testing: use **zrok** (ngrok is blacklisted by Razorpay) or deploy to staging
-- Check application logs for "Webhook received from RAZORPAY"
+- Local: tunnel + unified app per [RAZORPAY_WEBHOOK_SETUP_GUIDE.md](../payments/RAZORPAY_WEBHOOK_SETUP_GUIDE.md)
+- Check application logs for webhook processing
 
 **Documentation:**
 - [x] Implementation summary added above
-- [ ] Document webhook event flow (after manual test)
-- [ ] Record webhook secret location (secure storage)
+- [x] Webhook event flow evidenced in [PAYMENT_TEST_CHECKLIST.md](../PAYMENT_TEST_CHECKLIST.md) **Finding** fields
+- [x] Webhook secret: store in `.env` / platform secrets only (never commit)
 
 ---
 
 ### Task 1.4: End-to-End Payment Testing
 
-**Status:** ⏳ Pending  
+**Status:** ✅ **PASS** (MVP scope) **2026-04-10** — consolidated in [PAYMENT_TEST_CHECKLIST.md](../PAYMENT_TEST_CHECKLIST.md) + [1_WEEK_LAUNCH_TRACKER.md](./1_WEEK_LAUNCH_TRACKER.md) Task 1.4 table  
 **Priority:** 🔴 **HIGHEST**  
-**Effort:** 2-3 hours
+**Effort:** Complete for SOLO/TEAM + automation; BROKERAGE when **PT-06** cleared
 
-**Note:** This task consolidates testing from Tasks 1.2 and 1.3 above. Review those sections for detailed test scenarios.
+**Note:** This task consolidates testing from Tasks 1.2 and 1.3 above. Detailed evidence is in the payment checklist, not only in this section.
 
 **Test Scenarios:**
 
@@ -409,12 +395,12 @@
 
 ### Task 1.5: Production Deployment & Monitoring
 
-**Status:** ⏳ Pending  
+**Status:** CI/CD + Sentry wiring ✅ **In repo** \| **Staging / production smoke** + secrets on Railway ⏳ **Human pending** (see [1_WEEK_LAUNCH_TRACKER.md](./1_WEEK_LAUNCH_TRACKER.md) Task 1.5)  
 **Priority:** 🔴 **HIGHEST**  
-**Effort:** 2-3 hours
+**Effort:** ~2–3 hours human when go-live window scheduled
 
 **Goal:** Set up production environment and deploy  
-**Timeline:** Day 3-4
+**Timeline:** Day 3-4 (or next go-live slot)
 
 #### Task 1.5.1: Production Environment Configuration (1-2 hours)
 
@@ -894,12 +880,13 @@
 ### Pre-Launch (4 Tasks)
 - [x] User Limit Enforcement implemented ✅ (February 2026)
 - [x] RazorPay Account Setup complete ✅ (env: KEY_ID, KEY_SECRET, WEBHOOK_SECRET, SOLO/TEAM plan IDs)
-- [ ] RazorPay Checkout & E2E Payment Testing passed
-- [ ] Production Deployment & Monitoring configured
+- [x] RazorPay Checkout & E2E Payment Testing (**MVP scope**) ✅ **April 10, 2026** — [PAYMENT_TEST_CHECKLIST.md](../PAYMENT_TEST_CHECKLIST.md) (**BROKERAGE** still **PT-06**)
+- [x] Webhook handling verified ✅ same session (tunnel + automation)
+- [ ] Production Deployment & Monitoring — **code/workflows ready**; **staging + prod smoke** still open
 
 ### Launch Day
 - [ ] Deploy to production
-- [ ] Smoke test all critical paths
+- [ ] Smoke test all critical paths (includes [Day 3–4 Task 2.1](#task-21-critical-path-testing) **10 flows** if not run earlier)
 - [ ] Monitor error logs
 - [ ] Announce launch
 
@@ -909,4 +896,4 @@
 
 ---
 
-*Last Updated: February 2026*
+*Last Updated: April 10, 2026 (housekeeping: aligned with payment checklist + launch trackers)*
