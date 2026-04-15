@@ -67,7 +67,7 @@ export function PropertyPanel() {
   };
 
   return (
-    <div className="h-full flex flex-col bg-white">
+    <div className="h-full flex flex-col bg-sidebar">
       <div className="flex-1 overflow-y-auto">
         <div className="p-6 space-y-8">
           {/* SECTION 1: Property Image */}
@@ -79,7 +79,7 @@ export function PropertyPanel() {
                 <img
                   src={uploadedImage}
                   alt="Property"
-                  className="w-full h-48 object-cover rounded-lg border border-gray-200"
+                  className="w-full h-48 object-cover rounded-lg border border-border"
                 />
                 <button
                   onClick={handleRemoveImage}
@@ -89,11 +89,11 @@ export function PropertyPanel() {
                 </button>
               </div>
             ) : (
-              <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-gray-400 transition-colors">
+              <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-foreground/40 transition-colors">
                 <div className="flex flex-col items-center justify-center py-6">
-                  <Upload className="w-8 h-8 text-gray-400 mb-2" />
-                  <p className="text-sm text-gray-600 mb-1">Click to upload</p>
-                  <p className="text-xs text-gray-500">SVG, PNG, JPG (max. 5MB)</p>
+                  <Upload className="w-8 h-8 text-muted-foreground mb-2" />
+                  <p className="text-sm text-sidebar-foreground mb-1">Click to upload</p>
+                  <p className="text-xs text-muted-foreground">SVG, PNG, JPG (max. 5MB)</p>
                 </div>
                 <input
                   type="file"
@@ -130,8 +130,8 @@ export function PropertyPanel() {
                   onClick={() => setPropertyTier("luxury")}
                   className={`flex flex-col items-center justify-center py-3 px-2 rounded-lg border-2 transition-all ${
                     propertyTier === "luxury"
-                      ? "border-black bg-gray-50"
-                      : "border-gray-200 hover:border-gray-300"
+                      ? "border-foreground bg-muted"
+                      : "border-border hover:border-foreground/40"
                   }`}
                 >
                   <Crown className="w-5 h-5 mb-1" />
@@ -141,8 +141,8 @@ export function PropertyPanel() {
                   onClick={() => setPropertyTier("standard")}
                   className={`flex flex-col items-center justify-center py-3 px-2 rounded-lg border-2 transition-all ${
                     propertyTier === "standard"
-                      ? "border-black bg-gray-50"
-                      : "border-gray-200 hover:border-gray-300"
+                      ? "border-foreground bg-muted"
+                      : "border-border hover:border-foreground/40"
                   }`}
                 >
                   <Building2 className="w-5 h-5 mb-1" />
@@ -152,8 +152,8 @@ export function PropertyPanel() {
                   onClick={() => setPropertyTier("budget")}
                   className={`flex flex-col items-center justify-center py-3 px-2 rounded-lg border-2 transition-all ${
                     propertyTier === "budget"
-                      ? "border-black bg-gray-50"
-                      : "border-gray-200 hover:border-gray-300"
+                      ? "border-foreground bg-muted"
+                      : "border-border hover:border-foreground/40"
                   }`}
                 >
                   <Receipt className="w-5 h-5 mb-1" />
@@ -216,7 +216,7 @@ export function PropertyPanel() {
               <Label className="text-sm">Details</Label>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
-                  <Label htmlFor="price" className="text-xs text-gray-600">
+                  <Label htmlFor="price" className="text-xs text-muted-foreground">
                     Price
                   </Label>
                   <Input
@@ -228,7 +228,7 @@ export function PropertyPanel() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="sqft" className="text-xs text-gray-600">
+                  <Label htmlFor="sqft" className="text-xs text-muted-foreground">
                     Sqft
                   </Label>
                   <Input
@@ -240,7 +240,7 @@ export function PropertyPanel() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="beds" className="text-xs text-gray-600">
+                  <Label htmlFor="beds" className="text-xs text-muted-foreground">
                     Beds
                   </Label>
                   <Input
@@ -252,7 +252,7 @@ export function PropertyPanel() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="baths" className="text-xs text-gray-600">
+                  <Label htmlFor="baths" className="text-xs text-muted-foreground">
                     Baths
                   </Label>
                   <Input
@@ -316,7 +316,7 @@ export function PropertyPanel() {
       </div>
 
       {/* Generate Button - Fixed at bottom */}
-      <div className="p-6 border-t border-gray-200">
+      <div className="p-6 border-t border-border">
         <Button
           onClick={handleGenerate}
           className="w-full bg-black hover:bg-black/90 text-white h-11"
