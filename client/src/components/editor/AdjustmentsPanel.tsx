@@ -38,16 +38,16 @@ function AdjustmentSlider({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <div className="p-1.5 rounded-md bg-gray-100 dark:bg-gray-800">
-            <Icon className="w-4 h-4 text-gray-600 dark:text-gray-400" strokeWidth={2} />
+          <div className="p-1.5 rounded-md bg-muted">
+            <Icon className="w-4 h-4 text-muted-foreground" strokeWidth={2} />
           </div>
-          <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">{label}</label>
+          <label className="text-sm font-semibold text-foreground">{label}</label>
         </div>
         <input
           type="number"
           value={value}
           onChange={onInputChange}
-          className="w-16 h-8 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-center text-sm font-semibold text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-400 dark:focus:ring-violet-600 focus:border-violet-400 dark:focus:border-violet-600 transition-all shadow-sm"
+          className="w-16 h-8 bg-background border border-border rounded-lg text-center text-sm font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-violet-400 transition-all shadow-sm"
           min={-100}
           max={100}
         />
@@ -57,7 +57,7 @@ function AdjustmentSlider({
       <div className="relative h-10 flex items-center w-full group">
         {/* Background Track - Right portion (light gray) - full width with subtle shadow */}
         <div 
-          className="absolute inset-x-0 rounded-full bg-gray-200 dark:bg-gray-700 transition-colors"
+          className="absolute inset-x-0 rounded-full bg-muted transition-colors"
           style={{
             height: '8px',
             top: '50%',
@@ -248,7 +248,7 @@ export function AdjustmentsPanel({ element }: AdjustmentsPanelProps) {
       
       {/* Panel - slides from LEFT */}
       <div 
-        className={`fixed top-0 left-0 h-full w-80 bg-white dark:bg-gray-900 shadow-2xl z-[9998] flex flex-col transition-transform duration-300 ${
+        className={`fixed top-0 left-0 h-full w-80 bg-sidebar shadow-2xl z-[9998] flex flex-col transition-transform duration-300 ${
           isAnimating ? 'translate-x-0' : '-translate-x-full'
         }`}
         style={{
@@ -258,24 +258,24 @@ export function AdjustmentsPanel({ element }: AdjustmentsPanelProps) {
         }}
       >
         {/* Header */}
-        <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between bg-white dark:bg-gray-900">
+        <div className="px-4 py-3 border-b border-border flex items-center justify-between bg-sidebar">
           <div className="flex items-center gap-2">
             <button
               onClick={closePanel}
-              className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 transition-colors"
+              className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground transition-colors"
               title="Close"
             >
               <ChevronLeft className="w-5 h-5" strokeWidth={2} />
             </button>
-            <Sliders className="w-5 h-5 text-gray-700 dark:text-gray-300" strokeWidth={2} />
-            <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">Adjustments</h2>
+            <Sliders className="w-5 h-5 text-sidebar-foreground" strokeWidth={2} />
+            <h2 className="text-base font-semibold text-sidebar-foreground">Adjustments</h2>
           </div>
           <div className="flex items-center gap-1">
             {/* Reset Button */}
             {hasChanges && (
               <button
                 onClick={handleReset}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted rounded-lg transition-colors"
                 title="Reset All"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
@@ -287,8 +287,8 @@ export function AdjustmentsPanel({ element }: AdjustmentsPanelProps) {
 
         {/* Image Preview */}
         {element && (
-          <div className="px-4 py-4 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/50">
-            <div className="w-full h-32 rounded-xl overflow-hidden bg-white dark:bg-gray-800 shadow-sm">
+          <div className="px-4 py-4 border-b border-border bg-sidebar/50">
+            <div className="w-full h-32 rounded-xl overflow-hidden bg-background shadow-sm">
               <img
                 src={element.src}
                 alt="Preview"
@@ -338,8 +338,8 @@ export function AdjustmentsPanel({ element }: AdjustmentsPanelProps) {
         </div>
 
         {/* Footer */}
-        <div className="px-4 py-3 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/50">
-          <p className="text-xs text-gray-400 dark:text-gray-500 text-center">
+        <div className="px-4 py-3 border-t border-border bg-sidebar/50">
+          <p className="text-xs text-muted-foreground text-center">
             Drag sliders to adjust image
           </p>
         </div>
