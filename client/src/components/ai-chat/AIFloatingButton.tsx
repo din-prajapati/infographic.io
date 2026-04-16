@@ -20,8 +20,8 @@ export function AIFloatingButton({ onClick, isActive }: AIFloatingButtonProps) {
         transition-all duration-300
         ${
           isActive
-            ? 'bg-gray-900 text-white'
-            : 'bg-white text-gray-900 hover:bg-gray-50 border border-gray-200'
+            ? 'bg-foreground text-background'
+            : 'bg-background text-foreground hover:bg-muted border border-border'
         }
       `}
       whileHover={{ scale: 1.05 }}

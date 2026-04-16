@@ -28,8 +28,8 @@ export function TimestampDivider({ timestamp }: TimestampDividerProps) {
 
   return (
     <div className="flex items-center justify-center my-4">
-      <div className="px-3 py-1 bg-gray-100 rounded-full">
-        <span className="text-xs text-gray-500">{formatTimestamp(timestamp)}</span>
+      <div className="px-3 py-1 bg-muted rounded-full">
+        <span className="text-xs text-muted-foreground">{formatTimestamp(timestamp)}</span>
       </div>
     </div>
   );

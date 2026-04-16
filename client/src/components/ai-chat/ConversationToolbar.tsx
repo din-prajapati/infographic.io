@@ -27,7 +27,7 @@ export function ConversationToolbar({
   onCustomize,
 }: ConversationToolbarProps) {
   return (
-    <div className="flex items-center justify-between px-4 py-2 border-b border-gray-200 bg-gray-50/50">
+    <div className="flex items-center justify-between px-4 py-2 border-b border-border bg-muted/50">
       {/* Left: Regenerate */}
       <div className="flex items-center gap-2">
         {showRegenerateButton && onRegenerate && (
@@ -37,7 +37,7 @@ export function ConversationToolbar({
                 size="sm"
                 variant="outline"
                 onClick={onRegenerate}
-                className="h-8 px-3 gap-1.5 text-xs border-gray-300 hover:border-purple-400 hover:bg-purple-50"
+                className="h-8 px-3 gap-1.5 text-xs border-border hover:border-purple-400 hover:bg-purple-500/10"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
                 Regenerate

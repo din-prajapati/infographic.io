@@ -39,7 +39,7 @@ export function AIChatInput({
             }
           }}
           placeholder="Example: 'Luxury waterfront property listing'"
-          className="h-12 pr-24 pl-12 border-gray-200 focus:border-gray-900 focus:ring-gray-900"
+          className="h-12 pr-24 pl-12 border-border focus:border-foreground focus:ring-foreground"
           disabled={isGenerating}
         />
 
@@ -48,7 +48,7 @@ export function AIChatInput({
           type="button"
           variant="ghost"
           size="icon"
-          className="absolute left-1 top-1 h-10 w-10 hover:bg-gray-100"
+          className="absolute left-1 top-1 h-10 w-10 hover:bg-muted"
           onClick={onTemplateDropdownClick}
           disabled={isGenerating}
         >
@@ -59,7 +59,7 @@ export function AIChatInput({
         <Button
           type="button"
           size="icon"
-          className="absolute right-1 top-1 h-10 w-10 bg-gray-900 hover:bg-gray-800 disabled:bg-gray-300"
+          className="absolute right-1 top-1 h-10 w-10 bg-foreground hover:bg-foreground/90 disabled:bg-muted"
           onClick={onGenerate}
           disabled={!canGenerate}
         >

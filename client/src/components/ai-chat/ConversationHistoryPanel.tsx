@@ -60,23 +60,23 @@ export function ConversationHistoryPanel({
   };
 
   return (
-    <div className="border-b border-gray-200">
+    <div className="border-b border-border">
       <details
         className="group"
         open={isOpen}
         onToggle={(e) => setIsOpen((e.target as HTMLDetailsElement).open)}
       >
-        <summary className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-gray-50 transition-colors list-none">
+        <summary className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-muted transition-colors list-none">
           <div className="flex items-center gap-2">
-            <MessageSquare className="w-4 h-4 text-gray-600" />
-            <span className="text-sm font-medium text-gray-900">
+            <MessageSquare className="w-4 h-4 text-muted-foreground" />
+            <span className="text-sm font-medium text-foreground">
               Conversation History
             </span>
-            <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
+            <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
               {conversations.length}
             </span>
           </div>
-          <ChevronDown className="w-4 h-4 text-gray-500 group-open:rotate-180 transition-transform" />
+          <ChevronDown className="w-4 h-4 text-muted-foreground group-open:rotate-180 transition-transform" />
         </summary>
 
         <AnimatePresence>
@@ -92,9 +92,9 @@ export function ConversationHistoryPanel({
                 {conversations.map((conversation) => (
                   <div
                     key={conversation.id}
-                    className={`group/item flex items-center justify-between px-4 py-2.5 hover:bg-gray-50 transition-colors border-l-2 ${
+                    className={`group/item flex items-center justify-between px-4 py-2.5 hover:bg-muted transition-colors border-l-2 ${
                       currentConversationId === conversation.id
-                        ? 'border-l-blue-500 bg-blue-50'
+                        ? 'border-l-blue-500 bg-blue-500/10'
                         : 'border-l-transparent'
                     }`}
                   >
@@ -102,19 +102,19 @@ export function ConversationHistoryPanel({
                       onClick={() => onConversationClick(conversation.id)}
                       className="flex-1 flex items-start gap-2 text-left min-w-0"
                     >
-                      <div className="text-gray-600 mt-0.5 shrink-0">
+                      <div className="text-muted-foreground mt-0.5 shrink-0">
                         {getPropertyIcon(conversation.propertyType)}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate">
+                        <p className="text-sm font-medium text-foreground truncate">
                           {conversation.title}
                         </p>
                         <div className="flex items-center gap-2 mt-0.5">
-                          <span className="text-xs text-gray-500">
+                          <span className="text-xs text-muted-foreground">
                             {conversation.messages.length} messages
                           </span>
-                          <span className="text-xs text-gray-400">•</span>
-                          <span className="text-xs text-gray-500">
+                          <span className="text-xs text-muted-foreground/40">•</span>
+                          <span className="text-xs text-muted-foreground">
                             {formatTime(conversation.updatedAt)}
                           </span>
                         </div>
@@ -127,13 +127,13 @@ export function ConversationHistoryPanel({
                           e.stopPropagation();
                           onToggleFavorite(conversation.id);
                         }}
-                        className="p-1 hover:bg-white rounded transition-colors"
+                        className="p-1 hover:bg-muted rounded transition-colors"
                       >
                         <Star
                           className={`w-3.5 h-3.5 ${
                             conversation.isFavorite
                               ? 'fill-yellow-400 text-yellow-400'
-                              : 'text-gray-400'
+                              : 'text-muted-foreground'
                           }`}
                         />
                       </button>
@@ -142,9 +142,9 @@ export function ConversationHistoryPanel({
                           e.stopPropagation();
                           onDeleteConversation(conversation.id);
                         }}
-                        className="p-1 hover:bg-white rounded transition-colors"
+                        className="p-1 hover:bg-muted rounded transition-colors"
                       >
-                        <Trash2 className="w-3.5 h-3.5 text-gray-400 hover:text-red-500" />
+                        <Trash2 className="w-3.5 h-3.5 text-muted-foreground hover:text-red-500" />
                       </button>
                     </div>
                   </div>
