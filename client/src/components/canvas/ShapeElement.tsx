@@ -147,8 +147,10 @@ export function ShapeElement({ element, isSelected, onSelect }: ShapeElementProp
       }}
       onClick={handleClick}
       lockAspectRatio={element.shapeType === 'circle' || element.shapeType === 'triangle' || element.shapeType === 'star'}
+      data-element-id={element.id}
+      data-element-type="shape"
     >
-      <div className={`w-full h-full ${isSelected ? 'ring-2 ring-blue-500 ring-offset-1 shadow-lg' : ''}`}>
+      <div className={`w-full h-full ${isSelected ? 'outline outline-2 outline-blue-500 outline-offset-1 shadow-lg' : ''}`}>
         {renderShape()}
       </div>
     </Rnd>

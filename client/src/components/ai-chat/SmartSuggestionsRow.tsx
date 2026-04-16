@@ -31,7 +31,7 @@ export function SmartSuggestionsRow({
     >
       <div className="flex items-center gap-2 mb-2">
         <Sparkles className="w-3.5 h-3.5 text-purple-600" />
-        <span className="text-xs font-medium text-gray-700">Smart Suggestions</span>
+        <span className="text-xs font-medium text-muted-foreground">Smart Suggestions</span>
       </div>
       
       <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
@@ -40,7 +40,7 @@ export function SmartSuggestionsRow({
           <button
             key={suggestion.id}
             onClick={() => onSuggestionClick(suggestion.text)}
-            className="shrink-0 px-3 py-1.5 bg-gradient-to-r from-purple-50 to-blue-50 hover:from-purple-100 hover:to-blue-100 border border-purple-200 hover:border-purple-300 rounded-full text-xs font-medium text-gray-700 transition-all hover:shadow-sm"
+            className="shrink-0 px-3 py-1.5 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 hover:border-purple-500/50 rounded-full text-xs font-medium text-purple-500 transition-all hover:shadow-sm"
           >
             {suggestion.text}
           </button>
@@ -49,10 +49,10 @@ export function SmartSuggestionsRow({
         {/* Three-Dot Button */}
         <button
           onClick={onMoreClick}
-          className="shrink-0 w-8 h-8 flex items-center justify-center bg-white hover:bg-gray-100 border border-gray-300 hover:border-gray-400 rounded-full transition-all hover:shadow-sm"
+          className="shrink-0 w-8 h-8 flex items-center justify-center bg-background hover:bg-muted border border-border hover:border-foreground/30 rounded-full transition-all hover:shadow-sm"
           aria-label="More suggestions"
         >
-          <MoreVertical className="w-4 h-4 text-gray-600" />
+          <MoreVertical className="w-4 h-4 text-muted-foreground" />
         </button>
       </div>
     </motion.div>

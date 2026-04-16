@@ -119,9 +119,11 @@ export function TextElement({ element, isSelected, onSelect }: TextElementProps)
       }}
       onClick={handleClick}
       onDoubleClick={handleDoubleClick}
+      data-element-id={element.id}
+      data-element-type="text"
     >
       <div
-        className={`w-full h-full ${isSelected ? 'ring-2 ring-blue-500 ring-offset-1 shadow-lg' : ''}`}
+        className={`w-full h-full ${isSelected ? 'outline outline-2 outline-blue-500 outline-offset-1 shadow-lg' : ''}`}
         style={{
           transform: `rotate(${element.rotation}deg)`,
         }}

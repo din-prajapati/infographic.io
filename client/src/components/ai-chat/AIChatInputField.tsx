@@ -125,9 +125,9 @@ export function AIChatInputField({
         <div className="mb-3">
           <div className="flex items-center gap-1.5 mb-2">
             <Lightbulb className="w-3.5 h-3.5 text-amber-500" />
-            <span className="text-xs text-gray-600">Smart Suggestions</span>
+            <span className="text-xs text-muted-foreground">Smart Suggestions</span>
             {propertyType && (
-              <Badge variant="secondary" className="text-xs h-5 bg-blue-50 text-blue-700 border-0">
+              <Badge variant="secondary" className="text-xs h-5 bg-blue-500/15 text-blue-500 border-0">
                 {propertyType}
               </Badge>
             )}
@@ -141,10 +141,10 @@ export function AIChatInputField({
                     key={suggestion.id}
                     onClick={() => handleSuggestionClick(suggestion.text)}
                     className="
-                      flex items-center gap-1.5 px-3 py-1.5 
-                      bg-white border border-gray-200 rounded-full 
-                      text-xs text-gray-700
-                      hover:border-blue-500 hover:bg-blue-50 hover:text-blue-700
+                      flex items-center gap-1.5 px-3 py-1.5
+                      bg-background border border-border rounded-full
+                      text-xs text-muted-foreground
+                      hover:border-blue-500 hover:bg-blue-500/10 hover:text-blue-500
                       transition-all
                     "
                   >
@@ -162,14 +162,14 @@ export function AIChatInputField({
       {conversationHistory.length > 0 && (
         <div className="mb-3">
           <details className="group">
-            <summary className="flex items-center gap-2 cursor-pointer text-xs text-gray-600 mb-2 hover:text-gray-900">
+            <summary className="flex items-center gap-2 cursor-pointer text-xs text-muted-foreground mb-2 hover:text-foreground">
               <History className="w-3.5 h-3.5" />
               <span>Conversation ({conversationHistory.length})</span>
               <svg className="w-3 h-3 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </summary>
-            <ScrollArea className="h-[150px] rounded-lg border border-gray-200 bg-gray-50 p-2">
+            <ScrollArea className="h-[150px] rounded-lg border border-border bg-muted/50 p-2">
               <div className="space-y-2">
                 {conversationHistory.map((message) => (
                   <div key={message.id} className="space-y-1">
@@ -187,9 +187,9 @@ export function AIChatInputField({
                       <div
                         className={`
                           max-w-[75%] rounded-lg px-2.5 py-1.5 text-xs
-                          ${message.type === 'user' 
-                            ? 'bg-blue-500 text-white' 
-                            : 'bg-white border border-gray-200 text-gray-900'
+                          ${message.type === 'user'
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-muted border border-border text-foreground'
                           }
                         `}
                       >
@@ -201,7 +201,7 @@ export function AIChatInputField({
                         {message.previews.map((preview) => (
                           <div
                             key={preview.id}
-                            className="w-12 h-12 rounded overflow-hidden border border-gray-200 cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all"
+                            className="w-12 h-12 rounded overflow-hidden border border-border cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all"
                           >
                             <img
                               src={preview.thumbnail}
@@ -221,7 +221,7 @@ export function AIChatInputField({
       )}
 
       {/* Textarea Container with Icon Bar Inside */}
-      <div className="min-h-[120px] px-4 py-3 border border-gray-200 rounded-xl focus-within:border-gray-900 transition-colors bg-white">
+      <div className="min-h-[120px] px-4 py-3 border border-border rounded-xl focus-within:border-foreground transition-colors bg-background">
         <textarea
           value={value}
           onChange={(e) => onChange(e.target.value)}
@@ -236,7 +236,7 @@ export function AIChatInputField({
               ? 'Describe what you want to create...'
               : 'Ask AI to create a stunning real estate infographic...'
           }
-          className="w-full min-h-[96px] outline-none text-sm text-gray-900 placeholder:text-gray-400 resize-none"
+          className="w-full min-h-[96px] outline-none text-sm text-foreground placeholder:text-muted-foreground resize-none bg-transparent"
           disabled={isGenerating}
           rows={4}
         />
