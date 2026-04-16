@@ -173,7 +173,7 @@ export function CenterCanvas() {
     : null;
 
   return (
-    <div className="flex-1 flex flex-col bg-gray-100 relative overflow-hidden">
+    <div className="flex-1 flex flex-col bg-muted/50 relative overflow-hidden">
       {/* Canvas Area with Dot Grid */}
       <div 
         className="flex-1 dot-grid overflow-hidden flex items-center justify-center p-12 relative"

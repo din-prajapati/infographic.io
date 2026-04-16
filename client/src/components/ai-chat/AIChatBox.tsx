@@ -880,52 +880,47 @@ export function AIChatBox({
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.2, ease: "easeOut" }}
-          className="absolute bottom-20 right-6 w-[800px] max-w-[calc(100vw-3rem)] bg-white rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] overflow-hidden z-[100] flex flex-col max-h-[min(560px,calc(100vh-140px))] min-h-0"
+          className="absolute bottom-20 right-6 w-[800px] max-w-[calc(100vw-3rem)] bg-background rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.18)] overflow-hidden z-[100] flex flex-col max-h-[min(560px,calc(100vh-140px))] min-h-0"
         >
           <div className="flex flex-col flex-1 min-h-0">
           {/* Header */}
-          <div className="px-4 pt-4 pb-2 shrink-0 border-b border-gray-200">
+          <div className="px-4 pt-3 pb-2 shrink-0 border-b border-border">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-500">
+                <span className="text-sm font-medium text-foreground">
                   Real Estate Templates
                 </span>
-                <span className="text-xs px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full">
+                <span className="text-xs px-2 py-0.5 bg-purple-500/15 text-purple-500 rounded-full">
                   Powered by AI ✨
                 </span>
               </div>
               <div className="flex items-center gap-1">
-                {/* New Chat Icon */}
                 <Button
                   size="sm"
                   variant="ghost"
                   onClick={handleNewChat}
-                  className="h-8 w-8 p-0 hover:bg-gray-100"
+                  className="h-7 w-7 p-0 hover:bg-muted"
                   title="New Chat"
                 >
-                  <PlusCircle className="w-4 h-4 text-gray-600" />
+                  <PlusCircle className="w-4 h-4 text-muted-foreground" />
                 </Button>
-
-                {/* History Icon */}
                 <Button
                   size="sm"
                   variant="ghost"
                   onClick={() => setShowHistoryView(true)}
-                  className="h-8 w-8 p-0 hover:bg-gray-100"
+                  className="h-7 w-7 p-0 hover:bg-muted"
                   title="Chat History"
                 >
-                  <Clock className="w-4 h-4 text-gray-600" />
+                  <Clock className="w-4 h-4 text-muted-foreground" />
                 </Button>
-
-                {/* Close Button */}
                 <Button
                   size="sm"
                   variant="ghost"
                   onClick={handleClose}
-                  className="h-8 w-8 p-0 hover:bg-gray-100"
+                  className="h-7 w-7 p-0 hover:bg-muted"
                   title="Close"
                 >
-                  <X className="w-4 h-4 text-gray-600" />
+                  <X className="w-4 h-4 text-muted-foreground" />
                 </Button>
               </div>
             </div>
@@ -935,7 +930,7 @@ export function AIChatBox({
           {hasActiveConversation &&
             resultVariations.length > 0 &&
             selectedVariationId && (
-              <div className="shrink-0 px-4 py-2 border-b border-gray-200 bg-gray-50 flex gap-2">
+              <div className="shrink-0 px-4 py-2 border-b border-border bg-muted flex gap-2">
                 <Button
                   className="flex-1 bg-blue-600 hover:bg-blue-700"
                   onClick={() => handleUseVariation(selectedVariationId)}
@@ -988,7 +983,7 @@ export function AIChatBox({
               </AnimatePresence>
 
               {/* Input Field - Sticky at bottom */}
-              <div className="shrink-0 border-t border-gray-200 bg-white">
+              <div className="shrink-0 border-t border-border bg-background">
                 <AIChatInputField
                   value={state.inputValue}
                   onChange={handleInputChange}
@@ -1056,7 +1051,7 @@ export function AIChatBox({
                 {/* Error Message - only for system errors, not validation */}
                 {state.error && (
                   <div className="px-4 pb-3">
-                    <div className="p-2.5 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700 flex items-start gap-2">
+                    <div className="p-2.5 bg-destructive/10 border border-destructive/30 rounded-lg text-xs text-destructive flex items-start gap-2">
                       <span className="shrink-0 mt-0.5">&#9888;</span>
                       <span>{state.error}</span>
                     </div>
@@ -1064,7 +1059,7 @@ export function AIChatBox({
                 )}
               </div>
 
-              <div className="shrink-0 border-t border-gray-200 bg-white">
+              <div className="shrink-0 border-t border-border bg-background">
                 <AIChatInputField
                   value={state.inputValue}
                   onChange={handleInputChange}

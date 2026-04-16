@@ -20,7 +20,7 @@ export function CategoryChipList({
   onChipClick,
 }: CategoryChipListProps) {
   const selectedChipIds = selectedChips.map((chip) => chip.id);
-  const isChipSelected = (chipId: string) => selectedChipIds.includes(chipId);
+  const isChipSelected = (chipId: string) => (selectedChipIds as string[]).includes(chipId);
   
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
@@ -55,15 +55,15 @@ export function CategoryChipList({
   };
 
   return (
-    <div className="mb-6">
-      <div className="relative">
+    <div className="mb-1">
+      <div className="relative flex items-center">
         {/* Left Arrow */}
         {showLeftArrow && (
           <button
             onClick={scrollLeft}
-            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-7 h-7 rounded-full bg-white shadow-md border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-all"
+            className="absolute left-0 z-10 w-6 h-6 rounded-full bg-background shadow-md border border-border flex items-center justify-center hover:bg-muted transition-all shrink-0"
           >
-            <ChevronLeft className="w-4 h-4 text-gray-600" />
+            <ChevronLeft className="w-3.5 h-3.5 text-muted-foreground" />
           </button>
         )}
 
@@ -71,7 +71,7 @@ export function CategoryChipList({
         <div
           ref={scrollContainerRef}
           onScroll={updateArrowVisibility}
-          className="flex items-center gap-2 overflow-x-auto overflow-y-hidden flex-nowrap py-1 px-8 scrollbar-hide"
+          className="flex items-center gap-1.5 overflow-x-auto overflow-y-hidden flex-nowrap py-0.5 px-7 scrollbar-hide"
         >
           {chips
             .filter(chip => selectedChipIds.length === 0 || isChipSelected(chip.id))
@@ -90,9 +90,9 @@ export function CategoryChipList({
         {showRightArrow && (
           <button
             onClick={scrollRight}
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-7 h-7 rounded-full bg-white shadow-md border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-all"
+            className="absolute right-0 z-10 w-6 h-6 rounded-full bg-background shadow-md border border-border flex items-center justify-center hover:bg-muted transition-all shrink-0"
           >
-            <ChevronRight className="w-4 h-4 text-gray-600" />
+            <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
           </button>
         )}
       </div>

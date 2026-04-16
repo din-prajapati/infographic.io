@@ -33,9 +33,9 @@ export function ConversationHistoryView({
       className="flex flex-col h-full max-h-full"
     >
       {/* Header */}
-      <div className="px-4 pt-4 pb-3 border-b border-gray-200 shrink-0">
+      <div className="px-4 pt-4 pb-3 border-b border-border shrink-0">
         <div className="flex items-center justify-between mb-2">
-          <h3 className="font-medium text-gray-900">Chat History</h3>
+          <h3 className="font-medium text-foreground">Chat History</h3>
           <Button
             size="sm"
             variant="ghost"
@@ -51,9 +51,9 @@ export function ConversationHistoryView({
       <div className="flex-1 overflow-y-auto scrollbar-visible px-4">
         {conversations.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center px-6">
-            <MessageSquare className="w-12 h-12 text-gray-300 mb-3" />
-            <p className="text-sm text-gray-600 mb-1">No conversations yet</p>
-            <p className="text-xs text-gray-500">Start a new chat to see history here</p>
+            <MessageSquare className="w-12 h-12 text-muted-foreground/40 mb-3" />
+            <p className="text-sm text-muted-foreground mb-1">No conversations yet</p>
+            <p className="text-xs text-muted-foreground/60">Start a new chat to see history here</p>
           </div>
         ) : (
           <div className="space-y-6">
@@ -117,7 +117,7 @@ interface TimeSectionProps {
 function TimeSection({ title, conversations, onSelect }: TimeSectionProps) {
   return (
     <div className="mb-6">
-      <h3 className="text-xs font-medium text-gray-500 mb-2 px-1">{title}</h3>
+      <h3 className="text-xs font-medium text-muted-foreground mb-2 px-1 uppercase tracking-wide">{title}</h3>
       <div className="space-y-1">
         {conversations.map((conv) => (
           <ConversationItem
@@ -144,10 +144,10 @@ function ConversationItem({ conversation, onClick }: ConversationItemProps) {
   return (
     <button
       onClick={onClick}
-      className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-gray-50 active:bg-gray-100 transition-colors group"
+      className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-muted active:bg-muted transition-colors group"
     >
       <div className="flex items-start justify-between gap-2 mb-1">
-        <p className="text-sm text-gray-900 font-medium line-clamp-1 flex-1 group-hover:text-blue-600 transition-colors">
+        <p className="text-sm text-foreground font-medium line-clamp-1 flex-1 group-hover:text-blue-500 transition-colors">
           {conversation.title}
         </p>
         {conversation.isFavorite && (
@@ -156,16 +156,16 @@ function ConversationItem({ conversation, onClick }: ConversationItemProps) {
       </div>
       
       <div className="flex items-center gap-2">
-        <span className="text-xs text-gray-500">{timeStr}</span>
-        <span className="text-xs text-gray-400">•</span>
+        <span className="text-xs text-muted-foreground">{timeStr}</span>
+        <span className="text-xs text-muted-foreground/40">•</span>
         <div className="flex items-center gap-1">
-          <MessageSquare className="w-3 h-3 text-gray-400" />
-          <span className="text-xs text-gray-500">{messageCount}</span>
+          <MessageSquare className="w-3 h-3 text-muted-foreground/60" />
+          <span className="text-xs text-muted-foreground">{messageCount}</span>
         </div>
         {conversation.propertyType && (
           <>
-            <span className="text-xs text-gray-400">•</span>
-            <span className="text-xs px-1.5 py-0.5 bg-blue-50 text-blue-700 rounded capitalize">
+            <span className="text-xs text-muted-foreground/40">•</span>
+            <span className="text-xs px-1.5 py-0.5 bg-blue-500/10 text-blue-500 rounded capitalize">
               {conversation.propertyType}
             </span>
           </>
