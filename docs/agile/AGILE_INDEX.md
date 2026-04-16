@@ -33,7 +33,7 @@ Every PR is traceable from `git log` → Story → Milestone → Epic.
 
 | Epic ID | Title | Status | Milestones |
 |---------|-------|--------|------------|
-| [EPIC-DESIGN-01](epics/EPIC-DESIGN-01/EPIC.md) | MVP UI Design Consistency & Theme | 🟡 In Progress | M1 QA ✅ · M2 Code fixes 🔲 |
+| [EPIC-DESIGN-01](epics/EPIC-DESIGN-01/EPIC.md) | MVP UI Design Consistency & Theme | 🟡 In Progress | M1 QA ✅ · M2 🟡 US-002 on branch; AI chat grep-clean; editor residuals — [M-DESIGN-02](epics/EPIC-DESIGN-01/milestones/M-DESIGN-02-editor-tokens.md) |
 | [EPIC-PAY-01](epics/EPIC-PAY-01/EPIC.md) | MVP Payments Live | ✅ Done | All milestones closed |
 
 > Add new epics to this table when you start them.

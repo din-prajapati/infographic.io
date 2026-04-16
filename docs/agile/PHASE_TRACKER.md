@@ -77,7 +77,7 @@ Each phase requires a gate decision before the next phase starts:
 | Payment QA | 40/40 TCs | 40 TCs | ✅ |
 | Automated tests | 43 tests | 43 tests | ✅ |
 | **Deployment** | 0/3 HUMAN tasks | 3 tasks | ⏳ |
-| **EPIC-DESIGN-01 Phase B** | 0/1 PRs | 1 PR | 🔲 |
+| **EPIC-DESIGN-01 Phase B** | US-002 on branch ✅ / PR ⏳; AI chat clean; editor tail | 1 PR | 🟡 |
 
 **Overall Phase 0: 98%**
 

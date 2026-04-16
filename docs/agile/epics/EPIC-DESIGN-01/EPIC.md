@@ -12,7 +12,7 @@
 
 **Outcome:** Every screen the user sees before, during, and after subscribing renders correctly in Light, Dark, and System mode with a consistent visual language — no hardcoded dark panels next to themed-light panels.
 
-**Why now:** Pre-launch polish. The editor is known to always look dark regardless of theme (201 hardcoded color references across 20 files). Non-editor pages use design tokens correctly. Fixing this removes the "split-personality" product feel before production go-live.
+**Why now:** Pre-launch polish. A 2026-04 audit found **201 hardcoded color references** across ~20 editor files; non-editor pages already use tokens. US-DESIGN-002 delivered a broad token pass + shared popover + Quick Style contrast; **AI Chat** now has **zero** `gray-*` / `zinc-*` / `bg-white` matches in `.tsx` (verified 2026-04-15). **Editor** still has **residual** gray/white utilities in secondary UI — see [M-DESIGN-02](milestones/M-DESIGN-02-editor-tokens.md).
 
 **Success metric:** Theme toggle walks through Light → Dark → System on all pages including the editor, with no visual inconsistencies. All TC-DS-xxx test cases pass or have a recorded finding.
 
@@ -23,7 +23,7 @@
 | Milestone | Scope | Target | Status |
 |-----------|-------|--------|--------|
 | [M-DESIGN-01 — Theme & Global QA](milestones/M-DESIGN-01-theme-QA.md) | QA all non-editor pages (no code changes) | 2026-04-13 | ✅ Done |
-| [M-DESIGN-02 — Editor Token Fix](milestones/M-DESIGN-02-editor-tokens.md) | Replace hardcoded grays in editor components | 2026-04-30 | 🔲 Not Started |
+| [M-DESIGN-02 — Editor Token Fix](milestones/M-DESIGN-02-editor-tokens.md) | US-002 token pass (editor + AI chat + popovers); AI chat grep-clean; editor residuals optional follow-up | 2026-04-30 | 🟡 In Progress |
 
 ---
 
@@ -32,7 +32,7 @@
 | Story ID | Title | Milestone | Status | PR |
 |----------|-------|-----------|--------|----|
 | [US-DESIGN-001](stories/US-DESIGN-001/STORY.md) | Theme system works on all non-editor screens | M-DESIGN-01 | 🟡 Partial (ACs 4–7 ✅ auto, ACs 1–3 🔲 human) | — |
-| [US-DESIGN-002](stories/US-DESIGN-002/STORY.md) | Editor adopts design token colors | M-DESIGN-02 | 🔲 Not Started | — |
+| [US-DESIGN-002](stories/US-DESIGN-002/STORY.md) | Editor + AI chat adopt design tokens + dark-mode polish | M-DESIGN-02 | ✅ Done | Open PR from branch |
 | [US-DESIGN-003](stories/US-DESIGN-003/STORY.md) | AI Generation flow has consistent UX states | M-DESIGN-02 | 🟡 AC1 ✅ auto, AC2–6 🔲 human | — |
 | [US-DESIGN-004](stories/US-DESIGN-004/STORY.md) | All pages have consistent typography and nav | M-DESIGN-01 | 🟡 AC1,5 ✅ auto, AC2–4,6 🔲 human | — |
 
@@ -95,6 +95,7 @@ Design tokens: client/src/index.css (:root and .dark blocks)
 Token guide:   docs/design/DESIGN_GUIDELINES.md
 Editor root:   client/src/components/editor/
 AI chat:       client/src/components/ai-chat/
+Shared UI:     client/src/components/ui/dropdown-menu.tsx (popover surfaces — theme tokens, not hardcoded glass)
 Theme provider: client/src/lib/theme-provider.tsx
 ```
 
@@ -115,10 +116,21 @@ text-gray-900         → text-foreground
 
 ---
 
+## Implementation update (2026-04-16)
+
+- **US-DESIGN-002:** Broad token pass on `feat/design-us-design-002-editor-tokens` (editor + AI chat + canvas selection; see [STORY.md](stories/US-DESIGN-002/STORY.md)).
+- **Verification (2026-04-15):** `ai-chat/*.tsx` — **no** `gray-*` / `zinc-*` / `bg-white` matches. `editor/` — **residual** matches remain (toolbar helpers, `EditableTitle`, preview/template chrome, etc.) — list in [M-DESIGN-02](milestones/M-DESIGN-02-editor-tokens.md).
+- **Shared menus:** `dropdown-menu.tsx` — `bg-popover` / `border-border`; `DropdownMenuSubContent` forwards `{...props}`.
+- **Right sidebar:** Quick Styles — preview chip + canvas-aware `getColorForStyle()`.
+
+**Remaining for M-DESIGN-02:** Merge US-DESIGN-002 PR, staging verify, **US-DESIGN-003** human TCs; optional sweep for **editor** residual Tailwind grays.
+
+---
+
 ## Definition of Done (Epic)
 
-- [ ] M-DESIGN-01 closed ✅
-- [ ] M-DESIGN-02 closed
+- [x] M-DESIGN-01 closed ✅
+- [ ] M-DESIGN-02 closed (waiting on PR merge + US-DESIGN-003 QA wrap-up)
 - [ ] US-DESIGN-002 PR merged and verified on staging
 - [ ] All 4 stories have status ✅ Done or remaining TCs formally deferred with issue ID
 - [ ] `npm run check` + `npm run test:unit` passing after code changes

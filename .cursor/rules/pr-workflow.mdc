@@ -1,0 +1,42 @@
+---
+description: Open and describe GitHub PRs for agile stories — title, body, gh CLI, STORY.md traceability
+alwaysApply: false
+---
+
+# Pull requests — story workflow
+
+## When this applies
+
+Use when the user is **opening**, **editing**, or **reviewing** a GitHub PR tied to `docs/agile/epics/**/stories/US-*/STORY.md`.
+
+## Title
+
+```text
+[US-{DOMAIN}-{NNN}] {short title from story}
+```
+
+Example: `[US-DESIGN-002] Editor + AI chat design tokens & dark-mode polish`
+
+## Body
+
+1. Prefer **`PR_BODY.md`** in the same story folder (e.g. `docs/agile/epics/EPIC-DESIGN-01/stories/US-DESIGN-002/PR_BODY.md`) and pass it to GitHub:
+
+   ```bash
+   gh pr create --base main --title "..." --body-file docs/agile/epics/EPIC-DESIGN-01/stories/US-DESIGN-002/PR_BODY.md
+   ```
+
+2. Otherwise paste sections from **STORY.md**: user story, AC checklist, tests, out of scope.
+
+3. Align with templates in `.github/pull_request_template.md` and `.github/PULL_REQUEST_TEMPLATE/story.md`.
+
+## Commands
+
+- Full step-by-step: `docs/agile/guides/STORY_PR_WORKFLOW.md`
+- `npm run pr:open:us-design-002` — opens US-DESIGN-002 PR body file (after push)
+- PowerShell: `scripts/open-story-pr.ps1`
+
+## Rules
+
+- One **story** per branch / per PR when possible (`docs/agile/GIT_STRATEGY.md`).
+- Do not put `Made-with: Cursor` or similar trailers in commits (`.cursor/rules/commit-messages.mdc`).
+- After merge: update `STORY.md` PR #, `EPIC.md`, `TEAM_STATUS.md` per `docs/agile/HOW_TO_USE.md` §7.

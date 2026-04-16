@@ -112,14 +112,17 @@ Closes LIN-47
 ## PR Workflow
 
 ### 1. Open the PR
+
 ```bash
-git push -u origin feat/design-us-design-002-editor-tokens
-gh pr create \
-  --title "[US-DESIGN-002] Editor design token replacement" \
-  --body "$(cat docs/agile/epics/EPIC-DESIGN-01/stories/US-DESIGN-002/TASKS.md)"
+git push -u origin YOUR_BRANCH
+gh pr create --base main --title "[US-…] …" --body-file docs/agile/epics/…/stories/US-…/PR_BODY.md
 ```
 
-Or use the PR template below.
+**Full workflow:** [docs/agile/guides/STORY_PR_WORKFLOW.md](guides/STORY_PR_WORKFLOW.md)  
+**Templates:** [.github/pull_request_template.md](../.github/pull_request_template.md) · [.github/PULL_REQUEST_TEMPLATE/story.md](../.github/PULL_REQUEST_TEMPLATE/story.md)  
+**US-DESIGN-002:** `npm run pr:open:us-design-002` (uses `PR_BODY.md` in that story folder)
+
+Or use the inline PR description template below when not using `PR_BODY.md`.
 
 ### 2. PR Title Format
 ```

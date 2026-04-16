@@ -12,7 +12,7 @@
 | Domain | Active Epic | In Progress | Blocked | Upcoming |
 |--------|-------------|-------------|---------|----------|
 | [Payments (PAY)](#-payments-pay) | EPIC-PAY-01 ✅ Done | — | PT-06 BROKERAGE | EPIC-PAY-02 Phase 1 |
-| [Design / Frontend (DESIGN)](#-design--frontend-design) | EPIC-DESIGN-01 🟡 | US-DESIGN-002 (next) | US-DESIGN-003 (live API) | US-DESIGN-001 human QA |
+| [Design / Frontend (DESIGN)](#-design--frontend-design) | EPIC-DESIGN-01 🟡 | Open PR / merge US-002 | US-DESIGN-003 (live API) | US-DESIGN-001 human QA |
 | [Auth (AUTH)](#-auth-auth) | EPIC-AUTH-01 ✅ Done | — | — | Full invite flow post-MVP |
 | [Canvas Editor (EDIT)](#-canvas-editor-edit) | EPIC-EDIT-01 ✅ Done | — | — | Batch upload Phase 3 |
 | [AI Generation (AI)](#-ai-generation-ai) | EPIC-AI-01 ✅ Done | — | — | Multi-pass Phase 2 |
@@ -65,16 +65,13 @@
 | [US-DESIGN-001](epics/EPIC-DESIGN-01/stories/US-DESIGN-001/STORY.md) | Theme system — non-editor screens | 🟡 AC4–7 ✅, AC1–3 🔲 human | Nothing |
 | [US-DESIGN-004](epics/EPIC-DESIGN-01/stories/US-DESIGN-004/STORY.md) | Global typography + nav consistency | 🟡 AC1,5 ✅, AC2–4,6 🔲 human | Nothing |
 
+**Ship gate:** Open PR from `feat/design-us-design-002-editor-tokens` → merge **US-DESIGN-002** → record PR # in [STORY.md](epics/EPIC-DESIGN-01/stories/US-DESIGN-002/STORY.md), then run **US-DESIGN-003** staging QA.
+
 ### Ready to Start (Next AI Session)
 
-| Story | Title | TASKS.md | Est. |
-|-------|-------|----------|------|
-| [US-DESIGN-002](epics/EPIC-DESIGN-01/stories/US-DESIGN-002/STORY.md) | Editor design token replacement | [TASKS.md →](epics/EPIC-DESIGN-01/stories/US-DESIGN-002/TASKS.md) | ~2 h AI session |
-
-**Branch command:**
-```bash
-git checkout -b feat/design-us-design-002-editor-tokens
-```
+| Story | Title | Notes |
+|-------|-------|--------|
+| — | After US-002 PR merges | US-DESIGN-003 human TCs (live API) or ad-hoc fixes from staging |
 
 ### Blocked (needs external resource)
 
@@ -86,6 +83,7 @@ git checkout -b feat/design-us-design-002-editor-tokens
 | Story | AC status | PR |
 |-------|-----------|-----|
 | M-DESIGN-01 QA | ✅ 35 auto-tests run 2026-04-13 | — (QA-only milestone) |
+| [US-DESIGN-002](epics/EPIC-DESIGN-01/stories/US-DESIGN-002/STORY.md) | ✅ ACs + TCs per STORY (implementation on branch) | Open PR from `feat/design-us-design-002-editor-tokens` |
 
 ---
 
@@ -135,8 +133,7 @@ git checkout -b feat/design-us-design-002-editor-tokens
 | Export (PNG) | ✅ |
 
 ### Known Issue (Not a Bug — Deferred)
-> Canvas always looks dark regardless of theme — hardcoded grays in 20 editor component files.  
-> **Fix:** US-DESIGN-002 (EPIC-DESIGN-01, M-DESIGN-02) — see Design domain above.
+> **Theme:** Primary editor chrome + AI chat token work is on **US-DESIGN-002** (EPIC-DESIGN-01). AI Chat is grep-clean for common gray/white utilities; **editor** still has **residual** gray/white Tailwind in secondary UI — see [M-DESIGN-02](epics/EPIC-DESIGN-01/milestones/M-DESIGN-02-editor-tokens.md).
 
 ### Next (Phase 3+)
 | Feature | Phase | Story |

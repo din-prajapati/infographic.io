@@ -40,6 +40,7 @@ Phase          → Business outcome visible to executives (PHASE_TRACKER.md)
 | Picking the next thing to build | Read TEAM_STATUS.md → find "Ready to Start" | [§4 Pick a Story](#4-pick-a-story) |
 | About to start an AI coding session | Fill STORY.md + TASKS.md → run pre-flight | [§5 Run an AI Session](#5-run-an-ai-session) |
 | AI session is done | Review against ACs, merge PR | [§6 Review and Merge](#6-review-and-merge) |
+| Opening a story PR (`gh`, templates, `PR_BODY.md`) | [STORY_PR_WORKFLOW.md](guides/STORY_PR_WORKFLOW.md) · `.cursor/commands/pr-story-open.md` | [Story PR workflow](guides/STORY_PR_WORKFLOW.md) |
 | Story is done — update tracking | Tick off ACs, update all trackers | [§7 Close a Story](#7-close-a-story) |
 | Reporting status to stakeholders | Open PHASE_TRACKER.md | [§8 Executive Reporting](#8-executive-reporting) |
 | Checking what the team is working on | Open TEAM_STATUS.md | [§9 Team Check-in](#9-team-check-in) |
@@ -364,14 +365,21 @@ git diff origin/main --name-only
 
 ### Step E — Open the PR
 
+**Canonical guide:** [guides/STORY_PR_WORKFLOW.md](guides/STORY_PR_WORKFLOW.md) (GitHub templates in `.github/`, optional `PR_BODY.md` per story, `gh pr create --body-file`, Cursor command `pr-story-open`).
+
+Quick pattern:
+
 ```bash
+git push -u origin HEAD
 gh pr create \
+  --base main \
   --title "[US-{DOMAIN}-{NNN}] {short title}" \
-  --label "epic:{domain},type:{type},priority:P{N}" \
-  --body "$(cat docs/agile/epics/{EPIC-ID}/stories/{US-ID}/STORY.md)"
+  --body-file docs/agile/epics/{EPIC-ID}/stories/{US-ID}/PR_BODY.md
 ```
 
-PR description = STORY.md content. Anyone reading the PR sees: what user value it delivers, which ACs it satisfies, what test commands were run, and what's out of scope.
+If `PR_BODY.md` does not exist yet, paste **STORY.md** (story + ACs + tests + out of scope) into the PR body, or use the **story** template when GitHub offers the template dropdown (`?template=story.md`).
+
+**US-DESIGN-002 shortcut:** `npm run pr:open:us-design-002` (same as `gh pr create` with the story `PR_BODY.md`).
 
 ---
 

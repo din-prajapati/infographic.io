@@ -66,6 +66,12 @@
 - [x] **AC28:** `TemplateQuickActions.tsx` — popular chips `bg-foreground text-background`, "All Templates" button `bg-background border-border text-foreground`
 - [x] **AC29:** `AIChatHeader.tsx`, `AIChatInput.tsx`, `TimestampDivider.tsx`, `AIPropertyChatInput.tsx` — all hardcoded gray/white tokens replaced
 
+### Phase G — Shared popover + Quick Styles contrast (2026-04-16)
+
+- [x] **AC30:** `ui/dropdown-menu.tsx` — `DropdownMenuContent` / `DropdownMenuSubContent` use `bg-popover`, `text-popover-foreground`, `border-border`, `shadow-md` (no light-only glass); `DropdownMenuSubContent` forwards `{...props}` correctly
+- [x] **AC31:** `FloatingToolbar.tsx` — add-element dropdown items use `text-popover-foreground`; menu content relies on popover shadow (no redundant heavy shadow on content)
+- [x] **AC32:** `RightSidebar.tsx` — Quick Style previews: `Aa` on a white “paper” chip; `getColorForStyle(theme, styleName, canvasBg)` uses luminance vs canvas `backgroundColor` so body/caption styles are readable on light canvas and ink lightens on dark canvas
+
 ---
 
 ## Out of Scope
@@ -82,7 +88,9 @@
 
 - **Branch:** `feat/design-us-design-002-editor-tokens`
 - **PR:** #_____ (fill when opened)
-- **Total files modified:** 38 component files
+
+**Post-merge verification note (2026-04-15):** `components/ai-chat/*.tsx` has **no** `gray-*` / `zinc-*` / `bg-white` matches. `components/editor/` still has **residual** Tailwind grays/whites in places (e.g. tooltips, `EditableTitle`, image toolbar, template chrome) — tracked in [M-DESIGN-02](../../milestones/M-DESIGN-02-editor-tokens.md); optional cleanup story if product wants zero grep.
+- **Total files modified:** 40+ component files (editor + AI chat + canvas + shared `dropdown-menu`)
 - **Total hardcoded token references replaced:** ~280+
 
 ### Files Touched
@@ -101,15 +109,15 @@
 **Canvas (3 files):**
 - `ImageElement.tsx`, `ShapeElement.tsx`, `TextElement.tsx`
 
-**Editor (10 files):**
-- `AgentInfoForm.tsx`, `BrandPaletteDialog.tsx`, `CenterCanvas.tsx`, `ColorPickerField.tsx`
-- `ContextualToolbar.tsx`, `PropertyPanel.tsx`, `RightSidebar.tsx`
-- `SelectionInfoPanel.tsx`, `TransparencyPanel.tsx`
+**Editor (primary panels + toolbar):**
+- `AdjustmentsPanel.tsx`, `AgentInfoForm.tsx`, `BrandPaletteDialog.tsx`, `CenterCanvas.tsx`, `ColorPickerField.tsx`
+- `ContextualToolbar.tsx`, `EditorToolbar.tsx`, `FloatingToolbar.tsx`, `LayersPanel.tsx`, `PropertyPanel.tsx`, `RightSidebar.tsx`
+- `SelectionInfoPanel.tsx`, `TransparencyPanel.tsx`, `ZoomControls.tsx`
 - `sidebar/LayerItemWithThumbnail.tsx`
 - `toolbar/ShapeToolbar.tsx`, `toolbar/TextControls.tsx`
 
-**UI (1 file):**
-- `ui/dropdown-menu.tsx` (bug fix: missing `{...props}` spread on `DropdownMenuContent`)
+**UI (shared shadcn):**
+- `ui/dropdown-menu.tsx` — theme-aligned popover surfaces + `DropdownMenuSubContent` `{...props}` forward
 
 ---
 
@@ -161,13 +169,15 @@ text-purple-700       → text-purple-500
 | TC-DS-002-15 | Manual | P1 | Canvas outer area dark in dark mode | ✅ PASS | Fixed: `bg-muted/50` |
 | TC-DS-002-16 | Manual | P1 | All AI chat popups (QuickActions, AISuggestions, StylePresets, etc.) dark in dark mode | ✅ PASS | All panels use `bg-background border-border` |
 | TC-DS-002-17 | Manual | P1 | Category chips strip height reduced — not oversized | ✅ PASS | `mb-6 → mb-1`, `py-1.5 → py-1` |
+| TC-DS-002-18 | Manual | P1 | Editor dropdowns (e.g. FloatingToolbar add menu) readable in Dark mode | ✅ PASS | Popover token surfaces (AC30–31) |
+| TC-DS-002-19 | Manual | P1 | Quick Styles: preview + applied colors readable on light and dark canvas | ✅ PASS | Luminance vs `backgroundColor` (AC32) |
 
 ---
 
 ## Definition of Done
 
-- [x] All ACs 1–29 checked ✅
-- [x] All TCs run and recorded (11 automated Playwright + 6 manual)
+- [x] All ACs 1–32 checked ✅
+- [x] All TCs run and recorded (11 automated Playwright + 8 manual TC-DS-002-12 through -19)
 - [x] `npm run check` passes (zero new TypeScript errors)
 - [x] Manual canvas smoke: add text, shape — no regression
 - [ ] PR merged (PR #{number})

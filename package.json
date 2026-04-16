@@ -22,7 +22,8 @@
     "test:integration": "cd api && npx vitest run --config vitest.integration.config.ts --reporter=verbose",
     "test:watch": "cd api && npx vitest --config vitest.config.ts",
     "test:e2e": "playwright test",
-    "test:e2e:editor": "playwright test e2e/editor-ai-chatbox.spec.ts"
+    "test:e2e:editor": "playwright test e2e/editor-ai-chatbox.spec.ts",
+    "pr:open:us-design-002": "gh pr create --base main --title \"[US-DESIGN-002] Editor + AI chat design tokens & dark-mode polish\" --body-file docs/agile/epics/EPIC-DESIGN-01/stories/US-DESIGN-002/PR_BODY.md"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
