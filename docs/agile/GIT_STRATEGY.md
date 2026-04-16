@@ -71,6 +71,20 @@ docs(agile): add EPIC-DESIGN-01 milestone and story structure — DESIGN-001
 - Story ID always at the end after ` — `
 - No ticket numbers in the subject line unless using Linear magic words (see below)
 - Body is optional — use it for the "why" if not obvious from the AC
+- Do **not** append tooling noise to the subject or body: no `Made-with: Cursor`, no `Co-authored-by: Cursor <…>`, and no similar Cursor-branded trailers. Keep messages human-reviewable and stable in `git log`.
+
+### Stripping Cursor trailers from existing history (optional, local branch)
+
+Prefer the **object-database rewrite** (works when `git filter-branch` refuses because `git update-index --refresh` marks the whole tree dirty on Windows):
+
+```bash
+git branch backup/my-branch-msg-before-rewrite my-branch
+bash scripts/rewrite-commit-messages-strip-cursor.sh main my-branch
+```
+
+Alternative if you have a **clean** working tree: `git filter-branch` with `--msg-filter` and the same `sed` rules as in `scripts/rewrite-commit-messages-strip-cursor.sh`. See `git help filter-branch`.
+
+Only rewrite branches you have **not** yet pushed, or coordinate a force-push with collaborators. Remove `refs/original/*` backup refs after `filter-branch` if you used it.
 
 ### Linear magic word in commit (auto-closes Linear issue on merge):
 ```
