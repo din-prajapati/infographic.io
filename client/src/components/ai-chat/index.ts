@@ -21,9 +21,7 @@ export { QuickActionsPanel } from './QuickActionsPanel';
 export { StylePresetsPanel } from './StylePresetsPanel';
 export { ImageUploadPanel } from './ImageUploadPanel';
 
-// Phase 2.2: History & Favorites
-export { PromptHistory } from './PromptHistory';
-export { FavoritesPanel } from './FavoritesPanel';
+// Phase 2.2: History & Favorites (components removed — files deleted)
 
 // Phase 2.3: Generation Enhancement
 export { GenerationProgress } from './GenerationProgress';
