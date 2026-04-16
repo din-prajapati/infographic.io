@@ -20,11 +20,11 @@
 ## Acceptance Criteria
 
 - [x] **AC1:** Generation form (AI chat panel) renders and opens correctly in both Light and Dark modes — ✅ AUTO 2026-04-13
-- [ ] **AC2:** Loading/progress state visible in both themes (not white-on-white or white-on-dark) — 🔲 Partially addressed by US-DESIGN-002 token fixes; verify after that PR merges
+- [ ] **AC2:** Loading/progress state visible in both themes (not white-on-white or white-on-dark) — 🔲 Re-run / verify on staging after [US-DESIGN-002 PR #1](https://github.com/din-prajapati/infographic.io/pull/1) merged (2026-04-17)
 - [ ] **AC3:** After successful generation: result card at correct size, image loads, usage counter updates — 🔲 HUMAN (live Ideogram API)
 - [ ] **AC4:** Error state shows styled message, not raw JSON — 🔲 HUMAN (intentional failure)
 - [ ] **AC5:** "Use This Design" button visible with primary style — 🔲 HUMAN (completed generation)
-- [ ] **AC6:** Generation UI correct in both themes — 🔲 HUMAN (verify after US-DESIGN-002 merged)
+- [ ] **AC6:** Generation UI correct in both themes — 🔲 HUMAN (verify on staging; US-DESIGN-002 merged 2026-04-17)
 
 ---
 
@@ -61,7 +61,7 @@
 
 ## Note
 
-TC-DS-003-01/02 findings (hardcoded `bg-white`) are fixed in US-DESIGN-002, not here. After that PR merges, re-run the automated tests to confirm AC2 and AC6 pass.
+TC-DS-003-01/02 findings (hardcoded `bg-white`) were fixed in US-DESIGN-002 ([PR #1](https://github.com/din-prajapati/infographic.io/pull/1), merged 2026-04-17). Re-run the automated tests on `main` / staging to confirm AC2 and AC6 pass.
 
 ---
 

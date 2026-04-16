@@ -3,7 +3,7 @@
 > **Audience:** Engineering leads and domain teams  
 > **Purpose:** Per-domain view of what's in progress, what's next, and what's blocked — mapped to epics and stories.  
 > **Update cadence:** When a story status changes (start / block / complete).  
-> **Last updated:** 2026-04-15
+> **Last updated:** 2026-04-17
 
 ---
 
@@ -12,7 +12,7 @@
 | Domain | Active Epic | In Progress | Blocked | Upcoming |
 |--------|-------------|-------------|---------|----------|
 | [Payments (PAY)](#-payments-pay) | EPIC-PAY-01 ✅ Done | — | PT-06 BROKERAGE | EPIC-PAY-02 Phase 1 |
-| [Design / Frontend (DESIGN)](#-design--frontend-design) | EPIC-DESIGN-01 🟡 | Merge [PR #1](https://github.com/din-prajapati/infographic.io/pull/1) (US-002) | US-DESIGN-003 (live API) | US-DESIGN-001 human QA |
+| [Design / Frontend (DESIGN)](#-design--frontend-design) | EPIC-DESIGN-01 🟡 | US-003 staging / human TCs | Live Ideogram API | US-DESIGN-001 + 004 human QA |
 | [Auth (AUTH)](#-auth-auth) | EPIC-AUTH-01 ✅ Done | — | — | Full invite flow post-MVP |
 | [Canvas Editor (EDIT)](#-canvas-editor-edit) | EPIC-EDIT-01 ✅ Done | — | — | Batch upload Phase 3 |
 | [AI Generation (AI)](#-ai-generation-ai) | EPIC-AI-01 ✅ Done | — | — | Multi-pass Phase 2 |
@@ -64,26 +64,21 @@
 |-------|-------|--------|--------|
 | [US-DESIGN-001](epics/EPIC-DESIGN-01/stories/US-DESIGN-001/STORY.md) | Theme system — non-editor screens | 🟡 AC4–7 ✅, AC1–3 🔲 human | Nothing |
 | [US-DESIGN-004](epics/EPIC-DESIGN-01/stories/US-DESIGN-004/STORY.md) | Global typography + nav consistency | 🟡 AC1,5 ✅, AC2–4,6 🔲 human | Nothing |
+| [US-DESIGN-003](epics/EPIC-DESIGN-01/stories/US-DESIGN-003/STORY.md) | AI Generation flow UX states | 🟡 AC1 ✅; AC2–6 🔲 re-run / human on staging | Live Ideogram API |
 
-**Ship gate:** Merge [PR #1](https://github.com/din-prajapati/infographic.io/pull/1) (**US-DESIGN-002**), then run **US-DESIGN-003** staging QA.
+**Ship gate:** Deploy `main` to staging → run **US-DESIGN-003** TCs (incl. re-run TC-DS-003-01/02 after US-002 merge per [STORY.md](epics/EPIC-DESIGN-01/stories/US-DESIGN-003/STORY.md)). TCs that hit the live Ideogram API need staging keys and quota.
 
 ### Ready to Start (Next AI Session)
 
 | Story | Title | Notes |
 |-------|-------|--------|
-| — | After US-002 PR merges | US-DESIGN-003 human TCs (live API) or ad-hoc fixes from staging |
-
-### Blocked (needs external resource)
-
-| Story | Title | Blocked by |
-|-------|-------|------------|
-| [US-DESIGN-003](epics/EPIC-DESIGN-01/stories/US-DESIGN-003/STORY.md) | AI Generation flow UX states | Live Ideogram API + US-DESIGN-002 must merge first |
+| — | Residual editor Tailwind (optional) | Only if product wants zero grep — see [M-DESIGN-02](epics/EPIC-DESIGN-01/milestones/M-DESIGN-02-editor-tokens.md) |
 
 ### Done (this Epic)
 | Story | AC status | PR |
 |-------|-----------|-----|
 | M-DESIGN-01 QA | ✅ 35 auto-tests run 2026-04-13 | — (QA-only milestone) |
-| [US-DESIGN-002](epics/EPIC-DESIGN-01/stories/US-DESIGN-002/STORY.md) | ✅ ACs + TCs per STORY (implementation on branch) | [#1](https://github.com/din-prajapati/infographic.io/pull/1) |
+| [US-DESIGN-002](epics/EPIC-DESIGN-01/stories/US-DESIGN-002/STORY.md) | ✅ ACs + TCs; merged to `main` | [#1](https://github.com/din-prajapati/infographic.io/pull/1) merged 2026-04-17 |
 
 ---
 
@@ -121,7 +116,7 @@
 **Phase:** 0 (MVP) ✅ Done
 
 ### Now
-> No active development. Design token fix for editor UI is under EPIC-DESIGN-01 (US-DESIGN-002).
+> No active development. Editor + AI chat token pass shipped on **US-DESIGN-002** ([PR #1](https://github.com/din-prajapati/infographic.io/pull/1) merged 2026-04-17); follow-ups under EPIC-DESIGN-01.
 
 ### Done
 | Area | Status |
@@ -133,7 +128,7 @@
 | Export (PNG) | ✅ |
 
 ### Known Issue (Not a Bug — Deferred)
-> **Theme:** Primary editor chrome + AI chat token work is on **US-DESIGN-002** (EPIC-DESIGN-01). AI Chat is grep-clean for common gray/white utilities; **editor** still has **residual** gray/white Tailwind in secondary UI — see [M-DESIGN-02](epics/EPIC-DESIGN-01/milestones/M-DESIGN-02-editor-tokens.md).
+> **Theme:** US-DESIGN-002 merged — primary editor chrome + AI chat use design tokens. AI Chat is grep-clean for common gray/white utilities; **editor** still has **residual** gray/white Tailwind in secondary UI — see [M-DESIGN-02](epics/EPIC-DESIGN-01/milestones/M-DESIGN-02-editor-tokens.md).
 
 ### Next (Phase 3+)
 | Feature | Phase | Story |

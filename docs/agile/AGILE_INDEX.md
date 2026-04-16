@@ -12,6 +12,7 @@
 | **Active story to implement next** | [TEAM_STATUS.md → Design → Ready to Start](TEAM_STATUS.md) |
 | **Git branch/commit/PR conventions** | [GIT_STRATEGY.md](GIT_STRATEGY.md) |
 | **Open a story PR (`gh`, `PR_BODY.md`, templates)** | [guides/STORY_PR_WORKFLOW.md](guides/STORY_PR_WORKFLOW.md) |
+| **AI agile cycle: Story → PR (diagram + checklist)** | [guides/STORY_PR_WORKFLOW.md §0](guides/STORY_PR_WORKFLOW.md#0-in-the-ai-assisted-agile-cycle) |
 | **Linear + GitHub integration setup** | [LINEAR_GITHUB.md](LINEAR_GITHUB.md) |
 
 ---
@@ -34,7 +35,7 @@ Every PR is traceable from `git log` → Story → Milestone → Epic.
 
 | Epic ID | Title | Status | Milestones |
 |---------|-------|--------|------------|
-| [EPIC-DESIGN-01](epics/EPIC-DESIGN-01/EPIC.md) | MVP UI Design Consistency & Theme | 🟡 In Progress | M1 QA ✅ · M2 🟡 US-002 on branch; AI chat grep-clean; editor residuals — [M-DESIGN-02](epics/EPIC-DESIGN-01/milestones/M-DESIGN-02-editor-tokens.md) |
+| [EPIC-DESIGN-01](epics/EPIC-DESIGN-01/EPIC.md) | MVP UI Design Consistency & Theme | 🟡 In Progress | M1 QA ✅ · M2 🟡 US-002 merged ([PR #1](https://github.com/din-prajapati/infographic.io/pull/1)); US-003 + gates — [M-DESIGN-02](epics/EPIC-DESIGN-01/milestones/M-DESIGN-02-editor-tokens.md) |
 | [EPIC-PAY-01](epics/EPIC-PAY-01/EPIC.md) | MVP Payments Live | ✅ Done | All milestones closed |
 
 > Add new epics to this table when you start them.

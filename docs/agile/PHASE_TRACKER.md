@@ -3,7 +3,7 @@
 > **Audience:** Executives, product owners, stakeholders  
 > **Purpose:** Single-page view of delivery progress across all product phases — from MVP to B2B scale.  
 > **Update cadence:** After each milestone closes or phase gate decision.  
-> **Last updated:** 2026-04-15
+> **Last updated:** 2026-04-17
 
 ---
 
@@ -77,7 +77,7 @@ Each phase requires a gate decision before the next phase starts:
 | Payment QA | 40/40 TCs | 40 TCs | ✅ |
 | Automated tests | 43 tests | 43 tests | ✅ |
 | **Deployment** | 0/3 HUMAN tasks | 3 tasks | ⏳ |
-| **EPIC-DESIGN-01 Phase B** | US-002 on branch ✅ / PR ⏳; AI chat clean; editor tail | 1 PR | 🟡 |
+| **EPIC-DESIGN-01 Phase B** | US-002 merged ✅ ([PR #1](https://github.com/din-prajapati/infographic.io/pull/1)); US-003 + staging | 1 PR merged | 🟡 |
 
 **Overall Phase 0: 98%**
 

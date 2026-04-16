@@ -28,6 +28,36 @@ Phase          → Business outcome visible to executives (PHASE_TRACKER.md)
 
 **Rule:** All three pillars must be filled before opening the AI chat. A missing pillar = a wasted session.
 
+### Story → PR in the AI-assisted loop
+
+After the AI session implements on a **story branch**, you close the loop with **draft PR body → human approval → GitHub draft PR → (optional) ready for review → merge → §7 trackers**. Commands and the full diagram live in **[guides/STORY_PR_WORKFLOW.md §0](guides/STORY_PR_WORKFLOW.md#0-in-the-ai-assisted-agile-cycle)**.
+
+```mermaid
+flowchart LR
+  subgraph plan["Plan"]
+    T[TEAM_STATUS]
+    S[STORY + TASKS]
+    T --> S
+  end
+
+  subgraph ai["AI build"]
+    B[Story branch + commits]
+    S --> B
+  end
+
+  subgraph pr["PR"]
+    D[PR_BODY.draft.md]
+    A1{Approve body}
+    G[gh: draft PR]
+    A2{Promote / merge}
+    B --> D
+    D --> A1
+    A1 --> G
+    G --> A2
+    A2 --> X[§7 trackers]
+  end
+```
+
 ---
 
 ## When Do I Do What?
@@ -40,7 +70,7 @@ Phase          → Business outcome visible to executives (PHASE_TRACKER.md)
 | Picking the next thing to build | Read TEAM_STATUS.md → find "Ready to Start" | [§4 Pick a Story](#4-pick-a-story) |
 | About to start an AI coding session | Fill STORY.md + TASKS.md → run pre-flight | [§5 Run an AI Session](#5-run-an-ai-session) |
 | AI session is done | Review against ACs, merge PR | [§6 Review and Merge](#6-review-and-merge) |
-| Opening a story PR (`gh`, templates, `PR_BODY.md`) | [STORY_PR_WORKFLOW.md](guides/STORY_PR_WORKFLOW.md) · `.cursor/commands/pr-story-open.md` | [Story PR workflow](guides/STORY_PR_WORKFLOW.md) |
+| Opening a story PR (draft → approve → `gh`) | [STORY_PR_WORKFLOW.md](guides/STORY_PR_WORKFLOW.md) · `npm run pr:story -- …` · `.cursor/commands/pr-story-draft-publish.md` | [Story PR workflow](guides/STORY_PR_WORKFLOW.md) |
 | Story is done — update tracking | Tick off ACs, update all trackers | [§7 Close a Story](#7-close-a-story) |
 | Reporting status to stakeholders | Open PHASE_TRACKER.md | [§8 Executive Reporting](#8-executive-reporting) |
 | Checking what the team is working on | Open TEAM_STATUS.md | [§9 Team Check-in](#9-team-check-in) |
@@ -379,7 +409,7 @@ gh pr create \
 
 If `PR_BODY.md` does not exist yet, paste **STORY.md** (story + ACs + tests + out of scope) into the PR body, or use the **story** template when GitHub offers the template dropdown (`?template=story.md`).
 
-**US-DESIGN-002 shortcut:** `npm run pr:open:us-design-002` (same as `gh pr create` with the story `PR_BODY.md`).
+**Dynamic story id:** `npm run pr:story -- resolve US-DESIGN-003` then `npm run pr:story -- create US-DESIGN-003 --title "[US-DESIGN-003] …" --draft` (see [STORY_PR_WORKFLOW.md](guides/STORY_PR_WORKFLOW.md)). **US-DESIGN-002 one-liner:** `npm run pr:open:us-design-002`.
 
 ---
 

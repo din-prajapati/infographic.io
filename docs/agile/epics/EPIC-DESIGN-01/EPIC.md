@@ -23,7 +23,7 @@
 | Milestone | Scope | Target | Status |
 |-----------|-------|--------|--------|
 | [M-DESIGN-01 — Theme & Global QA](milestones/M-DESIGN-01-theme-QA.md) | QA all non-editor pages (no code changes) | 2026-04-13 | ✅ Done |
-| [M-DESIGN-02 — Editor Token Fix](milestones/M-DESIGN-02-editor-tokens.md) | US-002 token pass (editor + AI chat + popovers); AI chat grep-clean; editor residuals optional follow-up | 2026-04-30 | 🟡 In Progress |
+| [M-DESIGN-02 — Editor Token Fix](milestones/M-DESIGN-02-editor-tokens.md) | US-002 ✅ merged; US-003 human QA + exit gates | 2026-04-30 | 🟡 In Progress |
 
 ---
 
@@ -32,7 +32,7 @@
 | Story ID | Title | Milestone | Status | PR |
 |----------|-------|-----------|--------|----|
 | [US-DESIGN-001](stories/US-DESIGN-001/STORY.md) | Theme system works on all non-editor screens | M-DESIGN-01 | 🟡 Partial (ACs 4–7 ✅ auto, ACs 1–3 🔲 human) | — |
-| [US-DESIGN-002](stories/US-DESIGN-002/STORY.md) | Editor + AI chat adopt design tokens + dark-mode polish | M-DESIGN-02 | ✅ Done | [#1](https://github.com/din-prajapati/infographic.io/pull/1) |
+| [US-DESIGN-002](stories/US-DESIGN-002/STORY.md) | Editor + AI chat adopt design tokens + dark-mode polish | M-DESIGN-02 | ✅ Done (merged) | [#1](https://github.com/din-prajapati/infographic.io/pull/1) |
 | [US-DESIGN-003](stories/US-DESIGN-003/STORY.md) | AI Generation flow has consistent UX states | M-DESIGN-02 | 🟡 AC1 ✅ auto, AC2–6 🔲 human | — |
 | [US-DESIGN-004](stories/US-DESIGN-004/STORY.md) | All pages have consistent typography and nav | M-DESIGN-01 | 🟡 AC1,5 ✅ auto, AC2–4,6 🔲 human | — |
 
@@ -116,22 +116,22 @@ text-gray-900         → text-foreground
 
 ---
 
-## Implementation update (2026-04-16)
+## Implementation update (2026-04-17)
 
-- **US-DESIGN-002:** Broad token pass on `feat/design-us-design-002-editor-tokens` (editor + AI chat + canvas selection; see [STORY.md](stories/US-DESIGN-002/STORY.md)).
-- **Verification (2026-04-15):** `ai-chat/*.tsx` — **no** `gray-*` / `zinc-*` / `bg-white` matches. `editor/` — **residual** matches remain (toolbar helpers, `EditableTitle`, preview/template chrome, etc.) — list in [M-DESIGN-02](milestones/M-DESIGN-02-editor-tokens.md).
-- **Shared menus:** `dropdown-menu.tsx` — `bg-popover` / `border-border`; `DropdownMenuSubContent` forwards `{...props}`.
-- **Right sidebar:** Quick Styles — preview chip + canvas-aware `getColorForStyle()`.
+- **US-DESIGN-002:** Merged to `main` via [PR #1](https://github.com/din-prajapati/infographic.io/pull/1) (2026-04-17) — editor + AI chat + canvas selection + shared `dropdown-menu` + Quick Styles contrast (see [STORY.md](stories/US-DESIGN-002/STORY.md)).
+- **Verification (2026-04-15):** `ai-chat/*.tsx` — **no** `gray-*` / `zinc-*` / `bg-white` matches. `editor/` — **residual** matches remain — list in [M-DESIGN-02](milestones/M-DESIGN-02-editor-tokens.md).
+- **Shared menus / Right sidebar:** as shipped in PR #1.
 
-**Remaining for M-DESIGN-02:** Merge US-DESIGN-002 PR, staging verify, **US-DESIGN-003** human TCs; optional sweep for **editor** residual Tailwind grays.
+**Remaining for M-DESIGN-02:** Staging smoke on merged `main`, **US-DESIGN-003** human TCs (re-run auto TCs where noted), milestone exit gates; optional editor residual Tailwind sweep.
 
 ---
 
 ## Definition of Done (Epic)
 
 - [x] M-DESIGN-01 closed ✅
-- [ ] M-DESIGN-02 closed (waiting on PR merge + US-DESIGN-003 QA wrap-up)
-- [ ] US-DESIGN-002 PR merged and verified on staging
+- [ ] M-DESIGN-02 closed (US-003 human QA + exit gates on [milestone](milestones/M-DESIGN-02-editor-tokens.md))
+- [x] US-DESIGN-002 PR merged ([#1](https://github.com/din-prajapati/infographic.io/pull/1) — 2026-04-17)
+- [ ] US-DESIGN-002 verified on staging (human smoke after deploy)
 - [ ] All 4 stories have status ✅ Done or remaining TCs formally deferred with issue ID
 - [ ] `npm run check` + `npm run test:unit` passing after code changes
 - [ ] [docs/MVP_LAUNCH_TRACKER.md](../../../../MVP_LAUNCH_TRACKER.md) design QA task ticked
@@ -139,4 +139,4 @@ text-gray-900         → text-foreground
 
 ---
 
-*Epic created: 2026-04-13 | Phase A QA run: 2026-04-13 | Last updated: 2026-04-15*
+*Epic created: 2026-04-13 | Phase A QA run: 2026-04-13 | Last updated: 2026-04-17*

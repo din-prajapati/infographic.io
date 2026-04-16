@@ -5,7 +5,7 @@
 > **Epic:** [EPIC-DESIGN-01](../../EPIC.md)  
 > **Milestone:** [M-DESIGN-02 — Editor Token Fix](../../milestones/M-DESIGN-02-editor-tokens.md)  
 > **Linear:** LIN-XXX  
-> **Created:** 2026-04-13 | **Closed:** 2026-04-16
+> **Created:** 2026-04-13 | **Closed:** 2026-04-17 (PR [#1](https://github.com/din-prajapati/infographic.io/pull/1) merged)
 
 ---
 
@@ -180,7 +180,7 @@ text-purple-700       → text-purple-500
 - [x] All TCs run and recorded (11 automated Playwright + 8 manual TC-DS-002-12 through -19)
 - [x] `npm run check` passes (zero new TypeScript errors)
 - [x] Manual canvas smoke: add text, shape — no regression
-- [ ] PR merged ([#1](https://github.com/din-prajapati/infographic.io/pull/1))
+- [x] PR merged ([#1](https://github.com/din-prajapati/infographic.io/pull/1) — 2026-04-17)
 - [x] STORY.md status updated to ✅ Done
 - [x] TASKS.md task list fully checked
 - [x] ISSUES.md findings documented

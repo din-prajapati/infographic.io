@@ -1,46 +1,26 @@
-# Open a GitHub PR for the current story
+# Open a GitHub PR for a story (quick path)
 
-Use this when the implementation branch is ready and tests have been run.
+> For **draft → review → approve → publish**, use the command **“Story PR: draft body → review → GitHub”** (`pr-story-draft-publish.md`) and rule `pr-workflow.mdc`.
+
+## When to use this command
+
+Use when the body is already finalized in **`PR_BODY.md`** (or you intentionally skip the `.draft.md` step) and you want a **single** `gh pr create` (see `STORY_PR_WORKFLOW.md` for `--draft` vs `--ready`).
 
 ## Steps
 
-1. Confirm branch name matches [GIT_STRATEGY.md](docs/agile/GIT_STRATEGY.md) (e.g. `feat/design-us-design-002-editor-tokens`).
-
-2. From repo root:
-
-   ```bash
-   npm run check
-   npm run test:unit
-   ```
-
-3. Review scope:
+1. Branch naming: `docs/agile/GIT_STRATEGY.md`
+2. `git push -u origin HEAD`
+3. **Draft (recommended):**
 
    ```bash
-   git fetch origin main
-   git diff origin/main --name-only
+   node scripts/pr-story.mjs init-draft US-DOMAIN-NNN
+   # edit PR_BODY.draft.md if needed, then:
+   node scripts/pr-story.mjs create US-DOMAIN-NNN --title "[US-DOMAIN-NNN] …" --draft
    ```
 
-4. Push branch:
-
-   ```bash
-   git push -u origin HEAD
-   ```
-
-5. Open PR with **US-DESIGN-002** body file (edit title if needed):
-
-   ```bash
-   npm run pr:open:us-design-002
-   ```
-
-   Or manually:
-
-   ```bash
-   gh pr create --base main --title "[US-DESIGN-002] Editor + AI chat design tokens & dark-mode polish" --body-file docs/agile/epics/EPIC-DESIGN-01/stories/US-DESIGN-002/PR_BODY.md
-   ```
-
-6. Paste the PR URL into `STORY.md` → **PR:** `#___` after merge, per [HOW_TO_USE.md](docs/agile/HOW_TO_USE.md) §7.
+4. Or **one-shot** (legacy shortcut for US-DESIGN-002 only): `npm run pr:open:us-design-002`
 
 ## References
 
-- [STORY_PR_WORKFLOW.md](docs/agile/guides/STORY_PR_WORKFLOW.md)
-- [PR_BODY.md](docs/agile/epics/EPIC-DESIGN-01/stories/US-DESIGN-002/PR_BODY.md) for this story
+- `docs/agile/guides/STORY_PR_WORKFLOW.md`
+- `node scripts/pr-story.mjs` (dynamic story id + `--draft` / `--ready`)

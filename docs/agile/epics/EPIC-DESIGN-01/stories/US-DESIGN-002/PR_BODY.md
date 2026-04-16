@@ -6,7 +6,7 @@
 |-------|----------------|
 | **Epic** | [EPIC-DESIGN-01](../../EPIC.md) |
 | **Milestone** | [M-DESIGN-02](../../milestones/M-DESIGN-02-editor-tokens.md) |
-| **Branch** | `feat/design-us-design-002-editor-tokens` |
+| **Merge** | [PR #1](https://github.com/din-prajapati/infographic.io/pull/1) merged to `main` (2026-04-17) |
 | **Linear** | LIN-XXX (update if linked) |
 
 ### User outcome

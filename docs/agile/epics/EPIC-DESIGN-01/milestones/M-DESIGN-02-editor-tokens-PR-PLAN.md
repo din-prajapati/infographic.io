@@ -10,9 +10,9 @@
 
 ### PR 1 — US-DESIGN-002: Editor design token replacement
 
-**Branch:** `feat/design-us-design-002-editor-tokens`  
-**Status (2026-04-16):** 🟡 **Ready for PR** — implementation complete on branch (wide token pass + shared `dropdown-menu` popover tokens + RightSidebar Quick Style / canvas contrast + FloatingToolbar add menu). Open GitHub PR → merge → record PR # in [STORY.md](../stories/US-DESIGN-002/STORY.md).  
-**Rationale:** Core visual fix (primary chrome + AI chat + popovers). **AI Chat** is grep-clean for common gray/white utilities; **editor** still has residual gray/white in secondary UI — optional follow-up after merge. Until this PR merges, ship gate for M-DESIGN-02 stays open.  
+**Branch:** `feat/design-us-design-002-editor-tokens` (merged — delete local branch when convenient)  
+**Status (2026-04-17):** ✅ **Merged** — [PR #1](https://github.com/din-prajapati/infographic.io/pull/1) to `main`.  
+**Rationale:** Core visual fix (primary chrome + AI chat + popovers). **AI Chat** grep-clean for common gray/white utilities; **editor** residual optional follow-up.  
 **Depends on:** Nothing (M-DESIGN-01 QA already done)  
 **Blocks:** PR 2 (US-DESIGN-003 human QA needs a working editor in both themes on staging)  
 **Files:** Editor + AI chat + `ui/dropdown-menu.tsx` + canvas elements (see [STORY.md](../stories/US-DESIGN-002/STORY.md) file list)  
@@ -59,7 +59,8 @@ PR 1: US-DESIGN-002 (editor tokens)     ← start here
 ## Milestone Exit Gate
 
 - [x] PR 1 implementation complete on branch (2026-04-16)
-- [ ] PR 1 merged and verified on staging
+- [x] PR 1 merged to `main` (2026-04-17 — [#1](https://github.com/din-prajapati/infographic.io/pull/1))
+- [ ] PR 1 verified on staging (post-deploy smoke)
 - [ ] PR 2 TCs recorded (pass or finding noted)
 - [ ] PR 3 merged OR human QA recorded as "no code changes needed"
 - [ ] `npm run check` passes

@@ -120,9 +120,10 @@ gh pr create --base main --title "[US-…] …" --body-file docs/agile/epics/…
 
 **Full workflow:** [docs/agile/guides/STORY_PR_WORKFLOW.md](guides/STORY_PR_WORKFLOW.md)  
 **Templates:** [.github/pull_request_template.md](../.github/pull_request_template.md) · [.github/PULL_REQUEST_TEMPLATE/story.md](../.github/PULL_REQUEST_TEMPLATE/story.md)  
-**US-DESIGN-002:** `npm run pr:open:us-design-002` (uses `PR_BODY.md` in that story folder)
+**Dynamic (any story):** `npm run pr:story -- resolve US-DOMAIN-NNN` · `npm run pr:story -- create … --draft` · `npm run pr:story -- promote <N>` — see `docs/agile/guides/STORY_PR_WORKFLOW.md`.  
+**US-DESIGN-002 shortcut:** `npm run pr:open:us-design-002` (uses `PR_BODY.md`).
 
-Or use the inline PR description template below when not using `PR_BODY.md`.
+Or use the inline PR description template below when not using body files.
 
 ### 2. PR Title Format
 ```

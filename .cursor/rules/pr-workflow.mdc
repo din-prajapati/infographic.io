@@ -1,42 +1,64 @@
 ---
-description: Open and describe GitHub PRs for agile stories — title, body, gh CLI, STORY.md traceability
+description: Draft → approve → GitHub PR (draft or ready); story id, body file, gh CLI — GitHub best practices
+globs: docs/agile/**/*.md,.github/**/*,scripts/pr-story.mjs
 alwaysApply: false
 ---
 
-# Pull requests — story workflow
+# Pull requests — two-phase story workflow (GitHub-aligned)
 
 ## When this applies
 
-Use when the user is **opening**, **editing**, or **reviewing** a GitHub PR tied to `docs/agile/epics/**/stories/US-*/STORY.md`.
+Use when the user wants a **pull request** tied to `docs/agile/epics/**/stories/US-*-*/STORY.md`, especially when they ask for a **draft**, **review first**, or **approve then publish**.
 
-## Title
+## Phase 1 — Draft only (no GitHub, or GitHub Draft)
 
-```text
-[US-{DOMAIN}-{NNN}] {short title from story}
+1. Resolve the story folder: `node scripts/pr-story.mjs resolve US-DOMAIN-NNN` (prints path).
+2. Build the PR body (from user paste, from `STORY.md` / `TASKS.md`, or edits to existing `PR_BODY.md`).
+3. Write **`PR_BODY.draft.md`** in that story folder (same folder as `STORY.md`).
+4. Show the user the draft path and a short summary (title + first lines). **Stop and wait** for explicit approval — do **not** open a non-draft PR without consent.
+
+**Optional GitHub Draft (good for CI + early feedback):** After local body is approved, prefer:
+
+```bash
+node scripts/pr-story.mjs create US-DOMAIN-NNN --title "[US-…] …" --draft
 ```
 
-Example: `[US-DESIGN-002] Editor + AI chat design tokens & dark-mode polish`
+Uses `PR_BODY.draft.md` by default (`--body-file` to override).
 
-## Body
+## Phase 2 — After user approval
 
-1. Prefer **`PR_BODY.md`** in the same story folder (e.g. `docs/agile/epics/EPIC-DESIGN-01/stories/US-DESIGN-002/PR_BODY.md`) and pass it to GitHub:
+Interpret the user’s intent:
 
-   ```bash
-   gh pr create --base main --title "..." --body-file docs/agile/epics/EPIC-DESIGN-01/stories/US-DESIGN-002/PR_BODY.md
-   ```
+| User says (examples) | Action |
+|---------------------|--------|
+| Approve **draft on GitHub** / “open draft PR” | `node scripts/pr-story.mjs create … --draft` (push branch first if needed). |
+| Approve **ready for review** / “publish PR” / “ready for reviewers” | If PR already exists as draft: `node scripts/pr-story.mjs promote <N>`. If not created yet: `node scripts/pr-story.mjs create … --ready` (creates non-draft PR). |
+| Copy draft to canonical body only | `node scripts/pr-story.mjs init-draft` copies `PR_BODY.md` → `PR_BODY.draft.md` only when seeding from published template; to promote draft text to `PR_BODY.md`, copy file explicitly or use `save-draft` source = edited draft. |
 
-2. Otherwise paste sections from **STORY.md**: user story, AC checklist, tests, out of scope.
+## Title convention
 
-3. Align with templates in `.github/pull_request_template.md` and `.github/PULL_REQUEST_TEMPLATE/story.md`.
+```text
+[US-{DOMAIN}-{NNN}] {short title}
+```
 
-## Commands
+## GitHub practices (follow these)
 
-- Full step-by-step: `docs/agile/guides/STORY_PR_WORKFLOW.md`
-- `npm run pr:open:us-design-002` — opens US-DESIGN-002 PR body file (after push)
-- PowerShell: `scripts/open-story-pr.ps1`
+- Prefer **`gh pr create --draft`** first so the PR does not imply “ready to merge” and reviewers get a clear signal ([GitHub: draft PRs](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests#draft-pull-requests)).
+- Use **`gh pr ready <N>`** to move draft → ready for review when the user approves.
+- Keep the body in-repo: **`PR_BODY.md`** (published) vs **`PR_BODY.draft.md`** (work in progress). Either may be committed; teams may gitignore `*.draft.md` if preferred.
+- One story per branch when possible (`docs/agile/GIT_STRATEGY.md`).
+- Do not add `Made-with: Cursor` trailers (`.cursor/rules/commit-messages.mdc`).
+- After merge: update `STORY.md`, `EPIC.md`, `TEAM_STATUS.md` (`docs/agile/HOW_TO_USE.md` §7).
 
-## Rules
+## Script reference
 
-- One **story** per branch / per PR when possible (`docs/agile/GIT_STRATEGY.md`).
-- Do not put `Made-with: Cursor` or similar trailers in commits (`.cursor/rules/commit-messages.mdc`).
-- After merge: update `STORY.md` PR #, `EPIC.md`, `TEAM_STATUS.md` per `docs/agile/HOW_TO_USE.md` §7.
+```text
+node scripts/pr-story.mjs resolve US-DESIGN-002
+node scripts/pr-story.mjs init-draft US-DESIGN-002
+node scripts/pr-story.mjs save-draft US-DESIGN-002 path/to/body.md
+node scripts/pr-story.mjs create US-DESIGN-002 --title "[US-DESIGN-002] …" --draft
+node scripts/pr-story.mjs create US-DESIGN-002 --title "[US-DESIGN-002] …" --ready
+node scripts/pr-story.mjs promote 42
+```
+
+Full guide: `docs/agile/guides/STORY_PR_WORKFLOW.md`
