@@ -40,7 +40,7 @@ function IconButton({
           className={`h-8 w-8 flex items-center justify-center rounded-md transition-colors ${
             isActive
               ? "bg-violet-100 dark:bg-violet-600 text-violet-700 dark:text-white"
-              : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"
+              : "hover:bg-muted text-muted-foreground"
           }`}
         >
           {children}
@@ -55,7 +55,7 @@ function IconButton({
 
 // Divider component
 function Divider() {
-  return <div className="w-px h-6 bg-gray-200 dark:bg-gray-700 mx-1" />;
+  return <div className="w-px h-6 bg-border mx-1" />;
 }
 
 export function TransparencyPanel({ element, position, onClose }: TransparencyPanelProps) {
@@ -119,7 +119,7 @@ export function TransparencyPanel({ element, position, onClose }: TransparencyPa
   return (
     <div
       ref={panelRef}
-      className="absolute bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 p-3 z-50 pointer-events-auto"
+      className="absolute bg-background rounded-lg shadow-xl border border-border p-3 z-50 pointer-events-auto"
       style={{
         left: `${clampedX}px`,
         top: `${panelY}px`,
@@ -128,7 +128,7 @@ export function TransparencyPanel({ element, position, onClose }: TransparencyPa
       }}
     >
       {/* Top Toolbar Row */}
-      <div className="flex items-center gap-2 border-b border-gray-200 dark:border-gray-700 pb-2 mb-2">
+      <div className="flex items-center gap-2 border-b border-border pb-2 mb-2">
         <IconButton
           onClick={toggleTransparencyGrid}
           isActive={showTransparencyGrid}
@@ -156,7 +156,7 @@ export function TransparencyPanel({ element, position, onClose }: TransparencyPa
           onChange={handleOpacityInputChange}
           min={0}
           max={100}
-          className="w-16 h-8 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-center text-sm font-medium text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-violet-400 dark:focus:ring-violet-600 focus:border-violet-400 dark:focus:border-violet-600 transition-all"
+          className="w-16 h-8 rounded-lg text-center text-sm font-medium focus:ring-2 focus:ring-violet-400 focus:border-violet-400 transition-all"
         />
       </div>
     </div>

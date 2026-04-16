@@ -457,8 +457,8 @@ export function RightSidebar() {
                           onClick={() => applyBrandPalette(palette)}
                           className={`w-full p-3 rounded-lg border-2 transition-all flex flex-col items-center gap-2 ${
                             isSelected
-                              ? "border-black bg-gray-50"
-                              : "border-gray-200 hover:border-purple-300 hover:bg-purple-50/50"
+                              ? "border-foreground bg-muted"
+                              : "border-border hover:border-purple-300 hover:bg-purple-50/10"
                           }`}
                         >
                           {/* Color Swatch Preview */}
@@ -475,7 +475,7 @@ export function RightSidebar() {
                           </div>
                           {/* Theme Name */}
                           <div className="w-full text-center">
-                            <div className="text-sm font-medium text-gray-900 flex items-center justify-center gap-1.5">
+                            <div className="text-sm font-medium text-foreground flex items-center justify-center gap-1.5">
                               {palette.name}
                               {isCustom && (
                                 <span className="text-xs px-1.5 py-0.5 bg-purple-100 text-purple-700 rounded">
@@ -494,7 +494,7 @@ export function RightSidebar() {
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  className="h-6 w-6 bg-white/90 hover:bg-white"
+                                  className="h-6 w-6 bg-background/90 hover:bg-background"
                                   onClick={(e) => e.stopPropagation()}
                                 >
                                   <MoreVertical className="w-3 h-3" />
@@ -549,7 +549,7 @@ export function RightSidebar() {
                       <button
                         key={index}
                         onClick={() => addStyledText(style, styleColor)}
-                        className="p-3 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50/50 transition-all group flex flex-col items-center gap-2"
+                        className="p-3 rounded-lg border border-border hover:border-blue-300 hover:bg-blue-50/10 transition-all group flex flex-col items-center gap-2"
                       >
                         {/* Preview with theme color */}
                         <div
@@ -563,10 +563,10 @@ export function RightSidebar() {
                           {style.example}
                         </div>
                         {/* Style Name */}
-                        <div className="text-xs text-gray-600 text-center">
+                        <div className="text-xs text-muted-foreground text-center">
                           {style.name}
                         </div>
-                        <div className="text-xs text-gray-400">
+                        <div className="text-xs text-muted-foreground">
                           {style.fontSize}px
                         </div>
                       </button>
@@ -578,10 +578,10 @@ export function RightSidebar() {
               <Separator />
 
               {/* Help Text */}
-              <div className="p-3 bg-gradient-to-br from-purple-50 to-blue-50 rounded-lg border border-purple-100">
+              <div className="p-3 bg-muted rounded-lg border border-border">
                 <div className="flex items-start gap-2">
-                  <Sparkles className="w-4 h-4 text-purple-600 mt-0.5 flex-shrink-0" />
-                  <div className="text-xs text-gray-700">
+                  <Sparkles className="w-4 h-4 text-purple-500 mt-0.5 flex-shrink-0" />
+                  <div className="text-xs text-foreground">
                     <div className="font-medium mb-1">Quick Tip</div>
                     Select an element on the canvas to edit its properties in the floating toolbar above it
                   </div>

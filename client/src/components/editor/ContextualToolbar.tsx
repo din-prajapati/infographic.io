@@ -61,7 +61,7 @@ export function ContextualToolbar({ element, position }: ContextualToolbarProps)
     }
   };
 
-  const toolbarClass = "absolute bg-white rounded-xl shadow-lg border border-gray-200 px-2 py-1.5 z-50 pointer-events-auto";
+  const toolbarClass = "absolute bg-background rounded-xl shadow-lg border border-border px-2 py-1.5 z-50 pointer-events-auto";
   const toolbarStyle = {
     left: `${clampedX}px`,
     top: `${Math.max(8, toolbarY)}px`,
@@ -74,7 +74,7 @@ export function ContextualToolbar({ element, position }: ContextualToolbarProps)
       <div ref={toolbarRef} className={toolbarClass} style={toolbarStyle}>
         <div className="flex items-center gap-2 px-2 py-1">
           <Layers className="w-4 h-4 text-violet-500" />
-          <span className="text-sm text-gray-700 font-medium">
+          <span className="text-sm text-foreground font-medium">
             {selectedElementIds.length} elements selected
           </span>
         </div>

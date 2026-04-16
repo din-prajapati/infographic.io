@@ -52,6 +52,7 @@ function DropdownMenuContent({
           backdropFilter: "blur(var(--glass-blur, 28px))",
           WebkitBackdropFilter: "blur(var(--glass-blur, 28px))",
         }}
+        {...props}
       />
     </DropdownMenuPrimitive.Portal>
   );
