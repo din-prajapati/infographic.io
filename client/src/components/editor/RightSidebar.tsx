@@ -28,6 +28,84 @@ import {
 
 type TabType = "design" | "property-details" | "agent-info";
 
+/** Parse #RGB or #RRGGBB for canvas / theme swatches (non-hex falls through). */
+function parseHexColor(input: string): { r: number; g: number; b: number } | null {
+  const s = input.trim();
+  const m = s.match(/^#([0-9a-f]{6}|[0-9a-f]{3})$/i);
+  if (!m) return null;
+  let h = m[1];
+  if (h.length === 3) {
+    h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2];
+  }
+  const n = parseInt(h, 16);
+  return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
+}
+
+function relativeLuminance(rgb: { r: number; g: number; b: number }): number {
+  const lin = (v: number) => {
+    v /= 255;
+    return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+  };
+  const R = lin(rgb.r);
+  const G = lin(rgb.g);
+  const B = lin(rgb.b);
+  return 0.2126 * R + 0.7152 * G + 0.0722 * B;
+}
+
+function canvasBackgroundIsLight(canvasBg: string): boolean {
+  const rgb = parseHexColor(canvasBg);
+  if (!rgb) return true;
+  return relativeLuminance(rgb) >= 0.45;
+}
+
+function canvasBackgroundIsDark(canvasBg: string): boolean {
+  const rgb = parseHexColor(canvasBg);
+  if (!rgb) return false;
+  return relativeLuminance(rgb) < 0.35;
+}
+
+function isInkTooLightForLightCanvas(hex: string): boolean {
+  const rgb = parseHexColor(hex);
+  if (!rgb) return false;
+  return relativeLuminance(rgb) > 0.58;
+}
+
+function isInkTooDarkForDarkCanvas(hex: string): boolean {
+  const rgb = parseHexColor(hex);
+  if (!rgb) return false;
+  return relativeLuminance(rgb) < 0.35;
+}
+
+function pickDarkestReadableSwatch(palette: string[]): string | null {
+  let best: string | null = null;
+  let bestLum = Infinity;
+  for (const c of palette) {
+    const rgb = parseHexColor(c);
+    if (!rgb) continue;
+    const lum = relativeLuminance(rgb);
+    if (lum < bestLum) {
+      bestLum = lum;
+      best = c;
+    }
+  }
+  return best !== null && bestLum <= 0.5 ? best : null;
+}
+
+function pickLightestReadableSwatch(palette: string[]): string | null {
+  let best: string | null = null;
+  let bestLum = -1;
+  for (const c of palette) {
+    const rgb = parseHexColor(c);
+    if (!rgb) continue;
+    const lum = relativeLuminance(rgb);
+    if (lum > bestLum) {
+      bestLum = lum;
+      best = c;
+    }
+  }
+  return best !== null && bestLum >= 0.65 ? best : null;
+}
+
 // Built-in brand color palettes
 const defaultBrandPalettes: BrandPalette[] = [
   {
@@ -161,6 +239,7 @@ export function RightSidebar() {
   const updateElement = useCanvasStore((state) => state.updateElement);
   const setBackgroundColor = useCanvasStore((state) => state.setBackgroundColor);
   const setSelectedThemeColors = useCanvasStore((state) => state.setSelectedThemeColors);
+  const backgroundColor = useCanvasStore((state) => state.backgroundColor);
   const canvasWidth = useCanvasStore((state) => state.canvasWidth);
   const canvasHeight = useCanvasStore((state) => state.canvasHeight);
 
@@ -179,9 +258,12 @@ export function RightSidebar() {
   // Get all palettes (default + custom)
   const allPalettes = [...defaultBrandPalettes, ...customPalettes];
 
-  // Semantic color mapping function
-  const getColorForStyle = (theme: BrandPalette | null, styleName: string): string => {
-    // Fallback default colors
+  // Semantic color mapping — adjusted so ink stays readable on current canvas background
+  const getColorForStyle = (
+    theme: BrandPalette | null,
+    styleName: string,
+    canvasBg: string,
+  ): string => {
     const defaultColors: Record<string, string> = {
       "Headline Large": "#1F1F1F",
       "Headline Medium": "#1F1F1F",
@@ -200,7 +282,6 @@ export function RightSidebar() {
     const colors = theme.colors;
     const lastColor = colors[colors.length - 1];
 
-    // Semantic mapping based on text hierarchy
     const styleMap: Record<string, number> = {
       "Headline Large": 0,
       "Headline Medium": 0,
@@ -213,7 +294,39 @@ export function RightSidebar() {
     };
 
     const colorIndex = styleMap[styleName] ?? 0;
-    return colors[Math.min(colorIndex, colors.length - 1)] || lastColor;
+    let raw = colors[Math.min(colorIndex, colors.length - 1)] || lastColor;
+
+    const bodyLike = ["Body Large", "Body", "Caption"];
+    const headingLike = ["Headline Large", "Headline Medium", "Title", "Subtitle"];
+
+    if (canvasBackgroundIsLight(canvasBg)) {
+      if (bodyLike.includes(styleName) && isInkTooLightForLightCanvas(raw)) {
+        const dark = pickDarkestReadableSwatch(colors);
+        raw = dark ?? defaultColors[styleName] ?? "#374151";
+        if (isInkTooLightForLightCanvas(raw)) {
+          raw = defaultColors[styleName] ?? "#374151";
+        }
+      }
+      if (styleName === "Price Tag" && isInkTooLightForLightCanvas(raw)) {
+        raw = defaultColors["Price Tag"];
+      }
+    }
+
+    if (canvasBackgroundIsDark(canvasBg)) {
+      const needsLightInk =
+        bodyLike.includes(styleName) ||
+        headingLike.includes(styleName) ||
+        styleName === "Price Tag";
+      if (needsLightInk && isInkTooDarkForDarkCanvas(raw)) {
+        const light = pickLightestReadableSwatch(colors);
+        raw = light ?? "#F4F4F5";
+        if (isInkTooDarkForDarkCanvas(raw)) {
+          raw = "#F4F4F5";
+        }
+      }
+    }
+
+    return raw;
   };
 
   // Apply brand palette to canvas
@@ -478,7 +591,7 @@ export function RightSidebar() {
                             <div className="text-sm font-medium text-foreground flex items-center justify-center gap-1.5">
                               {palette.name}
                               {isCustom && (
-                                <span className="text-xs px-1.5 py-0.5 bg-purple-100 text-purple-700 rounded">
+                                <span className="text-xs px-1.5 py-0.5 rounded bg-purple-500/15 text-purple-700 dark:text-purple-300">
                                   Custom
                                 </span>
                               )}
@@ -544,26 +657,28 @@ export function RightSidebar() {
                 
                 <div className="grid grid-cols-2 gap-2">
                   {textStyles.map((style, index) => {
-                    const styleColor = getColorForStyle(selectedTheme, style.name);
+                    const styleColor = getColorForStyle(selectedTheme, style.name, backgroundColor);
                     return (
                       <button
                         key={index}
                         onClick={() => addStyledText(style, styleColor)}
-                        className="p-3 rounded-lg border border-border hover:border-blue-300 hover:bg-blue-50/10 transition-all group flex flex-col items-center gap-2"
+                        className="p-3 rounded-lg border border-border hover:border-blue-400/50 hover:bg-accent/30 transition-all group flex flex-col items-center gap-2"
                       >
-                        {/* Preview with theme color */}
-                        <div
-                          className="text-center"
-                          style={{
-                            fontSize: Math.min(style.fontSize / 1.5, 32),
-                            fontWeight: style.fontWeight,
-                            color: styleColor,
-                          }}
-                        >
-                          {style.example}
+                        {/* Light “canvas” chip so dark headline colors stay legible on dark sidebar */}
+                        <div className="w-full flex items-center justify-center rounded-md border border-border bg-white py-2 min-h-[2.75rem]">
+                          <span
+                            className="text-center leading-none"
+                            style={{
+                              fontSize: Math.min(style.fontSize / 1.5, 32),
+                              fontWeight: style.fontWeight,
+                              color: styleColor,
+                            }}
+                          >
+                            {style.example}
+                          </span>
                         </div>
                         {/* Style Name */}
-                        <div className="text-xs text-muted-foreground text-center">
+                        <div className="text-xs text-foreground/90 text-center font-medium">
                           {style.name}
                         </div>
                         <div className="text-xs text-muted-foreground">
