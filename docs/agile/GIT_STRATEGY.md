@@ -82,6 +82,12 @@ git branch backup/my-branch-msg-before-rewrite my-branch
 bash scripts/rewrite-commit-messages-strip-cursor.sh main my-branch
 ```
 
+To remove a trailing `Made-with: Cursor` line from **HEAD** only (e.g. after a bad hook), from **Git Bash**:
+
+```bash
+bash scripts/strip-made-with-from-HEAD.sh
+```
+
 Alternative if you have a **clean** working tree: `git filter-branch` with `--msg-filter` and the same `sed` rules as in `scripts/rewrite-commit-messages-strip-cursor.sh`. See `git help filter-branch`.
 
 Only rewrite branches you have **not** yet pushed, or coordinate a force-push with collaborators. Remove `refs/original/*` backup refs after `filter-branch` if you used it.
