@@ -11,7 +11,7 @@
 | Item | State |
 |------|--------|
 | US-DESIGN-002 implementation | ✅ On branch `feat/design-us-design-002-editor-tokens` |
-| US-DESIGN-002 PR merged | ⏳ Pending — record PR# in [STORY.md](../stories/US-DESIGN-002/STORY.md) |
+| US-DESIGN-002 PR merged | ⏳ Open: [#1](https://github.com/din-prajapati/infographic.io/pull/1) — merge to `main` |
 | US-DESIGN-003 | 🟡 Partial (human TCs, live API) |
 | **AI Chat** — `gray-*` / `zinc-*` / `bg-white` in `components/ai-chat/*.tsx` | ✅ **0 matches** (grep) |
 | **Editor** — same pattern grep in `components/editor/` | 🟡 **Residual** — not fully cleared (see below) |

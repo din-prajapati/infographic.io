@@ -32,7 +32,7 @@
 | Story ID | Title | Milestone | Status | PR |
 |----------|-------|-----------|--------|----|
 | [US-DESIGN-001](stories/US-DESIGN-001/STORY.md) | Theme system works on all non-editor screens | M-DESIGN-01 | 🟡 Partial (ACs 4–7 ✅ auto, ACs 1–3 🔲 human) | — |
-| [US-DESIGN-002](stories/US-DESIGN-002/STORY.md) | Editor + AI chat adopt design tokens + dark-mode polish | M-DESIGN-02 | ✅ Done | Open PR from branch |
+| [US-DESIGN-002](stories/US-DESIGN-002/STORY.md) | Editor + AI chat adopt design tokens + dark-mode polish | M-DESIGN-02 | ✅ Done | [#1](https://github.com/din-prajapati/infographic.io/pull/1) |
 | [US-DESIGN-003](stories/US-DESIGN-003/STORY.md) | AI Generation flow has consistent UX states | M-DESIGN-02 | 🟡 AC1 ✅ auto, AC2–6 🔲 human | — |
 | [US-DESIGN-004](stories/US-DESIGN-004/STORY.md) | All pages have consistent typography and nav | M-DESIGN-01 | 🟡 AC1,5 ✅ auto, AC2–4,6 🔲 human | — |
 
