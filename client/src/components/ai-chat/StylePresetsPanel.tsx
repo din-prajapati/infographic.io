@@ -105,11 +105,11 @@ export function StylePresetsPanel({ isOpen, onClose, onPresetClick, buttonRef }:
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
             style={{ bottom: position.bottom, right: position.right }}
-            className="fixed w-80 bg-white rounded-xl shadow-xl border border-gray-200 z-[110] max-h-[500px] overflow-y-auto"
+            className="fixed w-80 bg-background rounded-xl shadow-xl border border-border z-[110] max-h-[500px] overflow-y-auto"
           >
-            <div className="p-4 border-b border-gray-100">
+            <div className="p-4 border-b border-border">
               <h3 className="font-semibold text-sm">Style Presets 🎨</h3>
-              <p className="text-xs text-gray-500 mt-1">Choose a design style</p>
+              <p className="text-xs text-muted-foreground mt-1">Choose a design style</p>
             </div>
 
             <div className="p-2">
@@ -120,14 +120,14 @@ export function StylePresetsPanel({ isOpen, onClose, onPresetClick, buttonRef }:
                     onPresetClick(preset);
                     onClose();
                   }}
-                  className="w-full flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="w-full flex items-start gap-3 p-3 rounded-lg hover:bg-muted transition-colors"
                 >
                   {/* Color Swatches */}
                   <div className="flex gap-1 shrink-0">
                     {preset.colors.map((color, colorIdx) => (
                       <div
                         key={colorIdx}
-                        className="w-6 h-6 rounded border border-gray-200"
+                        className="w-6 h-6 rounded border border-border"
                         style={{ backgroundColor: color }}
                       />
                     ))}
@@ -136,12 +136,12 @@ export function StylePresetsPanel({ isOpen, onClose, onPresetClick, buttonRef }:
                   {/* Info */}
                   <div className="flex-1 text-left">
                     <div className="text-sm flex items-center justify-between">
-                      <span>{preset.name}</span>
-                      <span className="text-xs px-2 py-0.5 bg-gray-100 rounded-full text-gray-600">
+                      <span className="text-foreground">{preset.name}</span>
+                      <span className="text-xs px-2 py-0.5 bg-muted rounded-full text-muted-foreground">
                         {preset.mood}
                       </span>
                     </div>
-                    <div className="text-xs text-gray-500 mt-0.5">{preset.description}</div>
+                    <div className="text-xs text-muted-foreground mt-0.5">{preset.description}</div>
                   </div>
                 </button>
               ))}

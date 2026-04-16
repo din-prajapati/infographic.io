@@ -74,7 +74,7 @@ export function ImageUploadPanel({ isOpen, onClose, onImageUpload, buttonRef }: 
         input.accept = 'image/*';
         input.multiple = true;
         input.onchange = (e) => {
-          const files = e.target.files;
+          const files = (e.target as HTMLInputElement | null)?.files;
           if (files) {
             handleFiles(files);
           }
@@ -102,12 +102,12 @@ export function ImageUploadPanel({ isOpen, onClose, onImageUpload, buttonRef }: 
             initial={{ opacity: 0, y: 10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
-            className="fixed bottom-32 right-8 w-80 bg-white rounded-xl shadow-xl border border-gray-200 z-[110]"
+            className="fixed bottom-32 right-8 w-80 bg-background rounded-xl shadow-xl border border-border z-[110]"
             style={position}
           >
-            <div className="p-4 border-b border-gray-100">
+            <div className="p-4 border-b border-border">
               <h3 className="font-semibold text-sm">Upload Reference 📷</h3>
-              <p className="text-xs text-gray-500 mt-1">Add images for AI to reference</p>
+              <p className="text-xs text-muted-foreground mt-1">Add images for AI to reference</p>
             </div>
 
             <div className="p-4 space-y-3">
@@ -119,13 +119,13 @@ export function ImageUploadPanel({ isOpen, onClose, onImageUpload, buttonRef }: 
                 onDrop={handleDrop}
                 className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
                   dragActive
-                    ? 'border-purple-500 bg-purple-50'
-                    : 'border-gray-200 hover:border-gray-300'
+                    ? 'border-purple-500 bg-purple-500/10'
+                    : 'border-border hover:border-foreground/30'
                 }`}
               >
-                <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                <p className="text-sm text-gray-600 mb-1">Drag & drop images here</p>
-                <p className="text-xs text-gray-500 mb-3">or</p>
+                <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+                <p className="text-sm text-muted-foreground mb-1">Drag & drop images here</p>
+                <p className="text-xs text-muted-foreground/60 mb-3">or</p>
                 <label className="inline-block">
                   <input
                     type="file"
@@ -134,7 +134,7 @@ export function ImageUploadPanel({ isOpen, onClose, onImageUpload, buttonRef }: 
                     className="hidden"
                     multiple
                   />
-                  <span className="px-4 py-2 bg-gray-900 text-white text-xs rounded-lg hover:bg-gray-800 cursor-pointer inline-block">
+                  <span className="px-4 py-2 bg-foreground text-background text-xs rounded-lg hover:bg-foreground/90 cursor-pointer inline-block">
                     Browse Files
                   </span>
                 </label>
@@ -143,14 +143,14 @@ export function ImageUploadPanel({ isOpen, onClose, onImageUpload, buttonRef }: 
               {/* Uploaded Images */}
               {uploadedImages.length > 0 && (
                 <div>
-                  <h4 className="text-xs text-gray-600 mb-2">Uploaded ({uploadedImages.length})</h4>
+                  <h4 className="text-xs text-muted-foreground mb-2">Uploaded ({uploadedImages.length})</h4>
                   <div className="grid grid-cols-3 gap-2">
                     {uploadedImages.map((img, idx) => (
                       <div key={idx} className="relative group">
                         <img
                           src={img}
                           alt={`Upload ${idx + 1}`}
-                          className="w-full aspect-square object-cover rounded-lg border border-gray-200"
+                          className="w-full aspect-square object-cover rounded-lg border border-border"
                         />
                         <button
                           onClick={() => removeImage(idx)}
@@ -165,8 +165,8 @@ export function ImageUploadPanel({ isOpen, onClose, onImageUpload, buttonRef }: 
               )}
 
               {/* Tips */}
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                <p className="text-xs text-blue-700">
+              <div className="bg-muted border border-border rounded-lg p-3">
+                <p className="text-xs text-foreground">
                   <strong>Tip:</strong> Upload property photos, style references, or brand logos for better AI results.
                 </p>
               </div>

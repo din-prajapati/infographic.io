@@ -85,11 +85,11 @@ export function QuickActionsPanel({ isOpen, onClose, onActionClick, buttonRef }:
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
             style={{ bottom: position.bottom, left: position.left }}
-            className="fixed -translate-x-1/2 w-80 bg-white rounded-xl shadow-xl border border-gray-200 z-[110]"
+            className="fixed -translate-x-1/2 w-80 bg-background rounded-xl shadow-xl border border-border z-[110]"
           >
-            <div className="p-4 border-b border-gray-100">
+            <div className="p-4 border-b border-border">
               <h3 className="font-semibold text-sm">Quick Actions ⚡</h3>
-              <p className="text-xs text-gray-500 mt-1">Instant AI enhancements</p>
+              <p className="text-xs text-muted-foreground mt-1">Instant AI enhancements</p>
             </div>
 
             <div className="p-2">
@@ -100,14 +100,14 @@ export function QuickActionsPanel({ isOpen, onClose, onActionClick, buttonRef }:
                     onActionClick(action.action);
                     onClose();
                   }}
-                  className="w-full flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="w-full flex items-start gap-3 p-3 rounded-lg hover:bg-muted transition-colors"
                 >
-                  <div className="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center shrink-0">
-                    <action.icon className="w-4 h-4 text-purple-600" />
+                  <div className="w-8 h-8 rounded-lg bg-purple-500/15 flex items-center justify-center shrink-0">
+                    <action.icon className="w-4 h-4 text-purple-500" />
                   </div>
                   <div className="flex-1 text-left">
-                    <div className="text-sm">{action.label}</div>
-                    <div className="text-xs text-gray-500">{action.description}</div>
+                    <div className="text-sm text-foreground">{action.label}</div>
+                    <div className="text-xs text-muted-foreground">{action.description}</div>
                   </div>
                 </button>
               ))}

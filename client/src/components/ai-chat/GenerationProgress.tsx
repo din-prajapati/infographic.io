@@ -40,7 +40,7 @@ export function GenerationProgress({ steps, currentStep }: GenerationProgressPro
                     ? 'bg-green-500'
                     : step.status === 'in-progress'
                     ? 'bg-purple-500'
-                    : 'bg-gray-200'
+                    : 'bg-muted'
                 }`}
               >
                 {step.status === 'completed' ? (
@@ -48,7 +48,7 @@ export function GenerationProgress({ steps, currentStep }: GenerationProgressPro
                 ) : step.status === 'in-progress' ? (
                   <Loader2 className="w-3.5 h-3.5 text-white animate-spin" />
                 ) : (
-                  <span className="text-xs text-gray-400">{idx + 1}</span>
+                  <span className="text-xs text-muted-foreground">{idx + 1}</span>
                 )}
               </div>
 
@@ -59,7 +59,7 @@ export function GenerationProgress({ steps, currentStep }: GenerationProgressPro
                     ? 'text-green-700'
                     : step.status === 'in-progress'
                     ? 'text-purple-700'
-                    : 'text-gray-500'
+                    : 'text-muted-foreground'
                 }`}
               >
                 {step.label}
@@ -67,7 +67,7 @@ export function GenerationProgress({ steps, currentStep }: GenerationProgressPro
 
               {/* Progress Bar */}
               {step.status === 'in-progress' && (
-                <div className="w-12 h-1 bg-gray-200 rounded-full overflow-hidden">
+                <div className="w-12 h-1 bg-muted rounded-full overflow-hidden">
                   <motion.div
                     initial={{ width: '0%' }}
                     animate={{ width: '100%' }}
@@ -82,7 +82,7 @@ export function GenerationProgress({ steps, currentStep }: GenerationProgressPro
 
         {/* Overall Progress Bar */}
         <div className="mt-4">
-          <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+          <div className="h-2 bg-muted rounded-full overflow-hidden">
             <motion.div
               initial={{ width: '0%' }}
               animate={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
@@ -90,7 +90,7 @@ export function GenerationProgress({ steps, currentStep }: GenerationProgressPro
               className="h-full bg-gradient-to-r from-purple-500 to-blue-500"
             />
           </div>
-          <p className="text-xs text-gray-600 mt-2 text-center">
+          <p className="text-xs text-muted-foreground mt-2 text-center">
             Step {currentStep + 1} of {steps.length}
           </p>
         </div>

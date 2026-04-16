@@ -202,17 +202,17 @@ export function EnhancedSuggestionsPanel({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] max-h-[80vh] bg-white rounded-2xl shadow-2xl z-[101] flex flex-col"
+            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] max-h-[80vh] bg-background rounded-2xl shadow-2xl z-[101] flex flex-col"
           >
             {/* Header */}
-            <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between shrink-0">
+            <div className="px-6 py-4 border-b border-border flex items-center justify-between shrink-0">
               <div>
-                <h3 className="font-semibold text-gray-900">AI Design Suggestions</h3>
-                <p className="text-sm text-gray-500 mt-0.5">
+                <h3 className="font-semibold text-foreground">AI Design Suggestions</h3>
+                <p className="text-sm text-muted-foreground mt-0.5">
                   Tailored for{' '}
-                  <span className="text-gray-900 font-medium">{propertyType}</span> properties
+                  <span className="text-foreground font-medium">{propertyType}</span> properties
                   {priceRange && (
-                    <> in the <span className="text-gray-900 font-medium">{priceRange}</span> range</>
+                    <> in the <span className="text-foreground font-medium">{priceRange}</span> range</>
                   )}
                 </p>
               </div>
@@ -229,7 +229,7 @@ export function EnhancedSuggestionsPanel({
                   <div>
                     <div className="flex items-center gap-2 mb-3">
                       <Palette className="w-4 h-4 text-purple-600" />
-                      <h4 className="font-medium text-gray-900">Design Ideas</h4>
+                      <h4 className="font-medium text-foreground">Design Ideas</h4>
                       <Badge variant="secondary" className="text-xs bg-purple-50 text-purple-700 border-0">
                         {designSuggestions.length}
                       </Badge>
@@ -251,7 +251,7 @@ export function EnhancedSuggestionsPanel({
                   <div>
                     <div className="flex items-center gap-2 mb-3">
                       <FileText className="w-4 h-4 text-blue-600" />
-                      <h4 className="font-medium text-gray-900">Content Suggestions</h4>
+                      <h4 className="font-medium text-foreground">Content Suggestions</h4>
                       <Badge variant="secondary" className="text-xs bg-blue-50 text-blue-700 border-0">
                         {contentSuggestions.length}
                       </Badge>
@@ -273,7 +273,7 @@ export function EnhancedSuggestionsPanel({
                   <div>
                     <div className="flex items-center gap-2 mb-3">
                       <Layout className="w-4 h-4 text-green-600" />
-                      <h4 className="font-medium text-gray-900">Layout Options</h4>
+                      <h4 className="font-medium text-foreground">Layout Options</h4>
                       <Badge variant="secondary" className="text-xs bg-green-50 text-green-700 border-0">
                         {layoutSuggestions.length}
                       </Badge>
@@ -308,11 +308,11 @@ function SuggestionCardItem({ card, onClick }: SuggestionCardItemProps) {
   return (
     <button
       onClick={onClick}
-      className="group relative overflow-hidden rounded-xl border-2 border-gray-200 hover:border-blue-500 transition-all hover:shadow-md text-left bg-white"
+      className="group relative overflow-hidden rounded-xl border-2 border-border hover:border-blue-500 transition-all hover:shadow-md text-left bg-background"
     >
       {/* Image */}
       {card.imageUrl && (
-        <div className="aspect-video overflow-hidden bg-gray-100">
+        <div className="aspect-video overflow-hidden bg-muted">
           <img
             src={card.imageUrl}
             alt={card.title}
@@ -328,18 +328,18 @@ function SuggestionCardItem({ card, onClick }: SuggestionCardItemProps) {
             {card.icon}
           </div>
           <div className="flex-1 min-w-0">
-            <h5 className="text-sm font-medium text-gray-900 line-clamp-1">{card.title}</h5>
+            <h5 className="text-sm font-medium text-foreground line-clamp-1">{card.title}</h5>
           </div>
         </div>
-        <p className="text-xs text-gray-600 line-clamp-2 mb-2">{card.description}</p>
-        
+        <p className="text-xs text-muted-foreground line-clamp-2 mb-2">{card.description}</p>
+
         {/* Tags */}
         {card.tags && card.tags.length > 0 && (
           <div className="flex flex-wrap gap-1">
             {card.tags.map((tag, index) => (
               <span
                 key={index}
-                className="text-xs px-2 py-0.5 bg-gray-100 text-gray-700 rounded-full"
+                className="text-xs px-2 py-0.5 bg-muted text-muted-foreground rounded-full"
               >
                 {tag}
               </span>
