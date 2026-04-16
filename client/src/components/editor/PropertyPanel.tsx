@@ -319,7 +319,7 @@ export function PropertyPanel() {
       <div className="p-6 border-t border-border">
         <Button
           onClick={handleGenerate}
-          className="w-full bg-black hover:bg-black/90 text-white h-11"
+          className="w-full bg-foreground hover:bg-foreground/90 text-background h-11"
         >
           <Sparkles className="w-4 h-4 mr-2 text-yellow-400" fill="currentColor" />
           Generate Infographic

@@ -18,7 +18,7 @@ interface ShapeToolbarProps {
 
 // Divider
 function Divider() {
-  return <div className="w-px h-6 bg-gray-200 mx-1" />;
+  return <div className="w-px h-6 bg-border mx-1" />;
 }
 
 export function ShapeToolbar({ element, onTransparencyClick }: ShapeToolbarProps) {
@@ -46,7 +46,7 @@ export function ShapeToolbar({ element, onTransparencyClick }: ShapeToolbarProps
       <Tooltip>
         <TooltipTrigger asChild>
           <div className="flex items-center gap-1.5 px-2">
-            <span className="text-xs text-gray-500 font-medium">Fill</span>
+            <span className="text-xs text-muted-foreground font-medium">Fill</span>
             <div className="relative">
               <input
                 type="color"
@@ -55,7 +55,7 @@ export function ShapeToolbar({ element, onTransparencyClick }: ShapeToolbarProps
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
               />
               <div 
-                className="w-6 h-6 rounded border border-gray-300 cursor-pointer shadow-sm"
+                className="w-6 h-6 rounded border border-border cursor-pointer shadow-sm"
                 style={{ backgroundColor: element.fill }}
               />
             </div>
@@ -72,7 +72,7 @@ export function ShapeToolbar({ element, onTransparencyClick }: ShapeToolbarProps
       <Tooltip>
         <TooltipTrigger asChild>
           <div className="flex items-center gap-1.5 px-2">
-            <span className="text-xs text-gray-500 font-medium">Border</span>
+            <span className="text-xs text-muted-foreground font-medium">Border</span>
             <div className="relative">
               <input
                 type="color"
@@ -81,7 +81,7 @@ export function ShapeToolbar({ element, onTransparencyClick }: ShapeToolbarProps
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
               />
               <div 
-                className="w-6 h-6 rounded border-2 cursor-pointer bg-white"
+                className="w-6 h-6 rounded border-2 cursor-pointer bg-background"
                 style={{ borderColor: element.stroke }}
               />
             </div>
@@ -98,7 +98,7 @@ export function ShapeToolbar({ element, onTransparencyClick }: ShapeToolbarProps
       <Tooltip>
         <TooltipTrigger asChild>
           <div className="flex items-center gap-1.5 px-2">
-            <span className="text-xs text-gray-500 font-medium">Width</span>
+            <span className="text-xs text-muted-foreground font-medium">Width</span>
             <Slider
               value={[element.strokeWidth]}
               onValueChange={handleStrokeWidthChange}
@@ -107,7 +107,7 @@ export function ShapeToolbar({ element, onTransparencyClick }: ShapeToolbarProps
               step={1}
               className="w-14"
             />
-            <span className="text-xs text-gray-600 w-4 text-right font-medium">
+            <span className="text-xs text-muted-foreground w-4 text-right font-medium">
               {element.strokeWidth}
             </span>
           </div>
@@ -124,7 +124,7 @@ export function ShapeToolbar({ element, onTransparencyClick }: ShapeToolbarProps
         <TooltipTrigger asChild>
           <button
             onClick={onTransparencyClick}
-            className="h-8 w-8 flex items-center justify-center rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors"
+            className="h-8 w-8 flex items-center justify-center rounded-md hover:bg-muted text-muted-foreground transition-colors"
           >
             <CircleDot className="w-4 h-4" strokeWidth={2} style={{ opacity: element.opacity }} />
           </button>
@@ -150,7 +150,7 @@ export function ShapeToolbar({ element, onTransparencyClick }: ShapeToolbarProps
                   step={1}
                   className="w-14"
                 />
-                <span className="text-xs text-gray-600 w-4 text-right font-medium">
+                <span className="text-xs text-muted-foreground w-4 text-right font-medium">
                   {element.cornerRadius}
                 </span>
               </div>
