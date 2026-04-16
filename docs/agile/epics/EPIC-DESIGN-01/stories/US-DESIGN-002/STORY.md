@@ -87,7 +87,7 @@
 ## Engineering / PR
 
 - **Branch:** `feat/design-us-design-002-editor-tokens`
-- **PR:** #_____ (fill when opened)
+- **PR:** [#1](https://github.com/din-prajapati/infographic.io/pull/1)
 
 **Post-merge verification note (2026-04-15):** `components/ai-chat/*.tsx` has **no** `gray-*` / `zinc-*` / `bg-white` matches. `components/editor/` still has **residual** Tailwind grays/whites in places (e.g. tooltips, `EditableTitle`, image toolbar, template chrome) — tracked in [M-DESIGN-02](../../milestones/M-DESIGN-02-editor-tokens.md); optional cleanup story if product wants zero grep.
 - **Total files modified:** 40+ component files (editor + AI chat + canvas + shared `dropdown-menu`)
@@ -180,7 +180,7 @@ text-purple-700       → text-purple-500
 - [x] All TCs run and recorded (11 automated Playwright + 8 manual TC-DS-002-12 through -19)
 - [x] `npm run check` passes (zero new TypeScript errors)
 - [x] Manual canvas smoke: add text, shape — no regression
-- [ ] PR merged (PR #{number})
+- [ ] PR merged ([#1](https://github.com/din-prajapati/infographic.io/pull/1))
 - [x] STORY.md status updated to ✅ Done
 - [x] TASKS.md task list fully checked
 - [x] ISSUES.md findings documented
