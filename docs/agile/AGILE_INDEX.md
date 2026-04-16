@@ -11,6 +11,7 @@
 | **Domain team board (what's now / next / blocked)** | [TEAM_STATUS.md](TEAM_STATUS.md) |
 | **Active story to implement next** | [TEAM_STATUS.md → Design → Ready to Start](TEAM_STATUS.md) |
 | **Git branch/commit/PR conventions** | [GIT_STRATEGY.md](GIT_STRATEGY.md) |
+| **Open a story PR (`gh`, `PR_BODY.md`, templates)** | [guides/STORY_PR_WORKFLOW.md](guides/STORY_PR_WORKFLOW.md) |
 | **Linear + GitHub integration setup** | [LINEAR_GITHUB.md](LINEAR_GITHUB.md) |
 
 ---
