@@ -1,5 +1,6 @@
 # Commit Template — US-DESIGN-002
 
+> **GitHub PR body:** use [`PR_BODY.md`](./PR_BODY.md) with `gh pr create --body-file …` (see [`docs/agile/guides/STORY_PR_WORKFLOW.md`](../../../guides/STORY_PR_WORKFLOW.md)).  
 > Edit the commit message and file list as needed before running.  
 > Stage files individually per phase for clean history, or squash into one.
 
