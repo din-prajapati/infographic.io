@@ -46,14 +46,14 @@ export function ResultsVariations({
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: index * 0.1 }}
             onClick={() => onSelectVariation(variation.id)}
-            className={`group relative flex flex-col bg-white border-2 rounded-lg overflow-hidden transition-all ${
+            className={`group relative flex flex-col bg-background border-2 rounded-lg overflow-hidden transition-all ${
               selectedVariationId === variation.id
                 ? 'border-blue-500 shadow-lg'
-                : 'border-gray-200 hover:border-gray-300 hover:shadow-md'
+                : 'border-border hover:border-foreground/30 hover:shadow-md'
             }`}
           >
             {/* Preview Image */}
-            <div className="relative aspect-video bg-gray-100 overflow-hidden">
+            <div className="relative aspect-video bg-muted overflow-hidden">
               <img
                 src={variation.previewUrl}
                 alt={variation.title}
@@ -70,8 +70,8 @@ export function ResultsVariations({
 
             {/* Info */}
             <div className="p-2.5">
-              <p className="text-xs font-medium text-gray-900 mb-0.5">{variation.title}</p>
-              <p className="text-xs text-gray-500 line-clamp-1">{variation.description}</p>
+              <p className="text-xs font-medium text-foreground mb-0.5">{variation.title}</p>
+              <p className="text-xs text-muted-foreground line-clamp-1">{variation.description}</p>
             </div>
           </motion.button>
         ))}
@@ -83,7 +83,7 @@ export function ResultsVariations({
           size="sm"
           variant="outline"
           onClick={onRegenerateAll}
-          className="h-8 px-3 gap-1.5 text-xs border-gray-300 hover:border-purple-400 hover:bg-purple-50"
+          className="h-8 px-3 gap-1.5 text-xs border-border hover:border-purple-400 hover:bg-purple-500/10"
         >
           <RefreshCw className="w-3.5 h-3.5" />
           Regenerate
@@ -95,7 +95,7 @@ export function ResultsVariations({
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex gap-2 pt-2 border-t border-gray-200"
+          className="flex gap-2 pt-2 border-t border-border"
         >
           <Button
             className="flex-1 bg-blue-600 hover:bg-blue-700"

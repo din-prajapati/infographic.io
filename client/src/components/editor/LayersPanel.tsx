@@ -56,8 +56,8 @@ export function LayersPanel() {
       />
       
       {/* Panel - slides from LEFT */}
-      <div 
-        className={`fixed top-0 left-0 h-full w-80 bg-white shadow-2xl z-[9998] flex flex-col transition-transform duration-300 ${
+      <div
+        className={`fixed top-0 left-0 h-full w-80 bg-sidebar shadow-2xl z-[9998] flex flex-col transition-transform duration-300 ${
           isAnimating ? 'translate-x-0' : '-translate-x-full'
         }`}
         style={{
@@ -67,22 +67,22 @@ export function LayersPanel() {
         }}
       >
         {/* Header */}
-        <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between bg-white">
+        <div className="px-4 py-3 border-b border-border flex items-center justify-between bg-sidebar">
           <div className="flex items-center gap-2">
             <button
               onClick={closePanel}
-              className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-500 transition-colors"
+              className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground transition-colors"
               title="Close"
             >
               <ChevronLeft className="w-5 h-5" strokeWidth={2} />
             </button>
-            <h2 className="text-base font-semibold text-gray-900">Layers</h2>
+            <h2 className="text-base font-semibold text-sidebar-foreground">Layers</h2>
           </div>
           <div className="flex items-center gap-1">
             {/* Add Menu */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-500 transition-colors">
+                <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground transition-colors">
                   <Plus className="w-4 h-4" strokeWidth={2} />
                 </button>
               </DropdownMenuTrigger>
@@ -97,7 +97,7 @@ export function LayersPanel() {
             {/* Close Button */}
             <button
               onClick={closePanel}
-              className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-500 transition-colors"
+              className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground transition-colors"
               title="Close"
             >
               <X className="w-4 h-4" strokeWidth={2} />
@@ -106,11 +106,11 @@ export function LayersPanel() {
         </div>
 
         {/* Layer Count Badge */}
-        <div className="px-4 py-2 border-b border-gray-100 flex items-center justify-between bg-gray-50/80">
-          <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+        <div className="px-4 py-2 border-b border-border flex items-center justify-between bg-sidebar/80">
+          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
             {sortedElements.length} {sortedElements.length === 1 ? 'Layer' : 'Layers'}
           </span>
-          <button className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700">
+          <button className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
             <span>Sort</span>
             <ChevronDown className="w-3 h-3" />
           </button>
@@ -121,13 +121,13 @@ export function LayersPanel() {
           <div className="p-2 space-y-1">
             {sortedElements.length === 0 ? (
               <div className="py-10 text-center">
-                <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-gray-100 flex items-center justify-center">
-                  <Layers className="w-5 h-5 text-gray-400" />
+                <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-muted flex items-center justify-center">
+                  <Layers className="w-5 h-5 text-muted-foreground" />
                 </div>
-                <p className="text-sm font-medium text-gray-600 mb-1">
+                <p className="text-sm font-medium text-sidebar-foreground mb-1">
                   No layers yet
                 </p>
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-muted-foreground">
                   Add elements to see them here
                 </p>
               </div>
@@ -152,8 +152,8 @@ export function LayersPanel() {
         </ScrollArea>
 
         {/* Footer */}
-        <div className="px-4 py-2 border-t border-gray-100 bg-gray-50/50">
-          <p className="text-xs text-gray-400 text-center">
+        <div className="px-4 py-2 border-t border-border bg-sidebar/50">
+          <p className="text-xs text-muted-foreground text-center">
             Drag layers to reorder
           </p>
         </div>

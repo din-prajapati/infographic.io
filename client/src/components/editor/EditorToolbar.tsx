@@ -46,13 +46,13 @@ export function EditorToolbar({
   }, [onSaveClick]);
 
   return (
-    <div className="h-14 bg-gray-900 px-4 flex items-center justify-between">
+    <div className="h-14 bg-background border-b border-border px-4 flex items-center justify-between">
       {/* Left Section - Back & Logo */}
       <div className="flex items-center gap-3">
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8 text-gray-400 hover:text-white hover:bg-gray-800"
+          className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted"
           onClick={onBackClick}
         >
           <ArrowLeft className="w-4 h-4" />
@@ -76,39 +76,39 @@ export function EditorToolbar({
 
       {/* Right Section - Actions */}
       <div className="flex items-center gap-2">
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className="h-9 gap-2 text-gray-300 hover:text-white hover:bg-gray-800 border border-gray-700"
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-9 gap-2 text-foreground hover:text-foreground hover:bg-muted border border-border"
           onClick={onSaveClick}
         >
           <Save className="w-4 h-4" />
           Save
         </Button>
 
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className="h-9 gap-2 text-gray-300 hover:text-white hover:bg-gray-800 border border-gray-700"
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-9 gap-2 text-foreground hover:text-foreground hover:bg-muted border border-border"
           onClick={onExportClick}
         >
           <Download className="w-4 h-4" />
           Export
         </Button>
 
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className="h-9 gap-2 text-gray-300 hover:text-white hover:bg-gray-800 border border-gray-700"
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-9 gap-2 text-foreground hover:text-foreground hover:bg-muted border border-border"
         >
           <Upload className="w-4 h-4 text-yellow-500" />
           Publish
         </Button>
-       
+
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8 text-gray-400 hover:text-white hover:bg-gray-800"
+          className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted"
         >
           <Share2 className="w-4 h-4" />
         </Button>
@@ -116,7 +116,7 @@ export function EditorToolbar({
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8 text-gray-400 hover:text-white hover:bg-gray-800"
+          className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted"
           onClick={onPreviewClick}
           title="Preview (P)"
         >

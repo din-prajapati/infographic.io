@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -21,7 +21,11 @@ import {
   Twitter,
   Youtube,
   Instagram,
+  CreditCard,
+  Info,
 } from "lucide-react";
+
+const PENDING_PLAN_KEY = "pending_subscription_plan";
 
 type PlanSegment = "individual" | "enterprise";
 
@@ -32,7 +36,7 @@ const planDescriptions: Record<string, string> = {
   BROKERAGE: "For brokerages with white-label needs",
 };
 
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { queryClient, redirectToLogin } from "@/lib/queryClient";
 import { paymentsApi, type ProviderInfo } from "@/lib/api";
 import { PLAN_CONFIG, type PlanTier } from "@shared/schema";
@@ -76,7 +80,7 @@ const faqs = [
   {
     question: "What formats can I download?",
     answer:
-      "Free plans include PNG downloads. Paid plans include PDF export. All images are high-resolution and optimized for social media and print.",
+      "All plans include high-resolution PNG and JPG downloads, optimized for social media and print-ready sizing. PDF export is coming soon.",
   },
   {
     question: "Do unused credits roll over?",
@@ -104,7 +108,6 @@ const darkFloatingChars = [
 ];
 
 export default function PricingPage() {
-  const { toast } = useToast();
   const [, setLocation] = useLocation();
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
   const [selectedCurrency, setSelectedCurrency] = useState<"INR" | "USD">("INR");
@@ -134,7 +137,19 @@ export default function PricingPage() {
     enabled: !!localStorage.getItem("auth_token"),
   });
 
-  const currentPlan = subscriptionData?.subscription?.planTier || "FREE";
+  /** Only paid / entitled states count as "current" on pricing cards — PENDING checkout must not show as Current Plan (SOLO appears active after dismissing Razorpay otherwise). */
+  const subscription = subscriptionData?.subscription;
+  const currentPlan: PlanTier | "FREE" =
+    subscription &&
+    (subscription.status === "ACTIVE" ||
+      subscription.status === "PAST_DUE" ||
+      subscription.status === "HALTED" ||
+      subscription.status === "PAUSED")
+      ? (subscription.planTier as PlanTier)
+      : "FREE";
+
+  const subscriptionBillingIsAnnual = (sub: { billingPeriod?: string }) =>
+    String(sub.billingPeriod ?? "MONTHLY").toUpperCase() === "ANNUAL";
 
   // Calculate annual price with 15% discount
   const calculateAnnualPrice = (monthlyPrice: number): number => {
@@ -158,9 +173,8 @@ export default function PricingPage() {
     onSuccess: (data) => {
       if (data.provider === "STRIPE" && data.checkoutUrl) {
         window.location.href = data.checkoutUrl;
-      } else if (data.shortUrl) {
-        window.open(data.shortUrl, "_blank");
       } else {
+        // Always use Razorpay JS checkout widget — shortUrl (hosted page) is unreliable in test mode
         openRazorpayCheckout(data);
       }
       queryClient.invalidateQueries({ queryKey: ["/api/v1/payments/subscription"] });
@@ -175,29 +189,34 @@ export default function PricingPage() {
         redirectToLogin();
         return;
       }
-      toast({
-        title: "Subscription Error",
+      toast.error("Subscription Error", {
         description: error.message || "Failed to create subscription",
-        variant: "destructive",
       });
     },
   });
 
   const openRazorpayCheckout = (data: any) => {
     if (typeof window.Razorpay === "undefined") {
-      toast({
-        title: "Payment Error",
+      toast.error("Payment Error", {
         description: "Payment system is loading. Please try again in a moment.",
-        variant: "destructive",
       });
       return;
     }
 
+    const planTierLabel = data.subscription?.planTier || "Paid";
+
+    const subscriptionId = data.providerSubscription?.id ?? data.subscription?.externalSubscriptionId;
+    if (!subscriptionId) {
+      toast.error("Payment Error", {
+        description: "Missing subscription ID. Please try again.",
+      });
+      return;
+    }
     const options = {
       key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-      subscription_id: data.providerSubscription?.id,
+      subscription_id: subscriptionId,
       name: "InfographicAI",
-      description: `${data.subscription?.planTier} Plan Subscription`,
+      description: `${planTierLabel} Plan Subscription`,
       handler: async (response: any) => {
         try {
           await paymentsApi.verifyPayment({
@@ -206,8 +225,7 @@ export default function PricingPage() {
             razorpaySignature: response.razorpay_signature,
           });
 
-          toast({
-            title: "Payment Successful",
+          toast.success("Payment Successful", {
             description: "Your subscription is now active!",
           });
 
@@ -216,12 +234,26 @@ export default function PricingPage() {
           });
           setLocation("/templates");
         } catch (error: any) {
-          toast({
-            title: "Verification Failed",
+          toast.error("Verification Failed", {
             description: error.message || "Payment verification failed",
-            variant: "destructive",
           });
         }
+      },
+      modal: {
+        ondismiss: async () => {
+          toast.error("Payment Cancelled", {
+            description:
+              "Checkout was closed before payment completed. We are cancelling the pending checkout.",
+          });
+          try {
+            await paymentsApi.cancelSubscription();
+          } catch {
+            // No PENDING sub, or cancel already applied — still refresh below
+          }
+          queryClient.invalidateQueries({
+            queryKey: ["/api/v1/payments/subscription"],
+          });
+        },
       },
       prefill: {
         email: "",
@@ -236,6 +268,23 @@ export default function PricingPage() {
     razorpay.open();
   };
 
+  // Auto-resume pending subscription after post-login redirect back to /pricing
+  useEffect(() => {
+    if (!localStorage.getItem("auth_token")) return;
+    const stored = localStorage.getItem(PENDING_PLAN_KEY);
+    if (!stored) return;
+    localStorage.removeItem(PENDING_PLAN_KEY);
+    try {
+      const { planTier, isAnnual } = JSON.parse(stored) as { planTier: PlanTier; isAnnual: boolean };
+      if (!planTier || planTier === "FREE") return;
+      if (isAnnual) setAnnualToggles((prev) => ({ ...prev, [planTier]: true }));
+      setLoadingPlan(planTier);
+      createSubscriptionMutation.mutate({ planTier, isAnnual: isAnnual ?? false });
+    } catch {
+      // ignore malformed stored value
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   const handleSubscribe = async (planTier: PlanTier) => {
     if (planTier === "FREE") {
       setLocation("/auth");
@@ -243,6 +292,10 @@ export default function PricingPage() {
     }
 
     if (!localStorage.getItem("auth_token")) {
+      localStorage.setItem(
+        PENDING_PLAN_KEY,
+        JSON.stringify({ planTier, isAnnual: annualToggles[planTier] || false }),
+      );
       redirectToLogin();
       return;
     }
@@ -266,51 +319,52 @@ export default function PricingPage() {
       icon: planIcons[tier] ?? Gift,
     }));
 
+  /** TEAM only under Enterprise — avoids duplicate Team card on Individual vs Enterprise (TC-SOLO-M-01). */
   const plans =
     planSegment === "individual"
-      ? allPlans.filter((p) => p.tier === "FREE" || p.tier === "SOLO" || p.tier === "TEAM")
+      ? allPlans.filter((p) => p.tier === "FREE" || p.tier === "SOLO")
       : allPlans.filter((p) => p.tier === "TEAM" || p.tier === "BROKERAGE");
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a]">
+    <div className="min-h-screen" style={{ background: 'var(--page-bg)' }}>
       {/* Nav - Dark glass style */}
-      <nav className="border-b border-white/10 bg-black/80 backdrop-blur-xl sticky top-0 z-50">
+      <nav className="border-b border-border glass sticky top-0 z-50">
         <div className="container flex h-16 items-center justify-between px-6 max-w-6xl mx-auto">
           <Link
             href="/"
-            className="flex items-center gap-2 font-bold text-lg text-white"
+            className="flex items-center gap-2 font-bold text-lg text-foreground"
           >
-            <Building2 className="h-7 w-7 text-white" />
+            <Building2 className="h-7 w-7 text-foreground" />
             <span>InfographicAI</span>
           </Link>
           <div className="flex items-center gap-8">
             <a
               href="/#features"
-              className="text-sm font-medium text-gray-400 hover:text-white"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground"
             >
               Features
             </a>
             <a
               href="/pricing"
-              className="text-sm font-medium text-white"
+              className="text-sm font-medium text-foreground"
             >
               Pricing
             </a>
             <a
               href="/#faqs"
-              className="text-sm font-medium text-gray-400 hover:text-white"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground"
             >
               FAQs
             </a>
             <a
               href="#enterprise"
-              className="text-sm font-medium text-gray-400 hover:text-white"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground"
             >
               Enterprise
             </a>
             <Link href="/auth">
               <Button
-                className="gap-2 bg-white hover:bg-gray-100 text-black rounded-full font-medium px-5"
+                className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full font-medium px-5"
               >
                 Get Started <ArrowRight className="h-4 w-4" />
               </Button>
@@ -322,14 +376,14 @@ export default function PricingPage() {
       {/* Header - Segment Toggle */}
       <section className="container px-6 pt-10 pb-6 text-center max-w-6xl mx-auto">
         <div className="flex justify-center mb-6">
-          <div className="inline-flex rounded-full bg-white/5 border border-white/10 p-1">
+          <div className="inline-flex rounded-full glass border border-border p-1">
             <button
               type="button"
               onClick={() => setPlanSegment("individual")}
               className={`rounded-full px-6 py-2.5 text-sm font-medium transition-all ${
                 planSegment === "individual"
-                  ? "bg-white text-black shadow-sm"
-                  : "text-gray-400 hover:text-gray-200"
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
               Individual
@@ -339,14 +393,37 @@ export default function PricingPage() {
               onClick={() => setPlanSegment("enterprise")}
               className={`rounded-full px-6 py-2.5 text-sm font-medium transition-all ${
                 planSegment === "enterprise"
-                  ? "bg-white text-black shadow-sm"
-                  : "text-gray-400 hover:text-gray-200"
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
               Enterprise
             </button>
           </div>
         </div>
+
+        {/* Test mode: show Razorpay test card details and expected amounts */}
+        {typeof import.meta.env.VITE_RAZORPAY_KEY_ID === "string" &&
+          import.meta.env.VITE_RAZORPAY_KEY_ID.startsWith("rzp_test_") && (
+          <div className="mx-auto max-w-2xl rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 text-left">
+            <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400 font-medium mb-2">
+              <Info className="h-4 w-4 shrink-0" />
+              Test mode — Razorpay
+            </div>
+            <p className="text-sm text-muted-foreground mb-3">
+              For <strong>subscriptions</strong>, Razorpay often shows a small <strong>refundable auth charge</strong> (e.g. ₹5) in the price summary first; the modal copy should still state the full recurring amount (
+              <strong>Solo ₹2,999/mo</strong>, <strong>Team ₹6,999/mo</strong>, or annual equivalent). If you only see ₹1 or wrong recurring text, check Dashboard plan amounts and <code className="bg-muted px-1 rounded text-xs">RAZORPAY_PLAN_*</code> in <code className="bg-muted px-1 rounded text-xs">.env</code>.
+            </p>
+            <div className="flex items-start gap-2 text-sm text-muted-foreground">
+              <CreditCard className="h-4 w-4 shrink-0 mt-0.5" />
+              <div>
+                <span className="font-medium text-foreground">Test card (subscriptions):</span>{" "}
+                <code className="bg-muted px-1 rounded">5267 3181 8797 5449</code>
+                {" "}(Mastercard). CVV: any 3 digits · Expiry: any future date · OTP: <strong>4–10 digits</strong> = success. Or use UPI: <code className="bg-muted px-1 rounded">success@razorpay</code>.
+              </div>
+            </div>
+          </div>
+        )}
       </section>
 
       {/* Pricing Cards - Emergent-style with per-card Annual toggle */}
@@ -357,73 +434,134 @@ export default function PricingPage() {
             const isPlanLoading = loadingPlan === plan.tier;
             const PlanIcon = plan.icon;
             const leadIn = featureLeadIn[plan.tier];
-            const isAnnual = annualToggles[plan.tier] || false;
             const showAnnualToggle = plan.price > 0;
+            /** Paid current tier: reflect API billing period (annual vs monthly), not local toggle. */
+            const isPaidCurrentCard =
+              isCurrentPlan && showAnnualToggle && subscription != null;
+            const isAnnual = isPaidCurrentCard
+              ? subscriptionBillingIsAnnual(subscription as { billingPeriod?: string })
+              : annualToggles[plan.tier] || false;
+            const annualSwitchLocked = isPaidCurrentCard;
 
             const displayPrice = isAnnual
               ? Math.round(calculateAnnualPrice(plan.price) / 12)
               : plan.price;
 
             const savings = calculateMonthlySavings(plan.price);
+            const annualTotalInr = calculateAnnualPrice(plan.price);
+            const subscriptionAmountInr =
+              subscription?.amount != null
+                ? Math.round(Number(subscription.amount) / 100)
+                : null;
 
             return (
               <div
                 key={plan.tier}
-                className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8 flex flex-col"
+                className="glass rounded-2xl border border-border p-8 flex flex-col"
               >
                 {/* Header with Annual Toggle */}
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
-                    <h3 className="text-xl font-bold text-white">{plan.name}</h3>
-                    <PlanIcon className="h-5 w-5 text-gray-400" />
+                    <h3 className="text-xl font-bold text-foreground">{plan.name}</h3>
+                    <PlanIcon className="h-5 w-5 text-muted-foreground" />
                   </div>
                   {showAnnualToggle && (
                     <div className="flex items-center gap-2">
-                      <span className="text-xs text-gray-400 font-medium">Annual</span>
+                      <span className="text-xs text-muted-foreground font-medium">Annual</span>
                       <Switch
                         checked={isAnnual}
-                        onCheckedChange={() => toggleAnnual(plan.tier)}
+                        disabled={annualSwitchLocked}
+                        onCheckedChange={() => {
+                          if (!annualSwitchLocked) toggleAnnual(plan.tier);
+                        }}
                         className="data-[state=checked]:bg-blue-600 border-2"
                       />
                     </div>
                   )}
                 </div>
 
-                <p className="text-sm text-gray-400 mb-6">
+                <p className="text-sm text-muted-foreground mb-6">
                   {planDescriptions[plan.tier]}
                 </p>
 
                 {/* Price */}
                 <div className="mb-6">
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-4xl font-bold text-white">
-                      {selectedCurrency === "INR" ? "₹" : "$"}
-                      {selectedCurrency === "INR"
-                        ? displayPrice.toLocaleString()
-                        : Math.round(displayPrice / 83).toLocaleString()}
-                    </span>
-                    <span className="text-base text-gray-500">/ month</span>
-                    {isAnnual && plan.price > 0 && (
-                      <span className="text-sm text-teal-400 font-medium bg-teal-400/10 px-2 py-0.5 rounded-full">
-                        Save{" "}
-                        {selectedCurrency === "INR" ? "₹" : "$"}
-                        {selectedCurrency === "INR"
-                          ? savings.toLocaleString()
-                          : Math.round(savings / 83).toLocaleString()}
-                      </span>
-                    )}
-                  </div>
+                  {isPaidCurrentCard &&
+                  subscriptionAmountInr != null &&
+                  subscriptionAmountInr > 0 ? (
+                    <div className="space-y-1">
+                      <div className="flex flex-wrap items-baseline gap-2">
+                        <span className="text-4xl font-bold text-foreground">
+                          {selectedCurrency === "INR" ? "₹" : "$"}
+                          {selectedCurrency === "INR"
+                            ? subscriptionAmountInr.toLocaleString()
+                            : Math.round(subscriptionAmountInr / 83).toLocaleString()}
+                        </span>
+                        <span className="text-base text-muted-foreground">
+                          {isAnnual ? "/ year" : "/ month"}
+                        </span>
+                        {isAnnual && (
+                          <span className="text-sm text-teal-400 font-medium bg-teal-400/10 px-2 py-0.5 rounded-full">
+                            Annual
+                          </span>
+                        )}
+                      </div>
+                      {isAnnual && (
+                        <p className="text-sm text-muted-foreground">
+                          ≈{" "}
+                          {selectedCurrency === "INR" ? "₹" : "$"}
+                          {selectedCurrency === "INR"
+                            ? Math.round(subscriptionAmountInr / 12).toLocaleString()
+                            : Math.round(subscriptionAmountInr / 12 / 83).toLocaleString()}
+                          /mo equivalent
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex flex-wrap items-baseline gap-2">
+                        <span className="text-4xl font-bold text-foreground">
+                          {selectedCurrency === "INR" ? "₹" : "$"}
+                          {selectedCurrency === "INR"
+                            ? displayPrice.toLocaleString()
+                            : Math.round(displayPrice / 83).toLocaleString()}
+                        </span>
+                        <span className="text-base text-muted-foreground">
+                          {isAnnual && plan.price > 0 ? "/ month equiv." : "/ month"}
+                        </span>
+                        {isAnnual && plan.price > 0 && (
+                          <span className="text-sm text-teal-400 font-medium bg-teal-400/10 px-2 py-0.5 rounded-full">
+                            Save{" "}
+                            {selectedCurrency === "INR" ? "₹" : "$"}
+                            {selectedCurrency === "INR"
+                              ? savings.toLocaleString()
+                              : Math.round(savings / 83).toLocaleString()}
+                          </span>
+                        )}
+                      </div>
+                      {isAnnual && plan.price > 0 && (
+                        <p className="text-sm text-muted-foreground mt-2">
+                          Billed annually at{" "}
+                          {selectedCurrency === "INR" ? "₹" : "$"}
+                          {selectedCurrency === "INR"
+                            ? annualTotalInr.toLocaleString()
+                            : Math.round(annualTotalInr / 83).toLocaleString()}
+                          /year (15% off vs monthly×12)
+                        </p>
+                      )}
+                    </>
+                  )}
                 </div>
 
                 {/* Features */}
                 {leadIn && (
-                  <p className="text-sm text-gray-500 mb-3">{leadIn}</p>
+                  <p className="text-sm text-muted-foreground mb-3">{leadIn}</p>
                 )}
                 <ul className="space-y-3 mb-8 flex-1">
                   {plan.features.map((feature) => (
                     <li
                       key={feature}
-                      className="flex items-start gap-2 text-sm text-gray-300"
+                      className="flex items-start gap-2 text-sm text-foreground"
                     >
                       <Check className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
                       <span>{feature}</span>
@@ -435,8 +573,8 @@ export default function PricingPage() {
                 <Button
                   className={`w-full h-12 rounded-full font-medium ${
                     isCurrentPlan
-                      ? "bg-white/10 text-gray-400"
-                      : "bg-white hover:bg-gray-100 text-black"
+                      ? "bg-accent text-muted-foreground"
+                      : "bg-primary hover:bg-primary/90 text-primary-foreground"
                   }`}
                   disabled={isCurrentPlan || isPlanLoading}
                   onClick={() => handleSubscribe(plan.tier)}
@@ -459,7 +597,7 @@ export default function PricingPage() {
       </section>
 
       {/* FAQ Section - Dark with floating typography */}
-      <section className="relative bg-[#0a0a0a] py-20 overflow-hidden">
+      <section className="relative bg-background py-20 overflow-hidden">
         {/* Floating Typography */}
         <div className="absolute inset-0 pointer-events-none select-none overflow-hidden">
           {darkFloatingChars.map((item, i) => (
@@ -482,10 +620,10 @@ export default function PricingPage() {
             <p className="text-xs uppercase tracking-widest text-gray-500 mb-2">
               FREQUENTLY ASKED QUESTIONS
             </p>
-            <h2 className="text-2xl md:text-4xl font-bold text-white">
+            <h2 className="text-2xl md:text-4xl font-bold text-foreground">
               Curious about InfographicAI?
             </h2>
-            <p className="text-xl md:text-2xl font-bold text-white">
+            <p className="text-xl md:text-2xl font-bold text-foreground">
               We got you covered
             </p>
           </div>
@@ -495,12 +633,12 @@ export default function PricingPage() {
               <AccordionItem
                 key={index}
                 value={`faq-${index}`}
-                className="bg-white/5 rounded-xl border border-white/10 px-6 overflow-hidden"
+                className="glass rounded-xl border border-border px-6 overflow-hidden"
               >
-                <AccordionTrigger className="text-left text-white hover:no-underline py-5 text-base font-medium">
+                <AccordionTrigger className="text-left text-foreground hover:no-underline py-5 text-base font-medium">
                   {faq.question}
                 </AccordionTrigger>
-                <AccordionContent className="text-gray-400 pb-5 text-sm leading-relaxed">
+                <AccordionContent className="text-muted-foreground pb-5 text-sm leading-relaxed">
                   {faq.answer}
                 </AccordionContent>
               </AccordionItem>
@@ -535,11 +673,11 @@ export default function PricingPage() {
             </Button>
           </Link>
         </div>
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#0a0a0a] to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
       </section>
 
       {/* Footer */}
-      <footer className="bg-[#0a0a0a] border-t border-white/10 py-16">
+      <footer className="bg-background border-t border-border py-16">
         <div className="container px-6 max-w-6xl mx-auto">
           <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
             <div className="col-span-2 md:col-span-1">

@@ -80,7 +80,7 @@ export function SelectionInfoPanel({ element, position }: SelectionInfoPanelProp
   return (
     <div
       ref={panelRef}
-      className="absolute bg-white/95 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg border border-gray-200/80 z-50 pointer-events-none"
+      className="absolute bg-background/95 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg border border-border/80 z-50 pointer-events-none"
       style={{
         left: `${panelX}px`,
         top: `${panelY}px`,
@@ -89,26 +89,26 @@ export function SelectionInfoPanel({ element, position }: SelectionInfoPanelProp
     >
       <div className="flex flex-col gap-1 min-w-[120px]">
         <div className="flex items-center gap-2">
-          <span className="text-xs font-medium text-gray-500">
+          <span className="text-xs font-medium text-muted-foreground">
             {getElementTypeLabel(element.type)}
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-xs text-gray-400">Size:</span>
-          <span className="text-xs font-semibold text-gray-900">
+          <span className="text-xs text-muted-foreground">Size:</span>
+          <span className="text-xs font-semibold text-foreground">
             {Math.round(element.width)} × {Math.round(element.height)}
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-xs text-gray-400">Position:</span>
-          <span className="text-xs font-semibold text-gray-900">
+          <span className="text-xs text-muted-foreground">Position:</span>
+          <span className="text-xs font-semibold text-foreground">
             {Math.round(element.x)}, {Math.round(element.y)}
           </span>
         </div>
         {element.name && (
           <div className="flex items-center gap-2">
-            <span className="text-xs text-gray-400">Name:</span>
-            <span className="text-xs font-semibold text-gray-900 truncate max-w-[100px]">
+            <span className="text-xs text-muted-foreground">Name:</span>
+            <span className="text-xs font-semibold text-foreground truncate max-w-[100px]">
               {element.name}
             </span>
           </div>

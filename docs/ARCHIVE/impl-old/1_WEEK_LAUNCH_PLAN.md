@@ -1,0 +1,899 @@
+# 🚀 1-Week MVP Launch Plan - Detailed Daily Checklist
+
+> **Goal:** Launch functional MVP in 7 days  
+> **Focus:** Core user journey - Create → Edit → Save → Export  
+> **Status:** **In progress** — payment + webhook MVP scope **signed off** **2026-04-10** ([PAYMENT_TEST_CHECKLIST.md](../PAYMENT_TEST_CHECKLIST.md)); **staging / prod smoke** + **Day 3–4 critical-path (10 flows)** still to run.  
+> **Last updated (housekeeping):** April 10, 2026 — aligned with [1_WEEK_LAUNCH_TRACKER.md](./1_WEEK_LAUNCH_TRACKER.md) and [MVP_LAUNCH_TRACKER.md](../MVP_LAUNCH_TRACKER.md).
+
+### Related documents
+
+| Document | Purpose |
+|----------|---------|
+| [1_WEEK_LAUNCH_TRACKER.md](./1_WEEK_LAUNCH_TRACKER.md) | Day-by-day **verification** and test steps vs this plan (**use for current Pass/Pending**) |
+| [MVP_LAUNCH_TRACKER.md](../MVP_LAUNCH_TRACKER.md) | Executive MVP + phase tracker |
+| [NEXT_PHASE_DEVELOPMENT.md](../NEXT_PHASE_DEVELOPMENT.md) | Post-MVP backlog (includes **§6 Organization invite flow**) |
+| [ORGANIZATION_INVITE_FLOW.md](../ORGANIZATION_INVITE_FLOW.md) | Draft **full** org invite (token/email) — builds on Account → Organization |
+| [PAYMENT_TEST_CHECKLIST.md](../PAYMENT_TEST_CHECKLIST.md) | RazorPay checkout & webhooks |
+| [PAYMENT_AUTOMATED_TESTING.md](../PAYMENT_AUTOMATED_TESTING.md) | Unit / integration / API smoke / E2E runbook |
+
+---
+
+## 📋 Pre-Launch Setup (Before Day 1)
+
+### Environment Setup
+- [ ] Codebase cloned and dependencies installed
+- [ ] Development server runs without errors
+- [ ] Git repository ready for commits
+- [ ] Issue tracker set up (GitHub Issues or similar)
+- [ ] Communication channel ready (Slack/Discord)
+
+### Tools Needed
+- [ ] Chrome DevTools ready
+- [ ] Firefox Developer Edition installed
+- [ ] Safari installed (if on Mac) or access to Mac
+- [ ] Code editor configured
+- [ ] Browser extensions disabled for testing
+
+---
+
+## 📅 DAY 1-2: Critical Feature Completion
+
+### Task 1.1: User Limit Enforcement ⚠️ **CRITICAL**
+
+**Status:** ✅ **COMPLETED** (February 2026)  
+**Priority:** 🔴 **HIGHEST**  
+**Effort:** 4-6 hours
+
+**Requirements:**
+- Enforce user count limits per organization based on plan tier
+- **TEAM Plan:** Maximum 5 users
+- **BROKERAGE Plan:** Unlimited users
+- **FREE/SOLO Plans:** Single user (implicit)
+
+**Implementation Steps:**
+
+1. **Database Schema Update:**
+   ```sql
+   -- Add user_count tracking to organizations table
+   ALTER TABLE organizations ADD COLUMN user_count INTEGER DEFAULT 1;
+   ```
+
+2. **Update PLAN_CONFIG Schema:**
+   **File:** `shared/schema.ts`
+   
+   Add `userLimit` field to PLAN_CONFIG:
+   ```typescript
+   export const PLAN_CONFIG: Record<PlanTier, {
+     name: string;
+     price: number;
+     currency: string;
+     limit: number; // Usage limit (infographics/month)
+     userLimit: number; // User limit (team members) - NEW FIELD
+     features: string[];
+     popular?: boolean;
+   }> = {
+     FREE: {
+       name: 'Free',
+       price: 0,
+       currency: 'INR',
+       limit: 3,
+       userLimit: 1, // NEW
+       features: ['3 infographics/month', 'Basic templates', 'Email support'],
+     },
+     SOLO: {
+       name: 'Solo',
+       price: 2999,
+       currency: 'INR',
+       limit: 50,
+       userLimit: 1, // NEW
+       features: ['50 infographics/month', 'All templates', 'Priority support', 'Custom branding'],
+       popular: true,
+     },
+     TEAM: {
+       name: 'Team',
+       price: 6999,
+       currency: 'INR',
+       limit: 200,
+       userLimit: 5, // NEW - 5 users limit
+       features: ['200 infographics/month', 'Team collaboration', '5 users', 'Advanced analytics'],
+     },
+     BROKERAGE: {
+       name: 'Brokerage',
+       price: 24999,
+       currency: 'INR',
+       limit: 1000,
+       userLimit: -1, // NEW - Unlimited (-1 means unlimited)
+       features: ['1000 infographics/month', 'Unlimited users', 'White-label', 'Dedicated support'],
+     },
+   };
+   ```
+
+3. **Backend Validation:**
+   - Add middleware to check user count before registration
+   - Add API endpoint to check current user count
+   - Add validation in `auth.service.ts` when assigning users to organizations
+   - Update `organizations.service.ts` to track user count
+
+4. **Frontend UI:**
+   - Show user count in organization settings
+   - Display warning when approaching limit
+   - Block new user invitations when limit reached
+
+5. **Error Handling:**
+   - Clear error messages when limit exceeded
+   - Upgrade prompts for TEAM plan users
+
+**Files to Modify:**
+- `api/prisma/schema.prisma` - Add user_count field
+- `shared/schema.ts` - Add userLimit to PLAN_CONFIG
+- `api/src/modules/auth/services/auth.service.ts` - Add validation
+- `api/src/modules/organizations/services/organizations.service.ts` - Add user count tracking
+- `client/src/components/organization/OrganizationSettings.tsx` - Add UI
+
+**Acceptance Criteria:**
+- ✅ TEAM plan organizations cannot add more than 5 users
+- ✅ BROKERAGE plan organizations can add unlimited users
+- ✅ Clear error messages when limit exceeded
+- ✅ Upgrade prompts displayed appropriately
+
+**Implementation Completed:**
+- ✅ `PLAN_USER_LIMITS` config added to `shared/schema.ts` (FREE=1, SOLO=1, TEAM=5, BROKERAGE=unlimited)
+- ✅ `UsersService` created at `api/src/modules/users/users.service.ts` with:
+  - `getUserLimit(planTier)` - Get user limit for a plan tier
+  - `canAddUser(organizationId)` - Check if organization can add more users
+  - `getRemainingUserSlots(organizationId)` - Get available user slots
+  - `addUserToOrganization(organizationId, userId)` - Add user with limit validation
+- ✅ `UsersController` created at `api/src/modules/users/users.controller.ts` with endpoints:
+  - `GET /api/v1/users/organization` - Get current user's organization
+  - `GET /api/v1/users/organization/members` - List organization members
+  - `GET /api/v1/users/organization/slots` - Get available user slots
+  - `POST /api/v1/users/organization/members/:userId` - Add member to organization
+  - `DELETE /api/v1/users/organization/members/:userId` - Remove member
+- ✅ Auth registration enforces limits when joining existing organization via `organizationId` parameter
+- ✅ Frontend `usersApi` added to `client/src/lib/api.ts` for organization management
+
+---
+
+### Task 1.1b: Usage Analytics Dashboard (Bonus Feature)
+
+**Status:** ✅ **COMPLETED** (February 2026)  
+**Priority:** 🟡 **MEDIUM**  
+**Effort:** 2-3 hours
+
+**Implementation Completed:**
+- ✅ New page at `/usage` route (`client/src/pages/UsageDashboardPage.tsx`)
+- ✅ Summary cards showing: Current Plan, Monthly Usage, Total Generated, Total Cost
+- ✅ Monthly usage bar chart with visual representation
+- ✅ Cost breakdown by AI model (pie chart)
+- ✅ Recent activity table with detailed generation history
+- ✅ Export functionality (CSV and JSON formats)
+- ✅ Connected to existing backend endpoints at `/api/v1/payments/usage/*`
+- ✅ Protected route (requires authentication)
+
+---
+
+### Task 1.2: RazorPay Account Setup & Testing
+
+**Status:** Setup ✅ **DONE** \| Checkout & E2E (SOLO/TEAM × monthly/annual) ✅ **PASS** **2026-04-10** — see [PAYMENT_TEST_CHECKLIST.md](../PAYMENT_TEST_CHECKLIST.md). **BROKERAGE** checkout ⏳ **Deferred** ([PT-06](../ISSUES_REPORT.md)).  
+**Priority:** 🔴 **HIGHEST**  
+**Effort:** Setup + SOLO/TEAM testing complete; BROKERAGE when plan IDs exist
+
+**Location:** `client/src/pages/PricingPage.tsx`, `api/src/modules/payments/`
+
+**Requirements:**
+- ~~Complete RazorPay test account setup~~ ✅
+- ~~Generate API keys (test mode)~~ ✅
+- ~~Create subscription plans (FREE, SOLO, TEAM, BROKERAGE)~~ ✅ (SOLO & TEAM configured)
+- ~~Configure webhooks~~ ✅ (webhook secret set in `.env`)
+
+**Implementation Steps:**
+
+#### 1. Set up RazorPay Test Account ✅ **DONE**
+
+> **📖 Detailed Guide:** See **[RazorPay Setup Guide](../payments/RAZORPAY_SETUP_GUIDE.md)** for complete step-by-step instructions with screenshots guidance, troubleshooting, and all details.
+
+**Quick Checklist:**
+- [x] Create RazorPay account at https://dashboard.razorpay.com/signup
+- [x] Enable Test Mode (toggle in top-right)
+- [x] Generate API Keys (Settings → API Keys → Generate Keys)
+  - Copy Key ID (`rzp_test_...`)
+  - Copy Key Secret (shown only once!)
+- [x] Create Subscription Plans (Products → Plans → Create Plan):
+  - SOLO Monthly & Annual (`RAZORPAY_PLAN_SOLO_MONTHLY`, `RAZORPAY_PLAN_SOLO_ANNUAL`)
+  - TEAM Monthly & Annual (`RAZORPAY_PLAN_TEAM_MONTHLY`, `RAZORPAY_PLAN_TEAM_ANNUAL`)
+  - BROKERAGE: add when needed
+- [x] Configure Environment Variables:
+  - Backend `.env`: `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET`, Plan IDs
+  - Frontend `.env`: `VITE_RAZORPAY_KEY_ID` (if used)
+- [x] Restart server and verify no errors
+
+**For detailed instructions, troubleshooting, and verification checklist, see:**  
+👉 **[docs/payments/RAZORPAY_SETUP_GUIDE.md](../payments/RAZORPAY_SETUP_GUIDE.md)**
+
+#### 2. Test Checkout Flow for Each Tier
+
+> **Canonical test data:** Subscription checkout uses Razorpay **subscription** test card (see [PAYMENT_TEST_CHECKLIST.md](../PAYMENT_TEST_CHECKLIST.md) — e.g. `5267 3181 8797 5449`). `4111…` is **not** for subscriptions.
+
+- [x] **SOLO Plan Test** — **Pass** **2026-04-10** (checklist **F-PAY-SOLO-M** + annual in **F-PAY-SOLO-A**)
+  - Navigate to `/pricing`
+  - Select SOLO plan
+  - Click "Subscribe" button
+  - Verify RazorPay checkout modal opens
+  - Complete test payment (**subscription** test card per checklist)
+  - Verify payment success callback
+  - Verify subscription created in database
+  - Verify user plan tier updated to SOLO
+  - Verify usage limits updated (50/month)
+
+- [x] **TEAM Plan Test** — **Pass** **2026-04-10** (**F-PAY-TEAM-M/A**)
+  - Repeat above steps for TEAM plan
+  - Verify plan tier updated to TEAM
+  - Verify usage limits updated (200/month)
+
+- [ ] **BROKERAGE Plan Test** — **Deferred** (**PT-06**): repeat when plan IDs exist in `.env`
+
+#### 3. Test Annual Billing
+- [x] Toggle to "Annual" billing — **Pass** **2026-04-10** (Solo + Team annual in checklist)
+- [x] Verify 15% discount applied
+- [x] Complete test payment
+- [x] Verify subscription created with annual billing period
+
+#### 4. Test Payment Failure Scenarios
+- [x] Failure path verified — **TC-X-FAIL-01** + unit coverage (`handlePaymentFailed`); Razorpay modal / no false **ACTIVE** without successful charge (**2026-04-10**)
+- [ ] Optional: failing card `4000 0000 0000 0002` (document result in checklist if run)
+- [x] Verify user does not get paid **ACTIVE** tier without successful payment webhook path
+
+**Acceptance Criteria:**
+- ✅ All tier checkout flows work
+- ✅ Payment completion updates database correctly
+- ✅ Subscription status is ACTIVE after payment
+- ✅ Usage limits updated correctly per tier
+- ✅ Payment failures handled gracefully
+- ✅ Annual discount applied correctly
+
+**Documentation:**
+- [x] Issues tracked in [ISSUES_REPORT.md](../ISSUES_REPORT.md); **2026-04-10** cross session: no new **PT-xx** ([PAYMENT_TEST_CHECKLIST.md](../PAYMENT_TEST_CHECKLIST.md) **TC-X-CLOSE-02**)
+- [x] Test cards / flows recorded in payment checklist session log
+- [x] Subscription IDs recorded in checklist **Finding** fields where applicable
+
+---
+
+### Task 1.3: Verify RazorPay Webhook Handling
+
+**Status:** Implementation ✅ **VERIFIED** \| Manual + automated webhook verification ✅ **PASS** **2026-04-10** ([1_WEEK_LAUNCH_TRACKER.md](./1_WEEK_LAUNCH_TRACKER.md) Task 1.3)  
+**Priority:** 🔴 **HIGHEST**  
+**Effort:** Complete for MVP scope; repeat Dashboard URL + secret when deploying new environments
+
+**Location:** `server/routes.ts`, `api/src/modules/payments/services/payments.service.ts`, `server/payments/providers/razorpay.provider.ts`
+
+**Implementation verified (code complete):**
+- **Endpoint:** `POST /api/webhooks/razorpay` (Express, raw body preserved in `server/index.ts` for signature verification).
+- **Signature:** `X-Razorpay-Signature` + `RAZORPAY_WEBHOOK_SECRET`; verified via HMAC SHA256 in `razorpay.provider.ts` → `verifyWebhookSignature()`.
+- **Events handled in NestJS** (`payments.controller.ts` → `payments.service.ts`):
+  - `subscription.activated` → subscription status set to ACTIVE
+  - `subscription.charged` → payment record created, subscription period updated, idempotency by external payment ID
+  - `subscription.cancelled` → subscription CANCELLED, organization downgraded to FREE (3/month)
+  - `payment.failed` → failed payment recorded, subscription set to PAST_DUE; idempotency by external payment ID
+- **Razorpay payload:** Subscription ID from `event.payload.subscription.entity` or `payment.subscription_id`; payment data from `event.payload.payment.entity`.
+
+#### 1. Configure Webhook Endpoint in RazorPay Dashboard
+
+> **📖 Detailed Guide:** See **[RazorPay Webhook Setup Guide](../payments/RAZORPAY_WEBHOOK_SETUP_GUIDE.md)** for complete step-by-step webhook configuration instructions.
+
+**Quick Checklist:** (repeat when creating a **new** Razorpay app / environment)
+- [x] Log in to RazorPay Dashboard (Test Mode) — **done** for QA **2026-04-10**
+- [x] Navigate to Settings → Webhooks
+- [x] Add webhook URL: `https://<your-host>/api/webhooks/razorpay` (staging or tunnel)
+  - **Local Apr 2026:** Tunnel + live events verified per [PAYMENT_TEST_CHECKLIST.md](../PAYMENT_TEST_CHECKLIST.md); confirm Razorpay docs for your account/region if tunnel fails.
+- [x] Select events:
+  - `subscription.activated`
+  - `subscription.charged`
+  - `subscription.cancelled`
+  - `payment.failed`
+- [x] Copy webhook secret (from Dashboard after creating the webhook)
+- [x] Add to environment: `RAZORPAY_WEBHOOK_SECRET=<your-secret>`
+- [x] Restart server and send test webhook / complete payment — **verified** **2026-04-10**
+
+**For detailed instructions, troubleshooting, and event details, see:**  
+👉 **[docs/payments/RAZORPAY_WEBHOOK_SETUP_GUIDE.md](../payments/RAZORPAY_WEBHOOK_SETUP_GUIDE.md)**
+
+#### 2. Test Webhook Signature Verification
+- [x] **Code:** Signature verification implemented (raw body + HMAC SHA256)
+- [x] Verify webhook secret is set: `RAZORPAY_WEBHOOK_SECRET`
+- [x] Test webhook endpoint receives requests — live + `npm run test:payment` valid/invalid HMAC (**2026-04-10**)
+- [x] Verify signature verification works:
+  - Valid signature → Process webhook
+  - Invalid signature → Reject with 401
+- [x] Check logs for webhook processing
+
+#### 3. Test Subscription Activated Webhook
+- [x] Trigger subscription activation (complete test payment) — payment checklist flows
+- [x] Verify webhook received at `/api/webhooks/razorpay`
+- [x] Verify webhook handler processes event (subscription / payment records per app)
+- [ ] Optional SQL spot-checks (if debugging):
+  ```sql
+  SELECT * FROM subscriptions WHERE status = 'ACTIVE';
+  SELECT * FROM invoices WHERE subscription_id = '...';
+  SELECT * FROM payments WHERE subscription_id = '...';
+  ```
+
+#### 4. Test Subscription Charged Webhook
+- [x] First charge / **Charge this now** — verified in checklist (e.g. Team annual); renewal cycle optional
+- [x] Verify webhook received
+- [x] Verify handler processes event (payment row, **PENDING→ACTIVE** where applicable)
+
+#### 5. Test Subscription Cancelled Webhook
+- [x] Cancel / upgrade path — **`subscription.cancelled`** observed (e.g. SOLO→TEAM **2026-04-10**)
+- [x] Verify handler processes event per implementation
+
+#### 6. Test Payment Failed Webhook
+- [x] Failure UX + unit **`handlePaymentFailed`** — checklist **TC-X-FAIL-01** / automation
+- [ ] Optional: failing-card webhook payload drill (document if run)
+
+**Acceptance Criteria:**
+- ✅ Webhook endpoint implemented: `POST /api/webhooks/razorpay`
+- ✅ Signature verification (HMAC SHA256, raw body)
+- ✅ All four events handled: subscription.activated, subscription.charged, subscription.cancelled, payment.failed
+- ✅ Database updates in place (subscription status, payments, organization downgrade on cancel)
+- ✅ Idempotency: subscription.charged and payment.failed skip when payment already recorded by external ID
+- ✅ Invalid signature returns 401
+- [x] **Manual:** End-to-end with real webhooks — **Pass** **2026-04-10** (see tracker Task 1.4 row)
+
+**Testing Tools:**
+- RazorPay Dashboard → Webhooks → Send Test Webhook
+- Local: tunnel + unified app per [RAZORPAY_WEBHOOK_SETUP_GUIDE.md](../payments/RAZORPAY_WEBHOOK_SETUP_GUIDE.md)
+- Check application logs for webhook processing
+
+**Documentation:**
+- [x] Implementation summary added above
+- [x] Webhook event flow evidenced in [PAYMENT_TEST_CHECKLIST.md](../PAYMENT_TEST_CHECKLIST.md) **Finding** fields
+- [x] Webhook secret: store in `.env` / platform secrets only (never commit)
+
+---
+
+### Task 1.4: End-to-End Payment Testing
+
+**Status:** ✅ **PASS** (MVP scope) **2026-04-10** — consolidated in [PAYMENT_TEST_CHECKLIST.md](../PAYMENT_TEST_CHECKLIST.md) + [1_WEEK_LAUNCH_TRACKER.md](./1_WEEK_LAUNCH_TRACKER.md) Task 1.4 table  
+**Priority:** 🔴 **HIGHEST**  
+**Effort:** Complete for SOLO/TEAM + automation; BROKERAGE when **PT-06** cleared
+
+**Note:** This task consolidates testing from Tasks 1.2 and 1.3 above. Detailed evidence is in the payment checklist, not only in this section.
+
+**Test Scenarios:**
+
+1. **New Subscription:**
+   - User selects SOLO plan
+   - Redirects to RazorPay checkout
+   - Completes payment with test card
+   - Webhook received and processed
+   - Subscription activated
+   - Usage limits updated
+
+2. **Plan Upgrade:**
+   - User on FREE plan upgrades to SOLO
+   - Payment processed
+   - Subscription updated
+   - Usage limits increased
+
+3. **Plan Downgrade:**
+   - User on TEAM plan downgrades to SOLO
+   - Subscription updated at period end
+   - Usage limits decreased
+
+4. **Payment Failure:**
+   - Test failed payment scenario
+   - Error handling works correctly
+   - User notified appropriately
+
+**Acceptance Criteria:**
+- ✅ All payment flows work correctly
+- ✅ Webhooks processed successfully
+- ✅ Subscription status updated correctly
+- ✅ Usage limits enforced correctly
+
+---
+
+### Task 1.5: Production Deployment & Monitoring
+
+**Status:** CI/CD + Sentry wiring ✅ **In repo** \| **Staging / production smoke** + secrets on Railway ⏳ **Human pending** (see [1_WEEK_LAUNCH_TRACKER.md](./1_WEEK_LAUNCH_TRACKER.md) Task 1.5)  
+**Priority:** 🔴 **HIGHEST**  
+**Effort:** ~2–3 hours human when go-live window scheduled
+
+**Goal:** Set up production environment and deploy  
+**Timeline:** Day 3-4 (or next go-live slot)
+
+#### Task 1.5.1: Production Environment Configuration (1-2 hours)
+
+**Steps:**
+
+1. **Environment Variables Setup**
+   - [ ] Create production `.env` file (or configure platform secrets)
+   - [ ] Set all required variables:
+     ```
+     # Database
+     DATABASE_URL=<production-postgres-url>
+     
+     # Authentication
+     JWT_SECRET=<strong-random-secret>
+     SESSION_SECRET=<strong-random-secret>
+     
+     # AI Services
+     OPENAI_API_KEY=<production-key>
+     IDEOGRAM_API_KEY=<production-key>
+     
+     # Payment (RazorPay)
+     RAZORPAY_KEY_ID=<live-key>
+     RAZORPAY_KEY_SECRET=<live-secret>
+     RAZORPAY_WEBHOOK_SECRET=<live-webhook-secret>
+     
+     # App Config
+     NODE_ENV=production
+     CLIENT_URL=https://your-domain.com
+     API_PORT=3001
+     ```
+   - [ ] Verify all secrets are set (never commit to git)
+   - [ ] Document secret locations
+
+2. **Production Database Setup**
+   - [ ] Provision production PostgreSQL database
+   - [ ] Run migrations:
+     ```bash
+     npx prisma migrate deploy
+     ```
+   - [ ] Verify database connection:
+     ```bash
+     npx prisma db pull
+     ```
+   - [ ] Seed initial data (templates):
+     ```bash
+     npx prisma db seed
+     ```
+   - [ ] Verify database tables created:
+     - Users, Organizations, Templates
+     - Subscriptions, Payments, Invoices
+     - Infographics, Designs, Conversations
+
+3. **Build Production Bundle**
+   - [ ] Install dependencies:
+     ```bash
+     npm install
+     cd api && npm install
+     ```
+   - [ ] Build frontend:
+     ```bash
+     npm run build
+     ```
+   - [ ] Verify build output in `dist/` directory
+   - [ ] Test production build locally:
+     ```bash
+     npm run start
+     ```
+   - [ ] Verify all pages load correctly
+   - [ ] Check for console errors
+
+**Acceptance Criteria:**
+- ✅ All environment variables configured
+- ✅ Production database connected
+- ✅ Migrations applied successfully
+- ✅ Production build successful
+- ✅ No build errors or warnings
+- ✅ Local production build works
+
+---
+
+#### Task 1.5.2: Deploy to Production (1 hour)
+
+**Steps:**
+
+1. **Choose Deployment Platform**
+   - [ ] Select platform (Vercel, Netlify, Railway, etc.)
+   - [ ] Configure deployment settings
+   - [ ] Set environment variables in platform dashboard
+
+2. **Deploy Application**
+   - [ ] Push code to production branch
+   - [ ] Trigger deployment
+   - [ ] Monitor deployment logs
+   - [ ] Verify deployment successful
+
+3. **Post-Deployment Verification**
+   - [ ] Test production URL loads
+   - [ ] Verify API endpoints accessible:
+     - `GET /api/v1/templates`
+     - `GET /api/v1/infographics`
+   - [ ] Test authentication:
+     - Register new user
+     - Login with credentials
+   - [ ] Verify database connection
+   - [ ] Check application logs for errors
+
+**Acceptance Criteria:**
+- ✅ Application deployed successfully
+- ✅ Production URL accessible
+- ✅ API endpoints working
+- ✅ Authentication working
+- ✅ Database connected
+- ✅ No critical errors in logs
+
+**Rollback Plan:**
+- [ ] Document rollback procedure
+- [ ] Keep previous deployment version available
+- [ ] Test rollback process
+
+---
+
+#### Task 1.5.3: Monitoring Setup
+
+**Requirements:**
+- Configure monitoring and logging
+- Set up error tracking
+- Configure uptime monitoring
+
+**Implementation Steps:**
+
+1. **Application Logging:**
+   - Configure application logging (Winston/Pino)
+   - Set up log aggregation
+   - Configure log levels
+
+2. **Error Tracking:**
+   - Set up error tracking (Sentry/Bugsnag)
+   - Configure error alerts
+   - Set up error notification channels
+
+3. **Uptime Monitoring:**
+   - Configure uptime monitoring (UptimeRobot/Pingdom)
+   - Set up health check endpoints
+   - Configure alert notifications
+
+4. **Performance Monitoring:**
+   - Set up performance monitoring (New Relic/DataDog)
+   - Configure performance alerts
+   - Track key metrics
+
+5. **Health Checks:**
+   - Configure health check endpoints
+   - Set up database connection monitoring
+   - Configure API endpoint monitoring
+
+**Acceptance Criteria:**
+- ✅ Application logging configured
+- ✅ Error tracking set up and working
+- ✅ Uptime monitoring configured
+- ✅ Performance monitoring configured
+- ✅ Health checks passing
+
+---
+
+## 📅 DAY 3-4: Testing & Bug Fixes
+
+### Task 2.1: Critical Path Testing
+
+**Priority:** 🔴 **HIGH**  
+**Effort:** 4-6 hours
+
+**Test Areas:**
+- User registration and login
+- Infographic generation
+- Payment and subscription
+- User limit enforcement
+- Usage limit enforcement
+
+**Test Flows:**
+
+**Test Flow 1: User Registration & First Generation**
+- [ ] **Registration:**
+  - [ ] Navigate to `/auth`
+  - [ ] Fill registration form
+  - [ ] Submit registration
+  - [ ] Verify user created in database
+  - [ ] Verify organization created with FREE tier
+  - [ ] Verify redirect to home page
+  - [ ] Verify user logged in
+
+- [ ] **First Infographic Generation:**
+  - [ ] Navigate to generation form
+  - [ ] Fill property details
+  - [ ] Select AI model
+  - [ ] Submit generation request
+  - [ ] Verify generation started
+  - [ ] Verify status updates in real-time (WebSocket)
+  - [ ] Wait for completion
+  - [ ] Verify infographic appears in gallery
+  - [ ] Verify image URL is accessible
+  - [ ] Verify usage count incremented (1/3 for FREE tier)
+
+**Test Flow 2: Payment & Subscription Upgrade**
+- [ ] **Upgrade to SOLO Plan:**
+  - [ ] Navigate to `/pricing`
+  - [ ] Select SOLO plan
+  - [ ] Complete RazorPay checkout
+  - [ ] Verify payment success
+  - [ ] Verify subscription created
+  - [ ] Verify plan tier updated to SOLO
+  - [ ] Verify usage limits updated (50/month)
+  - [ ] Verify subscription card shows SOLO plan
+
+- [ ] **Generate More Infographics:**
+  - [ ] Generate 5 more infographics
+  - [ ] Verify all complete successfully
+  - [ ] Verify usage count increments (6/50)
+  - [ ] Verify no limit errors
+
+**Test Flow 3: Canvas Editor & Save/Load**
+- [ ] **Create Design:**
+  - [ ] Navigate to `/editor`
+  - [ ] Add text element
+  - [ ] Add shape element
+  - [ ] Add image element
+  - [ ] Edit properties (colors, fonts, sizes)
+  - [ ] Save design
+  - [ ] Verify design saved to database
+  - [ ] Verify thumbnail generated
+
+- [ ] **Load Design:**
+  - [ ] Navigate to `/my-designs`
+  - [ ] Click saved design
+  - [ ] Verify design loads in editor
+  - [ ] Verify all elements restored correctly
+  - [ ] Verify properties match saved state
+
+- [ ] **Export Design:**
+  - [ ] Click "Export" button
+  - [ ] Verify PNG downloads
+  - [ ] Verify image quality is good
+  - [ ] Verify no UI elements in export
+
+**Test Flow 4: Template Loading**
+- [ ] **Load Template from AI Chat:**
+  - [ ] Open AI Chat Box
+  - [ ] Select category chip
+  - [ ] Click prompt suggestion
+  - [ ] Click "Generate"
+  - [ ] Wait for generation
+  - [ ] Click "Use This Design"
+  - [ ] Verify template loads in editor
+  - [ ] Verify canvas elements restored
+  - [ ] Verify can edit template
+
+**Test Flow 5: User Limit Enforcement**
+- [ ] **TEAM Plan User Limit:**
+  - [ ] Create TEAM plan organization
+  - [ ] Add 5 users successfully
+  - [ ] Attempt to add 6th user
+  - [ ] Verify error message displays correctly
+  - [ ] Verify upgrade prompt shows
+  - [ ] Verify user NOT added
+
+- [ ] **BROKERAGE Plan Unlimited Users:**
+  - [ ] Create BROKERAGE plan organization
+  - [ ] Add multiple users (10+)
+  - [ ] Verify all users added successfully
+  - [ ] Verify no limit errors
+
+**Test Flow 6: Cross-Browser Testing**
+- [ ] **Chrome:**
+  - [ ] Test all flows above
+  - [ ] Verify no console errors
+  - [ ] Verify responsive design works
+
+- [ ] **Firefox:**
+  - [ ] Test all flows above
+  - [ ] Verify no Firefox-specific issues
+  - [ ] Verify LocalStorage works
+
+- [ ] **Safari:**
+  - [ ] Test all flows above
+  - [ ] Verify no Safari-specific issues
+  - [ ] Verify WebSocket works
+
+**Acceptance Criteria:**
+- ✅ All critical flows work end-to-end
+- ✅ No data loss or corruption
+- ✅ Payment flow works correctly
+- ✅ Canvas editor functions properly
+- ✅ Cross-browser compatibility verified
+- ✅ Performance acceptable (<3s load time)
+- ✅ No critical errors in console
+
+**Documentation:**
+- [ ] Document any issues found
+- [ ] Prioritize issues (Critical/High/Medium/Low)
+- [ ] Create GitHub issues for bugs
+
+---
+
+### Task 2.2: Bug Fixes
+
+**Priority:** 🔴 **HIGH**  
+**Effort:** 4-8 hours
+
+**Focus Areas:**
+- Critical bugs blocking launch
+- Payment flow issues
+- User limit enforcement bugs
+- Performance issues
+
+**Bug Fix Process:**
+1. Document all bugs found during testing
+2. Prioritize by severity (Critical > High > Medium > Low)
+3. Fix critical bugs first
+4. Re-test fixes
+5. Document remaining non-critical bugs for post-launch
+
+---
+
+## 📅 DAY 5-7: Launch Preparation
+
+### Task 3.1: Pre-Launch Checklist (1 hour)
+
+**Final Verification:**
+- [ ] **Code:**
+  - [ ] All critical bugs fixed
+  - [ ] No console errors
+  - [ ] No TypeScript errors
+  - [ ] Code committed to git
+  - [ ] Production build successful
+
+- [ ] **Infrastructure:**
+  - [ ] Production database running
+  - [ ] Environment variables set
+  - [ ] Webhook endpoints configured
+  - [ ] SSL certificate active
+  - [ ] Domain configured
+
+- [ ] **Payment:**
+  - [ ] RazorPay live keys configured
+  - [ ] Webhook secret set
+  - [ ] Test payment completed successfully
+  - [ ] Subscription activation verified
+
+- [ ] **Monitoring:**
+  - [ ] Error tracking configured (Sentry or similar)
+  - [ ] Logging configured
+  - [ ] Uptime monitoring set up (optional)
+  - [ ] Alert notifications configured
+
+- [ ] **Documentation:**
+  - [ ] README updated
+  - [ ] User guide available (optional)
+  - [ ] API documentation accessible
+  - [ ] Support email configured
+
+**Acceptance Criteria:**
+- ✅ All checklist items completed
+- ✅ No blocking issues
+- ✅ Ready for launch
+
+---
+
+### Task 3.2: Launch & Monitor (1-2 hours)
+
+**Launch Steps:**
+
+1. **Deploy Final Version**
+   - [ ] Push final code to production
+   - [ ] Verify deployment successful
+   - [ ] Smoke test critical paths
+
+2. **Announce Launch**
+   - [ ] Post launch announcement
+   - [ ] Share with beta testers
+   - [ ] Update social media (if applicable)
+
+3. **Monitor First Hour**
+   - [ ] Watch error logs
+   - [ ] Monitor user signups
+   - [ ] Check payment processing
+   - [ ] Verify webhook processing
+   - [ ] Respond to any issues immediately
+
+**Acceptance Criteria:**
+- ✅ Application live and accessible
+- ✅ Users can register
+- ✅ Payment processing works
+- ✅ No critical errors
+- ✅ Performance acceptable
+
+**Post-Launch Tasks:**
+- [ ] Monitor for 24 hours
+- [ ] Collect user feedback
+- [ ] Fix any critical issues
+- [ ] Plan next iteration
+
+---
+
+### Task 3.3: Post-Launch Monitoring Checklist
+
+**First 24 Hours:**
+- [ ] Monitor error logs every 2 hours
+- [ ] Check payment processing
+- [ ] Verify webhook processing
+- [ ] Monitor user signups
+- [ ] Respond to support emails
+- [ ] Fix critical issues immediately
+
+**First Week:**
+- [ ] Daily error log review
+- [ ] Weekly user feedback review
+- [ ] Performance metrics analysis
+- [ ] Payment success rate monitoring
+- [ ] Plan Release 1.1 features
+
+---
+
+## 🎯 Success Metrics
+
+### Launch Day Goals
+- ✅ App is live and accessible
+- ✅ Core features work (Create, Edit, Save, Export)
+- ✅ No critical bugs
+- ✅ Works in Chrome, Firefox, Safari
+- ✅ Performance acceptable (<3s load)
+- ✅ User documentation available
+
+### Post-Launch Monitoring (First 24 Hours)
+- [ ] Monitor error logs
+- [ ] Track user signups (if applicable)
+- [ ] Monitor performance metrics
+- [ ] Collect user feedback
+- [ ] Fix any critical issues immediately
+
+---
+
+## 🚨 Emergency Rollback Plan
+
+### If Critical Bug Found Post-Launch
+
+1. **Assess Severity**
+   - Is it blocking users?
+   - How many users affected?
+   - Can we hotfix?
+
+2. **Decision Tree**
+   - **Critical & Blocking:** Rollback immediately
+   - **Critical but Workaround:** Hotfix ASAP
+   - **Non-Critical:** Fix in next release
+
+3. **Rollback Steps**
+   - [ ] Revert to previous deployment
+   - [ ] Verify rollback successful
+   - [ ] Fix bug in development
+   - [ ] Test fix thoroughly
+   - [ ] Re-deploy
+
+---
+
+## 📞 Support Plan
+
+### Launch Day Support
+- [ ] Have team available for monitoring
+- [ ] Set up error alerting
+- [ ] Have communication channel ready
+- [ ] Prepare FAQ for common issues
+- [ ] Be ready to respond quickly
+
+---
+
+## ✅ MVP Launch Checklist
+
+### Pre-Launch (4 Tasks)
+- [x] User Limit Enforcement implemented ✅ (February 2026)
+- [x] RazorPay Account Setup complete ✅ (env: KEY_ID, KEY_SECRET, WEBHOOK_SECRET, SOLO/TEAM plan IDs)
+- [x] RazorPay Checkout & E2E Payment Testing (**MVP scope**) ✅ **April 10, 2026** — [PAYMENT_TEST_CHECKLIST.md](../PAYMENT_TEST_CHECKLIST.md) (**BROKERAGE** still **PT-06**)
+- [x] Webhook handling verified ✅ same session (tunnel + automation)
+- [ ] Production Deployment & Monitoring — **code/workflows ready**; **staging + prod smoke** still open
+
+### Launch Day
+- [ ] Deploy to production
+- [ ] Smoke test all critical paths (includes [Day 3–4 Task 2.1](#task-21-critical-path-testing) **10 flows** if not run earlier)
+- [ ] Monitor error logs
+- [ ] Announce launch
+
+---
+
+**Good luck with the launch! You've got this! 🚀**
+
+---
+
+*Last Updated: April 10, 2026 (housekeeping: aligned with payment checklist + launch trackers)*

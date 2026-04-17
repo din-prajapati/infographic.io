@@ -12,16 +12,16 @@ export function BillingScreen() {
       <PaymentHistory />
 
       {/* Upgrade CTA */}
-      <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg p-6 text-white">
+      <div className="glass rounded-xl border border-border p-6">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-xl font-semibold mb-2">Need More?</h3>
-            <p className="text-blue-100">
+            <h3 className="mb-2 text-xl font-semibold text-foreground">Need More?</h3>
+            <p className="text-muted-foreground">
               Upgrade to unlock more features and higher limits
             </p>
           </div>
           <Link href="/pricing">
-            <Button variant="secondary" className="bg-white text-blue-600 hover:bg-blue-50">
+            <Button variant="default">
               View Plans
             </Button>
           </Link>

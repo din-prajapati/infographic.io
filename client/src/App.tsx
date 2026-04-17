@@ -1,4 +1,4 @@
-import { Switch, Route, Redirect, useLocation } from "wouter";
+import { Switch, Route, Redirect, useLocation, useSearch } from "wouter";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient, REDIRECT_TO_AUTH_KEY } from "./lib/queryClient";
 import { AuthProvider, useAuth } from "./lib/auth";
@@ -15,15 +15,17 @@ import LandingPage from "./pages/LandingPage";
 import UsageDashboardPage from "./pages/UsageDashboardPage";
 import AuthCallbackPage from "./pages/AuthCallbackPage";
 import { ErrorBoundary } from "./components/ui/error-boundary";
+import { ThemeProvider } from "./lib/theme-provider";
 
 function ProtectedRoute({ component: Component }: { component: () => JSX.Element }) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
+  if (isLoading) return null;
   return isAuthenticated ? <Component /> : <Redirect to="/auth" />;
 }
 
-function EditorRoute() {
-  const [location] = useLocation();
-  const params = new URLSearchParams(location.split('?')[1]);
+function EditorInner() {
+  const search = useSearch();
+  const params = new URLSearchParams(search);
   const designId = params.get('designId') || undefined;
   const templateId = params.get('templateId') || undefined;
   const [, navigate] = useLocation();
@@ -33,22 +35,24 @@ function EditorRoute() {
   };
 
   return (
-    <ProtectedRoute
-      component={() => (
-        <EditorLayout
-          onBackClick={handleBackFromEditor}
-          designId={designId}
-          templateId={templateId}
-        />
-      )}
+    <EditorLayout
+      onBackClick={handleBackFromEditor}
+      designId={designId}
+      templateId={templateId}
     />
   );
+}
+
+function EditorRoute() {
+  return <ProtectedRoute component={EditorInner} />;
 }
 
 function TemplatesPageWrapper() {
   const [, navigate] = useLocation();
   const handleOpenTemplate = (templateId?: string) => {
-    const url = templateId ? `/editor?templateId=${templateId}` : '/editor';
+    const url = templateId
+      ? `/editor?templateId=${encodeURIComponent(templateId)}`
+      : "/editor";
     navigate(url);
   };
   return <TemplatesPage onOpenEditor={handleOpenTemplate} />;
@@ -76,7 +80,8 @@ function AppLayoutWithHeader({ component: Component }: { component: () => JSX.El
 }
 
 function HomeRoute() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
+  if (isLoading) return null;
   return isAuthenticated ? <Redirect to="/templates" /> : <LandingPage />;
 }
 
@@ -110,16 +115,18 @@ export default function App() {
   useRedirectToAuthOnLoad();
   return (
     <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <TooltipProvider delayDuration={300}>
-            <div className="min-h-screen bg-background flex flex-col">
-              <Router />
-            </div>
-            <Toaster />
-          </TooltipProvider>
-        </AuthProvider>
-      </QueryClientProvider>
+      <ThemeProvider defaultTheme="system">
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider>
+            <TooltipProvider delayDuration={300}>
+              <div className="min-h-screen bg-background flex flex-col">
+                <Router />
+              </div>
+              <Toaster />
+            </TooltipProvider>
+          </AuthProvider>
+        </QueryClientProvider>
+      </ThemeProvider>
     </ErrorBoundary>
   );
 }

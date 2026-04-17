@@ -5,7 +5,7 @@
 
 import { motion } from 'motion/react';
 import { Message } from './types';
-import { Sparkles, Check, Loader2, RefreshCw, Image as ImageIcon } from 'lucide-react';
+import { Sparkles, Check, Loader2, RefreshCw, Image as ImageIcon, AlertCircle, MapPin, DollarSign } from 'lucide-react';
 import { Button } from '../ui/button';
 import {
   Tooltip,
@@ -17,16 +17,20 @@ interface MessageBubbleProps {
   message: Message;
   index: number;
   onRegenerateAll?: () => void;
+  selectedPreviewId?: string | null;
+  onSelectPreview?: (id: string) => void;
 }
 
-export function MessageBubble({ message, index, onRegenerateAll }: MessageBubbleProps) {
+export function MessageBubble({ message, index, onRegenerateAll, selectedPreviewId, onSelectPreview }: MessageBubbleProps) {
   const isUser = message.type === 'user';
   const isLoading = message.isLoading;
   const isGenerating = message.isGenerating;
+  const isValidationHint = message.isValidationHint;
+  const isError = !isValidationHint && !isUser && message.content.startsWith('Error:');
 
-  // Format timestamp
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString('en-US', { 
+  const formatTime = (date: Date | string) => {
+    const d = date instanceof Date ? date : new Date(date);
+    return d.toLocaleTimeString('en-US', { 
       hour: 'numeric', 
       minute: '2-digit',
       hour12: true 
@@ -44,19 +48,28 @@ export function MessageBubble({ message, index, onRegenerateAll }: MessageBubble
         {/* Tool/Model Tag for AI messages */}
         {!isUser && (
           <div className="flex items-center gap-2 mb-2 px-1">
-            <div className="flex items-center gap-1.5 px-2 py-0.5 bg-purple-100 rounded-full">
-              <Sparkles className="w-3 h-3 text-purple-600" />
-              <span className="text-xs text-purple-700 font-medium">Real Estate Template Generator</span>
-            </div>
-            {isGenerating && (
-              <div className="px-2 py-0.5 bg-blue-100 rounded-full">
-                <span className="text-xs text-blue-700 font-medium">Executing</span>
+            {isValidationHint ? (
+              <div className="flex items-center gap-1.5 px-2 py-0.5 bg-amber-500/15 rounded-full">
+                <AlertCircle className="w-3 h-3 text-amber-500" />
+                <span className="text-xs text-amber-500 font-medium">Missing Information</span>
               </div>
-            )}
-            {!isGenerating && message.resultPreviews && (
-              <div className="px-2 py-0.5 bg-green-100 rounded-full">
-                <span className="text-xs text-green-700 font-medium">Complete</span>
-              </div>
+            ) : (
+              <>
+                <div className="flex items-center gap-1.5 px-2 py-0.5 bg-purple-500/15 rounded-full">
+                  <Sparkles className="w-3 h-3 text-purple-500" />
+                  <span className="text-xs text-purple-500 font-medium">Real Estate Template Generator</span>
+                </div>
+                {isGenerating && (
+                  <div className="px-2 py-0.5 bg-blue-500/15 rounded-full">
+                    <span className="text-xs text-blue-500 font-medium">Executing</span>
+                  </div>
+                )}
+                {!isGenerating && message.resultPreviews && (
+                  <div className="px-2 py-0.5 bg-green-500/15 rounded-full">
+                    <span className="text-xs text-green-500 font-medium">Complete</span>
+                  </div>
+                )}
+              </>
             )}
           </div>
         )}
@@ -65,10 +78,14 @@ export function MessageBubble({ message, index, onRegenerateAll }: MessageBubble
         <div
           className={`px-4 py-3 rounded-2xl ${
             isUser
-              ? 'bg-gray-100 text-gray-900 rounded-br-md'
-              : isGenerating 
-                ? 'bg-gradient-to-br from-gray-50 to-purple-50 border border-purple-200 text-gray-900 rounded-bl-md min-w-[320px]'
-                : 'bg-white border border-gray-200 text-gray-900 rounded-bl-md'
+              ? 'bg-muted text-foreground rounded-br-md'
+              : isValidationHint
+                ? 'bg-amber-500/10 border border-amber-500/30 text-foreground rounded-bl-md'
+                : isError
+                  ? 'bg-destructive/10 border border-destructive/30 text-foreground rounded-bl-md'
+                  : isGenerating
+                    ? 'bg-purple-500/10 border border-purple-500/30 text-foreground rounded-bl-md min-w-[320px]'
+                    : 'bg-background border border-border text-foreground rounded-bl-md'
           }`}
         >
           {/* User Message Icon Badge */}
@@ -77,7 +94,7 @@ export function MessageBubble({ message, index, onRegenerateAll }: MessageBubble
               <div className="w-6 h-6 rounded-full bg-purple-600 flex items-center justify-center">
                 <ImageIcon className="w-3.5 h-3.5 text-white" />
               </div>
-              <span className="text-xs text-gray-500">You</span>
+              <span className="text-xs text-muted-foreground">You</span>
             </div>
           )}
 
@@ -86,12 +103,44 @@ export function MessageBubble({ message, index, onRegenerateAll }: MessageBubble
               <Sparkles className="w-4 h-4 animate-pulse" />
               <span className="text-sm">Thinking...</span>
             </div>
+          ) : isValidationHint ? (
+            // Validation guidance message
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+                <p className="text-sm font-medium text-amber-800">{message.content}</p>
+              </div>
+              
+              {message.missingFields && message.missingFields.length > 0 && (
+                <div className="space-y-2 pl-1">
+                  <p className="text-xs text-amber-700 font-medium">Please include:</p>
+                  {message.missingFields.map((field) => (
+                    <div key={field} className="flex items-center gap-2 text-sm text-amber-900">
+                      {field === 'address' ? (
+                        <MapPin className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                      ) : (
+                        <DollarSign className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                      )}
+                      <span>
+                        {field === 'address' 
+                          ? 'Property address (e.g., "123 Oak Street, Austin TX")'
+                          : 'Price (e.g., "$450,000" or "450k")'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <p className="text-xs text-amber-600 italic">
+                Example: "3BR house at 123 Oak St, Austin TX for $450k with pool"
+              </p>
+            </div>
           ) : isGenerating && message.generationSteps ? (
             // Generation Progress inside AI bubble
             <div className="space-y-3">
               <div className="flex items-center gap-2 mb-3">
                 <Sparkles className="w-4 h-4 text-purple-600" />
-                <p className="text-sm font-medium text-gray-900">Generating your infographic...</p>
+                <p className="text-sm font-medium text-foreground">Generating your infographic...</p>
               </div>
               
               <div className="space-y-2">
@@ -106,14 +155,14 @@ export function MessageBubble({ message, index, onRegenerateAll }: MessageBubble
                         <Loader2 className="w-3 h-3 text-white animate-spin" />
                       </div>
                     ) : (
-                      <div className="w-5 h-5 rounded-full bg-gray-200 shrink-0" />
+                      <div className="w-5 h-5 rounded-full bg-muted border border-border shrink-0" />
                     )}
                     <span className={`text-sm ${
-                      step.status === 'completed' 
-                        ? 'text-gray-600' 
+                      step.status === 'completed'
+                        ? 'text-muted-foreground'
                         : step.status === 'in-progress'
-                          ? 'text-purple-700 font-medium'
-                          : 'text-gray-400'
+                          ? 'text-purple-500 font-medium'
+                          : 'text-muted-foreground/50'
                     }`}>
                       {step.label}
                     </span>
@@ -127,17 +176,28 @@ export function MessageBubble({ message, index, onRegenerateAll }: MessageBubble
               
               {/* Result Previews - Small thumbnails in AI message */}
               {message.resultPreviews && message.resultPreviews.length > 0 && (
-                <div className="mt-3 pt-3 border-t border-gray-200">
-                  <p className="text-xs text-gray-600 mb-2">Generated {message.resultPreviews.length} variations:</p>
+                <div className="mt-3 pt-3 border-t border-border">
+                  <p className="text-xs text-muted-foreground mb-2">Generated {message.resultPreviews.length} variations:</p>
                   <div className="flex gap-2">
                     {message.resultPreviews.map((preview) => (
-                      <div key={preview.id} className="flex-1">
+                      <div
+                        key={preview.id}
+                        className={`flex-1 cursor-pointer rounded-lg transition-all ${
+                          selectedPreviewId === preview.id
+                            ? 'ring-2 ring-blue-500'
+                            : 'hover:ring-2 hover:ring-blue-300'
+                        }`}
+                        onClick={() => onSelectPreview?.(preview.id)}
+                        role="button"
+                        aria-label={`Select ${preview.title}`}
+                        aria-pressed={selectedPreviewId === preview.id}
+                      >
                         <img 
                           src={preview.thumbnail} 
                           alt={preview.title}
-                          className="w-full h-20 object-cover rounded-lg border border-gray-200"
+                          className="w-full h-20 object-cover rounded-lg border border-border"
                         />
-                        <p className="text-xs text-gray-600 mt-1 truncate">{preview.title}</p>
+                        <p className="text-xs text-muted-foreground mt-1 truncate">{preview.title}</p>
                       </div>
                     ))}
                   </div>
@@ -149,7 +209,7 @@ export function MessageBubble({ message, index, onRegenerateAll }: MessageBubble
 
         {/* Timestamp */}
         {!isLoading && (
-          <span className="text-xs text-gray-500 mt-1 px-1">
+          <span className="text-xs text-muted-foreground mt-1 px-1">
             {formatTime(message.timestamp)}
           </span>
         )}

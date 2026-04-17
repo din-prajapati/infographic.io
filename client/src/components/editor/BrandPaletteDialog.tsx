@@ -127,7 +127,7 @@ export function BrandPaletteDialog({
                     type="color"
                     value={color}
                     onChange={(e) => handleColorChange(index, e.target.value)}
-                    className="w-12 h-12 rounded-lg border-2 border-gray-200 cursor-pointer"
+                    className="w-12 h-12 rounded-lg border-2 border-border cursor-pointer"
                   />
                   <Input
                     type="text"
@@ -166,11 +166,11 @@ export function BrandPaletteDialog({
           {/* Preview */}
           <div className="space-y-2">
             <Label>Preview</Label>
-            <div className="flex gap-2 p-3 rounded-lg border border-gray-200 bg-gray-50">
+            <div className="flex gap-2 p-3 rounded-lg border border-border bg-muted">
               {colors.map((color, index) => (
                 <div
                   key={index}
-                  className="w-8 h-8 rounded border border-gray-300"
+                  className="w-8 h-8 rounded border border-border"
                   style={{ backgroundColor: color }}
                   title={color}
                 />

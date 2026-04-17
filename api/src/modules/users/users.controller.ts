@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Delete, Param, Req, UseGuards, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Param, Body, Req, UseGuards, BadRequestException } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UsersService } from './users.service';
+import { InviteMemberDto } from './dto/invite-member.dto';
 
 @ApiTags('users')
 @Controller('users')
@@ -44,6 +45,19 @@ export class UsersController {
     return { data: slots };
   }
 
+  @Post('organization/members/invite')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Add member by email (account must already exist)' })
+  async inviteMember(@Req() req: any, @Body() dto: InviteMemberDto) {
+    const organizationId = req.user.organizationId;
+    if (!organizationId) {
+      throw new BadRequestException('User not part of an organization');
+    }
+    await this.usersService.inviteUserByEmail(organizationId, dto.email);
+    return { success: true, message: 'User added to organization' };
+  }
+
   @Post('organization/members/:userId')
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth()
@@ -62,7 +76,11 @@ export class UsersController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Remove user from organization' })
   async removeMember(@Req() req: any, @Param('userId') userId: string) {
-    await this.usersService.removeUserFromOrganization(userId);
+    const organizationId = req.user.organizationId;
+    if (!organizationId) {
+      throw new BadRequestException('User not part of an organization');
+    }
+    await this.usersService.removeUserFromOrganization(organizationId, userId);
     return { success: true, message: 'User removed from organization' };
   }
 }

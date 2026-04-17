@@ -52,11 +52,11 @@ export function GenerationProgressBar({
       initial={{ y: 20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       exit={{ y: 20, opacity: 0 }}
-      className="sticky bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-3 z-10"
+      className="sticky bottom-0 left-0 right-0 bg-background border-t border-border px-4 py-3 z-10"
     >
       {/* Progress Bar */}
       <div className="mb-2">
-        <div className="h-1 bg-gray-100 rounded-full overflow-hidden">
+        <div className="h-1 bg-muted rounded-full overflow-hidden">
           <motion.div
             className="h-full bg-gradient-to-r from-purple-500 to-blue-500"
             initial={{ width: 0 }}
@@ -70,11 +70,11 @@ export function GenerationProgressBar({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Loader2 className="w-4 h-4 text-purple-600 animate-spin" />
-          <span className="text-sm text-gray-700">{message}</span>
+          <span className="text-sm text-foreground">{message}</span>
         </div>
-        <div className="flex items-center gap-2 text-sm text-gray-500">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <span>{formatTime(elapsedTime)}</span>
-          <span className="text-gray-300">/</span>
+          <span className="text-muted-foreground/50">/</span>
           <span>{formatTime(estimatedTime)}</span>
         </div>
       </div>

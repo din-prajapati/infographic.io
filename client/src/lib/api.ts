@@ -30,7 +30,7 @@ function getEffectiveApiBaseUrl(): string {
 const API_URL = getEffectiveApiBaseUrl();
 
 // Helper function to build API URLs
-const getApiUrl = (path: string): string => {
+export const getApiUrl = (path: string): string => {
   if (API_URL) {
     // Cross-origin: use full URL
     return `${API_URL}${API_BASE}${path}`;
@@ -116,6 +116,7 @@ export interface Subscription {
   currentPeriodEnd: string;
   amount: number;
   currency: string;
+  createdAt?: string;
 }
 
 export interface Payment {
@@ -152,13 +153,16 @@ export const paymentsApi = {
     apiRequest<{ plans: any[] }>(getApiUrl('/payments/plans')),
 
   createSubscription: (data: CreateSubscriptionInput) =>
-    apiRequest<{ success: boolean; subscription: Subscription; provider: string; shortUrl?: string; checkoutUrl?: string }>(
+    apiRequest<{ success: boolean; subscription: Subscription; provider: string; providerSubscription?: { id: string }; shortUrl?: string; checkoutUrl?: string }>(
       getApiUrl('/payments/create-subscription'),
       { method: 'POST', body: JSON.stringify(data) }
     ),
 
   getSubscription: () =>
-    apiRequest<{ subscription: Subscription | null }>(getApiUrl('/payments/subscription')),
+    apiRequest<{
+      subscription: Subscription | null;
+      usage?: { current: number; limit: number };
+    }>(getApiUrl('/payments/subscription')),
 
   updatePlan: (planTier: string) =>
     apiRequest<{ success: boolean; subscription: Subscription }>(
@@ -375,40 +379,49 @@ export const conversationsApi = {
 
 // Design API - for saving/loading canvas designs
 export const designsApi = {
-  // Save a design (create or update)
+  // Save a design (create or update) — always uses POST to create new DB records
   save: async (design: DesignMetadata): Promise<DesignMetadata> => {
-    try {
-      const endpoint = design.id ? getApiUrl(`/designs/${design.id}`) : getApiUrl('/designs');
-      const response = await apiRequest<any>(endpoint, {
-        method: design.id ? 'PUT' : 'POST',
-        body: JSON.stringify({
-          name: design.name,
-          type: design.type,
-          category: design.category,
-          thumbnail: design.thumbnail,
-          canvasData: design.canvasData,
-          tags: design.tags,
-        }),
+    const body = JSON.stringify({
+      name: design.name,
+      type: design.type,
+      category: design.category,
+      thumbnail: design.thumbnail,
+      canvasData: design.canvasData,
+      tags: design.tags,
+    });
+
+    // Check if ID is a DB-generated cuid (starts with 'c', 25 chars, alphanumeric only)
+    const isDbId = design.id && /^c[a-z0-9]{24}$/.test(design.id);
+
+    if (isDbId) {
+      // Existing DB record — try PUT update
+      try {
+        const response = await apiRequest<any>(getApiUrl(`/designs/${design.id}`), {
+          method: 'PUT',
+          body,
+        });
+        if (response?.id) {
+          return { ...design, id: response.id, updatedAt: response.updatedAt || design.updatedAt };
+        }
+        return design;
+      } catch (error) {
+        throw error;
+      }
+    } else {
+      // New design (LocalStorage ID or no ID) — use POST to create
+      const response = await apiRequest<any>(getApiUrl('/designs'), {
+        method: 'POST',
+        body,
       });
-      
-      // Transform backend response to DesignMetadata format
-      if (response.id) {
+      if (response?.id) {
         return {
+          ...design,
           id: response.id,
-          name: design.name,
-          type: design.type,
-          category: design.category,
-          thumbnail: design.thumbnail,
-          canvasData: design.canvasData,
-          tags: design.tags,
           createdAt: response.createdAt || design.createdAt,
           updatedAt: response.updatedAt || design.updatedAt,
         };
       }
       return design;
-    } catch (error) {
-      // If API fails, throw error so storage.ts can fall back to LocalStorage
-      throw error;
     }
   },
 
@@ -447,38 +460,33 @@ export const designsApi = {
 export const canvasTemplatesApi = {
   // Save a template (create or update)
   save: async (template: DesignMetadata): Promise<DesignMetadata> => {
-    try {
-      const endpoint = template.id ? getApiUrl(`/canvas-templates/${template.id}`) : getApiUrl('/canvas-templates');
-      const response = await apiRequest<any>(endpoint, {
-        method: template.id ? 'PUT' : 'POST',
-        body: JSON.stringify({
-          name: template.name,
-          type: 'template',
-          category: template.category,
-          thumbnail: template.thumbnail,
-          canvasData: template.canvasData,
-          tags: template.tags,
-        }),
-      });
-      
-      // Transform backend response to DesignMetadata format
-      if (response.id) {
-        return {
-          id: response.id,
-          name: template.name,
-          type: 'template',
-          category: template.category,
-          thumbnail: template.thumbnail,
-          canvasData: template.canvasData,
-          tags: template.tags,
-          createdAt: response.createdAt || template.createdAt,
-          updatedAt: response.updatedAt || template.updatedAt,
-        };
-      }
-      return template;
-    } catch (error) {
-      throw error;
+    const body = JSON.stringify({
+      name: template.name,
+      type: 'template',
+      category: template.category,
+      thumbnail: template.thumbnail,
+      canvasData: template.canvasData,
+      tags: template.tags,
+    });
+
+    // Check if ID is a DB-generated cuid
+    const isDbId = template.id && /^c[a-z0-9]{24}$/.test(template.id);
+
+    const endpoint = isDbId ? getApiUrl(`/canvas-templates/${template.id}`) : getApiUrl('/canvas-templates');
+    const response = await apiRequest<any>(endpoint, {
+      method: isDbId ? 'PUT' : 'POST',
+      body,
+    });
+
+    if (response?.id) {
+      return {
+        ...template,
+        id: response.id,
+        createdAt: response.createdAt || template.createdAt,
+        updatedAt: response.updatedAt || template.updatedAt,
+      };
     }
+    return template;
   },
 
   // Get all templates
@@ -558,4 +566,11 @@ export const usersApi = {
       getApiUrl(`/users/organization/members/${userId}`),
       { method: 'DELETE' }
     ),
+
+  /** Add an existing account to the org by email (backend: POST .../members/invite). */
+  inviteMemberByEmail: (email: string) =>
+    apiRequest<{ success: boolean; message: string }>(getApiUrl('/users/organization/members/invite'), {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    }),
 };

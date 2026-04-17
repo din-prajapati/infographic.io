@@ -47,7 +47,7 @@ export function AgentInfoForm() {
         <div className="space-y-2">
           <Label className="text-sm">Agent Photo / Logo</Label>
           <div className="flex items-center gap-3">
-            <div className="w-20 h-20 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden bg-gray-50">
+            <div className="w-20 h-20 rounded-lg border-2 border-dashed border-border flex items-center justify-center overflow-hidden bg-muted">
               {logoPreview ? (
                 <img
                   src={logoPreview}
@@ -55,7 +55,7 @@ export function AgentInfoForm() {
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <User className="w-8 h-8 text-gray-400" />
+                <User className="w-8 h-8 text-muted-foreground" />
               )}
             </div>
             <div className="flex-1">

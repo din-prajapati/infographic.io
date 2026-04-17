@@ -6,53 +6,59 @@ Write-Host "📦 Express frontend will run on port 5000" -ForegroundColor Cyan
 Write-Host "🔧 NestJS API will run on port 3001" -ForegroundColor Cyan
 Write-Host ""
 
-# Check if port 5000 is already in use
-$maxRetries = 3
-$retryCount = 0
-$portFreed = $false
+function Stop-ProcessOnPort {
+    param([int]$Port, [string]$PortLabel)
+    $conn = $null
+    try {
+        $conn = Get-NetTCPConnection -LocalPort $Port -ErrorAction SilentlyContinue
+    } catch {
+        Write-Host "⚠️  Get-NetTCPConnection failed, trying netstat..." -ForegroundColor Yellow
+        $netstat = netstat -ano | Select-String ":$Port\s"
+        if (-not $netstat) { return $true }
+        $last = ($netstat | Select-Object -Last 1).ToString() -match '\s+(\d+)\s*$'
+        if ($matches) { $conn = [PSCustomObject]@{ OwningProcess = [int]$matches[1] } }
+    }
+    if (-not $conn) { return $true }
+    $conn = $conn | Select-Object -First 1
+    $pidToKill = $conn.OwningProcess
+    if ($pidToKill -eq 0) {
+        Write-Host "⏳ $PortLabel is in TIME_WAIT. Waiting 5s..." -ForegroundColor Yellow
+        Start-Sleep -Seconds 5
+        return $false
+    }
+    try {
+        $proc = Get-Process -Id $pidToKill -ErrorAction SilentlyContinue
+        $procName = if ($proc) { $proc.ProcessName } else { "unknown" }
+        Write-Host "🔄 Stopping process on $PortLabel (PID: $pidToKill - $procName)..." -ForegroundColor Yellow
+        Stop-Process -Id $pidToKill -Force -ErrorAction Stop
+        Start-Sleep -Seconds 2
+        return $true
+    } catch {
+        Write-Host "❌ Failed to stop PID $pidToKill : $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "   Run: taskkill /PID $pidToKill /F" -ForegroundColor Yellow
+        return $false
+    }
+}
 
-while ($retryCount -lt $maxRetries -and -not $portFreed) {
-    $port5000 = Get-NetTCPConnection -LocalPort 5000 -ErrorAction SilentlyContinue
-    if ($port5000) {
-        $retryCount++
-        $pidToKill = $port5000.OwningProcess
-        Write-Host "⚠️  Port 5000 is already in use by PID: $pidToKill (Attempt $retryCount/$maxRetries)" -ForegroundColor Yellow
-        
-        # Get process info before killing
-        $processInfo = Get-Process -Id $pidToKill -ErrorAction SilentlyContinue
-        if ($processInfo) {
-            Write-Host "   Process: $($processInfo.ProcessName) (PID: $pidToKill)" -ForegroundColor Gray
+# Free port 5000 (Express) and 3001 (NestJS)
+foreach ($portInfo in @(
+    @{ Port = 5000; Label = "port 5000" }
+    @{ Port = 3001; Label = "port 3001" }
+)) {
+    $retries = 0
+    while ($retries -lt 3) {
+        $conn = Get-NetTCPConnection -LocalPort $portInfo.Port -ErrorAction SilentlyContinue
+        if (-not $conn) { break }
+        if (-not (Stop-ProcessOnPort -Port $portInfo.Port -PortLabel $portInfo.Label)) {
+            $retries++
+            continue
         }
-        
-        try {
-            Write-Host "🔄 Attempting to free the port..." -ForegroundColor Yellow
-            Stop-Process -Id $pidToKill -Force -ErrorAction Stop
-            Write-Host "✅ Process $pidToKill terminated successfully" -ForegroundColor Green
-            Start-Sleep -Seconds 3
-            
-            # Verify port is free
-            $checkPort = Get-NetTCPConnection -LocalPort 5000 -ErrorAction SilentlyContinue
-            if (-not $checkPort) {
-                $portFreed = $true
-                Write-Host "✅ Port 5000 is now free" -ForegroundColor Green
-            } else {
-                Write-Host "⚠️  Port still in use, will retry..." -ForegroundColor Yellow
-            }
-        } catch {
-            $errorMessage = $_.Exception.Message
-            Write-Host "❌ Failed to terminate process ${pidToKill}: $errorMessage" -ForegroundColor Red
-            if ($retryCount -ge $maxRetries) {
-                Write-Host ""
-                Write-Host "Please kill it manually:" -ForegroundColor Yellow
-                Write-Host "   taskkill /PID $pidToKill /F" -ForegroundColor Yellow
-                Write-Host ""
-                Write-Host "Or use a different port:" -ForegroundColor Yellow
-                Write-Host "   `$env:PORT = '5001'; npm run dev" -ForegroundColor Yellow
-                exit 1
-            }
+        $conn = Get-NetTCPConnection -LocalPort $portInfo.Port -ErrorAction SilentlyContinue
+        if (-not $conn) {
+            Write-Host "✅ Port $($portInfo.Port) is free" -ForegroundColor Green
+            break
         }
-    } else {
-        $portFreed = $true
+        $retries++
     }
 }
 

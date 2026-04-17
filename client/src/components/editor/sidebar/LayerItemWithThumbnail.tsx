@@ -55,7 +55,7 @@ export function LayerItemWithThumbnail({ element, isSelected, onSelect }: LayerI
         const shapeElement = element as ShapeElement;
         return (
           <div 
-            className="w-11 h-11 rounded-xl shadow-sm flex items-center justify-center border-2 border-white"
+            className="w-11 h-11 rounded-xl shadow-sm flex items-center justify-center border-2 border-border"
             style={{
               backgroundColor: shapeElement.fill,
             }}
@@ -74,7 +74,7 @@ export function LayerItemWithThumbnail({ element, isSelected, onSelect }: LayerI
       case 'image':
         const imageElement = element as ImageElement;
         return (
-          <div className="w-11 h-11 rounded-xl overflow-hidden shadow-sm border-2 border-white bg-gray-100">
+          <div className="w-11 h-11 rounded-xl overflow-hidden shadow-sm border-2 border-border bg-muted">
             <img
               src={imageElement.src}
               alt={imageElement.name}
@@ -111,15 +111,15 @@ export function LayerItemWithThumbnail({ element, isSelected, onSelect }: LayerI
       onClick={onSelect}
       className={`
         group flex items-center gap-2.5 px-2.5 py-2 rounded-xl cursor-pointer transition-all duration-150
-        ${isSelected 
-          ? 'bg-gradient-to-r from-violet-50 to-purple-50 border-2 border-violet-200 shadow-sm' 
-          : 'hover:bg-gray-50 border-2 border-transparent'}
+        ${isSelected
+          ? 'bg-gradient-to-r from-violet-500/10 to-purple-500/10 border-2 border-violet-400/40 shadow-sm'
+          : 'hover:bg-muted border-2 border-transparent'}
         ${!element.visible ? 'opacity-50' : ''}
       `}
     >
       {/* Drag Handle */}
       <div className="flex-shrink-0 opacity-0 group-hover:opacity-40 cursor-grab active:cursor-grabbing transition-opacity">
-        <GripVertical className="w-4 h-4 text-gray-400" />
+        <GripVertical className="w-4 h-4 text-muted-foreground" />
       </div>
 
       {/* Thumbnail */}
@@ -130,11 +130,11 @@ export function LayerItemWithThumbnail({ element, isSelected, onSelect }: LayerI
       {/* Info */}
       <div className="flex-1 min-w-0">
         <p className={`text-sm font-medium truncate ${
-          isSelected ? 'text-violet-700' : 'text-gray-700'
+          isSelected ? 'text-violet-500' : 'text-foreground'
         }`}>
           {getDisplayName()}
         </p>
-        <p className="text-xs text-gray-400 truncate">
+        <p className="text-xs text-muted-foreground truncate">
           {typeInfo.label}
         </p>
       </div>
@@ -145,9 +145,9 @@ export function LayerItemWithThumbnail({ element, isSelected, onSelect }: LayerI
         <button
           onClick={toggleVisibility}
           className={`w-7 h-7 flex items-center justify-center rounded-lg transition-colors ${
-            element.visible 
-              ? 'hover:bg-gray-100 text-gray-400 hover:text-gray-600' 
-              : 'bg-gray-100 text-gray-500'
+            element.visible
+              ? 'hover:bg-muted text-muted-foreground hover:text-foreground'
+              : 'bg-muted text-muted-foreground'
           }`}
           title={element.visible ? "Hide layer" : "Show layer"}
         >
@@ -164,7 +164,7 @@ export function LayerItemWithThumbnail({ element, isSelected, onSelect }: LayerI
           className={`w-7 h-7 flex items-center justify-center rounded-lg transition-colors ${
             element.locked 
               ? 'bg-amber-50 text-amber-500' 
-              : 'hover:bg-gray-100 text-gray-400 hover:text-gray-600'
+              : 'hover:bg-muted text-muted-foreground hover:text-foreground'
           }`}
           title={element.locked ? "Unlock layer" : "Lock layer"}
         >

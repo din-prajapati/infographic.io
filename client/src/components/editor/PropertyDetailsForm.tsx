@@ -19,15 +19,15 @@ import { ScrollArea } from "../ui/scroll-area";
 
 export function PropertyDetailsForm() {
   const [propertyType, setPropertyType] = useState("residential");
-  const [price, setPrice] = useState("");
-  const [beds, setBeds] = useState("");
-  const [baths, setBaths] = useState("");
-  const [sqft, setSqft] = useState("");
-  const [address, setAddress] = useState("");
-  const [description, setDescription] = useState("");
+  const [price, setPrice] = useState("$500,000");
+  const [beds, setBeds] = useState("3");
+  const [baths, setBaths] = useState("2");
+  const [sqft, setSqft] = useState("2,500");
+  const [address, setAddress] = useState("123 Test Avenue, Design City");
+  const [description, setDescription] = useState("Beautiful modern home with pool and garden.");
 
   return (
-    <ScrollArea className="flex-1">
+    <div className="flex-1">
       <div className="p-3 space-y-4">
         <div className="space-y-2">
           <h3 className="font-medium">Property Information</h3>
@@ -179,6 +179,7 @@ export function PropertyDetailsForm() {
           </div>
         </div>
       </div>
-    </ScrollArea>
+      </div>
+
   );
 }

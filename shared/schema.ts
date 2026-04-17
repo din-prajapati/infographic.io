@@ -9,7 +9,15 @@ import { z } from 'zod';
 
 // Enums for payment system
 export const paymentProviderEnum = pgEnum('payment_provider', ['RAZORPAY', 'STRIPE', 'PADDLE', 'PAYPAL']);
-export const subscriptionStatusEnum = pgEnum('subscription_status', ['ACTIVE', 'PAST_DUE', 'CANCELLED', 'HALTED', 'PAUSED', 'EXPIRED']);
+export const subscriptionStatusEnum = pgEnum('subscription_status', [
+  'PENDING',
+  'ACTIVE',
+  'PAST_DUE',
+  'CANCELLED',
+  'HALTED',
+  'PAUSED',
+  'EXPIRED',
+]);
 export const paymentStatusEnum = pgEnum('payment_status', ['PENDING', 'AUTHORIZED', 'CAPTURED', 'REFUNDED', 'FAILED']);
 export const planTierEnum = pgEnum('plan_tier', ['FREE', 'SOLO', 'TEAM', 'BROKERAGE', 'API_STARTER', 'API_GROWTH', 'API_ENTERPRISE']);
 
@@ -55,7 +63,7 @@ export const subscriptions = pgTable('subscriptions', {
   externalPlanId: text('external_plan_id').notNull(),
   externalCustomerId: text('external_customer_id'),
   planTier: planTierEnum('plan_tier').notNull(),
-  status: subscriptionStatusEnum('status').default('ACTIVE').notNull(),
+  status: subscriptionStatusEnum('status').default('PENDING').notNull(),
   currentPeriodStart: timestamp('current_period_start').notNull(),
   currentPeriodEnd: timestamp('current_period_end').notNull(),
   cancelledAt: timestamp('cancelled_at'),
@@ -127,7 +135,14 @@ export type Invoice = typeof invoices.$inferSelect;
 export type InsertInvoice = z.infer<typeof insertInvoiceSchema>;
 
 export type PaymentProvider = 'RAZORPAY' | 'STRIPE' | 'PADDLE' | 'PAYPAL';
-export type SubscriptionStatus = 'ACTIVE' | 'PAST_DUE' | 'CANCELLED' | 'HALTED' | 'PAUSED' | 'EXPIRED';
+export type SubscriptionStatus =
+  | 'PENDING'
+  | 'ACTIVE'
+  | 'PAST_DUE'
+  | 'CANCELLED'
+  | 'HALTED'
+  | 'PAUSED'
+  | 'EXPIRED';
 export type PaymentStatus = 'PENDING' | 'AUTHORIZED' | 'CAPTURED' | 'REFUNDED' | 'FAILED';
 export type PlanTier = 'FREE' | 'SOLO' | 'TEAM' | 'BROKERAGE' | 'API_STARTER' | 'API_GROWTH' | 'API_ENTERPRISE';
 

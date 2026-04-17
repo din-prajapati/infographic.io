@@ -37,29 +37,29 @@ export function TemplateCategoryView({
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05, duration: 0.3 }}
-              className="border border-gray-200 rounded-lg overflow-hidden"
+              className="border border-border rounded-lg overflow-hidden"
             >
               {/* Category Header */}
               <button
                 onClick={() => toggleCategory(category.id)}
-                className="w-full flex items-center justify-between p-3 hover:bg-gray-50 transition-colors"
+                className="w-full flex items-center justify-between p-3 hover:bg-muted transition-colors"
               >
                 <div className="flex items-center gap-3">
                   <span className="text-xl">{category.icon}</span>
                   <div className="text-left">
                     <div className="flex items-center gap-2">
-                      <h4 className="text-gray-900">{category.name}</h4>
-                      <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
+                      <h4 className="text-foreground text-sm font-medium">{category.name}</h4>
+                      <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
                         {category.templateCount}
                       </span>
                     </div>
-                    <p className="text-xs text-gray-500 mt-0.5">{category.description}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{category.description}</p>
                   </div>
                 </div>
                 {isExpanded ? (
-                  <ChevronDown className="w-4 h-4 text-gray-400 shrink-0" />
+                  <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />
                 ) : (
-                  <ChevronRight className="w-4 h-4 text-gray-400 shrink-0" />
+                  <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
                 )}
               </button>
 
@@ -71,22 +71,22 @@ export function TemplateCategoryView({
                     animate={{ height: 'auto', opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
                     transition={{ duration: 0.2 }}
-                    className="border-t border-gray-100"
+                    className="border-t border-border"
                   >
-                    <div className="p-2 space-y-1 bg-gray-50">
+                    <div className="p-2 space-y-1 bg-muted/50">
                       {categoryTemplates.map((template) => (
                         <button
                           key={template.id}
                           onClick={() => onTemplateSelect(template)}
-                          className="w-full flex items-center gap-3 p-2 rounded hover:bg-white transition-colors text-left"
+                          className="w-full flex items-center gap-3 p-2 rounded hover:bg-background transition-colors text-left"
                         >
                           <span className="text-base">{template.emoji}</span>
                           <div className="flex-1 min-w-0">
-                            <div className="text-sm text-gray-900">{template.name}</div>
-                            <div className="text-xs text-gray-500 truncate">{template.description}</div>
+                            <div className="text-sm text-foreground">{template.name}</div>
+                            <div className="text-xs text-muted-foreground truncate">{template.description}</div>
                           </div>
                           {template.isPopular && (
-                            <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full shrink-0">
+                            <span className="text-xs bg-yellow-500/15 text-yellow-600 dark:text-yellow-400 px-2 py-0.5 rounded-full shrink-0">
                               Popular
                             </span>
                           )}

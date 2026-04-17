@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { prisma } from '../../database/prisma.client';
 
 export interface UserLimitConfig {
@@ -98,8 +98,21 @@ export class UsersService {
    * Add user to organization (with limit check)
    */
   async addUserToOrganization(userId: string, organizationId: string): Promise<void> {
+    const target = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+    if (!target) {
+      throw new NotFoundException('User not found');
+    }
+    if (target.organizationId === organizationId) {
+      throw new BadRequestException('This user is already a member of your organization');
+    }
+    if (target.organizationId && target.organizationId !== organizationId) {
+      throw new BadRequestException('This user already belongs to another organization');
+    }
+
     const canAdd = await this.canAddUser(organizationId);
-    
+
     if (!canAdd) {
       const organization = await prisma.organization.findUnique({
         where: { id: organizationId },
@@ -117,9 +130,34 @@ export class UsersService {
   }
 
   /**
-   * Remove user from organization
+   * Add an existing account to the organization by email (must already be registered).
    */
-  async removeUserFromOrganization(userId: string): Promise<void> {
+  async inviteUserByEmail(organizationId: string, email: string): Promise<void> {
+    const normalized = email.trim().toLowerCase();
+    const target = await prisma.user.findFirst({
+      where: {
+        email: { equals: normalized, mode: 'insensitive' },
+      },
+    });
+    if (!target) {
+      throw new NotFoundException('No account exists with this email. They must sign up first.');
+    }
+    await this.addUserToOrganization(target.id, organizationId);
+  }
+
+  /**
+   * Remove user from organization (only if they belong to the given organization).
+   */
+  async removeUserFromOrganization(organizationId: string, userId: string): Promise<void> {
+    const target = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+    if (!target) {
+      throw new NotFoundException('User not found');
+    }
+    if (target.organizationId !== organizationId) {
+      throw new BadRequestException('User is not a member of this organization');
+    }
     await prisma.user.update({
       where: { id: userId },
       data: { organizationId: null },

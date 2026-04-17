@@ -76,7 +76,7 @@ function ToolBtn({
           className={`h-8 w-8 flex items-center justify-center rounded-md transition-colors ${
             isActive
               ? "bg-violet-100 text-violet-700"
-              : "hover:bg-gray-100 text-gray-600"
+              : "hover:bg-muted text-muted-foreground"
           }`}
         >
           {children}
@@ -90,7 +90,7 @@ function ToolBtn({
 }
 
 function Divider() {
-  return <div className="w-px h-6 bg-gray-200 mx-1.5" />;
+  return <div className="w-px h-6 bg-border mx-1.5" />;
 }
 
 export function TextControls({ values, onChange }: TextControlsProps) {
@@ -132,7 +132,7 @@ export function TextControls({ values, onChange }: TextControlsProps) {
     <div className="flex items-center gap-0.5">
       {/* Font Family Dropdown */}
       <Select value={values.fontFamily} onValueChange={(val) => onChange({ fontFamily: val })}>
-        <SelectTrigger className="h-8 w-[120px] text-sm border-0 bg-transparent hover:bg-gray-100 rounded-md px-2 font-medium">
+        <SelectTrigger className="h-8 w-[120px] text-sm border-0 bg-transparent hover:bg-muted rounded-md px-2 font-medium">
           <SelectValue />
         </SelectTrigger>
         <SelectContent className="rounded-lg shadow-lg z-[100]">
@@ -150,7 +150,7 @@ export function TextControls({ values, onChange }: TextControlsProps) {
       <div className="flex items-center">
         <Tooltip>
           <TooltipTrigger asChild>
-            <button onClick={decreaseFontSize} className="h-8 w-7 flex items-center justify-center hover:bg-gray-100 rounded-md">
+            <button onClick={decreaseFontSize} className="h-8 w-7 flex items-center justify-center hover:bg-muted rounded-md">
               <Minus className="w-3.5 h-3.5 text-gray-600" />
             </button>
           </TooltipTrigger>
@@ -168,7 +168,7 @@ export function TextControls({ values, onChange }: TextControlsProps) {
         />
         <Tooltip>
           <TooltipTrigger asChild>
-            <button onClick={increaseFontSize} className="h-8 w-7 flex items-center justify-center hover:bg-gray-100 rounded-md">
+            <button onClick={increaseFontSize} className="h-8 w-7 flex items-center justify-center hover:bg-muted rounded-md">
               <Plus className="w-3.5 h-3.5 text-gray-600" />
             </button>
           </TooltipTrigger>
@@ -190,8 +190,8 @@ export function TextControls({ values, onChange }: TextControlsProps) {
               onChange={(e) => onChange({ color: e.target.value })}
               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
             />
-            <div className="h-8 w-8 flex flex-col items-center justify-center hover:bg-gray-100 rounded-md cursor-pointer">
-              <span className="text-sm font-bold text-gray-700">A</span>
+            <div className="h-8 w-8 flex flex-col items-center justify-center hover:bg-muted rounded-md cursor-pointer">
+              <span className="text-sm font-bold text-foreground">A</span>
               <div className="w-5 h-1 rounded-sm" style={{ backgroundColor: values.color }} />
             </div>
           </div>

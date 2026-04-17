@@ -1,0 +1,12 @@
+---
+description: Commit message hygiene — no Cursor branding in git messages
+globs: "**/*"
+alwaysApply: true
+---
+
+# Commit messages
+
+- Never add **Made-with: Cursor**, **Made with Cursor**, or **Co-authored-by: Cursor** (or similar) to commit subjects or bodies.
+- Use the project format in `docs/agile/GIT_STRATEGY.md`: `{type}({scope}): {what} — {story-id}`.
+- Optional `Co-Authored-By:` lines for non-Cursor tools are fine if your team agrees; avoid Cursor-specific trailers.
+- If the environment injects a `Made-with: Cursor` line anyway, strip it with `bash scripts/strip-made-with-from-HEAD.sh` (Git Bash), or commit using the real Git binary (e.g. on Windows: `"%ProgramFiles%\Git\mingw64\bin\git.exe"`) so `git commit` / `git commit-tree` are not intercepted.

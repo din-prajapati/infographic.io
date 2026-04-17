@@ -76,24 +76,24 @@ export function AISuggestionsPanel({ isOpen, onClose, onSuggestionClick, buttonR
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
             style={{ bottom: position.bottom, left: position.left }}
-            className="fixed w-80 bg-white rounded-xl shadow-xl border border-gray-200 z-[110] max-h-[500px] overflow-y-auto"
+            className="fixed w-80 bg-background rounded-xl shadow-xl border border-border z-[110] max-h-[500px] overflow-y-auto"
           >
-            <div className="p-4 border-b border-gray-100">
+            <div className="p-4 border-b border-border">
               <h3 className="font-semibold text-sm">AI Suggestions 💡</h3>
-              <p className="text-xs text-gray-500 mt-1">Click to use a suggestion</p>
+              <p className="text-xs text-muted-foreground mt-1">Click to use a suggestion</p>
             </div>
 
             <div className="p-3 space-y-3">
               {/* Property Context Badge - Dynamic */}
-              <div className="px-3 py-2 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-100">
+              <div className="px-3 py-2 bg-muted rounded-lg border border-border">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="w-6 h-6 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
                       <Sparkles className="w-3.5 h-3.5 text-white" />
                     </div>
                     <div>
-                      <p className="text-xs font-medium text-gray-700">Smart Mode Active</p>
-                      <p className="text-xs text-gray-500">Optimized for Residential · Mid-range</p>
+                      <p className="text-xs font-medium text-foreground">Smart Mode Active</p>
+                      <p className="text-xs text-muted-foreground">Optimized for Residential · Mid-range</p>
                     </div>
                   </div>
                 </div>
@@ -101,47 +101,47 @@ export function AISuggestionsPanel({ isOpen, onClose, onSuggestionClick, buttonR
 
               {/* Top 3 Contextual Quick Actions */}
               <div>
-                <h4 className="text-xs font-medium text-gray-900 mb-2 px-1">⚡ Quick Actions</h4>
+                <h4 className="text-xs font-medium text-foreground mb-2 px-1">⚡ Quick Actions</h4>
                 <div className="grid grid-cols-3 gap-2">
                   <button
                     onClick={() => {
                       onSuggestionClick('Add warm colors');
                       onClose();
                     }}
-                    className="flex flex-col items-center gap-1.5 p-3 rounded-lg border-2 border-gray-200 hover:border-blue-500 hover:bg-blue-50 transition-all group"
+                    className="flex flex-col items-center gap-1.5 p-3 rounded-lg border-2 border-border hover:border-blue-500 hover:bg-blue-500/10 transition-all group"
                   >
-                    <div className="w-8 h-8 rounded-full bg-orange-100 group-hover:bg-orange-200 flex items-center justify-center transition-colors">
+                    <div className="w-8 h-8 rounded-full bg-orange-500/15 group-hover:bg-orange-500/25 flex items-center justify-center transition-colors">
                       <div className="w-4 h-4 rounded-full bg-gradient-to-br from-orange-400 to-red-400"></div>
                     </div>
-                    <span className="text-xs text-gray-700 text-center">Warm Colors</span>
+                    <span className="text-xs text-foreground text-center">Warm Colors</span>
                   </button>
-                  
+
                   <button
                     onClick={() => {
                       onSuggestionClick('Make it modern');
                       onClose();
                     }}
-                    className="flex flex-col items-center gap-1.5 p-3 rounded-lg border-2 border-gray-200 hover:border-blue-500 hover:bg-blue-50 transition-all group"
+                    className="flex flex-col items-center gap-1.5 p-3 rounded-lg border-2 border-border hover:border-blue-500 hover:bg-blue-500/10 transition-all group"
                   >
-                    <div className="w-8 h-8 rounded-full bg-blue-100 group-hover:bg-blue-200 flex items-center justify-center transition-colors">
-                      <Sparkles className="w-4 h-4 text-blue-600" />
+                    <div className="w-8 h-8 rounded-full bg-blue-500/15 group-hover:bg-blue-500/25 flex items-center justify-center transition-colors">
+                      <Sparkles className="w-4 h-4 text-blue-500" />
                     </div>
-                    <span className="text-xs text-gray-700 text-center">Modern</span>
+                    <span className="text-xs text-foreground text-center">Modern</span>
                   </button>
-                  
+
                   <button
                     onClick={() => {
                       onSuggestionClick('Add agent photo');
                       onClose();
                     }}
-                    className="flex flex-col items-center gap-1.5 p-3 rounded-lg border-2 border-gray-200 hover:border-blue-500 hover:bg-blue-50 transition-all group"
+                    className="flex flex-col items-center gap-1.5 p-3 rounded-lg border-2 border-border hover:border-blue-500 hover:bg-blue-500/10 transition-all group"
                   >
-                    <div className="w-8 h-8 rounded-full bg-purple-100 group-hover:bg-purple-200 flex items-center justify-center transition-colors">
-                      <svg className="w-4 h-4 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <div className="w-8 h-8 rounded-full bg-purple-500/15 group-hover:bg-purple-500/25 flex items-center justify-center transition-colors">
+                      <svg className="w-4 h-4 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                       </svg>
                     </div>
-                    <span className="text-xs text-gray-700 text-center">Agent Photo</span>
+                    <span className="text-xs text-foreground text-center">Agent Photo</span>
                   </button>
                 </div>
               </div>
@@ -150,8 +150,8 @@ export function AISuggestionsPanel({ isOpen, onClose, onSuggestionClick, buttonR
               {suggestions.map((section, idx) => (
                 <div key={idx}>
                   <div className="flex items-center gap-2 mb-2 px-1">
-                    <section.icon className="w-3.5 h-3.5 text-gray-400" />
-                    <h4 className="text-xs font-medium text-gray-600">{section.title}</h4>
+                    <section.icon className="w-3.5 h-3.5 text-muted-foreground" />
+                    <h4 className="text-xs font-medium text-muted-foreground">{section.title}</h4>
                   </div>
                   <div className="space-y-1">
                     {section.items.map((item, itemIdx) => (
@@ -161,10 +161,10 @@ export function AISuggestionsPanel({ isOpen, onClose, onSuggestionClick, buttonR
                           onSuggestionClick(item);
                           onClose();
                         }}
-                        className="w-full text-left px-3 py-2.5 text-sm rounded-lg hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 hover:border-blue-200 border border-transparent transition-all group flex items-center justify-between"
+                        className="w-full text-left px-3 py-2.5 text-sm rounded-lg hover:bg-muted border border-transparent hover:border-border transition-all group flex items-center justify-between"
                       >
-                        <span className="text-gray-700 group-hover:text-gray-900">{item}</span>
-                        <svg className="w-4 h-4 text-gray-300 group-hover:text-blue-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <span className="text-foreground">{item}</span>
+                        <svg className="w-4 h-4 text-muted-foreground group-hover:text-blue-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                         </svg>
                       </button>
@@ -174,10 +174,10 @@ export function AISuggestionsPanel({ isOpen, onClose, onSuggestionClick, buttonR
               ))}
 
               {/* Property-Specific Suggestions Section */}
-              <div className="pt-2 border-t border-gray-100">
+              <div className="pt-2 border-t border-border">
                 <div className="flex items-center gap-2 mb-2 px-1">
                   <TrendingUp className="w-3.5 h-3.5 text-emerald-500" />
-                  <h4 className="text-xs font-medium text-gray-600">For Residential Properties</h4>
+                  <h4 className="text-xs font-medium text-muted-foreground">For Residential Properties</h4>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <button

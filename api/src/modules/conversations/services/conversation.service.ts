@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Inject } from '@nestjs/common';
 import { PrismaService } from '../../../common/services/prisma.service';
 import { CreateConversationDto, UpdateConversationDto, AddMessageDto } from '../dto/create-conversation.dto';
 
@@ -25,7 +25,7 @@ export interface ConversationMessage {
 
 @Injectable()
 export class ConversationService {
-  constructor(private prisma: PrismaService) {}
+  constructor(@Inject(PrismaService) private prisma: PrismaService) {}
 
   async findAll(userId: string) {
     const conversations = await this.prisma.conversation.findMany({

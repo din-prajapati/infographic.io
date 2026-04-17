@@ -148,18 +148,18 @@ export function AIPropertyChatInput({
       {conversationHistory.length > 0 && (
         <div className="flex-1 min-h-0 mb-3">
           <details className="group" open={showHistory}>
-            <summary className="flex items-center justify-between px-1 py-2 cursor-pointer hover:bg-gray-50 rounded-lg transition-colors list-none">
+            <summary className="flex items-center justify-between px-1 py-2 cursor-pointer hover:bg-muted rounded-lg transition-colors list-none">
               <div className="flex items-center gap-2">
-                <History className="w-4 h-4 text-gray-500" />
-                <span className="text-xs text-gray-600 font-medium">Conversation History</span>
-                <Badge variant="secondary" className="text-xs h-5 bg-gray-100 text-gray-700 border-0">
+                <History className="w-4 h-4 text-muted-foreground" />
+                <span className="text-xs text-muted-foreground font-medium">Conversation History</span>
+                <Badge variant="secondary" className="text-xs h-5 bg-muted text-muted-foreground border-0">
                   {conversationHistory.length}
                 </Badge>
               </div>
               <motion.div
                 animate={{ rotate: showHistory ? 180 : 0 }}
                 transition={{ duration: 0.2 }}
-                className="text-gray-400"
+                className="text-muted-foreground"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -168,7 +168,7 @@ export function AIPropertyChatInput({
             </summary>
             
             <div className="mt-2">
-              <ScrollArea className="h-[200px] rounded-lg border border-gray-200 bg-gray-50 p-3">
+              <ScrollArea className="h-[200px] rounded-lg border border-border bg-muted/50 p-3">
                 <div className="space-y-3">
                   {conversationHistory.map((message) => (
                     <div key={message.id} className="space-y-2">
@@ -187,9 +187,9 @@ export function AIPropertyChatInput({
                         <div
                           className={`
                             max-w-[80%] rounded-lg px-3 py-2 text-sm
-                            ${message.type === 'user' 
-                              ? 'bg-blue-500 text-white' 
-                              : 'bg-white border border-gray-200 text-gray-900'
+                            ${message.type === 'user'
+                              ? 'bg-blue-500 text-white'
+                              : 'bg-muted border border-border text-foreground'
                             }
                           `}
                         >
@@ -203,7 +203,7 @@ export function AIPropertyChatInput({
                           {message.previews.map((preview) => (
                             <div
                               key={preview.id}
-                              className="w-20 h-20 rounded-lg overflow-hidden border border-gray-200 cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all"
+                              className="w-20 h-20 rounded-lg overflow-hidden border border-border cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all"
                             >
                               <img
                                 src={preview.thumbnail}
@@ -228,9 +228,9 @@ export function AIPropertyChatInput({
         <div className="mb-3">
           <div className="flex items-center gap-1.5 mb-2 px-1">
             <Lightbulb className="w-3.5 h-3.5 text-amber-500" />
-            <span className="text-xs text-gray-600">Smart Suggestions</span>
+            <span className="text-xs text-muted-foreground">Smart Suggestions</span>
             {propertyType && (
-              <Badge variant="secondary" className="text-xs h-5 bg-blue-50 text-blue-700 border-0">
+              <Badge variant="secondary" className="text-xs h-5 bg-blue-500/15 text-blue-500 border-0">
                 {propertyType}
               </Badge>
             )}
@@ -241,10 +241,10 @@ export function AIPropertyChatInput({
                 key={suggestion.id}
                 onClick={() => handleSuggestionClick(suggestion)}
                 className="
-                  flex items-center gap-1.5 px-3 py-1.5 
-                  bg-white border border-gray-200 rounded-full 
-                  text-xs text-gray-700
-                  hover:border-blue-500 hover:bg-blue-50 hover:text-blue-700
+                  flex items-center gap-1.5 px-3 py-1.5
+                  bg-background border border-border rounded-full
+                  text-xs text-muted-foreground
+                  hover:border-blue-500 hover:bg-blue-500/10 hover:text-blue-500
                   transition-all
                   disabled:opacity-50 disabled:cursor-not-allowed
                 "
@@ -262,9 +262,9 @@ export function AIPropertyChatInput({
       <div
         className={`
           relative rounded-xl border-2 transition-all
-          ${isFocused 
-            ? 'border-blue-500 shadow-sm' 
-            : 'border-gray-200 hover:border-gray-300'
+          ${isFocused
+            ? 'border-blue-500 shadow-sm'
+            : 'border-border hover:border-foreground/30'
           }
           ${isGenerating ? 'opacity-60 pointer-events-none' : ''}
         `}
@@ -283,7 +283,7 @@ export function AIPropertyChatInput({
             className="
               w-full min-h-[24px] max-h-[120px]
               bg-transparent outline-none resize-none
-              text-sm text-gray-900 placeholder:text-gray-400
+              text-sm text-foreground placeholder:text-muted-foreground
               overflow-y-auto scrollbar-thin
             "
             style={{ height: '24px' }}
@@ -293,7 +293,7 @@ export function AIPropertyChatInput({
         {/* Bottom Bar */}
         <div className="flex items-center justify-between px-3 pb-3 pt-0">
           <div className="flex items-center gap-1">
-            <span className="text-xs text-gray-400">
+            <span className="text-xs text-muted-foreground">
               {isGenerating ? 'Generating...' : 'Press Enter to send'}
             </span>
           </div>
@@ -307,12 +307,12 @@ export function AIPropertyChatInput({
               variant="ghost"
               className="
                 h-8 w-8 p-0 rounded-full
-                hover:bg-gray-100
+                hover:bg-muted
                 disabled:opacity-40 disabled:cursor-not-allowed
               "
               title="View all suggestions"
             >
-              <MoreVertical className="w-4 h-4 text-gray-600" />
+              <MoreVertical className="w-4 h-4 text-muted-foreground" />
             </Button>
 
             {/* Send Button */}
@@ -345,8 +345,8 @@ export function AIPropertyChatInput({
 
       {/* Contextual Hint */}
       {propertyType && priceRange && (
-        <div className="mt-2 text-xs text-gray-500 text-center">
-          AI is optimized for <span className="text-gray-700 font-medium">{propertyType}</span> properties in the <span className="text-gray-700 font-medium">{priceRange}</span> range
+        <div className="mt-2 text-xs text-muted-foreground text-center">
+          AI is optimized for <span className="text-foreground font-medium">{propertyType}</span> properties in the <span className="text-foreground font-medium">{priceRange}</span> range
         </div>
       )}
 

@@ -32,7 +32,7 @@ export class GenerationsService {
     @Inject(TemplatesService) private templatesService: TemplatesService,
     @Inject(UsageAlertService) private usageAlertService: UsageAlertService,
     @Inject(forwardRef(() => GenerationProgressGateway)) private progressGateway: GenerationProgressGateway,
-    private prisma: PrismaService,
+    @Inject(PrismaService) private prisma: PrismaService,
   ) {}
 
   async generateFromChat(
@@ -52,15 +52,21 @@ export class GenerationsService {
           const extraction = await this.extractorService.getExtraction(dto.extractionId, userId);
           extractedData = extraction.extractedData;
           
-          // Optionally link extraction to conversation if conversationId provided
+          // Optionally link extraction to conversation if conversationId provided and exists in DB
           if (dto.conversationId && !extraction.conversationId && this.prisma && typeof (this.prisma as any).extraction !== 'undefined') {
-            await this.prisma.extraction.update({
-              where: { id: dto.extractionId },
-              data: { conversationId: dto.conversationId },
-            }).catch((err) => {
-              // Log but don't fail if update fails
-              console.warn(`⚠️ [GenerationsService] Failed to link extraction to conversation:`, err);
-            });
+            const convExists = await this.prisma.conversation.findUnique({
+              where: { id: dto.conversationId },
+              select: { id: true },
+            }).catch(() => null);
+
+            if (convExists) {
+              await this.prisma.extraction.update({
+                where: { id: dto.extractionId },
+                data: { conversationId: dto.conversationId },
+              }).catch((err) => {
+                console.warn(`⚠️ [GenerationsService] Failed to link extraction to conversation:`, err);
+              });
+            }
           }
         } catch (extractionError: any) {
           console.error(`❌ [GenerationsService] Extraction lookup failed:`, extractionError);
@@ -96,6 +102,18 @@ export class GenerationsService {
           `Missing required fields: ${missing.join(', ')}. Please provide at least address and price in your prompt.`
         );
       }
+
+      /* 
+      // Original strict validation disabled for testing
+      if (!extractedData.address || !extractedData.price) {
+        const missing = [];
+        if (!extractedData.address) missing.push('address');
+        if (!extractedData.price) missing.push('price');
+        throw new BadRequestException(
+          `Missing required fields: ${missing.join(', ')}. Please provide at least address and price in your prompt.`
+        );
+      }
+      */
 
     // Convert extracted data to GenerateInfographicDto format
     const propertyData = {
@@ -297,10 +315,28 @@ export class GenerationsService {
       },
     });
 
-    // Trigger generation
+    this.progressGateway.emitProgress(newGeneration.id, {
+      status: 'processing',
+      step: 0,
+      stepLabel: 'Starting regeneration...',
+      progress: 0,
+    });
+
     Promise.resolve().then(async () => {
       try {
-        await this.aiOrchestrator.generateInfographic(newGeneration.id, propertyData);
+        await this.aiOrchestrator.generateInfographic(
+          newGeneration.id,
+          propertyData,
+          { style },
+          this.progressGateway,
+        );
+
+        this.progressGateway.emitProgress(newGeneration.id, {
+          status: 'completed',
+          step: 5,
+          stepLabel: 'Regeneration complete!',
+          progress: 100,
+        });
       } catch (error: any) {
         await this.prisma.infographic.update({
           where: { id: newGeneration.id },
@@ -308,6 +344,11 @@ export class GenerationsService {
             status: 'failed',
             errorMessage: error?.message || 'Regeneration failed',
           },
+        });
+
+        this.progressGateway.emitProgress(newGeneration.id, {
+          status: 'failed',
+          errorMessage: error?.message || 'Regeneration failed',
         });
       }
     });

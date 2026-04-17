@@ -130,7 +130,7 @@ export function SaveDialog({
           {/* Thumbnail Preview */}
           {thumbnail && (
             <div className="flex justify-center">
-              <div className="relative w-48 h-27 rounded-lg overflow-hidden border border-gray-200">
+              <div className="relative w-48 h-27 rounded-lg overflow-hidden border border-border">
                 <img
                   src={thumbnail}
                   alt="Preview"

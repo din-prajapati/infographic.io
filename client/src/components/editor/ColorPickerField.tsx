@@ -219,7 +219,7 @@ export function ColorPickerField({ label, value, onChange, description }: ColorP
         <Popover open={isOpen} onOpenChange={setIsOpen}>
           <PopoverTrigger asChild>
             <button
-              className="w-10 h-9 rounded-lg border border-gray-200 shadow-sm hover:border-gray-300 transition-colors flex-shrink-0"
+              className="w-10 h-9 rounded-lg border border-border shadow-sm hover:border-foreground/30 transition-colors flex-shrink-0"
               style={{ backgroundColor: hexValue }}
             />
           </PopoverTrigger>
@@ -254,7 +254,7 @@ export function ColorPickerField({ label, value, onChange, description }: ColorP
 
               {/* Hue Slider */}
               <div className="flex gap-3 items-center">
-                <button className="w-10 h-10 rounded-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors flex-shrink-0">
+                <button className="w-10 h-10 rounded-lg border border-border flex items-center justify-center hover:bg-muted transition-colors flex-shrink-0">
                   <Pipette className="w-4 h-4" />
                 </button>
                 
@@ -271,7 +271,7 @@ export function ColorPickerField({ label, value, onChange, description }: ColorP
                     }}
                   />
                   <div 
-                    className="absolute w-6 h-6 bg-gray-900 border-2 border-white rounded-full shadow-lg top-1/2 -translate-y-1/2 pointer-events-none"
+                    className="absolute w-6 h-6 bg-foreground border-2 border-background rounded-full shadow-lg top-1/2 -translate-y-1/2 pointer-events-none"
                     style={{ left: `${(hue / 360) * 100}%`, transform: 'translate(-50%, -50%)' }}
                   />
                 </div>
@@ -288,7 +288,7 @@ export function ColorPickerField({ label, value, onChange, description }: ColorP
                     max={255}
                     className="h-9 text-center"
                   />
-                  <Label className="text-xs text-center block text-gray-500">R</Label>
+                  <Label className="text-xs text-center block text-muted-foreground">R</Label>
                 </div>
                 <div className="space-y-1">
                   <Input
@@ -299,7 +299,7 @@ export function ColorPickerField({ label, value, onChange, description }: ColorP
                     max={255}
                     className="h-9 text-center"
                   />
-                  <Label className="text-xs text-center block text-gray-500">G</Label>
+                  <Label className="text-xs text-center block text-muted-foreground">G</Label>
                 </div>
                 <div className="space-y-1">
                   <Input
@@ -310,7 +310,7 @@ export function ColorPickerField({ label, value, onChange, description }: ColorP
                     max={255}
                     className="h-9 text-center"
                   />
-                  <Label className="text-xs text-center block text-gray-500">B</Label>
+                  <Label className="text-xs text-center block text-muted-foreground">B</Label>
                 </div>
               </div>
             </div>
@@ -328,7 +328,7 @@ export function ColorPickerField({ label, value, onChange, description }: ColorP
       </div>
 
       {description && (
-        <p className="text-xs text-gray-500">{description}</p>
+        <p className="text-xs text-muted-foreground">{description}</p>
       )}
     </div>
   );

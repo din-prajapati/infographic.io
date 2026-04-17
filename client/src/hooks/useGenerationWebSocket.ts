@@ -2,7 +2,6 @@ import { useEffect, useRef, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { useAuth } from '../lib/auth';
 
-// Use environment variable for API URL
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 const WS_URL = API_URL.replace(/^http/, 'ws');
 
@@ -30,17 +29,21 @@ export function useGenerationWebSocket({
   const socketRef = useRef<Socket | null>(null);
   const { user } = useAuth();
 
+  // Store callbacks in refs to avoid reconnection on every render
+  const onProgressRef = useRef(onProgress);
+  onProgressRef.current = onProgress;
+  const onErrorRef = useRef(onError);
+  onErrorRef.current = onError;
+
   const connect = useCallback(() => {
     if (!generationId || !user?.id) {
       return;
     }
 
-    // Disconnect existing socket if any
     if (socketRef.current) {
       socketRef.current.disconnect();
     }
 
-    // Connect to WebSocket namespace
     const socket = io(`${WS_URL}/generations`, {
       transports: ['websocket', 'polling'],
       reconnection: true,
@@ -52,8 +55,6 @@ export function useGenerationWebSocket({
 
     socket.on('connect', () => {
       console.log('🔌 [WebSocket] Connected to generation progress server');
-      
-      // Subscribe to generation updates
       socket.emit('subscribe', {
         generationId,
         userId: user.id,
@@ -66,12 +67,12 @@ export function useGenerationWebSocket({
 
     socket.on('progress', (progress: GenerationProgress) => {
       console.log('📊 [WebSocket] Progress update:', progress);
-      onProgress?.(progress);
+      onProgressRef.current?.(progress);
     });
 
     socket.on('error', (error: { message: string }) => {
       console.error('❌ [WebSocket] Error:', error);
-      onError?.(new Error(error.message));
+      onErrorRef.current?.(new Error(error.message));
     });
 
     socket.on('disconnect', () => {
@@ -80,9 +81,9 @@ export function useGenerationWebSocket({
 
     socket.on('connect_error', (error: Error) => {
       console.error('❌ [WebSocket] Connection error:', error);
-      onError?.(error);
+      onErrorRef.current?.(error);
     });
-  }, [generationId, user?.id, onProgress, onError]);
+  }, [generationId, user?.id]);
 
   const disconnect = useCallback(() => {
     if (socketRef.current) {
@@ -94,7 +95,6 @@ export function useGenerationWebSocket({
       }
       socketRef.current.disconnect();
       socketRef.current = null;
-      console.log('🔌 [WebSocket] Disconnected');
     }
   }, [generationId, user?.id]);
 

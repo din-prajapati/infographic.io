@@ -1,3 +1,13 @@
+import * as Sentry from '@sentry/react';
+import { browserTracingIntegration } from '@sentry/react';
+
+Sentry.init({
+  dsn: import.meta.env.VITE_SENTRY_DSN,
+  integrations: [browserTracingIntegration()],
+  tracesSampleRate: 1.0,
+  enabled: import.meta.env.PROD,
+});
+
 import React from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";

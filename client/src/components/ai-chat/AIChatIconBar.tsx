@@ -41,7 +41,7 @@ export function AIChatIconBar({
   paperclipRef,
 }: AIChatIconBarProps) {
   return (
-    <div className="flex items-center gap-2 mt-3 pt-3 border-t border-gray-100 -mx-1">
+    <div className="flex items-center gap-2 mt-3 pt-2 border-t border-border -mx-1">
       {/* Left Section: Attach Icon + Selected Chips */}
       <div className="flex items-center gap-2">
         {/* Attach/Paperclip Icon */}
@@ -50,7 +50,7 @@ export function AIChatIconBar({
           type="button"
           variant="ghost"
           size="icon"
-          className="h-8 w-8 hover:bg-gray-100 text-gray-500"
+          className="h-8 w-8 hover:bg-muted text-muted-foreground"
           title="Attach file"
           onClick={onUploadClick}
         >
@@ -84,7 +84,7 @@ export function AIChatIconBar({
           type="button"
           variant="ghost"
           size="icon"
-          className="h-8 w-8 hover:bg-gray-100 text-gray-500"
+          className="h-8 w-8 hover:bg-muted text-muted-foreground"
           title="AI Suggestions"
           onClick={onSuggestionsClick}
         >
@@ -97,7 +97,7 @@ export function AIChatIconBar({
           type="button"
           variant="ghost"
           size="icon"
-          className="h-8 w-8 hover:bg-gray-100 text-gray-500"
+          className="h-8 w-8 hover:bg-muted text-muted-foreground"
           title="Quick Actions"
           onClick={onQuickActionsClick}
         >
@@ -110,7 +110,7 @@ export function AIChatIconBar({
           type="button"
           variant="ghost"
           size="icon"
-          className="h-8 w-8 hover:bg-gray-100 text-gray-500"
+          className="h-8 w-8 hover:bg-muted text-muted-foreground"
           title="Style Presets"
           onClick={onStylePresetsClick}
         >
@@ -124,7 +124,7 @@ export function AIChatIconBar({
           className={`h-9 w-9 rounded-full transition-all ${
             canGenerate
               ? 'bg-blue-600 hover:bg-blue-700 text-white'
-              : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+              : 'bg-muted text-muted-foreground/50 cursor-not-allowed'
           }`}
           onClick={onGenerate}
           disabled={!canGenerate || isGenerating}

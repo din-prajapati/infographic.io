@@ -27,16 +27,18 @@ const carouselTaglines = [
 
 export default function AuthPage() {
   const [, navigate] = useLocation();
-  const { login, isAuthenticated } = useAuth();
+  const { login, isAuthenticated, isLoading } = useAuth();
   const [isLoginMode, setIsLoginMode] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
 
   useEffect(() => {
+    if (isLoading) return; // Wait for auth state to be read from localStorage
     if (isAuthenticated) {
-      navigate('/');
+      const pendingPlan = localStorage.getItem('pending_subscription_plan');
+      navigate(pendingPlan ? '/pricing' : '/');
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, isLoading, navigate]);
 
   const nextSlide = useCallback(() => {
     setCurrentSlide((prev) => (prev + 1) % carouselImages.length);
@@ -88,7 +90,7 @@ export default function AuthPage() {
       {carouselImages.map((img, i) => (
         <div
           key={i}
-          className="absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ease-in-out"
+          className="absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ease-in-out pointer-events-none"
           style={{
             backgroundImage: `url(${img})`,
             opacity: currentSlide === i ? 1 : 0,
@@ -98,7 +100,7 @@ export default function AuthPage() {
         />
       ))}
 
-      <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.15)' }} />
+      <div className="absolute inset-0 pointer-events-none" style={{ background: 'rgba(0,0,0,0.15)' }} />
 
       <div
         className="relative z-10 w-full max-w-[1100px] flex flex-col lg:flex-row overflow-hidden"
@@ -111,7 +113,8 @@ export default function AuthPage() {
           boxShadow: '0 25px 60px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255,255,255,0.2)',
         }}
       >
-        <div className="w-full lg:w-[45%] p-8 md:p-10 lg:p-12 flex flex-col justify-center"
+        <div
+          className="relative z-20 w-full lg:w-[45%] p-8 md:p-10 lg:p-12 flex flex-col justify-center pointer-events-auto"
           style={{
             background: 'rgba(255, 255, 255, 0.08)',
             backdropFilter: 'blur(60px)',
@@ -173,10 +176,7 @@ export default function AuthPage() {
                           placeholder="agent@realty.com"
                           data-testid="input-email"
                           className="h-11 rounded-xl border-0 text-white placeholder:text-white/40 focus-visible:ring-1 focus-visible:ring-white/40"
-                          style={{
-                            background: 'rgba(255,255,255,0.12)',
-                            backdropFilter: 'blur(10px)',
-                          }}
+                          style={{ background: 'rgba(255,255,255,0.12)' }}
                           {...field}
                         />
                       </FormControl>
@@ -196,19 +196,16 @@ export default function AuthPage() {
                             type={showPassword ? 'text' : 'password'}
                             placeholder="••••••••"
                             data-testid="input-password"
-                            className="h-11 rounded-xl border-0 text-white placeholder:text-white/40 pr-10 focus-visible:ring-1 focus-visible:ring-white/40"
-                            style={{
-                              background: 'rgba(255,255,255,0.12)',
-                              backdropFilter: 'blur(10px)',
-                            }}
+                            className="h-11 rounded-xl border-0 text-white placeholder:text-white/40 pr-12 focus-visible:ring-1 focus-visible:ring-white/40"
+                            style={{ background: 'rgba(255,255,255,0.12)' }}
                             {...field}
                           />
                           <button
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 hover:text-white/80 transition-colors"
+                            className="absolute right-3 top-0 bottom-0 flex items-center justify-center text-white/70 hover:text-white transition-colors"
                           >
-                            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                            {showPassword ? <EyeOff size={22} /> : <Eye size={22} />}
                           </button>
                         </div>
                       </FormControl>
@@ -232,6 +229,7 @@ export default function AuthPage() {
                   className="w-full h-12 rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transition-all duration-200 mt-2"
                   style={{
                     background: '#000000',
+                    color: 'white',
                     border: '1px solid rgba(255,255,255,0.15)',
                   }}
                   disabled={loginMutation.isPending}
@@ -244,51 +242,38 @@ export default function AuthPage() {
           ) : (
             <Form {...registerForm}>
               <form onSubmit={registerForm.handleSubmit((data) => registerMutation.mutate(data))} className="space-y-4">
-                <FormField
-                  control={registerForm.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-xs font-medium text-white/70 mb-1">Full Name</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="John Doe"
-                          data-testid="input-name"
-                          className="h-11 rounded-xl border-0 text-white placeholder:text-white/40 focus-visible:ring-1 focus-visible:ring-white/40"
-                          style={{
-                            background: 'rgba(255,255,255,0.12)',
-                            backdropFilter: 'blur(10px)',
-                          }}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage className="text-xs mt-1 text-red-300" />
-                    </FormItem>
+                <div className="grid gap-2">
+                  <label htmlFor="register-name" className="text-xs font-medium text-white/70 mb-1">Full Name</label>
+                  <input
+                    id="register-name"
+                    type="text"
+                    placeholder="John Doe"
+                    data-testid="input-name"
+                    autoComplete="name"
+                    className="h-11 w-full rounded-xl border-0 px-3 py-1 text-base text-white placeholder:text-white/40 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/40 md:text-sm"
+                    style={{ background: 'rgba(255,255,255,0.12)' }}
+                    {...registerForm.register('name')}
+                  />
+                  {registerForm.formState.errors.name && (
+                    <p className="text-xs mt-1 text-red-300">{registerForm.formState.errors.name.message}</p>
                   )}
-                />
-                <FormField
-                  control={registerForm.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-xs font-medium text-white/70 mb-1">Email</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="email"
-                          placeholder="agent@realty.com"
-                          data-testid="input-register-email"
-                          className="h-11 rounded-xl border-0 text-white placeholder:text-white/40 focus-visible:ring-1 focus-visible:ring-white/40"
-                          style={{
-                            background: 'rgba(255,255,255,0.12)',
-                            backdropFilter: 'blur(10px)',
-                          }}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage className="text-xs mt-1 text-red-300" />
-                    </FormItem>
+                </div>
+                <div className="grid gap-2">
+                  <label htmlFor="register-email" className="text-xs font-medium text-white/70 mb-1">Email</label>
+                  <input
+                    id="register-email"
+                    type="email"
+                    placeholder="agent@realty.com"
+                    data-testid="input-register-email"
+                    autoComplete="email"
+                    className="h-11 w-full rounded-xl border-0 px-3 py-1 text-base text-white placeholder:text-white/40 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/40 md:text-sm"
+                    style={{ background: 'rgba(255,255,255,0.12)' }}
+                    {...registerForm.register('email')}
+                  />
+                  {registerForm.formState.errors.email && (
+                    <p className="text-xs mt-1 text-red-300">{registerForm.formState.errors.email.message}</p>
                   )}
-                />
+                </div>
                 <FormField
                   control={registerForm.control}
                   name="password"
@@ -301,19 +286,16 @@ export default function AuthPage() {
                             type={showPassword ? 'text' : 'password'}
                             placeholder="••••••••"
                             data-testid="input-register-password"
-                            className="h-11 rounded-xl border-0 text-white placeholder:text-white/40 pr-10 focus-visible:ring-1 focus-visible:ring-white/40"
-                            style={{
-                              background: 'rgba(255,255,255,0.12)',
-                              backdropFilter: 'blur(10px)',
-                            }}
+                            className="h-11 rounded-xl border-0 text-white placeholder:text-white/40 pr-12 focus-visible:ring-1 focus-visible:ring-white/40"
+                            style={{ background: 'rgba(255,255,255,0.12)' }}
                             {...field}
                           />
                           <button
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 hover:text-white/80 transition-colors"
+                            className="absolute right-3 top-0 bottom-0 flex items-center justify-center text-white/70 hover:text-white transition-colors"
                           >
-                            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                            {showPassword ? <EyeOff size={22} /> : <Eye size={22} />}
                           </button>
                         </div>
                       </FormControl>
@@ -332,10 +314,7 @@ export default function AuthPage() {
                           placeholder="ABC Realty"
                           data-testid="input-organization"
                           className="h-11 rounded-xl border-0 text-white placeholder:text-white/40 focus-visible:ring-1 focus-visible:ring-white/40"
-                          style={{
-                            background: 'rgba(255,255,255,0.12)',
-                            backdropFilter: 'blur(10px)',
-                          }}
+                          style={{ background: 'rgba(255,255,255,0.12)' }}
                           {...field}
                         />
                       </FormControl>
@@ -349,6 +328,7 @@ export default function AuthPage() {
                   className="w-full h-12 rounded-xl text-sm font-semibold shadow-lg hover:shadow-xl transition-all duration-200 mt-2"
                   style={{
                     background: '#000000',
+                    color: 'white',
                     border: '1px solid rgba(255,255,255,0.15)',
                   }}
                   disabled={registerMutation.isPending}
@@ -376,7 +356,7 @@ export default function AuthPage() {
           {carouselImages.map((img, i) => (
             <div
               key={i}
-              className="absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ease-in-out"
+              className="absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ease-in-out pointer-events-none"
               style={{
                 backgroundImage: `url(${img})`,
                 opacity: currentSlide === i ? 1 : 0,
@@ -384,7 +364,7 @@ export default function AuthPage() {
             />
           ))}
 
-          <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.05) 40%, rgba(0,0,0,0.2) 100%)' }} />
+          <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(180deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.05) 40%, rgba(0,0,0,0.2) 100%)' }} />
 
           <div className="absolute top-8 left-8 right-8 z-10">
             <p className="text-white text-lg md:text-xl font-semibold leading-relaxed drop-shadow-lg" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.4)' }}>

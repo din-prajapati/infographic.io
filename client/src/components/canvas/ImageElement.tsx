@@ -88,9 +88,11 @@ export function ImageElement({ element, isSelected, onSelect }: ImageElementProp
       }}
       onClick={handleClick}
       lockAspectRatio
+      data-element-id={element.id}
+      data-element-type="image"
     >
       <div 
-        className={`w-full h-full relative ${isSelected ? 'ring-2 ring-blue-500 ring-offset-1 shadow-lg' : ''}`} 
+        className={`w-full h-full relative ${isSelected ? 'outline outline-2 outline-blue-500 outline-offset-1 shadow-lg' : ''}`} 
         style={{ 
           overflow: 'hidden',
           borderRadius: `${element.cornerRadius}px`,

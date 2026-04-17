@@ -12,11 +12,13 @@ import {
   InvoiceResponse,
   PlanResponse,
 } from '../interfaces/payment-provider.interface';
+import { getPaymentSettings } from '../config';
 
 // RazorPay SDK types (simplified for this implementation)
 interface RazorpayInstance {
   customers: {
     create(params: any): Promise<any>;
+    all(params?: { count?: number; skip?: number }): Promise<{ items: Array<{ id: string; email: string; name: string }> }>;
   };
   plans: {
     create(params: any): Promise<any>;
@@ -72,19 +74,44 @@ export class RazorpayProvider implements IPaymentProvider {
 
   async createCustomer(email: string, name: string, phone?: string): Promise<CustomerResponse> {
     const razorpay = await this.getRazorpayInstance();
+    const existing = await this.fetchCustomerByEmail(razorpay, email);
+    if (existing) return existing;
+
     const customer = await razorpay.customers.create({
       email,
       name,
       contact: phone,
       fail_existing: 0,
     });
-
     return {
       id: customer.id,
       email: customer.email,
       name: customer.name,
       provider: 'RAZORPAY',
     };
+  }
+
+  private async fetchCustomerByEmail(
+    razorpay: RazorpayInstance,
+    email: string
+  ): Promise<CustomerResponse | null> {
+    let skip = 0;
+    const count = 100;
+    const maxPages = 50;
+    const normalizedEmail = email?.toLowerCase().trim();
+    if (!normalizedEmail) return null;
+
+    for (let i = 0; i < maxPages; i++) {
+      const res = await razorpay.customers.all({ count, skip });
+      const items = res?.items || (res as any)?.data?.items || [];
+      const found = items.find((c: any) => (c?.email || '').toLowerCase().trim() === normalizedEmail);
+      if (found) {
+        return { id: found.id, email: found.email, name: found.name, provider: 'RAZORPAY' };
+      }
+      if (items.length < count) break;
+      skip += count;
+    }
+    return null;
   }
 
   async createPlan(params: CreatePlanParams): Promise<PlanResponse> {
@@ -112,8 +139,9 @@ export class RazorpayProvider implements IPaymentProvider {
 
   async createSubscription(params: CreateSubscriptionParams): Promise<SubscriptionResponse> {
     const razorpay = await this.getRazorpayInstance();
-    // Razorpay requires start_at >= their server time; use 60s buffer to avoid clock skew
-    const startAt = params.startAt ?? Math.floor(Date.now() / 1000) + 60;
+    const { razorpaySubscriptionStartBufferSeconds } = getPaymentSettings();
+    const startAt =
+      params.startAt ?? Math.floor(Date.now() / 1000) + razorpaySubscriptionStartBufferSeconds;
     const subscription = await razorpay.subscriptions.create({
       plan_id: params.planId,
       customer_id: params.customerId,
@@ -125,13 +153,21 @@ export class RazorpayProvider implements IPaymentProvider {
       notes: {},
     });
 
+    const now = Date.now() / 1000;
+    const fallbackEnd = now + 30 * 24 * 60 * 60;
+    const currentStart = subscription.current_start && subscription.current_start > 0
+      ? subscription.current_start
+      : now;
+    const currentEnd = subscription.current_end && subscription.current_end > 0
+      ? subscription.current_end
+      : fallbackEnd;
     return {
       id: subscription.id,
       customerId: subscription.customer_id,
       planId: subscription.plan_id,
       status: subscription.status,
-      currentPeriodStart: new Date(subscription.current_start * 1000),
-      currentPeriodEnd: new Date(subscription.current_end * 1000),
+      currentPeriodStart: new Date(currentStart * 1000),
+      currentPeriodEnd: new Date(currentEnd * 1000),
       amount: subscription.amount || 0,
       currency: subscription.currency || 'INR',
       provider: 'RAZORPAY',
@@ -143,13 +179,21 @@ export class RazorpayProvider implements IPaymentProvider {
     const razorpay = await this.getRazorpayInstance();
     const subscription = await razorpay.subscriptions.fetch(subscriptionId);
 
+    const now = Date.now() / 1000;
+    const fallbackEnd = now + 30 * 24 * 60 * 60;
+    const currentStart = subscription.current_start && subscription.current_start > 0
+      ? subscription.current_start
+      : now;
+    const currentEnd = subscription.current_end && subscription.current_end > 0
+      ? subscription.current_end
+      : fallbackEnd;
     return {
       id: subscription.id,
       customerId: subscription.customer_id,
       planId: subscription.plan_id,
       status: subscription.status,
-      currentPeriodStart: new Date(subscription.current_start * 1000),
-      currentPeriodEnd: new Date(subscription.current_end * 1000),
+      currentPeriodStart: new Date(currentStart * 1000),
+      currentPeriodEnd: new Date(currentEnd * 1000),
       amount: subscription.amount || 0,
       currency: subscription.currency || 'INR',
       provider: 'RAZORPAY',

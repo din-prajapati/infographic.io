@@ -27,36 +27,42 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
     const state = get();
     const maxZIndex = Math.max(0, ...state.elements.map((el) => el.zIndex));
     const newElement = { ...element, zIndex: maxZIndex + 1 };
-    
+    // Save pre-change state to history before mutating
+    get().pushToHistory(state.elements);
     set({
       elements: [...state.elements, newElement],
     });
-    get().pushToHistory();
   },
 
   updateElement: (id, updates) => {
-    set((state) => ({
+    const state = get();
+    // Save pre-change state to history before mutating
+    get().pushToHistory(state.elements);
+    set({
       elements: state.elements.map((el) =>
         el.id === id ? { ...el, ...updates } : el
       ),
-    }));
-    get().pushToHistory();
+    });
   },
 
   deleteElement: (id) => {
-    set((state) => ({
+    const state = get();
+    // Save pre-change state to history before mutating
+    get().pushToHistory(state.elements);
+    set({
       elements: state.elements.filter((el) => el.id !== id),
       selectedElementIds: state.selectedElementIds.filter((sid) => sid !== id),
-    }));
-    get().pushToHistory();
+    });
   },
 
   deleteElements: (ids) => {
-    set((state) => ({
+    const state = get();
+    // Save pre-change state to history before mutating
+    get().pushToHistory(state.elements);
+    set({
       elements: state.elements.filter((el) => !ids.includes(el.id)),
       selectedElementIds: state.selectedElementIds.filter((sid) => !ids.includes(sid)),
-    }));
-    get().pushToHistory();
+    });
   },
 
   duplicateElement: (id) => {
@@ -137,11 +143,12 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
   pasteFromClipboard: () => {
     const state = get();
     const newElements = state.clipboard.map((el) => cloneElement(el));
+    // Save pre-change state to history before mutating
+    get().pushToHistory(state.elements);
     set({
       elements: [...state.elements, ...newElements],
       selectedElementIds: newElements.map((el) => el.id),
     });
-    get().pushToHistory();
   },
 
   // History
@@ -177,10 +184,12 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
     });
   },
 
-  pushToHistory: () => {
+  pushToHistory: (snapshot?: CanvasElement[]) => {
     const state = get();
+    // Use provided snapshot (pre-change state), or current elements as fallback
+    const elementsToSave = snapshot ?? state.elements;
     // Limit history to 50 steps
-    const newPast = [...state.history.past, state.elements].slice(-50);
+    const newPast = [...state.history.past, elementsToSave].slice(-50);
     set({
       history: {
         past: newPast,
@@ -217,12 +226,14 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
 
   // Utility
   clearCanvas: () => {
+    const state = get();
+    // Save pre-change state to history before clearing
+    get().pushToHistory(state.elements);
     set({
       elements: [],
       selectedElementIds: [],
       clipboard: [],
     });
-    get().pushToHistory();
   },
 
   loadCanvas: (state) => {

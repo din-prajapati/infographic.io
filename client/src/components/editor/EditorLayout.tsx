@@ -15,6 +15,7 @@ import {
   loadTemplateById,
   generateId,
 } from "../../lib/storage";
+import { getGalleryTemplateDisplayName } from "../../lib/galleryTemplateCatalog";
 import { captureCanvasData, generateThumbnailSync, restoreCanvasData } from "../../lib/canvasState";
 import { downloadCanvas } from "../../lib/canvasExport";
 import { useCanvasStore } from "../../hooks/useCanvasStore";
@@ -45,6 +46,7 @@ export function EditorLayout({ onBackClick, designId, templateId }: EditorLayout
   const pasteFromClipboard = useCanvasStore((state) => state.pasteFromClipboard);
   const activeTool = useCanvasStore((state) => state.activeTool);
   const setActiveTool = useCanvasStore((state) => state.setActiveTool);
+  const loadCanvas = useCanvasStore((state) => state.loadCanvas);
 
   // Get selected element for AdjustmentsPanel
   const selectedElement = selectedElementIds.length === 1 
@@ -55,6 +57,8 @@ export function EditorLayout({ onBackClick, designId, templateId }: EditorLayout
   useEffect(() => {
     const loadData = async () => {
       if (designId) {
+        // Clear canvas first to avoid stale elements from a previous session
+        loadCanvas({ elements: [], canvasWidth: 1200, canvasHeight: 800, backgroundColor: '#FFFFFF', zoom: 1 });
         try {
           const design = await loadDesignById(designId);
           if (design) {
@@ -75,10 +79,14 @@ export function EditorLayout({ onBackClick, designId, templateId }: EditorLayout
           const template = await loadTemplateById(templateId);
           if (template) {
             setDesignName(`${template.name} (Copy)`);
-            
-            // Restore canvas data from template (don't set currentDesignId)
+
             if (template.canvasData) {
               restoreCanvasData(template.canvasData);
+            }
+          } else {
+            const galleryName = getGalleryTemplateDisplayName(templateId);
+            if (galleryName) {
+              setDesignName(`${galleryName} (Template)`);
             }
           }
         } catch (error) {
@@ -181,23 +189,25 @@ export function EditorLayout({ onBackClick, designId, templateId }: EditorLayout
   };
 
   const handleExport = async () => {
+    const toastId = toast.loading('Exporting design...');
     try {
-      toast.loading('Exporting design...');
-      
       const success = await downloadCanvas(designName || 'design', 'png');
       
       if (success) {
         toast.success('Design exported!', {
+          id: toastId,
           description: 'Your design has been downloaded as a PNG file.',
         });
       } else {
         toast.error('Export failed', {
+          id: toastId,
           description: 'Could not export your design. Please try again.',
         });
       }
     } catch (error) {
       console.error('Export error:', error);
       toast.error('Export error', {
+        id: toastId,
         description: 'An unexpected error occurred.',
       });
     }
@@ -220,16 +230,25 @@ export function EditorLayout({ onBackClick, designId, templateId }: EditorLayout
         updatedAt: new Date().toISOString(),
       };
 
-      let success = false;
+      let result: { success: boolean; savedDesign: typeof designData };
       if (data.type === "design") {
-        success = await saveDesign(designData);
+        result = await saveDesign(designData);
       } else {
-        success = await saveTemplate(designData);
+        result = await saveTemplate(designData);
       }
 
-      if (success) {
-        setCurrentDesignId(designData.id);
+      if (result.success) {
+        // Use the API-returned ID (may differ from local ID if API created a new DB record)
+        const savedId = result.savedDesign.id;
+        setCurrentDesignId(savedId);
         setDesignName(data.name);
+
+        // Update URL to reflect the saved design ID (allows reload/bookmark to restore design)
+        if (data.type === "design" && savedId) {
+          const newUrl = `/editor?designId=${savedId}`;
+          window.history.replaceState(null, '', newUrl);
+        }
+
         toast.success(
           `${data.type === "design" ? "Design" : "Template"} saved successfully!`,
           {

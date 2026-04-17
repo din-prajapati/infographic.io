@@ -189,6 +189,7 @@ enum PaymentProvider {
 }
 
 enum SubscriptionStatus {
+  PENDING
   ACTIVE
   PAST_DUE
   CANCELLED
@@ -226,7 +227,8 @@ model Subscription {
   externalPlanId         String
   externalCustomerId     String?
   planTier               PlanTier
-  status                 SubscriptionStatus @default(ACTIVE)
+  billingPeriod          String             @default("MONTHLY")
+  status                 SubscriptionStatus @default(PENDING)
   currentPeriodStart     DateTime
   currentPeriodEnd       DateTime
   cancelledAt            DateTime?

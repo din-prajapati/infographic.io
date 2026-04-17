@@ -30,6 +30,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { PLAN_CONFIG } from "@shared/schema";
 
 import carouselImage1 from "@/assets/images/carousel/property-1.jpg";
 import carouselImage2 from "@/assets/images/carousel/property-2.jpg";
@@ -76,7 +77,7 @@ const painPointCards = [
   {
     icon: Users,
     title: "Team Collaboration",
-    description: "Share templates and assets across your team.",
+    description: "Organization-based plans support multiple users. Team workspace UI coming soon.",
   },
 ];
 
@@ -104,40 +105,31 @@ const faqs = [
   {
     question: "What formats can I download?",
     answer:
-      "Free plans include high-resolution PNG downloads. Paid plans also include PDF export for professional printing, flyers, and MLS uploads.",
+      "All plans include high-resolution PNG and JPG downloads. Images are optimized for social media, MLS, and print-ready sizing. PDF export is coming soon.",
   },
 ];
 
-const pricingPlans = [
-  {
-    tier: "FREE",
-    name: "Free",
-    icon: Gift,
-    description: "Get started with essential features",
-    price: 0,
-    features: ["3 infographics per month", "Basic templates", "PNG download", "Watermark included"],
-  },
-  {
-    tier: "SOLO",
-    name: "Solo",
-    icon: Star,
-    description: "Perfect for individual agents",
-    price: 999,
-    features: ["25 infographics per month", "All templates", "PNG & PDF export", "No watermark", "Custom branding"],
-  },
-  {
-    tier: "TEAM",
-    name: "Team",
-    icon: Building,
-    description: "Built for real estate teams",
-    price: 2499,
-    features: ["100 infographics per month", "Team workspace", "Brand kit", "Priority support", "API access"],
-  },
-];
+const planIcons: Record<string, typeof Gift> = {
+  FREE: Gift,
+  SOLO: Star,
+  TEAM: Building,
+};
+
+const pricingPlans = (["FREE", "SOLO", "TEAM"] as const).map((tier) => {
+  const config = PLAN_CONFIG[tier];
+  return {
+    tier,
+    name: config.name,
+    icon: planIcons[tier] ?? Gift,
+    description: tier === "FREE" ? "Get started with essential features" : tier === "SOLO" ? "Perfect for individual agents" : "Built for real estate teams",
+    price: config.price,
+    features: config.features,
+  };
+});
 
 function TemplateCard({ template }: { template: typeof showcaseTemplates[0] }) {
   return (
-    <div className="relative group w-[280px] md:w-[320px] rounded-2xl overflow-hidden bg-gradient-to-br from-gray-900 to-gray-800 border border-white/10 shadow-xl transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl">
+    <div className="relative group w-[280px] md:w-[320px] rounded-2xl overflow-hidden bg-gradient-to-br from-gray-900 to-gray-800 border border-border shadow-xl transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl">
       <div className="aspect-[4/3] overflow-hidden">
         <img
           src={template.image}
@@ -356,7 +348,7 @@ export default function LandingPage() {
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {painPointCards.map((card, index) => (
-              <div key={index} className="bg-white/5 border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-colors">
+              <div key={index} className="glass rounded-2xl border border-border p-6 hover:bg-white/10 transition-colors">
                 <div className="w-12 h-12 rounded-xl bg-teal-500/20 flex items-center justify-center mb-4">
                   <card.icon className="h-6 w-6 text-teal-400" />
                 </div>
@@ -388,7 +380,7 @@ export default function LandingPage() {
               const PlanIcon = plan.icon;
 
               return (
-                <div key={plan.tier} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 flex flex-col">
+                <div key={plan.tier} className="glass rounded-2xl border border-border p-8 flex flex-col">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <h3 className="text-xl font-bold text-black">{plan.name}</h3>
@@ -461,20 +453,20 @@ export default function LandingPage() {
               <div className="space-y-6">
                 <div className="flex gap-4">
                   <div className="w-12 h-12 rounded-xl bg-teal-500/20 flex items-center justify-center flex-shrink-0">
-                    <Users className="h-6 w-6 text-teal-400" />
+                    <Target className="h-6 w-6 text-teal-400" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-white mb-1">Team Workspace</h3>
-                    <p className="text-gray-400 text-sm">Share templates and assets across your entire team seamlessly.</p>
+                    <h3 className="text-lg font-semibold text-white mb-1">Brand Kit</h3>
+                    <p className="text-gray-400 text-sm">Apply custom brand palettes and colors to your infographics in the editor.</p>
                   </div>
                 </div>
                 <div className="flex gap-4">
                   <div className="w-12 h-12 rounded-xl bg-teal-500/20 flex items-center justify-center flex-shrink-0">
-                    <Building2 className="h-6 w-6 text-teal-400" />
+                    <Zap className="h-6 w-6 text-teal-400" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-white mb-1">Multi-Agent Support</h3>
-                    <p className="text-gray-400 text-sm">Each agent gets their own workspace with shared resources.</p>
+                    <h3 className="text-lg font-semibold text-white mb-1">Instant Export</h3>
+                    <p className="text-gray-400 text-sm">Download high-resolution PNG and JPG files, optimized for social media and MLS.</p>
                   </div>
                 </div>
               </div>
@@ -482,25 +474,25 @@ export default function LandingPage() {
             <div className="relative">
               <div className="bg-gradient-to-br from-teal-500/20 to-transparent rounded-3xl p-8">
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/10">
-                    <Users className="h-8 w-8 text-teal-400 mb-2" />
-                    <p className="text-white font-semibold">Team Workspace</p>
-                    <p className="text-gray-400 text-xs mt-1">Share templates & assets</p>
-                  </div>
-                  <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/10">
-                    <Building2 className="h-8 w-8 text-teal-400 mb-2" />
-                    <p className="text-white font-semibold">Multi-Agent</p>
-                    <p className="text-gray-400 text-xs mt-1">Individual workspaces</p>
-                  </div>
-                  <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/10">
+                  <div className="glass rounded-xl p-4 border border-border">
                     <Target className="h-8 w-8 text-teal-400 mb-2" />
                     <p className="text-white font-semibold">Brand Kit</p>
                     <p className="text-gray-400 text-xs mt-1">Custom branding</p>
                   </div>
-                  <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/10">
+                  <div className="glass rounded-xl p-4 border border-border">
                     <Zap className="h-8 w-8 text-teal-400 mb-2" />
                     <p className="text-white font-semibold">Instant Export</p>
-                    <p className="text-gray-400 text-xs mt-1">PNG, PDF, Print</p>
+                    <p className="text-gray-400 text-xs mt-1">PNG & JPG</p>
+                  </div>
+                  <div className="glass rounded-xl p-4 border border-border">
+                    <Users className="h-8 w-8 text-teal-400 mb-2" />
+                    <p className="text-white font-semibold">Team Workspace</p>
+                    <p className="text-gray-400 text-xs mt-1">Coming soon</p>
+                  </div>
+                  <div className="glass rounded-xl p-4 border border-border">
+                    <Building2 className="h-8 w-8 text-teal-400 mb-2" />
+                    <p className="text-white font-semibold">Multi-Agent</p>
+                    <p className="text-gray-400 text-xs mt-1">Coming soon</p>
                   </div>
                 </div>
               </div>
@@ -535,7 +527,7 @@ export default function LandingPage() {
               <AccordionItem
                 key={index}
                 value={`faq-${index}`}
-                className="bg-white/5 rounded-xl border border-white/10 px-6 overflow-hidden"
+                className="glass rounded-xl border border-border px-6 overflow-hidden"
               >
                 <AccordionTrigger className="text-left text-white hover:no-underline py-5 text-base md:text-lg font-medium">
                   {faq.question}

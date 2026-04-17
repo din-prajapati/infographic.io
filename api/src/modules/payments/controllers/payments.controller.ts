@@ -14,18 +14,11 @@ import {
   BadRequestException,
   NotFoundException,
 } from '@nestjs/common';
-import * as fs from 'fs';
-import * as path from 'path';
-
-const DEBUG_LOG_PATH = path.join(__dirname, '../../../../..', '.cursor', 'debug.log');
-function debugLog(location: string, message: string, data: Record<string, unknown>) {
-  try {
-    fs.appendFileSync(DEBUG_LOG_PATH, JSON.stringify({ location, message, data, timestamp: Date.now() }) + '\n');
-  } catch (_) {}
-}
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiSecurity, ApiQuery } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { PaymentsService } from '../services/payments.service';
+import { UsageAnalyticsService } from '../services/usage-analytics.service';
+import { PLAN_CONFIG } from '@shared/schema';
 import {
   CreateSubscriptionDto,
   CancelSubscriptionDto,
@@ -40,7 +33,10 @@ import { PlanTier } from '@prisma/client';
 export class PaymentsController {
   private readonly logger = new Logger(PaymentsController.name);
 
-  constructor(@Inject(PaymentsService) private readonly paymentsService: PaymentsService) {}
+  constructor(
+    @Inject(PaymentsService) private readonly paymentsService: PaymentsService,
+    @Inject(UsageAnalyticsService) private readonly usageAnalyticsService: UsageAnalyticsService,
+  ) {}
 
   @Get('provider-info')
   @ApiOperation({ summary: 'Get payment provider configuration for frontend' })
@@ -76,39 +72,11 @@ export class PaymentsController {
         success: true,
         subscription: result.subscription,
         provider: result.provider,
+        providerSubscription: result.providerSubscription,
         shortUrl: result.shortUrl,
         checkoutUrl: result.checkoutUrl,
       };
     } catch (err: any) {
-      // #region agent log
-      const safeErrPayload: Record<string, unknown> = {
-        errorMessage: err?.message,
-        errorName: err?.name,
-        errorStack: err?.stack?.slice(0, 800),
-        responseMessage: err?.response?.message,
-        errorDescription: err?.error?.description ?? err?.description,
-      };
-      if (err?.response?.data && typeof err.response.data === 'object') {
-        safeErrPayload.responseData = err.response.data;
-      }
-      if (err?.code) safeErrPayload.code = err.code;
-      if (err?.statusCode) safeErrPayload.statusCode = err.statusCode;
-      try {
-        fetch('http://127.0.0.1:7244/ingest/8efc90dd-6123-4218-ac73-6942740927b9', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            location: 'PaymentsController.createSubscription',
-            message: 'create-subscription failed',
-            data: safeErrPayload,
-            timestamp: Date.now(),
-            sessionId: 'debug-session',
-            hypothesisId: 'A',
-          }),
-        }).catch(() => {});
-      } catch (_) {}
-      debugLog('PaymentsController.createSubscription', 'create-subscription failed', safeErrPayload);
-      // #endregion
       let logMessage: string;
       try {
         logMessage =
@@ -141,8 +109,21 @@ export class PaymentsController {
   @ApiOperation({ summary: 'Get current subscription for authenticated user' })
   async getSubscription(@Req() req: any) {
     const userId = req.user.id;
+    const organizationId = req.user.organizationId || userId;
     const subscription = await this.paymentsService.getCurrentSubscription(userId);
-    return { subscription };
+
+    // Include monthly usage for billing display
+    let usage: { current: number; limit: number } | undefined;
+    try {
+      const { count } = await this.usageAnalyticsService.getCurrentMonthUsage(userId, organizationId);
+      const planTier = (subscription?.planTier || 'FREE') as keyof typeof PLAN_CONFIG;
+      const planConfig = PLAN_CONFIG[planTier] || PLAN_CONFIG.FREE;
+      usage = { current: count, limit: planConfig.limit };
+    } catch {
+      usage = undefined;
+    }
+
+    return { subscription, usage };
   }
 
   @Post('update-plan')
@@ -214,11 +195,14 @@ export class PaymentsController {
       internalEvent = stripeEventMap[event.type] || event.type;
     }
 
-    console.log(`Webhook received from ${providerType}:`, event.type || event.event, `-> ${internalEvent}`);
+    this.logger.log(
+      `Webhook received from ${providerType}: ${event.type || event.event} -> ${internalEvent}`,
+    );
 
     // Handle events based on internal event type
     switch (internalEvent) {
       case 'subscription.activated':
+      case 'subscription.authenticated': // RazorPay test mode: fired instead of subscription.activated
         await this.paymentsService.handleSubscriptionActivated(event, providerType);
         break;
       case 'subscription.charged':
@@ -230,8 +214,14 @@ export class PaymentsController {
       case 'payment.failed':
         await this.paymentsService.handlePaymentFailed(event, providerType);
         break;
+      case 'payment.authorized':
+      case 'payment.captured':
+        // Razorpay sends these for mandate / token flows (e.g. ₹5 card step). Billing truth is
+        // subscription.charged (first invoice + ACTIVE + org); subscription.authenticated is logged only.
+        this.logger.debug(`Webhook acknowledged: ${internalEvent} (no handler required)`);
+        break;
       default:
-        console.log(`Unhandled webhook event: ${internalEvent}`);
+        this.logger.log(`Unhandled webhook event: ${internalEvent}`);
     }
 
     return {

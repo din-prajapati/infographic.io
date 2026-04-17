@@ -1,17 +1,15 @@
-import { Injectable, BadRequestException, NotFoundException, Inject } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+  Inject,
+  Logger,
+} from '@nestjs/common';
 import { randomUUID } from 'crypto';
-import * as fs from 'fs';
-import * as path from 'path';
 import { PaymentProvider, SubscriptionStatus, PaymentStatus, PlanTier } from '@prisma/client';
 import { SubscriptionStorageService } from './subscription-storage.service';
 import { PLAN_CONFIG } from '@shared/schema';
 
-const DEBUG_LOG_PATH = path.join(__dirname, '../../../../..', '.cursor', 'debug.log');
-function debugLog(location: string, message: string, data: object, hypothesisId: string) {
-  try {
-    fs.appendFileSync(DEBUG_LOG_PATH, JSON.stringify({ location, message, data, timestamp: Date.now(), sessionId: 'debug-session', hypothesisId }) + '\n');
-  } catch (_) {}
-}
 // Import payment provider factory from server directory
 import { paymentProviderFactory } from '../../../../../server/payments/providers/payment-provider.factory';
 import type { PaymentProviderType } from '../../../../../server/payments/interfaces/payment-provider.interface';
@@ -83,6 +81,8 @@ const STRIPE_PLAN_KEYS: PlanKeysByTier = {
 
 @Injectable()
 export class PaymentsService {
+  private readonly logger = new Logger(PaymentsService.name);
+
   /** Fallback plan IDs from env (used when provider plan keys have no value) */
   private PLAN_IDS: Record<PlanTier, Record<PaymentProviderType, string>> = {
     FREE: { RAZORPAY: '', STRIPE: '', PADDLE: '', PAYPAL: '' },
@@ -159,11 +159,7 @@ export class PaymentsService {
 
   constructor(
     @Inject(SubscriptionStorageService) private readonly storage: SubscriptionStorageService,
-  ) {
-    // #region agent log
-    debugLog('payments.service.ts:constructor', 'PaymentsService constructed', { hasStorage: !!this.storage, storageType: typeof this.storage }, 'A');
-    // #endregion
-  }
+  ) {}
 
   /**
    * Calculate annual price with 15% discount
@@ -191,22 +187,13 @@ export class PaymentsService {
     shortUrl?: string;
     checkoutUrl?: string;
   }> {
-    // #region agent log
-    debugLog('payments.service.ts:createSubscription', 'createSubscription entry', { userId, planTier, hasStorage: !!this.storage, storageType: typeof this.storage }, 'B');
-    // #endregion
     if (!this.storage) {
       throw new BadRequestException(
         'PaymentsService: SubscriptionStorageService not injected. Check PaymentsModule providers.',
       );
     }
-    // #region agent log
-    debugLog('payments.service.ts:beforeGetUser', 'about to call storage.getUser', { hasStorage: !!this.storage, userId }, 'C');
-    // #endregion
     // Get user from database
     let user = await this.storage.getUser(userId);
-    // #region agent log
-    debugLog('payments.service.ts:afterGetUser', 'storage.getUser returned', { hasUser: !!user, userId }, 'C');
-    // #endregion
     if (!user) {
       throw new NotFoundException('User not found');
     }
@@ -225,17 +212,46 @@ export class PaymentsService {
     // Get appropriate provider based on currency/region
     const provider = paymentProviderFactory.getProviderByCurrency(currency) || paymentProviderFactory.getProvider(region);
     const providerName = provider.getProviderName() as PaymentProviderType;
-    // #region agent log
-    debugLog('payments.service.ts:afterGetProvider', 'provider resolved', { providerName, currency, region }, 'B');
-    // #endregion
 
     // Get provider-specific plan ID (for Razorpay: use _MONTHLY/_ANNUAL when set, else default)
     const externalPlanId = this.getExternalPlanId(planTier, providerName, billingPeriod);
-    // #region agent log
-    debugLog('payments.service.ts:externalPlanId', 'external plan id', { externalPlanId, planTier, billingPeriod }, 'B');
-    // #endregion
     if (!externalPlanId) {
       throw new BadRequestException(`Plan ${planTier} not configured for ${providerName}`);
+    }
+
+    // PT-03 fix: Cancel any existing active or pending subscription before creating a new one
+    const existingSubscription = await this.storage.getCurrentSubscriptionByUserId(userId);
+    if (existingSubscription) {
+      try {
+        const existingProvider = paymentProviderFactory.getProvider(null, existingSubscription.paymentProvider as PaymentProviderType);
+        await existingProvider.cancelSubscription(existingSubscription.externalSubscriptionId, false);
+        await this.storage.updateSubscription(existingSubscription.id, {
+          status: SubscriptionStatus.CANCELLED,
+          cancelledAt: new Date(),
+        });
+      } catch (cancelErr: unknown) {
+        const desc = this.providerCancelErrorDescription(cancelErr);
+        if (this.isBenignSubscriptionCancelFailure(desc)) {
+          this.logger.debug(
+            `Prior subscription ${existingSubscription.externalSubscriptionId} not cancelled via API (expected): ${desc}`,
+          );
+          try {
+            await this.storage.updateSubscription(existingSubscription.id, {
+              status: SubscriptionStatus.EXPIRED,
+              cancelledAt: new Date(),
+            });
+          } catch (syncErr: unknown) {
+            this.logger.warn(
+              `Could not sync local subscription to EXPIRED: ${this.providerCancelErrorDescription(syncErr)}`,
+            );
+          }
+        } else {
+          this.logger.warn(
+            `Failed to cancel existing subscription before upgrade (ext=${existingSubscription.externalSubscriptionId}): ${desc}`,
+          );
+        }
+        // Continue anyway — do not block new subscription creation
+      }
     }
 
     // Get or create customer ID for this provider
@@ -249,18 +265,10 @@ export class PaymentsService {
     }
 
     if (!externalCustomerId) {
-      // #region agent log
-      debugLog('payments.service.ts:beforeCreateCustomer', 'calling provider.createCustomer', { email: user.email }, 'C');
-      // #endregion
       let customer: { id: string };
       try {
         customer = await provider.createCustomer(user.email, user.name || user.email);
       } catch (createCustomerErr: any) {
-        debugLog('payments.service.ts:createCustomerFailed', 'provider.createCustomer threw', {
-          errorMessage: createCustomerErr?.message,
-          errorDescription: createCustomerErr?.error?.description ?? createCustomerErr?.description,
-          responseData: createCustomerErr?.response?.data,
-        }, 'C');
         throw createCustomerErr;
       }
       externalCustomerId = customer.id;
@@ -287,9 +295,6 @@ export class PaymentsService {
     let providerSubscription: any;
 
     if (providerName === 'STRIPE') {
-      // #region agent log
-      debugLog('payments.service.ts:beforeStripeCheckout', 'calling createCheckoutSession', { externalPlanId, externalCustomerId }, 'D');
-      // #endregion
       // Import StripeProvider to use createCheckoutSession
       const { StripeProvider } = await import('../../../../../server/payments/providers/stripe.provider');
       const stripeProvider = new StripeProvider();
@@ -305,11 +310,6 @@ export class PaymentsService {
           cancelUrl: cancelUrl || `${baseUrl}/pricing?payment=cancelled`,
         });
       } catch (stripeErr: any) {
-        debugLog('payments.service.ts:stripeCheckoutFailed', 'createCheckoutSession threw', {
-          errorMessage: stripeErr?.message,
-          code: stripeErr?.code,
-          raw: stripeErr?.raw?.message,
-        }, 'D');
         throw stripeErr;
       }
 
@@ -328,9 +328,6 @@ export class PaymentsService {
         provider: 'STRIPE',
       };
     } else {
-      // #region agent log
-      debugLog('payments.service.ts:beforeRazorpaySubscription', 'calling provider.createSubscription', { externalPlanId, externalCustomerId }, 'D');
-      // #endregion
       try {
         providerSubscription = await provider.createSubscription({
           planId: externalPlanId,
@@ -340,11 +337,6 @@ export class PaymentsService {
           notify: true,
         });
       } catch (razorpayErr: any) {
-        debugLog('payments.service.ts:razorpaySubscriptionFailed', 'provider.createSubscription threw', {
-          errorMessage: razorpayErr?.message,
-          errorDescription: razorpayErr?.error?.description ?? razorpayErr?.description,
-          responseData: razorpayErr?.response?.data,
-        }, 'D');
         throw razorpayErr;
       }
     }
@@ -352,13 +344,6 @@ export class PaymentsService {
     // Create subscription record in database
     const subscriptionId = randomUUID();
     const now = new Date();
-    // #region agent log
-    debugLog('payments.service.ts:beforeStorageCreate', 'calling storage.createSubscription', {
-      subscriptionId,
-      externalSubscriptionId: providerSubscription.id,
-      providerName,
-    }, 'E');
-    // #endregion
     let subscription: any;
     try {
       subscription = await this.storage.createSubscription({
@@ -370,7 +355,8 @@ export class PaymentsService {
       externalPlanId: externalPlanId,
       externalCustomerId: externalCustomerId,
       planTier,
-      status: SubscriptionStatus.ACTIVE, // Will be updated via webhook for both providers
+      status: SubscriptionStatus.PENDING, // PT-04 fix: stays PENDING until webhook fires
+      billingPeriod: billingPeriod === 'annual' ? 'ANNUAL' : 'MONTHLY',
       currentPeriodStart: providerSubscription.currentPeriodStart,
       currentPeriodEnd: providerSubscription.currentPeriodEnd,
       amount: finalPrice * 100, // Convert to paise/cents
@@ -379,21 +365,12 @@ export class PaymentsService {
       cancelledAt: null,
     });
     } catch (storageErr: any) {
-      debugLog('payments.service.ts:storageCreateFailed', 'storage.createSubscription threw', {
-        errorMessage: storageErr?.message,
-        code: storageErr?.code,
-      }, 'E');
       throw storageErr;
     }
 
-    // Update organization plan if user has one
-    if (user.organizationId) {
-      await this.storage.updateOrganization(user.organizationId, {
-        planTier: planTier,
-        monthlyLimit: planConfig.limit,
-        activeSubscriptionId: subscription.id,
-      });
-    }
+    // PT-04 fix: Do NOT upgrade org plan here.
+    // Org plan is upgraded in handleSubscriptionCharged() on the first successful invoice
+    // (subscription.charged). Authenticated-only subs (e.g. UPI mandate, 0 invoices) stay PENDING.
 
     return {
       subscription,
@@ -405,10 +382,34 @@ export class PaymentsService {
   }
 
   /**
-   * Get current subscription for a user
+   * Get current subscription for a user.
+   * If currentPeriodEnd is epoch/invalid, refreshes from Razorpay and updates DB.
    */
   async getCurrentSubscription(userId: string) {
-    return this.storage.getActiveSubscriptionByUserId(userId);
+    const subscription = await this.storage.getCurrentSubscriptionByUserId(userId);
+    if (!subscription) return null;
+
+    const periodEndTime = new Date(subscription.currentPeriodEnd).getTime();
+    const isEpochOrInvalid = Number.isNaN(periodEndTime) || periodEndTime < 86400000; // Before 2 Jan 1970
+
+    if (isEpochOrInvalid && subscription.paymentProvider === 'RAZORPAY') {
+      try {
+        const provider = paymentProviderFactory.getProvider(null, 'RAZORPAY');
+        const refreshed = await provider.fetchSubscription(subscription.externalSubscriptionId);
+        if (refreshed.currentPeriodEnd.getTime() > 86400000) {
+          await this.storage.updateSubscription(subscription.id, {
+            currentPeriodStart: refreshed.currentPeriodStart,
+            currentPeriodEnd: refreshed.currentPeriodEnd,
+          });
+          return this.storage.getSubscription(subscription.id);
+        }
+      } catch (err) {
+        // Log but don't fail - return existing subscription
+        console.warn('Failed to refresh subscription from Razorpay:', err?.message || err);
+      }
+    }
+
+    return subscription;
   }
 
   /**
@@ -467,28 +468,51 @@ export class PaymentsService {
       throw new NotFoundException('No active subscription found');
     }
 
-    // Get provider and cancel
-    const provider = paymentProviderFactory.getProvider(null, subscription.paymentProvider as PaymentProviderType);
-    await provider.cancelSubscription(subscription.externalSubscriptionId, !immediate); // cancelAtCycleEnd
+    const isPending = subscription.status === SubscriptionStatus.PENDING;
+    // Unpaid / in-checkout: no billing period to honor — cancel at provider now and clear local row.
+    const cancelImmediately = immediate || isPending;
 
-    // Update in database
-    const updatedSubscription = await this.storage.updateSubscription(subscription.id, {
-      status: immediate ? SubscriptionStatus.CANCELLED : SubscriptionStatus.ACTIVE,
-      cancelAtPeriodEnd: !immediate,
-      cancelledAt: immediate ? new Date() : null,
-    });
+    const provider = paymentProviderFactory.getProvider(null, subscription.paymentProvider as PaymentProviderType);
+    try {
+      await provider.cancelSubscription(subscription.externalSubscriptionId, !cancelImmediately); // cancelAtCycleEnd
+    } catch (providerErr: unknown) {
+      const desc = this.providerCancelErrorDescription(providerErr);
+      if (this.isBenignSubscriptionCancelFailure(desc)) {
+        this.logger.debug(`Provider cancel treated as no-op: ${desc}`);
+      } else if (isPending) {
+        // Abandoned checkout: still clear local PENDING so Billing/Pricing recover even if Razorpay returns an edge-case error.
+        this.logger.warn(
+          `PENDING cancel: provider error (${desc}) — syncing local CANCELLED + FREE anyway`,
+        );
+      } else {
+        throw new BadRequestException(desc || 'Failed to cancel subscription with payment provider');
+      }
+    }
+
+    let updatedSubscription;
+    if (cancelImmediately) {
+      updatedSubscription = await this.storage.updateSubscription(subscription.id, {
+        status: SubscriptionStatus.CANCELLED,
+        cancelAtPeriodEnd: false,
+        cancelledAt: new Date(),
+      });
+      if (subscription.organizationId) {
+        await this.storage.updateOrganization(subscription.organizationId, {
+          planTier: 'FREE',
+          monthlyLimit: 3,
+          activeSubscriptionId: null,
+        });
+      }
+    } else {
+      updatedSubscription = await this.storage.updateSubscription(subscription.id, {
+        status: SubscriptionStatus.ACTIVE,
+        cancelAtPeriodEnd: true,
+        cancelledAt: null,
+      });
+    }
 
     if (!updatedSubscription) {
       throw new BadRequestException('Failed to cancel subscription');
-    }
-
-    // Downgrade organization to FREE if immediate cancellation
-    if (immediate && subscription.organizationId) {
-      await this.storage.updateOrganization(subscription.organizationId, {
-        planTier: 'FREE',
-        monthlyLimit: 3,
-        activeSubscriptionId: null,
-      });
     }
 
     return updatedSubscription;
@@ -540,15 +564,38 @@ export class PaymentsService {
   // ==========================================
 
   /**
-   * Handle subscription activated webhook
+   * PT-04: Org tier/limits only after a successful subscription invoice (subscription.charged).
+   * Not used for subscription.authenticated — Razorpay can be Authenticated with 0 invoices charged.
+   */
+  private async upgradeOrganizationForActiveSubscription(subscription: {
+    id: string;
+    organizationId: string | null;
+    planTier: PlanTier;
+  }): Promise<void> {
+    if (!subscription.organizationId) return;
+    const planConfig = PLAN_CONFIG[subscription.planTier];
+    await this.storage.updateOrganization(subscription.organizationId, {
+      planTier: subscription.planTier,
+      monthlyLimit: planConfig.limit,
+      activeSubscriptionId: subscription.id,
+    });
+  }
+
+  /**
+   * Razorpay: subscription.authenticated (and sometimes subscription.activated) means the
+   * mandate / payment method is registered — not necessarily that the first recurring invoice was paid.
+   * UPI test flows can complete “success” here while Dashboard still shows 0 of N invoices charged.
+   * We keep PENDING and do not upgrade the org until subscription.charged (see handleSubscriptionCharged).
    */
   async handleSubscriptionActivated(event: any, provider: PaymentProviderType): Promise<void> {
     const externalSubId = this.extractSubscriptionId(event, provider);
     const subscription = await this.storage.getSubscriptionByExternalId(externalSubId, provider as PaymentProvider);
 
-    if (subscription) {
-      await this.storage.updateSubscription(subscription.id, { status: SubscriptionStatus.ACTIVE });
-    }
+    if (!subscription) return;
+
+    this.logger.log(
+      `Webhook ${provider} subscription.authenticated/activated for ${externalSubId}: acknowledged; ACTIVE + org upgrade on subscription.charged only`,
+    );
   }
 
   /**
@@ -565,7 +612,16 @@ export class PaymentsService {
     // Check for duplicate payment (idempotency)
     const existingPayment = await this.storage.getPaymentByExternalId(paymentData.id, provider as PaymentProvider);
     if (existingPayment) {
-      console.log('Payment already processed, skipping');
+      const latest = await this.storage.getSubscriptionByExternalId(externalSubId, provider as PaymentProvider);
+      if (latest?.status === SubscriptionStatus.PENDING) {
+        this.logger.warn(
+          `subscription.charged replay: payment ${paymentData.id} already stored but subscription still PENDING — activating`,
+        );
+        await this.storage.updateSubscription(latest.id, { status: SubscriptionStatus.ACTIVE });
+        await this.upgradeOrganizationForActiveSubscription(latest);
+      } else {
+        this.logger.debug('Payment already processed, skipping');
+      }
       return;
     }
 
@@ -588,19 +644,19 @@ export class PaymentsService {
       errorDescription: null,
     });
 
-    // Update subscription period
-    await this.storage.updateSubscription(subscription.id, {
+    const periodUpdate = {
       currentPeriodStart: paymentData.periodStart,
       currentPeriodEnd: paymentData.periodEnd,
-    });
+    };
 
-    // Reset organization usage if applicable
-    if (subscription.organizationId) {
-      const org = await this.storage.getOrganization(subscription.organizationId);
-      if (org) {
-        // Note: Usage count reset should be handled by a separate service
-        // This is just updating the subscription
-      }
+    if (subscription.status === SubscriptionStatus.PENDING) {
+      await this.storage.updateSubscription(subscription.id, {
+        ...periodUpdate,
+        status: SubscriptionStatus.ACTIVE,
+      });
+      await this.upgradeOrganizationForActiveSubscription(subscription);
+    } else {
+      await this.storage.updateSubscription(subscription.id, periodUpdate);
     }
   }
 
@@ -639,6 +695,13 @@ export class PaymentsService {
     );
 
     if (!subscription) return;
+
+    // Idempotency: skip if this payment failure was already recorded
+    const existingPayment = await this.storage.getPaymentByExternalId(paymentData.id, provider as PaymentProvider);
+    if (existingPayment) {
+      console.log('Payment failure already processed, skipping');
+      return;
+    }
 
     // Record failed payment
     const paymentId = randomUUID();
@@ -696,17 +759,25 @@ export class PaymentsService {
       case 'RAZORPAY': {
         const payment = event.payload?.payment?.entity || {};
         const subscription = event.payload?.subscription?.entity || {};
+        const now = Date.now() / 1000;
+        const fallbackEnd = now + 30 * 24 * 60 * 60;
+        const periodStart = subscription?.current_start && subscription.current_start > 0
+          ? subscription.current_start
+          : now;
+        const periodEnd = subscription?.current_end && subscription.current_end > 0
+          ? subscription.current_end
+          : fallbackEnd;
         return {
           id: payment.id,
           orderId: payment.order_id,
-          subscriptionId: subscription.id,
+          subscriptionId: subscription?.id || payment?.subscription_id,
           amount: payment.amount,
           currency: payment.currency,
           method: payment.method,
           errorCode: payment.error_code,
           errorDescription: payment.error_description,
-          periodStart: new Date((subscription.current_start || Date.now() / 1000) * 1000),
-          periodEnd: new Date((subscription.current_end || Date.now() / 1000 + 30 * 24 * 60 * 60) * 1000),
+          periodStart: new Date(periodStart * 1000),
+          periodEnd: new Date(periodEnd * 1000),
         };
       }
       case 'STRIPE': {
@@ -729,5 +800,42 @@ export class PaymentsService {
           periodEnd: new Date(),
         };
     }
+  }
+
+  /** Human-readable message from provider/SDK cancel errors (avoids dumping raw objects in logs). */
+  private providerCancelErrorDescription(err: unknown): string {
+    if (err == null) return '';
+    if (typeof err === 'string') return err;
+    if (err instanceof Error && err.message) return err.message;
+    const rec = err as Record<string, unknown>;
+    const inner = rec.error as Record<string, unknown> | undefined;
+    const fromInner =
+      typeof inner?.description === 'string' ? inner.description : '';
+    const fromRec = typeof rec.description === 'string' ? rec.description : '';
+    const fromMsg = typeof rec.message === 'string' ? rec.message : '';
+    if (fromInner) return fromInner;
+    if (fromRec) return fromRec;
+    if (fromMsg) return fromMsg;
+    try {
+      return JSON.stringify(err);
+    } catch {
+      return String(err);
+    }
+  }
+
+  /**
+   * Provider cancel can fail harmlessly (already terminal, wrong state) or with Razorpay plain-object errors.
+   * Used before upgrades and in user-initiated cancel.
+   */
+  private isBenignSubscriptionCancelFailure(description: string): boolean {
+    const d = description.toLowerCase();
+    return (
+      (d.includes('not cancellable') && d.includes('expired')) ||
+      d.includes('already cancelled') ||
+      d.includes('already canceled') ||
+      d.includes('already been cancelled') ||
+      d.includes('subscription is cancelled') ||
+      d.includes('subscription has been cancelled')
+    );
   }
 }

@@ -123,7 +123,6 @@ export function restoreCanvasData(canvasData: any): boolean {
       zoom: canvasData.zoom || 1,
     });
 
-    console.log('Canvas data restored successfully');
     return true;
   } catch (error) {
     console.error('Error restoring canvas data:', error);

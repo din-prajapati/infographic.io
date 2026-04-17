@@ -19,10 +19,10 @@ export function PromptSuggestionCard({ suggestion, onClick, index }: PromptSugge
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05, duration: 0.3 }}
       onClick={onClick}
-      className="group flex flex-col bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-md hover:border-gray-300 transition-all text-left"
+      className="group flex flex-col bg-background border border-border rounded-lg overflow-hidden hover:shadow-md hover:border-foreground/20 transition-all text-left"
     >
       {/* Preview Image */}
-      <div className="relative aspect-video bg-gray-100 overflow-hidden">
+      <div className="relative aspect-video bg-muted overflow-hidden">
         <img
           src={suggestion.previewImage}
           alt={suggestion.text}
@@ -31,8 +31,8 @@ export function PromptSuggestionCard({ suggestion, onClick, index }: PromptSugge
       </div>
 
       {/* Text */}
-      <div className="p-3">
-        <p className="text-xs text-gray-700 line-clamp-2">
+      <div className="p-2.5">
+        <p className="text-xs text-muted-foreground line-clamp-2 group-hover:text-foreground transition-colors">
           {suggestion.text}
         </p>
       </div>

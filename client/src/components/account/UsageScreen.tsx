@@ -12,7 +12,7 @@ import {
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from "recharts";
 import { useQuery } from "@tanstack/react-query";
 import { usageAnalyticsApi, type MonthlyUsageData, type CostBreakdown, type UsageHistoryItem } from "@/lib/api";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 const usageMetrics = [
   { 
@@ -63,8 +63,6 @@ const creditUsageData = [
 
 export function UsageScreen() {
   const [entriesPerPage, setEntriesPerPage] = useState("10");
-  const { toast } = useToast();
-
   // Fetch real usage data
   const { data: monthlyUsageData, isLoading: isLoadingMonthly } = useQuery({
     queryKey: ['/api/v1/payments/usage/monthly'],
@@ -105,15 +103,12 @@ export function UsageScreen() {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      toast({
-        title: "Export Successful",
+      toast.success("Export Successful", {
         description: `Usage data exported as ${format.toUpperCase()}`,
       });
     } catch (error: any) {
-      toast({
-        title: "Export Failed",
+      toast.error("Export Failed", {
         description: error.message || "Failed to export usage data",
-        variant: "destructive",
       });
     }
   };
@@ -181,7 +176,7 @@ export function UsageScreen() {
           return (
             <div 
               key={index}
-              className="bg-white border border-gray-200 rounded-lg p-5"
+              className="glass rounded-xl border border-border p-5"
             >
               <div className="flex items-start justify-between mb-4">
                 <div 
@@ -191,19 +186,15 @@ export function UsageScreen() {
                   <Icon className="w-5 h-5" style={{ color: metric.color }} />
                 </div>
                 <span 
-                  className="text-xs font-semibold px-2 py-1 rounded"
-                  style={{ 
-                    backgroundColor: metric.positive ? "#dcfce7" : "#fee2e2",
-                    color: metric.positive ? "#16a34a" : "#dc2626"
-                  }}
+                  className={`text-xs font-semibold px-2 py-1 rounded ${metric.positive ? 'bg-success/20 text-success' : 'bg-destructive/20 text-destructive'}`}
                 >
                   {metric.change}
                 </span>
               </div>
-              <p className="text-2xl font-semibold mb-1">
+              <p className="text-2xl font-semibold mb-1 text-foreground">
                 {metric.value}
               </p>
-              <p className="text-sm text-gray-600">{metric.label}</p>
+              <p className="text-sm text-muted-foreground">{metric.label}</p>
             </div>
           );
         })}
@@ -212,39 +203,40 @@ export function UsageScreen() {
       {/* Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Projects Chart */}
-        <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200">
+        <div className="glass rounded-xl border border-border overflow-hidden">
+          <div className="px-6 py-4 border-b border-border">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-semibold">Project Activity</h3>
-                <p className="text-sm text-gray-500 mt-1">Projects created over time</p>
+                <h3 className="font-semibold text-foreground">Project Activity</h3>
+                <p className="text-sm text-muted-foreground mt-1">Projects created over time</p>
               </div>
-              <TrendingUp className="w-5 h-5 text-green-500" />
+              <TrendingUp className="w-5 h-5 text-success" />
             </div>
           </div>
           <div className="p-6">
             <ResponsiveContainer width="100%" height={240}>
               <BarChart data={usageData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                 <XAxis 
                   dataKey="month" 
-                  tick={{ fontSize: 12, fill: '#6b7280' }}
-                  axisLine={{ stroke: '#e5e7eb' }}
+                  tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
+                  axisLine={{ stroke: 'hsl(var(--border))' }}
                   tickLine={false}
                 />
                 <YAxis 
-                  tick={{ fontSize: 12, fill: '#6b7280' }}
+                  tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
                   axisLine={false}
                   tickLine={false}
                 />
                 <Tooltip 
                   contentStyle={{ 
-                    backgroundColor: "white",
-                    border: "1px solid #e5e7eb",
-                    borderRadius: "8px",
-                    fontSize: "14px"
+                    backgroundColor: 'hsl(var(--background))',
+                    border: '1px solid hsl(var(--border))',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    color: 'hsl(var(--foreground))'
                   }}
-                  cursor={{ fill: '#f9fafb' }}
+                  cursor={{ fill: 'hsl(var(--muted) / 0.5)' }}
                 />
                 <Bar 
                   dataKey="projects" 
@@ -257,14 +249,14 @@ export function UsageScreen() {
         </div>
 
         {/* Exports Chart */}
-        <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200">
+        <div className="glass rounded-xl border border-border overflow-hidden">
+          <div className="px-6 py-4 border-b border-border">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-semibold">Export Activity</h3>
-                <p className="text-sm text-gray-500 mt-1">Total exports per month</p>
+                <h3 className="font-semibold text-foreground">Export Activity</h3>
+                <p className="text-sm text-muted-foreground mt-1">Total exports per month</p>
               </div>
-              <Download className="w-5 h-5 text-green-500" />
+              <Download className="w-5 h-5 text-success" />
             </div>
           </div>
           <div className="p-6">
@@ -276,24 +268,25 @@ export function UsageScreen() {
                     <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                 <XAxis 
                   dataKey="month" 
-                  tick={{ fontSize: 12, fill: '#6b7280' }}
-                  axisLine={{ stroke: '#e5e7eb' }}
+                  tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
+                  axisLine={{ stroke: 'hsl(var(--border))' }}
                   tickLine={false}
                 />
                 <YAxis 
-                  tick={{ fontSize: 12, fill: '#6b7280' }}
+                  tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
                   axisLine={false}
                   tickLine={false}
                 />
                 <Tooltip 
                   contentStyle={{ 
-                    backgroundColor: "white",
-                    border: "1px solid #e5e7eb",
-                    borderRadius: "8px",
-                    fontSize: "14px"
+                    backgroundColor: 'hsl(var(--background))',
+                    border: '1px solid hsl(var(--border))',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    color: 'hsl(var(--foreground))'
                   }}
                 />
                 <Area 
@@ -309,38 +302,39 @@ export function UsageScreen() {
         </div>
 
         {/* Storage Usage Chart */}
-        <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200">
+        <div className="glass rounded-xl border border-border overflow-hidden">
+          <div className="px-6 py-4 border-b border-border">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-semibold">Storage Usage</h3>
-                <p className="text-sm text-gray-500 mt-1">Storage consumption trend</p>
+                <h3 className="font-semibold text-foreground">Storage Usage</h3>
+                <p className="text-sm text-muted-foreground mt-1">Storage consumption trend</p>
               </div>
-              <Image className="w-5 h-5 text-purple-500" />
+              <Image className="w-5 h-5 text-primary" />
             </div>
           </div>
           <div className="p-6">
             <ResponsiveContainer width="100%" height={240}>
               <LineChart data={usageData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                 <XAxis 
                   dataKey="month" 
-                  tick={{ fontSize: 12, fill: '#6b7280' }}
-                  axisLine={{ stroke: '#e5e7eb' }}
+                  tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
+                  axisLine={{ stroke: 'hsl(var(--border))' }}
                   tickLine={false}
                 />
                 <YAxis 
-                  tick={{ fontSize: 12, fill: '#6b7280' }}
+                  tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
                   axisLine={false}
                   tickLine={false}
-                  label={{ value: 'GB', angle: -90, position: 'insideLeft', style: { fill: '#6b7280', fontSize: 12 } }}
+                  label={{ value: 'GB', angle: -90, position: 'insideLeft', style: { fill: 'hsl(var(--muted-foreground))', fontSize: 12 } }}
                 />
                 <Tooltip 
                   contentStyle={{ 
-                    backgroundColor: "white",
-                    border: "1px solid #e5e7eb",
-                    borderRadius: "8px",
-                    fontSize: "14px"
+                    backgroundColor: 'hsl(var(--background))',
+                    border: '1px solid hsl(var(--border))',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    color: 'hsl(var(--foreground))'
                   }}
                 />
                 <Line 
@@ -357,14 +351,14 @@ export function UsageScreen() {
         </div>
 
         {/* Monthly Usage Chart */}
-        <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200">
+        <div className="glass rounded-xl border border-border overflow-hidden">
+          <div className="px-6 py-4 border-b border-border">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-semibold">Monthly Usage</h3>
-                <p className="text-sm text-gray-500 mt-1">Infographics generated per month</p>
+                <h3 className="font-semibold text-foreground">Monthly Usage</h3>
+                <p className="text-sm text-muted-foreground mt-1">Infographics generated per month</p>
               </div>
-              <TrendingUp className="w-5 h-5 text-amber-500" />
+              <TrendingUp className="w-5 h-5 text-primary" />
             </div>
           </div>
           <div className="p-6">
@@ -377,24 +371,25 @@ export function UsageScreen() {
                       <stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/>
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                   <XAxis 
                     dataKey="month" 
-                    tick={{ fontSize: 12, fill: '#6b7280' }}
-                    axisLine={{ stroke: '#e5e7eb' }}
+                    tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
+                    axisLine={{ stroke: 'hsl(var(--border))' }}
                     tickLine={false}
                   />
                   <YAxis 
-                    tick={{ fontSize: 12, fill: '#6b7280' }}
+                    tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
                     axisLine={false}
                     tickLine={false}
                   />
                   <Tooltip 
                     contentStyle={{ 
-                      backgroundColor: "white",
-                      border: "1px solid #e5e7eb",
-                      borderRadius: "8px",
-                      fontSize: "14px"
+                      backgroundColor: 'hsl(var(--background))',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      color: 'hsl(var(--foreground))'
                     }}
                   />
                   <Area 
@@ -407,7 +402,7 @@ export function UsageScreen() {
                 </AreaChart>
               </ResponsiveContainer>
             ) : (
-              <div className="flex items-center justify-center h-240 text-gray-500">
+              <div className="flex items-center justify-center h-240 text-muted-foreground">
                 No usage data available
               </div>
             )}
@@ -417,10 +412,10 @@ export function UsageScreen() {
 
       {/* Cost Breakdown by AI Model */}
       {costBreakdown.length > 0 && (
-        <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200">
+        <div className="glass rounded-xl border border-border overflow-hidden">
+          <div className="px-6 py-4 border-b border-border">
             <div className="flex items-center justify-between">
-              <h2 className="font-semibold">Cost Breakdown by AI Model</h2>
+              <h2 className="font-semibold text-foreground">Cost Breakdown by AI Model</h2>
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={() => handleExport('csv')}>
                   Export CSV
@@ -434,14 +429,14 @@ export function UsageScreen() {
           <div className="p-6">
             <div className="space-y-4">
               {costBreakdown.map((item) => (
-                <div key={item.aiModel} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                <div key={item.aiModel} className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
                   <div>
-                    <p className="font-medium">{item.aiModel}</p>
-                    <p className="text-sm text-gray-600">{item.count} infographics</p>
+                    <p className="font-medium text-foreground">{item.aiModel}</p>
+                    <p className="text-sm text-muted-foreground">{item.count} infographics</p>
                   </div>
                   <div className="text-right">
-                    <p className="font-semibold">${item.totalCostUsd.toFixed(2)}</p>
-                    <p className="text-sm text-gray-600">${item.averageCostUsd.toFixed(4)} avg</p>
+                    <p className="font-semibold text-foreground">${item.totalCostUsd.toFixed(2)}</p>
+                    <p className="text-sm text-muted-foreground">${item.averageCostUsd.toFixed(4)} avg</p>
                   </div>
                 </div>
               ))}
@@ -451,63 +446,63 @@ export function UsageScreen() {
       )}
 
       {/* Credit Usage Table */}
-      <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="font-semibold">Usage History</h2>
+      <div className="glass rounded-xl border border-border overflow-hidden">
+        <div className="px-6 py-4 border-b border-border">
+          <h2 className="font-semibold text-foreground">Usage History</h2>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="bg-gray-50 border-b border-gray-200">
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <tr className="bg-muted/50 border-b border-border">
+                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Type
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Date
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Tool
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Amount
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Purchased Credits
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Plan Credits
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-100">
+            <tbody className="divide-y divide-border">
               {creditUsageData.length > 0 ? (
                 creditUsageData.map((row) => (
-                  <tr key={row.id} className="hover:bg-gray-50">
+                  <tr key={row.id} className="hover:bg-muted/50">
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <Badge className="bg-indigo-100 text-indigo-700 hover:bg-indigo-100">
+                      <Badge variant="secondary">
                         {row.type}
                       </Badge>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <p className="text-sm text-gray-600">{row.date}</p>
+                      <p className="text-sm text-muted-foreground">{row.date}</p>
                     </td>
                     <td className="px-6 py-4">
-                      <p className="text-sm text-gray-900">{row.tool}</p>
+                      <p className="text-sm text-foreground">{row.tool}</p>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <p className="text-sm text-gray-900">{row.amount}</p>
+                      <p className="text-sm text-foreground">{row.amount}</p>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <p className="text-sm text-gray-600">{row.purchased}</p>
+                      <p className="text-sm text-muted-foreground">{row.purchased}</p>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <p className="text-sm text-gray-600">{row.plan}</p>
+                      <p className="text-sm text-muted-foreground">{row.plan}</p>
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
+                  <td colSpan={6} className="px-6 py-8 text-center text-muted-foreground">
                     No usage history available
                   </td>
                 </tr>
@@ -515,9 +510,9 @@ export function UsageScreen() {
             </tbody>
           </table>
         </div>
-        <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+        <div className="px-6 py-4 border-t border-border flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-600">Show:</span>
+            <span className="text-sm text-muted-foreground">Show:</span>
             <Select value={entriesPerPage} onValueChange={setEntriesPerPage}>
               <SelectTrigger className="w-20 h-8">
                 <SelectValue />
@@ -530,7 +525,7 @@ export function UsageScreen() {
               </SelectContent>
             </Select>
           </div>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-muted-foreground">
             {creditUsageData.length > 0 ? `Showing 1 - ${creditUsageData.length} of ${usageHistory.length}` : 'No data'}
           </p>
           <div className="flex gap-2">

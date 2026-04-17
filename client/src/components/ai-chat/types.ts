@@ -106,6 +106,9 @@ export interface Message {
     thumbnail: string;
     title: string;
   }>;
+  // Validation guidance (shown as friendly hint, not error)
+  isValidationHint?: boolean;
+  missingFields?: string[];
 }
 
 // NEW: Conversation Types
