@@ -1,0 +1,855 @@
+/*
+ * ╔══════════════════════════════════════════════════════════════════╗
+ * ║              INFOGRAPHIC AI — DESIGN TOKENS  v2                 ║
+ * ║                                                                  ║
+ * ║  Synthesized from (CSS + visual screenshot analysis):            ║
+ * ║    • Lovart.ai   — canvas editor: dark pill toolbar, white       ║
+ * ║                    sidebars, lime promo accent, AI right panel   ║
+ * ║    • FillinForm  — templates page: warm cream bg, colorful       ║
+ * ║                    card headers, dark pill filter tabs,          ║
+ * ║                    solid black CTA buttons                       ║
+ * ║                                                                  ║
+ * ║  USAGE: Replace the :root / .dark blocks in globals.css with    ║
+ * ║  the tokens below. Do NOT change component structure.           ║
+ * ╚══════════════════════════════════════════════════════════════════╝
+ */
+
+/* ================================================================== */
+/*  PRIMITIVE PALETTE                                                  */
+/*  Raw values — referenced by semantic tokens below.                  */
+/*  Never use these directly in components; use semantic tokens.       */
+/* ================================================================== */
+
+:root {
+
+  /* ── Brand Blue (Lovart primary: #0ca0eb) ──────────────────────── */
+  --primitive-blue-50:   #e6f5ff;
+  --primitive-blue-100:  #b8e1ff;
+  --primitive-blue-200:  #8fcdff;
+  --primitive-blue-300:  #66b5ff;
+  --primitive-blue-400:  #3d9bff;
+  --primitive-blue-500:  #0ca0eb;   /* ← PRIMARY */
+  --primitive-blue-600:  #0886cb;
+  --primitive-blue-700:  #075ed9;
+  --primitive-blue-800:  #0044b3;
+  --primitive-blue-900:  #00318c;
+  --primitive-blue-1000: #002066;
+
+  /* ── Amber / Gold (Lovart secondary: #f9b959) ──────────────────── */
+  --primitive-amber-50:  #fff7e9;
+  --primitive-amber-100: #ffe4ba;
+  --primitive-amber-200: #ffcf8b;
+  --primitive-amber-300: #ffb65d;
+  --primitive-amber-400: #f9b959;   /* ← SECONDARY */
+  --primitive-amber-500: #ff9a2d;
+  --primitive-amber-600: #ff7d00;
+  --primitive-amber-700: #d25f00;
+  --primitive-amber-800: #a64501;
+
+  /* ── Neutral (warm grey — from Lovart canvas palette) ──────────── */
+  --primitive-neutral-0:    #ffffff;
+  --primitive-neutral-50:   #f9f8f6;   /* bg-base-default */
+  --primitive-neutral-100:  #f2f1ee;   /* bg-base-secondary */
+  --primitive-neutral-150:  #eae9e6;   /* bg-base-tertiary */
+  --primitive-neutral-200:  #e5e6ec;
+  --primitive-neutral-300:  #c1c5cc;
+  --primitive-neutral-400:  #a4a9b2;
+  --primitive-neutral-500:  #86909c;
+  --primitive-neutral-600:  #7c7c79;   /* text-tertiary */
+  --primitive-neutral-700:  #525251;   /* text-secondary */
+  --primitive-neutral-800:  #2f3640;
+  --primitive-neutral-900:  #191e26;
+  --primitive-neutral-950:  #100f09;   /* text-default / bg-invert */
+  --primitive-neutral-1000: #000000;
+
+  /* ── Green / Success ────────────────────────────────────────────── */
+  --primitive-green-50:  #ebffee;
+  --primitive-green-100: #cff7d3;
+  --primitive-green-200: #aff4c6;
+  --primitive-green-300: #85e0a3;
+  --primitive-green-400: #14ae5c;
+  --primitive-green-500: #009951;
+  --primitive-green-600: #008043;
+  --primitive-green-700: #02542d;
+
+  /* ── Red / Danger ───────────────────────────────────────────────── */
+  --primitive-red-50:  #ffece8;
+  --primitive-red-100: #fdcdc5;
+  --primitive-red-200: #fbaca3;
+  --primitive-red-300: #f98981;
+  --primitive-red-400: #f76560;
+  --primitive-red-500: #f53f3f;
+  --primitive-red-600: #cb272d;
+  --primitive-red-700: #a1151e;
+
+  /* ── Purple / AI / Flow (Lovart: #722ed1) ───────────────────────── */
+  --primitive-purple-50:  #f5e8ff;
+  --primitive-purple-100: #ddbef6;
+  --primitive-purple-200: #c396ed;
+  --primitive-purple-300: #a871e3;
+  --primitive-purple-400: #8c4eda;
+  --primitive-purple-500: #722ed1;   /* ← AI / flow accent */
+  --primitive-purple-600: #551eb0;
+  --primitive-purple-700: #3c108f;
+
+  /* ── Cyan / Teal ────────────────────────────────────────────────── */
+  --primitive-cyan-50:  #e8fffb;
+  --primitive-cyan-100: #b8f4ec;
+  --primitive-cyan-200: #89e9e0;
+  --primitive-cyan-300: #5edfd6;
+  --primitive-cyan-400: #36d4cf;
+  --primitive-cyan-500: #14c9c8;
+  --primitive-cyan-600: #0ca5aa;
+
+  /* ── Special / Brand accents (Lovart) ───────────────────────────── */
+  --primitive-lime:      #e0ff66;   /* ribbon / badge highlight */
+  --primitive-white:     #ffffff;
+  --primitive-black:     #000000;
+
+  /* ── Translucent white scale (Lovart surface panels) ───────────── */
+  --primitive-white-5:   rgba(255, 255, 255, 0.05);
+  --primitive-white-10:  rgba(255, 255, 255, 0.10);
+  --primitive-white-20:  rgba(255, 255, 255, 0.20);
+  --primitive-white-40:  rgba(255, 255, 255, 0.40);
+  --primitive-white-60:  rgba(255, 255, 255, 0.60);
+  --primitive-white-80:  rgba(255, 255, 255, 0.80);
+  --primitive-white-85:  rgba(255, 255, 255, 0.85);
+  --primitive-white-90:  rgba(255, 255, 255, 0.90);
+  --primitive-white-95:  rgba(255, 255, 255, 0.95);
+
+  /* ── Translucent dark scale ─────────────────────────────────────── */
+  --primitive-dark-5:    rgba(16, 15, 9, 0.05);
+  --primitive-dark-10:   rgba(16, 15, 9, 0.10);
+  --primitive-dark-15:   rgba(16, 15, 9, 0.15);
+  --primitive-dark-30:   rgba(16, 15, 9, 0.30);
+  --primitive-dark-50:   rgba(16, 15, 9, 0.50);
+  --primitive-dark-70:   rgba(16, 15, 9, 0.70);
+  --primitive-dark-85:   rgba(16, 15, 9, 0.85);
+  --primitive-dark-90:   rgba(16, 15, 9, 0.90);
+  --primitive-dark-95:   rgba(16, 15, 9, 0.95);
+}
+
+
+/* ================================================================== */
+/*  SEMANTIC TOKENS  — LIGHT MODE                                      */
+/*  Maps primitive values to intent-based names.                       */
+/* ================================================================== */
+
+:root {
+
+  /* ── Typography ──────────────────────────────────────────────────
+     Primary font:  Inter (both sites)
+     Display font:  Outfit (both sites — headings, hero text)
+     Mono:          SF Mono / Cascadia Code
+  ─────────────────────────────────────────────────────────────────── */
+  --font-sans:    Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-display: Outfit, Inter, sans-serif;
+  --font-mono:    "SF Mono", Monaco, "Cascadia Code", "Fira Code", monospace;
+  --font-size:    16px;
+
+  /* Font scale (px — Lovart component sizes) */
+  --font-size-11: 11px;
+  --font-size-12: 12px;   /* caption / label-xs */
+  --font-size-13: 13px;   /* label-sm */
+  --font-size-14: 14px;   /* body / label */
+  --font-size-16: 16px;   /* body-lg */
+  --font-size-18: 18px;   /* heading-sm */
+  --font-size-24: 24px;   /* heading-md */
+  --font-size-32: 32px;   /* heading-lg */
+  --font-size-48: 48px;   /* hero */
+
+  /* Line heights */
+  --line-height-xs: 16px;
+  --line-height-sm: 20px;
+  --line-height-md: 24px;
+  --line-height-lg: 28px;
+  --line-height-xl: 36px;
+
+  /* Font weights */
+  --font-weight-normal:   400;
+  --font-weight-medium:   500;
+  --font-weight-semibold: 600;
+  --font-weight-bold:     700;
+
+  /* ── Spacing scale ──────────────────────────────────────────────── */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* ── Component heights (from Lovart Mantine scale) ──────────────── */
+  --comp-xxs: 22px;
+  --comp-xs:  28px;
+  --comp-sm:  32px;
+  --comp-md:  36px;
+  --comp-lg:  40px;
+  --comp-xl:  48px;
+
+  /* ── Border radius ──────────────────────────────────────────────── */
+  --radius:     0.75rem;   /* 12px — shadcn compat (FillinForm: 0.75rem) */
+  --radius-xs:  4px;       /* tags, small badges */
+  --radius-sm:  6px;       /* small buttons, inputs */
+  --radius-md:  8px;       /* default interactive elements */
+  --radius-lg:  12px;      /* cards, panels, modals */
+  --radius-xl:  16px;      /* large cards, drawers */
+  --radius-2xl: 24px;      /* pill shapes, hero cards */
+  --radius-full: 9999px;   /* fully rounded — avatars, pills */
+
+  /* ── Border widths ──────────────────────────────────────────────── */
+  --border-width-hairline: 0.5px;
+  --border-width-normal:   1px;
+  --border-width-selected: 2px;
+
+  /* ── Background tokens (Lovart semantic layer) ──────────────────── */
+  --bg-base-default:   #f9f8f6;   /* warm near-white canvas */
+  --bg-base-secondary: #f2f1ee;   /* subtle section bg */
+  --bg-base-tertiary:  #eae9e6;   /* hover / divider zones */
+  --bg-input:          #ffffff;
+  --bg-invert:         #100f09;   /* dark overlay / tooltip bg */
+  --bg-overlay-l1:     rgba(16, 15, 9, 0.05);
+  --bg-overlay-l2:     rgba(16, 15, 9, 0.10);
+  --bg-overlay-l3:     rgba(16, 15, 9, 0.15);
+
+  /* ── Text tokens ────────────────────────────────────────────────── */
+  --text-default:   #100f09;   /* primary text — warm near-black */
+  --text-secondary: #525251;   /* secondary / labels */
+  --text-tertiary:  #7c7c79;   /* placeholder / caption */
+  --text-disabled:  #7c7c79;
+  --text-invert:    #f5f4ef;   /* text on dark surfaces */
+  --text-link:      #0ca0eb;   /* interactive links */
+  --text-link-hover:#0886cb;
+
+  /* ── Icon tokens ────────────────────────────────────────────────── */
+  --icon-default:   #100f09;
+  --icon-secondary: #525251;
+  --icon-tertiary:  #7c7c79;
+  --icon-disabled:  #7c7c79;
+  --icon-invert:    #f5f4ef;
+  --icon-brand:     #0ca0eb;
+
+  /* ── Border tokens ──────────────────────────────────────────────── */
+  --border-subtle:   rgba(26, 26, 25, 0.06);   /* hairline dividers */
+  --border-default:  rgba(26, 26, 25, 0.12);   /* input borders */
+  --border-strong:   rgba(26, 26, 25, 0.18);   /* selected/focused */
+  --border-contrast: #1a1a19;                   /* high-contrast borders */
+  --border-focus:    #0ca0eb;                   /* focus ring */
+
+  /* ── Status / semantic colors ───────────────────────────────────── */
+  --color-success:         #14ae5c;
+  --color-success-surface: #ebffee;
+  --color-success-border:  rgba(20, 174, 92, 0.30);
+
+  --color-danger:          #f53f3f;
+  --color-danger-surface:  #ffece8;
+  --color-danger-border:   rgba(245, 63, 63, 0.30);
+
+  --color-warning:         #ff7d00;
+  --color-warning-surface: #fff7e9;
+  --color-warning-border:  rgba(255, 125, 0, 0.30);
+
+  --color-info:            #0ca0eb;
+  --color-info-surface:    #e6f5ff;
+  --color-info-border:     rgba(12, 160, 235, 0.30);
+
+  /* ── Brand accents (Lovart special palette) ─────────────────────── */
+  --color-accent-lime:   #e0ff66;   /* ribbon / "new" badge highlight */
+  --color-accent-amber:  #f9b959;   /* warm secondary CTA */
+  --color-accent-purple: #722ed1;   /* AI features / flow */
+  --color-accent-cyan:   #14c9c8;   /* real-time / live indicators */
+
+  /* ── Shadows ────────────────────────────────────────────────────── */
+  /* Both sites use feather-light shadows — avoid heavy drop shadows  */
+  --shadow-xs:  0px 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-sm:  0px 1px 2px rgba(0, 0, 0, 0.05),
+                0px 1px 3px rgba(0, 0, 0, 0.10);
+  --shadow-md:  0px 4px 20px rgba(0, 0, 0, 0.08);
+  --shadow-lg:  0px 8px 16px -4px rgba(0, 0, 0, 0.10),
+                0px 2px 2px  rgba(0, 0, 0, 0.04);
+  --shadow-xl:  0px 16px 40px rgba(193, 193, 193, 0.25);
+  --shadow-2xl: 0px 32px 64px -16px rgba(0, 0, 0, 0.18);
+
+  /* ── Glassmorphism (Lovart panel system + current project) ──────── */
+  /* Frosted glass panels — use with backdrop-filter: blur(var(--glass-blur)) */
+  --surface-panel-95:    rgba(255, 255, 255, 0.95);   /* toolbar, top bar */
+  --surface-panel-90:    rgba(255, 255, 255, 0.90);   /* sidebar panels */
+  --surface-panel-85:    rgba(255, 255, 255, 0.85);   /* hover cards */
+  --surface-chatbox:     rgba(0, 0, 0, 0.40);         /* AI chat input */
+
+  --glass-bg:        rgba(255, 255, 255, 0.88);
+  --glass-border:    rgba(180, 200, 220, 0.45);
+  --glass-shadow:    0 8px 32px rgba(0, 0, 0, 0.08),
+                     0 2px 8px  rgba(0, 0, 0, 0.04);
+  --glass-blur:      24px;
+  --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.60);
+  --glass-tint:      rgba(12, 160, 235, 0.02);
+
+  /* ── Page background ────────────────────────────────────────────── */
+  /* Warm cream gradient — blends Lovart's warm base with cool hint   */
+  --page-bg: linear-gradient(
+    135deg,
+    hsl(45 15% 97%) 0%,
+    hsl(210 18% 97%) 50%,
+    hsl(45 12% 97%) 100%
+  );
+
+
+  /* ================================================================ */
+  /*  SHADCN / TAILWIND COMPAT TOKENS (HSL values)                    */
+  /*  These replace the :root block currently in globals.css.         */
+  /*  All map to hsl(var(--token)) via @theme inline in globals.css.  */
+  /* ================================================================ */
+
+  --background:          45 13% 97%;        /* #f9f8f6 warm near-white */
+  --foreground:          45 30% 6%;         /* #100f09 warm near-black */
+
+  --card:                0 0% 100%;
+  --card-foreground:     45 30% 6%;
+
+  --popover:             0 0% 100%;
+  --popover-foreground:  45 30% 6%;
+
+  --primary:             207 90% 49%;       /* #0ca0eb Lovart blue */
+  --primary-foreground:  0 0% 100%;
+
+  --secondary:           38 93% 66%;        /* #f9b959 Lovart amber */
+  --secondary-foreground: 45 30% 6%;
+
+  --muted:               45 10% 92%;
+  --muted-foreground:    45 5% 48%;
+
+  --accent:              207 90% 95%;       /* pale blue tint */
+  --accent-foreground:   207 90% 35%;
+
+  --destructive:         0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+
+  --border:              45 10% 88%;
+  --input:               45 10% 85%;
+  --input-background:    45 10% 96%;
+  --switch-background:   45 5% 80%;
+  --ring:                207 90% 49%;
+
+  --success:             142 71% 40%;
+  --warning:             38 92% 50%;
+
+  /* Sidebar */
+  --sidebar:                    45 10% 95%;
+  --sidebar-foreground:         45 20% 15%;
+  --sidebar-primary:            207 90% 49%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent:             207 90% 95%;
+  --sidebar-accent-foreground:  207 90% 35%;
+  --sidebar-border:             45 10% 88%;
+  --sidebar-ring:               207 90% 49%;
+
+  /* Chart palette */
+  --chart-1: 207 90% 49%;   /* blue  */
+  --chart-2: 38 93% 60%;    /* amber */
+  --chart-3: 142 71% 40%;   /* green */
+  --chart-4: 285 60% 50%;   /* purple */
+  --chart-5: 340 75% 55%;   /* pink  */
+}
+
+
+/* ================================================================== */
+/*  SEMANTIC TOKENS  — DARK MODE                                       */
+/*  Lovart-inspired warm-dark theme (very dark with warm undertones)   */
+/* ================================================================== */
+
+.dark {
+
+  /* ── Background tokens ──────────────────────────────────────────── */
+  --bg-base-default:   #100f09;   /* Lovart's warm near-black canvas */
+  --bg-base-secondary: #1a1a14;
+  --bg-base-tertiary:  #222219;
+  --bg-input:          #1a1a14;
+  --bg-invert:         #f5f4ef;
+  --bg-overlay-l1:     rgba(245, 244, 239, 0.05);
+  --bg-overlay-l2:     rgba(245, 244, 239, 0.10);
+  --bg-overlay-l3:     rgba(245, 244, 239, 0.15);
+
+  /* ── Text tokens ────────────────────────────────────────────────── */
+  --text-default:   #f5f4ef;
+  --text-secondary: #a4a09b;
+  --text-tertiary:  #6b6762;
+  --text-disabled:  #6b6762;
+  --text-invert:    #100f09;
+  --text-link:      #3db5f5;
+  --text-link-hover:#66c7ff;
+
+  /* ── Icon tokens ────────────────────────────────────────────────── */
+  --icon-default:   #f5f4ef;
+  --icon-secondary: #a4a09b;
+  --icon-tertiary:  #6b6762;
+  --icon-disabled:  #6b6762;
+  --icon-invert:    #100f09;
+  --icon-brand:     #3db5f5;
+
+  /* ── Border tokens ──────────────────────────────────────────────── */
+  --border-subtle:   rgba(245, 244, 239, 0.06);
+  --border-default:  rgba(245, 244, 239, 0.12);
+  --border-strong:   rgba(245, 244, 239, 0.20);
+  --border-contrast: #f5f4ef;
+  --border-focus:    #3db5f5;
+
+  /* ── Glassmorphism — Dark ───────────────────────────────────────── */
+  --surface-panel-95:    rgba(16, 15, 9, 0.95);
+  --surface-panel-90:    rgba(16, 15, 9, 0.90);
+  --surface-panel-85:    rgba(20, 19, 14, 0.85);
+  --surface-chatbox:     rgba(0, 0, 0, 0.60);
+
+  --glass-bg:        rgba(16, 15, 9, 0.85);
+  --glass-border:    rgba(255, 255, 255, 0.10);
+  --glass-shadow:    0 8px 32px rgba(0, 0, 0, 0.50),
+                     0 2px 8px  rgba(0, 0, 0, 0.30);
+  --glass-blur:      24px;
+  --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  --glass-tint:      rgba(12, 160, 235, 0.06);
+
+  /* ── Page background ────────────────────────────────────────────── */
+  --page-bg: linear-gradient(
+    135deg,
+    hsl(45 30% 4%)  0%,
+    hsl(220 20% 6%) 40%,
+    hsl(45 25% 5%)  100%
+  );
+
+  /* ── Shadows — Dark ─────────────────────────────────────────────── */
+  --shadow-xs:  0px 1px 2px rgba(0, 0, 0, 0.20);
+  --shadow-sm:  0px 1px 2px rgba(0, 0, 0, 0.25),
+                0px 1px 3px rgba(0, 0, 0, 0.35);
+  --shadow-md:  0px 4px 20px rgba(0, 0, 0, 0.35);
+  --shadow-lg:  0px 8px 16px -4px rgba(0, 0, 0, 0.40),
+                0px 2px 2px  rgba(0, 0, 0, 0.20);
+  --shadow-xl:  0px 16px 40px rgba(0, 0, 0, 0.50);
+  --shadow-2xl: 0px 32px 64px -16px rgba(0, 0, 0, 0.60);
+
+  /* ── Shadcn / Tailwind HSL tokens ───────────────────────────────── */
+  --background:          45 30% 4%;         /* warm near-black */
+  --foreground:          45 20% 96%;
+
+  --card:                45 25% 7%;
+  --card-foreground:     45 15% 92%;
+
+  --popover:             45 25% 7%;
+  --popover-foreground:  45 20% 96%;
+
+  --primary:             207 90% 55%;       /* slightly lighter on dark bg */
+  --primary-foreground:  0 0% 100%;
+
+  --secondary:           38 80% 50%;
+  --secondary-foreground: 0 0% 100%;
+
+  --muted:               45 15% 12%;
+  --muted-foreground:    45 8% 52%;
+
+  --accent:              207 50% 14%;
+  --accent-foreground:   207 90% 65%;
+
+  --destructive:         0 84% 55%;
+  --destructive-foreground: 0 0% 100%;
+
+  --border:              45 15% 18%;
+  --input:               45 12% 14%;
+  --input-background:    45 15% 10%;
+  --switch-background:   45 10% 22%;
+  --ring:                207 90% 55%;
+
+  --success:             142 71% 45%;
+  --warning:             38 92% 50%;
+
+  /* Sidebar */
+  --sidebar:                    45 28% 5%;
+  --sidebar-foreground:         45 15% 88%;
+  --sidebar-primary:            207 90% 55%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent:             207 50% 14%;
+  --sidebar-accent-foreground:  207 90% 65%;
+  --sidebar-border:             45 15% 12%;
+  --sidebar-ring:               207 90% 55%;
+
+  /* Chart palette — brightened for dark bg */
+  --chart-1: 207 90% 60%;
+  --chart-2: 38 90% 65%;
+  --chart-3: 142 65% 50%;
+  --chart-4: 285 60% 65%;
+  --chart-5: 340 75% 65%;
+}
+
+
+/* ================================================================== */
+/*  ANIMATION & TRANSITION TOKENS                                      */
+/*  Consistent motion language across the app                         */
+/* ================================================================== */
+
+:root {
+  /* Durations */
+  --duration-instant:  50ms;
+  --duration-fast:     100ms;
+  --duration-normal:   200ms;
+  --duration-slow:     350ms;
+  --duration-slower:   500ms;
+
+  /* Easing (CSS standard curves) */
+  --ease-default:      cubic-bezier(0.4, 0, 0.2, 1);   /* standard */
+  --ease-in:           cubic-bezier(0.4, 0, 1, 1);
+  --ease-out:          cubic-bezier(0, 0, 0.2, 1);
+  --ease-spring:       cubic-bezier(0.34, 1.56, 0.64, 1); /* overshoot */
+  --ease-smooth:       cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
+  /* Common transitions */
+  --transition-base:   color var(--duration-normal) var(--ease-default),
+                       background-color var(--duration-normal) var(--ease-default),
+                       border-color var(--duration-normal) var(--ease-default),
+                       opacity var(--duration-normal) var(--ease-default);
+
+  --transition-shadow: box-shadow var(--duration-normal) var(--ease-default);
+  --transition-transform: transform var(--duration-normal) var(--ease-spring);
+}
+
+
+/* ================================================================== */
+/*  Z-INDEX STACK                                                      */
+/* ================================================================== */
+
+:root {
+  --z-below:    -1;
+  --z-base:      0;
+  --z-raised:   10;    /* cards, inline floating elements */
+  --z-dropdown: 100;   /* dropdowns, context menus */
+  --z-sticky:   200;   /* sticky headers */
+  --z-overlay:  300;   /* overlays, backdrops */
+  --z-modal:    400;   /* dialogs, sheets */
+  --z-popover:  500;   /* tooltips, popovers */
+  --z-toast:    600;   /* notifications */
+  --z-max:      9999;  /* emergency top-layer */
+}
+
+
+/* ================================================================== */
+/*  COMPONENT-SPECIFIC TOKENS                                          */
+/*  Derived from screenshot analysis — Lovart canvas + FillinForm      */
+/* ================================================================== */
+
+:root {
+
+  /* ── TEMPLATE CATEGORY COLORS  (Real Estate — our domain) ─────────
+     Inspired by FillinForm's bold card-header color system but mapped
+     to our actual real estate infographic categories.
+     Source of truth: client/src/components/ai-chat/templateData.ts
+                      client/src/components/ai-chat/categoryChipsData.ts
+
+     COLOR SEMANTICS for Real Estate:
+       Blue    → new listings / trust / professional announcements
+       Purple  → premium features / aspirational / highlights
+       Emerald → sold / success / positive status
+       Amber   → agent identity / warmth / personal brand
+       Orange  → events / urgency / open house CTA
+       Indigo  → data / analytics / market intelligence
+       Teal    → location / community / neighborhood
+       Red     → price reduction / attention / back-on-market
+  ─────────────────────────────────────────────────────────────────── */
+
+  /* ── Main template categories (templateData.ts — 4 categories) ── */
+  --category-listing-announcements: #3B82F6;   /* Blue  — new/coming-soon/exclusive listings */
+  --category-property-features:     #8B5CF6;   /* Purple — open house, virtual tour, highlights */
+  --category-status-updates:        #10B981;   /* Emerald — just-sold, price-reduced, under-contract */
+  --category-agent-branding:        #F59E0B;   /* Amber  — agent intro, testimonials, market updates */
+
+  /* ── AI chat chips (categoryChipsData.ts — 6 chips) ─────────── */
+  --chip-property-listings:  #3B82F6;   /* Blue   — matches listing-announcements */
+  --chip-open-house:         #F97316;   /* Orange — event / urgency */
+  --chip-just-sold:          #10B981;   /* Emerald — success / achievement */
+  --chip-agent-branding:     #F59E0B;   /* Amber  — personal brand */
+  --chip-market-stats:       #6366F1;   /* Indigo — data / analytics */
+  --chip-neighborhood:       #14B8A6;   /* Teal   — location / community */
+
+  /* ── Template tier / badge system (TemplatesPage.tsx) ────────── */
+  /* Replaces hardcoded bg-foreground/90, bg-blue-600, bg-purple-600 */
+  --badge-luxury-bg:    #92400E;          /* deep amber-brown — premium, exclusive */
+  --badge-luxury-text:  #FEF3C7;          /* light amber text */
+  --badge-standard-bg:  #1E3A5F;          /* deep navy — professional, reliable */
+  --badge-standard-text:#DBEAFE;          /* light blue text */
+  --badge-budget-bg:    #14532D;          /* deep green — accessible, value */
+  --badge-budget-text:  #DCFCE7;          /* light green text */
+  --badge-custom-bg:    #4C1D95;          /* deep purple — user-created */
+  --badge-custom-text:  #EDE9FE;          /* light purple text */
+  --badge-api-bg:       #0C3461;          /* deep brand blue — developer/API */
+  --badge-api-text:     #E0F2FE;          /* light sky text */
+
+  /* ── Category surface tints (for backgrounds behind category icon) */
+  /* Used in FillinForm-style card icon containers */
+  --category-surface-listing-announcements: rgba(59, 130, 246, 0.12);
+  --category-surface-property-features:    rgba(139, 92, 246, 0.12);
+  --category-surface-status-updates:       rgba(16, 185, 129, 0.12);
+  --category-surface-agent-branding:       rgba(245, 158, 11, 0.12);
+  --category-surface-open-house:           rgba(249, 115, 22, 0.12);
+  --category-surface-market-stats:         rgba(99, 102, 241, 0.12);
+  --category-surface-neighborhood:         rgba(20, 184, 166, 0.12);
+
+  /* ── FILTER / SEGMENTED CONTROL  (FillinForm filter pills) ─────────
+     Active pill = solid dark navy/black, white text, fully rounded
+     Inactive pill = transparent bg, muted text, fully rounded
+  ─────────────────────────────────────────────────────────────────── */
+  --filter-pill-active-bg:        #0f1729;   /* FillinForm near-black navy */
+  --filter-pill-active-text:      #ffffff;
+  --filter-pill-inactive-bg:      transparent;
+  --filter-pill-inactive-text:    #7c7c79;
+  --filter-pill-inactive-hover-bg: rgba(16, 15, 9, 0.06);
+  --filter-pill-radius:           9999px;
+
+  /* ── CANVAS EDITOR TOOLBAR  (Lovart dark floating pill toolbar) ─────
+     The horizontal toolbar floating above the canvas is dark,
+     pill-shaped with white icons and labels. NOT the sidebar.
+  ─────────────────────────────────────────────────────────────────── */
+  --toolbar-floating-bg:          #2c2c2c;   /* Lovart dark toolbar */
+  --toolbar-floating-text:        #ffffff;
+  --toolbar-floating-icon:        rgba(255, 255, 255, 0.85);
+  --toolbar-floating-hover-bg:    rgba(255, 255, 255, 0.12);
+  --toolbar-floating-border:      rgba(255, 255, 255, 0.08);
+  --toolbar-floating-radius:      var(--radius-2xl);   /* pill shape */
+  --toolbar-floating-shadow:      0 4px 24px rgba(0, 0, 0, 0.30),
+                                  0 1px 4px  rgba(0, 0, 0, 0.20);
+
+  /* ── CANVAS SIDEBAR PANEL  (Lovart left panel — Layer/History) ──────
+     Clean white panel, minimal borders, flat appearance.
+     Layer items use small icons + text labels.
+  ─────────────────────────────────────────────────────────────────── */
+  --sidebar-panel-bg:             #ffffff;
+  --sidebar-panel-border:         rgba(26, 26, 25, 0.08);
+  --sidebar-panel-header-text:    #100f09;
+  --sidebar-panel-item-bg:        transparent;
+  --sidebar-panel-item-bg-hover:  rgba(12, 160, 235, 0.07);
+  --sidebar-panel-item-bg-active: rgba(12, 160, 235, 0.12);
+  --sidebar-panel-item-text:      #525251;
+  --sidebar-panel-item-text-active: #100f09;
+  --sidebar-panel-divider:        rgba(26, 26, 25, 0.06);
+
+  /* ── AI CHAT PANEL  (Lovart right panel) ────────────────────────────
+     White background, clean message bubbles, bottom input area.
+     Lime promo banner uses the accent lime color.
+  ─────────────────────────────────────────────────────────────────── */
+  --chat-panel-bg:                #ffffff;
+  --chat-panel-border:            rgba(26, 26, 25, 0.08);
+  --chat-message-ai-bg:           #f2f1ee;
+  --chat-message-user-bg:         #0ca0eb;
+  --chat-message-user-text:       #ffffff;
+  --chat-input-bg:                #f9f8f6;
+  --chat-input-border:            rgba(26, 26, 25, 0.10);
+  --chat-promo-banner-bg:         #e0ff66;   /* Lovart lime ribbon */
+  --chat-promo-banner-text:       #100f09;
+
+  /* ── CTA BUTTONS  (FillinForm "Use Template" = solid black) ─────────
+     Primary CTA on cards = near-black solid, white text, rounded.
+     This is FillinForm's style — confident, high contrast.
+  ─────────────────────────────────────────────────────────────────── */
+  --btn-cta-bg:                   #0f1729;   /* FillinForm solid dark navy */
+  --btn-cta-text:                 #ffffff;
+  --btn-cta-bg-hover:             #1e2d4f;
+  --btn-cta-radius:               var(--radius-lg);
+
+  --btn-primary-bg:               #0ca0eb;   /* brand blue for primary actions */
+  --btn-primary-text:             #ffffff;
+  --btn-primary-bg-hover:         #0886cb;
+
+  /* ── SEARCH BAR  (FillinForm centered search) ───────────────────────
+     Rounded, full-width container, subtle border and shadow.
+  ─────────────────────────────────────────────────────────────────── */
+  --search-bg:                    #ffffff;
+  --search-border:                rgba(26, 26, 25, 0.10);
+  --search-shadow:                0 1px 3px rgba(0, 0, 0, 0.08);
+  --search-placeholder:           #7c7c79;
+  --search-radius:                var(--radius-full);
+
+  /* ── TEMPLATE / CONTENT CARD  (FillinForm card pattern) ────────────
+     Colored header zone (full-width, tall) + white info section.
+     Card has rounded corners, subtle shadow, hover lift.
+  ─────────────────────────────────────────────────────────────────── */
+  --card-bg:                      #ffffff;
+  --card-border:                  rgba(26, 26, 25, 0.07);
+  --card-shadow:                  0 1px 3px  rgba(0, 0, 0, 0.08),
+                                  0 1px 2px  rgba(0, 0, 0, 0.06);
+  --card-shadow-hover:            0 8px 24px rgba(0, 0, 0, 0.12),
+                                  0 2px 6px  rgba(0, 0, 0, 0.06);
+  --card-radius:                  var(--radius-lg);   /* 12px */
+  --card-header-radius:           12px 12px 0 0;      /* top only */
+  --card-header-min-height:       140px;
+  --card-header-icon-bg:          rgba(255, 255, 255, 0.20);   /* icon container on color bg */
+  --card-header-icon-radius:      var(--radius-md);
+
+  /* ── CANVAS BACKGROUND ──────────────────────────────────────────────
+     Lovart canvas area is neutral light grey (not white, not cream).
+  ─────────────────────────────────────────────────────────────────── */
+  --canvas-bg:                    #f5f5f5;
+  --canvas-grid-dot:              #cfcfcf;
+  --canvas-selection-stroke:      #3b82f6;
+  --canvas-selection-fill:        rgba(17, 176, 255, 0.10);
+
+  /* ── TOP NAV BAR  (FillinForm clean top nav) ────────────────────────
+     White/transparent, logo on left, links centered/right, avatar.
+     Very minimal — just enough height for comfortable touch targets.
+  ─────────────────────────────────────────────────────────────────── */
+  --navbar-bg:                    rgba(255, 255, 255, 0.92);
+  --navbar-border:                rgba(26, 26, 25, 0.08);
+  --navbar-height:                56px;
+  --navbar-link-text:             #525251;
+  --navbar-link-text-active:      #100f09;
+  --navbar-link-text-hover:       #100f09;
+
+  /* ── BADGE / LABEL  (FillinForm category pill, Lovart tag) ──────────
+     Small rounded label above card title.
+  ─────────────────────────────────────────────────────────────────── */
+  --badge-bg:                     rgba(26, 26, 25, 0.06);
+  --badge-text:                   #525251;
+  --badge-radius:                 var(--radius-xs);   /* 4px */
+  --badge-font-size:              var(--font-size-12);
+
+  /* ── AVATAR ─────────────────────────────────────────────────────────
+     FillinForm: circular avatar with subtle border in top-right nav.
+  ─────────────────────────────────────────────────────────────────── */
+  --avatar-bg:                    #0ca0eb;
+  --avatar-text:                  #ffffff;
+  --avatar-border:                rgba(26, 26, 25, 0.10);
+  --avatar-size-sm:               28px;
+  --avatar-size-md:               36px;
+  --avatar-size-lg:               48px;
+}
+
+/* Component tokens — dark mode overrides */
+.dark {
+  /* Category colors stay vivid on dark — no change needed.
+     Surface tints are slightly more opaque for visibility. */
+  --category-surface-listing-announcements: rgba(59, 130, 246, 0.18);
+  --category-surface-property-features:    rgba(139, 92, 246, 0.18);
+  --category-surface-status-updates:       rgba(16, 185, 129, 0.18);
+  --category-surface-agent-branding:       rgba(245, 158, 11, 0.18);
+  --category-surface-open-house:           rgba(249, 115, 22, 0.18);
+  --category-surface-market-stats:         rgba(99, 102, 241, 0.18);
+  --category-surface-neighborhood:         rgba(20, 184, 166, 0.18);
+
+  /* Badge tiers — lighter backgrounds on dark mode */
+  --badge-luxury-bg:    #78350F;
+  --badge-standard-bg:  #1E3A5F;
+  --badge-budget-bg:    #14532D;
+  --badge-custom-bg:    #3B0764;
+  --badge-api-bg:       #0C2D48;
+
+  --filter-pill-active-bg:        #f5f4ef;
+  --filter-pill-active-text:      #100f09;
+  --filter-pill-inactive-text:    #6b6762;
+  --filter-pill-inactive-hover-bg: rgba(245, 244, 239, 0.06);
+
+  --toolbar-floating-bg:          #1a1a14;
+  --toolbar-floating-border:      rgba(255, 255, 255, 0.10);
+
+  --sidebar-panel-bg:             #1a1a14;
+  --sidebar-panel-border:         rgba(245, 244, 239, 0.06);
+  --sidebar-panel-item-bg-hover:  rgba(12, 160, 235, 0.10);
+  --sidebar-panel-item-bg-active: rgba(12, 160, 235, 0.16);
+  --sidebar-panel-item-text:      #a4a09b;
+  --sidebar-panel-item-text-active: #f5f4ef;
+
+  --chat-panel-bg:                #1a1a14;
+  --chat-panel-border:            rgba(245, 244, 239, 0.06);
+  --chat-message-ai-bg:           #222219;
+  --chat-input-bg:                #100f09;
+  --chat-input-border:            rgba(245, 244, 239, 0.10);
+
+  --btn-cta-bg:                   #f5f4ef;
+  --btn-cta-text:                 #100f09;
+  --btn-cta-bg-hover:             #ffffff;
+
+  --search-bg:                    #1a1a14;
+  --search-border:                rgba(245, 244, 239, 0.10);
+
+  --card-bg:                      #1a1a14;
+  --card-border:                  rgba(245, 244, 239, 0.06);
+  --card-shadow:                  0 1px 3px rgba(0, 0, 0, 0.30);
+  --card-shadow-hover:            0 8px 24px rgba(0, 0, 0, 0.50);
+
+  --navbar-bg:                    rgba(16, 15, 9, 0.92);
+  --navbar-border:                rgba(245, 244, 239, 0.08);
+  --navbar-link-text:             #a4a09b;
+  --navbar-link-text-active:      #f5f4ef;
+  --navbar-link-text-hover:       #f5f4ef;
+
+  --badge-bg:                     rgba(245, 244, 239, 0.08);
+  --badge-text:                   #a4a09b;
+
+  --canvas-bg:                    #2c2c2c;
+  --canvas-grid-dot:              #444440;
+}
+
+
+/*
+ * ══════════════════════════════════════════════════════════════════
+ *  DESIGN DECISIONS  (why each choice was made)
+ * ══════════════════════════════════════════════════════════════════
+ *
+ *  PRIMARY (#0ca0eb)
+ *    Lovart's brand blue. Clear, actionable, tech-forward.
+ *    Replaces current teal (174°) which reads "health/wellness".
+ *
+ *  SECONDARY (#f9b959 amber)
+ *    Lovart's warm accent. Works as CTA highlight, premium badge,
+ *    hover state for non-destructive actions.
+ *
+ *  BACKGROUNDS — warm cream (#f9f8f6)
+ *    Lovart uses warm off-whites. Reduces eye strain on canvas tools.
+ *    FillinForm uses a similarly warm near-white (#f9f5f0 visible in
+ *    screenshot). Cool greys feel clinical by comparison.
+ *
+ *  DARK MODE (warm near-black #100f09)
+ *    Lovart canvas dark. Warm blacks feel less harsh than pure #000.
+ *
+ *  FONTS — Inter + Outfit
+ *    Both reference sites use this exact pairing.
+ *    Inter → UI chrome, labels, body.
+ *    Outfit → headings, hero text, display elements.
+ *
+ *  SHADOWS — feather-light
+ *    Both sites max out at 0.08–0.12 opacity. Heavy shadows = dated.
+ *
+ *  DARK PILL TOOLBAR (--toolbar-floating-bg: #2c2c2c)
+ *    Lovart's floating editor toolbar. High contrast against any
+ *    canvas color. Keep pill shape (border-radius: 9999px).
+ *
+ *  FILTER PILLS (active = solid #0f1729)
+ *    FillinForm pattern: active filter = solid dark, white text.
+ *    Much cleaner than underline or outline active states.
+ *
+ *  TEMPLATE CATEGORY COLORS (--category-* / --chip-*)
+ *    Mapped to our 4 real estate template categories (templateData.ts)
+ *    and 6 AI chat chips (categoryChipsData.ts). FillinForm's bold
+ *    card-header pattern is the inspiration but color semantics are
+ *    real-estate-specific: blue=listings, purple=features,
+ *    emerald=sold/status, amber=agent, orange=open-house, indigo=data.
+ *    --category-surface-* are 12% opacity tints for icon containers.
+ *
+ *  TEMPLATE BADGE TIERS (--badge-luxury/standard/budget/custom/api)
+ *    Replaces raw Tailwind classes hardcoded in TemplatesPage.tsx.
+ *    Deep saturated backgrounds read as confident on property photos
+ *    without competing with the image.
+ *
+ *  CTA BUTTON (#0f1729 dark navy)
+ *    FillinForm's "Use Template" = solid near-black. Maximally
+ *    confident. Works on both white cards and photo card headers.
+ *
+ *  ACCENT LIME (#e0ff66)
+ *    Lovart promo banner. Use only for "new" / promotional badges.
+ *    Never as primary CTA. High attention-grab, low semantic weight.
+ *
+ *  ACCENT PURPLE (#722ed1)
+ *    Lovart's AI/flow color. Use for AI chat, generation indicators.
+ *
+ *  GLASSMORPHISM
+ *    --surface-panel-* for sidebars and toolbars (backdrop-filter).
+ *    --glass-* for floating cards, modals, overlays.
+ * ══════════════════════════════════════════════════════════════════
+ */
