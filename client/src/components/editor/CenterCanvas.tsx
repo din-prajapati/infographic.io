@@ -220,17 +220,8 @@ export function CenterCanvas() {
           )}
           
           {/* Canvas Content */}
-          <div 
-            className="absolute rounded-2xl overflow-hidden"
-            style={{
-              left: '10px',
-              top: '-30px',
-              display: 'flex',
-              flexWrap: 'wrap',
-              right: '0',
-              bottom: '0',
-              height: '100%',
-            }}
+          <div
+            className="absolute inset-0 rounded-2xl overflow-hidden"
             data-canvas-content="true"
             data-testid="design-canvas"
             role="application"

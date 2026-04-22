@@ -41,7 +41,7 @@
 ## Engineering / PR
 
 - **Branch:** `feat/epic-design-02-ui-redesign`
-- **PR:** #_____
+- **PR:** #2
 - **Primary files touched:**
   - `index.html` (add Google Fonts `<link>`)
   - `tailwind.config.ts` (add `fontFamily.display`)
@@ -102,7 +102,7 @@ Rules:
 - [x] `npm run check` passes (no new errors vs baseline)
 - [x] `npm run test:unit` passes — 34/34
 - [x] Manual browser check: Outfit shows in DevTools Fonts panel
-- [ ] PR merged (PR #_____)
+- [ ] PR merged (PR #2)
 - [ ] TASKS.md task list fully checked
 
 ---

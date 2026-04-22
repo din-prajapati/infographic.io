@@ -82,7 +82,7 @@ function SheetContent({
       <SheetPrimitive.Content
         data-slot="sheet-content"
         className={cn(
-          "data-[state=open]:animate-in data-[state=closed]:animate-out fixed z-[9999] flex flex-col gap-4 transition ease-in-out data-[state=closed]:duration-300 data-[state=open]:duration-500",
+          "bg-card text-card-foreground data-[state=open]:animate-in data-[state=closed]:animate-out fixed z-[9999] flex flex-col gap-4 transition ease-in-out data-[state=closed]:duration-300 data-[state=open]:duration-500",
           side === "right" &&
             "data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right inset-y-0 right-0 h-full w-3/4 border-l sm:max-w-sm",
           side === "left" &&
@@ -94,7 +94,6 @@ function SheetContent({
           className,
         )}
         style={{
-          background: "var(--glass-bg, rgba(255, 255, 255, 0.92))",
           borderColor: "var(--glass-border, rgba(180, 200, 220, 0.55))",
           boxShadow: "var(--glass-shadow, 0 8px 32px rgba(0, 0, 0, 0.08)), var(--glass-highlight, inset 0 1px 0 rgba(255, 255, 255, 0.6))",
           backdropFilter: "blur(var(--glass-blur, 28px))",

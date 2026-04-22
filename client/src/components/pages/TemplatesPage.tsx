@@ -167,7 +167,9 @@ export function TemplatesPage({ onOpenEditor }: TemplatesPageProps) {
     const matchesCategory =
       selectedCategory === "all-categories" ||
       (selectedCategory === "custom" && template.isCustom) ||
-      (selectedCategory === "real-estate" && template.badge === "Luxury");
+      (selectedCategory === "real-estate" && !template.isCustom) ||
+      (selectedCategory === "business" && template.isApiTemplate && template.badge?.toLowerCase() === "business") ||
+      (selectedCategory === "marketing" && template.isApiTemplate && template.badge?.toLowerCase() === "marketing");
 
     const matchesStyle =
       selectedStyle === "all-styles" || 
@@ -198,7 +200,9 @@ export function TemplatesPage({ onOpenEditor }: TemplatesPageProps) {
           {/* Search and Filters */}
           <div className="flex items-center gap-3">
             <div className="flex-1 relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+              <span className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+                <Search className="w-4 h-4 text-muted-foreground" />
+              </span>
               <Input
                 placeholder="Search templates..."
                 className="pl-11 h-11 bg-input-background border-border text-foreground placeholder:text-muted-foreground"

@@ -31,8 +31,8 @@ function AdjustmentSlider({
   // Calculate percentage (0-100 for slider position)
   const percentage = ((value + 100) / 200) * 100;
   
-  // Purple color for filled portion (vibrant medium-light purple matching image)
-  const purpleColor = '#A855F7'; // vibrant medium purple
+  // Use primary design token color for the filled slider portion
+  const purpleColor = 'hsl(var(--primary))';
   
   return (
     <div className="space-y-4">
@@ -47,7 +47,7 @@ function AdjustmentSlider({
           type="number"
           value={value}
           onChange={onInputChange}
-          className="w-16 h-8 bg-background border border-border rounded-lg text-center text-sm font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-violet-400 transition-all shadow-sm"
+          className="w-16 h-8 bg-input-background border border-border rounded-lg text-center text-sm font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring transition-all shadow-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
           min={-100}
           max={100}
         />

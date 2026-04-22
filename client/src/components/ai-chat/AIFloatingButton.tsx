@@ -17,18 +17,18 @@ export function AIFloatingButton({ onClick, isActive }: AIFloatingButtonProps) {
       onClick={onClick}
       className={`
         flex items-center gap-2 px-4 h-12 rounded-full shadow-lg
-        transition-all duration-300
+        transition-all duration-300 font-medium text-sm
         ${
           isActive
-            ? 'bg-foreground text-background'
-            : 'bg-background text-foreground hover:bg-muted border border-border'
+            ? 'bg-primary text-primary-foreground shadow-primary/30'
+            : 'bg-background text-foreground hover:bg-accent hover:text-accent-foreground border border-border'
         }
       `}
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
     >
-      <Sparkles className="w-5 h-5" />
-      <span className="font-medium">AI Templates</span>
+      <Sparkles className={`w-5 h-5 ${isActive ? 'text-primary-foreground' : 'text-primary'}`} />
+      <span>AI Templates</span>
     </motion.button>
   );
 }

@@ -150,7 +150,9 @@ export function MyDesignsPage({ onOpenEditor }: MyDesignsPageProps) {
           {/* Search and Filters */}
           <div className="flex items-center gap-3 mb-6">
             <div className="flex-1 relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+              <span className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+                <Search className="w-4 h-4 text-muted-foreground" />
+              </span>
               <Input
                 placeholder="Search designs..."
                 className="pl-11 h-11 bg-input-background border-border text-foreground placeholder:text-muted-foreground"
@@ -199,34 +201,17 @@ export function MyDesignsPage({ onOpenEditor }: MyDesignsPageProps) {
 
           {/* Filter Tabs */}
           <div className="flex gap-2">
-            <Button
-              size="sm"
-              className={`rounded-full h-8 ${filterTab === "all" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground hover:bg-accent"}`}
-              onClick={() => setFilterTab("all")}
-            >
-              All Designs
-            </Button>
-            <Button
-              size="sm"
-              className={`rounded-full h-8 ${filterTab === "recent" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground hover:bg-accent"}`}
-              onClick={() => setFilterTab("recent")}
-            >
-              Recent
-            </Button>
-            <Button
-              size="sm"
-              className={`rounded-full h-8 ${filterTab === "favorites" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground hover:bg-accent"}`}
-              onClick={() => setFilterTab("favorites")}
-            >
-              Favorites
-            </Button>
-            <Button
-              size="sm"
-              className={`rounded-full h-8 ${filterTab === "archived" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground hover:bg-accent"}`}
-              onClick={() => setFilterTab("archived")}
-            >
-              Archived
-            </Button>
+            {(["all", "recent", "favorites", "archived"] as const).map((tab) => (
+              <Button
+                key={tab}
+                variant={filterTab === tab ? "default" : "ghost"}
+                size="sm"
+                className="rounded-full h-8"
+                onClick={() => setFilterTab(tab)}
+              >
+                {tab === "all" ? "All Designs" : tab.charAt(0).toUpperCase() + tab.slice(1)}
+              </Button>
+            ))}
           </div>
         </div>
 
@@ -273,7 +258,7 @@ export function MyDesignsPage({ onOpenEditor }: MyDesignsPageProps) {
                           className={`w-3.5 h-3.5 ${
                             favoriteIds.includes(design.id)
                               ? "fill-yellow-400 text-yellow-400"
-                              : "text-gray-500"
+                              : "text-muted-foreground"
                           }`}
                         />
                       </Button>

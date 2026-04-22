@@ -138,7 +138,7 @@ function TemplateCard({ template }: { template: typeof showcaseTemplates[0] }) {
         />
       </div>
       <div className="absolute top-3 right-3">
-        <span className="px-2 py-1 bg-teal-500/90 text-white text-xs font-medium rounded-full backdrop-blur-sm">
+        <span className="px-2 py-1 bg-primary/90 text-white text-xs font-medium rounded-full backdrop-blur-sm">
           {template.badge}
         </span>
       </div>
@@ -214,7 +214,7 @@ export default function LandingPage() {
               <a href="#features" className="text-sm font-medium text-white/80 hover:text-white">Features</a>
               <a href="#faq" className="text-sm font-medium text-white/80 hover:text-white">FAQ</a>
               <Link href="/auth">
-                <Button className="gap-2 bg-teal-500 hover:bg-teal-600 text-white rounded-full font-medium px-5">
+                <Button className="gap-2 bg-primary hover:bg-primary/90 text-white rounded-full font-medium px-5">
                   Get Started <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
@@ -226,7 +226,7 @@ export default function LandingPage() {
           <div className="text-center px-6 max-w-4xl mx-auto">
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
               Create Property<br />
-              <span className="text-teal-400">Infographics</span> in Minutes
+              <span className="text-secondary">Infographics</span> in Minutes
             </h1>
             <p className="text-lg md:text-xl text-gray-300 mb-10 max-w-2xl mx-auto">
               Transform your listings into stunning visuals. Perfect for social media, MLS, and print marketing.
@@ -244,7 +244,7 @@ export default function LandingPage() {
                 </Button>
               </Link>
               <Link href="/auth">
-                <Button size="lg" variant="outline" className="h-14 px-8 gap-2 rounded-full border-2 border-white/30 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 font-medium text-lg">
+                <Button size="lg" variant="outline" className="h-14 px-8 gap-2 rounded-full border-2 border-white/30 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 hover:text-white font-medium text-lg">
                   Continue with Email
                 </Button>
               </Link>
@@ -275,7 +275,7 @@ export default function LandingPage() {
           {/* Trust Badges */}
           <div className="flex flex-wrap items-center justify-center gap-8 md:gap-16 mb-20 pb-12 border-b border-white/10">
             <div className="text-center">
-              <p className="text-teal-400 text-2xl md:text-3xl font-bold">2024</p>
+              <p className="text-primary text-2xl md:text-3xl font-bold">2024</p>
               <p className="text-gray-500 text-xs uppercase tracking-wide">Product Launch</p>
             </div>
             <div className="text-center">
@@ -283,7 +283,7 @@ export default function LandingPage() {
               <p className="text-gray-500 text-xs uppercase tracking-wide">Purpose-Built</p>
             </div>
             <div className="text-center">
-              <p className="text-teal-400 text-2xl md:text-3xl font-bold">50+</p>
+              <p className="text-primary text-2xl md:text-3xl font-bold">50+</p>
               <p className="text-gray-500 text-xs uppercase tracking-wide">Templates</p>
             </div>
             <div className="text-center">
@@ -294,7 +294,7 @@ export default function LandingPage() {
 
           {/* Section Header */}
           <div className="text-center mb-12">
-            <p className="text-xs uppercase tracking-widest text-teal-400 mb-4">TEMPLATE SHOWCASE</p>
+            <p className="text-xs uppercase tracking-widest text-primary/70 mb-4">TEMPLATE SHOWCASE</p>
             <h2 className="text-3xl md:text-5xl font-bold text-white mb-4">
               Professional Templates for Every Format
             </h2>
@@ -306,19 +306,19 @@ export default function LandingPage() {
           {/* Format Icons */}
           <div className="flex items-center justify-center gap-8 mb-12">
             <div className="text-center">
-              <Smartphone className="h-8 w-8 text-teal-400 mx-auto mb-2" />
+              <Smartphone className="h-8 w-8 text-primary mx-auto mb-2" />
               <p className="text-white text-sm">Social</p>
             </div>
             <div className="text-center">
-              <Monitor className="h-8 w-8 text-teal-400 mx-auto mb-2" />
+              <Monitor className="h-8 w-8 text-primary mx-auto mb-2" />
               <p className="text-white text-sm">Web</p>
             </div>
             <div className="text-center">
-              <Printer className="h-8 w-8 text-teal-400 mx-auto mb-2" />
+              <Printer className="h-8 w-8 text-primary mx-auto mb-2" />
               <p className="text-white text-sm">Print</p>
             </div>
             <div className="text-center">
-              <FileImage className="h-8 w-8 text-teal-400 mx-auto mb-2" />
+              <FileImage className="h-8 w-8 text-primary mx-auto mb-2" />
               <p className="text-white text-sm">MLS</p>
             </div>
           </div>
@@ -343,14 +343,14 @@ export default function LandingPage() {
         {/* Pain Point Cards */}
         <div className="container px-6 max-w-6xl mx-auto mt-20">
           <div className="text-center mb-12">
-            <p className="text-xs uppercase tracking-widest text-teal-400 mb-4">WHY INFOGRAPHICAI</p>
+            <p className="text-xs uppercase tracking-widest text-primary/70 mb-4">WHY INFOGRAPHICAI</p>
             <h2 className="text-3xl md:text-4xl font-bold text-white">Solve Your Marketing Challenges</h2>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {painPointCards.map((card, index) => (
-              <div key={index} className="glass rounded-2xl border border-border p-6 hover:bg-white/10 transition-colors">
-                <div className="w-12 h-12 rounded-xl bg-teal-500/20 flex items-center justify-center mb-4">
-                  <card.icon className="h-6 w-6 text-teal-400" />
+              <div key={index} className="bg-white/[0.06] border border-white/10 backdrop-blur-sm rounded-2xl p-6 hover:bg-white/[0.1] transition-colors">
+                <div className="w-12 h-12 rounded-xl bg-primary/20 border border-primary/20 flex items-center justify-center mb-4">
+                  <card.icon className="h-6 w-6 text-primary" />
                 </div>
                 <h3 className="text-lg font-semibold text-white mb-2">{card.title}</h3>
                 <p className="text-gray-400 text-sm leading-relaxed">{card.description}</p>
@@ -364,7 +364,7 @@ export default function LandingPage() {
       <section id="pricing" className="bg-[#f5f5f0] py-20 md:py-32">
         <div className="container px-6 max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <p className="text-xs uppercase tracking-widest text-teal-600 mb-4">PRICING</p>
+            <p className="text-xs uppercase tracking-widest text-primary mb-4">PRICING</p>
             <h2 className="text-3xl md:text-5xl font-bold text-black mb-4">Simple, Transparent Pricing</h2>
             <p className="text-gray-600 text-lg max-w-2xl mx-auto">
               Start free and upgrade as you grow. Annual billing saves 15%.
@@ -406,7 +406,7 @@ export default function LandingPage() {
                       </span>
                       <span className="text-base text-gray-500">/ month</span>
                       {isAnnual && plan.price > 0 && (
-                        <span className="text-sm text-teal-600 font-medium bg-teal-50 px-2 py-0.5 rounded-full">
+                        <span className="text-sm text-primary font-medium bg-primary/10 px-2 py-0.5 rounded-full">
                           Save ₹{savings.toLocaleString()}
                         </span>
                       )}
@@ -433,7 +433,7 @@ export default function LandingPage() {
           </div>
 
           <div className="text-center mt-8">
-            <Link href="/pricing" className="text-teal-600 hover:text-teal-700 font-medium">
+            <Link href="/pricing" className="text-primary hover:text-primary/80 font-medium">
               View all plans and enterprise options →
             </Link>
           </div>
@@ -445,15 +445,15 @@ export default function LandingPage() {
         <div className="container px-6 max-w-6xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
-              <p className="text-xs uppercase tracking-widest text-teal-400 mb-4">KEY FEATURES</p>
+              <p className="text-xs uppercase tracking-widest text-primary/70 mb-4">KEY FEATURES</p>
               <h2 className="text-3xl md:text-5xl font-bold text-white mb-8">
                 Built for Teams<br />
                 <span className="text-gray-400">& Brokerages</span>
               </h2>
               <div className="space-y-6">
                 <div className="flex gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-teal-500/20 flex items-center justify-center flex-shrink-0">
-                    <Target className="h-6 w-6 text-teal-400" />
+                  <div className="w-12 h-12 rounded-xl bg-primary/20 border border-primary/20 flex items-center justify-center flex-shrink-0">
+                    <Target className="h-6 w-6 text-primary" />
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-white mb-1">Brand Kit</h3>
@@ -461,8 +461,8 @@ export default function LandingPage() {
                   </div>
                 </div>
                 <div className="flex gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-teal-500/20 flex items-center justify-center flex-shrink-0">
-                    <Zap className="h-6 w-6 text-teal-400" />
+                  <div className="w-12 h-12 rounded-xl bg-primary/20 border border-primary/20 flex items-center justify-center flex-shrink-0">
+                    <Zap className="h-6 w-6 text-primary" />
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-white mb-1">Instant Export</h3>
@@ -472,25 +472,25 @@ export default function LandingPage() {
               </div>
             </div>
             <div className="relative">
-              <div className="bg-gradient-to-br from-teal-500/20 to-transparent rounded-3xl p-8">
+              <div className="bg-gradient-to-br from-primary/10 to-transparent rounded-3xl p-8">
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="glass rounded-xl p-4 border border-border">
-                    <Target className="h-8 w-8 text-teal-400 mb-2" />
+                  <div className="bg-white/[0.06] border border-white/10 backdrop-blur-sm rounded-xl p-4">
+                    <Target className="h-8 w-8 text-primary mb-2" />
                     <p className="text-white font-semibold">Brand Kit</p>
                     <p className="text-gray-400 text-xs mt-1">Custom branding</p>
                   </div>
-                  <div className="glass rounded-xl p-4 border border-border">
-                    <Zap className="h-8 w-8 text-teal-400 mb-2" />
+                  <div className="bg-white/[0.06] border border-white/10 backdrop-blur-sm rounded-xl p-4">
+                    <Zap className="h-8 w-8 text-primary mb-2" />
                     <p className="text-white font-semibold">Instant Export</p>
                     <p className="text-gray-400 text-xs mt-1">PNG & JPG</p>
                   </div>
-                  <div className="glass rounded-xl p-4 border border-border">
-                    <Users className="h-8 w-8 text-teal-400 mb-2" />
+                  <div className="bg-white/[0.06] border border-white/10 backdrop-blur-sm rounded-xl p-4">
+                    <Users className="h-8 w-8 text-primary mb-2" />
                     <p className="text-white font-semibold">Team Workspace</p>
                     <p className="text-gray-400 text-xs mt-1">Coming soon</p>
                   </div>
-                  <div className="glass rounded-xl p-4 border border-border">
-                    <Building2 className="h-8 w-8 text-teal-400 mb-2" />
+                  <div className="bg-white/[0.06] border border-white/10 backdrop-blur-sm rounded-xl p-4">
+                    <Building2 className="h-8 w-8 text-primary mb-2" />
                     <p className="text-white font-semibold">Multi-Agent</p>
                     <p className="text-gray-400 text-xs mt-1">Coming soon</p>
                   </div>
@@ -527,9 +527,9 @@ export default function LandingPage() {
               <AccordionItem
                 key={index}
                 value={`faq-${index}`}
-                className="glass rounded-xl border border-border px-6 overflow-hidden"
+                className="bg-white/[0.06] border border-white/10 backdrop-blur-sm rounded-xl px-6 overflow-hidden"
               >
-                <AccordionTrigger className="text-left text-white hover:no-underline py-5 text-base md:text-lg font-medium">
+                <AccordionTrigger className="text-left text-white hover:text-white hover:no-underline py-5 text-base md:text-lg font-medium [&>svg]:text-white/60">
                   {faq.question}
                 </AccordionTrigger>
                 <AccordionContent className="text-gray-400 pb-5 text-sm md:text-base leading-relaxed">

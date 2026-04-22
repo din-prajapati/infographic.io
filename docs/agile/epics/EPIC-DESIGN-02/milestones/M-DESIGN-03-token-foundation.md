@@ -46,7 +46,7 @@ After this milestone the app will visually shift to the new palette on every pag
 - [x] Primary interactive elements (buttons, links, focus rings) are blue `#0ca0eb`, not teal
 - [x] Secondary accent elements are amber `#f9b959`, not purple-blue
 - [x] Manual smoke: theme toggle on Templates + Editor + Account — all three pages
-- [ ] PR merged
+- [ ] PR #2 merged
 
 ---
 

@@ -2,7 +2,7 @@
 
 > **Story:** [STORY.md](./STORY.md)  
 > **Branch:** `feat/epic-design-02-ui-redesign`  
-> **PR:** #_____  
+> **PR:** #2  
 > **Linear:** LIN-XXX  
 > **Type:** feat
 
@@ -103,7 +103,7 @@ npm run test:unit
 - [x] `npm run check` passes (no new errors vs pre-existing baseline)
 - [x] `npm run test:unit` passes — 34/34 ✅
 - [x] Manual smoke: Templates + Editor + Account in Light + Dark
-- [ ] PR opened with story card as description
+- [x] PR opened with story card as description — PR #2
 - [x] STORY.md ACs updated ✅
 
 ---

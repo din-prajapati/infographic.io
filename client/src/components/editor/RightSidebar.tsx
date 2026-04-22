@@ -471,11 +471,11 @@ export function RightSidebar() {
   };
 
   return (
-    <div className="w-80 h-full border-l bg-sidebar flex flex-col">
+    <div className="w-80 h-full bg-sidebar flex flex-col" style={{ borderLeft: '1px solid var(--glass-border, rgba(180, 200, 220, 0.35))' }}>
       {/* Generate Button - Sticky at Top */}
       <div className="p-3 border-b bg-sidebar">
-        <Button 
-          className="w-full h-10 gap-2 bg-gradient-to-br from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600"
+        <Button
+          className="w-full h-10 gap-2 bg-primary hover:bg-primary/90 text-primary-foreground"
         >
           <Sparkles className="w-4 h-4" />
           Generate Template

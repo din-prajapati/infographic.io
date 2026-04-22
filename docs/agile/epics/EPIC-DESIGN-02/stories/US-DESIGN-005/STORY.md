@@ -45,7 +45,7 @@
 ## Engineering / PR
 
 - **Branch:** `feat/epic-design-02-ui-redesign`
-- **PR:** #_____
+- **PR:** #2
 - **Primary files touched:**
   - `client/src/styles/globals.css` (`:root` and `.dark` blocks only)
 
@@ -146,7 +146,7 @@ Rules:
 - [x] `npm run check` passes (no new errors vs baseline)
 - [x] `npm run test:unit` passes — 34/34
 - [x] Manual theme toggle smoke on Templates + Account pages
-- [ ] PR merged (PR #_____)
+- [ ] PR merged (PR #2)
 - [ ] TASKS.md task list fully checked
 
 ---

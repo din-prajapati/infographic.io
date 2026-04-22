@@ -95,15 +95,15 @@ export function ZoomControls() {
         <DropdownMenuContent align="center" className="w-48">
           <DropdownMenuItem onClick={handleZoomIn} className="flex items-center justify-between">
             <span>Zoom in</span>
-            <span className="text-xs text-gray-400">Ctrl + +</span>
+            <span className="text-xs text-muted-foreground">Ctrl + +</span>
           </DropdownMenuItem>
           <DropdownMenuItem onClick={handleZoomOut} className="flex items-center justify-between">
             <span>Zoom out</span>
-            <span className="text-xs text-gray-400">Ctrl + -</span>
+            <span className="text-xs text-muted-foreground">Ctrl + -</span>
           </DropdownMenuItem>
           <DropdownMenuItem onClick={handleFitToScreen} className="flex items-center justify-between">
             <span>Fit to Screen</span>
-            <span className="text-xs text-gray-400">Shift + 1</span>
+            <span className="text-xs text-muted-foreground">Shift + 1</span>
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => handleZoomTo(50)} className="flex items-center justify-between">
             <span>Zoom to 50%</span>
