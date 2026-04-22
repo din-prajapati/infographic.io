@@ -36,6 +36,7 @@ Every PR is traceable from `git log` → Story → Milestone → Epic.
 | Epic ID | Title | Status | Milestones |
 |---------|-------|--------|------------|
 | [EPIC-DESIGN-01](epics/EPIC-DESIGN-01/EPIC.md) | MVP UI Design Consistency & Theme | 🟡 In Progress | M1 QA ✅ · M2 🟡 US-002 merged ([PR #1](https://github.com/din-prajapati/infographic.io/pull/1)); US-003 + gates — [M-DESIGN-02](epics/EPIC-DESIGN-01/milestones/M-DESIGN-02-editor-tokens.md) |
+| [EPIC-DESIGN-02](epics/EPIC-DESIGN-02/EPIC.md) | UI/UX Redesign — Blue/Amber/Warm-Cream Palette | 🔄 In Progress | M-DESIGN-03 ✅ · M-DESIGN-04 🔲 · M-DESIGN-05 🔲 |
 | [EPIC-PAY-01](epics/EPIC-PAY-01/EPIC.md) | MVP Payments Live | ✅ Done | All milestones closed |
 
 > Add new epics to this table when you start them.
