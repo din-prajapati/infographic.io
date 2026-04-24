@@ -11,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
+import { NumberStepper } from "../ui/number-stepper";
 
 type PropertyTier = "luxury" | "standard" | "budget";
 
@@ -23,8 +24,8 @@ export function PropertyPanel() {
   const [address, setAddress] = useState("");
   const [price, setPrice] = useState("");
   const [sqft, setSqft] = useState("");
-  const [beds, setBeds] = useState("");
-  const [baths, setBaths] = useState("");
+  const [beds, setBeds] = useState(0);
+  const [baths, setBaths] = useState(0);
   const [extraInfo, setExtraInfo] = useState("");
   const [agentName, setAgentName] = useState("");
   const [agentBrokerage, setAgentBrokerage] = useState("");
@@ -240,27 +241,23 @@ export function PropertyPanel() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="beds" className="text-xs text-muted-foreground">
-                    Beds
-                  </Label>
-                  <Input
-                    id="beds"
-                    type="number"
+                  <Label className="text-xs text-muted-foreground">Beds</Label>
+                  <NumberStepper
                     value={beds}
-                    onChange={(e) => setBeds(e.target.value)}
-                    placeholder="0"
+                    onChange={setBeds}
+                    min={0}
+                    max={20}
+                    className="w-full"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="baths" className="text-xs text-muted-foreground">
-                    Baths
-                  </Label>
-                  <Input
-                    id="baths"
-                    type="number"
+                  <Label className="text-xs text-muted-foreground">Baths</Label>
+                  <NumberStepper
                     value={baths}
-                    onChange={(e) => setBaths(e.target.value)}
-                    placeholder="0"
+                    onChange={setBaths}
+                    min={0}
+                    max={20}
+                    className="w-full"
                   />
                 </div>
               </div>

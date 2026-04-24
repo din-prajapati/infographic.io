@@ -46,8 +46,8 @@ const PillButton: React.FC<PillButtonProps> = ({
           onClick={onClick}
           className={`h-8 px-3 flex items-center gap-1.5 rounded-lg text-sm font-medium transition-colors ${
             isActive
-              ? "bg-violet-100 text-violet-700"
-              : "hover:bg-gray-100 text-gray-600"
+              ? "bg-accent text-accent-foreground"
+              : "hover:bg-accent text-muted-foreground hover:text-accent-foreground"
           }`}
         >
           {children}
@@ -81,8 +81,8 @@ const IconButton: React.FC<IconButtonProps> = ({
           onClick={onClick}
           className={`h-8 w-8 flex items-center justify-center rounded-md transition-colors ${
             isActive
-              ? "bg-violet-100 text-violet-700"
-              : "hover:bg-gray-100 text-gray-600"
+              ? "bg-accent text-accent-foreground"
+              : "hover:bg-accent text-muted-foreground hover:text-accent-foreground"
           }`}
         >
           {children}
@@ -97,7 +97,7 @@ const IconButton: React.FC<IconButtonProps> = ({
 
 // Divider
 function Divider() {
-  return <div className="w-px h-6 bg-gray-200 mx-1" />;
+  return <div className="w-px h-6 bg-border mx-1" />;
 }
 
 export function ImageToolbar({ element, onTransparencyClick }: ImageToolbarProps) {
@@ -166,7 +166,7 @@ export function ImageToolbar({ element, onTransparencyClick }: ImageToolbarProps
       <Tooltip>
         <TooltipTrigger asChild>
           <div className="flex items-center gap-1.5 px-2">
-            <span className="text-xs text-gray-500 font-medium">Radius</span>
+            <span className="text-xs text-muted-foreground font-medium">Radius</span>
             <Slider
               value={[element.cornerRadius]}
               onValueChange={handleCornerRadiusChange}
@@ -175,7 +175,7 @@ export function ImageToolbar({ element, onTransparencyClick }: ImageToolbarProps
               step={1}
               className="w-14"
             />
-            <span className="text-xs text-gray-600 w-5 text-right font-medium">
+            <span className="text-xs text-foreground w-5 text-right font-medium">
               {element.cornerRadius}
             </span>
           </div>

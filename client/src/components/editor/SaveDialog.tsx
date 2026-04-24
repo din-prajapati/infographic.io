@@ -37,7 +37,11 @@ export interface SaveDialogData {
 }
 
 const categories = [
-  { value: "real-estate", label: "Real Estate" },
+  { value: "real-estate", label: "Real Estate — General" },
+  { value: "real-estate-listing", label: "Real Estate — Property Listing" },
+  { value: "real-estate-market", label: "Real Estate — Market Report" },
+  { value: "real-estate-luxury", label: "Real Estate — Luxury" },
+  { value: "real-estate-commercial", label: "Real Estate — Commercial" },
   { value: "business", label: "Business" },
   { value: "marketing", label: "Marketing" },
   { value: "education", label: "Education" },

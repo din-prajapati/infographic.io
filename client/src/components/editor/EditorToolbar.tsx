@@ -46,7 +46,7 @@ export function EditorToolbar({
   }, [onSaveClick]);
 
   return (
-    <div className="h-14 bg-background border-b border-border px-4 flex items-center justify-between">
+    <div className="h-14 bg-background border-b border-border px-4 relative flex items-center">
       {/* Left Section - Back & Logo */}
       <div className="flex items-center gap-3">
         <Button
@@ -69,13 +69,13 @@ export function EditorToolbar({
         </div>
       </div>
 
-      {/* Center Section - Zoom Controls */}
-      <div className="flex-1 flex items-center justify-center px-6">
+      {/* Center Section - Zoom Controls (absolutely centred, never shifts) */}
+      <div className="absolute left-1/2 -translate-x-1/2 flex items-center">
         <ZoomControls />
       </div>
 
       {/* Right Section - Actions */}
-      <div className="flex items-center gap-2">
+      <div className="ml-auto flex items-center gap-2">
         <Button
           variant="ghost"
           size="sm"

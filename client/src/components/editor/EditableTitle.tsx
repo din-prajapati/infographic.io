@@ -60,7 +60,7 @@ export function EditableTitle({
 
   return (
     <div
-      className={`flex items-center gap-2 ${className}`}
+      className={`flex items-center gap-1.5 ${className}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -72,25 +72,25 @@ export function EditableTitle({
           onChange={(e) => setEditValue(e.target.value)}
           onBlur={handleBlur}
           onKeyDown={handleKeyDown}
-          className="bg-gray-800 text-white text-sm px-2 py-1 rounded border border-gray-600 focus:outline-none focus:border-purple-500 min-w-[200px]"
+          className="bg-input-background text-foreground text-sm px-2 py-1 rounded border border-border focus:outline-none focus:border-ring w-[200px]"
           maxLength={50}
         />
       ) : (
         <>
           <span
             onClick={handleClick}
-            className={`text-white text-sm cursor-pointer hover:text-gray-200 ${
-              !value ? "text-gray-400 italic" : ""
+            className={`text-sm cursor-pointer text-foreground hover:text-foreground/80 ${
+              !value ? "text-muted-foreground italic" : ""
             }`}
           >
             {displayValue}
           </span>
-          {isHovered && (
-            <Pencil
-              className={`w-3.5 h-3.5 text-gray-400 cursor-pointer hover:text-white transition-colors ${iconClassName}`}
-              onClick={handleClick}
-            />
-          )}
+          <Pencil
+            className={`w-3.5 h-3.5 text-muted-foreground cursor-pointer hover:text-foreground transition-colors ${
+              isHovered ? "opacity-100" : "opacity-0 pointer-events-none"
+            } ${iconClassName}`}
+            onClick={handleClick}
+          />
         </>
       )}
     </div>

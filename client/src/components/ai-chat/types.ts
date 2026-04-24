@@ -24,7 +24,8 @@ export interface CategoryChip {
   id: CategoryChipType;
   name: string;
   icon: string; // emoji for now
-  color: string; // for selected state
+  color: string;        // border + text color for selected state (CSS var or hex)
+  surfaceColor: string; // background tint for selected state (rgba, pre-computed)
 }
 
 export interface PromptSuggestion {

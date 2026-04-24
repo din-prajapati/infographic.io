@@ -5,7 +5,7 @@
 
 import { motion, AnimatePresence } from "motion/react";
 import { useState, useEffect, useRef, useCallback } from "react";
-import { X, PlusCircle, Clock, Edit } from "lucide-react";
+import { X, PlusCircle, Clock, Edit, LayoutGrid } from "lucide-react";
 import { Button } from "../ui/button";
 import {
   AIChatState,
@@ -19,9 +19,11 @@ import {
 } from "./types";
 import { categoryChips } from "./categoryChipsData";
 import { getPromptsByCategoryId } from "./promptSuggestionsData";
+import { categories } from "./templateData";
 import { AIChatInputField } from "./AIChatInputField";
 import { CategoryChipList } from "./CategoryChipList";
 import { PromptSuggestionGrid } from "./PromptSuggestionGrid";
+import { TemplateCategoryView } from "./TemplateCategoryView";
 import { AISuggestionsPanel } from "./AISuggestionsPanel";
 import { QuickActionsPanel } from "./QuickActionsPanel";
 import { StylePresetsPanel, StylePreset } from "./StylePresetsPanel";
@@ -76,6 +78,7 @@ export function AIChatBox({
   const [showQuickActionsPanel, setShowQuickActionsPanel] = useState(false);
   const [showStylePresetsPanel, setShowStylePresetsPanel] = useState(false);
   const [showImageUploadPanel, setShowImageUploadPanel] = useState(false);
+  const [showCategoryBrowse, setShowCategoryBrowse] = useState(false);
 
   // Refs for icon buttons (for panel positioning)
   const lightbulbRef = useRef<HTMLButtonElement>(null);
@@ -714,6 +717,7 @@ export function AIChatBox({
     setShowQuickActionsPanel(false);
     setShowStylePresetsPanel(false);
     setShowImageUploadPanel(false);
+    setShowCategoryBrowse(false);
     onClose();
   };
 
@@ -826,6 +830,11 @@ export function AIChatBox({
     setShowEnhancedSuggestions(false);
   };
 
+  const handleCategoryTemplateSelect = (template: Template) => {
+    setState((prev) => ({ ...prev, inputValue: `Create a ${template.name} infographic` }));
+    setShowCategoryBrowse(false);
+  };
+
   const handleBackFromConversation = () => {
     setCurrentConversation(null);
     setConversationMessages([]);
@@ -854,6 +863,7 @@ export function AIChatBox({
       error: null,
     }));
     setShowHistoryView(false);
+    setShowCategoryBrowse(false);
   };
 
   const currentSuggestions = state.activeChipId
@@ -1015,7 +1025,8 @@ export function AIChatBox({
                 {/* Category Chips (above fold before prompt) */}
                 {!state.isGenerating &&
                   resultVariations.length === 0 &&
-                  state.selectedChips.length === 0 && (
+                  state.selectedChips.length === 0 &&
+                  !showCategoryBrowse && (
                     <div className="px-4 pt-3 pb-2">
                       <CategoryChipList
                         chips={categoryChips}
@@ -1023,6 +1034,30 @@ export function AIChatBox({
                         onChipClick={handleChipClick}
                       />
                     </div>
+                  )}
+
+                {/* Browse Templates toggle button */}
+                {!state.isGenerating && resultVariations.length === 0 && state.selectedChips.length === 0 && (
+                  <div className="px-4 pb-2">
+                    <button
+                      onClick={() => setShowCategoryBrowse((v) => !v)}
+                      className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                      data-testid="browse-templates-toggle"
+                    >
+                      <LayoutGrid className="w-3.5 h-3.5" />
+                      {showCategoryBrowse ? 'Hide categories' : 'Browse by category'}
+                    </button>
+                  </div>
+                )}
+
+                {/* Template Category View */}
+                {!state.isGenerating &&
+                  resultVariations.length === 0 &&
+                  showCategoryBrowse && (
+                    <TemplateCategoryView
+                      categories={categories}
+                      onTemplateSelect={handleCategoryTemplateSelect}
+                    />
                   )}
 
                 {/* Prompt Suggestion Grid */}

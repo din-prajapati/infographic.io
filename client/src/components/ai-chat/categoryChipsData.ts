@@ -10,37 +10,43 @@ export const categoryChips: CategoryChip[] = [
     id: 'property-listings',
     name: 'Property Listings',
     icon: '🏡',
-    color: '#FF8C00', // orange
+    color: '#3B82F6',                       // Blue
+    surfaceColor: 'rgba(59, 130, 246, 0.15)',
   },
   {
     id: 'open-house',
     name: 'Open House',
     icon: '🚪',
-    color: '#4CAF50', // green
+    color: '#F97316',                       // Orange
+    surfaceColor: 'rgba(249, 115, 22, 0.15)',
   },
   {
     id: 'just-sold',
     name: 'Just Sold',
     icon: '✅',
-    color: '#2196F3', // blue
+    color: '#10B981',                       // Emerald
+    surfaceColor: 'rgba(16, 185, 129, 0.15)',
   },
   {
     id: 'agent-branding',
     name: 'Agent Branding',
     icon: '👤',
-    color: '#9C27B0', // purple
+    color: '#F59E0B',                       // Amber
+    surfaceColor: 'rgba(245, 158, 11, 0.15)',
   },
   {
     id: 'market-stats',
     name: 'Market Stats',
     icon: '📊',
-    color: '#FF5722', // deep orange
+    color: '#6366F1',                       // Indigo
+    surfaceColor: 'rgba(99, 102, 241, 0.15)',
   },
   {
     id: 'neighborhood',
     name: 'Neighborhood',
     icon: '🗺️',
-    color: '#00BCD4', // cyan
+    color: '#14B8A6',                       // Teal
+    surfaceColor: 'rgba(20, 184, 166, 0.15)',
   },
 ];
 

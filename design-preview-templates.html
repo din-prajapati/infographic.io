@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>InfographicAI — Template Gallery Preview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./client/src/design-tokens.css" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { font-size: 16px; }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg-base-default);
+      color: var(--text-default);
+      min-height: 100vh;
+    }
+
+    /* ── Page background gradient ───────────────────────────────── */
+    .page-wrapper {
+      background: var(--page-bg);
+      min-height: 100vh;
+    }
+
+    /* ── TOP NAVBAR ─────────────────────────────────────────────── */
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: var(--z-sticky);
+      height: var(--navbar-height);
+      background: var(--navbar-bg);
+      border-bottom: 1px solid var(--navbar-border);
+      backdrop-filter: blur(var(--glass-blur));
+      -webkit-backdrop-filter: blur(var(--glass-blur));
+      display: flex;
+      align-items: center;
+      padding: 0 var(--space-6);
+      gap: var(--space-8);
+    }
+
+    .navbar-logo {
+      font-family: var(--font-display);
+      font-size: var(--font-size-18);
+      font-weight: var(--font-weight-bold);
+      color: var(--text-default);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .navbar-logo .logo-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: var(--radius-full);
+      background: var(--color-accent-purple);
+    }
+
+    .navbar-links {
+      display: flex;
+      align-items: center;
+      gap: var(--space-1);
+      list-style: none;
+      flex: 1;
+    }
+
+    .navbar-links a {
+      text-decoration: none;
+      font-size: var(--font-size-14);
+      font-weight: var(--font-weight-medium);
+      color: var(--navbar-link-text);
+      padding: var(--space-2) var(--space-3);
+      border-radius: var(--radius-md);
+      transition: var(--transition-base);
+    }
+
+    .navbar-links a:hover,
+    .navbar-links a.active {
+      color: var(--navbar-link-text-active);
+      background: var(--bg-overlay-l1);
+    }
+
+    .navbar-links a.active {
+      color: var(--text-default);
+      font-weight: var(--font-weight-semibold);
+    }
+
+    .navbar-right {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+
+    .avatar {
+      width: var(--avatar-size-md);
+      height: var(--avatar-size-md);
+      border-radius: var(--radius-full);
+      background: var(--color-brand-600, var(--avatar-bg));
+      color: var(--avatar-text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: var(--font-size-14);
+      font-weight: var(--font-weight-semibold);
+      border: 1.5px solid var(--avatar-border);
+      cursor: pointer;
+    }
+
+    /* ── PAGE CONTENT ───────────────────────────────────────────── */
+    .page-content {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: var(--space-8) var(--space-6);
+    }
+
+    /* ── PAGE HEADER ────────────────────────────────────────────── */
+    .page-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: var(--space-6);
+    }
+
+    .page-header h1 {
+      font-family: var(--font-display);
+      font-size: var(--font-size-32);
+      font-weight: var(--font-weight-bold);
+      color: var(--text-default);
+      line-height: 1.2;
+      margin-bottom: var(--space-2);
+    }
+
+    .page-header p {
+      font-size: var(--font-size-14);
+      color: var(--text-secondary);
+    }
+
+    /* ── BUTTONS ────────────────────────────────────────────────── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: 0 var(--space-4);
+      height: var(--comp-lg);
+      border-radius: var(--radius-lg);
+      font-size: var(--font-size-14);
+      font-weight: var(--font-weight-medium);
+      cursor: pointer;
+      border: none;
+      transition: var(--transition-base);
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: var(--btn-primary-bg);
+      color: var(--btn-primary-text);
+    }
+    .btn-primary:hover { background: var(--btn-primary-bg-hover); }
+
+    .btn-cta {
+      background: var(--btn-cta-bg);
+      color: var(--btn-cta-text);
+    }
+    .btn-cta:hover { background: var(--btn-cta-bg-hover); }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--color-accent-purple);
+      border: 1px solid var(--border-default);
+    }
+    .btn-ghost:hover { background: var(--bg-overlay-l1); }
+
+    /* ── SEARCH + FILTERS BAR ───────────────────────────────────── */
+    .search-bar-row {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      margin-bottom: var(--space-6);
+    }
+
+    .search-wrapper {
+      flex: 1;
+      position: relative;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 16px;
+      height: 16px;
+      color: var(--search-placeholder);
+      pointer-events: none;
+    }
+
+    .search-input {
+      width: 100%;
+      height: var(--comp-xl);
+      padding: 0 var(--space-4) 0 42px;
+      background: var(--search-bg);
+      border: 1px solid var(--search-border);
+      border-radius: var(--search-radius);
+      box-shadow: var(--search-shadow);
+      font-size: var(--font-size-14);
+      font-family: var(--font-sans);
+      color: var(--text-default);
+      outline: none;
+      transition: var(--transition-base), box-shadow var(--duration-normal) var(--ease-default);
+    }
+
+    .search-input::placeholder { color: var(--search-placeholder); }
+    .search-input:focus {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px rgba(12, 160, 235, 0.10);
+    }
+
+    .filter-select {
+      height: var(--comp-xl);
+      padding: 0 var(--space-4);
+      background: var(--search-bg);
+      border: 1px solid var(--search-border);
+      border-radius: var(--radius-lg);
+      font-size: var(--font-size-14);
+      font-family: var(--font-sans);
+      color: var(--text-default);
+      cursor: pointer;
+      outline: none;
+    }
+
+    /* ── FILTER PILLS  (FillinForm-inspired active=solid pill) ─── */
+    .filter-pills {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      margin-bottom: var(--space-6);
+    }
+
+    .filter-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-1);
+      height: var(--comp-sm);
+      padding: 0 var(--space-4);
+      border-radius: var(--filter-pill-radius);
+      font-size: var(--font-size-13);
+      font-weight: var(--font-weight-medium);
+      cursor: pointer;
+      border: none;
+      background: var(--filter-pill-inactive-bg);
+      color: var(--filter-pill-inactive-text);
+      transition: var(--transition-base);
+    }
+
+    .filter-pill:hover {
+      background: var(--filter-pill-inactive-hover-bg);
+      color: var(--text-default);
+    }
+
+    .filter-pill.active {
+      background: var(--filter-pill-active-bg);
+      color: var(--filter-pill-active-text);
+    }
+
+    .filter-pill .pill-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: var(--radius-full);
+    }
+
+    /* ── SECTION HEADER ─────────────────────────────────────────── */
+    .section-label {
+      font-size: var(--font-size-12);
+      font-weight: var(--font-weight-semibold);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-tertiary);
+      margin-bottom: var(--space-3);
+    }
+
+    /* ── TEMPLATE GRID ──────────────────────────────────────────── */
+    .template-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-5);
+      margin-bottom: var(--space-10);
+    }
+
+    @media (max-width: 1200px) { .template-grid { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 860px)  { .template-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 560px)  { .template-grid { grid-template-columns: 1fr; } }
+
+    /* ── TEMPLATE CARD ──────────────────────────────────────────── */
+    .template-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--card-radius);
+      box-shadow: var(--card-shadow);
+      overflow: hidden;
+      cursor: pointer;
+      transition: box-shadow var(--duration-normal) var(--ease-default),
+                  transform var(--duration-normal) var(--ease-spring);
+    }
+
+    .template-card:hover {
+      box-shadow: var(--card-shadow-hover);
+      transform: translateY(-2px);
+    }
+
+    /* Card header — colored zone (FillinForm pattern) */
+    .card-header {
+      position: relative;
+      height: var(--card-header-min-height);
+      border-radius: var(--card-header-radius);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    /* Subtle noise/pattern overlay on card headers */
+    .card-header::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .card-header-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: var(--card-header-icon-radius);
+      background: var(--card-header-icon-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Badge on card header */
+    .card-badge {
+      position: absolute;
+      top: var(--space-3);
+      right: var(--space-3);
+      padding: 3px 10px;
+      border-radius: var(--radius-full);
+      font-size: var(--font-size-11);
+      font-weight: var(--font-weight-semibold);
+      z-index: 2;
+      letter-spacing: 0.02em;
+    }
+
+    .badge-luxury   { background: var(--badge-luxury-bg);   color: var(--badge-luxury-text); }
+    .badge-standard { background: var(--badge-standard-bg); color: var(--badge-standard-text); }
+    .badge-budget   { background: var(--badge-budget-bg);   color: var(--badge-budget-text); }
+    .badge-custom   { background: var(--badge-custom-bg);   color: var(--badge-custom-text); }
+    .badge-api      { background: var(--badge-api-bg);      color: var(--badge-api-text); }
+    .badge-popular  { background: var(--color-accent-lime); color: var(--text-default); }
+
+    /* Card body */
+    .card-body {
+      padding: var(--space-4);
+    }
+
+    .card-category-label {
+      font-size: var(--font-size-12);
+      color: var(--text-tertiary);
+      font-weight: var(--font-weight-medium);
+      margin-bottom: var(--space-1);
+      display: flex;
+      align-items: center;
+      gap: var(--space-1);
+    }
+
+    .card-category-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: var(--radius-full);
+      flex-shrink: 0;
+    }
+
+    .card-title {
+      font-size: var(--font-size-16);
+      font-weight: var(--font-weight-semibold);
+      color: var(--text-default);
+      margin-bottom: var(--space-1);
+      line-height: 1.3;
+    }
+
+    .card-desc {
+      font-size: var(--font-size-13);
+      color: var(--text-secondary);
+      line-height: 1.5;
+      margin-bottom: var(--space-4);
+    }
+
+    .card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid var(--border-subtle);
+      padding-top: var(--space-3);
+      margin-top: var(--space-3);
+    }
+
+    .card-uses {
+      font-size: var(--font-size-12);
+      color: var(--text-tertiary);
+    }
+
+    .btn-use-template {
+      height: var(--comp-sm);
+      padding: 0 var(--space-3);
+      background: var(--btn-cta-bg);
+      color: var(--btn-cta-text);
+      border: none;
+      border-radius: var(--radius-md);
+      font-size: var(--font-size-13);
+      font-weight: var(--font-weight-medium);
+      cursor: pointer;
+      transition: var(--transition-base);
+    }
+
+    .btn-use-template:hover { background: var(--btn-cta-bg-hover); }
+
+    /* ── CATEGORY CARDS ROW (FillinForm-inspired category overview) */
+    .category-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-4);
+      margin-bottom: var(--space-8);
+    }
+
+    .category-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--card-shadow);
+      padding: var(--space-4);
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      cursor: pointer;
+      transition: box-shadow var(--duration-normal) var(--ease-default),
+                  transform var(--duration-normal) var(--ease-spring);
+    }
+
+    .category-card:hover {
+      box-shadow: var(--card-shadow-hover);
+      transform: translateY(-1px);
+    }
+
+    .category-card-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .category-card-info { flex: 1; min-width: 0; }
+
+    .category-card-name {
+      font-size: var(--font-size-14);
+      font-weight: var(--font-weight-semibold);
+      color: var(--text-default);
+    }
+
+    .category-card-count {
+      font-size: var(--font-size-12);
+      color: var(--text-tertiary);
+      margin-top: 2px;
+    }
+
+    .category-card-arrow {
+      color: var(--text-tertiary);
+      font-size: 14px;
+    }
+
+    /* Active category card gets left border accent */
+    .category-card.active {
+      border-left: 3px solid;
+    }
+
+    /* ── EMPTY STATE ─────────────────────────────────────────────── */
+    .empty-state {
+      grid-column: 1 / -1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-16);
+      color: var(--text-secondary);
+      gap: var(--space-4);
+    }
+
+    /* ── PROMO BANNER (Lovart lime ribbon) ──────────────────────── */
+    .promo-banner {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-3) var(--space-4);
+      background: var(--color-accent-lime);
+      border-radius: var(--radius-lg);
+      margin-bottom: var(--space-6);
+      font-size: var(--font-size-14);
+      font-weight: var(--font-weight-medium);
+      color: var(--text-default);
+    }
+
+    .promo-banner .promo-icon { font-size: 18px; }
+    .promo-banner .promo-close {
+      margin-left: auto;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+      opacity: 0.6;
+    }
+
+    /* ── SVG ICONS (inline) ─────────────────────────────────────── */
+    svg { display: inline-block; vertical-align: middle; }
+  </style>
+</head>
+<body>
+<div class="page-wrapper">
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <a href="#" class="navbar-logo">
+      <span class="logo-dot"></span>
+      Infograph.ai
+    </a>
+    <ul class="navbar-links">
+      <li><a href="#">Templates</a></li>
+      <li><a href="#" class="active">Template Gallery</a></li>
+      <li><a href="#">My Designs</a></li>
+      <li><a href="#">Account</a></li>
+    </ul>
+    <div class="navbar-right">
+      <div class="avatar">P</div>
+    </div>
+  </nav>
+
+  <!-- PAGE CONTENT -->
+  <main class="page-content">
+
+    <!-- PROMO BANNER -->
+    <div class="promo-banner">
+      <span class="promo-icon">⚡</span>
+      <span>New AI-powered templates for real estate agents — Generate infographics in seconds</span>
+      <button class="promo-close">✕</button>
+    </div>
+
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+      <div>
+        <h1>Template Gallery</h1>
+        <p>Choose from our curated collection of professional real estate infographic templates</p>
+      </div>
+      <button class="btn btn-primary">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+        Create Blank
+      </button>
+    </div>
+
+    <!-- CATEGORY OVERVIEW CARDS -->
+    <p class="section-label">Browse by Category</p>
+    <div class="category-grid">
+      <div class="category-card active" style="border-left-color: var(--category-listing-announcements);">
+        <div class="category-card-icon" style="background: var(--category-surface-listing-announcements);">🏡</div>
+        <div class="category-card-info">
+          <div class="category-card-name">Listing Announcements</div>
+          <div class="category-card-count">4 templates</div>
+        </div>
+        <span class="category-card-arrow">›</span>
+      </div>
+      <div class="category-card">
+        <div class="category-card-icon" style="background: var(--category-surface-property-features);">⭐</div>
+        <div class="category-card-info">
+          <div class="category-card-name">Property Features</div>
+          <div class="category-card-count">4 templates</div>
+        </div>
+        <span class="category-card-arrow">›</span>
+      </div>
+      <div class="category-card">
+        <div class="category-card-icon" style="background: var(--category-surface-status-updates);">📊</div>
+        <div class="category-card-info">
+          <div class="category-card-name">Status Updates</div>
+          <div class="category-card-count">4 templates</div>
+        </div>
+        <span class="category-card-arrow">›</span>
+      </div>
+      <div class="category-card">
+        <div class="category-card-icon" style="background: var(--category-surface-agent-branding);">👤</div>
+        <div class="category-card-info">
+          <div class="category-card-name">Agent Branding</div>
+          <div class="category-card-count">3 templates</div>
+        </div>
+        <span class="category-card-arrow">›</span>
+      </div>
+    </div>
+
+    <!-- SEARCH + FILTERS -->
+    <div class="search-bar-row">
+      <div class="search-wrapper">
+        <svg class="search-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+        </svg>
+        <input type="text" class="search-input" placeholder="Search templates..." />
+      </div>
+      <select class="filter-select">
+        <option>All Categories</option>
+        <option>My Templates</option>
+        <option>Real Estate</option>
+        <option>Business</option>
+        <option>Marketing</option>
+      </select>
+      <select class="filter-select">
+        <option>All Styles</option>
+        <option>Luxury</option>
+        <option>Standard</option>
+        <option>Budget</option>
+      </select>
+    </div>
+
+    <!-- FILTER PILLS -->
+    <div class="filter-pills">
+      <button class="filter-pill active">All</button>
+      <button class="filter-pill">
+        <span class="pill-dot" style="background: var(--category-listing-announcements);"></span>
+        Listing Announcements
+      </button>
+      <button class="filter-pill">
+        <span class="pill-dot" style="background: var(--category-property-features);"></span>
+        Property Features
+      </button>
+      <button class="filter-pill">
+        <span class="pill-dot" style="background: var(--category-status-updates);"></span>
+        Status Updates
+      </button>
+      <button class="filter-pill">
+        <span class="pill-dot" style="background: var(--category-agent-branding);"></span>
+        Agent Branding
+      </button>
+    </div>
+
+    <p class="section-label">All Templates — 15 results</p>
+
+    <!-- TEMPLATE GRID -->
+    <div class="template-grid">
+
+      <!-- Card 1 — Listing Announcements / Luxury -->
+      <div class="template-card">
+        <div class="card-header" style="background: var(--category-listing-announcements);">
+          <div class="card-header-icon">💎</div>
+          <span class="card-badge badge-luxury">Luxury</span>
+        </div>
+        <div class="card-body">
+          <div class="card-category-label">
+            <span class="card-category-dot" style="background: var(--category-listing-announcements);"></span>
+            Listing Announcements
+          </div>
+          <div class="card-title">Luxury Listing</div>
+          <div class="card-desc">High-end property announcement with premium styling and visual impact.</div>
+          <div class="card-footer">
+            <span class="card-uses">2.4k uses</span>
+            <button class="btn-use-template">Use Template</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2 — Listing Announcements / Standard -->
+      <div class="template-card">
+        <div class="card-header" style="background: linear-gradient(135deg, var(--category-listing-announcements), #206ccf);">
+          <div class="card-header-icon">🏠</div>
+          <span class="card-badge badge-standard">Standard</span>
+        </div>
+        <div class="card-body">
+          <div class="card-category-label">
+            <span class="card-category-dot" style="background: var(--category-listing-announcements);"></span>
+            Listing Announcements
+          </div>
+          <div class="card-title">New Listing</div>
+          <div class="card-desc">Classic new property listing announcement for social media.</div>
+          <div class="card-footer">
+            <span class="card-uses">1.8k uses</span>
+            <button class="btn-use-template">Use Template</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 3 — Listing Announcements / Standard -->
+      <div class="template-card">
+        <div class="card-header" style="background: linear-gradient(135deg, #6366F1, var(--category-listing-announcements));">
+          <div class="card-header-icon">⏰</div>
+          <span class="card-badge badge-standard">Standard</span>
+        </div>
+        <div class="card-body">
+          <div class="card-category-label">
+            <span class="card-category-dot" style="background: var(--category-listing-announcements);"></span>
+            Listing Announcements
+          </div>
+          <div class="card-title">Coming Soon</div>
+          <div class="card-desc">Teaser for upcoming property listings. Build anticipation early.</div>
+          <div class="card-footer">
+            <span class="card-uses">3.1k uses</span>
+            <button class="btn-use-template">Use Template</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 4 — Property Features / Popular -->
+      <div class="template-card">
+        <div class="card-header" style="background: var(--category-property-features);">
+          <div class="card-header-icon">🚪</div>
+          <span class="card-badge badge-popular">Popular</span>
+        </div>
+        <div class="card-body">
+          <div class="card-category-label">
+            <span class="card-category-dot" style="background: var(--category-property-features);"></span>
+            Property Features
+          </div>
+          <div class="card-title">Open House</div>
+          <div class="card-desc">Open house event announcement with date, time, and property details.</div>
+          <div class="card-footer">
+            <span class="card-uses">4.2k uses</span>
+            <button class="btn-use-template">Use Template</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 5 — Property Features -->
+      <div class="template-card">
+        <div class="card-header" style="background: linear-gradient(135deg, var(--category-property-features), #a871e3);">
+          <div class="card-header-icon">✨</div>
+          <span class="card-badge badge-luxury">Luxury</span>
+        </div>
+        <div class="card-body">
+          <div class="card-category-label">
+            <span class="card-category-dot" style="background: var(--category-property-features);"></span>
+            Property Features
+          </div>
+          <div class="card-title">Property Highlights</div>
+          <div class="card-desc">Showcase key features and premium amenities with visual flair.</div>
+          <div class="card-footer">
+            <span class="card-uses">1.5k uses</span>
+            <button class="btn-use-template">Use Template</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 6 — Status Updates / Popular -->
+      <div class="template-card">
+        <div class="card-header" style="background: var(--category-status-updates);">
+          <div class="card-header-icon">✅</div>
+          <span class="card-badge badge-popular">Popular</span>
+        </div>
+        <div class="card-body">
+          <div class="card-category-label">
+            <span class="card-category-dot" style="background: var(--category-status-updates);"></span>
+            Status Updates
+          </div>
+          <div class="card-title">Just Sold</div>
+          <div class="card-desc">Celebrate a recent sale success and boost your agent credibility.</div>
+          <div class="card-footer">
+            <span class="card-uses">5.7k uses</span>
+            <button class="btn-use-template">Use Template</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 7 — Status Updates / Budget -->
+      <div class="template-card">
+        <div class="card-header" style="background: linear-gradient(135deg, var(--category-status-updates), #009951);">
+          <div class="card-header-icon">💰</div>
+          <span class="card-badge badge-popular">Popular</span>
+        </div>
+        <div class="card-body">
+          <div class="card-category-label">
+            <span class="card-category-dot" style="background: var(--category-status-updates);"></span>
+            Status Updates
+          </div>
+          <div class="card-title">Price Reduced</div>
+          <div class="card-desc">Announce a price reduction to attract ready buyers quickly.</div>
+          <div class="card-footer">
+            <span class="card-uses">3.8k uses</span>
+            <button class="btn-use-template">Use Template</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 8 — Agent Branding -->
+      <div class="template-card">
+        <div class="card-header" style="background: var(--category-agent-branding);">
+          <div class="card-header-icon">👋</div>
+          <span class="card-badge badge-standard">Standard</span>
+        </div>
+        <div class="card-body">
+          <div class="card-category-label">
+            <span class="card-category-dot" style="background: var(--category-agent-branding);"></span>
+            Agent Branding
+          </div>
+          <div class="card-title">Agent Introduction</div>
+          <div class="card-desc">Introduce yourself and your services with a professional infographic.</div>
+          <div class="card-footer">
+            <span class="card-uses">2.7k uses</span>
+            <button class="btn-use-template">Use Template</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 9 — Agent Branding / Custom -->
+      <div class="template-card">
+        <div class="card-header" style="background: linear-gradient(135deg, var(--category-agent-branding), #F97316);">
+          <div class="card-header-icon">📈</div>
+          <span class="card-badge badge-standard">Standard</span>
+        </div>
+        <div class="card-body">
+          <div class="card-category-label">
+            <span class="card-category-dot" style="background: var(--category-agent-branding);"></span>
+            Agent Branding
+          </div>
+          <div class="card-title">Market Update</div>
+          <div class="card-desc">Share local market insights and statistics as an infographic.</div>
+          <div class="card-footer">
+            <span class="card-uses">2.3k uses</span>
+            <button class="btn-use-template">Use Template</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 10 — Property Features / Neighborhood -->
+      <div class="template-card">
+        <div class="card-header" style="background: var(--chip-neighborhood);">
+          <div class="card-header-icon">🗺️</div>
+          <span class="card-badge badge-budget">Budget</span>
+        </div>
+        <div class="card-body">
+          <div class="card-category-label">
+            <span class="card-category-dot" style="background: var(--chip-neighborhood);"></span>
+            Property Features
+          </div>
+          <div class="card-title">Neighborhood Guide</div>
+          <div class="card-desc">Highlight local area and community features for prospective buyers.</div>
+          <div class="card-footer">
+            <span class="card-uses">1.2k uses</span>
+            <button class="btn-use-template">Use Template</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 11 — Custom Template -->
+      <div class="template-card">
+        <div class="card-header" style="background: linear-gradient(135deg, #722ed1, #8c4eda);">
+          <div class="card-header-icon">⭐</div>
+          <span class="card-badge badge-custom">Custom</span>
+        </div>
+        <div class="card-body">
+          <div class="card-category-label">
+            <span class="card-category-dot" style="background: #722ed1;"></span>
+            My Templates
+          </div>
+          <div class="card-title">Client Testimonial</div>
+          <div class="card-desc">Share client success stories and five-star reviews visually.</div>
+          <div class="card-footer">
+            <span class="card-uses">Custom</span>
+            <button class="btn-use-template">Use Template</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 12 — API Template -->
+      <div class="template-card">
+        <div class="card-header" style="background: linear-gradient(135deg, var(--chip-market-stats), #3B82F6);">
+          <div class="card-header-icon">🔑</div>
+          <span class="card-badge badge-api">API</span>
+        </div>
+        <div class="card-body">
+          <div class="card-category-label">
+            <span class="card-category-dot" style="background: var(--chip-market-stats);"></span>
+            Listing Announcements
+          </div>
+          <div class="card-title">Exclusive Listing</div>
+          <div class="card-desc">Off-market and exclusive property announcement template.</div>
+          <div class="card-footer">
+            <span class="card-uses">API</span>
+            <button class="btn-use-template">Use Template</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script>
+  // Filter pill interaction
+  document.querySelectorAll('.filter-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+    });
+  });
+  // Category card interaction
+  document.querySelectorAll('.category-card').forEach(card => {
+    card.addEventListener('click', () => {
+      document.querySelectorAll('.category-card').forEach(c => c.classList.remove('active'));
+      card.classList.add('active');
+    });
+  });
+  // Promo banner close
+  document.querySelector('.promo-close').addEventListener('click', e => {
+    e.target.closest('.promo-banner').remove();
+  });
+</script>
+</body>
+</html>

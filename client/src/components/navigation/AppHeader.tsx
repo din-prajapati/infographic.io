@@ -20,7 +20,7 @@ export function AppHeader({ activeTab, onTabChange }: AppHeaderProps) {
   };
 
   return (
-    <div className="h-16 border-b border-border glass">
+    <div className="h-16 border-b border-border glass relative z-50">
       <div className="flex items-center justify-between h-full px-6">
         {/* Logo & Brand */}
         <Link href="/templates" className="flex items-center gap-3">

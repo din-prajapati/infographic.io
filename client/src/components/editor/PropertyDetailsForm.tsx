@@ -16,12 +16,13 @@ import {
 } from "../ui/select";
 import { Separator } from "../ui/separator";
 import { ScrollArea } from "../ui/scroll-area";
+import { NumberStepper } from "../ui/number-stepper";
 
 export function PropertyDetailsForm() {
   const [propertyType, setPropertyType] = useState("residential");
   const [price, setPrice] = useState("$500,000");
-  const [beds, setBeds] = useState("3");
-  const [baths, setBaths] = useState("2");
+  const [beds, setBeds] = useState(3);
+  const [baths, setBaths] = useState(2);
   const [sqft, setSqft] = useState("2,500");
   const [address, setAddress] = useState("123 Test Avenue, Design City");
   const [description, setDescription] = useState("Beautiful modern home with pool and garden.");
@@ -74,29 +75,23 @@ export function PropertyDetailsForm() {
         {/* Beds & Baths */}
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-2">
-            <Label htmlFor="beds" className="text-sm">
-              Beds
-            </Label>
-            <Input
-              id="beds"
-              type="number"
-              placeholder="3"
+            <Label className="text-sm">Beds</Label>
+            <NumberStepper
               value={beds}
-              onChange={(e) => setBeds(e.target.value)}
-              className="h-9"
+              onChange={setBeds}
+              min={0}
+              max={20}
+              className="w-full"
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="baths" className="text-sm">
-              Baths
-            </Label>
-            <Input
-              id="baths"
-              type="number"
-              placeholder="2"
+            <Label className="text-sm">Baths</Label>
+            <NumberStepper
               value={baths}
-              onChange={(e) => setBaths(e.target.value)}
-              className="h-9"
+              onChange={setBaths}
+              min={0}
+              max={20}
+              className="w-full"
             />
           </div>
         </div>

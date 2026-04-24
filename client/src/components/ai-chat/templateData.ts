@@ -13,7 +13,7 @@ export const categories: CategoryInfo[] = [
     description: 'New property listings and coming soon posts',
     icon: '🏡',
     templateCount: 4,
-    color: '#3B82F6', // Blue
+    color: 'var(--category-listing-announcements)',
   },
   {
     id: 'property-features',
@@ -21,7 +21,7 @@ export const categories: CategoryInfo[] = [
     description: 'Highlight unique amenities and features',
     icon: '⭐',
     templateCount: 4,
-    color: '#8B5CF6', // Purple
+    color: 'var(--category-property-features)',
   },
   {
     id: 'status-updates',
@@ -29,7 +29,7 @@ export const categories: CategoryInfo[] = [
     description: 'Price changes, sold, and pending status',
     icon: '📊',
     templateCount: 4,
-    color: '#10B981', // Green
+    color: 'var(--category-status-updates)',
   },
   {
     id: 'agent-branding',
@@ -37,7 +37,7 @@ export const categories: CategoryInfo[] = [
     description: 'Personal branding and testimonials',
     icon: '👤',
     templateCount: 3,
-    color: '#F59E0B', // Orange
+    color: 'var(--category-agent-branding)',
   },
 ];
 

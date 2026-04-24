@@ -1,5 +1,5 @@
 import { Search, Plus, ChevronDown } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, CSSProperties } from "react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Badge } from "../ui/badge";
@@ -25,7 +25,7 @@ interface TemplateItem {
   description: string;
   uses: string;
   badge: string;
-  badgeColor: string;
+  badgeStyle: CSSProperties;
   image: string;
   isCustom?: boolean;
   isApiTemplate?: boolean;
@@ -38,7 +38,7 @@ const templates: TemplateItem[] = [
     description: "Luxury property showcase",
     uses: "2.4k",
     badge: "Luxury",
-    badgeColor: "bg-foreground/90 text-background",
+    badgeStyle: { backgroundColor: 'var(--badge-luxury-bg)', color: 'var(--badge-luxury-text)' },
     image: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBpbnRlcmlvciUyMGRlc2lnbnxlbnwxfHx8fDE3NjQyMzU0NzB8MA&ixlib=rb-4.1.0&q=80&w=1080",
   },
   {
@@ -47,7 +47,7 @@ const templates: TemplateItem[] = [
     description: "Contemporary apartment layout",
     uses: "1.8k",
     badge: "Standard",
-    badgeColor: "bg-muted-foreground/80 text-background",
+    badgeStyle: { backgroundColor: 'var(--badge-standard-bg)', color: 'var(--badge-standard-text)' },
     image: "https://images.unsplash.com/photo-1718893389568-22a2a039998c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBhcmNoaXRlY3R1cmUlMjBob3VzZXxlbnwxfHx8fDE3NjQyMjQyODZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
   },
   {
@@ -56,7 +56,7 @@ const templates: TemplateItem[] = [
     description: "Affordable housing design",
     uses: "3.1k",
     badge: "Budget",
-    badgeColor: "bg-primary/80 text-primary-foreground",
+    badgeStyle: { backgroundColor: 'var(--badge-budget-bg)', color: 'var(--badge-budget-text)' },
     image: "https://images.unsplash.com/photo-1605191353027-d21e534a419a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb3p5JTIwaG9tZSUyMGludGVyaW9yfGVufDF8fHx8MTc2NDI2NzYzOXww&ixlib=rb-4.1.0&q=80&w=1080",
   },
   {
@@ -65,7 +65,7 @@ const templates: TemplateItem[] = [
     description: "Premium property template",
     uses: "1.5k",
     badge: "Luxury",
-    badgeColor: "bg-foreground/90 text-background",
+    badgeStyle: { backgroundColor: 'var(--badge-luxury-bg)', color: 'var(--badge-luxury-text)' },
     image: "https://images.unsplash.com/photo-1686056040370-b5e5c06c4273?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxsdXh1cnklMjBhcGFydG1lbnR8ZW58MXx8fHwxNzY0MjkxODMyfDA&ixlib=rb-4.1.0&q=80&w=1080",
   },
   {
@@ -74,7 +74,7 @@ const templates: TemplateItem[] = [
     description: "Spacious family home",
     uses: "2.7k",
     badge: "Standard",
-    badgeColor: "bg-muted-foreground/80 text-background",
+    badgeStyle: { backgroundColor: 'var(--badge-standard-bg)', color: 'var(--badge-standard-text)' },
     image: "https://images.unsplash.com/photo-1720247520862-7e4b14176fa8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb250ZW1wb3JhcnklMjBsaXZpbmclMjByb29tfGVufDF8fHx8MTc2NDIzMzI4NXww&ixlib=rb-4.1.0&q=80&w=1080",
   },
   {
@@ -83,7 +83,7 @@ const templates: TemplateItem[] = [
     description: "Exclusive coastal property",
     uses: "1.8k",
     badge: "Luxury",
-    badgeColor: "bg-foreground/90 text-background",
+    badgeStyle: { backgroundColor: 'var(--badge-luxury-bg)', color: 'var(--badge-luxury-text)' },
     image: "https://images.unsplash.com/photo-1704428382583-c9c7c1e55d94?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBiZWRyb29tJTIwZGVzaWdufGVufDF8fHx8MTc2NDIzMzQ4N3ww&ixlib=rb-4.1.0&q=80&w=1080",
   },
   {
@@ -92,7 +92,7 @@ const templates: TemplateItem[] = [
     description: "Compact living space",
     uses: "4.2k",
     badge: "Budget",
-    badgeColor: "bg-primary/80 text-primary-foreground",
+    badgeStyle: { backgroundColor: 'var(--badge-budget-bg)', color: 'var(--badge-budget-text)' },
     image: "https://images.unsplash.com/photo-1713420560043-cc218e86cc86?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx1cmJhbiUyMGFwYXJ0bWVudCUyMGRlc2lnbnxlbnwxfHx8fDE3NjQzMjM2ODF8MA&ixlib=rb-4.1.0&q=80&w=1080",
   },
   {
@@ -101,7 +101,7 @@ const templates: TemplateItem[] = [
     description: "City center residence",
     uses: "2.3k",
     badge: "Standard",
-    badgeColor: "bg-muted-foreground/80 text-background",
+    badgeStyle: { backgroundColor: 'var(--badge-standard-bg)', color: 'var(--badge-standard-text)' },
     image: "https://images.unsplash.com/photo-1567016376408-0226e4d0c1ea?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtaW5pbWFsaXN0JTIwaW50ZXJpb3J8ZW58MXx8fHwxNzY0MjQwMTk4fDA&ixlib=rb-4.1.0&q=80&w=1080",
   },
 ];
@@ -133,14 +133,14 @@ export function TemplatesPage({ onOpenEditor }: TemplatesPageProps) {
   }, []);
 
   // Combine API templates, built-in templates, and custom templates
-  const allTemplates = [
+  const allTemplates: TemplateItem[] = [
     ...customTemplates.map(t => ({
       id: t.id,
       title: t.name,
       description: t.category || "Custom template",
       uses: "Custom",
       badge: t.category || "Custom",
-      badgeColor: "bg-purple-600 text-white",
+      badgeStyle: { backgroundColor: 'var(--badge-custom-bg)', color: 'var(--badge-custom-text)' },
       image: t.thumbnail,
       isCustom: true,
     })),
@@ -150,7 +150,7 @@ export function TemplatesPage({ onOpenEditor }: TemplatesPageProps) {
       description: t.category || "Template",
       uses: "API",
       badge: t.category || "Template",
-      badgeColor: "bg-blue-600 text-white",
+      badgeStyle: { backgroundColor: 'var(--badge-api-bg)', color: 'var(--badge-api-text)' },
       image: t.previewUrl || "",
       isCustom: false,
       isApiTemplate: true,
@@ -167,7 +167,9 @@ export function TemplatesPage({ onOpenEditor }: TemplatesPageProps) {
     const matchesCategory =
       selectedCategory === "all-categories" ||
       (selectedCategory === "custom" && template.isCustom) ||
-      (selectedCategory === "real-estate" && template.badge === "Luxury");
+      (selectedCategory === "real-estate" && !template.isCustom) ||
+      (selectedCategory === "business" && template.isApiTemplate && template.badge?.toLowerCase() === "business") ||
+      (selectedCategory === "marketing" && template.isApiTemplate && template.badge?.toLowerCase() === "marketing");
 
     const matchesStyle =
       selectedStyle === "all-styles" || 
@@ -198,7 +200,9 @@ export function TemplatesPage({ onOpenEditor }: TemplatesPageProps) {
           {/* Search and Filters */}
           <div className="flex items-center gap-3">
             <div className="flex-1 relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+              <span className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+                <Search className="w-4 h-4 text-muted-foreground" />
+              </span>
               <Input
                 placeholder="Search templates..."
                 className="pl-11 h-11 bg-input-background border-border text-foreground placeholder:text-muted-foreground"
@@ -266,13 +270,13 @@ export function TemplatesPage({ onOpenEditor }: TemplatesPageProps) {
                     />
                   )}
                   <div className="absolute top-3 right-3">
-                    <Badge className={`${template.badgeColor}`}>
+                    <Badge style={template.badgeStyle}>
                       {template.badge}
                     </Badge>
                   </div>
                   {template.isCustom && (
                     <div className="absolute top-3 left-3">
-                      <Badge className="bg-purple-500 text-white">
+                      <Badge style={{ backgroundColor: 'var(--badge-custom-bg)', color: 'var(--badge-custom-text)' }}>
                         Custom
                       </Badge>
                     </div>

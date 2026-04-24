@@ -56,25 +56,26 @@ body {
   --font-sans:
     Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-mono: "SF Mono", Monaco, "Cascadia Code", monospace;
+  --font-display: 'Outfit', 'Inter', sans-serif;
 
   /* Colors - Light Mode (Glassmorphism) */
-  --background: 220 20% 97%;
-  --foreground: 222 47% 11%;
+  --background: 45 13% 97%;
+  --foreground: 45 30% 6%;
   --card: 0 0% 100%;
-  --card-foreground: 222 47% 11%;
-  --sidebar: 220 20% 95%;
-  --sidebar-foreground: 222 47% 15%;
-  --muted: 220 15% 92%;
-  --muted-foreground: 220 10% 42%;
-  --accent: 174 72% 95%;
-  --accent-foreground: 174 72% 25%;
-  --border: 220 15% 88%;
-  --input: 220 15% 85%;
-  --ring: 174 72% 40%;
-  --primary: 174 72% 40%;
+  --card-foreground: 45 30% 6%;
+  --sidebar: 45 10% 95%;
+  --sidebar-foreground: 45 25% 15%;
+  --muted: 45 10% 92%;
+  --muted-foreground: 45 5% 48%;
+  --accent: 207 90% 95%;
+  --accent-foreground: 207 90% 35%;
+  --border: 45 10% 88%;
+  --input: 45 10% 85%;
+  --ring: 207 90% 49%;
+  --primary: 207 90% 49%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 239 84% 67%;
-  --secondary-foreground: 0 0% 100%;
+  --secondary: 38 93% 66%;
+  --secondary-foreground: 45 30% 6%;
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 100%;
   --success: 142 71% 45%;
@@ -85,15 +86,15 @@ body {
   --popover-foreground: 222 47% 11%;
 
   /* Sidebar tokens */
-  --sidebar-primary: 174 72% 40%;
+  --sidebar-primary: 207 90% 49%;
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 174 72% 95%;
-  --sidebar-accent-foreground: 174 72% 25%;
-  --sidebar-border: 220 15% 88%;
-  --sidebar-ring: 174 72% 40%;
+  --sidebar-accent: 207 90% 95%;
+  --sidebar-accent-foreground: 207 90% 35%;
+  --sidebar-border: 45 10% 88%;
+  --sidebar-ring: 207 90% 49%;
 
   /* Input */
-  --input-background: 220 15% 96%;
+  --input-background: 45 10% 96%;
   --switch-background: 220 10% 80%;
 
   /* Border Radius */
@@ -113,14 +114,14 @@ body {
   --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
   --glass-blur: 28px;
   --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.6);
-  --glass-tint: rgba(20, 184, 166, 0.03);
+  --glass-tint: rgba(12, 160, 235, 0.02);
 
   /* Page gradients */
   --page-bg: linear-gradient(
     135deg,
-    hsl(220 20% 97%) 0%,
-    hsl(174 30% 96%) 50%,
-    hsl(220 20% 97%) 100%
+    hsl(45 15% 97%) 0%,
+    hsl(210 18% 97%) 50%,
+    hsl(45 12% 97%) 100%
   );
 
   /* Font Weights */
@@ -128,31 +129,71 @@ body {
   --font-weight-normal: 400;
 
   /* Charts */
-  --chart-1: 174 72% 40%;
-  --chart-2: 239 84% 67%;
-  --chart-3: 38 92% 50%;
+  --chart-1: 207 90% 49%;
+  --chart-2: 38 93% 60%;
+  --chart-3: 142 71% 40%;
   --chart-4: 280 65% 60%;
   --chart-5: 340 75% 55%;
+
+  /* ── Domain Color Tokens — M-DESIGN-04 ──────────────────────────
+     Source of truth for real estate category colors and badge tiers.
+     Consumed by: categoryChipsData.ts, templateData.ts, TemplatesPage.tsx
+  ─────────────────────────────────────────────────────────────────── */
+
+  /* AI chat category chips (categoryChipsData.ts) */
+  --chip-property-listings:  #3B82F6;   /* Blue   — listings / trust */
+  --chip-open-house:         #F97316;   /* Orange — event / urgency  */
+  --chip-just-sold:          #10B981;   /* Emerald — success         */
+  --chip-agent-branding:     #F59E0B;   /* Amber  — personal brand   */
+  --chip-market-stats:       #6366F1;   /* Indigo — data / analytics */
+  --chip-neighborhood:       #14B8A6;   /* Teal   — location         */
+
+  /* Template categories (templateData.ts) */
+  --category-listing-announcements: #3B82F6;
+  --category-property-features:     #8B5CF6;
+  --category-status-updates:        #10B981;
+  --category-agent-branding:        #F59E0B;
+
+  /* Category surface tints (icon container bg) */
+  --category-surface-listing-announcements: rgba(59, 130, 246, 0.12);
+  --category-surface-property-features:     rgba(139, 92, 246, 0.12);
+  --category-surface-status-updates:        rgba(16, 185, 129, 0.12);
+  --category-surface-agent-branding:        rgba(245, 158, 11, 0.12);
+  --category-surface-open-house:            rgba(249, 115, 22, 0.12);
+  --category-surface-market-stats:          rgba(99, 102, 241, 0.12);
+  --category-surface-neighborhood:          rgba(20, 184, 166, 0.12);
+
+  /* Template badge tiers (TemplatesPage.tsx) */
+  --badge-luxury-bg:    #92400E;
+  --badge-luxury-text:  #FEF3C7;
+  --badge-standard-bg:  #1E3A5F;
+  --badge-standard-text:#DBEAFE;
+  --badge-budget-bg:    #14532D;
+  --badge-budget-text:  #DCFCE7;
+  --badge-custom-bg:    #4C1D95;
+  --badge-custom-text:  #EDE9FE;
+  --badge-api-bg:       #0C3461;
+  --badge-api-text:     #E0F2FE;
 }
 
 .dark {
   /* Colors - Dark Mode (Glassmorphism) */
-  --background: 228 20% 6%;
-  --foreground: 0 0% 95%;
-  --card: 228 15% 10%;
-  --card-foreground: 0 0% 92%;
-  --sidebar: 228 18% 8%;
-  --sidebar-foreground: 0 0% 90%;
-  --muted: 228 12% 14%;
-  --muted-foreground: 220 10% 55%;
-  --accent: 174 50% 12%;
-  --accent-foreground: 174 72% 65%;
-  --border: 228 12% 28%;
-  --input: 228 10% 22%;
-  --ring: 174 72% 45%;
-  --primary: 174 72% 45%;
+  --background: 45 30% 4%;
+  --foreground: 45 20% 96%;
+  --card: 45 25% 7%;
+  --card-foreground: 45 20% 92%;
+  --sidebar: 45 28% 5%;
+  --sidebar-foreground: 45 15% 90%;
+  --muted: 45 15% 12%;
+  --muted-foreground: 45 8% 55%;
+  --accent: 207 50% 14%;
+  --accent-foreground: 207 90% 65%;
+  --border: 45 12% 28%;
+  --input: 45 10% 22%;
+  --ring: 207 90% 55%;
+  --primary: 207 90% 55%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 239 60% 55%;
+  --secondary: 38 80% 50%;
   --secondary-foreground: 0 0% 100%;
   --destructive: 0 84% 55%;
   --destructive-foreground: 0 0% 100%;
@@ -160,19 +201,19 @@ body {
   --warning: 38 92% 50%;
 
   /* Popover */
-  --popover: 228 15% 10%;
-  --popover-foreground: 0 0% 95%;
+  --popover: 45 25% 7%;
+  --popover-foreground: 45 20% 96%;
 
   /* Sidebar tokens */
-  --sidebar-primary: 174 72% 45%;
+  --sidebar-primary: 207 90% 55%;
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 174 50% 12%;
-  --sidebar-accent-foreground: 174 72% 65%;
-  --sidebar-border: 228 10% 16%;
-  --sidebar-ring: 174 72% 45%;
+  --sidebar-accent: 207 50% 14%;
+  --sidebar-accent-foreground: 207 90% 65%;
+  --sidebar-border: 45 10% 16%;
+  --sidebar-ring: 207 90% 55%;
 
   /* Input */
-  --input-background: 228 12% 14%;
+  --input-background: 45 15% 12%;
   --switch-background: 228 10% 28%;
 
   /* Apple Vision Pro Glassmorphism - Dark */
@@ -181,16 +222,33 @@ body {
   --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.2);
   --glass-blur: 28px;
   --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.12);
-  --glass-tint: rgba(20, 184, 166, 0.08);
+  --glass-tint: rgba(12, 160, 235, 0.06);
 
   /* Page gradients */
   --page-bg: linear-gradient(
     135deg,
-    hsl(220 25% 5%) 0%,
-    hsl(200 30% 7%) 30%,
-    hsl(174 20% 6%) 60%,
-    hsl(220 25% 5%) 100%
+    hsl(45 30% 4%) 0%,
+    hsl(220 20% 6%) 30%,
+    hsl(45 25% 5%) 60%,
+    hsl(45 30% 4%) 100%
   );
+
+  /* ── Domain Color Dark Overrides — M-DESIGN-04 ───────────────── */
+  /* Surface tints: slightly more opaque for visibility on dark bg  */
+  --category-surface-listing-announcements: rgba(59, 130, 246, 0.18);
+  --category-surface-property-features:     rgba(139, 92, 246, 0.18);
+  --category-surface-status-updates:        rgba(16, 185, 129, 0.18);
+  --category-surface-agent-branding:        rgba(245, 158, 11, 0.18);
+  --category-surface-open-house:            rgba(249, 115, 22, 0.18);
+  --category-surface-market-stats:          rgba(99, 102, 241, 0.18);
+  --category-surface-neighborhood:          rgba(20, 184, 166, 0.18);
+
+  /* Badge tiers: slightly lighter on dark cards */
+  --badge-luxury-bg:   #78350F;
+  --badge-standard-bg: #1E3A5F;
+  --badge-budget-bg:   #14532D;
+  --badge-custom-bg:   #3B0764;
+  --badge-api-bg:      #0C2D48;
 }
 
 @theme inline {

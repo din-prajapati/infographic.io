@@ -1,0 +1,1259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>InfographicAI — Canvas Editor Preview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./client/src/design-tokens.css" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; font-size: 16px; }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg-base-default);
+      color: var(--text-default);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── TOP BAR ────────────────────────────────────────────────── */
+    .topbar {
+      height: 48px;
+      background: var(--surface-panel-95);
+      border-bottom: 1px solid var(--border-subtle);
+      backdrop-filter: blur(var(--glass-blur));
+      -webkit-backdrop-filter: blur(var(--glass-blur));
+      display: flex;
+      align-items: center;
+      padding: 0 var(--space-3);
+      gap: var(--space-3);
+      flex-shrink: 0;
+      z-index: var(--z-sticky);
+    }
+
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      min-width: 180px;
+    }
+
+    .topbar-logo {
+      font-family: var(--font-display);
+      font-size: var(--font-size-14);
+      font-weight: var(--font-weight-bold);
+      color: var(--text-default);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .logo-mark {
+      width: 24px;
+      height: 24px;
+      border-radius: var(--radius-sm);
+      background: var(--color-accent-purple);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 12px;
+    }
+
+    .project-name {
+      font-size: var(--font-size-13);
+      font-weight: var(--font-weight-medium);
+      color: var(--text-default);
+      padding: 3px var(--space-2);
+      border-radius: var(--radius-sm);
+      cursor: text;
+      transition: var(--transition-base);
+    }
+    .project-name:hover { background: var(--bg-overlay-l1); }
+
+    .topbar-center {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      min-width: 180px;
+      justify-content: flex-end;
+    }
+
+    .credits-badge {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 10px;
+      background: var(--color-accent-lime);
+      border-radius: var(--radius-full);
+      font-size: var(--font-size-12);
+      font-weight: var(--font-weight-semibold);
+      color: var(--text-default);
+    }
+
+    .topbar-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      height: var(--comp-sm);
+      padding: 0 var(--space-3);
+      border-radius: var(--radius-md);
+      font-size: var(--font-size-13);
+      font-weight: var(--font-weight-medium);
+      cursor: pointer;
+      border: 1px solid var(--border-default);
+      background: transparent;
+      color: var(--text-default);
+      transition: var(--transition-base);
+    }
+    .topbar-btn:hover { background: var(--bg-overlay-l1); }
+    .topbar-btn.primary {
+      background: var(--btn-cta-bg);
+      color: var(--btn-cta-text);
+      border-color: transparent;
+    }
+    .topbar-btn.primary:hover { background: var(--btn-cta-bg-hover); }
+
+    .avatar-sm {
+      width: 28px;
+      height: 28px;
+      border-radius: var(--radius-full);
+      background: var(--avatar-bg);
+      color: var(--avatar-text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: var(--font-weight-semibold);
+      cursor: pointer;
+    }
+
+    /* ── MAIN LAYOUT ────────────────────────────────────────────── */
+    .editor-layout {
+      display: flex;
+      flex: 1;
+      min-height: 0;
+      position: relative;
+    }
+
+    /* ── LEFT SIDEBAR (Layers Panel — Lovart style) ─────────────── */
+    .left-sidebar {
+      width: 220px;
+      flex-shrink: 0;
+      background: var(--sidebar-panel-bg);
+      border-right: 1px solid var(--sidebar-panel-border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .sidebar-header {
+      height: 44px;
+      padding: 0 var(--space-3);
+      border-bottom: 1px solid var(--sidebar-panel-divider);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .sidebar-header-title {
+      font-size: var(--font-size-13);
+      font-weight: var(--font-weight-semibold);
+      color: var(--sidebar-panel-header-text);
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .sidebar-icon-btn {
+      width: 24px;
+      height: 24px;
+      border-radius: var(--radius-sm);
+      background: none;
+      border: none;
+      color: var(--icon-tertiary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition-base);
+    }
+    .sidebar-icon-btn:hover { background: var(--bg-overlay-l2); color: var(--icon-default); }
+
+    /* Section within sidebar */
+    .sidebar-section {
+      border-bottom: 1px solid var(--sidebar-panel-divider);
+    }
+
+    .sidebar-section-header {
+      height: 32px;
+      padding: 0 var(--space-3);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+    }
+
+    .sidebar-section-label {
+      font-size: var(--font-size-11);
+      font-weight: var(--font-weight-semibold);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-tertiary);
+    }
+
+    /* Layer items */
+    .layer-list {
+      padding: var(--space-1) var(--space-2);
+    }
+
+    .layer-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: 5px var(--space-2);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: var(--transition-base);
+    }
+
+    .layer-item:hover { background: var(--sidebar-panel-item-bg-hover); }
+    .layer-item.active {
+      background: var(--sidebar-panel-item-bg-active);
+    }
+
+    .layer-item-icon {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--icon-secondary);
+    }
+
+    .layer-item.active .layer-item-icon { color: var(--icon-brand); }
+
+    .layer-item-thumb {
+      width: 20px;
+      height: 20px;
+      border-radius: 3px;
+      flex-shrink: 0;
+      border: 1px solid var(--border-subtle);
+    }
+
+    .layer-item-name {
+      font-size: var(--font-size-13);
+      color: var(--sidebar-panel-item-text);
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .layer-item.active .layer-item-name { color: var(--sidebar-panel-item-text-active); }
+
+    .layer-item-actions {
+      display: flex;
+      gap: 2px;
+      opacity: 0;
+      transition: opacity var(--duration-fast);
+    }
+    .layer-item:hover .layer-item-actions { opacity: 1; }
+
+    /* Empty state in sidebar */
+    .sidebar-empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-6) var(--space-3);
+      gap: var(--space-2);
+      color: var(--text-tertiary);
+      font-size: var(--font-size-12);
+      text-align: center;
+    }
+
+    .sidebar-empty-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-lg);
+      background: var(--bg-overlay-l1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      margin-bottom: var(--space-1);
+    }
+
+    /* ── CANVAS AREA ────────────────────────────────────────────── */
+    .canvas-area {
+      flex: 1;
+      min-width: 0;
+      position: relative;
+      background: var(--canvas-bg);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Dot grid background */
+    .canvas-area::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(circle, var(--canvas-grid-dot) 1px, transparent 1px);
+      background-size: 24px 24px;
+      pointer-events: none;
+    }
+
+    /* Zoom indicator */
+    .canvas-zoom {
+      position: absolute;
+      bottom: var(--space-4);
+      left: var(--space-4);
+      font-size: var(--font-size-12);
+      color: var(--text-tertiary);
+      background: var(--surface-panel-90);
+      padding: 3px 8px;
+      border-radius: var(--radius-sm);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--border-subtle);
+    }
+
+    /* Canvas document mock */
+    .canvas-document {
+      position: relative;
+      width: 380px;
+      height: 480px;
+      background: white;
+      border-radius: 4px;
+      box-shadow: 0 4px 40px rgba(0,0,0,0.20), 0 1px 4px rgba(0,0,0,0.10);
+      overflow: hidden;
+      z-index: 1;
+    }
+
+    /* Selection handle mock */
+    .canvas-document::before {
+      content: '';
+      position: absolute;
+      inset: -2px;
+      border: 2px solid var(--canvas-selection-stroke);
+      border-radius: 5px;
+      pointer-events: none;
+    }
+
+    .selection-label {
+      position: absolute;
+      top: -24px;
+      left: 0;
+      font-size: 10px;
+      background: var(--canvas-selection-stroke);
+      color: white;
+      padding: 2px 6px;
+      border-radius: 3px;
+    }
+
+    /* Mock infographic content */
+    .mock-infographic {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(160deg, #0f1729 0%, #1a2847 100%);
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+      gap: 12px;
+    }
+
+    .mock-header {
+      font-family: var(--font-display);
+      font-size: 13px;
+      font-weight: 700;
+      color: white;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      opacity: 0.9;
+    }
+
+    .mock-title {
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 700;
+      color: white;
+      line-height: 1.2;
+    }
+
+    .mock-price {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--color-accent-lime);
+    }
+
+    .mock-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .mock-stat {
+      background: rgba(255,255,255,0.08);
+      border-radius: 8px;
+      padding: 8px;
+      text-align: center;
+    }
+
+    .mock-stat-value {
+      font-size: 16px;
+      font-weight: 700;
+      color: white;
+    }
+
+    .mock-stat-label {
+      font-size: 9px;
+      color: rgba(255,255,255,0.5);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .mock-image {
+      flex: 1;
+      border-radius: 8px;
+      background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.10));
+      border: 1px solid rgba(255,255,255,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(255,255,255,0.2);
+      font-size: 32px;
+    }
+
+    .mock-agent {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .mock-agent-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--category-agent-branding);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      color: white;
+      font-weight: 600;
+    }
+
+    .mock-agent-info { flex: 1; }
+
+    .mock-agent-name {
+      font-size: 10px;
+      font-weight: 600;
+      color: white;
+    }
+
+    .mock-agent-title {
+      font-size: 9px;
+      color: rgba(255,255,255,0.4);
+    }
+
+    /* ── FLOATING DARK PILL TOOLBAR (Lovart) ────────────────────── */
+    .floating-toolbar {
+      position: absolute;
+      top: var(--space-5);
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: var(--z-raised);
+      background: var(--toolbar-floating-bg);
+      border: 1px solid var(--toolbar-floating-border);
+      border-radius: var(--toolbar-floating-radius);
+      box-shadow: var(--toolbar-floating-shadow);
+      display: flex;
+      align-items: center;
+      padding: 5px 8px;
+      gap: 2px;
+    }
+
+    .toolbar-btn {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      height: var(--comp-sm);
+      padding: 0 var(--space-3);
+      border-radius: 20px;
+      font-size: var(--font-size-12);
+      font-weight: var(--font-weight-medium);
+      color: var(--toolbar-floating-text);
+      background: none;
+      border: none;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background var(--duration-fast) var(--ease-default);
+    }
+    .toolbar-btn:hover { background: var(--toolbar-floating-hover-bg); }
+    .toolbar-btn svg { opacity: 0.85; }
+
+    .toolbar-divider {
+      width: 1px;
+      height: 16px;
+      background: var(--toolbar-floating-border);
+      margin: 0 4px;
+    }
+
+    .toolbar-more {
+      width: 28px;
+      height: 28px;
+      border-radius: var(--radius-full);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: none;
+      border: none;
+      color: var(--toolbar-floating-icon);
+      cursor: pointer;
+    }
+
+    /* ── BOTTOM TOOL ROW (editor bottom bar) ────────────────────── */
+    .bottom-toolbar {
+      position: absolute;
+      bottom: var(--space-4);
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: var(--z-raised);
+      background: var(--toolbar-floating-bg);
+      border: 1px solid var(--toolbar-floating-border);
+      border-radius: var(--toolbar-floating-radius);
+      box-shadow: var(--toolbar-floating-shadow);
+      display: flex;
+      align-items: center;
+      padding: 5px 10px;
+      gap: var(--space-1);
+    }
+
+    .tool-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: var(--radius-full);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: none;
+      border: none;
+      color: var(--toolbar-floating-icon);
+      cursor: pointer;
+      font-size: 16px;
+      transition: background var(--duration-fast);
+    }
+    .tool-btn:hover { background: var(--toolbar-floating-hover-bg); }
+    .tool-btn.active {
+      background: var(--color-brand-600);
+      color: white;
+    }
+
+    /* ── RIGHT PANEL (AI Chat) ──────────────────────────────────── */
+    .right-panel {
+      width: 320px;
+      flex-shrink: 0;
+      background: var(--chat-panel-bg);
+      border-left: 1px solid var(--chat-panel-border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .chat-header {
+      height: 48px;
+      padding: 0 var(--space-4);
+      border-bottom: 1px solid var(--chat-panel-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .chat-header-title {
+      font-size: var(--font-size-14);
+      font-weight: var(--font-weight-semibold);
+      color: var(--text-default);
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .ai-badge {
+      font-size: var(--font-size-11);
+      padding: 2px 8px;
+      border-radius: var(--radius-full);
+      background: var(--category-surface-agent-branding);
+      color: var(--category-agent-branding);
+      font-weight: var(--font-weight-semibold);
+    }
+
+    /* Chat message area */
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: var(--space-4);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+    }
+
+    .chat-messages::-webkit-scrollbar { width: 4px; }
+    .chat-messages::-webkit-scrollbar-track { background: transparent; }
+    .chat-messages::-webkit-scrollbar-thumb { background: var(--border-default); border-radius: 4px; }
+
+    /* Message bubbles */
+    .msg {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+      max-width: 85%;
+    }
+
+    .msg.user { align-self: flex-end; align-items: flex-end; }
+    .msg.ai   { align-self: flex-start; align-items: flex-start; }
+
+    .msg-sender {
+      font-size: var(--font-size-11);
+      color: var(--text-tertiary);
+      font-weight: var(--font-weight-medium);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .msg-bubble {
+      padding: var(--space-3);
+      border-radius: var(--radius-lg);
+      font-size: var(--font-size-13);
+      line-height: 1.5;
+    }
+
+    .msg.user .msg-bubble {
+      background: var(--chat-message-user-bg);
+      color: var(--chat-message-user-text);
+      border-radius: var(--radius-lg) var(--radius-lg) 4px var(--radius-lg);
+    }
+
+    .msg.ai .msg-bubble {
+      background: var(--chat-message-ai-bg);
+      color: var(--text-default);
+      border-radius: var(--radius-lg) var(--radius-lg) var(--radius-lg) 4px;
+    }
+
+    .msg-bubble strong { font-weight: var(--font-weight-semibold); }
+
+    /* Result image in chat */
+    .chat-result-image {
+      width: 100%;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      border: 1px solid var(--border-subtle);
+      margin-top: var(--space-2);
+    }
+
+    .chat-result-image .result-inner {
+      background: linear-gradient(135deg, #0f1729, #1a2847);
+      height: 160px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .result-mini-text {
+      color: rgba(255,255,255,0.7);
+      font-size: 10px;
+      text-align: center;
+      font-family: var(--font-display);
+    }
+
+    .result-actions {
+      display: flex;
+      gap: var(--space-2);
+      padding: var(--space-2) var(--space-3);
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .result-action-btn {
+      flex: 1;
+      height: var(--comp-xs);
+      border-radius: var(--radius-sm);
+      font-size: var(--font-size-12);
+      font-weight: var(--font-weight-medium);
+      cursor: pointer;
+      border: 1px solid var(--border-default);
+      background: transparent;
+      color: var(--text-secondary);
+      transition: var(--transition-base);
+    }
+    .result-action-btn:hover { background: var(--bg-overlay-l1); }
+    .result-action-btn.primary {
+      background: var(--btn-primary-bg);
+      color: white;
+      border-color: transparent;
+    }
+
+    /* Reaction buttons */
+    .msg-reactions {
+      display: flex;
+      gap: var(--space-2);
+      margin-top: 4px;
+    }
+
+    .reaction-btn {
+      width: 24px;
+      height: 24px;
+      border-radius: var(--radius-full);
+      background: var(--bg-overlay-l1);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      color: var(--icon-tertiary);
+      transition: var(--transition-base);
+    }
+    .reaction-btn:hover { background: var(--bg-overlay-l2); color: var(--icon-default); }
+
+    /* Promo banner in chat */
+    .chat-promo {
+      margin: var(--space-3) var(--space-4);
+      padding: var(--space-2) var(--space-3);
+      background: var(--chat-promo-banner-bg);
+      border-radius: var(--radius-md);
+      font-size: var(--font-size-12);
+      font-weight: var(--font-weight-medium);
+      color: var(--chat-promo-banner-text);
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      flex-shrink: 0;
+    }
+
+    .chat-promo-close {
+      margin-left: auto;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 12px;
+      opacity: 0.5;
+    }
+
+    /* Chat input area */
+    .chat-input-area {
+      padding: var(--space-3) var(--space-4);
+      border-top: 1px solid var(--chat-panel-border);
+      flex-shrink: 0;
+    }
+
+    .chat-attached-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 8px;
+      background: var(--bg-overlay-l2);
+      border-radius: var(--radius-full);
+      font-size: var(--font-size-11);
+      color: var(--text-secondary);
+      margin-bottom: var(--space-2);
+    }
+
+    .chat-input-row {
+      display: flex;
+      align-items: flex-end;
+      gap: var(--space-2);
+    }
+
+    .chat-input {
+      flex: 1;
+      min-height: 36px;
+      max-height: 100px;
+      padding: 8px 12px;
+      background: var(--chat-input-bg);
+      border: 1px solid var(--chat-input-border);
+      border-radius: var(--radius-2xl);
+      font-size: var(--font-size-13);
+      font-family: var(--font-sans);
+      color: var(--text-default);
+      resize: none;
+      outline: none;
+      transition: var(--transition-base);
+      line-height: 1.4;
+    }
+    .chat-input::placeholder { color: var(--text-tertiary); }
+    .chat-input:focus {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px rgba(12, 160, 235, 0.08);
+    }
+
+    .chat-send-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: var(--radius-full);
+      background: var(--btn-primary-bg);
+      color: white;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: var(--transition-base);
+    }
+    .chat-send-btn:hover { background: var(--btn-primary-bg-hover); }
+
+    .chat-bottom-actions {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      margin-top: var(--space-2);
+    }
+
+    .chat-action-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 10px;
+      background: var(--bg-overlay-l1);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-full);
+      font-size: var(--font-size-11);
+      font-weight: var(--font-weight-medium);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: var(--transition-base);
+    }
+    .chat-action-chip:hover { background: var(--bg-overlay-l2); }
+
+    .agent-selector {
+      margin-left: auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 10px;
+      background: var(--bg-overlay-l1);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-full);
+      font-size: var(--font-size-12);
+      font-weight: var(--font-weight-medium);
+      color: var(--text-default);
+      cursor: pointer;
+    }
+
+    /* ── SCROLLBAR HIDE ─────────────────────────────────────────── */
+    .scrollbar-hide {
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .scrollbar-hide::-webkit-scrollbar { display: none; }
+
+    svg { display: inline-block; vertical-align: middle; }
+  </style>
+</head>
+<body>
+
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-logo">
+        <div class="logo-mark">✦</div>
+      </div>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" opacity="0.4"><path d="M15 18l-6-6 6-6"/></svg>
+      <span class="project-name">Luxury Listing — D1</span>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" opacity="0.4"><path d="M6 9l6 6 6-6"/></svg>
+    </div>
+
+    <div class="topbar-center">
+      <!-- intentionally empty — breadcrumb is left -->
+    </div>
+
+    <div class="topbar-right">
+      <div class="credits-badge">
+        <span>⚡</span>
+        <span>30</span>
+      </div>
+      <button class="topbar-btn">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98"/></svg>
+        Share
+      </button>
+      <button class="topbar-btn primary">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download
+      </button>
+      <div class="avatar-sm">D</div>
+    </div>
+  </header>
+
+  <!-- EDITOR LAYOUT -->
+  <div class="editor-layout">
+
+    <!-- LEFT SIDEBAR -->
+    <aside class="left-sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-header-title">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <rect x="2" y="3" width="6" height="6" rx="1"/><rect x="2" y="15" width="6" height="6" rx="1"/><rect x="10" y="3" width="12" height="6" rx="1"/><rect x="10" y="15" width="12" height="6" rx="1"/>
+          </svg>
+          Layers
+        </div>
+        <button class="sidebar-icon-btn">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+      </div>
+
+      <!-- History section -->
+      <div class="sidebar-section">
+        <div class="sidebar-section-header">
+          <span class="sidebar-section-label">History</span>
+          <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 15l-6-6-6 6"/></svg>
+        </div>
+        <div class="sidebar-empty" style="padding: var(--space-3);">
+          <div class="sidebar-empty-icon">🕐</div>
+          <span>No history yet</span>
+        </div>
+      </div>
+
+      <!-- Layers section -->
+      <div class="sidebar-section" style="flex: 1; overflow-y: auto;">
+        <div class="sidebar-section-header">
+          <span class="sidebar-section-label">Elements</span>
+        </div>
+        <div class="layer-list">
+
+          <div class="layer-item active">
+            <div class="layer-item-icon">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="m3 9 9-6 9 6M3 15l9 6 9-6"/></svg>
+            </div>
+            <div class="layer-item-thumb" style="background: linear-gradient(135deg, #0ca0eb, #722ed1);"></div>
+            <span class="layer-item-name">Image 5</span>
+            <div class="layer-item-actions">
+              <button class="sidebar-icon-btn">
+                <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="layer-item">
+            <div class="layer-item-icon">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            </div>
+            <div class="layer-item-thumb" style="background: var(--color-accent-amber);"></div>
+            <span class="layer-item-name">Star 1</span>
+            <div class="layer-item-actions">
+              <button class="sidebar-icon-btn">
+                <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="layer-item">
+            <div class="layer-item-icon">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            </div>
+            <div class="layer-item-thumb" style="background: var(--category-listing-announcements);"></div>
+            <span class="layer-item-name">Polygon 1</span>
+            <div class="layer-item-actions">
+              <button class="sidebar-icon-btn">
+                <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="layer-item">
+            <div class="layer-item-icon">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
+            </div>
+            <div class="layer-item-thumb" style="background: var(--category-property-features); border-radius: 50%;"></div>
+            <span class="layer-item-name">Ellipse 1</span>
+          </div>
+
+          <div class="layer-item">
+            <div class="layer-item-icon">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+            </div>
+            <div class="layer-item-thumb" style="background: var(--primitive-neutral-800);"></div>
+            <span class="layer-item-name">Rectangle 1</span>
+          </div>
+
+          <div class="layer-item" style="padding-left: 28px;">
+            <div class="layer-item-icon">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+            </div>
+            <div class="layer-item-thumb" style="background: var(--primitive-neutral-300);"></div>
+            <span class="layer-item-name">Rectangle</span>
+          </div>
+
+          <div class="layer-item" style="padding-left: 28px;">
+            <div class="layer-item-icon">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+            </div>
+            <div class="layer-item-thumb" style="background: var(--primitive-neutral-200);"></div>
+            <span class="layer-item-name">Rectangle</span>
+          </div>
+
+          <div class="layer-item">
+            <div class="layer-item-icon">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
+            </div>
+            <div class="layer-item-thumb" style="background: transparent; display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 700; color: var(--text-default);">T</div>
+            <span class="layer-item-name">Text</span>
+          </div>
+
+          <div class="layer-item">
+            <div class="layer-item-icon">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
+            </div>
+            <div class="layer-item-thumb" style="background: transparent; display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 700; color: var(--text-secondary);">T</div>
+            <span class="layer-item-name">Text</span>
+          </div>
+
+        </div>
+      </div>
+    </aside>
+
+    <!-- CANVAS AREA -->
+    <main class="canvas-area">
+
+      <!-- Floating tool toolbar (dark pill — Lovart style) -->
+      <div class="floating-toolbar">
+        <button class="toolbar-btn">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+          Remove BG
+        </button>
+        <div class="toolbar-divider"></div>
+        <button class="toolbar-btn">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 20L4 4m16 0L4 20"/></svg>
+          Eraser
+        </button>
+        <button class="toolbar-btn">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+          Edit Elements
+        </button>
+        <button class="toolbar-btn">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
+          Edit Text
+        </button>
+        <div class="toolbar-divider"></div>
+        <button class="toolbar-btn">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download
+        </button>
+        <button class="toolbar-more">•••</button>
+      </div>
+
+      <!-- Mock canvas document -->
+      <div class="canvas-document">
+        <span class="selection-label">Image 5 · 1792 × 2400</span>
+        <div class="mock-infographic">
+          <div class="mock-header">🏡 Listing Announcement</div>
+          <div class="mock-title">Luxury Villa<br/>Waterfront Estate</div>
+          <div class="mock-price">$2,850,000</div>
+          <div class="mock-stats">
+            <div class="mock-stat">
+              <div class="mock-stat-value">4</div>
+              <div class="mock-stat-label">Beds</div>
+            </div>
+            <div class="mock-stat">
+              <div class="mock-stat-value">3.5</div>
+              <div class="mock-stat-label">Baths</div>
+            </div>
+            <div class="mock-stat">
+              <div class="mock-stat-value">3,200</div>
+              <div class="mock-stat-label">Sq Ft</div>
+            </div>
+          </div>
+          <div class="mock-image">🏠</div>
+          <div class="mock-agent">
+            <div class="mock-agent-avatar">P</div>
+            <div class="mock-agent-info">
+              <div class="mock-agent-name">Priya Sharma · Realtor®</div>
+              <div class="mock-agent-title">InfographicAI Certified Agent</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom tool buttons -->
+      <div class="bottom-toolbar">
+        <button class="tool-btn">⬤</button>
+        <button class="tool-btn">◼</button>
+        <button class="tool-btn">⊕</button>
+        <button class="tool-btn">⊞</button>
+        <button class="tool-btn">▭</button>
+        <button class="tool-btn">✏️</button>
+        <button class="tool-btn">T</button>
+        <button class="tool-btn active">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m5 3 14 9-14 9V3z"/></svg>
+        </button>
+        <button class="tool-btn">✂️</button>
+      </div>
+
+      <!-- Zoom indicator -->
+      <div class="canvas-zoom">8%</div>
+    </main>
+
+    <!-- RIGHT PANEL (AI Chat) -->
+    <aside class="right-panel">
+      <div class="chat-header">
+        <div class="chat-header-title">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 1 7.38 16.74L21 21l-2.26-1.62A10 10 0 1 1 12 2z"/></svg>
+          Generate another infographic
+          <span class="ai-badge">AI</span>
+        </div>
+        <div style="display: flex; gap: 4px;">
+          <button class="sidebar-icon-btn">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
+          </button>
+          <button class="sidebar-icon-btn">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Chat messages -->
+      <div class="chat-messages">
+
+        <div class="msg user">
+          <span class="msg-sender">You</span>
+          <div class="msg-bubble">Create a luxury listing infographic for a waterfront property with 4 beds, 3.5 baths, $2.85M price.</div>
+        </div>
+
+        <div class="msg ai">
+          <span class="msg-sender">✦ AI Agent</span>
+          <div class="msg-bubble">
+            Perfect! I've created a <strong>luxury listing infographic</strong> showcasing the waterfront estate. The layout features a dark navy premium theme with property stats and agent branding — ideal for social media marketing.
+          </div>
+          <div class="chat-result-image">
+            <div class="result-inner">
+              <div class="result-mini-text">
+                🏡 LUXURY LISTING<br/>
+                <strong style="color: white; font-size: 12px;">Waterfront Villa — $2.85M</strong><br/>
+                <span style="color: var(--color-accent-lime);">4 Beds · 3.5 Baths · 3,200 sqft</span>
+              </div>
+            </div>
+            <div class="result-actions">
+              <button class="result-action-btn">Regenerate</button>
+              <button class="result-action-btn">Variations</button>
+              <button class="result-action-btn primary">Use This</button>
+            </div>
+          </div>
+          <div class="msg-reactions">
+            <button class="reaction-btn">👍</button>
+            <button class="reaction-btn">👎</button>
+          </div>
+        </div>
+
+        <div class="msg user">
+          <span class="msg-sender">You</span>
+          <div class="msg-bubble">Make the background brighter and add a neighborhood map section.</div>
+        </div>
+
+        <div class="msg ai">
+          <span class="msg-sender">✦ AI Agent</span>
+          <div class="msg-bubble">
+            Updated! I've brightened the background and added a <strong>Neighborhood Guide</strong> section with local amenities highlighted. The layout is still optimized for Instagram square format.
+          </div>
+          <div class="msg-reactions">
+            <button class="reaction-btn">👍</button>
+            <button class="reaction-btn">👎</button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Promo banner -->
+      <div class="chat-promo">
+        <span>⚡</span>
+        <span>Get 365 days of free Nano Plan!</span>
+        <button class="chat-promo-close">✕</button>
+      </div>
+
+      <!-- Input area -->
+      <div class="chat-input-area">
+        <div class="chat-attached-chip">
+          <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="m3 9 9-6 9 6M3 15l9 6 9-6"/></svg>
+          Image 5
+        </div>
+        <div class="chat-input-row">
+          <textarea class="chat-input" rows="1" placeholder="Describe changes or generate new…"></textarea>
+          <button class="chat-send-btn">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+        </div>
+        <div class="chat-bottom-actions">
+          <button class="chat-action-chip">
+            <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add
+          </button>
+          <button class="chat-action-chip">
+            <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="m3 9 9-6 9 6M3 15l9 6 9-6"/></svg>
+            Templates
+          </button>
+          <div class="agent-selector">
+            <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 1 7.38 16.74L21 21l-2.26-1.62A10 10 0 1 1 12 2z"/></svg>
+            Agent
+            <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+  </div>
+
+  <script>
+    // Promo close
+    document.querySelector('.chat-promo-close').addEventListener('click', e => {
+      e.target.closest('.chat-promo').style.display = 'none';
+    });
+    // Toolbar button active state
+    document.querySelectorAll('.toolbar-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.toolbar-btn').forEach(b => b.style.background = '');
+        btn.style.background = 'rgba(255,255,255,0.12)';
+      });
+    });
+    // Tool button active state
+    document.querySelectorAll('.tool-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    });
+    // Layer item active state
+    document.querySelectorAll('.layer-item').forEach(item => {
+      item.addEventListener('click', () => {
+        document.querySelectorAll('.layer-item').forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
+      });
+    });
+    // Auto-resize textarea
+    const textarea = document.querySelector('.chat-input');
+    textarea.addEventListener('input', function() {
+      this.style.height = 'auto';
+      this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+    });
+  </script>
+
+</body>
+</html>
