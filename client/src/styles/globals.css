@@ -134,6 +134,46 @@ body {
   --chart-3: 142 71% 40%;
   --chart-4: 280 65% 60%;
   --chart-5: 340 75% 55%;
+
+  /* ── Domain Color Tokens — M-DESIGN-04 ──────────────────────────
+     Source of truth for real estate category colors and badge tiers.
+     Consumed by: categoryChipsData.ts, templateData.ts, TemplatesPage.tsx
+  ─────────────────────────────────────────────────────────────────── */
+
+  /* AI chat category chips (categoryChipsData.ts) */
+  --chip-property-listings:  #3B82F6;   /* Blue   — listings / trust */
+  --chip-open-house:         #F97316;   /* Orange — event / urgency  */
+  --chip-just-sold:          #10B981;   /* Emerald — success         */
+  --chip-agent-branding:     #F59E0B;   /* Amber  — personal brand   */
+  --chip-market-stats:       #6366F1;   /* Indigo — data / analytics */
+  --chip-neighborhood:       #14B8A6;   /* Teal   — location         */
+
+  /* Template categories (templateData.ts) */
+  --category-listing-announcements: #3B82F6;
+  --category-property-features:     #8B5CF6;
+  --category-status-updates:        #10B981;
+  --category-agent-branding:        #F59E0B;
+
+  /* Category surface tints (icon container bg) */
+  --category-surface-listing-announcements: rgba(59, 130, 246, 0.12);
+  --category-surface-property-features:     rgba(139, 92, 246, 0.12);
+  --category-surface-status-updates:        rgba(16, 185, 129, 0.12);
+  --category-surface-agent-branding:        rgba(245, 158, 11, 0.12);
+  --category-surface-open-house:            rgba(249, 115, 22, 0.12);
+  --category-surface-market-stats:          rgba(99, 102, 241, 0.12);
+  --category-surface-neighborhood:          rgba(20, 184, 166, 0.12);
+
+  /* Template badge tiers (TemplatesPage.tsx) */
+  --badge-luxury-bg:    #92400E;
+  --badge-luxury-text:  #FEF3C7;
+  --badge-standard-bg:  #1E3A5F;
+  --badge-standard-text:#DBEAFE;
+  --badge-budget-bg:    #14532D;
+  --badge-budget-text:  #DCFCE7;
+  --badge-custom-bg:    #4C1D95;
+  --badge-custom-text:  #EDE9FE;
+  --badge-api-bg:       #0C3461;
+  --badge-api-text:     #E0F2FE;
 }
 
 .dark {
@@ -192,6 +232,23 @@ body {
     hsl(45 25% 5%) 60%,
     hsl(45 30% 4%) 100%
   );
+
+  /* ── Domain Color Dark Overrides — M-DESIGN-04 ───────────────── */
+  /* Surface tints: slightly more opaque for visibility on dark bg  */
+  --category-surface-listing-announcements: rgba(59, 130, 246, 0.18);
+  --category-surface-property-features:     rgba(139, 92, 246, 0.18);
+  --category-surface-status-updates:        rgba(16, 185, 129, 0.18);
+  --category-surface-agent-branding:        rgba(245, 158, 11, 0.18);
+  --category-surface-open-house:            rgba(249, 115, 22, 0.18);
+  --category-surface-market-stats:          rgba(99, 102, 241, 0.18);
+  --category-surface-neighborhood:          rgba(20, 184, 166, 0.18);
+
+  /* Badge tiers: slightly lighter on dark cards */
+  --badge-luxury-bg:   #78350F;
+  --badge-standard-bg: #1E3A5F;
+  --badge-budget-bg:   #14532D;
+  --badge-custom-bg:   #3B0764;
+  --badge-api-bg:      #0C2D48;
 }
 
 @theme inline {

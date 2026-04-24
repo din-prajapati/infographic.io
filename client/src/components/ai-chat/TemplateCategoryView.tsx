@@ -42,10 +42,18 @@ export function TemplateCategoryView({
               {/* Category Header */}
               <button
                 onClick={() => toggleCategory(category.id)}
-                className="w-full flex items-center justify-between p-3 hover:bg-muted transition-colors"
+                className="w-full flex items-center justify-between p-3 hover:opacity-90 transition-opacity"
+                style={{
+                  backgroundColor: `color-mix(in srgb, ${category.color} 12%, transparent)`,
+                  borderLeft: `3px solid ${category.color}`,
+                }}
+                data-category-id={category.id}
               >
                 <div className="flex items-center gap-3">
-                  <span className="text-xl">{category.icon}</span>
+                  <span
+                    className="text-xl w-8 h-8 flex items-center justify-center rounded-md shrink-0"
+                    style={{ backgroundColor: `color-mix(in srgb, ${category.color} 18%, transparent)` }}
+                  >{category.icon}</span>
                   <div className="text-left">
                     <div className="flex items-center gap-2">
                       <h4 className="text-foreground text-sm font-medium">{category.name}</h4>
@@ -86,7 +94,7 @@ export function TemplateCategoryView({
                             <div className="text-xs text-muted-foreground truncate">{template.description}</div>
                           </div>
                           {template.isPopular && (
-                            <span className="text-xs bg-yellow-500/15 text-yellow-600 dark:text-yellow-400 px-2 py-0.5 rounded-full shrink-0">
+                            <span className="text-xs bg-amber-500/15 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-full shrink-0">
                               Popular
                             </span>
                           )}

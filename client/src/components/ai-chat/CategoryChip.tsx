@@ -20,11 +20,18 @@ export function CategoryChip({ chip, isSelected, onClick, index }: CategoryChipP
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05, duration: 0.3 }}
       onClick={onClick}
-      className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border transition-all whitespace-nowrap shrink-0 text-xs ${
+      className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border transition-all whitespace-nowrap shrink-0 text-xs border-border bg-background text-muted-foreground hover:border-foreground/30 hover:bg-muted hover:text-foreground"
+      style={
         isSelected
-          ? 'border-blue-500 bg-blue-500/15 text-blue-500'
-          : 'border-border bg-background text-muted-foreground hover:border-foreground/30 hover:bg-muted hover:text-foreground'
-      }`}
+          ? {
+              borderColor: chip.color,
+              backgroundColor: chip.surfaceColor,
+              color: chip.color,
+            }
+          : undefined
+      }
+      data-chip-id={chip.id}
+      data-selected={isSelected}
     >
       <span className="text-sm leading-none">{chip.icon}</span>
       <span>{chip.name}</span>

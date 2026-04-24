@@ -45,9 +45,9 @@
 
 | Milestone                                                                           | Scope                                                    | Target     | Status         |
 | ----------------------------------------------------------------------------------- | -------------------------------------------------------- | ---------- | -------------- |
-| [M-DESIGN-03 — Token Foundation](milestones/M-DESIGN-03-token-foundation.md)        | Replace globals.css color scheme + add Outfit font       | 2026-05-10 | ✅ Done        |
-| [M-DESIGN-04 — Domain Color System](milestones/M-DESIGN-04-domain-colors.md)        | Migrate hardcoded category/chip/badge colors to tokens   | 2026-05-20 | 🔲 Not Started |
-| [M-DESIGN-05 — Component Visual Polish](milestones/M-DESIGN-05-component-polish.md) | Apply component tokens to TemplatesPage, Editor, AI Chat | 2026-05-31 | 🔲 Not Started |
+| [M-DESIGN-03 — Token Foundation](milestones/M-DESIGN-03-token-foundation.md)        | Replace globals.css color scheme + add Outfit font       | 2026-05-10 | ✅ Done — 2026-04-22 |
+| [M-DESIGN-04 — Domain Color System](milestones/M-DESIGN-04-domain-colors.md)        | Migrate hardcoded category/chip/badge colors to tokens   | 2026-05-20 | ✅ Done — 2026-04-23 |
+| [M-DESIGN-05 — Component Visual Polish](milestones/M-DESIGN-05-component-polish.md) | Apply component tokens to TemplatesPage, Editor, AI Chat | 2026-05-31 | 🔲 Not Started      |
 
 ---
 
@@ -57,8 +57,8 @@
 | ----------------------------------------------- | ------------------------------------------------------------- | ----------- | ------ | --- |
 | [US-DESIGN-005](stories/US-DESIGN-005/STORY.md) | New color scheme in globals.css                               | M-DESIGN-03 | ✅     | —   |
 | [US-DESIGN-006](stories/US-DESIGN-006/STORY.md) | Outfit display font integration                               | M-DESIGN-03 | ✅     | —   |
-| [US-DESIGN-007](stories/US-DESIGN-007/STORY.md) | Real estate category color token migration                    | M-DESIGN-04 | 🔲     | —   |
-| [US-DESIGN-008](stories/US-DESIGN-008/STORY.md) | Template badge tier token migration                           | M-DESIGN-04 | 🔲     | —   |
+| [US-DESIGN-007](stories/US-DESIGN-007/STORY.md) | Real estate category color token migration                    | M-DESIGN-04 | ✅     | —   |
+| [US-DESIGN-008](stories/US-DESIGN-008/STORY.md) | Template badge tier token migration                           | M-DESIGN-04 | ✅     | —   |
 | [US-DESIGN-009](stories/US-DESIGN-009/STORY.md) | TemplatesPage visual redesign (filter pills + card headers)   | M-DESIGN-05 | 🔲     | —   |
 | [US-DESIGN-010](stories/US-DESIGN-010/STORY.md) | Editor component visual refinement (toolbar + sidebar tokens) | M-DESIGN-05 | 🔲     | —   |
 | [US-DESIGN-011](stories/US-DESIGN-011/STORY.md) | AI Chat panel visual refinement (surface + promo tokens)      | M-DESIGN-05 | 🔲     | —   |
@@ -119,8 +119,8 @@ AI Chat:                client/src/components/ai-chat/AIChatBox.tsx
 
 ## Definition of Done (Epic)
 
-- [ ] M-DESIGN-03 closed (color scheme + font shipped)
-- [ ] M-DESIGN-04 closed (category/badge tokens migrated)
+- [x] M-DESIGN-03 closed (color scheme + font shipped) — 2026-04-22
+- [x] M-DESIGN-04 closed (category/badge tokens migrated) — 2026-04-23
 - [ ] M-DESIGN-05 closed (component visual polish shipped)
 - [ ] All stories ✅ Done
 - [ ] `npm run check` + `npm run test:unit` passing

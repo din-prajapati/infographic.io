@@ -74,13 +74,13 @@ grep -n "bg-purple-600\|bg-blue-600\|bg-purple-500" client/src/components/pages/
 
 ## Task Checklist
 
-- [ ] T1 — Badge tier color strings replaced with CSS token inline styles
-- [ ] `npm run check` passes ✅
-- [ ] `npm run test:unit` passes ✅
-- [ ] Grep check: 0 `bg-purple-600/bg-blue-600` matches in TemplatesPage.tsx ✅
-- [ ] Manual smoke: all 5 badge tiers visible in Light + Dark ✅
-- [ ] PR opened with story card as description ✅
-- [ ] STORY.md ACs updated ✅
+- [x] T1 — Badge tier color strings replaced with CSS token inline styles; also fixed overlay Custom badge (bg-purple-500 → token)
+- [x] `npm run check` passes ✅ — 2026-04-23
+- [x] `npm run test:unit` passes ✅ — 2026-04-23
+- [x] Grep check: 0 `bg-purple-600/bg-blue-600` matches in TemplatesPage.tsx ✅ — 2026-04-23
+- [x] Manual smoke: all 5 badge tiers visible in Light + Dark ✅ — 2026-04-24
+- [ ] PR opened with story card as description
+- [x] STORY.md ACs updated ✅
 
 ---
 

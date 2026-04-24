@@ -97,15 +97,15 @@ grep -r "FF8C00\|4CAF50\|9C27B0\|FF5722\|00BCD4\|2196F3" client/src
 
 ## Task Checklist
 
-- [ ] T1 — `categoryChipsData.ts` hex colors migrated to CSS vars
-- [ ] T2 — `templateData.ts` hex colors migrated to CSS vars
-- [ ] T3 — `TemplateCategoryView.tsx` gray-* classes replaced with semantic tokens
-- [ ] `npm run check` passes ✅
-- [ ] `npm run test:unit` passes ✅
-- [ ] Grep check: 0 old hex colors in client/src ✅
-- [ ] Manual smoke: chips + category view in Light + Dark ✅
-- [ ] PR opened with story card as description ✅
-- [ ] STORY.md ACs updated ✅
+- [x] T1 — `categoryChipsData.ts` hex colors migrated to CSS vars (+ `surfaceColor` rgba added per chip)
+- [x] T2 — `templateData.ts` hex colors migrated to CSS vars
+- [x] T3 — `TemplateCategoryView.tsx` gray-* classes replaced with semantic tokens; component rewired into AIChatBox
+- [x] `npm run check` passes ✅ — 2026-04-23
+- [x] `npm run test:unit` passes ✅ — 2026-04-23
+- [x] Grep check: 0 old hex colors in client/src ✅ — 2026-04-23
+- [x] Manual smoke: chips + category view in Light + Dark ✅ — 2026-04-24
+- [ ] PR opened with story card as description
+- [x] STORY.md ACs updated ✅
 
 ---
 

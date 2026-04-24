@@ -3817,6 +3817,41 @@
   --chart-3: 142 71% 40%;
   --chart-4: 280 65% 60%;
   --chart-5: 340 75% 55%;
+
+  /* ── Domain Color Tokens — M-DESIGN-04 ──────────────────────────
+     AI chat chips, template categories, and badge tiers.
+     Consumed by: categoryChipsData.ts, templateData.ts, TemplatesPage.tsx
+  ─────────────────────────────────────────────────────────────────── */
+  --chip-property-listings:  #3B82F6;
+  --chip-open-house:         #F97316;
+  --chip-just-sold:          #10B981;
+  --chip-agent-branding:     #F59E0B;
+  --chip-market-stats:       #6366F1;
+  --chip-neighborhood:       #14B8A6;
+
+  --category-listing-announcements: #3B82F6;
+  --category-property-features:     #8B5CF6;
+  --category-status-updates:        #10B981;
+  --category-agent-branding:        #F59E0B;
+
+  --category-surface-listing-announcements: rgba(59, 130, 246, 0.12);
+  --category-surface-property-features:     rgba(139, 92, 246, 0.12);
+  --category-surface-status-updates:        rgba(16, 185, 129, 0.12);
+  --category-surface-agent-branding:        rgba(245, 158, 11, 0.12);
+  --category-surface-open-house:            rgba(249, 115, 22, 0.12);
+  --category-surface-market-stats:          rgba(99, 102, 241, 0.12);
+  --category-surface-neighborhood:          rgba(20, 184, 166, 0.12);
+
+  --badge-luxury-bg:    #92400E;
+  --badge-luxury-text:  #FEF3C7;
+  --badge-standard-bg:  #1E3A5F;
+  --badge-standard-text:#DBEAFE;
+  --badge-budget-bg:    #14532D;
+  --badge-budget-text:  #DCFCE7;
+  --badge-custom-bg:    #4C1D95;
+  --badge-custom-text:  #EDE9FE;
+  --badge-api-bg:       #0C3461;
+  --badge-api-text:     #E0F2FE;
 }
 
 .dark {
@@ -3867,6 +3902,21 @@
 
   /* Page gradient */
   --page-bg: linear-gradient(135deg, hsl(45 30% 4%) 0%, hsl(220 20% 6%) 30%, hsl(45 25% 5%) 60%, hsl(45 30% 4%) 100%);
+
+  /* ── Domain Color Dark Overrides — M-DESIGN-04 ───────────────── */
+  --category-surface-listing-announcements: rgba(59, 130, 246, 0.18);
+  --category-surface-property-features:     rgba(139, 92, 246, 0.18);
+  --category-surface-status-updates:        rgba(16, 185, 129, 0.18);
+  --category-surface-agent-branding:        rgba(245, 158, 11, 0.18);
+  --category-surface-open-house:            rgba(249, 115, 22, 0.18);
+  --category-surface-market-stats:          rgba(99, 102, 241, 0.18);
+  --category-surface-neighborhood:          rgba(20, 184, 166, 0.18);
+
+  --badge-luxury-bg:   #78350F;
+  --badge-standard-bg: #1E3A5F;
+  --badge-budget-bg:   #14532D;
+  --badge-custom-bg:   #3B0764;
+  --badge-api-bg:      #0C2D48;
 }
 
 /* Display font utility — ensures font-display class resolves to Outfit */
