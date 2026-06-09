@@ -142,39 +142,68 @@ Run `npx playwright test` on staging to confirm the logic-ready tests also pass 
 
 > **Goal:** Deploy to a real hosted environment; run E2E tests; sign off the two staging-only ACs.  
 > **Time:** ~3–4 hours (first-time setup ~2 hrs; smoke test ~1 hr)  
-> **Prerequisites:** Task 1 complete; Railway CLI installed; Neon account with project.
+> **Prerequisites:** Task 1 complete; Railway CLI installed; Neon account with project.  
+> **Deployment flow (from `docs/DEPLOYMENT_STRATEGY.md` §3):**  
+> `merge to main` → Railway auto-deploys staging → verify → tag → production
 
 ---
 
-### 2A. Infrastructure Setup (follow `docs/setup/RAILWAY_NEON_DEPLOY.md`)
+### 2A. One-Time Infrastructure Setup (follow `docs/setup/RAILWAY_NEON_DEPLOY.md`)
+
+> Do this once. After setup, every future merge to `main` auto-deploys staging — no manual command needed.
+
+**Step 1 — Neon: database**
 
 | # | Step | Done? | Notes |
 |---|---|---|---|
-| S-01 | **Neon:** Create project (or reuse existing), create a `staging` branch off `main` | ☐ | |
-| S-02 | Copy the `staging` branch **direct connection string** (non-pooled, `?sslmode=require`) | ☐ | |
-| S-03 | **Railway:** `railway login` + `railway init` (name: `infographic-editor`) | ☐ | |
-| S-04 | Create `staging` environment in Railway dashboard | ☐ | |
-| S-05 | Set Railway staging variables (see table below) | ☐ | |
-| S-06 | `railway up --detach` (staging environment) | ☐ | |
-| S-07 | `railway logs` → confirm `serving on port` + `Nest application successfully started` | ☐ | |
-| S-08 | `railway domain` → note the staging URL | ☐ | |
+| S-01 | Create a Neon project (or reuse existing) | ☐ | Dashboard: console.neon.tech |
+| S-02 | Create a `staging` branch off the `main`/`production` Neon branch | ☐ | Branches → New branch |
+| S-03 | Copy the `staging` branch **direct connection string** (non-pooled, with `?sslmode=require`) | ☐ | Use Direct — not the Pooler endpoint |
+
+**Step 2 — Railway: app service (no Railway Postgres)**
+
+| # | Step | Done? | Notes |
+|---|---|---|---|
+| S-04 | `railway login` + `railway init` (project name: `infographic-editor`) | ☐ | |
+| S-05 | In Railway dashboard: create `staging` environment (Settings → Environments → New) | ☐ | |
+| S-06 | Set Railway staging variables (see table below) | ☐ | |
+| S-07 | **Bootstrap first deploy:** `railway up --detach` *(one-time only — creates the service)* | ☐ | After this, merges to `main` trigger auto-deploy |
+| S-08 | In Railway service settings → Deploy → set **Branch = `main`** and enable **Auto Deploy** | ☐ | This wires the CI/CD flow from the strategy |
+| S-09 | `railway logs` → confirm `prisma db push` + `serving on port` + `Nest application successfully started` | ☐ | First boot seeds templates automatically |
+| S-10 | `railway domain` → note the staging URL | ☐ | |
 
 **Required Railway staging variables:**
 
 | Variable | Value |
 |---|---|
-| `DATABASE_URL` | Neon staging-branch direct URL |
+| `DATABASE_URL` | Neon **staging** branch direct URL (`?sslmode=require`) |
 | `NODE_ENV` | `production` |
-| `JWT_SECRET` | Random 32-byte base64 (unique for staging) |
-| `SESSION_SECRET` | Random 32-byte base64 |
+| `JWT_SECRET` | Random 32-byte base64 — unique for staging |
+| `SESSION_SECRET` | Random 32-byte base64 — unique for staging |
 | `OPENAI_API_KEY` | Your OpenAI key |
 | `IDEOGRAM_API_KEY` | Your Ideogram key (**required for AC3 image fidelity**) |
-| `RAZORPAY_KEY_ID` / `_SECRET` | Razorpay **TEST** keys |
-| `RAZORPAY_PLAN_SOLO_MONTHLY` etc. | Test plan IDs |
-| `VITE_RAZORPAY_KEY_ID` | Same test key (browser-exposed) |
-| `GOOGLE_CLIENT_ID` / `_SECRET` / `CALLBACK_URL` | Update callback URL to Railway staging URL |
+| `RAZORPAY_KEY_ID` / `RAZORPAY_KEY_SECRET` | Razorpay **TEST** keys |
+| `RAZORPAY_PLAN_SOLO_MONTHLY` etc. | Razorpay test plan IDs |
+| `VITE_RAZORPAY_KEY_ID` | Same TEST key (browser-exposed) |
+| `RAZORPAY_WEBHOOK_SECRET` | Test webhook secret |
+| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | OAuth credentials |
+| `GOOGLE_CALLBACK_URL` | `https://<staging-url>/api/v1/auth/google/callback` |
 
-> ⚠️ Do **not** add a Railway Postgres service. The DB lives on Neon.
+> ⚠️ Do **not** add a Railway Postgres service. The DB is on Neon.  
+> ⚠️ Do **not** set `PORT` — Railway injects it automatically.
+
+---
+
+### 2B. Deploy: Merge to `main` → Staging Auto-Deploys
+
+> Per `docs/DEPLOYMENT_STRATEGY.md` §3: merging to `main` is the staging deploy trigger — not `railway up`.
+
+| # | Step | Done? | Notes |
+|---|---|---|---|
+| S-11 | Open a PR from `feat/epic-design-02-ui-redesign` → `main` on GitHub | ☐ | Use STORY.md as PR body |
+| S-12 | Review the diff; confirm no unintended files (`.env`, secrets) | ☐ | |
+| S-13 | **Merge the PR** (squash merge) → Railway detects push to `main` and starts staging deploy | ☐ | Watch Railway dashboard |
+| S-14 | Railway deploy completes → `railway logs` shows clean startup | ☐ | Same checks as S-09 |
 
 ---
 
@@ -242,83 +271,100 @@ PLAYWRIGHT_BASE_URL=https://<your-staging>.up.railway.app npx playwright test
 
 > **Goal:** Deploy to production with live keys; verify monitoring is working.  
 > **Time:** ~1 hour  
-> **Prerequisites:** Task 2 complete and signed off.
+> **Prerequisites:** Task 2 signed off; staging smoke fully green.  
+> **Deployment flow (from `docs/DEPLOYMENT_STRATEGY.md` §3):**  
+> `git tag v1.0.0` → push tag → Railway promotes to production (canary → 100%)
 
 ---
 
 ### 3A. Neon Production Branch
 
-| # | Step | Done? |
-|---|---|---|
-| P-01 | Use or confirm the Neon `main`/`production` branch (separate from staging) | ☐ |
-| P-02 | Copy the production branch **direct connection string** | ☐ |
+| # | Step | Done? | Notes |
+|---|---|---|---|
+| P-01 | Confirm the Neon `main` branch is the production branch (default) | ☐ | Or create a `production` branch if you want named separation |
+| P-02 | Copy the production branch **direct connection string** (`?sslmode=require`) | ☐ | |
 
 ---
 
-### 3B. Railway Production Environment
+### 3B. Railway Production Environment — One-Time Setup
 
-| # | Step | Done? |
-|---|---|---|
-| P-03 | Create `production` environment in Railway (protected; deploy from tag or manual promote) | ☐ |
-| P-04 | Set all variables for production (see table below) | ☐ |
-| P-05 | `railway up --detach` (production environment) | ☐ |
-| P-06 | `railway logs` → confirm clean startup (`prisma db push` + NestJS + serving) | ☐ |
-| P-07 | `railway domain` → set custom domain or note Railway URL | ☐ |
+| # | Step | Done? | Notes |
+|---|---|---|---|
+| P-03 | In Railway dashboard: create `production` environment (mark as **Protected**) | ☐ | Protected = no accidental deploys |
+| P-04 | Set all production variables (see table below) | ☐ | **LIVE keys only — never TEST keys here** |
+| P-05 | In Railway service settings → Deploy → set **Deploy Trigger = Git tag (`v*`)** | ☐ | Per strategy §3: production deploys from a version tag, not branch push |
+| P-06 | **Bootstrap first deploy:** `railway up --detach` from the `production` environment *(one-time)* | ☐ | Creates the service; subsequent deploys are tag-triggered |
+| P-07 | `railway logs` → confirm clean startup | ☐ | |
+| P-08 | `railway domain` → set custom domain or note Railway URL | ☐ | |
 
-**Required Railway production variables:**
+---
+
+### 3C. Release: Tag `v1.0.0` → Production Auto-Deploys
+
+> Per `docs/DEPLOYMENT_STRATEGY.md` §3: production deploys from a tag push, not a merge.
+
+| # | Step | Done? | Notes |
+|---|---|---|---|
+| P-09 | Confirm `main` is green on staging and all Task 2 checks are signed off | ☐ | Don't tag until staging is stable |
+| P-10 | `git tag v1.0.0 -m "InfographicAI v1.0.0 — Phase 0 launch"` | ☐ | |
+| P-11 | `git push origin v1.0.0` → Railway detects tag and starts production deploy | ☐ | |
+| P-12 | Railway deploy completes → `railway logs` shows clean startup (production environment) | ☐ | |
+
+**Required Railway production variables (P-04):**
 
 | Variable | Value |
 |---|---|
-| `DATABASE_URL` | Neon **production** branch direct URL |
+| `DATABASE_URL` | Neon **production** branch direct URL (`?sslmode=require`) |
 | `NODE_ENV` | `production` |
-| `JWT_SECRET` | **New** random 32-byte — different from staging |
-| `SESSION_SECRET` | **New** random 32-byte |
+| `JWT_SECRET` | **New** random 32-byte — **different from staging** |
+| `SESSION_SECRET` | **New** random 32-byte — **different from staging** |
 | `OPENAI_API_KEY` | Your OpenAI key |
 | `IDEOGRAM_API_KEY` | Your Ideogram key |
-| `RAZORPAY_KEY_ID` / `_SECRET` | **LIVE** Razorpay keys (not test) |
-| `RAZORPAY_PLAN_SOLO_MONTHLY` etc. | **LIVE** plan IDs |
-| `VITE_RAZORPAY_KEY_ID` | **LIVE** browser-exposed key |
+| `RAZORPAY_KEY_ID` / `RAZORPAY_KEY_SECRET` | **LIVE** Razorpay keys — not test |
+| `RAZORPAY_PLAN_SOLO_MONTHLY` etc. | **LIVE** plan IDs from Razorpay Dashboard |
+| `VITE_RAZORPAY_KEY_ID` | **LIVE** key (browser-exposed) |
 | `RAZORPAY_WEBHOOK_SECRET` | Live webhook secret |
-| `GOOGLE_CLIENT_ID` / `_SECRET` / `CALLBACK_URL` | Update callback URL to production domain |
-| `SENTRY_DSN` | Paste from Sentry project |
+| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | OAuth credentials |
+| `GOOGLE_CALLBACK_URL` | `https://<prod-url>/api/v1/auth/google/callback` |
+| `SENTRY_DSN` | Paste from Sentry project dashboard |
 | `VITE_SENTRY_DSN` | Same value (browser-exposed) |
 
-> ⚠️ Double-check: LIVE Razorpay keys should **never** go into staging variables. If they accidentally did, rotate them immediately.
+> ⚠️ LIVE Razorpay keys must **never** appear in staging variables. If that happens, rotate them immediately in the Razorpay Dashboard.
 
 ---
 
-### 3C. Production Smoke Test
+### 3D. Production Smoke Test
 
 | # | Check | Pass? | Notes |
 |---|---|---|---|
-| P-08 | `GET https://<prod-url>/api/health` returns `{"status":"ok","db":"connected"}` | ☐ | |
-| P-09 | Register a real account → lands on `/templates` | ☐ | |
-| P-10 | Open template → Editor loads | ☐ | |
-| P-11 | Generate one infographic (uses Ideogram live key) | ☐ | Costs ~$0.025 |
-| P-12 | Usage counter shows `1/3` | ☐ | |
-| P-13 | **LIVE Razorpay:** Complete a SOLO monthly checkout with a real card | ☐ | Costs ₹999 — use your own card for final smoke |
-| P-14 | Plan shows as SOLO after webhook fires | ☐ | |
-| P-15 | Generate more infographics; counter updates | ☐ | |
+| P-13 | `GET https://<prod-url>/api/health` returns `{"status":"ok","db":"connected"}` | ☐ | |
+| P-14 | Register a real account → lands on `/templates` | ☐ | `prisma db push` at first boot seeds templates |
+| P-15 | Open template → Editor loads | ☐ | |
+| P-16 | Generate one infographic (uses live Ideogram key) | ☐ | Costs ~$0.025 per image |
+| P-17 | Usage counter shows `1/3` (FREE tier) | ☐ | |
+| P-18 | **LIVE Razorpay:** Complete a SOLO monthly checkout with a real card | ☐ | Costs ₹999 — use your own card for final smoke |
+| P-19 | Plan shows as SOLO after webhook fires | ☐ | Check Account page |
+| P-20 | Generate more infographics; counter updates (e.g. `2/50`, `3/50`) | ☐ | |
 
 ---
 
-### 3D. Sentry Verification
+### 3E. Sentry Verification
 
 | # | Check | Pass? | Notes |
 |---|---|---|---|
-| P-16 | Open Sentry dashboard → InfographicAI project | ☐ | |
-| P-17 | A **test error** appears: in browser console run `throw new Error("Sentry smoke test")` on the production URL | ☐ | Or trigger a known error path |
-| P-18 | Event appears in Sentry within ~30 seconds | ☐ | |
-| P-19 | **Source maps** resolve: Sentry shows readable filenames, not bundle hashes | ☐ | If not, configure `SENTRY_AUTH_TOKEN` in build |
+| P-21 | Open Sentry dashboard → InfographicAI project | ☐ | |
+| P-22 | Trigger a test event: browser console on production URL → `throw new Error("Sentry smoke test")` | ☐ | |
+| P-23 | Event appears in Sentry within ~30 seconds | ☐ | |
+| P-24 | **Source maps** resolve: Sentry shows readable filenames, not bundle hashes | ☐ | If not, add `SENTRY_AUTH_TOKEN` to Railway build variables |
 
 ---
 
-### 3E. Google OAuth — Production
+### 3F. Google OAuth — Production
 
 | # | Check | Pass? | Notes |
 |---|---|---|---|
-| P-20 | Update Google Cloud Console: add production URL to **Authorized redirect URIs** | ☐ | `https://<prod-url>/api/v1/auth/google/callback` |
-| P-21 | Google sign-in works on production | ☐ | |
+| P-25 | Google Cloud Console: add production domain to **Authorized redirect URIs** | ☐ | `https://<prod-url>/api/v1/auth/google/callback` |
+| P-26 | Google sign-in works on production | ☐ | |
 
 ---
 
