@@ -123,7 +123,7 @@ export function AIChatIconBar({
           size="icon"
           className={`h-9 w-9 rounded-full transition-all ${
             canGenerate
-              ? 'bg-blue-600 hover:bg-blue-700 text-white'
+              ? 'bg-primary hover:bg-primary/90 text-primary-foreground'
               : 'bg-muted text-muted-foreground/50 cursor-not-allowed'
           }`}
           onClick={onGenerate}

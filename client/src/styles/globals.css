@@ -81,6 +81,14 @@ body {
   --success: 142 71% 45%;
   --warning: 38 92% 50%;
 
+  /* ── AI Brand Accent — configurable AI feature identity color ────
+     Change this ONE value to retheme all AI-powered UI surfaces:
+     floating button · generation progress · chat bubbles · hover states
+     Default: purple-500 — signals "AI" vs blue primary "user action"
+  ─────────────────────────────────────────────────────────────────── */
+  --ai-accent: 271 81% 56%;
+  --ai-accent-foreground: 0 0% 100%;
+
   /* Popover */
   --popover: 0 0% 100%;
   --popover-foreground: 222 47% 11%;
@@ -199,6 +207,10 @@ body {
   --destructive-foreground: 0 0% 100%;
   --success: 142 71% 45%;
   --warning: 38 92% 50%;
+
+  /* AI Brand Accent — slightly brighter on dark for visibility */
+  --ai-accent: 271 91% 68%;
+  --ai-accent-foreground: 0 0% 100%;
 
   /* Popover */
   --popover: 45 25% 7%;

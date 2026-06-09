@@ -308,7 +308,7 @@ function SuggestionCardItem({ card, onClick }: SuggestionCardItemProps) {
   return (
     <button
       onClick={onClick}
-      className="group relative overflow-hidden rounded-xl border-2 border-border hover:border-blue-500 transition-all hover:shadow-md text-left bg-background"
+      className="group relative overflow-hidden rounded-xl border-2 border-border hover:border-primary transition-all hover:shadow-md text-left bg-background"
     >
       {/* Image */}
       {card.imageUrl && (
@@ -324,7 +324,7 @@ function SuggestionCardItem({ card, onClick }: SuggestionCardItemProps) {
       {/* Content */}
       <div className="p-3">
         <div className="flex items-start gap-2 mb-1">
-          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center shrink-0 text-white">
+          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-ai-accent to-primary flex items-center justify-center shrink-0 text-white">
             {card.icon}
           </div>
           <div className="flex-1 min-w-0">
@@ -349,7 +349,7 @@ function SuggestionCardItem({ card, onClick }: SuggestionCardItemProps) {
       </div>
 
       {/* Hover Effect */}
-      <div className="absolute inset-0 border-2 border-transparent group-hover:border-blue-500 rounded-xl pointer-events-none" />
+      <div className="absolute inset-0 border-2 border-transparent group-hover:border-primary rounded-xl pointer-events-none" />
     </button>
   );
 }

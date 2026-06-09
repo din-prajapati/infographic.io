@@ -30,7 +30,7 @@ export function SmartSuggestionsRow({
       className="px-4 pb-3"
     >
       <div className="flex items-center gap-2 mb-2">
-        <Sparkles className="w-3.5 h-3.5 text-purple-600" />
+        <Sparkles className="w-3.5 h-3.5 text-ai-accent" />
         <span className="text-xs font-medium text-muted-foreground">Smart Suggestions</span>
       </div>
       
@@ -40,7 +40,7 @@ export function SmartSuggestionsRow({
           <button
             key={suggestion.id}
             onClick={() => onSuggestionClick(suggestion.text)}
-            className="shrink-0 px-3 py-1.5 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 hover:border-purple-500/50 rounded-full text-xs font-medium text-purple-500 transition-all hover:shadow-sm"
+            className="shrink-0 px-3 py-1.5 bg-ai-accent/10 hover:bg-ai-accent/20 border border-ai-accent/30 hover:border-ai-accent/50 rounded-full text-xs font-medium text-ai-accent transition-all hover:shadow-sm"
           >
             {suggestion.text}
           </button>

@@ -116,6 +116,23 @@ export class GenerationsService {
       */
 
     // Convert extracted data to GenerateInfographicDto format
+    // dto.agent overrides extractor results — enables AgentInfoForm values to reach generation
+    const extractedAgent = extractedData.agent || {};
+    const dtoAgent = dto.agent || {};
+    const agentData = {
+      name: dtoAgent.name || extractedAgent.name || 'Agent',
+      brokerage: dtoAgent.brokerage ?? extractedAgent.brokerage ?? '',
+      phone: dtoAgent.phone ?? extractedAgent.phone ?? '',
+      email: dtoAgent.email ?? extractedAgent.email ?? '',
+      // dto.agent.brandColors (from sidebar palette) > extracted > hardcoded defaults
+      brandColors:
+        (dtoAgent.brandColors && dtoAgent.brandColors.length > 0)
+          ? dtoAgent.brandColors
+          : (extractedAgent.brandColors && extractedAgent.brandColors.length > 0)
+            ? extractedAgent.brandColors
+            : ['#1F448B', '#FFFFFF'],
+    };
+
     const propertyData = {
       propertyType: extractedData.propertyType || 'residential',
       listingType: extractedData.listingType || 'for_sale',
@@ -125,11 +142,7 @@ export class GenerationsService {
       baths: extractedData.baths || 0,
       sqft: extractedData.sqft || 0,
       features: extractedData.features || [],
-      agent: extractedData.agent || {
-        name: 'Agent',
-        brokerage: '',
-        brandColors: ['#1F448B', '#FFFFFF'],
-      },
+      agent: agentData,
       aiModel: dto.model || 'ideogram-turbo',
     };
 

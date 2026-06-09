@@ -1,0 +1,18 @@
+flowchart LR
+  subgraph Frontend["Frontend (React :5000)"]
+    A["AIChatBox.tsx\n(format + quality selectors)"]
+    B["PhotoUpload.tsx\n(new component)"]:::good
+    C["FormatSelector.tsx\n(new component)"]:::good
+    D["QualitySelector.tsx\n(new component)"]:::good
+  end
+  subgraph NestJS["NestJS API (:3001)"]
+    E["GenerationRequest\n(propertyTier, outputPurpose, aspectRatio)"]:::good
+    F["image-generation.service.ts\n(maps request → model internally)"]
+    G["photo-upload.service.ts\n(new — stores reference photo)"]:::good
+  end
+  A --> E
+  B --> G
+  C --> E
+  D --> E
+  E -- "FREE/SOLO → Flash\nTEAM/BROKERAGE → Pro\nprint → higher params" --> F
+  classDef good fill:#0b3b2e,stroke:#14532d,color:#ecfdf5;

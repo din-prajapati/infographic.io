@@ -58,7 +58,7 @@ export function GenerationProgressBar({
       <div className="mb-2">
         <div className="h-1 bg-muted rounded-full overflow-hidden">
           <motion.div
-            className="h-full bg-gradient-to-r from-purple-500 to-blue-500"
+            className="h-full bg-gradient-to-r from-ai-accent to-primary"
             initial={{ width: 0 }}
             animate={{ width: `${progress}%` }}
             transition={{ duration: 0.3 }}
@@ -69,7 +69,7 @@ export function GenerationProgressBar({
       {/* Status and Timer */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Loader2 className="w-4 h-4 text-purple-600 animate-spin" />
+          <Loader2 className="w-4 h-4 text-ai-accent animate-spin" />
           <span className="text-sm text-foreground">{message}</span>
         </div>
         <div className="flex items-center gap-2 text-sm text-muted-foreground">

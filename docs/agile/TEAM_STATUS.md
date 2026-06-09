@@ -9,15 +9,15 @@
 
 ## Board Summary (All Domains)
 
-| Domain | Active Epic | In Progress | Blocked | Upcoming |
-|--------|-------------|-------------|---------|----------|
-| [Payments (PAY)](#-payments-pay) | EPIC-PAY-01 ✅ Done | — | PT-06 BROKERAGE | EPIC-PAY-02 Phase 1 |
-| [Design / Frontend (DESIGN)](#-design--frontend-design) | EPIC-DESIGN-01 🟡 | US-003 staging / human TCs | Live Ideogram API | US-DESIGN-001 + 004 human QA |
-| [Auth (AUTH)](#-auth-auth) | EPIC-AUTH-01 ✅ Done | — | — | Full invite flow post-MVP |
-| [Canvas Editor (EDIT)](#-canvas-editor-edit) | EPIC-EDIT-01 ✅ Done | — | — | Batch upload Phase 3 |
-| [AI Generation (AI)](#-ai-generation-ai) | EPIC-AI-01 ✅ Done | — | — | Multi-pass Phase 2 |
-| [Infrastructure (INFRA)](#-infrastructure-infra) | EPIC-INFRA-01 🟡 | Phase 0 deploy tasks | — | Admin dashboard Phase 5 |
-| [Organization / Team (ORG)](#-organization--team-org) | — | — | — | Full invite flow post-MVP |
+| Domain | Active Epic | Status | Blocked | Upcoming |
+|--------|-------------|--------|---------|----------|
+| [Payments (PAY)](#-payments-pay) | EPIC-PAY-01 | ✅ Done | PT-06 BROKERAGE | EPIC-PAY-02 Phase 1 |
+| [Design (DESIGN)](#-design--frontend-design) | EPIC-DESIGN-01 + EPIC-DESIGN-02 | 🟡 US-003/004 staging | Live Ideogram API | Staging deploy unblocks both |
+| [Auth (AUTH)](#-auth-auth) | EPIC-AUTH-01 | ✅ Done | — | Full invite flow post-MVP |
+| [Canvas Editor (EDIT)](#-canvas-editor-edit) | EPIC-EDIT-01 | ✅ Done | — | Batch upload Phase 3 |
+| [AI Generation (AI)](#-ai-generation-ai) | EPIC-AI-01 | ✅ Done | — | EPIC-AI-00 (Phase 0.5 Foundation) |
+| [Infrastructure (INFRA)](#-infrastructure-infra) | EPIC-INFRA-01 | 🟡 3 deploy tasks | Human tasks | Admin dashboard Phase 5 |
+| [Organization (ORG)](#-organization--team-org) | — | Post-MVP | No email provider | EPIC-ORG-01 post-launch |
 
 ---
 
@@ -26,7 +26,7 @@
 ## 💳 Payments (PAY)
 
 **Epic lead:** Dinesh  
-**Active epic:** [EPIC-PAY-01](epics/EPIC-PAY-01/EPIC.md) — MVP Payments  
+**Active epic:** [EPIC-PAY-01](epics/phase-0-mvp/EPIC-PAY-01/EPIC.md) — MVP Payments  
 **Phase:** 0 (MVP)
 
 ### Now (In Progress)
@@ -55,30 +55,38 @@
 ## 🎨 Design / Frontend (DESIGN)
 
 **Epic lead:** Dinesh  
-**Active epic:** [EPIC-DESIGN-01](epics/EPIC-DESIGN-01/EPIC.md) — UI Design Consistency & Theme  
-**Phase:** 0 (MVP)
+**Active epic:** [EPIC-DESIGN-01](epics/phase-0-mvp/EPIC-DESIGN-01/EPIC.md) — UI Design Consistency & Theme  
+**Phase:** 0 (MVP) · **Last updated:** 2026-04-29
 
-### Now (In Progress)
+### Now — Blocked on Staging Deploy
 
-| Story | Title | Status | Blocks |
-|-------|-------|--------|--------|
-| [US-DESIGN-001](epics/EPIC-DESIGN-01/stories/US-DESIGN-001/STORY.md) | Theme system — non-editor screens | 🟡 AC4–7 ✅, AC1–3 🔲 human | Nothing |
-| [US-DESIGN-004](epics/EPIC-DESIGN-01/stories/US-DESIGN-004/STORY.md) | Global typography + nav consistency | 🟡 AC1,5 ✅, AC2–4,6 🔲 human | Nothing |
-| [US-DESIGN-003](epics/EPIC-DESIGN-01/stories/US-DESIGN-003/STORY.md) | AI Generation flow UX states | 🟡 AC1 ✅; AC2–6 🔲 re-run / human on staging | Live Ideogram API |
+| Story | Title | Status | Unblocked by |
+|-------|-------|--------|--------------|
+| [US-DESIGN-003](epics/phase-0-mvp/EPIC-DESIGN-01/stories/US-DESIGN-003/STORY.md) | AI Generation flow UX states | 🟡 AC3 🔲 — result image proportions | Live Ideogram API on staging |
+| [US-DESIGN-004](epics/phase-0-mvp/EPIC-DESIGN-01/stories/US-DESIGN-004/STORY.md) | Global typography + nav consistency | 🟡 AC2–4,6 🔲 — button heights, card borders, spacing | Staging deploy |
 
-**Ship gate:** Deploy `main` to staging → run **US-DESIGN-003** TCs (incl. re-run TC-DS-003-01/02 after US-002 merge per [STORY.md](epics/EPIC-DESIGN-01/stories/US-DESIGN-003/STORY.md)). TCs that hit the live Ideogram API need staging keys and quota.
+**Ship gate:** Deploy `main` to staging (HUMAN TASK 2) → run US-DESIGN-003 AC3 + US-DESIGN-004 visual spot checks. Both stories close on same staging session.
 
-### Ready to Start (Next AI Session)
+### Done (Phase 0)
 
-| Story | Title | Notes |
-|-------|-------|--------|
-| — | Residual editor Tailwind (optional) | Only if product wants zero grep — see [M-DESIGN-02](epics/EPIC-DESIGN-01/milestones/M-DESIGN-02-editor-tokens.md) |
+| Story / Milestone | Title | Closed | PR |
+|-------------------|-------|--------|----|
+| M-DESIGN-01 | Theme & Global QA (35 auto-tests) | 2026-04-13 | — |
+| [US-DESIGN-001](epics/phase-0-mvp/EPIC-DESIGN-01/stories/US-DESIGN-001/STORY.md) | Theme toggle + human QA · 3 bugs fixed | 2026-04-29 | — |
+| [US-DESIGN-002](epics/phase-0-mvp/EPIC-DESIGN-01/stories/US-DESIGN-002/STORY.md) | Editor + AI chat design tokens | 2026-04-17 | [PR #1](https://github.com/din-prajapati/infographic.io/pull/1) |
+| M-DESIGN-03 | Token Foundation (Blue/Amber/Warm-Cream) | 2026-04-22 | — |
+| [US-DESIGN-005](epics/phase-0-mvp/EPIC-DESIGN-02/stories/US-DESIGN-005/STORY.md) | New color scheme in globals.css | 2026-04-22 | — |
+| [US-DESIGN-006](epics/phase-0-mvp/EPIC-DESIGN-02/stories/US-DESIGN-006/STORY.md) | Outfit display font integration | 2026-04-22 | — |
+| M-DESIGN-04 | Domain Color System | 2026-04-23 | — |
+| [US-DESIGN-007](epics/phase-0-mvp/EPIC-DESIGN-02/stories/US-DESIGN-007/STORY.md) | Real estate category color token migration | 2026-04-23 | — |
+| [US-DESIGN-008](epics/phase-0-mvp/EPIC-DESIGN-02/stories/US-DESIGN-008/STORY.md) | Template badge tier token migration | 2026-04-23 | — |
+| UI hover consistency | 14 blue→primary fixes · ai-accent token · Danger Zone | 2026-04-29 | — |
 
-### Done (this Epic)
-| Story | AC status | PR |
-|-------|-----------|-----|
-| M-DESIGN-01 QA | ✅ 35 auto-tests run 2026-04-13 | — (QA-only milestone) |
-| [US-DESIGN-002](epics/EPIC-DESIGN-01/stories/US-DESIGN-002/STORY.md) | ✅ ACs + TCs; merged to `main` | [#1](https://github.com/din-prajapati/infographic.io/pull/1) merged 2026-04-17 |
+### Deferred to Phase 4
+
+| Item | Reason |
+|------|--------|
+| M-DESIGN-05 / [EPIC-DESIGN-03](epics/phase-4-backlog/EPIC-DESIGN-03/EPIC.md) | TemplatesPage, Editor, AI Chat component polish — after Phase 3 AI Advanced |
 
 ---
 
@@ -128,7 +136,7 @@
 | Export (PNG) | ✅ |
 
 ### Known Issue (Not a Bug — Deferred)
-> **Theme:** US-DESIGN-002 merged — primary editor chrome + AI chat use design tokens. AI Chat is grep-clean for common gray/white utilities; **editor** still has **residual** gray/white Tailwind in secondary UI — see [M-DESIGN-02](epics/EPIC-DESIGN-01/milestones/M-DESIGN-02-editor-tokens.md).
+> **Theme:** US-DESIGN-002 merged — primary editor chrome + AI chat use design tokens. AI Chat is grep-clean for common gray/white utilities; **editor** still has **residual** gray/white Tailwind in secondary UI — see [M-DESIGN-02](epics/phase-0-mvp/EPIC-DESIGN-01/milestones/M-DESIGN-02-editor-tokens.md).
 
 ### Next (Phase 3+)
 | Feature | Phase | Story |

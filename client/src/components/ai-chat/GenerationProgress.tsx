@@ -24,10 +24,10 @@ export function GenerationProgress({ steps, currentStep }: GenerationProgressPro
       animate={{ opacity: 1, y: 0 }}
       className="px-4 pb-4"
     >
-      <div className="bg-gradient-to-br from-purple-50 to-blue-50 border border-purple-200 rounded-xl p-4">
+      <div className="bg-gradient-to-br from-ai-accent/8 to-primary/8 border border-ai-accent/30 rounded-xl p-4"> {/* AI brand — intentional */}
         <div className="flex items-center gap-2 mb-3">
-          <Loader2 className="w-4 h-4 text-purple-600 animate-spin" />
-          <h3 className="text-sm text-purple-900">Generating your infographic...</h3>
+          <Loader2 className="w-4 h-4 text-ai-accent animate-spin" />
+          <h3 className="text-sm text-foreground">Generating your infographic...</h3>
         </div>
 
         <div className="space-y-2">
@@ -39,7 +39,7 @@ export function GenerationProgress({ steps, currentStep }: GenerationProgressPro
                   step.status === 'completed'
                     ? 'bg-green-500'
                     : step.status === 'in-progress'
-                    ? 'bg-purple-500'
+                    ? 'bg-ai-accent'
                     : 'bg-muted'
                 }`}
               >
@@ -58,7 +58,7 @@ export function GenerationProgress({ steps, currentStep }: GenerationProgressPro
                   step.status === 'completed'
                     ? 'text-green-700'
                     : step.status === 'in-progress'
-                    ? 'text-purple-700'
+                    ? 'text-ai-accent'
                     : 'text-muted-foreground'
                 }`}
               >
@@ -72,7 +72,7 @@ export function GenerationProgress({ steps, currentStep }: GenerationProgressPro
                     initial={{ width: '0%' }}
                     animate={{ width: '100%' }}
                     transition={{ duration: 2, ease: 'linear', repeat: Infinity }}
-                    className="h-full bg-purple-500"
+                    className="h-full bg-ai-accent"
                   />
                 </div>
               )}
@@ -87,7 +87,7 @@ export function GenerationProgress({ steps, currentStep }: GenerationProgressPro
               initial={{ width: '0%' }}
               animate={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
               transition={{ duration: 0.5 }}
-              className="h-full bg-gradient-to-r from-purple-500 to-blue-500"
+              className="h-full bg-gradient-to-r from-ai-accent to-primary"
             />
           </div>
           <p className="text-xs text-muted-foreground mt-2 text-center">

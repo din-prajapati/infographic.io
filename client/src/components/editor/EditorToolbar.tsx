@@ -1,11 +1,8 @@
 import { Button } from "../ui/button";
-import { 
-  Sparkles, 
+import {
+  Sparkles,
   ArrowLeft,
-  Share2, 
-  ChevronDown,
   Maximize2,
-  Upload,
   Download,
   Save
 } from "lucide-react";
@@ -94,23 +91,6 @@ export function EditorToolbar({
         >
           <Download className="w-4 h-4" />
           Export
-        </Button>
-
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-9 gap-2 text-foreground hover:text-foreground hover:bg-muted border border-border"
-        >
-          <Upload className="w-4 h-4 text-yellow-500" />
-          Publish
-        </Button>
-
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted"
-        >
-          <Share2 className="w-4 h-4" />
         </Button>
 
         <Button

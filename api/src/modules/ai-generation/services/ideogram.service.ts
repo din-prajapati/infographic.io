@@ -9,6 +9,9 @@ export class IdeogramService {
 
   constructor() {
     this.apiKey = process.env.IDEOGRAM_API_KEY || '';
+    if (!this.apiKey) {
+      console.warn('⚠️ IDEOGRAM_API_KEY not configured. Image generation will fail with 401. Set IDEOGRAM_API_KEY environment variable to enable real generation.');
+    }
   }
 
   async generateImage(prompt: string, model: string = 'ideogram-turbo'): Promise<string> {

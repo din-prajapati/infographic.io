@@ -17,8 +17,12 @@ import { loadTemplateById } from "../../lib/storage";
 import { restoreCanvasData } from "../../lib/canvasState";
 import { toast } from "sonner";
 
-export function CenterCanvas() {
-  
+interface CenterCanvasProps {
+  isPreviewMode?: boolean;
+}
+
+export function CenterCanvas({ isPreviewMode = false }: CenterCanvasProps) {
+
   const [isAIChatExpanded, setIsAIChatExpanded] =
     useState(false);
   const [isPanning, setIsPanning] = useState(false);
@@ -38,10 +42,6 @@ export function CenterCanvas() {
   const canvasPanX = useCanvasStore((state) => state.canvasPanX);
   const canvasPanY = useCanvasStore((state) => state.canvasPanY);
   const setPan = useCanvasStore((state) => state.setPan);
-
-  // Get isPreviewMode from parent if needed, for now we'll assume false
-  // In a real implementation, this could be passed as a prop
-  const isPreviewMode = false;
 
   const handleAIButtonClick = () => {
     setIsAIChatExpanded(prev => !prev);
@@ -737,21 +737,19 @@ export function CenterCanvas() {
       </div>
 
       {/* AI Button - Purple Gradient */}
-      <div className="absolute bottom-6 right-6">
-        <Button
-          onClick={handleAIButtonClick}
-          aria-label={
-            isAIChatExpanded ? "Close AI Chat" : "Open AI Chat"
-          }
-          aria-expanded={isAIChatExpanded}
-          aria-controls={
-            isAIChatExpanded ? "ai-chat-panel" : undefined
-          }
-          className="h-14 w-14 rounded-full bg-gradient-to-br from-purple-500 to-purple-700 hover:from-purple-600 hover:to-purple-800 shadow-lg hover:shadow-xl transition-all"
-        >
-          <Sparkles className="w-10 h-10 animate-pulse" />
-        </Button>
-      </div>
+      {!isPreviewMode && (
+        <div className="absolute bottom-6 right-6">
+          <Button
+            onClick={handleAIButtonClick}
+            aria-label={isAIChatExpanded ? "Close AI Chat" : "Open AI Chat"}
+            aria-expanded={isAIChatExpanded}
+            aria-controls={isAIChatExpanded ? "ai-chat-panel" : undefined}
+            className="h-14 w-14 rounded-full bg-gradient-to-br from-ai-accent to-ai-accent/70 hover:from-ai-accent/90 hover:to-ai-accent/60 shadow-lg hover:shadow-xl transition-all" /* AI brand — intentional */
+          >
+            <Sparkles className="w-10 h-10 animate-pulse" />
+          </Button>
+        </div>
+      )}
 
       {/* AI Chat Box */}
       <AIChatBox

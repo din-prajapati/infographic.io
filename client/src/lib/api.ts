@@ -70,6 +70,14 @@ export const infographicsApi = {
 };
 
 // AI Generations API (Sub-Resource)
+export interface AgentInput {
+  name?: string;
+  brokerage?: string;
+  phone?: string;
+  email?: string;
+  brandColors?: string[];
+}
+
 export interface GenerateFromChatInput {
   prompt: string;
   extractionId?: string;
@@ -77,6 +85,7 @@ export interface GenerateFromChatInput {
   style?: string;
   model?: 'ideogram-turbo' | 'ideogram-v2' | 'nano-banana-pro';
   variations?: number;
+  agent?: AgentInput;
 }
 
 export interface GenerationStatus {

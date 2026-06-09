@@ -55,9 +55,9 @@ export function MessageBubble({ message, index, onRegenerateAll, selectedPreview
               </div>
             ) : (
               <>
-                <div className="flex items-center gap-1.5 px-2 py-0.5 bg-purple-500/15 rounded-full">
-                  <Sparkles className="w-3 h-3 text-purple-500" />
-                  <span className="text-xs text-purple-500 font-medium">Real Estate Template Generator</span>
+                <div className="flex items-center gap-1.5 px-2 py-0.5 bg-ai-accent/15 rounded-full"> {/* AI brand — intentional */}
+                  <Sparkles className="w-3 h-3 text-ai-accent" />
+                  <span className="text-xs text-ai-accent font-medium">Real Estate Template Generator</span>
                 </div>
                 {isGenerating && (
                   <div className="px-2 py-0.5 bg-blue-500/15 rounded-full">
@@ -84,14 +84,14 @@ export function MessageBubble({ message, index, onRegenerateAll, selectedPreview
                 : isError
                   ? 'bg-destructive/10 border border-destructive/30 text-foreground rounded-bl-md'
                   : isGenerating
-                    ? 'bg-purple-500/10 border border-purple-500/30 text-foreground rounded-bl-md min-w-[320px]'
+                    ? 'bg-ai-accent/10 border border-ai-accent/30 text-foreground rounded-bl-md min-w-[320px]' /* AI brand — intentional */
                     : 'bg-background border border-border text-foreground rounded-bl-md'
           }`}
         >
           {/* User Message Icon Badge */}
           {isUser && (
             <div className="flex items-center gap-2 mb-2">
-              <div className="w-6 h-6 rounded-full bg-purple-600 flex items-center justify-center">
+              <div className="w-6 h-6 rounded-full bg-ai-accent flex items-center justify-center">
                 <ImageIcon className="w-3.5 h-3.5 text-white" />
               </div>
               <span className="text-xs text-muted-foreground">You</span>
@@ -139,7 +139,7 @@ export function MessageBubble({ message, index, onRegenerateAll, selectedPreview
             // Generation Progress inside AI bubble
             <div className="space-y-3">
               <div className="flex items-center gap-2 mb-3">
-                <Sparkles className="w-4 h-4 text-purple-600" />
+                <Sparkles className="w-4 h-4 text-ai-accent" />
                 <p className="text-sm font-medium text-foreground">Generating your infographic...</p>
               </div>
               
@@ -151,7 +151,7 @@ export function MessageBubble({ message, index, onRegenerateAll, selectedPreview
                         <Check className="w-3 h-3 text-white" />
                       </div>
                     ) : step.status === 'in-progress' ? (
-                      <div className="w-5 h-5 rounded-full bg-purple-500 flex items-center justify-center shrink-0">
+                      <div className="w-5 h-5 rounded-full bg-ai-accent flex items-center justify-center shrink-0">
                         <Loader2 className="w-3 h-3 text-white animate-spin" />
                       </div>
                     ) : (
@@ -161,7 +161,7 @@ export function MessageBubble({ message, index, onRegenerateAll, selectedPreview
                       step.status === 'completed'
                         ? 'text-muted-foreground'
                         : step.status === 'in-progress'
-                          ? 'text-purple-500 font-medium'
+                          ? 'text-ai-accent font-medium'
                           : 'text-muted-foreground/50'
                     }`}>
                       {step.label}

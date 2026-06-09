@@ -47,6 +47,8 @@ import {
   type ResultVariation as ApiResultVariation,
 } from "../../lib/api";
 import { useGenerationWebSocket } from "../../hooks/useGenerationWebSocket";
+import { useAgentStore } from "../../hooks/useAgentStore";
+import { useCanvasStore } from "../../hooks/useCanvasStore";
 
 interface AIChatBoxProps {
   isExpanded: boolean;
@@ -144,6 +146,11 @@ export function AIChatBox({
   currentAiMessageIdRef.current = currentAiMessageId;
   const currentConversationRef = useRef(currentConversation);
   currentConversationRef.current = currentConversation;
+
+  // Agent info from the sidebar Agent Info Form (shared Zustand store)
+  const agentInfo = useAgentStore((s) => s.agent);
+  // Brand colors applied in the sidebar Design tab (canvas store)
+  const selectedThemeColors = useCanvasStore((s) => s.selectedThemeColors);
 
   // Property context for smart suggestions (mock data - will come from form)
   const [propertyType] = useState<
@@ -564,11 +571,26 @@ export function AIChatBox({
     setCurrentStep(0);
 
     try {
+      // Merge agent form values + sidebar brand palette into generation request
+      const brandColors =
+        selectedThemeColors && selectedThemeColors.length > 0
+          ? selectedThemeColors
+          : agentInfo.brandColors.length > 0
+            ? agentInfo.brandColors
+            : undefined;
+
       const generationResult = await generationsApi.generate({
         prompt: promptText,
         conversationId: conversationId,
         variations: 3,
         model: "ideogram-turbo",
+        agent: {
+          name: agentInfo.name || undefined,
+          brokerage: agentInfo.brokerage || undefined,
+          phone: agentInfo.phone || undefined,
+          email: agentInfo.email || undefined,
+          brandColors,
+        },
       });
 
       const generationId = generationResult.id;
@@ -942,7 +964,7 @@ export function AIChatBox({
             selectedVariationId && (
               <div className="shrink-0 px-4 py-2 border-b border-border bg-muted flex gap-2">
                 <Button
-                  className="flex-1 bg-blue-600 hover:bg-blue-700"
+                  className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground"
                   onClick={() => handleUseVariation(selectedVariationId)}
                 >
                   Use This Design

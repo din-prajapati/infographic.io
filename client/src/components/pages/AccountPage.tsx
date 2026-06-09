@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { User, Mail, Bell, Lock, CreditCard, LogOut, BarChart3, Palette, Users } from "lucide-react";
+import { User, Mail, Bell, Lock, CreditCard, LogOut, BarChart3, Palette, Users, Trash2, UserX } from "lucide-react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
@@ -176,10 +176,12 @@ export function AccountPage() {
                     Irreversible actions that will affect your account
                   </p>
                   <div className="space-y-3">
-                    <Button variant="outline" className="w-full justify-start text-destructive border-destructive/20 hover:bg-destructive/10">
+                    <Button variant="ghost" className="w-full justify-start gap-3 text-destructive hover:text-destructive hover:bg-destructive/10">
+                      <Trash2 className="w-4 h-4" />
                       Delete All Designs
                     </Button>
-                    <Button variant="outline" className="w-full justify-start text-destructive border-destructive/20 hover:bg-destructive/10">
+                    <Button variant="ghost" className="w-full justify-start gap-3 text-destructive hover:text-destructive hover:bg-destructive/10">
+                      <UserX className="w-4 h-4" />
                       Delete Account
                     </Button>
                   </div>

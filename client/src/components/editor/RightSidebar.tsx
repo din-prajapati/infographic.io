@@ -571,7 +571,7 @@ export function RightSidebar() {
                           className={`w-full p-3 rounded-lg border-2 transition-all flex flex-col items-center gap-2 ${
                             isSelected
                               ? "border-foreground bg-muted"
-                              : "border-border hover:border-purple-300 hover:bg-purple-50/10"
+                              : "border-border hover:border-ai-accent/40 hover:bg-ai-accent/10" /* AI brand — intentional */
                           }`}
                         >
                           {/* Color Swatch Preview */}
@@ -662,7 +662,7 @@ export function RightSidebar() {
                       <button
                         key={index}
                         onClick={() => addStyledText(style, styleColor)}
-                        className="p-3 rounded-lg border border-border hover:border-blue-400/50 hover:bg-accent/30 transition-all group flex flex-col items-center gap-2"
+                        className="p-3 rounded-lg border border-border hover:border-primary/50 hover:bg-primary/10 transition-all group flex flex-col items-center gap-2"
                       >
                         {/* Light “canvas” chip so dark headline colors stay legible on dark sidebar */}
                         <div className="w-full flex items-center justify-center rounded-md border border-border bg-white py-2 min-h-[2.75rem]">
@@ -695,7 +695,7 @@ export function RightSidebar() {
               {/* Help Text */}
               <div className="p-3 bg-muted rounded-lg border border-border">
                 <div className="flex items-start gap-2">
-                  <Sparkles className="w-4 h-4 text-purple-500 mt-0.5 flex-shrink-0" />
+                  <Sparkles className="w-4 h-4 text-ai-accent mt-0.5 flex-shrink-0" />
                   <div className="text-xs text-foreground">
                     <div className="font-medium mb-1">Quick Tip</div>
                     Select an element on the canvas to edit its properties in the floating toolbar above it

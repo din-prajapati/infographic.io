@@ -51,6 +51,11 @@ export default {
           foreground: "hsl(var(--destructive-foreground) / <alpha-value>)",
           border: "var(--destructive-border)",
         },
+        // AI brand identity — change --ai-accent in globals.css to retheme all AI surfaces
+        "ai-accent": {
+          DEFAULT: "hsl(var(--ai-accent) / <alpha-value>)",
+          foreground: "hsl(var(--ai-accent-foreground) / <alpha-value>)",
+        },
         ring: "hsl(var(--ring) / <alpha-value>)",
         chart: {
           "1": "hsl(var(--chart-1) / <alpha-value>)",

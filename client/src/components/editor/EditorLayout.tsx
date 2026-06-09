@@ -286,9 +286,9 @@ export function EditorLayout({ onBackClick, designId, templateId }: EditorLayout
         )}
         
         {/* Main Editor Area */}
-        <div className={`flex-1 flex overflow-hidden relative min-h-0 ${isPreviewMode ? 'bg-gray-900' : ''}`}>
+        <div className={`flex-1 flex overflow-hidden relative min-h-0 ${isPreviewMode ? 'bg-neutral-950' : ''}`}>
           {/* Center Canvas */}
-          <CenterCanvas />
+          <CenterCanvas isPreviewMode={isPreviewMode} />
           
           {/* Right Sidebar - Design & Properties */}
           {!isPreviewMode && <RightSidebar />}

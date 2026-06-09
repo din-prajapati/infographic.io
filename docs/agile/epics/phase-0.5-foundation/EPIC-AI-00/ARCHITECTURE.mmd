@@ -1,0 +1,27 @@
+flowchart LR
+  subgraph Frontend["Frontend (React :5000)"]
+    A["AIChatBox.tsx\n(localStorage today)"]:::bad
+    B["useGenerationWebSocket.ts"]:::bad
+  end
+  subgraph Gateway["Socket.io Gateway"]
+    C["GenerationProgressGateway\n(NOT in AppModule today)"]:::bad
+  end
+  subgraph NestJS["NestJS API (:3001)"]
+    D["openai.service.ts\n(gpt-5 → fix to gpt-4o)"]:::bad
+    E["image-generation.service.ts\n(Ideogram → Nano Banana)"]:::bad
+    F["prompt-extractor.service.ts\n(extraction NOT persisted)"]:::bad
+    G["conversations module"]:::good
+  end
+  subgraph DB["PostgreSQL (Neon)"]
+    H["Extraction table"]
+    I["Conversation + Message tables"]
+  end
+  A -- "should use" --> G
+  B -- "broken: no gateway" --> C
+  C -- "fix: add to AppModule" --> D
+  D -- "fix model" --> E
+  E -- "swap to Nano Banana" --> F
+  F -- "fix: call prisma.extraction.create" --> H
+  G --> I
+  classDef good fill:#0b3b2e,stroke:#14532d,color:#ecfdf5;
+  classDef bad  fill:#3b0b0b,stroke:#7f1d1d,color:#fef2f2;

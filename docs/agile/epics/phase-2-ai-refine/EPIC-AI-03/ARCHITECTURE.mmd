@@ -1,0 +1,25 @@
+flowchart LR
+  subgraph Canvas["Canvas Editor"]
+    A["Infographic displayed"]
+    B["Refine with AI button"]:::good
+    C["Element Edit Mode\n(click element → edit)"]:::good
+  end
+  subgraph Chat["AI Chat"]
+    D["Quick Refine chips\npost-generation"]:::good
+    E["ConversationAiService\n(refine intent)"]
+  end
+  subgraph NestJS["NestJS API"]
+    F["QuickEditService\n(new)"]:::good
+    G["ElementEditService\n(new)"]:::good
+    H["SemanticLayerService\n(new)"]:::good
+  end
+  subgraph Storage["Storage"]
+    I["Cloudflare R2\n(signed URLs)"]:::good
+  end
+  A --> B --> D
+  D --> E --> F
+  A --> C --> G
+  G --> H
+  F --> I
+  G --> I
+  classDef good fill:#0b3b2e,stroke:#14532d,color:#ecfdf5;

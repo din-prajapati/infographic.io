@@ -83,7 +83,7 @@ export function ResultsVariations({
           size="sm"
           variant="outline"
           onClick={onRegenerateAll}
-          className="h-8 px-3 gap-1.5 text-xs border-border hover:border-purple-400 hover:bg-purple-500/10"
+          className="h-8 px-3 gap-1.5 text-xs border-border hover:border-ai-accent/60 hover:bg-ai-accent/10"
         >
           <RefreshCw className="w-3.5 h-3.5" />
           Regenerate
@@ -98,7 +98,7 @@ export function ResultsVariations({
           className="flex gap-2 pt-2 border-t border-border"
         >
           <Button
-            className="flex-1 bg-blue-600 hover:bg-blue-700"
+            className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground"
             onClick={() => onUseVariation(selectedVariationId)}
           >
             Use This Design

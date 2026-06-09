@@ -167,12 +167,10 @@ export class AiOrchestrator {
         }
       }
 
-      try {
+      const createUsageRecord = async () => {
         const infographic = await this.prisma.infographic.findUnique({
           where: { id: infographicId },
         });
-
-        console.log(`📊 [Orchestrator] Creating usage record for ${infographicId}...`);
         await this.prisma.usageRecord.create({
           data: {
             userId: infographic.userId,
@@ -183,10 +181,26 @@ export class AiOrchestrator {
             creditsUsed: 1,
           },
         });
+      };
+
+      try {
+        console.log(`📊 [Orchestrator] Creating usage record for ${infographicId}...`);
+        await createUsageRecord();
         console.log(`✅ [Orchestrator] Usage record created for ${infographicId}`);
       } catch (usageError: any) {
-        console.error(`❌ [Orchestrator] Failed to create usage record for ${infographicId}:`, usageError?.message || usageError);
-        // Don't throw - usage record creation failure shouldn't fail the infographic
+        console.warn(`⚠️ [Orchestrator] Usage record failed for ${infographicId}, retrying once:`, usageError?.message || usageError);
+        try {
+          await new Promise(resolve => setTimeout(resolve, 500));
+          await createUsageRecord();
+          console.log(`✅ [Orchestrator] Usage record created on retry for ${infographicId}`);
+        } catch (retryError: any) {
+          // BILLING WARNING: generation succeeded but no usage was recorded.
+          // This means quota is not decremented — investigate persistence layer.
+          console.error(
+            `🚨 [Orchestrator] BILLING: Usage record permanently lost for ${infographicId} (model=${aiModel}, cost=$${costUsd}):`,
+            retryError?.message || retryError,
+          );
+        }
       }
 
       // Store variations in propertyData for retrieval
@@ -201,12 +215,21 @@ export class AiOrchestrator {
       };
 
       // Update infographic with variations data
-      await this.prisma.infographic.update({
-        where: { id: infographicId },
-        data: {
-          propertyData: updatedPropertyData as any,
-        },
-      });
+      try {
+        await this.prisma.infographic.update({
+          where: { id: infographicId },
+          data: {
+            propertyData: updatedPropertyData as any,
+          },
+        });
+      } catch (variationsWriteError: any) {
+        // Non-fatal: status=completed and imageUrl are already saved above.
+        // Fallback in getVariations() will return a single image from imageUrl.
+        console.warn(
+          `⚠️ [Orchestrator] Failed to write variations for ${infographicId} — fallback to single image:`,
+          variationsWriteError?.message || variationsWriteError,
+        );
+      }
 
       const elapsed = Date.now() - startTime;
       console.log(`✅ [Orchestrator] Infographic ${infographicId} completed in ${elapsed}ms. Cost: $${costUsd}${isDemoMode ? ' (Demo Mode)' : ''}`);

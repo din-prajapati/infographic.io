@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Download, TrendingUp, FileText, Image, Users, Calendar, Loader2 } from "lucide-react";
+import { Download, TrendingUp, FileText, Image, Users, Loader2 } from "lucide-react";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import { 
@@ -13,53 +13,6 @@ import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, R
 import { useQuery } from "@tanstack/react-query";
 import { usageAnalyticsApi, type MonthlyUsageData, type CostBreakdown, type UsageHistoryItem } from "@/lib/api";
 import { toast } from "sonner";
-
-const usageMetrics = [
-  { 
-    label: "Total Projects", 
-    value: "148", 
-    change: "+12%", 
-    positive: true,
-    icon: FileText,
-    color: "#3b82f6"
-  },
-  { 
-    label: "Total Exports", 
-    value: "480", 
-    change: "+18%", 
-    positive: true,
-    icon: Download,
-    color: "#10b981"
-  },
-  { 
-    label: "Storage Used", 
-    value: "34.4 GB", 
-    change: "+8%", 
-    positive: true,
-    icon: Image,
-    color: "#8b5cf6"
-  },
-  { 
-    label: "Team Members", 
-    value: "8", 
-    change: "+2", 
-    positive: true,
-    icon: Users,
-    color: "#f59e0b"
-  },
-];
-
-const creditUsageData = [
-  { id: 1, type: "Used", date: "Nov 29, 04:45:49 PM", tool: "Hifi Standard Design", amount: 6, purchased: 0, plan: 0 },
-  { id: 2, type: "Used", date: "Nov 29, 04:40:08 PM", tool: "Hifi Standard Design", amount: 6, purchased: 0, plan: 6 },
-  { id: 3, type: "Used", date: "Nov 28, 01:45:33 PM", tool: "Hifi Standard Design", amount: 6, purchased: 0, plan: 12 },
-  { id: 4, type: "Used", date: "Nov 28, 01:39:31 PM", tool: "Heatmap", amount: 2, purchased: 0, plan: 18 },
-  { id: 5, type: "Used", date: "Nov 28, 01:38:39 PM", tool: "UX Review", amount: 1, purchased: 0, plan: 20 },
-  { id: 6, type: "Used", date: "Nov 27, 05:51:08 PM", tool: "Hifi Standard Design", amount: 6, purchased: 0, plan: 21 },
-  { id: 7, type: "Used", date: "Nov 27, 05:38:42 PM", tool: "Hifi Standard Design", amount: 6, purchased: 0, plan: 27 },
-  { id: 8, type: "Used", date: "Nov 27, 05:33:20 PM", tool: "Hifi Standard Design", amount: 6, purchased: 0, plan: 33 },
-  { id: 9, type: "Used", date: "Nov 27, 04:11:45 PM", tool: "Hifi Standard Design", amount: 6, purchased: 0, plan: 39 },
-];
 
 export function UsageScreen() {
   const [entriesPerPage, setEntriesPerPage] = useState("10");

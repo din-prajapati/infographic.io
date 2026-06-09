@@ -1,4 +1,4 @@
-# How to Use — Hybrid Agile AI Workflow
+﻿# How to Use — Hybrid Agile AI Workflow
 
 > **What this guide covers:** How to plan, build, review, and track work using the hybrid system (our Agile hierarchy + Gauntlet's Three Pillars). Every section answers a concrete question: what do I do right now?  
 > **Time to read:** 15 minutes. Time to apply for the first story: 30 minutes.
@@ -617,10 +617,10 @@ This is a live story — fully planned, ready to start. Use it as your first run
 
 ```bash
 # 1. Verify pre-flight (all already done)
-#    Brain:  docs/agile/epics/EPIC-DESIGN-01/stories/US-DESIGN-002/STORY.md ✅
-#    Muscle: docs/agile/epics/EPIC-DESIGN-01/stories/US-DESIGN-002/TASKS.md ✅
-#    Map:    docs/agile/epics/EPIC-DESIGN-01/ARCHITECTURE.mmd ✅
-#    Env:    docs/agile/epics/EPIC-DESIGN-01/ENV.yaml ✅
+#    Brain:  docs/agile/epics/phase-0-mvp/EPIC-DESIGN-01/stories/US-DESIGN-002/STORY.md ✅
+#    Muscle: docs/agile/epics/phase-0-mvp/EPIC-DESIGN-01/stories/US-DESIGN-002/TASKS.md ✅
+#    Map:    docs/agile/epics/phase-0-mvp/EPIC-DESIGN-01/ARCHITECTURE.mmd ✅
+#    Env:    docs/agile/epics/phase-0-mvp/EPIC-DESIGN-01/ENV.yaml ✅
 
 # 2. Create branch
 git checkout main && git pull
@@ -644,7 +644,7 @@ gh pr create \
 #    Update EPIC.md story row, TEAM_STATUS, PHASE_TRACKER
 ```
 
-Everything needed is in `docs/agile/epics/EPIC-DESIGN-01/stories/US-DESIGN-002/`.
+Everything needed is in `docs/agile/epics/phase-0-mvp/EPIC-DESIGN-01/stories/US-DESIGN-002/`.
 
 ---
 
