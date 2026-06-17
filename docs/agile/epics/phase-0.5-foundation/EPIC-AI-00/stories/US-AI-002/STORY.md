@@ -1,11 +1,11 @@
 # Story Card — US-AI-002
 
-> **Status:** 🔲 Not Started
+> **Status:** ✅ Done
 > **Feature:** F-AI-00-02 — Correct LLM model routing
 > **Epic:** [EPIC-AI-00](../../EPIC.md)
 > **Milestone:** [M-AI-01-critical-fixes](../../milestones/M-AI-01-critical-fixes.md)
 > **Linear:** LIN-US-AI-002
-> **Created:** 2026-04-28 | **Closed:** —
+> **Created:** 2026-04-28 | **Closed:** 2026-06-17
 
 ---
 
