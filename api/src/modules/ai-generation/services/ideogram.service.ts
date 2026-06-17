@@ -5,6 +5,7 @@ import {
   normalizeImageModel,
   orientationToIdeogramAspect,
 } from '../../../config/image-generation.config';
+import { logGen, elapsed } from '../../../common/utils/ai-gen-logger';
 
 @Injectable()
 export class IdeogramService {
@@ -22,39 +23,48 @@ export class IdeogramService {
     prompt: string,
     model: string = 'ideogram-turbo',
     orientation?: string,
+    generationId?: string,
   ): Promise<string> {
-    try {
-      const resolvedModel = normalizeImageModel(model);
-      const modelMap: Record<string, string> = {
-        'ideogram-turbo': 'V_2_TURBO',
-        'ideogram-2': 'V_2',
-      };
+    const t0 = Date.now();
+    const resolvedModel = normalizeImageModel(model);
+    const aspectRatio = orientationToIdeogramAspect(orientation);
+    const modelMap: Record<string, string> = {
+      'ideogram-turbo': 'V_2_TURBO',
+      'ideogram-2': 'V_2',
+    };
+    const apiModel = modelMap[resolvedModel] || 'V_2_TURBO';
 
+    logGen({ generationId: generationId ?? 'unknown', event: 'image:api:start', imageModel: resolvedModel, aspectRatio });
+
+    try {
       const response = await axios.post(
         `${this.baseUrl}/generate`,
         {
           image_request: {
-            model: modelMap[resolvedModel] || 'V_2_TURBO',
-            prompt: prompt,
-            aspect_ratio: orientationToIdeogramAspect(orientation),
+            model: apiModel,
+            prompt,
+            aspect_ratio: aspectRatio,
             magic_prompt_option: 'AUTO',
           },
         },
-        {
-          headers: {
-            'Api-Key': this.apiKey,
-            'Content-Type': 'application/json',
-          },
-        }
+        { headers: { 'Api-Key': this.apiKey, 'Content-Type': 'application/json' } },
       );
 
       if (response.data?.data?.[0]?.url) {
+        logGen({ generationId: generationId ?? 'unknown', event: 'image:api:ok', imageModel: resolvedModel, durationMs: elapsed(t0) });
         return response.data.data[0].url;
       }
 
       throw new Error('No image URL in response');
     } catch (error: any) {
-      console.error('Ideogram API error:', error.response?.data || error.message);
+      logGen({
+        generationId: generationId ?? 'unknown',
+        event: 'image:api:error',
+        imageModel: resolvedModel,
+        durationMs: elapsed(t0),
+        error: error.response?.data?.message || error.message,
+        httpStatus: error.response?.status,
+      }, 'error');
       throw new HttpException(
         error.response?.data?.message || 'Failed to generate image',
         error.response?.status || 500,

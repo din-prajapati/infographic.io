@@ -1,41 +1,50 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { ForbiddenException } from '@nestjs/common';
-import { UsageLimitService } from '../../src/modules/infographics/services/usage-limit.service';
+import { ForbiddenException, NotFoundException } from '@nestjs/common';
 
-describe('UsageLimitService', () => {
-  const prisma = {
+// ---------------------------------------------------------------------------
+// Mock the prisma singleton BEFORE importing the service.
+// UsageLimitService calls `prisma.*` directly (module-level singleton),
+// not via constructor injection, so vi.mock is required here.
+// ---------------------------------------------------------------------------
+const { mockPrisma } = vi.hoisted(() => {
+  const mockPrisma = {
     organization: { findUnique: vi.fn(), create: vi.fn() },
     usageRecord: { findMany: vi.fn(), findFirst: vi.fn() },
     user: { findUnique: vi.fn(), update: vi.fn() },
     infographic: { findFirst: vi.fn() },
   };
+  return { mockPrisma };
+});
 
+vi.mock('../../src/database/prisma.client', () => ({
+  prisma: mockPrisma,
+}));
+
+import { UsageLimitService } from '../../src/modules/infographics/services/usage-limit.service';
+
+describe('UsageLimitService', () => {
   let service: UsageLimitService;
 
   beforeEach(() => {
     vi.clearAllMocks();
-    service = new UsageLimitService(prisma as any);
+    service = new UsageLimitService();
   });
 
   it('resolveMonthlyLimit uses organization.monthlyLimit when set', () => {
-    expect(
-      service.resolveMonthlyLimit({ planTier: 'free', monthlyLimit: 3 }),
-    ).toBe(3);
-    expect(
-      service.resolveMonthlyLimit({ planTier: 'solo', monthlyLimit: 50 }),
-    ).toBe(50);
+    expect(service.resolveMonthlyLimit({ planTier: 'free', monthlyLimit: 3 })).toBe(3);
+    expect(service.resolveMonthlyLimit({ planTier: 'solo', monthlyLimit: 50 })).toBe(50);
     expect(
       service.resolveMonthlyLimit({ planTier: 'api_enterprise', monthlyLimit: -1 }),
     ).toBe(Infinity);
   });
 
   it('assertCanGenerate throws 403 when at limit', async () => {
-    prisma.organization.findUnique.mockResolvedValue({
+    mockPrisma.organization.findUnique.mockResolvedValue({
       id: 'org-1',
       planTier: 'free',
       monthlyLimit: 3,
     });
-    prisma.usageRecord.findMany.mockResolvedValue([
+    mockPrisma.usageRecord.findMany.mockResolvedValue([
       { creditsUsed: 1 },
       { creditsUsed: 1 },
       { creditsUsed: 1 },
@@ -47,12 +56,12 @@ describe('UsageLimitService', () => {
   });
 
   it('assertCanGenerate allows when under limit', async () => {
-    prisma.organization.findUnique.mockResolvedValue({
+    mockPrisma.organization.findUnique.mockResolvedValue({
       id: 'org-1',
       planTier: 'free',
       monthlyLimit: 3,
     });
-    prisma.usageRecord.findMany.mockResolvedValue([
+    mockPrisma.usageRecord.findMany.mockResolvedValue([
       { creditsUsed: 1 },
       { creditsUsed: 1 },
     ]);
@@ -61,43 +70,47 @@ describe('UsageLimitService', () => {
   });
 
   it('assertCanGenerate allows unlimited enterprise plans', async () => {
-    prisma.organization.findUnique.mockResolvedValue({
+    mockPrisma.organization.findUnique.mockResolvedValue({
       id: 'org-ent',
       planTier: 'api_enterprise',
       monthlyLimit: -1,
     });
 
     await expect(service.assertCanGenerate('org-ent', 1)).resolves.toBeUndefined();
-    expect(prisma.usageRecord.findMany).not.toHaveBeenCalled();
+    expect(mockPrisma.usageRecord.findMany).not.toHaveBeenCalled();
   });
 
   it('resolveOrganizationIdForUser heals from usage history when user org is missing', async () => {
-    prisma.user.findUnique.mockResolvedValue({ organizationId: null });
-    prisma.usageRecord.findFirst.mockResolvedValue({ organizationId: 'org-historic' });
-    prisma.user.update.mockResolvedValue({});
+    mockPrisma.user.findUnique.mockResolvedValue({ organizationId: null });
+    mockPrisma.organization.findUnique.mockResolvedValue(null);
+    mockPrisma.usageRecord.findFirst.mockResolvedValue({ organizationId: 'org-historic' });
+    mockPrisma.user.update.mockResolvedValue({});
 
     const orgId = await service.resolveOrganizationIdForUser('user-1');
 
     expect(orgId).toBe('org-historic');
-    expect(prisma.user.update).toHaveBeenCalledWith({
+    expect(mockPrisma.user.update).toHaveBeenCalledWith({
       where: { id: 'user-1' },
       data: { organizationId: 'org-historic' },
     });
   });
 
+  it('resolveOrganizationIdForUser throws NotFoundException when user does not exist', async () => {
+    mockPrisma.user.findUnique.mockResolvedValue(null);
+
+    await expect(service.resolveOrganizationIdForUser('ghost-user')).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
+  });
+
   it('getUsageQuotaForUser resolves org before returning quota', async () => {
-    prisma.user.findUnique.mockResolvedValue({ organizationId: 'org-1' });
-    prisma.organization.findUnique.mockResolvedValue({
+    mockPrisma.user.findUnique.mockResolvedValue({ organizationId: 'org-1' });
+    mockPrisma.organization.findUnique.mockResolvedValue({
       id: 'org-1',
       planTier: 'free',
       monthlyLimit: 3,
     });
-    prisma.organization.findUnique.mockResolvedValueOnce({
-      id: 'org-1',
-      planTier: 'free',
-      monthlyLimit: 3,
-    });
-    prisma.usageRecord.findMany.mockResolvedValue([{ creditsUsed: 2 }]);
+    mockPrisma.usageRecord.findMany.mockResolvedValue([{ creditsUsed: 2 }]);
 
     const quota = await service.getUsageQuotaForUser('user-1');
 
