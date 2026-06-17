@@ -18,7 +18,7 @@ export const AI_MODELS: Record<string, AIModelPricing> = {
 };
 
 export const OPENAI_COSTS = {
-  gpt5PerRequest: 0.004,
+  gpt4oPerRequest: 0.004,
 };
 
 export function getModelCost(modelName: string): number {
@@ -33,7 +33,7 @@ export function getModelCost(modelName: string): number {
 }
 
 export function getTotalCost(modelName: string): number {
-  return getModelCost(modelName) + OPENAI_COSTS.gpt5PerRequest;
+  return getModelCost(modelName) + OPENAI_COSTS.gpt4oPerRequest;
 }
 
 export const SUPPORTED_AI_MODELS = Object.keys(AI_MODELS);

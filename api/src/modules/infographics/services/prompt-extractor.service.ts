@@ -100,13 +100,12 @@ Return the extracted data as JSON.`;
       }
 
       const response = await openai.chat.completions.create({
-        model: 'gpt-5',
+        model: 'gpt-4o',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt },
         ],
         response_format: { type: 'json_object' },
-        // Note: gpt-5 only supports default temperature (1), custom values are not supported
       });
 
       const extractedJson = JSON.parse(response.choices[0].message.content || '{}');
