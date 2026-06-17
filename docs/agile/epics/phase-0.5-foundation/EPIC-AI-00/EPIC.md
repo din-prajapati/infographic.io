@@ -34,6 +34,7 @@
 |----------|-------|-----------|--------|----|
 | [US-AI-001](stories/US-AI-001/STORY.md) | Wire Socket.io Gateway to AppModule | M-AI-01 | 🔲 | — |
 | [US-AI-002](stories/US-AI-002/STORY.md) | Fix GPT model ID: gpt-5 → gpt-4o | M-AI-01 | 🔲 | — |
+| [US-AI-002a](stories/US-AI-002a/STORY.md) | Brand color hex codes → descriptive names in image prompt | M-AI-01 | 🔲 | — |
 | [US-AI-003](stories/US-AI-003/STORY.md) | Replace Ideogram Turbo with Nano Banana Flash (FREE/SOLO) | M-AI-02 | 🔲 | — |
 | [US-AI-004](stories/US-AI-004/STORY.md) | Replace Ideogram V2 with Nano Banana Pro (TEAM/BROKERAGE) | M-AI-02 | 🔲 | — |
 | [US-AI-005](stories/US-AI-005/STORY.md) | Persist Extraction data to database | M-AI-03 | 🔲 | — |

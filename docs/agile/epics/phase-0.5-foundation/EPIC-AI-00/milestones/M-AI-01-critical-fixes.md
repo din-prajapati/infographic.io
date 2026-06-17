@@ -18,6 +18,7 @@ Socket.io generation progress events are visible in the browser and the AI syste
 |-------|-------|--------|----|
 | [US-AI-001](../stories/US-AI-001/STORY.md) | Wire Socket.io Gateway to AppModule | 🔲 | — |
 | [US-AI-002](../stories/US-AI-002/STORY.md) | Fix GPT model ID: gpt-5 → gpt-4o | 🔲 | — |
+| [US-AI-002a](../stories/US-AI-002a/STORY.md) | Brand color hex codes → descriptive names in image prompt | 🔲 | — |
 
 ---
 
@@ -26,7 +27,9 @@ Socket.io generation progress events are visible in the browser and the AI syste
 - [ ] `GenerationProgressGateway` is listed in `InfographicsModule` providers (or `AppModule` imports)
 - [ ] Browser WS tab shows `generation:progress` events during a generation run
 - [ ] `api/src/modules/ai-generation/services/openai.service.ts` has `model: 'gpt-4o'` — no `gpt-5` anywhere in codebase
-- [ ] `npm run check` passes after both changes
+- [ ] Server log during generation shows color names (not hex codes) in the image prompt when a brand palette is selected
+- [ ] When no brand palette is selected, the "Brand colors:" line is absent from the image prompt entirely
+- [ ] `npm run check` passes after all changes
 - [ ] All stories above have status ✅ Done
 
 ---

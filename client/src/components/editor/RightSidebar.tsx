@@ -1,14 +1,23 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
+import { motion, AnimatePresence } from "motion/react";
 import { ScrollArea } from "../ui/scroll-area";
-import { 
-  Palette, 
-  Type, 
+import {
+  Palette,
+  Type,
   Sparkles,
-  Wand2,
   Plus,
   Edit2,
   Trash2,
-  MoreVertical
+  MoreVertical,
+  Loader2,
+  ArrowLeft,
+  ArrowRight,
+  CheckCircle2,
+  ZoomIn,
+  Maximize2,
+  X,
+  RefreshCw,
+  Check,
 } from "lucide-react";
 import { Button } from "../ui/button";
 import { Separator } from "../ui/separator";
@@ -25,6 +34,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
+import { usePropertyStore } from "../../hooks/usePropertyStore";
+import { useAgentStore } from "../../hooks/useAgentStore";
+import { generationsApi, ResultVariation } from "../../lib/api";
+import { useGenerationWebSocket, GenerationProgress } from "../../hooks/useGenerationWebSocket";
+import { loadAiVariationToCanvas } from "../../lib/canvasState";
 
 type TabType = "design" | "property-details" | "agent-info";
 
@@ -227,18 +241,50 @@ function saveCustomPalettes(palettes: BrandPalette[]) {
   }
 }
 
+function buildPropertyPrompt(
+  property: ReturnType<typeof usePropertyStore.getState>["property"],
+  agent: ReturnType<typeof useAgentStore.getState>["agent"],
+): string {
+  const parts: string[] = [
+    `${property.type} property`,
+    property.address ? `at ${property.address}` : "",
+    property.price ? `listed at ${property.price}` : "",
+    property.beds || property.baths
+      ? `${property.beds} bedrooms, ${property.baths} bathrooms`
+      : "",
+    property.sqft ? `${property.sqft} sqft` : "",
+    property.features.length > 0 ? `features: ${property.features.join(", ")}` : "",
+    property.description ? property.description : "",
+    agent.name ? `Agent: ${agent.name}` : "",
+    agent.brokerage ? agent.brokerage : "",
+  ].filter(Boolean);
+  return parts.join(". ");
+}
+
 export function RightSidebar() {
   const [activeTab, setActiveTab] = useState<TabType>("design");
   const [customPalettes, setCustomPalettes] = useState<BrandPalette[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingPalette, setEditingPalette] = useState<BrandPalette | null>(null);
   const [selectedTheme, setSelectedTheme] = useState<BrandPalette | null>(null);
-  
+
+  // Generation state
+  const [generating, setGenerating] = useState(false);
+  const [generationId, setGenerationId] = useState<string | null>(null);
+  const [generationProgress, setGenerationProgress] = useState(0);
+  const [generationStep, setGenerationStep] = useState("");
+  const [variations, setVariations] = useState<ResultVariation[] | null>(null);
+  const [showResults, setShowResults] = useState(false);
+  const [selectedVariationId, setSelectedVariationId] = useState<string | null>(null);
+  const [loadingVariationId, setLoadingVariationId] = useState<string | null>(null);
+  const [lightboxVariation, setLightboxVariation] = useState<ResultVariation | null>(null);
+
   const addElement = useCanvasStore((state) => state.addElement);
   const elements = useCanvasStore((state) => state.elements);
   const updateElement = useCanvasStore((state) => state.updateElement);
   const setBackgroundColor = useCanvasStore((state) => state.setBackgroundColor);
   const setSelectedThemeColors = useCanvasStore((state) => state.setSelectedThemeColors);
+  const selectedThemeColors = useCanvasStore((state) => state.selectedThemeColors);
   const backgroundColor = useCanvasStore((state) => state.backgroundColor);
   const canvasWidth = useCanvasStore((state) => state.canvasWidth);
   const canvasHeight = useCanvasStore((state) => state.canvasHeight);
@@ -254,6 +300,114 @@ export function RightSidebar() {
       setSelectedThemeColors(defaultTheme.colors);
     }
   }, []);
+
+  // WebSocket progress updates for panel-triggered generation
+  const handleWebSocketProgress = useCallback(
+    async (progress: GenerationProgress) => {
+      setGenerationProgress(progress.progress ?? 0);
+      setGenerationStep(progress.stepLabel ?? "");
+
+      if (progress.status === "completed" && progress.generationId) {
+        try {
+          const vars = await generationsApi.getVariations(progress.generationId);
+          setVariations(vars);
+          setShowResults(true);
+        } catch {
+          toast.error("Failed to load results");
+        } finally {
+          setGenerating(false);
+          setGenerationId(null);
+        }
+      } else if (progress.status === "failed") {
+        toast.error(progress.errorMessage ?? "Generation failed");
+        setGenerating(false);
+        setGenerationId(null);
+      }
+    },
+    [],
+  );
+
+  useGenerationWebSocket({
+    generationId,
+    onProgress: handleWebSocketProgress,
+  });
+
+  const handleGenerate = async () => {
+    const property = usePropertyStore.getState().property;
+    const agent = useAgentStore.getState().agent;
+
+    if (!property.address.trim()) {
+      toast.error("Address is required", {
+        description: "Fill in the Property Address before generating.",
+      });
+      return;
+    }
+    if (!property.price.trim()) {
+      toast.error("Price is required", {
+        description: "Fill in the listing Price before generating.",
+      });
+      return;
+    }
+
+    const prompt = buildPropertyPrompt(property, agent);
+    const themeColors = selectedThemeColors ?? [];
+    const brandColors: string[] | undefined =
+      themeColors.length > 0
+        ? themeColors
+        : agent.brandColors.length > 0
+          ? agent.brandColors
+          : undefined;
+
+    setGenerating(true);
+    setVariations(null);
+    setSelectedVariationId(null);
+    setShowResults(true);
+    setGenerationProgress(0);
+    setGenerationStep("Starting…");
+
+    try {
+      const result = await generationsApi.generate({
+        prompt,
+        variations: 3,
+        model: "ideogram-turbo",
+        orientation: "landscape",
+        agent: {
+          name: agent.name || undefined,
+          brokerage: agent.brokerage || undefined,
+          phone: agent.phone || undefined,
+          email: agent.email || undefined,
+          brandColors,
+        },
+      });
+      setGenerationId(result.id);
+      // WebSocket hook takes over from here
+    } catch (err: any) {
+      const msg = err?.message ?? "Generation failed. Please try again.";
+      if (msg.toLowerCase().includes("monthly limit")) {
+        toast.error("Monthly limit reached", {
+          description: msg,
+          action: { label: "View plans", onClick: () => { window.location.href = "/pricing"; } },
+        });
+      } else {
+        toast.error("Generation failed", { description: msg });
+      }
+      setGenerating(false);
+      setGenerationId(null);
+    }
+  };
+
+  const handleUseDesign = async (variation: ResultVariation) => {
+    setLoadingVariationId(variation.id);
+    try {
+      await loadAiVariationToCanvas(variation.imageUrl, variation.title ?? "AI Design");
+      setSelectedVariationId(variation.id);
+      toast.success("Design loaded", { description: "The canvas has been updated." });
+    } catch {
+      toast.error("Failed to load design");
+    } finally {
+      setLoadingVariationId(null);
+    }
+  };
 
   // Get all palettes (default + custom)
   const allPalettes = [...defaultBrandPalettes, ...customPalettes];
@@ -475,12 +629,220 @@ export function RightSidebar() {
       {/* Generate Button - Sticky at Top */}
       <div className="p-3 border-b bg-sidebar">
         <Button
-          className="w-full h-10 gap-2 bg-primary hover:bg-primary/90 text-primary-foreground"
+          onClick={handleGenerate}
+          disabled={generating}
+          className="w-full h-10 gap-2 bg-primary hover:bg-primary/90 text-primary-foreground disabled:opacity-70"
         >
-          <Sparkles className="w-4 h-4" />
-          Generate Template
+          {generating ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              {generationStep || "Generating…"}
+            </>
+          ) : (
+            <>
+              <Sparkles className="w-4 h-4" />
+              Quick Generate
+            </>
+          )}
         </Button>
+        {!generating && (
+          <p className="text-[10px] text-muted-foreground text-center mt-1.5">
+            From your Property &amp; Agent details
+          </p>
+        )}
+        {generating && generationProgress > 0 && (
+          <div className="mt-2 h-1 rounded-full bg-muted overflow-hidden">
+            <div
+              className="h-full bg-primary transition-all duration-500"
+              style={{ width: `${generationProgress}%` }}
+            />
+          </div>
+        )}
       </div>
+
+      {/* Lightbox — shared with AI Chat pattern */}
+      <AnimatePresence>
+        {lightboxVariation && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black/85 p-6"
+            onClick={() => setLightboxVariation(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.92, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.92, opacity: 0 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="relative flex flex-col items-center gap-3 max-w-[85vw] max-h-[85vh]"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                onClick={() => setLightboxVariation(null)}
+                className="absolute -top-4 -right-4 w-9 h-9 bg-white rounded-full flex items-center justify-center shadow-xl hover:bg-gray-100 transition-colors z-10"
+              >
+                <X className="w-4 h-4 text-gray-700" />
+              </button>
+              <img
+                src={lightboxVariation.imageUrl}
+                alt={lightboxVariation.title ?? "Preview"}
+                className="max-w-full max-h-[72vh] rounded-xl object-contain shadow-2xl"
+              />
+              <div className="flex items-center gap-3">
+                <p className="text-white font-medium text-sm">
+                  {lightboxVariation.title ?? "Design Preview"}
+                </p>
+              </div>
+              <Button
+                className="bg-white text-gray-900 hover:bg-gray-100 font-medium"
+                onClick={() => { handleUseDesign(lightboxVariation); setLightboxVariation(null); }}
+                disabled={!!loadingVariationId}
+              >
+                {loadingVariationId === lightboxVariation.id ? (
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                ) : (
+                  <CheckCircle2 className="w-4 h-4 mr-2" />
+                )}
+                Use This Design
+              </Button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Results view — shown after generation completes */}
+      {variations !== null && showResults ? (
+        <div className="flex-1 min-h-0 flex flex-col">
+          {/* Results header */}
+          <div className="flex items-center justify-between px-3 py-2 border-b">
+            <button
+              onClick={() => setShowResults(false)}
+              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <ArrowLeft className="w-3 h-3" />
+              Edit Details
+            </button>
+            <span className="text-xs font-medium text-foreground">
+              {variations.length} Result{variations.length !== 1 ? "s" : ""}
+            </span>
+          </div>
+
+          {/* AI Chat nudge — pill matching "3 results ready" style */}
+          <div className="mx-3 mt-3 flex items-center justify-between text-xs bg-ai-accent/10 text-ai-accent rounded-md px-3 py-2 border border-ai-accent/20">
+            <span className="flex items-center gap-1.5 font-medium">
+              <Sparkles className="w-3.5 h-3.5" />
+              Want to iterate? Use AI Chat
+            </span>
+            <ArrowRight className="w-3 h-3 text-ai-accent/70 shrink-0" />
+          </div>
+
+          {/* Variation cards */}
+          <div className="flex-1 min-h-0">
+          <ScrollArea className="h-full">
+            <div className="p-3 space-y-3">
+              {variations.map((variation, idx) => {
+                const isSelected = selectedVariationId === variation.id;
+                return (
+                <div
+                  key={variation.id}
+                  className={`rounded-lg border-2 overflow-hidden transition-all ${
+                    isSelected
+                      ? "border-primary shadow-[0_0_0_2px_hsl(var(--primary)/0.2)]"
+                      : "border-border"
+                  }`}
+                >
+                  {/* Thumbnail — click to lightbox */}
+                  <div
+                    className="relative bg-muted aspect-video cursor-zoom-in group"
+                    onClick={() => setLightboxVariation(variation)}
+                    title="Click to preview full size"
+                  >
+                    <img
+                      src={variation.imageUrl}
+                      alt={variation.title ?? `Variation ${idx + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                    {/* Always-visible preview badge */}
+                    <div className="absolute top-1.5 left-1.5 flex items-center gap-1 bg-black/60 text-white rounded-full px-1.5 py-0.5 pointer-events-none">
+                      <Maximize2 className="w-2.5 h-2.5" />
+                      <span className="text-[9px] font-medium leading-none">Preview</span>
+                    </div>
+                    {/* Selected checkmark */}
+                    {isSelected && (
+                      <div className="absolute top-1.5 right-1.5 w-5 h-5 bg-primary rounded-full flex items-center justify-center shadow">
+                        <Check className="w-3 h-3 text-primary-foreground" />
+                      </div>
+                    )}
+                  </div>
+                  {/* Card footer */}
+                  <div className="p-2.5 space-y-2">
+                    <p className="text-xs font-medium text-foreground">
+                      {variation.title ?? `Variation ${idx + 1}`}
+                    </p>
+                    <div className="flex gap-1.5">
+                      <Button
+                        size="sm"
+                        className="flex-1 h-8 gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground text-xs"
+                        onClick={() => handleUseDesign(variation)}
+                        disabled={loadingVariationId === variation.id}
+                      >
+                        {loadingVariationId === variation.id ? (
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                        ) : isSelected ? (
+                          <Check className="w-3 h-3" />
+                        ) : (
+                          <CheckCircle2 className="w-3 h-3" />
+                        )}
+                        {isSelected ? "Applied" : "Use This"}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-8 w-8 p-0 shrink-0 text-muted-foreground hover:text-foreground"
+                        onClick={() => setLightboxVariation(variation)}
+                        title="Preview full size"
+                      >
+                        <ZoomIn className="w-3.5 h-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+                );
+              })}
+
+              {/* Regenerate */}
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleGenerate}
+                className="w-full h-8 gap-1.5 text-xs border-border"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                Regenerate all
+              </Button>
+            </div>
+          </ScrollArea>
+          </div>
+        </div>
+      ) : (
+        <>
+      {/* Results-ready pill — shown when results exist but user is back in form view */}
+      {variations !== null && !showResults && (
+        <button
+          onClick={() => setShowResults(true)}
+          className="mx-3 mt-3 flex items-center justify-between text-xs bg-primary/10 text-primary rounded-md px-3 py-2 hover:bg-primary/15 transition-colors border border-primary/20"
+        >
+          <span className="flex items-center gap-1.5 font-medium">
+            <CheckCircle2 className="w-3.5 h-3.5" />
+            {variations.length} results ready
+          </span>
+          <span className="flex items-center gap-0.5 text-primary/70">
+            View
+            <ArrowRight className="w-3 h-3" />
+          </span>
+        </button>
+      )}
 
       {/* Tab Switcher */}
       <div className="px-3 pt-3">
@@ -489,8 +851,8 @@ export function RightSidebar() {
             onClick={() => setActiveTab("design")}
             className={`
               flex-1 h-7 rounded-md transition-all font-medium
-              ${activeTab === "design" 
-                ? "bg-background shadow-sm text-foreground" 
+              ${activeTab === "design"
+                ? "bg-background shadow-sm text-foreground"
                 : "text-muted-foreground hover:text-foreground"
               }
             `}
@@ -501,8 +863,8 @@ export function RightSidebar() {
             onClick={() => setActiveTab("property-details")}
             className={`
               flex-1 h-7 rounded-md transition-all font-medium
-              ${activeTab === "property-details" 
-                ? "bg-background shadow-sm text-foreground" 
+              ${activeTab === "property-details"
+                ? "bg-background shadow-sm text-foreground"
                 : "text-muted-foreground hover:text-foreground"
               }
             `}
@@ -513,8 +875,8 @@ export function RightSidebar() {
             onClick={() => setActiveTab("agent-info")}
             className={`
               flex-1 h-7 rounded-md transition-all font-medium
-              ${activeTab === "agent-info" 
-                ? "bg-background shadow-sm text-foreground" 
+              ${activeTab === "agent-info"
+                ? "bg-background shadow-sm text-foreground"
                 : "text-muted-foreground hover:text-foreground"
               }
             `}
@@ -714,6 +1076,8 @@ export function RightSidebar() {
           </ScrollArea>
         )}
       </div>
+      </>
+      )}
 
       {/* Brand Palette Dialog */}
       <BrandPaletteDialog

@@ -173,27 +173,6 @@ export function AgentInfoForm() {
           />
         </div>
 
-        {/* Social Media */}
-        <div className="space-y-2">
-          <Label className="text-sm">Social Media (Optional)</Label>
-          <div className="space-y-2">
-            <Input
-              type="url"
-              placeholder="Facebook URL"
-              className="h-9 text-sm"
-            />
-            <Input
-              type="url"
-              placeholder="Instagram handle"
-              className="h-9 text-sm"
-            />
-            <Input
-              type="url"
-              placeholder="LinkedIn URL"
-              className="h-9 text-sm"
-            />
-          </div>
-        </div>
       </div>
     </ScrollArea>
   );

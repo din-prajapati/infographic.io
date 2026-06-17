@@ -1,9 +1,3 @@
-/**
- * Property Details Form Component
- * Form fields for property information
- */
-
-import { useState } from "react";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Textarea } from "../ui/textarea";
@@ -15,17 +9,20 @@ import {
   SelectValue,
 } from "../ui/select";
 import { Separator } from "../ui/separator";
-import { ScrollArea } from "../ui/scroll-area";
 import { NumberStepper } from "../ui/number-stepper";
+import { usePropertyStore } from "../../hooks/usePropertyStore";
+
+const FEATURES = ["Pool", "Garage", "Garden", "Fireplace", "AC", "Heating"];
 
 export function PropertyDetailsForm() {
-  const [propertyType, setPropertyType] = useState("residential");
-  const [price, setPrice] = useState("$500,000");
-  const [beds, setBeds] = useState(3);
-  const [baths, setBaths] = useState(2);
-  const [sqft, setSqft] = useState("2,500");
-  const [address, setAddress] = useState("123 Test Avenue, Design City");
-  const [description, setDescription] = useState("Beautiful modern home with pool and garden.");
+  const { property, setProperty } = usePropertyStore();
+
+  const toggleFeature = (feature: string) => {
+    const next = property.features.includes(feature)
+      ? property.features.filter((f) => f !== feature)
+      : [...property.features, feature];
+    setProperty({ features: next });
+  };
 
   return (
     <div className="flex-1">
@@ -44,7 +41,10 @@ export function PropertyDetailsForm() {
           <Label htmlFor="property-type" className="text-sm">
             Property Type <span className="text-red-500">*</span>
           </Label>
-          <Select value={propertyType} onValueChange={setPropertyType}>
+          <Select
+            value={property.type}
+            onValueChange={(v) => setProperty({ type: v as typeof property.type })}
+          >
             <SelectTrigger id="property-type" className="h-9">
               <SelectValue />
             </SelectTrigger>
@@ -66,8 +66,8 @@ export function PropertyDetailsForm() {
             id="price"
             type="text"
             placeholder="$450,000"
-            value={price}
-            onChange={(e) => setPrice(e.target.value)}
+            value={property.price}
+            onChange={(e) => setProperty({ price: e.target.value })}
             className="h-9"
           />
         </div>
@@ -77,8 +77,8 @@ export function PropertyDetailsForm() {
           <div className="space-y-2">
             <Label className="text-sm">Beds</Label>
             <NumberStepper
-              value={beds}
-              onChange={setBeds}
+              value={property.beds}
+              onChange={(v) => setProperty({ beds: v })}
               min={0}
               max={20}
               className="w-full"
@@ -87,8 +87,8 @@ export function PropertyDetailsForm() {
           <div className="space-y-2">
             <Label className="text-sm">Baths</Label>
             <NumberStepper
-              value={baths}
-              onChange={setBaths}
+              value={property.baths}
+              onChange={(v) => setProperty({ baths: v })}
               min={0}
               max={20}
               className="w-full"
@@ -105,8 +105,8 @@ export function PropertyDetailsForm() {
             id="sqft"
             type="text"
             placeholder="2,500"
-            value={sqft}
-            onChange={(e) => setSqft(e.target.value)}
+            value={property.sqft}
+            onChange={(e) => setProperty({ sqft: e.target.value })}
             className="h-9"
           />
         </div>
@@ -120,8 +120,8 @@ export function PropertyDetailsForm() {
             id="address"
             type="text"
             placeholder="123 Main Street, City, State"
-            value={address}
-            onChange={(e) => setAddress(e.target.value)}
+            value={property.address}
+            onChange={(e) => setProperty({ address: e.target.value })}
             className="h-9"
           />
         </div>
@@ -134,47 +134,34 @@ export function PropertyDetailsForm() {
           <Textarea
             id="description"
             placeholder="Beautiful family home with modern amenities..."
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            value={property.description}
+            onChange={(e) => setProperty({ description: e.target.value })}
             className="min-h-[80px] resize-none"
+            maxLength={500}
           />
           <p className="text-xs text-muted-foreground">
-            {description.length}/500 characters
+            {property.description.length}/500 characters
           </p>
         </div>
 
-        {/* Features/Amenities */}
+        {/* Features & Amenities */}
         <div className="space-y-2">
           <Label className="text-sm">Features & Amenities</Label>
-          <div className="grid grid-cols-2 gap-2 text-sm">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" className="rounded" />
-              <span className="text-xs">Pool</span>
-            </label>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" className="rounded" />
-              <span className="text-xs">Garage</span>
-            </label>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" className="rounded" />
-              <span className="text-xs">Garden</span>
-            </label>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" className="rounded" />
-              <span className="text-xs">Fireplace</span>
-            </label>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" className="rounded" />
-              <span className="text-xs">AC</span>
-            </label>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" className="rounded" />
-              <span className="text-xs">Heating</span>
-            </label>
+          <div className="grid grid-cols-2 gap-2">
+            {FEATURES.map((feature) => (
+              <label key={feature} className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="rounded"
+                  checked={property.features.includes(feature)}
+                  onChange={() => toggleFeature(feature)}
+                />
+                <span className="text-xs">{feature}</span>
+              </label>
+            ))}
           </div>
         </div>
       </div>
-      </div>
-
+    </div>
   );
 }
