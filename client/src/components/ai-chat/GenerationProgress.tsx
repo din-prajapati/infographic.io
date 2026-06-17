@@ -83,11 +83,12 @@ export function GenerationProgress({ steps, currentStep }: GenerationProgressPro
         {/* Overall Progress Bar */}
         <div className="mt-4">
           <div className="h-2 bg-muted rounded-full overflow-hidden">
-            <motion.div
-              initial={{ width: '0%' }}
-              animate={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
-              transition={{ duration: 0.5 }}
+            <div
               className="h-full bg-gradient-to-r from-ai-accent to-primary"
+              style={{
+                width: `${((currentStep + 1) / steps.length) * 100}%`,
+                transition: 'width 0.4s ease',
+              }}
             />
           </div>
           <p className="text-xs text-muted-foreground mt-2 text-center">

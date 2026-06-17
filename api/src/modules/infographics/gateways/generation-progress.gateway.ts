@@ -97,10 +97,23 @@ export class GenerationProgressGateway
     progress?: number;
     errorMessage?: string;
   }) {
+    const STEP_TO_PERCENT: Record<number, number> = {
+      0: 8,
+      1: 25,
+      2: 50,
+      3: 72,
+      4: 88,
+      5: 100,
+    };
+    const resolvedProgress =
+      progress.progress ??
+      (progress.step !== undefined ? STEP_TO_PERCENT[progress.step] : undefined);
+
     const room = `generation:${generationId}`;
     this.server.to(room).emit('progress', {
       generationId,
       ...progress,
+      progress: resolvedProgress,
       timestamp: new Date().toISOString(),
     });
     this.logger.debug(`Emitted progress for generation ${generationId}: ${progress.status} - Step ${progress.step || 'N/A'}`);

@@ -50,6 +50,12 @@ export interface ShapeElement extends BaseElement {
 export interface ImageElement extends BaseElement {
   type: 'image';
   src: string;
+  /** How the image fills its element box. */
+  objectFit?: 'contain' | 'cover' | 'fill';
+  /** AI-generated full-bleed import — uses background-image for reliable fit */
+  isAiImport?: boolean;
+  /** Detected orientation when imported from AI (landscape 16:9, portrait 9:16, square 1:1) */
+  aiOrientation?: 'landscape' | 'portrait' | 'square';
   cornerRadius: number;
   flipHorizontal: boolean;
   flipVertical: boolean;

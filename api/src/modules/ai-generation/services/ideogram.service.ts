@@ -1,6 +1,10 @@
 import { Injectable, HttpException } from '@nestjs/common';
 import axios from 'axios';
 import { getModelCost } from '../../../config/ai-models.config';
+import {
+  normalizeImageModel,
+  orientationToIdeogramAspect,
+} from '../../../config/image-generation.config';
 
 @Injectable()
 export class IdeogramService {
@@ -14,9 +18,14 @@ export class IdeogramService {
     }
   }
 
-  async generateImage(prompt: string, model: string = 'ideogram-turbo'): Promise<string> {
+  async generateImage(
+    prompt: string,
+    model: string = 'ideogram-turbo',
+    orientation?: string,
+  ): Promise<string> {
     try {
-      const modelMap = {
+      const resolvedModel = normalizeImageModel(model);
+      const modelMap: Record<string, string> = {
         'ideogram-turbo': 'V_2_TURBO',
         'ideogram-2': 'V_2',
       };
@@ -25,9 +34,9 @@ export class IdeogramService {
         `${this.baseUrl}/generate`,
         {
           image_request: {
-            model: modelMap[model] || 'V_2_TURBO',
+            model: modelMap[resolvedModel] || 'V_2_TURBO',
             prompt: prompt,
-            aspect_ratio: 'ASPECT_16_9',
+            aspect_ratio: orientationToIdeogramAspect(orientation),
             magic_prompt_option: 'AUTO',
           },
         },
@@ -54,6 +63,6 @@ export class IdeogramService {
   }
 
   getCostPerImage(model: string): number {
-    return getModelCost(model);
+    return getModelCost(normalizeImageModel(model));
   }
 }

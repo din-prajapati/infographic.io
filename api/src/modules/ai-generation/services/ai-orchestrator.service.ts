@@ -3,6 +3,7 @@ import { PrismaService } from '../../../common/services/prisma.service';
 import { OpenAiService } from './openai.service';
 import { IdeogramService } from './ideogram.service';
 import { getTotalCost } from '../../../config/ai-models.config';
+import { normalizeImageModel } from '../../../config/image-generation.config';
 
 @Injectable()
 export class AiOrchestrator {
@@ -15,12 +16,13 @@ export class AiOrchestrator {
   async generateInfographic(
     infographicId: string,
     propertyData: any,
-    options?: { variations?: number; style?: string },
+    options?: { variations?: number; style?: string; orientation?: string },
     progressGateway?: any, // Optional WebSocket gateway for progress updates
   ): Promise<void> {
     const startTime = Date.now();
     const variations = options?.variations || 1;
     const style = options?.style;
+    const orientation = options?.orientation || propertyData.orientation || 'landscape';
     
     try {
       const isDemoMode = process.env.DEMO_MODE === 'true';
@@ -84,7 +86,7 @@ export class AiOrchestrator {
           });
           
           console.log(`🎨 [Orchestrator] Calling Ideogram for ${infographicId} (${variations} variations)...`);
-          const aiModel = propertyData.aiModel || 'ideogram-turbo';
+          const aiModel = normalizeImageModel(propertyData.aiModel || 'ideogram-turbo');
           
           // Generate multiple variations
           const generationPromises = [];
@@ -95,7 +97,7 @@ export class AiOrchestrator {
               : imagePrompt;
             
             generationPromises.push(
-              this.ideogramService.generateImage(variationPrompt, aiModel)
+              this.ideogramService.generateImage(variationPrompt, aiModel, orientation)
             );
           }
           
@@ -122,7 +124,7 @@ export class AiOrchestrator {
       // Use first image URL as primary (for backward compatibility)
       const imageUrl = imageUrls[0] || '';
 
-      const aiModel = propertyData.aiModel || 'ideogram-turbo';
+      const aiModel = normalizeImageModel(propertyData.aiModel || 'ideogram-turbo');
       const costUsd = isDemoMode ? 0 : getTotalCost(aiModel);
 
       try {

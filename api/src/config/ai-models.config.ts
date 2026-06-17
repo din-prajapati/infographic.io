@@ -22,7 +22,9 @@ export const OPENAI_COSTS = {
 };
 
 export function getModelCost(modelName: string): number {
-  const model = AI_MODELS[modelName];
+  const normalized =
+    modelName === 'ideogram-v2' ? 'ideogram-2' : modelName;
+  const model = AI_MODELS[normalized];
   if (!model) {
     console.warn(`Unknown AI model: ${modelName}, falling back to ideogram-turbo pricing`);
     return AI_MODELS['ideogram-turbo'].costPerImage;

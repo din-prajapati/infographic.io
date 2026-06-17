@@ -71,6 +71,17 @@ export class GenerateFromChatDto {
   @IsOptional()
   model?: 'ideogram-turbo' | 'ideogram-v2' | 'nano-banana-pro';
 
+  @ApiProperty({
+    example: 'landscape',
+    description: 'Infographic layout orientation',
+    required: false,
+    enum: ['landscape', 'portrait', 'square'],
+    default: 'landscape',
+  })
+  @IsEnum(['landscape', 'portrait', 'square'])
+  @IsOptional()
+  orientation?: 'landscape' | 'portrait' | 'square';
+
   @ApiProperty({ 
     example: 3,
     description: 'Number of variations to generate (1-5)',

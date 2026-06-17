@@ -44,8 +44,14 @@ import {
   generationsApi,
   extractionsApi,
   conversationsApi,
+  paymentsApi,
   type ResultVariation as ApiResultVariation,
 } from "../../lib/api";
+import { toast } from "sonner";
+import {
+  InfographicOrientation,
+  ImageQualityModel,
+} from "../../lib/aiGenerationSettings";
 import { useGenerationWebSocket } from "../../hooks/useGenerationWebSocket";
 import { useAgentStore } from "../../hooks/useAgentStore";
 import { useCanvasStore } from "../../hooks/useCanvasStore";
@@ -95,6 +101,7 @@ export function AIChatBox({
   // Generation states
   const [generationSteps, setGenerationSteps] = useState<GenerationStep[]>([]);
   const [currentStep, setCurrentStep] = useState(0);
+  const [progressPercent, setProgressPercent] = useState(0);
   const [resultVariations, setResultVariations] = useState<ResultVariation[]>(
     [],
   );
@@ -107,6 +114,10 @@ export function AIChatBox({
   const [currentAiMessageId, setCurrentAiMessageId] = useState<string | null>(
     null,
   );
+  const [generationOrientation, setGenerationOrientation] =
+    useState<InfographicOrientation>("landscape");
+  const [generationQualityModel, setGenerationQualityModel] =
+    useState<ImageQualityModel>("ideogram-turbo");
 
   // Conversation history with previews
   const [conversationHistory, setConversationHistory] = useState<
@@ -202,7 +213,8 @@ export function AIChatBox({
   useGenerationWebSocket({
     generationId: currentGenerationId,
     onProgress: (progress) => {
-      if (!currentAiMessageId) return;
+      const aiMsgId = currentAiMessageIdRef.current;
+      if (!aiMsgId) return;
 
       const stepLabels = [
         "Analyzing your prompt",
@@ -213,21 +225,18 @@ export function AIChatBox({
       ];
 
       // Map WebSocket step (0-5) to UI steps (0-4)
-      // WebSocket steps: 0=start, 1=analyze, 2=prompt, 3=generate, 4=process, 5=complete
-      // UI steps: 0=analyze, 1=layout, 2=content, 3=style, 4=finalize
+      // Backend steps: 0=start, 1=analyze, 2=prompt, 3=generate, 4=process, 5=complete
+      // UI steps:      0=analyze, 1=layout,  2=content, 3=style,   4=finalize
+      // Each backend step must map to a DIFFERENT uiStep so the progress bar
+      // advances visibly rather than sticking at 0% for the first two phases.
       let uiStep = 0;
       if (progress.step !== undefined) {
-        if (progress.step === 0)
-          uiStep = 0; // Starting
-        else if (progress.step === 1)
-          uiStep = 0; // Analyzing
-        else if (progress.step === 2)
-          uiStep = 1; // Creating prompt
-        else if (progress.step === 3)
-          uiStep = 2; // Generating images
-        else if (progress.step === 4)
-          uiStep = 3; // Processing
-        else if (progress.step === 5) uiStep = 4; // Finalizing
+        if (progress.step === 0) uiStep = 0;      // start    → Analyzing your prompt
+        else if (progress.step === 1) uiStep = 1; // analyze  → Designing layout
+        else if (progress.step === 2) uiStep = 2; // prompt   → Generating content
+        else if (progress.step === 3) uiStep = 3; // generate → Applying style
+        else if (progress.step === 4) uiStep = 4; // process  → Finalizing design
+        else if (progress.step === 5) uiStep = 4; // complete → stay at Finalizing
       }
       uiStep = Math.min(uiStep, stepLabels.length - 1);
 
@@ -244,11 +253,27 @@ export function AIChatBox({
 
       setCurrentStep(uiStep);
       setGenerationSteps(updatedSteps);
+      // Backend only emits `step` (0-5), never a numeric `progress` field.
+      // Derive the percentage from the step so the bar visibly advances.
+      // If the backend ever adds a progress field later, prefer it.
+      const STEP_TO_PERCENT: Record<number, number> = {
+        0: 5,   // start      → show something immediately
+        1: 25,  // analyze
+        2: 50,  // prompt
+        3: 70,  // generate images
+        4: 85,  // process
+        5: 100, // complete
+      };
+      if (progress.progress !== undefined) {
+        setProgressPercent(progress.progress);
+      } else if (progress.step !== undefined) {
+        setProgressPercent(STEP_TO_PERCENT[progress.step] ?? 0);
+      }
 
       // Update conversation message
       setConversationMessages((prev) =>
         prev.map((msg) =>
-          msg.id === currentAiMessageId
+          msg.id === aiMsgId
             ? { ...msg, generationSteps: updatedSteps, currentStep: uiStep }
             : msg,
         ),
@@ -437,6 +462,99 @@ export function AIChatBox({
     return { valid: missing.length === 0, missing };
   };
 
+  const showMonthlyLimitReached = (
+    current: number,
+    limit: number,
+    planTier?: string,
+    descriptionOverride?: string,
+  ) => {
+    toast.error("Monthly limit reached", {
+      description:
+        descriptionOverride ??
+        `You've used ${current} of ${limit} infographics this month${planTier ? ` on your ${planTier} plan` : ""}. Upgrade to continue generating.`,
+      action: {
+        label: "View plans",
+        onClick: () => {
+          window.location.href = "/pricing";
+        },
+      },
+    });
+  };
+
+  const isMonthlyLimitMessage = (message: string) => {
+    const lower = message.toLowerCase();
+    return lower.includes("monthly limit") || lower.includes("limit reached");
+  };
+
+  const isNetworkError = (error: unknown) => {
+    if (error instanceof TypeError) return true;
+    const msg = error instanceof Error ? error.message : String(error);
+    const lower = msg.toLowerCase();
+    return (
+      lower.includes("failed to fetch") ||
+      lower.includes("networkerror") ||
+      lower.includes("load failed")
+    );
+  };
+
+  const ensureWithinUsageLimit = async (): Promise<boolean> => {
+    const checkQuota = (
+      current: number,
+      limit: number,
+      planTier?: string,
+    ): boolean => {
+      if (limit <= 0) return true;
+      if (current >= limit) {
+        showMonthlyLimitReached(current, limit, planTier);
+        return false;
+      }
+      return true;
+    };
+
+    // Primary: same source as Account → Billing (the numbers the user already sees)
+    try {
+      const { usage, subscription } = await paymentsApi.getSubscription();
+      const planTier = subscription?.planTier?.toLowerCase() ?? "free";
+      return checkQuota(usage?.current ?? 0, usage?.limit ?? 3, planTier);
+    } catch (billingError) {
+      const billingMsg =
+        billingError instanceof Error
+          ? billingError.message
+          : String(billingError);
+      if (isMonthlyLimitMessage(billingMsg)) {
+        showMonthlyLimitReached(0, 0, undefined, billingMsg);
+        return false;
+      }
+    }
+
+    // Fallback: dedicated quota endpoint
+    try {
+      const quota = await generationsApi.getUsageQuota();
+      return checkQuota(quota.current, quota.limit, quota.planTier);
+    } catch (quotaError) {
+      const msg =
+        quotaError instanceof Error ? quotaError.message : String(quotaError);
+      if (isMonthlyLimitMessage(msg)) {
+        showMonthlyLimitReached(0, 0, undefined, msg);
+        return false;
+      }
+      if (isNetworkError(quotaError)) {
+        toast.error("Connection problem", {
+          description:
+            "Couldn't reach the server. Check your internet connection and try again.",
+        });
+      } else {
+        showMonthlyLimitReached(
+          0,
+          0,
+          undefined,
+          "Your monthly infographic limit may already be used up. Check Account → Billing, or upgrade your plan to continue.",
+        );
+      }
+      return false;
+    }
+  };
+
   const handleGenerate = async () => {
     if (!state.inputValue.trim() && state.selectedChips.length === 0) return;
 
@@ -474,9 +592,9 @@ export function AIChatBox({
       return;
     }
 
-    // --- VALIDATION PASSED: proceed with generation ---
+    // --- VALIDATION PASSED: show UI immediately, then check quota ---
 
-    // CREATE USER MESSAGE
+    // CREATE USER MESSAGE + AI placeholder now so the UI responds instantly
     const userMessage: Message = {
       id: `msg-user-${Date.now()}`,
       type: "user",
@@ -484,7 +602,6 @@ export function AIChatBox({
       timestamp: new Date(),
     };
 
-    // CREATE AI MESSAGE WITH GENERATION STEPS
     const aiMessageId = `msg-ai-${Date.now()}`;
     const steps: GenerationStep[] = [
       { id: "analyze", label: "Analyzing your prompt", status: "in-progress" },
@@ -504,13 +621,33 @@ export function AIChatBox({
       currentStep: 0,
     };
 
-    // Add messages to conversation - APPEND to existing if available
     if (currentConversation) {
-      // Continue existing conversation
       setConversationMessages((prev) => [...prev, userMessage, aiMessage]);
     } else {
-      // New conversation
       setConversationMessages([userMessage, aiMessage]);
+    }
+
+    setState((prev) => ({ ...prev, isGenerating: true, error: null, inputValue: "" }));
+    setResultVariations([]);
+    setSelectedVariationId(null);
+    setGenerationSteps(steps);
+    setCurrentStep(0);
+    setProgressPercent(0);
+    setCurrentAiMessageId(aiMessageId);
+
+    // Now check quota — after UI is already showing progress
+    if (!(await ensureWithinUsageLimit())) {
+      // Quota exceeded: remove the optimistic messages and reset
+      if (currentConversation) {
+        setConversationMessages((prev) =>
+          prev.filter((m) => m.id !== userMessage.id && m.id !== aiMessageId),
+        );
+      } else {
+        setConversationMessages([]);
+      }
+      setState((prev) => ({ ...prev, isGenerating: false }));
+      setCurrentAiMessageId(null);
+      return;
     }
 
     // Create or update conversation
@@ -563,13 +700,6 @@ export function AIChatBox({
       );
     }
 
-    // Start generation process
-    setState((prev) => ({ ...prev, isGenerating: true, error: null }));
-    setResultVariations([]);
-    setSelectedVariationId(null);
-    setGenerationSteps(steps);
-    setCurrentStep(0);
-
     try {
       // Merge agent form values + sidebar brand palette into generation request
       const brandColors =
@@ -583,7 +713,8 @@ export function AIChatBox({
         prompt: promptText,
         conversationId: conversationId,
         variations: 3,
-        model: "ideogram-turbo",
+        model: generationQualityModel,
+        orientation: generationOrientation,
         agent: {
           name: agentInfo.name || undefined,
           brokerage: agentInfo.brokerage || undefined,
@@ -622,7 +753,19 @@ export function AIChatBox({
       } else if (error?.response?.status === 429) {
         errorMessage =
           "Rate limit exceeded. Please wait a moment and try again.";
-      } else if (error?.response?.status === 403) {
+      } else if (
+        error?.response?.status === 403 ||
+        errorMessage.toLowerCase().includes("monthly limit")
+      ) {
+        toast.error("Monthly limit reached", {
+          description: errorMessage,
+          action: {
+            label: "View plans",
+            onClick: () => {
+              window.location.href = "/pricing";
+            },
+          },
+        });
         errorMessage =
           "Monthly limit reached. Please upgrade your plan or wait until next month.";
       } else if (error?.response?.status >= 500) {
@@ -795,11 +938,15 @@ export function AIChatBox({
         category: "listing-announcements",
         description: variation.description || "AI-generated infographic design",
         previewImage: variation.previewUrl,
+        isAiVariation: true,
+        aiOrientation: generationOrientation,
         emoji: "🎨",
       };
       onTemplateLoad(template);
     }
-    handleClose();
+    // Close the panel but keep resultVariations in state so the user can
+    // reopen the chat and pick a different variation without re-generating.
+    onClose();
   };
 
   const handleUseVariation = (id: string) => {
@@ -811,11 +958,23 @@ export function AIChatBox({
         category: "listing-announcements",
         description: variation.description || "AI-generated infographic design",
         previewImage: variation.previewUrl,
+        isAiVariation: true,
+        aiOrientation: generationOrientation,
         emoji: "🎨",
       };
       onTemplateLoad(template);
     }
-    handleClose();
+    // Close the panel but keep resultVariations in state so the user can
+    // reopen the chat and pick a different variation without re-generating.
+    onClose();
+  };
+
+  // Shared props for both AIChatInputField instances
+  const inputFieldSettings = {
+    orientation: generationOrientation,
+    qualityModel: generationQualityModel,
+    onOrientationChange: setGenerationOrientation,
+    onQualityModelChange: setGenerationQualityModel,
   };
 
   // NEW: Conversation handlers
@@ -912,7 +1071,7 @@ export function AIChatBox({
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.2, ease: "easeOut" }}
-          className="absolute bottom-20 right-6 w-[800px] max-w-[calc(100vw-3rem)] bg-background rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.18)] overflow-hidden z-[100] flex flex-col max-h-[min(560px,calc(100vh-140px))] min-h-0"
+          className="absolute bottom-6 right-[88px] w-[900px] max-w-[calc(100vw-6rem)] bg-background rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.18)] overflow-hidden z-[100] flex flex-col max-h-[calc(100vh-80px)] min-h-0"
         >
           <div className="flex flex-col flex-1 min-h-0">
           {/* Header */}
@@ -958,26 +1117,6 @@ export function AIChatBox({
             </div>
           </div>
 
-          {/* Conversation Toolbar - Only show during active conversation with results */}
-          {hasActiveConversation &&
-            resultVariations.length > 0 &&
-            selectedVariationId && (
-              <div className="shrink-0 px-4 py-2 border-b border-border bg-muted flex gap-2">
-                <Button
-                  className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground"
-                  onClick={() => handleUseVariation(selectedVariationId)}
-                >
-                  Use This Design
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => handleEditVariation(selectedVariationId)}
-                >
-                  <Edit className="w-4 h-4 mr-2" />
-                  Customize
-                </Button>
-              </div>
-            )}
 
           {/* Main Content Area - Scrollable */}
           {showHistoryView ? (
@@ -999,6 +1138,7 @@ export function AIChatBox({
                 onRegenerateAll={handleRegenerateAll}
                 selectedPreviewId={selectedVariationId}
                 onSelectPreview={setSelectedVariationId}
+                onUseVariation={handleUseVariation}
               />
 
               {/* Progress Bar (Sticky during generation) */}
@@ -1008,7 +1148,12 @@ export function AIChatBox({
                     isGenerating={state.isGenerating}
                     currentStep={currentStep}
                     totalSteps={generationSteps.length}
-                    message="Generating templates using Real Estate Template Generator..."
+                    progressPercent={progressPercent}
+                    message={
+                      generationSteps.find((s) => s.status === "in-progress")?.label
+                      ?? generationSteps[currentStep]?.label
+                      ?? "Generating your infographic..."
+                    }
                     estimatedTime={45}
                   />
                 )}
@@ -1031,12 +1176,7 @@ export function AIChatBox({
                   zapRef={zapRef}
                   paletteRef={paletteRef}
                   paperclipRef={paperclipRef}
-                  conversationHistory={conversationHistory}
-                  propertyType={propertyType}
-                  priceRange={priceRange}
-                  onMoreSuggestionsClick={() =>
-                    setShowEnhancedSuggestions(true)
-                  }
+                  {...inputFieldSettings}
                 />
               </div>
             </>
@@ -1098,6 +1238,7 @@ export function AIChatBox({
                   <ResultsVariations
                     variations={resultVariations}
                     selectedVariationId={selectedVariationId}
+                    orientation={generationOrientation}
                     onSelectVariation={setSelectedVariationId}
                     onRegenerateAll={handleRegenerateAll}
                     onEditVariation={handleEditVariation}
@@ -1132,10 +1273,7 @@ export function AIChatBox({
                   zapRef={zapRef}
                   paletteRef={paletteRef}
                   paperclipRef={paperclipRef}
-                  conversationHistory={conversationHistory}
-                  propertyType={propertyType}
-                  priceRange={priceRange}
-                  onMoreSuggestionsClick={() => setShowEnhancedSuggestions(true)}
+                  {...inputFieldSettings}
                 />
               </div>
             </div>

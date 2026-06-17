@@ -84,6 +84,7 @@ export interface GenerateFromChatInput {
   conversationId?: string;
   style?: string;
   model?: 'ideogram-turbo' | 'ideogram-v2' | 'nano-banana-pro';
+  orientation?: 'landscape' | 'portrait' | 'square';
   variations?: number;
   agent?: AgentInput;
 }
@@ -246,6 +247,15 @@ export const usageAnalyticsApi = {
 };
 
 export const generationsApi = {
+  getUsageQuota: () =>
+    apiRequest<{
+      organizationId: string | null;
+      planTier: string;
+      current: number;
+      limit: number;
+      remaining: number;
+    }>(getApiUrl('/infographics/generations/usage/quota')),
+
   // Generate from chat prompt
   generate: (data: GenerateFromChatInput) =>
     apiRequest<{ id: string; status: string; conversationId?: string }>(

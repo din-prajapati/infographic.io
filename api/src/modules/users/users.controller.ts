@@ -14,7 +14,10 @@ export class UsersController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get current user organization info with limits' })
   async getOrganizationInfo(@Req() req: any) {
-    const userId = req.user.id;
+    const userId = req.user?.id;
+    if (!userId || !this.usersService) {
+      return { data: null };
+    }
     const info = await this.usersService.getUserOrganizationInfo(userId);
     return { data: info };
   }

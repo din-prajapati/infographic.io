@@ -58,13 +58,15 @@ export class AuthService {
       }
       organizationId = registerDto.organizationId;
     }
-    // Option 2: Create new organization
-    else if (registerDto.organizationName) {
+    // Option 2: Create new organization (always, even if name is omitted)
+    else {
+      const orgName = registerDto.organizationName?.trim()
+        || `${registerDto.name?.trim() || registerDto.email.split('@')[0]}'s Organization`;
       const organization = await prisma.organization.create({
         data: {
-          name: registerDto.organizationName,
-          planTier: 'free', // Free tier activation
-          monthlyLimit: 3, // Free tier limit
+          name: orgName,
+          planTier: 'free',
+          monthlyLimit: 3,
         },
       });
       organizationId = organization.id;

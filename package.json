@@ -15,6 +15,7 @@
     "db:push": "drizzle-kit push",
     "prisma:generate": "prisma generate --schema=api/prisma/schema.prisma",
     "db:deploy": "prisma db push --schema=api/prisma/schema.prisma --skip-generate",
+    "db:seed": "npx tsx api/prisma/seed.ts",
     "list-active-subscriptions": "cd api && npx tsx scripts/list-active-subscriptions.ts",
     "clean-dev-db": "cd api && npx tsx scripts/clean-dev-db.ts",
     "verify:payment-prereqs": "node scripts/verify-payment-prerequisites.js",

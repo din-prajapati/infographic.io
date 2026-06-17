@@ -3,69 +3,47 @@ import { prisma } from '../../../database/prisma.client';
 import { AiOrchestrator } from '../../ai-generation/services/ai-orchestrator.service';
 import { TemplatesService } from '../../templates/services/templates.service';
 import { GenerateInfographicDto } from '../dto/generate-infographic.dto';
+import { UsageLimitService } from './usage-limit.service';
 
 @Injectable()
 export class InfographicsService {
   constructor(
     @Inject(AiOrchestrator) private aiOrchestrator: AiOrchestrator,
     @Inject(TemplatesService) private templatesService: TemplatesService,
+    @Inject(UsageLimitService) private usageLimitService: UsageLimitService,
   ) {}
 
-  async generate(dto: GenerateInfographicDto, userId: string, organizationId: string) {
+  async generate(dto: GenerateInfographicDto, userId: string, organizationId: string | null) {
     console.log(`🚀 [Service] Starting generate: userId=${userId}, orgId=${organizationId}`);
-    
-    let organization = await prisma.organization.findUnique({
-      where: { id: organizationId },
-    });
 
-    // If organization doesn't exist, create a default one for the user
+    let organization = organizationId
+      ? await prisma.organization.findUnique({ where: { id: organizationId } })
+      : null;
+
+    // Heal users with no organization: create a default org and link it to the user
     if (!organization) {
-      console.log(`📋 [Service] Organization not found, creating default organization for user ${userId}`);
+      console.log(`📋 [Service] No valid organization for user ${userId} — creating default org`);
       organization = await prisma.organization.create({
         data: {
-          id: organizationId,
           name: 'My Organization',
           planTier: 'free',
+          monthlyLimit: 3,
         },
       });
-      console.log(`✅ [Service] Default organization created: ${organization.id}`);
+      // Write the new org ID back to the user record so all future requests resolve correctly
+      await prisma.user.update({
+        where: { id: userId },
+        data: { organizationId: organization.id },
+      });
+      console.log(`✅ [Service] Default organization created and linked: ${organization.id}`);
     } else {
       console.log(`✅ [Service] Organization found: ${organization.id}`);
     }
 
-    const tierLimits = {
-      free: 3,
-      solo: 50,
-      team: 200,
-      brokerage: 1000,
-      api_starter: 5000,
-      api_growth: 20000,
-      api_enterprise: Infinity,
-    };
+    // Always derive organizationId from the resolved organization object
+    organizationId = organization.id;
 
-    const monthlyLimit = tierLimits[organization.planTier] || 3;
-
-    if (monthlyLimit !== Infinity) {
-      const currentMonth = new Date().getMonth();
-      const currentYear = new Date().getFullYear();
-      const usageCount = await prisma.usageRecord.count({
-        where: {
-          organizationId,
-          createdAt: {
-            gte: new Date(currentYear, currentMonth, 1),
-            lt: new Date(currentYear, currentMonth + 1, 1),
-          },
-        },
-      });
-
-      // Usage alerts are handled by UsageAlertService (called after generation completes)
-
-      if (usageCount >= monthlyLimit) {
-        throw new BadRequestException(
-          `Monthly limit of ${monthlyLimit} infographics reached for ${organization.planTier} tier. Please upgrade your plan or wait until next month.`
-        );
-      }
-    }
+    await this.usageLimitService.assertCanGenerate(organizationId, 1);
 
     console.log(`📋 [Service] Selecting template...`);
     const templateId = await this.templatesService.selectBestTemplate(dto);

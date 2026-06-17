@@ -5,6 +5,7 @@ import { InfographicsService } from './infographics.service';
 import { AiOrchestrator } from '../../ai-generation/services/ai-orchestrator.service';
 import { TemplatesService } from '../../templates/services/templates.service';
 import { UsageAlertService } from './usage-alert.service';
+import { UsageLimitService } from './usage-limit.service';
 import { GenerationProgressGateway } from '../gateways/generation-progress.gateway';
 import { GenerateFromChatDto } from '../dto/generate-from-chat.dto';
 
@@ -31,6 +32,7 @@ export class GenerationsService {
     @Inject(AiOrchestrator) private aiOrchestrator: AiOrchestrator,
     @Inject(TemplatesService) private templatesService: TemplatesService,
     @Inject(UsageAlertService) private usageAlertService: UsageAlertService,
+    @Inject(UsageLimitService) private usageLimitService: UsageLimitService,
     @Inject(forwardRef(() => GenerationProgressGateway)) private progressGateway: GenerationProgressGateway,
     @Inject(PrismaService) private prisma: PrismaService,
   ) {}
@@ -38,9 +40,11 @@ export class GenerationsService {
   async generateFromChat(
     dto: GenerateFromChatDto,
     userId: string,
-    organizationId: string,
+    organizationId: string | null,
   ): Promise<{ id: string; status: string; conversationId?: string }> {
     console.log(`🚀 [GenerationsService] Starting chat-based generation for user ${userId}`);
+
+    const resolvedOrgId = await this.usageLimitService.assertCanGenerateForUser(userId, 1);
 
     try {
       let extractedData;
@@ -144,6 +148,7 @@ export class GenerationsService {
       features: extractedData.features || [],
       agent: agentData,
       aiModel: dto.model || 'ideogram-turbo',
+      orientation: dto.orientation || 'landscape',
     };
 
     // Generate infographic using existing service
@@ -154,7 +159,7 @@ export class GenerationsService {
     const infographic = await this.prisma.infographic.create({
       data: {
         userId,
-        organizationId,
+        organizationId: resolvedOrgId,
         templateId,
         propertyData: propertyData as any,
         imageUrl: '',
@@ -180,6 +185,7 @@ export class GenerationsService {
             {
               variations: dto.variations || 3,
               style: dto.style,
+              orientation: dto.orientation || 'landscape',
             },
             this.progressGateway, // Pass gateway for progress updates
           );
@@ -193,7 +199,7 @@ export class GenerationsService {
           });
           
           // Check usage alerts after successful generation
-          await this.usageAlertService.checkAndAlert(organizationId);
+          await this.usageAlertService.checkAndAlert(resolvedOrgId);
         } catch (error: any) {
           console.error(`❌ [GenerationsService] Background generation failed:`, error);
           let errorMessage = error?.message || 'Generation failed';
@@ -304,6 +310,10 @@ export class GenerationsService {
 
     if (!original) {
       throw new NotFoundException(`Generation ${generationId} not found`);
+    }
+
+    if (original.organizationId) {
+      await this.usageLimitService.assertCanGenerate(original.organizationId, 1);
     }
 
     // Create new generation with modifications

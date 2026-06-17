@@ -23,6 +23,34 @@ export function ImageElement({ element, isSelected, onSelect }: ImageElementProp
 
   if (!element.visible) return null;
 
+  // AI imports: pin to artboard bounds — avoids react-rnd size desync clipping
+  if (element.isAiImport) {
+    const filterStyle = `
+      brightness(${element.filters.brightness}%)
+      contrast(${element.filters.contrast}%)
+      saturate(${element.filters.saturation}%)
+    `.trim();
+
+    return (
+      <div
+        className="absolute inset-0 pointer-events-none"
+        role="img"
+        aria-label={element.name}
+        data-element-id={element.id}
+        data-element-type="image"
+        style={{
+          zIndex: element.zIndex,
+          opacity: element.opacity,
+          backgroundImage: `url(${JSON.stringify(element.src)})`,
+          backgroundSize: 'contain',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          filter: filterStyle || 'none',
+        }}
+      />
+    );
+  }
+
   // Build filter style without blur
   const filterStyle = `
     brightness(${element.filters.brightness}%)
@@ -87,7 +115,7 @@ export function ImageElement({ element, isSelected, onSelect }: ImageElementProp
         cursor: element.locked ? 'not-allowed' : 'move',
       }}
       onClick={handleClick}
-      lockAspectRatio
+      lockAspectRatio={element.width / element.height}
       data-element-id={element.id}
       data-element-type="image"
     >
@@ -133,12 +161,14 @@ export function ImageElement({ element, isSelected, onSelect }: ImageElementProp
           <img
             src={element.src}
             alt={element.name}
-            className="w-full h-full"
+            className="absolute inset-0 w-full h-full pointer-events-none"
             style={{
               filter: filterStyle || 'none',
-              transform,
-              objectFit: 'cover',
-              zIndex: 1,
+              ...(element.rotation !== 0 || element.flipHorizontal || element.flipVertical
+                ? { transform }
+                : {}),
+              objectFit: element.objectFit ?? 'contain',
+              objectPosition: 'center',
             }}
             draggable={false}
           />

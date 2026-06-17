@@ -24,6 +24,11 @@ export function AccountPage() {
   const displayEmail = user?.email || "";
   const initials = displayName.split(" ").map((name) => name.charAt(0).toUpperCase()).slice(0, 2).join("");
 
+  // Split stored full name into first / last for the profile form
+  const nameParts = displayName.trim().split(/\s+/);
+  const firstName = nameParts[0] ?? "";
+  const lastName = nameParts.slice(1).join(" ");
+
   return (
     <div className="min-h-screen" style={{ background: 'var(--page-bg)' }}>
       <div className="max-w-[1200px] mx-auto px-6 py-8">
@@ -145,16 +150,16 @@ export function AccountPage() {
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="firstName" className="text-muted-foreground">First Name</Label>
-                        <Input id="firstName" defaultValue="John" className="bg-input-background border-border text-foreground" />
+                        <Input id="firstName" defaultValue={firstName} className="bg-input-background border-border text-foreground" />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="lastName" className="text-muted-foreground">Last Name</Label>
-                        <Input id="lastName" defaultValue="Doe" className="bg-input-background border-border text-foreground" />
+                        <Input id="lastName" defaultValue={lastName} className="bg-input-background border-border text-foreground" />
                       </div>
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="email" className="text-muted-foreground">Email Address</Label>
-                      <Input id="email" type="email" defaultValue="john.doe@example.com" className="bg-input-background border-border text-foreground" />
+                      <Input id="email" type="email" defaultValue={displayEmail} readOnly className="bg-input-background border-border text-foreground opacity-70 cursor-not-allowed" />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="bio" className="text-muted-foreground">Bio</Label>
