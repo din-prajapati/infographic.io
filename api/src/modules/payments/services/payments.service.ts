@@ -8,6 +8,7 @@ import {
 import { randomUUID } from 'crypto';
 import { PaymentProvider, SubscriptionStatus, PaymentStatus, PlanTier } from '@prisma/client';
 import { SubscriptionStorageService } from './subscription-storage.service';
+import { prisma } from '../../../database/prisma.client';
 import { PLAN_CONFIG } from '@shared/schema';
 
 // Import payment provider factory from server directory
@@ -198,6 +199,21 @@ export class PaymentsService {
       throw new NotFoundException('User not found');
     }
 
+    // TEAM+ plans require an org for multi-user workspace — heal if missing.
+    // SOLO/FREE have userLimit=1 and don't expose org features; every user already gets an
+    // org on registration (auth.service.ts), so a missing org there is a separate data bug.
+    const MULTI_USER_PLANS = new Set<PlanTier>(['TEAM', 'BROKERAGE', 'API_GROWTH', 'API_ENTERPRISE'] as PlanTier[]);
+    if (!user.organizationId && MULTI_USER_PLANS.has(planTier)) {
+      const org = await this.storage.createOrganization({
+        id: randomUUID(),
+        name: `${user.name || user.email.split('@')[0]}'s Organization`,
+        planTier: 'free',
+        monthlyLimit: 3,
+      });
+      await this.storage.updateUser(userId, { organizationId: org.id });
+      user = { ...user, organizationId: org.id, organization: org as any };
+    }
+
     const planConfig = PLAN_CONFIG[planTier];
     if (planConfig.price === 0) {
       throw new BadRequestException('Cannot create subscription for free plan');
@@ -383,14 +399,39 @@ export class PaymentsService {
 
   /**
    * Get current subscription for a user.
-   * If currentPeriodEnd is epoch/invalid, refreshes from Razorpay and updates DB.
+   * For PENDING Razorpay subscriptions: polls Razorpay and promotes to ACTIVE if the first
+   * invoice has been charged (status = 'active'). Also heals invalid period dates.
    */
   async getCurrentSubscription(userId: string) {
     const subscription = await this.storage.getCurrentSubscriptionByUserId(userId);
     if (!subscription) return null;
 
+    if (subscription.status === SubscriptionStatus.PENDING && subscription.paymentProvider === 'RAZORPAY') {
+      try {
+        const provider = paymentProviderFactory.getProvider(null, 'RAZORPAY');
+        const refreshed = await provider.fetchSubscription(subscription.externalSubscriptionId);
+        if (refreshed.status === 'active') {
+          const updates: any = { status: SubscriptionStatus.ACTIVE };
+          if (refreshed.currentPeriodEnd.getTime() > 86400000) {
+            updates.currentPeriodStart = refreshed.currentPeriodStart;
+            updates.currentPeriodEnd = refreshed.currentPeriodEnd;
+          }
+          await this.storage.updateSubscription(subscription.id, updates);
+          await this.upgradeOrganizationForActiveSubscription({
+            id: subscription.id,
+            organizationId: subscription.organizationId,
+            planTier: subscription.planTier as PlanTier,
+          });
+          return this.storage.getSubscription(subscription.id);
+        }
+      } catch (err) {
+        this.logger.warn(`Failed to sync PENDING subscription from Razorpay: ${err?.message || err}`);
+      }
+      return subscription;
+    }
+
     const periodEndTime = new Date(subscription.currentPeriodEnd).getTime();
-    const isEpochOrInvalid = Number.isNaN(periodEndTime) || periodEndTime < 86400000; // Before 2 Jan 1970
+    const isEpochOrInvalid = Number.isNaN(periodEndTime) || periodEndTime < 86400000;
 
     if (isEpochOrInvalid && subscription.paymentProvider === 'RAZORPAY') {
       try {
@@ -404,8 +445,7 @@ export class PaymentsService {
           return this.storage.getSubscription(subscription.id);
         }
       } catch (err) {
-        // Log but don't fail - return existing subscription
-        console.warn('Failed to refresh subscription from Razorpay:', err?.message || err);
+        this.logger.warn(`Failed to refresh subscription dates from Razorpay: ${err?.message || err}`);
       }
     }
 
@@ -523,6 +563,161 @@ export class PaymentsService {
    */
   async getPaymentHistory(userId: string) {
     return this.storage.getPaymentsByUserId(userId);
+  }
+
+  private razorpayStatusToUserMessage(rzpStatus: string): string {
+    const map: Record<string, string> = {
+      created:       'Your checkout was not completed. Please go to the Pricing page and subscribe again to activate your plan.',
+      authenticated: 'Your payment method is registered and your first charge is being processed. This usually takes a few minutes.',
+      active:        'Your plan is active.',
+      pending:       'Your payment is being retried by our payment provider. Please check your payment method or contact support if this persists.',
+      halted:        'Payment failed after multiple retries. Please update your payment method or contact support.',
+      cancelled:     'Your subscription has been cancelled.',
+      completed:     'Your subscription has completed all billing cycles.',
+      expired:       'Your subscription has expired. Please visit the Pricing page to subscribe again.',
+    };
+    return map[rzpStatus] ?? 'Your payment is still being processed. Please wait a moment and try again.';
+  }
+
+  private async logSubscriptionEvent(data: {
+    userId?: string;
+    subscriptionId?: string;
+    eventType: string;
+    provider?: string;
+    providerStatus?: string;
+    localStatus?: string;
+    promoted?: boolean;
+    message?: string;
+    metadata?: Record<string, any>;
+  }): Promise<void> {
+    try {
+      await prisma.subscriptionEvent.create({
+        data: {
+          userId: data.userId,
+          subscriptionId: data.subscriptionId,
+          eventType: data.eventType,
+          provider: data.provider,
+          providerStatus: data.providerStatus,
+          localStatus: data.localStatus,
+          promoted: data.promoted ?? false,
+          message: data.message,
+          metadata: data.metadata as any,
+        },
+      });
+    } catch (logErr: any) {
+      this.logger.warn(`Failed to write SubscriptionEvent log: ${logErr?.message}`);
+    }
+  }
+
+  /**
+   * Force-sync subscription status from Razorpay.
+   * Promotes PENDING → ACTIVE when Razorpay reports active or authenticated.
+   * Logs every attempt to SubscriptionEvent table.
+   * Returns a user-friendly message only — raw provider status is never exposed to the frontend.
+   */
+  async syncSubscriptionFromProvider(userId: string): Promise<{
+    localStatus: string;
+    promoted: boolean;
+    message: string;
+  }> {
+    const subscription = await this.storage.getCurrentSubscriptionByUserId(userId);
+    if (!subscription) {
+      return { localStatus: 'NONE', promoted: false, message: 'No active subscription found on your account.' };
+    }
+
+    if (subscription.status !== SubscriptionStatus.PENDING) {
+      return { localStatus: subscription.status, promoted: false, message: 'Your plan is already active.' };
+    }
+
+    if (subscription.paymentProvider !== 'RAZORPAY') {
+      return { localStatus: subscription.status, promoted: false, message: 'Automatic sync is not available for your payment method. Please contact support.' };
+    }
+
+    try {
+      const provider = paymentProviderFactory.getProvider(null, 'RAZORPAY');
+      const refreshed = await provider.fetchSubscription(subscription.externalSubscriptionId);
+      const rzpStatus = String(refreshed.status ?? '').toLowerCase();
+
+      // 'created' = checkout was opened but never completed — abandon it so the user can re-subscribe
+      if (rzpStatus === 'created') {
+        await this.storage.updateSubscription(subscription.id, {
+          status: SubscriptionStatus.CANCELLED,
+          cancelledAt: new Date(),
+        });
+        await this.logSubscriptionEvent({
+          userId,
+          subscriptionId: subscription.id,
+          eventType: 'sync_attempt',
+          provider: 'RAZORPAY',
+          providerStatus: rzpStatus,
+          localStatus: 'CANCELLED',
+          promoted: false,
+          message: 'Stale created-status subscription abandoned; user can now re-subscribe',
+        });
+        this.logger.log(`Sync abandoned stale subscription ${subscription.id} (Razorpay: created)`);
+        return {
+          localStatus: 'CANCELLED',
+          promoted: false,
+          message: 'Your previous checkout was not completed. You can now select a plan and subscribe.',
+        };
+      }
+
+      const shouldPromote = rzpStatus === 'active' || rzpStatus === 'authenticated';
+
+      if (shouldPromote) {
+        const updates: any = { status: SubscriptionStatus.ACTIVE };
+        if (refreshed.currentPeriodEnd && refreshed.currentPeriodEnd.getTime() > 86400000) {
+          updates.currentPeriodStart = refreshed.currentPeriodStart;
+          updates.currentPeriodEnd = refreshed.currentPeriodEnd;
+        }
+        await this.storage.updateSubscription(subscription.id, updates);
+        await this.upgradeOrganizationForActiveSubscription({
+          id: subscription.id,
+          organizationId: subscription.organizationId,
+          planTier: subscription.planTier as PlanTier,
+        });
+        await this.logSubscriptionEvent({
+          userId,
+          subscriptionId: subscription.id,
+          eventType: 'status_promoted',
+          provider: 'RAZORPAY',
+          providerStatus: rzpStatus,
+          localStatus: 'ACTIVE',
+          promoted: true,
+          message: 'PENDING promoted to ACTIVE via force-sync',
+        });
+        this.logger.log(`Sync promoted subscription ${subscription.id} PENDING→ACTIVE (Razorpay: ${rzpStatus})`);
+        return { localStatus: 'ACTIVE', promoted: true, message: 'Your plan has been activated successfully!' };
+      }
+
+      const userMessage = this.razorpayStatusToUserMessage(rzpStatus);
+      await this.logSubscriptionEvent({
+        userId,
+        subscriptionId: subscription.id,
+        eventType: 'sync_attempt',
+        provider: 'RAZORPAY',
+        providerStatus: rzpStatus,
+        localStatus: subscription.status,
+        promoted: false,
+        message: userMessage,
+      });
+      this.logger.log(`Sync checked subscription ${subscription.id}: Razorpay=${rzpStatus}, no promotion`);
+      return { localStatus: subscription.status, promoted: false, message: userMessage };
+
+    } catch (err: any) {
+      const errMsg = err?.message || 'unknown error';
+      await this.logSubscriptionEvent({
+        userId,
+        subscriptionId: subscription.id,
+        eventType: 'sync_error',
+        provider: 'RAZORPAY',
+        localStatus: subscription.status,
+        promoted: false,
+        message: errMsg,
+      });
+      this.logger.warn(`syncSubscriptionFromProvider failed for user ${userId}: ${errMsg}`);
+      return { localStatus: subscription.status, promoted: false, message: 'Unable to check your subscription status right now. Please try again in a moment.' };
+    }
   }
 
   /**

@@ -104,6 +104,15 @@ export class PaymentsController {
     }
   }
 
+  @Post('subscription/sync')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Force-sync subscription status from payment provider (promotes PENDING → ACTIVE if provider confirms)' })
+  async syncSubscription(@Req() req: any) {
+    const userId = req.user.id;
+    return this.paymentsService.syncSubscriptionFromProvider(userId);
+  }
+
   @Get('subscription')
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth()

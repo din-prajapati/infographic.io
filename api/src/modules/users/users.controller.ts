@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Delete, Param, Body, Req, UseGuards, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Param, Body, Req, UseGuards, BadRequestException, Inject } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UsersService } from './users.service';
@@ -7,7 +7,7 @@ import { InviteMemberDto } from './dto/invite-member.dto';
 @ApiTags('users')
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(@Inject(UsersService) private readonly usersService: UsersService) {}
 
   @Get('organization')
   @UseGuards(AuthGuard('jwt'))

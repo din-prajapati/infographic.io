@@ -1,8 +1,139 @@
 # 💰 Comprehensive Pricing Analysis & Optimization Strategy
 
 > **Purpose:** Complete financial analysis including all AI models, cost optimization, revenue strategies, and free trial recommendations  
-> **Last Updated:** January 2025  
+> **Last Updated:** June 2026 (see June 2026 Audit section — supersedes original cost figures)  
 > **Currency Base:** USD ($) with regional pricing
+
+---
+
+---
+
+## 🔄 June 2026 — Cost Audit, Bug Fixes & Model Update
+
+> **Status:** Two billing bugs discovered and fixed. Default model upgraded to V4 Turbo. Pricing tiers reviewed.  
+> **Action required:** Revisit BROKERAGE and API plan pricing if Nano Banana (V4 Default) is adopted as default model.
+
+### Bugs Found & Fixed (June 2026)
+
+| Bug | What code did | What Ideogram actually charges | Effect |
+|---|---|---|---|
+| Wrong price | $0.025/image | $0.05/image (V2 Turbo actual) | 2× undercount |
+| Wrong count | 1 image tracked per event | 3 images called per event (3 variations) | 3× undercount |
+| **Combined** | $0.025/event tracked | $0.154/event actual | **6.1× undercount** |
+
+Discovered by reconciling Ideogram dashboard tooltip (66 calls on Jun 16) against DB records (22 usage rows × 3 images = 66 — exact match).
+
+**Fixes applied in `api/src/config/ai-models.config.ts` and `api/src/modules/ai-generation/services/ai-orchestrator.service.ts`.**
+
+---
+
+### Verified Ideogram API Pricing (June 2026 — from official pricing page)
+
+#### Standard Generation Models
+
+| Model | API key | Price/image |
+|---|---|---|
+| 4.0 Turbo | `V_4_TURBO` | **$0.03** ← new default |
+| 4.0 Default | `V_4` | $0.06 |
+| 4.0 Quality | `V_4_QUALITY` | $0.10 |
+| 3.0 Flash | `V_3_FLASH` | $0.03 |
+| 3.0 Turbo | `V_3_TURBO` | $0.03 |
+| 3.0 Default | `V_3` | $0.06 |
+| 3.0 Quality | `V_3_QUALITY` | $0.09 |
+| **2.0 Turbo** | `V_2_TURBO` | **$0.05** (was previous default) |
+| **2.0 Default** | `V_2` | **$0.08** (was "Balanced") |
+| 2a Turbo | `V_2A_TURBO` | $0.025 (legacy — original wrong price came from here) |
+| 2a Default | `V_2A` | $0.04 |
+| 1.0 Turbo | `V_1_TURBO` | $0.02 |
+
+#### Nano Banana Clarification
+
+The January 2025 doc listed "Nano Banana Pro 2K/4K" as a Google product at $0.134–$0.240.
+
+**Actual situation (June 2026):**
+- The Ideogram pricing page lists **"Generate with Google Gemini"** at $0.20/image (1K/2K) and $0.36/image (4K) — this is the correct spec for that feature.
+- The codebase has an internal alias `nano-banana-pro` in `image-generation.config.ts` that currently routes to **`ideogram-4` (V4 Default = $0.06/image)** — it is NOT connected to Google Gemini yet.
+- If the Google Gemini integration were wired up, cost would be $0.20–$0.36/image, which is 3–6× more expensive than V4 Default. That would require a complete pricing tier overhaul before enabling.
+
+For all margin calculations below, **"Nano Banana" = `ideogram-4` = V4 Default = $0.06/image**.
+
+---
+
+### Model Change Applied
+
+Default model switched from V2 Turbo → **V4 Turbo** in `api/src/config/image-generation.config.ts`.
+
+| | Old default (V2 Turbo) | New default (V4 Turbo) |
+|---|---|---|
+| API key | `V_2_TURBO` | `V_4_TURBO` |
+| Price/image | $0.05 | **$0.03** |
+| Quality | Good | Better (newer model) |
+| Cost/event (3 imgs + GPT) | $0.154 | **$0.094** |
+| Cost saving | — | **39% cheaper** |
+
+All V3 and V4 model variants also added to `ai-models.config.ts` and `ideogram.service.ts` model map.
+
+---
+
+### Revised Full-Utilisation Margin by Plan
+
+Exchange rate: ₹85 = $1
+
+| Plan | Price INR→USD | Events/mo | V4 Turbo COGS | V4 Turbo Margin | Nano Banana COGS | Nano Banana Margin |
+|---|---|---|---|---|---|---|
+| FREE | ₹0 | 3 | $0.28 | -$0.28 (acquisition) | $0.55 | -$0.55 |
+| SOLO | ₹2,999 → $35 | 50 | $4.70 | **$30.30 (86%)** | $9.20 | $25.80 (73%) |
+| TEAM | ₹6,999 → $82 | 200 | $18.80 | **$63.20 (77%)** | $36.80 | $45.20 (55%) |
+| BROKERAGE | ₹24,999 → $294 | 1,000 | $94 | **$200 (68%)** | $184 | $110 (37%) ⚠️ |
+| API_STARTER | ₹82,999 → $976 | 5,000 | $470 | **$506 (52%)** | $920 | $56 (6%) ⚠️ |
+| API_GROWTH | ₹2,49,999 → $2,941 | 20,000 | $1,880 | **$1,061 (36%)** | $3,680 | **-$739 LOSS** ❌ |
+
+> Note: API_GROWTH with the old V2 Turbo default was already at -$139/mo loss at full utilization. The V4 Turbo switch fixed this to +$1,061/mo.
+
+---
+
+### Pricing Revision Required?
+
+**With V4 Turbo (current default) — no price changes needed.** All plans are profitable at full utilization.
+
+**With Nano Banana (V4 Default, $0.06/image) as universal default — the following plans need repricing:**
+
+| Plan | Issue | Required price for 60% margin |
+|---|---|---|
+| TEAM | 55% margin — borderline | ₹8,999/mo (+₹2,000) |
+| BROKERAGE | 37% margin — too thin | ₹39,999/mo (+₹15,000) |
+| API_STARTER | 6% margin — near-breakeven | ₹1,99,999/mo (+₹1,17,000) |
+| API_GROWTH | -25% — active loss ❌ | ₹7,49,999/mo (3× current) — not viable |
+
+**Recommendation:** Do NOT use Nano Banana as the universal default. Instead:
+
+| Plan | Model | Rationale |
+|---|---|---|
+| FREE | V4 Turbo only | Minimize acquisition loss |
+| SOLO | V4 Turbo only | 86% margin — no risk |
+| TEAM | V4 Turbo default; Nano Banana as opt-in quality toggle | Quality as a feature |
+| BROKERAGE | User choice: V4 Turbo / Nano Banana / V4 Quality | Full model access |
+| API_STARTER | V4 Turbo only | Economics only work at $0.03 |
+| API_GROWTH | V4 Turbo only | Nano Banana would lose $739/mo at full util |
+
+**Alternative — "Nano Banana" as a standalone mid-tier plan:**
+- Price: ₹14,999/mo (~$176)
+- Events: 100/mo
+- Model: V4 Default ($0.06/image)
+- COGS: 100 × $0.184 = $18.40
+- Margin: $157.60 (89%) — excellent
+- Positioning: "Studio quality for power agents" — between TEAM and BROKERAGE
+
+---
+
+### Billing Discrepancy to Investigate
+
+Actual Ideogram billing reconciled to ~$0.065/Turbo image vs official $0.05 (V2 Turbo). Likely causes:
+1. `magic_prompt_option: 'AUTO'` in API call may add processing cost
+2. 16:9 aspect ratio may carry a resolution surcharge vs 1:1 baseline
+3. Account may be on a legacy rate card
+
+**Action:** Check Ideogram dashboard → Usage → click a single call to see the per-image line item breakdown.
 
 ---
 
@@ -777,6 +908,6 @@ Start
 
 ---
 
-*Last Updated: January 2025*  
-*Cost Basis: $0.033/infographic (GPT-5 + Ideogram Turbo)*  
-*Exchange Rate: ₹83 = $1 USD*
+*Originally written: January 2025 — cost figures in the body below the June 2026 section are SUPERSEDED*  
+*June 2026 update: default model = V4 Turbo ($0.03/image); cost per event (3 variations) = $0.094*  
+*Exchange Rate used in June 2026 analysis: ₹85 = $1 USD*

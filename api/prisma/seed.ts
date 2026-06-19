@@ -111,7 +111,12 @@ async function upsertUser(
 ) {
   const existing = await prisma.user.findUnique({ where: { email: def.email } });
   if (existing) {
-    console.log(`  ⏭️  User already exists: ${def.email}`);
+    if (existing.organizationId !== orgId) {
+      await prisma.user.update({ where: { id: existing.id }, data: { organizationId: orgId } });
+      console.log(`  🔧 Fixed org link for existing user: ${def.email}`);
+    } else {
+      console.log(`  ⏭️  User already exists: ${def.email}`);
+    }
     return existing;
   }
   const user = await prisma.user.create({

@@ -1,8 +1,10 @@
 import {
   ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
+import { SubscriptionStatus } from '@prisma/client';
 import { prisma } from '../../../database/prisma.client';
 
 /** Monthly infographic limits by plan tier (fallback when org.monthlyLimit is unset). */
@@ -26,6 +28,7 @@ export interface UsageQuotaSnapshot {
 
 @Injectable()
 export class UsageLimitService {
+  private readonly logger = new Logger(UsageLimitService.name);
 
   resolveMonthlyLimit(org: { planTier: string; monthlyLimit: number }): number {
     if (org.monthlyLimit === -1) {
@@ -143,6 +146,42 @@ export class UsageLimitService {
     return newOrg.id;
   }
 
+  /**
+   * If org is on FREE but has a PENDING subscription, optimistically grant that
+   * subscription's plan limits. This covers the window between payment initiation
+   * and webhook arrival — particularly common in local dev where Razorpay cannot
+   * reach localhost and the webhook never fires automatically.
+   */
+  private async resolveEffectiveTier(
+    org: { id: string; planTier: string; monthlyLimit: number },
+  ): Promise<{ planTier: string; monthlyLimit: number }> {
+    if ((org.planTier || 'free').toLowerCase() !== 'free') {
+      this.logger.debug(`resolveEffectiveTier: org already on ${org.planTier} — no PENDING check needed`);
+      return org;
+    }
+
+    // Org is still FREE. Check if there is a PENDING subscription that hasn't been
+    // confirmed via webhook yet (common in local dev — Razorpay can't reach localhost).
+    const pendingSub = await prisma.subscription.findFirst({
+      where: {
+        organizationId: org.id,
+        status: SubscriptionStatus.PENDING,
+      },
+      orderBy: { createdAt: 'desc' },
+      select: { planTier: true, id: true },
+    });
+
+    if (!pendingSub) {
+      this.logger.debug(`resolveEffectiveTier: org ${org.id} is FREE and no PENDING subscription found`);
+      return org;
+    }
+
+    const pendingTier = (pendingSub.planTier || 'FREE').toLowerCase();
+    const pendingLimit = PLAN_TIER_MONTHLY_LIMITS[pendingTier] ?? 3;
+    this.logger.log(`resolveEffectiveTier: org ${org.id} is FREE but sub ${pendingSub.id} is PENDING ${pendingSub.planTier} — granting ${pendingLimit} limit`);
+    return { planTier: pendingSub.planTier, monthlyLimit: pendingLimit };
+  }
+
   async getUsageQuota(organizationId: string): Promise<UsageQuotaSnapshot> {
     const org = await prisma.organization.findUnique({
       where: { id: organizationId },
@@ -151,14 +190,15 @@ export class UsageLimitService {
       throw new NotFoundException('Organization not found');
     }
 
-    const limit = this.resolveMonthlyLimit(org);
+    const effective = await this.resolveEffectiveTier(org);
+    const limit = this.resolveMonthlyLimit(effective);
     const current = await this.getCurrentMonthUsageCount(organizationId);
     const remaining =
       limit === Infinity ? Infinity : Math.max(0, limit - current);
 
     return {
       organizationId,
-      planTier: org.planTier,
+      planTier: effective.planTier,
       current,
       limit: limit === Infinity ? -1 : limit,
       remaining: remaining === Infinity ? -1 : remaining,
@@ -185,7 +225,8 @@ export class UsageLimitService {
       throw new NotFoundException('Organization not found');
     }
 
-    const limit = this.resolveMonthlyLimit(org);
+    const effective = await this.resolveEffectiveTier(org);
+    const limit = this.resolveMonthlyLimit(effective);
     if (limit === Infinity) {
       return;
     }
@@ -193,7 +234,7 @@ export class UsageLimitService {
     const current = await this.getCurrentMonthUsageCount(organizationId);
     if (current + creditsRequired > limit) {
       throw new ForbiddenException(
-        `Monthly limit of ${limit} infographics reached for your ${org.planTier} plan (${current}/${limit} used). Please upgrade your plan or wait until next month.`,
+        `Monthly limit of ${limit} infographics reached for your ${effective.planTier} plan (${current}/${limit} used). Please upgrade your plan or wait until next month.`,
       );
     }
   }

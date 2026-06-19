@@ -36,12 +36,17 @@ export class SubscriptionStorageService {
       razorpayCustomerId: string;
       stripeCustomerId: string;
       paddleCustomerId: string;
+      organizationId: string;
     }>,
   ) {
     return this.prisma.user.update({
       where: { id },
       data,
     });
+  }
+
+  async createOrganization(data: { id: string; name: string; planTier: string; monthlyLimit: number }) {
+    return this.prisma.organization.create({ data });
   }
 
   // Subscription operations

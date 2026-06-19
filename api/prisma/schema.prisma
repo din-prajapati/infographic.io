@@ -275,6 +275,25 @@ model Payment {
   @@index([createdAt])
 }
 
+model SubscriptionEvent {
+  id             String   @id @default(cuid())
+  userId         String?
+  subscriptionId String?
+  eventType      String   // sync_attempt | status_promoted | webhook_received | sync_error
+  provider       String?
+  providerStatus String?
+  localStatus    String?
+  promoted       Boolean  @default(false)
+  message        String?
+  metadata       Json?
+  createdAt      DateTime @default(now())
+
+  @@index([userId])
+  @@index([subscriptionId])
+  @@index([eventType])
+  @@index([createdAt])
+}
+
 model Invoice {
   id                     String          @id @default(cuid())
   userId                 String

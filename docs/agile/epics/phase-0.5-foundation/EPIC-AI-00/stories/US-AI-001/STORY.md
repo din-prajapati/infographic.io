@@ -1,11 +1,11 @@
 # Story Card — US-AI-001
 
-> **Status:** 🔲 Not Started
+> **Status:** ✅ Done
 > **Feature:** F-AI-00-01 — Real-time generation progress via Socket.io
 > **Epic:** [EPIC-AI-00](../../EPIC.md)
 > **Milestone:** [M-AI-01-critical-fixes](../../milestones/M-AI-01-critical-fixes.md)
 > **Linear:** LIN-US-AI-001
-> **Created:** 2026-04-28 | **Closed:** —
+> **Created:** 2026-04-28 | **Closed:** 2026-06-15
 
 ---
 
@@ -19,10 +19,10 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC1:** `GenerationProgressGateway` is registered in the NestJS module providers so it is instantiated and accepts WebSocket connections
-- [ ] **AC2:** During a generation run, the browser receives `generation:progress` events over Socket.io (visible in browser network → WS tab)
-- [ ] **AC3:** The existing `useGenerationWebSocket` hook in the frontend receives and displays these events (progress steps appear in the chat panel)
-- [ ] **AC4:** `npm run check` passes after changes
+- [x] **AC1:** `GenerationProgressGateway` is registered in the NestJS module providers so it is instantiated and accepts WebSocket connections
+- [x] **AC2:** During a generation run, the browser receives `generation:progress` events over Socket.io (visible in browser network → WS tab)
+- [x] **AC3:** The existing `useGenerationWebSocket` hook in the frontend receives and displays these events (progress steps appear in the chat panel)
+- [x] **AC4:** `npm run check` passes after changes
 
 ---
 

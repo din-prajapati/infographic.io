@@ -114,7 +114,7 @@ export class AiOrchestrator {
       }
 
       const imageUrl = imageUrls[0] || '';
-      const costUsd = isDemoMode ? 0 : getTotalCost(imageModel);
+      const costUsd = isDemoMode ? 0 : getTotalCost(imageModel, variations);
 
       // Step 3 — Persist to DB
       progressGateway?.emitProgress(infographicId, { status: 'processing', step: 5, stepLabel: 'Finalizing...' });

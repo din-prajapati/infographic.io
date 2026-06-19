@@ -90,13 +90,32 @@ function getSubscriptionBillingLabels(
 
 export function SubscriptionCard({ organization }: SubscriptionCardProps) {
   const [showCancelDialog, setShowCancelDialog] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const { data, isLoading } = useQuery<{
+  const { data, isLoading, refetch } = useQuery<{
     subscription: Subscription | null;
     usage?: { current: number; limit: number };
   }>({
     queryKey: [getApiUrl('/payments/subscription')],
   });
+
+  const handleRefreshStatus = async () => {
+    setIsRefreshing(true);
+    try {
+      const result = await paymentsApi.syncSubscription();
+      if (result.promoted) {
+        toast.success('Plan activated!', { description: result.message });
+        await queryClient.invalidateQueries({ queryKey: [getApiUrl('/payments/subscription')] });
+        refetch();
+      } else {
+        toast.info('Checking your subscription', { description: result.message });
+      }
+    } catch {
+      toast.error('Could not reach server — please try again');
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   const subscription = data?.subscription;
   const usageFromApi = data?.usage;
@@ -225,9 +244,21 @@ export function SubscriptionCard({ organization }: SubscriptionCardProps) {
           {subscriptionStatus === 'PENDING' && (
             <div className="flex items-start gap-2 rounded-md border border-yellow-500/30 bg-yellow-500/10 p-3">
               <Clock className="h-4 w-4 shrink-0 mt-0.5 text-yellow-500" />
-              <p className="text-sm text-yellow-600 dark:text-yellow-400">
-                Payment processing — your plan will activate once payment is confirmed. This usually takes under a minute.
-              </p>
+              <div className="flex-1 space-y-1">
+                <p className="text-sm font-medium text-yellow-600 dark:text-yellow-400">
+                  Payment received — activating your plan
+                </p>
+                <p className="text-xs text-yellow-600/80 dark:text-yellow-400/80">
+                  Your payment was captured. You can generate infographics now — your {planConfig.name} plan limits are already in effect. This banner will disappear once activation is confirmed (usually under a minute).
+                </p>
+                <button
+                  onClick={handleRefreshStatus}
+                  disabled={isRefreshing}
+                  className="text-xs font-medium text-yellow-700 dark:text-yellow-300 underline underline-offset-2 hover:no-underline disabled:opacity-50"
+                >
+                  {isRefreshing ? 'Checking...' : 'Refresh to check status'}
+                </button>
+              </div>
             </div>
           )}
 

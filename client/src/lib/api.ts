@@ -194,6 +194,12 @@ export const paymentsApi = {
       getApiUrl('/payments/verify'),
       { method: 'POST', body: JSON.stringify(data) }
     ),
+
+  syncSubscription: () =>
+    apiRequest<{ localStatus: string; promoted: boolean; message: string }>(
+      getApiUrl('/payments/subscription/sync'),
+      { method: 'POST' }
+    ),
 };
 
 // Usage Analytics API

@@ -1,4 +1,5 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import { PlanTier, SubscriptionStatus } from '@prisma/client';
 import { prisma } from '../../database/prisma.client';
 
 export interface UserLimitConfig {
@@ -108,7 +109,14 @@ export class UsersService {
       throw new BadRequestException('This user is already a member of your organization');
     }
     if (target.organizationId && target.organizationId !== organizationId) {
-      throw new BadRequestException('This user already belongs to another organization');
+      // Allow the move only if the user's current org is their personal solo org
+      // (they are its only member). Block if they are in a real shared org.
+      const currentOrgMemberCount = await prisma.user.count({
+        where: { organizationId: target.organizationId },
+      });
+      if (currentOrgMemberCount > 1) {
+        throw new BadRequestException('This user already belongs to another organization');
+      }
     }
 
     const canAdd = await this.canAddUser(organizationId);
@@ -180,7 +188,9 @@ export class UsersService {
   }
 
   /**
-   * Get user's organization with limits info
+   * Get user's organization with limits info.
+   * Heals missing org for users who have an active multi-user subscription but no org linked
+   * (can happen when org was deleted or user was created through an edge-case registration path).
    */
   async getUserOrganizationInfo(userId: string) {
     const user = await prisma.user.findUnique({
@@ -188,15 +198,63 @@ export class UsersService {
       include: { organization: true },
     });
 
-    if (!user?.organization) {
-      return null;
+    if (!user) return null;
+
+    const MULTI_USER_TIERS: PlanTier[] = ['TEAM', 'BROKERAGE', 'API_GROWTH', 'API_ENTERPRISE'];
+    let organization = user.organization;
+
+    if (!organization) {
+      const activeSub = await prisma.subscription.findFirst({
+        where: { userId, status: SubscriptionStatus.ACTIVE, planTier: { in: MULTI_USER_TIERS } },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      if (!activeSub) return null;
+
+      const tierKey = activeSub.planTier.toLowerCase();
+      const config = PLAN_USER_LIMITS[tierKey] ?? PLAN_USER_LIMITS.free;
+
+      organization = await prisma.organization.create({
+        data: {
+          name: `${user.name || user.email.split('@')[0]}'s Organization`,
+          planTier: activeSub.planTier,
+          monthlyLimit: config.monthlyLimit,
+        },
+      });
+      await prisma.user.update({ where: { id: userId }, data: { organizationId: organization.id } });
+      if (!activeSub.organizationId) {
+        await prisma.subscription.update({
+          where: { id: activeSub.id },
+          data: { organizationId: organization.id },
+        });
+      }
+    } else if (!MULTI_USER_TIERS.includes(organization.planTier.toUpperCase() as PlanTier)) {
+      // Heal: org exists but planTier wasn't upgraded (webhook skipped organizationId backlink)
+      const activeSub = await prisma.subscription.findFirst({
+        where: { userId, status: SubscriptionStatus.ACTIVE, planTier: { in: MULTI_USER_TIERS } },
+        orderBy: { createdAt: 'desc' },
+      });
+      if (activeSub) {
+        const tierKey = activeSub.planTier.toLowerCase();
+        const config = PLAN_USER_LIMITS[tierKey] ?? PLAN_USER_LIMITS.free;
+        organization = await prisma.organization.update({
+          where: { id: organization.id },
+          data: { planTier: activeSub.planTier, monthlyLimit: config.monthlyLimit },
+        });
+        if (!activeSub.organizationId) {
+          await prisma.subscription.update({
+            where: { id: activeSub.id },
+            data: { organizationId: organization.id },
+          });
+        }
+      }
     }
 
-    const userSlots = await this.getRemainingUserSlots(user.organization.id);
-    const planConfig = PLAN_USER_LIMITS[user.organization.planTier.toLowerCase()] || PLAN_USER_LIMITS.free;
+    const userSlots = await this.getRemainingUserSlots(organization.id);
+    const planConfig = PLAN_USER_LIMITS[organization.planTier.toLowerCase()] || PLAN_USER_LIMITS.free;
 
     return {
-      organization: user.organization,
+      organization,
       userSlots,
       planLimits: planConfig,
     };

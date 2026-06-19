@@ -13,6 +13,36 @@ const COLOR_NAMES: Record<string, string> = {
   '#EDE9FE': 'pale lavender', '#1F448B': 'deep navy blue', '#000000': 'black',
 };
 
+// City/state only — full street addresses with house numbers garble in image models
+function extractCityRegion(address: string): string {
+  if (!address) return '';
+  const parts = address.split(',').map(p => p.trim());
+  if (parts.length >= 3) {
+    const city = parts[parts.length - 2];
+    const stateZip = parts[parts.length - 1].replace(/\s*\d{5}(-\d{4})?\s*$/, '').trim();
+    return `${city}, ${stateZip}`;
+  }
+  return parts.length === 2 ? address : parts.slice(-2).join(', ');
+}
+
+// Abbreviated price — "$500K" renders more reliably than "$500,000" in image models
+function formatPriceShort(price?: number | string): string {
+  if (!price) return '';
+  const num = typeof price === 'string' ? parseFloat(price.replace(/[^0-9.]/g, '')) : price;
+  if (!num || isNaN(num)) return '';
+  if (num >= 1_000_000) return `$${(num % 1_000_000 === 0 ? num / 1_000_000 : (num / 1_000_000).toFixed(1))}M`;
+  if (num >= 1_000) return `$${Math.round(num / 1_000)}K`;
+  return `$${num.toLocaleString()}`;
+}
+
+// Formatted sqft with comma separator
+function formatSqft(sqft?: number | string): string {
+  if (!sqft) return '';
+  const num = typeof sqft === 'string' ? parseInt(sqft.replace(/[^0-9]/g, '')) : sqft;
+  if (!num || isNaN(num)) return '';
+  return `${num.toLocaleString()} SQ FT`;
+}
+
 function hexToColorName(hex: string): string {
   if (COLOR_NAMES[hex]) return COLOR_NAMES[hex];
   if (COLOR_NAMES[hex.toUpperCase()]) return COLOR_NAMES[hex.toUpperCase()];
@@ -74,16 +104,15 @@ export class OpenAiService {
       return `Beautiful ${propertyData.beds}BR Property at ${propertyData.address}`;
     }
 
-    const prompt = `Analyze this real estate property and create a compelling headline (max 50 chars):
-    
-Property: ${propertyData.address}
-Type: ${propertyData.propertyType}
-Price: $${propertyData.price.toLocaleString()}
+    const prompt = `Create a short real estate listing headline. Max 30 characters. No address, no price, no numbers.
+
+Property type: ${propertyData.propertyType}
+Location: ${propertyData.address}
 Beds: ${propertyData.beds}, Baths: ${propertyData.baths}
 Sqft: ${propertyData.sqft}
 Features: ${propertyData.features?.join(', ') || 'None'}
 
-Create a headline that highlights the most appealing aspect. Be concise and engaging.`;
+Return ONLY the headline text. Examples: "Stunning Hilltop Retreat", "Modern Urban Sanctuary", "Sun-Drenched Family Home". No quotes in your response.`;
 
     const response = await this.openai.chat.completions.create({
       model: 'gpt-4o',
@@ -95,27 +124,45 @@ Create a headline that highlights the most appealing aspect. Be concise and enga
   }
 
   async generateImagePrompt(propertyData: any, headline: string): Promise<string> {
-    const agentName = propertyData.agent?.name || 'Agent';
-    const brokerage = propertyData.agent?.brokerage || '';
-
     const rawColors: string[] = propertyData.agent?.brandColors || [];
     const colorDescription = rawColors.length > 0
       ? rawColors.map(hexToColorName).join(', ')
       : '';
 
-    const lines = [
-      `Professional real estate infographic design:`,
-      `- Main text: "${headline}"`,
-      `- Property: ${propertyData.address}`,
-      `- Price: $${propertyData.price?.toLocaleString()} prominently displayed`,
-      `- ${propertyData.beds} bed, ${propertyData.baths} bath, ${propertyData.sqft} sqft`,
-      `- Agent: ${agentName}${brokerage ? ` - ${brokerage}` : ''}`,
-    ];
-    if (colorDescription) lines.push(`- Brand colors: ${colorDescription}`);
+    // Truncate headline — shorter strings render more reliably in image models
+    const shortHeadline = headline.length > 32
+      ? headline.slice(0, 32).trimEnd() + '…'
+      : headline;
+
+    // City/region only — street numbers and full addresses garble consistently
+    const location = extractCityRegion(propertyData.address);
+
+    // Abbreviated price — "$500K" is far more reliable than "$500,000"
+    const priceTag = formatPriceShort(propertyData.price);
+
+    // Pipe-separated stat line — this exact pattern appears millions of times in real estate ads,
+    // making it the format image models render most accurately
+    const statParts: string[] = [];
+    if (propertyData.beds) statParts.push(`${propertyData.beds} BED`);
+    if (propertyData.baths) statParts.push(`${propertyData.baths} BATH`);
+    if (propertyData.sqft) statParts.push(formatSqft(propertyData.sqft));
+    const statsLine = statParts.join(' | ');
+
+    const agentName = propertyData.agent?.name || '';
+    const brokerage = propertyData.agent?.brokerage || '';
+    const agentLine = [agentName, brokerage].filter(Boolean).join(', ');
+
+    const lines = [`Professional real estate listing infographic:`];
+    lines.push(`- Headline: "${shortHeadline}"`);
+    if (propertyData.address) lines.push(`- Address: ${propertyData.address}`);
+    if (priceTag) lines.push(`- Price: ${priceTag}`);
+    if (statsLine) lines.push(`- Details: ${statsLine}`);
+    if (agentLine) lines.push(`- Agent: ${agentLine}`);
+    if (colorDescription) lines.push(`- Brand palette: ${colorDescription}`);
     lines.push(
-      `- Clean, modern, luxury aesthetic`,
-      `- High contrast, readable typography`,
-      `- Professional layout with clear hierarchy`,
+      `- Style: modern luxury real estate marketing, editorial typography`,
+      `- Layout: strong visual hierarchy, each text element in its own clearly defined zone`,
+      `- Render every text element accurately and legibly`,
     );
     return lines.join('\n');
   }

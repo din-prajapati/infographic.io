@@ -18,9 +18,10 @@ export interface DesignMetadata {
   tags?: string[];
 }
 
-const DESIGNS_KEY = "brainwave_designs";
-const TEMPLATES_KEY = "brainwave_templates";
-const AUTOSAVE_KEY = "brainwave_autosave";
+const STORAGE_PREFIX = import.meta.env.VITE_STORAGE_PREFIX ?? 'infographicai';
+const DESIGNS_KEY = `${STORAGE_PREFIX}_designs`;
+const TEMPLATES_KEY = `${STORAGE_PREFIX}_templates`;
+const AUTOSAVE_KEY = `${STORAGE_PREFIX}_autosave`;
 
 /**
  * Check if user is authenticated
@@ -439,5 +440,19 @@ export function clearAutosaveDraft(): void {
     localStorage.removeItem(AUTOSAVE_KEY);
   } catch (error) {
     console.error("Error clearing autosave draft:", error);
+  }
+}
+
+/**
+ * Clear all user-scoped localStorage data on logout.
+ * Prevents one user's designs/canvas from leaking into the next user's session
+ * on a shared browser.
+ */
+export function clearUserStorage(): void {
+  try {
+    localStorage.removeItem(DESIGNS_KEY);
+    localStorage.removeItem(AUTOSAVE_KEY);
+  } catch (error) {
+    console.error("Error clearing user storage:", error);
   }
 }

@@ -29,8 +29,13 @@ export class IdeogramService {
     const resolvedModel = normalizeImageModel(model);
     const aspectRatio = orientationToIdeogramAspect(orientation);
     const modelMap: Record<string, string> = {
-      'ideogram-turbo': 'V_2_TURBO',
-      'ideogram-2': 'V_2',
+      'ideogram-turbo':    'V_2_TURBO',
+      'ideogram-2':        'V_2',
+      'ideogram-3-turbo':  'V_3_TURBO',
+      'ideogram-3':        'V_3',
+      'ideogram-4-turbo':  'V_4_TURBO',
+      'ideogram-4':        'V_4',
+      'ideogram-4-quality':'V_4_QUALITY',
     };
     const apiModel = modelMap[resolvedModel] || 'V_2_TURBO';
 
