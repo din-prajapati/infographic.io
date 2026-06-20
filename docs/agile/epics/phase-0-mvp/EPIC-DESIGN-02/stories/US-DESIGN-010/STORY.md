@@ -1,11 +1,12 @@
 # Story Card — US-DESIGN-010
 
-> **Status:** 🔲 Not Started  
+> **Status:** ✅ Done  
 > **Feature:** F-DESIGN-10 — Component Visual Polish  
 > **Epic:** [EPIC-DESIGN-02](../../EPIC.md)  
 > **Milestone:** [M-DESIGN-05 — Component Visual Polish](../../milestones/M-DESIGN-05-component-polish.md)  
 > **Linear:** LIN-XXX  
-> **Created:** 2026-04-17 | **Closed:** —
+> **Created:** 2026-04-17 | **Closed:** 2026-06-20  
+> **Commit:** `baffe6e` — feat(design): Phase 0 close-out — AI Chat panel, canvas editor polish, generation infrastructure
 
 ---
 
@@ -19,16 +20,16 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC1:** Floating toolbar uses `--toolbar-floating-bg` (`#2c2c2c`) dark pill background with white icon tints
-- [ ] **AC2:** Floating toolbar has `--toolbar-floating-radius` pill shape (`9999px`) and `--toolbar-floating-shadow` lift shadow
-- [ ] **AC3:** Layer sidebar panel uses `--sidebar-panel-bg` (white) with `--sidebar-panel-border` subtle right border
-- [ ] **AC4:** Active layer item uses `--sidebar-panel-item-bg-active` blue tint background
-- [ ] **AC5:** Canvas outer area uses `--canvas-bg` (`#f5f5f5`) as its background
-- [ ] **AC6:** Canvas selection ring uses `--canvas-selection-stroke` (`#3b82f6`) blue
-- [ ] **AC7:** No logic, routing, canvas rendering, or state changes — only visual CSS/class updates
-- [ ] **AC8:** Changes work in both Light and Dark modes
-- [ ] **AC9:** `npm run check` passes — zero TypeScript errors
-- [ ] **AC10:** `npm run test:unit` passes — no regressions
+- [x] **AC1:** Floating toolbar uses `--toolbar-floating-bg` (`#2c2c2c`) dark pill background with white icon tints
+- [x] **AC2:** Floating toolbar has `--toolbar-floating-radius` pill shape (`9999px`) and `--toolbar-floating-shadow` lift shadow
+- [x] **AC3:** Layer sidebar panel uses `--sidebar-panel-bg` (white) with `--sidebar-panel-border` subtle right border
+- [x] **AC4:** Active layer item uses `--sidebar-panel-item-bg-active` blue tint background
+- [x] **AC5:** Canvas outer area uses `--canvas-bg` (`#f5f5f5`) as its background
+- [x] **AC6:** Canvas selection ring uses `--canvas-selection-stroke` (`#3b82f6`) blue
+- [x] **AC7:** No logic, routing, canvas rendering, or state changes — only visual CSS/class updates
+- [x] **AC8:** Changes work in both Light and Dark modes
+- [x] **AC9:** `npm run check` passes — zero TypeScript errors
+- [x] **AC10:** `npm run test:unit` passes — no regressions
 
 ---
 
@@ -135,14 +136,14 @@ Rules:
 
 ## Definition of Done
 
-- [ ] All ACs checked ✅
-- [ ] All test cases run and recorded
-- [ ] `npm run check` passes
-- [ ] `npm run test:unit` passes
-- [ ] Manual smoke: Editor in Light + Dark — toolbar dark pill, sidebar white panel, canvas editing functional
-- [ ] Visual match to `design-preview-canvas.html` confirmed
-- [ ] PR merged (PR #_____)
-- [ ] TASKS.md task list fully checked
+- [x] All ACs checked ✅
+- [x] All test cases run and recorded
+- [x] `npm run check` passes
+- [x] `npm run test:unit` passes
+- [x] Manual smoke: Editor in Light + Dark — toolbar dark pill, sidebar white panel, canvas editing functional
+- [x] Visual match to `design-preview-canvas.html` confirmed
+- [x] PR merged — commit `baffe6e` on `feat/epic-design-02-ui-redesign`
+- [x] TASKS.md task list fully checked
 
 ---
 

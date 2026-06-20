@@ -1,11 +1,12 @@
 # Story Card — US-DESIGN-011
 
-> **Status:** 🔲 Not Started  
+> **Status:** ✅ Done  
 > **Feature:** F-DESIGN-11 — Component Visual Polish  
 > **Epic:** [EPIC-DESIGN-02](../../EPIC.md)  
 > **Milestone:** [M-DESIGN-05 — Component Visual Polish](../../milestones/M-DESIGN-05-component-polish.md)  
 > **Linear:** LIN-XXX  
-> **Created:** 2026-04-17 | **Closed:** —
+> **Created:** 2026-04-17 | **Closed:** 2026-06-20  
+> **Commit:** `baffe6e` — feat(design): Phase 0 close-out — AI Chat panel, canvas editor polish, generation infrastructure
 
 ---
 
@@ -19,16 +20,16 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC1:** Chat panel background uses `--chat-panel-bg` (white/near-white surface)
-- [ ] **AC2:** AI message bubbles use `--chat-message-ai-bg` (warm grey `#f3f4f6`)
-- [ ] **AC3:** User message bubbles use `--chat-message-user-bg` (brand blue `#0ca0eb`) with white text
-- [ ] **AC4:** Promo/upgrade banner uses `--chat-promo-banner-bg` (lime `#e0ff66`) with dark text
-- [ ] **AC5:** Chat input area uses `--chat-input-bg` and `--chat-input-border` tokens
-- [ ] **AC6:** Bottom action chips (quick-reply / suggestion chips) use `--chat-action-chip-*` tokens
-- [ ] **AC7:** No logic, routing, message sending, or state changes — only visual CSS/class updates
-- [ ] **AC8:** Changes work in both Light and Dark modes
-- [ ] **AC9:** `npm run check` passes — zero TypeScript errors
-- [ ] **AC10:** `npm run test:unit` passes — no regressions
+- [x] **AC1:** Chat panel background uses `--chat-panel-bg` (white/near-white surface)
+- [x] **AC2:** AI message bubbles use `--chat-message-ai-bg` (warm grey `#f3f4f6`)
+- [x] **AC3:** User message bubbles use `--chat-message-user-bg` (brand blue `#0ca0eb`) with white text
+- [x] **AC4:** Promo/upgrade banner uses `--chat-promo-banner-bg` (lime `#e0ff66`) with dark text
+- [x] **AC5:** Chat input area uses `--chat-input-bg` and `--chat-input-border` tokens
+- [x] **AC6:** Bottom action chips (quick-reply / suggestion chips) use `--chat-action-chip-*` tokens
+- [x] **AC7:** No logic, routing, message sending, or state changes — only visual CSS/class updates
+- [x] **AC8:** Changes work in both Light and Dark modes
+- [x] **AC9:** `npm run check` passes — zero TypeScript errors
+- [x] **AC10:** `npm run test:unit` passes — no regressions
 
 ---
 
@@ -148,15 +149,15 @@ Rules:
 
 ## Definition of Done
 
-- [ ] All ACs checked ✅
-- [ ] All test cases run and recorded
-- [ ] `npm run check` passes
-- [ ] `npm run test:unit` passes
-- [ ] Manual smoke: AI Chat in Light + Dark — bubble colors, promo banner, input, chips
-- [ ] Sending a message and receiving AI response still works end-to-end
-- [ ] Visual match to `design-preview-canvas.html` right panel confirmed
-- [ ] PR merged (PR #_____)
-- [ ] TASKS.md task list fully checked
+- [x] All ACs checked ✅
+- [x] All test cases run and recorded
+- [x] `npm run check` passes
+- [x] `npm run test:unit` passes
+- [x] Manual smoke: AI Chat in Light + Dark — bubble colors, promo banner, input, chips
+- [x] Sending a message and receiving AI response still works end-to-end
+- [x] Visual match to `design-preview-canvas.html` right panel confirmed
+- [x] PR merged — commit `baffe6e` on `feat/epic-design-02-ui-redesign`
+- [x] TASKS.md task list fully checked
 
 ---
 
