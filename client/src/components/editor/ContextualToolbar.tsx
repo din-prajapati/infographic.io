@@ -12,10 +12,13 @@ import { TransparencyPanel } from "./TransparencyPanel";
 
 interface ContextualToolbarProps {
   element: CanvasElement;
+  /** Center X and top Y of the selected element in viewport-relative coordinates. */
   position: { x: number; y: number };
+  /** Width of the canvas viewport div — used for horizontal clamping. */
+  viewportWidth: number;
 }
 
-export function ContextualToolbar({ element, position }: ContextualToolbarProps) {
+export function ContextualToolbar({ element, position, viewportWidth }: ContextualToolbarProps) {
   const toolbarRef = useRef<HTMLDivElement>(null);
   const [toolbarSize, setToolbarSize] = useState({ width: 600, height: 48 });
   const [showTransparencyPanel, setShowTransparencyPanel] = useState(false);
@@ -23,16 +26,11 @@ export function ContextualToolbar({ element, position }: ContextualToolbarProps)
 
   const updateElement = useCanvasStore((state) => state.updateElement);
   const selectedElementIds = useCanvasStore((state) => state.selectedElementIds);
-  const canvasWidth = useCanvasStore((state) => state.canvasWidth);
 
   // Hide toolbar when crop panel is active
   if (activePanel === 'crop') {
     return null;
   }
-
-  // Check if panel is open to adjust position
-  const isPanelOpen = activePanel === 'layers' || activePanel === 'adjustments';
-  const panelOffset = isPanelOpen ? 340 : 0;
 
   useEffect(() => {
     if (toolbarRef.current) {
@@ -46,14 +44,12 @@ export function ContextualToolbar({ element, position }: ContextualToolbarProps)
     setShowTransparencyPanel(false);
   }, [element.id]);
 
-  // Calculate position
-  const toolbarX = position.x + panelOffset;
+  // position.x is already the viewport-relative center X of the selected element.
+  // Clamp so the toolbar never clips past viewport edges.
   const toolbarY = position.y - toolbarSize.height - 16;
-  
-  // Clamp X position within canvas bounds
-  const minX = toolbarSize.width / 2 + panelOffset + 20;
-  const maxX = canvasWidth + panelOffset - toolbarSize.width / 2 - 20;
-  const clampedX = Math.max(minX, Math.min(maxX, toolbarX));
+  const minX = toolbarSize.width / 2 + 20;
+  const maxX = viewportWidth - toolbarSize.width / 2 - 20;
+  const clampedX = Math.max(minX, Math.min(maxX, position.x));
 
   const handleTextChange = (updates: Partial<TextStyles>) => {
     if (element.type === 'text') {

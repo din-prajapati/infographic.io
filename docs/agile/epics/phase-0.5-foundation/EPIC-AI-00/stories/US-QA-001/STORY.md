@@ -156,13 +156,18 @@ This story captures all bug fixes and test automation produced across three QA s
 
 ## Known Bugs (Carry-Forward to Phase 1)
 
-| ID | Description | Story |
-|----|-------------|-------|
-| F3-04-B1 | Dimensions badge overlaps selected canvas element | Needs `US-EDITOR-01` |
-| F4-06-UX1 | No "back to results" after "Use This Design" | Needs `US-UX-01` |
-| RS-H03 | "Generate Template" button has no `onClick` handler | Needs `US-SIDEBAR-01` |
-| RS-P10 | PropertyDetailsForm state resets on tab switch | Needs `US-SIDEBAR-01` |
-| RS-A07 | Agent social media fields have no state binding | Needs `US-SIDEBAR-02` |
+| ID | Description | Story | Status |
+|----|-------------|-------|--------|
+| F3-04-B1 | Dimensions badge overlaps selected canvas element | Needs `US-EDITOR-01` | Open |
+| F4-06-UX1 | No "back to results" after "Use This Design" | Needs `US-UX-01` | Open |
+
+> **Note (verified 2026-06-20):** RS-H03, RS-P10, RS-A07, RS-A08, RS-P11 were listed as bugs but are **already implemented**:
+> - `RightSidebar.tsx:631` — sticky "Generate" button has `onClick={handleGenerate}`
+> - `handleGenerate()` reads `usePropertyStore.getState().property` + `useAgentStore.getState().agent` and passes all fields to the AI API
+> - `PropertyDetailsForm.tsx` uses `usePropertyStore` Zustand store — state persists on tab switch
+> - `AgentInfoForm.tsx` — social media fields were removed; remaining fields all have `value`/`onChange` bindings via `useAgentStore`
+>
+> US-SIDEBAR-01 and US-SIDEBAR-02 should **not** be created — their scope is already covered.
 
 ---
 

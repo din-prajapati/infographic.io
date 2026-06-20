@@ -14,6 +14,7 @@ interface ImageElementProps {
 
 export function ImageElement({ element, isSelected, onSelect }: ImageElementProps) {
   const updateElement = useCanvasStore((state) => state.updateElement);
+  const zoom = useCanvasStore((state) => state.zoom);
   const { isEnabled: showTransparencyGrid } = useTransparencyGrid();
 
   const handleClick = (e: React.MouseEvent) => {
@@ -119,11 +120,15 @@ export function ImageElement({ element, isSelected, onSelect }: ImageElementProp
       data-element-id={element.id}
       data-element-type="image"
     >
-      <div 
-        className={`w-full h-full relative ${isSelected ? 'outline outline-2 outline-blue-500 outline-offset-1 shadow-lg' : ''}`} 
-        style={{ 
+      <div
+        className="w-full h-full relative"
+        style={{
           overflow: 'hidden',
           borderRadius: `${element.cornerRadius}px`,
+          ...(isSelected ? {
+            outline: `${2 / zoom}px solid #3b82f6`,
+            outlineOffset: `${1 / zoom}px`,
+          } : {}),
         }}
       >
         {/* Checkerboard background (when transparency grid is enabled) */}

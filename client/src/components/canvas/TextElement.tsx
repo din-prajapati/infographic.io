@@ -13,6 +13,7 @@ interface TextElementProps {
 
 export function TextElement({ element, isSelected, onSelect }: TextElementProps) {
   const updateElement = useCanvasStore((state) => state.updateElement);
+  const zoom = useCanvasStore((state) => state.zoom);
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(element.content);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -123,9 +124,13 @@ export function TextElement({ element, isSelected, onSelect }: TextElementProps)
       data-element-type="text"
     >
       <div
-        className={`w-full h-full ${isSelected ? 'outline outline-2 outline-blue-500 outline-offset-1 shadow-lg' : ''}`}
+        className="w-full h-full"
         style={{
           transform: `rotate(${element.rotation}deg)`,
+          ...(isSelected ? {
+            outline: `${2 / zoom}px solid #3b82f6`,
+            outlineOffset: `${1 / zoom}px`,
+          } : {}),
         }}
       >
         {isEditing ? (

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Plus, Sparkles, Building2, Home, TrendingUp, BarChart3, PieChart, ArrowRight, CheckCircle2, DollarSign, Users, MapPin, Target, TrendingDown } from "lucide-react";
 import { Button } from "../ui/button";
 import { AIChatBox } from "../ai-chat/AIChatBox";
@@ -171,16 +171,37 @@ export function CenterCanvas({ isPreviewMode = false }: CenterCanvasProps) {
 
   const sortedElements = sortByZIndex(elements);
   const hasElements = elements.length > 0;
-  
+
   // Get selected element for dimensions display and info panel
-  const selectedElement = selectedElementIds.length === 1 
+  const selectedElement = selectedElementIds.length === 1
     ? elements.find((el) => el.id === selectedElementIds[0])
     : null;
+
+  // Ref for the viewport div — used to compute toolbar position in viewport coords
+  const viewportRef = useRef<HTMLDivElement>(null);
+
+  // Compute toolbar center position in viewport-relative coordinates.
+  // The canvas container's layout center is always at (vpW/2, vpH/2) because
+  // flex-center + symmetric padding places it there. The CSS transform then
+  // applies translate(panX,panY) scale(zoom) around that center.
+  const getToolbarCoords = (): { x: number; y: number } | null => {
+    const vp = viewportRef.current;
+    if (!vp || !selectedElement) return null;
+    const vpW = vp.clientWidth;
+    const vpH = vp.clientHeight;
+    const canvasLeft = vpW / 2 - (canvasWidth * zoom) / 2 + canvasPanX;
+    const canvasTop  = vpH / 2 - (canvasHeight * zoom) / 2 + canvasPanY;
+    return {
+      x: canvasLeft + (selectedElement.x + selectedElement.width / 2) * zoom,
+      y: canvasTop + selectedElement.y * zoom,
+    };
+  };
 
   return (
     <div className="flex-1 flex flex-col bg-muted/50 relative overflow-hidden">
       {/* Canvas Area with Dot Grid */}
       <div
+        ref={viewportRef}
         className="flex-1 dot-grid overflow-hidden flex items-center justify-center p-12 relative"
         data-canvas-viewport
         onMouseDown={handlePanStart}
@@ -191,11 +212,22 @@ export function CenterCanvas({ isPreviewMode = false }: CenterCanvasProps) {
           cursor: activeTool === 'hand' ? (isPanning ? 'grabbing' : 'grab') : 'default'
         }}
       >
-        {/* Dimensions badge — viewport-level, bottom-left corner, never overlaps artboard elements */}
+        {/* Dimensions badge — viewport-level, bottom-left corner, never overlaps artboard */}
         {selectedElement && !isPreviewMode && (
           <DimensionsDisplay element={selectedElement} />
         )}
-        {/* Canvas Container with Shadow - z-index ensures it stays behind AI ChatBox */}
+        {/* Contextual toolbar — viewport-level so it stays at natural size regardless of zoom */}
+        {selectedElement && !isPreviewMode && (() => {
+          const coords = getToolbarCoords();
+          return coords ? (
+            <ContextualToolbar
+              element={selectedElement}
+              position={coords}
+              viewportWidth={viewportRef.current?.clientWidth ?? 800}
+            />
+          ) : null;
+        })()}
+        {/* Canvas Container with Shadow */}
         <div
           data-canvas-container
           className="bg-white rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] relative z-0"
@@ -207,16 +239,6 @@ export function CenterCanvas({ isPreviewMode = false }: CenterCanvasProps) {
             backgroundColor: backgroundColor,
           }}
         >
-          {/* Contextual Toolbar - appears above selected element */}
-          {selectedElement && !isPreviewMode && (
-            <ContextualToolbar
-              element={selectedElement}
-              position={{
-                x: selectedElement.x + selectedElement.width / 2,
-                y: selectedElement.y,
-              }}
-            />
-          )}
 
           
           {/* Canvas Content */}
