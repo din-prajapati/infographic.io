@@ -12,6 +12,7 @@ const { mockPrisma } = vi.hoisted(() => {
     usageRecord: { findMany: vi.fn(), findFirst: vi.fn() },
     user: { findUnique: vi.fn(), update: vi.fn() },
     infographic: { findFirst: vi.fn() },
+    subscription: { findFirst: vi.fn() },
   };
   return { mockPrisma };
 });
@@ -44,6 +45,7 @@ describe('UsageLimitService', () => {
       planTier: 'free',
       monthlyLimit: 3,
     });
+    mockPrisma.subscription.findFirst.mockResolvedValue(null);
     mockPrisma.usageRecord.findMany.mockResolvedValue([
       { creditsUsed: 1 },
       { creditsUsed: 1 },
@@ -61,6 +63,7 @@ describe('UsageLimitService', () => {
       planTier: 'free',
       monthlyLimit: 3,
     });
+    mockPrisma.subscription.findFirst.mockResolvedValue(null);
     mockPrisma.usageRecord.findMany.mockResolvedValue([
       { creditsUsed: 1 },
       { creditsUsed: 1 },
@@ -110,6 +113,7 @@ describe('UsageLimitService', () => {
       planTier: 'free',
       monthlyLimit: 3,
     });
+    mockPrisma.subscription.findFirst.mockResolvedValue(null);
     mockPrisma.usageRecord.findMany.mockResolvedValue([{ creditsUsed: 2 }]);
 
     const quota = await service.getUsageQuotaForUser('user-1');
