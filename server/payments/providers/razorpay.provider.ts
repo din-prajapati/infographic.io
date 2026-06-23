@@ -18,7 +18,7 @@ import { getPaymentSettings } from '../config';
 interface RazorpayInstance {
   customers: {
     create(params: any): Promise<any>;
-    all(params?: { count?: number; skip?: number }): Promise<{ items: Array<{ id: string; email?: string; name: string }> }>;
+    all(params?: { count?: number; skip?: number }): Promise<{ items: Array<{ id: string; email?: string; name?: string }> }>;
   };
   plans: {
     create(params: any): Promise<any>;
@@ -106,7 +106,7 @@ export class RazorpayProvider implements IPaymentProvider {
       const items = res?.items || (res as any)?.data?.items || [];
       const found = items.find((c: any) => (c?.email || '').toLowerCase().trim() === normalizedEmail);
       if (found) {
-        return { id: found.id, email: found.email, name: found.name, provider: 'RAZORPAY' };
+        return { id: found.id, email: found.email, name: found.name ?? '', provider: 'RAZORPAY' };
       }
       if (items.length < count) break;
       skip += count;
