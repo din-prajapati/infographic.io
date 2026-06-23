@@ -116,11 +116,12 @@ export const invoices = pgTable('invoices', {
 });
 
 // Drizzle-Zod Insert Schemas
-export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true, updatedAt: true });
-export const insertOrganizationSchema = createInsertSchema(organizations).omit({ id: true, createdAt: true, updatedAt: true });
-export const insertSubscriptionSchema = createInsertSchema(subscriptions).omit({ id: true, createdAt: true, updatedAt: true });
-export const insertPaymentSchema = createInsertSchema(payments).omit({ id: true, createdAt: true, updatedAt: true });
-export const insertInvoiceSchema = createInsertSchema(invoices).omit({ id: true, createdAt: true, updatedAt: true });
+// drizzle-zod v0.7+ already excludes default fields (id, createdAt, updatedAt) from insert schemas
+export const insertUserSchema = createInsertSchema(users);
+export const insertOrganizationSchema = createInsertSchema(organizations);
+export const insertSubscriptionSchema = createInsertSchema(subscriptions);
+export const insertPaymentSchema = createInsertSchema(payments);
+export const insertInvoiceSchema = createInsertSchema(invoices);
 
 // Types
 export type User = typeof users.$inferSelect;

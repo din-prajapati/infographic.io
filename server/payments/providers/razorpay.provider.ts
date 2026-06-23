@@ -18,7 +18,7 @@ import { getPaymentSettings } from '../config';
 interface RazorpayInstance {
   customers: {
     create(params: any): Promise<any>;
-    all(params?: { count?: number; skip?: number }): Promise<{ items: Array<{ id: string; email: string; name: string }> }>;
+    all(params?: { count?: number; skip?: number }): Promise<{ items: Array<{ id: string; email?: string; name: string }> }>;
   };
   plans: {
     create(params: any): Promise<any>;
