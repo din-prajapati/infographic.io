@@ -35,6 +35,9 @@ jobs:
         run: npm ci
         working-directory: api
 
+      - name: Remove root NestJS to prevent duplicate type conflicts
+        run: rm -rf node_modules/@nestjs
+
       - name: Generate Prisma client
         run: npx prisma generate --schema=api/prisma/schema.prisma
 
