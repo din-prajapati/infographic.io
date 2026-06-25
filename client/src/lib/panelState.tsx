@@ -4,13 +4,13 @@
 
 import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 
-export type LeftPanelType = 'layers' | 'adjustments' | null;
+export type LeftPanelType = 'layers' | 'adjustments' | 'crop' | null;
 
 interface PanelStateContextType {
   activePanel: LeftPanelType;
-  openPanel: (panel: 'layers' | 'adjustments') => void;
+  openPanel: (panel: 'layers' | 'adjustments' | 'crop') => void;
   closePanel: () => void;
-  togglePanel: (panel: 'layers' | 'adjustments') => void;
+  togglePanel: (panel: 'layers' | 'adjustments' | 'crop') => void;
 }
 
 const PanelStateContext = createContext<PanelStateContextType | null>(null);
@@ -22,7 +22,7 @@ interface PanelStateProviderProps {
 export function PanelStateProvider({ children }: PanelStateProviderProps) {
   const [activePanel, setActivePanel] = useState<LeftPanelType>(null);
 
-  const openPanel = useCallback((panel: 'layers' | 'adjustments') => {
+  const openPanel = useCallback((panel: 'layers' | 'adjustments' | 'crop') => {
     setActivePanel(panel);
   }, []);
 
@@ -30,7 +30,7 @@ export function PanelStateProvider({ children }: PanelStateProviderProps) {
     setActivePanel(null);
   }, []);
 
-  const togglePanel = useCallback((panel: 'layers' | 'adjustments') => {
+  const togglePanel = useCallback((panel: 'layers' | 'adjustments' | 'crop') => {
     setActivePanel((current) => (current === panel ? null : panel));
   }, []);
 

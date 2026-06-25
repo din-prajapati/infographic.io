@@ -30,7 +30,7 @@
 - [x] T12 — `ContextualToolbar.tsx` — toolbar class, multi-select text
 - [x] T13 — `SelectionInfoPanel.tsx` — container, all text colors
 - [x] T14 — `TransparencyPanel.tsx` — container, border, hover, input, divider
-- [x] T15 — `RightSidebar.tsx` — Brand Styles: theme cards, palette buttons, Quick Style chips, Quick Tip box
+- [x] T15 — `RightSidebar.tsx` — Brand Styles + primary CTA **Quick Generate** (renamed from "Generate Template"; model-opacity UX)
 - [x] T16 — `PropertyPanel.tsx` — Generate button `bg-black → bg-foreground`
 - [x] T17 — `AgentInfoForm.tsx` — logo upload area, empty icon
 - [x] T18 — `BrandPaletteDialog.tsx` — color input border, preview area, swatch border

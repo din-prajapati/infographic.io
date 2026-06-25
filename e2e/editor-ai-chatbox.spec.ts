@@ -29,6 +29,7 @@ async function ensureLoggedIn(page: import("@playwright/test").Page) {
         true,
         "Set TEST_USER_EMAIL and TEST_USER_PASSWORD in .env (loaded by playwright.config) or the shell.",
       );
+      return;
     }
     await page.getByTestId("input-email").fill(email);
     await page.getByTestId("input-password").fill(password);

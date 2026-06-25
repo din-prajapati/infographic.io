@@ -104,7 +104,7 @@ model Infographic {
   status         String       @default("pending") // pending, processing, completed, failed
   errorMessage   String?
   createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  updatedAt      DateTime     @default(now()) @updatedAt
   usageRecord    UsageRecord?
 
   @@index([userId])

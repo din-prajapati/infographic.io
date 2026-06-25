@@ -66,8 +66,7 @@ export function SaveDialog({
   // Generate thumbnail when dialog opens
   useEffect(() => {
     if (isOpen) {
-      const thumb = generateThumbnail();
-      setThumbnail(thumb);
+      generateThumbnail().then(setThumbnail);
     }
   }, [isOpen]);
 

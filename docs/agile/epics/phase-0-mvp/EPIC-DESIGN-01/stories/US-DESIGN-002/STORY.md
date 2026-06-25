@@ -155,7 +155,7 @@ text-purple-700       → text-purple-500
 | TC-DS-002-01 | Auto | P0 | Open editor in Light mode → toolbar is light | ✅ PASS | `rgb(252, 252, 252)` = `--background` |
 | TC-DS-002-02 | Auto | P0 | Open editor in Dark mode → toolbar matches dark theme | ✅ PASS | See ISSUES.md NOTE-01 |
 | TC-DS-002-03 | Auto | P0 | Left sidebar (Layers) in both modes — text visible | ✅ PASS | Heading visible after toggle |
-| TC-DS-002-04 | Auto | P0 | Right sidebar (Properties) — all controls visible | ✅ PASS | "Generate Template" button visible |
+| TC-DS-002-04 | Auto | P0 | Right sidebar (Properties) — all controls visible | ✅ PASS | "Quick Generate" button visible (renamed from "Generate Template") |
 | TC-DS-002-05 | Auto | P1 | Zoom controls visible in Light mode | ✅ PASS | `rgb(240, 240, 240)` = `--muted` |
 | TC-DS-002-06 | Auto | P1 | FloatingToolbar readable icons in both modes | ✅ PASS | Panel bg `rgb(252, 252, 252)` |
 | TC-DS-002-07 | Auto | P1 | Add text → drag → resize → text visible on canvas | ✅ PASS | Before: 0, After: 1 |

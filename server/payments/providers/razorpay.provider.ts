@@ -106,7 +106,7 @@ export class RazorpayProvider implements IPaymentProvider {
       const items = res?.items || (res as any)?.data?.items || [];
       const found = items.find((c: any) => (c?.email || '').toLowerCase().trim() === normalizedEmail);
       if (found) {
-        return { id: found.id, email: found.email, name: found.name ?? '', provider: 'RAZORPAY' };
+        return { id: found.id, email: found.email ?? '', name: found.name ?? '', provider: 'RAZORPAY' };
       }
       if (items.length < count) break;
       skip += count;
