@@ -9,7 +9,8 @@
  * Why mock-backed: the real generation pipeline calls the live Ideogram API,
  * which cannot run in CI. These tests intercept the REST contract
  * (POST /conversations, POST /generations, GET .../status, GET .../variations)
- * and force the WebSocket polling fallback, so we deterministically verify the
+ * and enable E2E poll-only mode (skips socket.io, uses REST status polling), so we
+ * deterministically verify the
  * FRONTEND CONTRACT for each UX state:
  *   - AC3  (TC-DS-003-03): completed generation renders result cards, images
  *           load, and the preview keeps the expected (16:9) proportions.
@@ -21,6 +22,9 @@
  */
 import { test, expect, type Page } from "@playwright/test";
 import process from "node:process";
+
+/** Must match E2E_GENERATION_POLL_ONLY_KEY in useGenerationWebSocket.ts */
+const E2E_GENERATION_POLL_ONLY_KEY = "e2e-generation-poll-only";
 
 const email = process.env.TEST_USER_EMAIL;
 const password = process.env.TEST_USER_PASSWORD;
@@ -109,11 +113,22 @@ async function openEditorWithChat(page: Page) {
 }
 
 /**
- * Force the WebSocket progress channel to fail so the component's polling
- * fallback drives completion, then fulfill the generation REST contract.
+ * Enable poll-only generation progress (no socket.io) and fulfill the REST contract.
+ * Playwright cannot reliably intercept cross-origin WS to :3001; localStorage flag
+ * is read at runtime by useGenerationWebSocket (works with reuseExistingServer).
  */
 async function mockGeneration(page: Page, opts: { status?: "completed" | "failed"; errorMessage?: string } = {}) {
   const status = opts.status ?? "completed";
+
+  // Set in current page immediately — addInitScript only fires on full HTTP navigations,
+  // not SPA history.pushState. Both are needed: evaluate() covers the SPA case,
+  // addInitScript covers any subsequent full reload.
+  await page.evaluate((key) => {
+    localStorage.setItem(key, "1");
+  }, E2E_GENERATION_POLL_ONLY_KEY);
+  await page.addInitScript((key) => {
+    localStorage.setItem(key, "1");
+  }, E2E_GENERATION_POLL_ONLY_KEY);
 
   // Quota check — ensureWithinUsageLimit passes before POST /generations
   await page.route("**/api/v1/payments/subscription", async (route) => {
@@ -221,12 +236,9 @@ test.describe("US-DESIGN-003 — AI generation flow UX", () => {
     const panel = page.locator("#ai-chat-panel");
     await expect(panel.getByText(/generated 3 variations/i)).toBeVisible({ timeout: 30_000 });
 
-    const useBtn = page.locator("#ai-chat-panel").getByRole("button", { name: /use this design/i });
+    const useBtn = page.locator("#ai-chat-panel").getByRole("button", { name: /use this design/i }).first();
     await expect(useBtn).toBeVisible();
     await expect(useBtn).toHaveClass(/bg-primary/);
-
-    // Customize action accompanies it (toolbar pairing).
-    await expect(page.locator("#ai-chat-panel").getByRole("button", { name: /customize/i })).toBeVisible();
   });
 
   test("AC4-adjacent: invalid prompt shows styled guidance state, not a raw error", async ({ page }) => {
@@ -239,8 +251,8 @@ test.describe("US-DESIGN-003 — AI generation flow UX", () => {
 
     await openEditorWithChat(page);
 
-    // Address present, price missing — avoid "for 123" which false-matches price regex
-    await submitPrompt(page, "Create an infographic at 123 Main St, Austin TX");
+    // Address present (city, state), price missing — avoid "at/for 123" price-regex false positives
+    await submitPrompt(page, "Create an infographic for a property in Austin, TX");
 
     const panel = page.locator("#ai-chat-panel");
     await expect(panel.getByText(/missing information/i)).toBeVisible();

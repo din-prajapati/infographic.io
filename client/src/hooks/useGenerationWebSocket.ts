@@ -5,6 +5,23 @@ import { useAuth } from '../lib/auth';
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 const WS_URL = API_URL.replace(/^http/, 'ws');
 
+/** localStorage key set by mock-backed E2E (addInitScript) to skip socket.io. */
+export const E2E_GENERATION_POLL_ONLY_KEY = 'e2e-generation-poll-only';
+
+function isGenerationPollOnlyMode(): boolean {
+  if (import.meta.env.VITE_E2E_GENERATION_POLL_ONLY === 'true') {
+    return true;
+  }
+  if (typeof window !== 'undefined') {
+    try {
+      return window.localStorage.getItem(E2E_GENERATION_POLL_ONLY_KEY) === '1';
+    } catch {
+      return false;
+    }
+  }
+  return false;
+}
+
 export interface GenerationProgress {
   generationId: string;
   status: 'pending' | 'processing' | 'completed' | 'failed';
@@ -99,9 +116,18 @@ export function useGenerationWebSocket({
   }, [generationId, user?.id]);
 
   useEffect(() => {
-    if (generationId && user?.id) {
-      connect();
+    if (!generationId || !user?.id) {
+      return;
     }
+
+    if (isGenerationPollOnlyMode()) {
+      onErrorRef.current?.(
+        new Error('E2E poll-only mode: skipping WebSocket, using REST status polling'),
+      );
+      return;
+    }
+
+    connect();
 
     return () => {
       disconnect();
