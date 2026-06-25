@@ -235,23 +235,17 @@ export function FloatingToolbar({
             <>
               <ToolDivider />
               <DropdownMenu modal={false}>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <DropdownMenuTrigger asChild>
-                      <button
-                        type="button"
-                        aria-label="Add element"
-                        aria-haspopup="menu"
-                        className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-muted text-muted-foreground transition-colors"
-                      >
-                        <Plus className="w-5 h-5" strokeWidth={2} />
-                      </button>
-                    </DropdownMenuTrigger>
-                  </TooltipTrigger>
-                  <TooltipContent side="right" sideOffset={12}>
-                    Add Element
-                  </TooltipContent>
-                </Tooltip>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label="Add element"
+                    title="Add Element"
+                    aria-haspopup="menu"
+                    className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-muted text-muted-foreground transition-colors"
+                  >
+                    <Plus className="w-5 h-5" strokeWidth={2} />
+                  </button>
+                </DropdownMenuTrigger>
                 <DropdownMenuContent
                   side="right"
                   align="start"

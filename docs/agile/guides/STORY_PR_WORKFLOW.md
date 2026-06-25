@@ -1,4 +1,4 @@
-# Story PR workflow — open, review, merge
+﻿# Story PR workflow — open, review, merge
 
 > **Audience:** Developers and AI sessions closing an agile **Story**  
 > **Prerequisites:** [GIT_STRATEGY.md](../GIT_STRATEGY.md), story folder with `STORY.md` + `TASKS.md`  
@@ -169,19 +169,19 @@ Each story can ship **`PR_BODY.md`** (canonical) and/or **`PR_BODY.draft.md`** (
 ```powershell
 # Windows (PowerShell), from repo root
 git push -u origin HEAD
-gh pr create --base main --title "[US-DESIGN-002] Editor + AI chat design tokens & dark-mode polish" --body-file "docs/agile/epics/EPIC-DESIGN-01/stories/US-DESIGN-002/PR_BODY.md"
+gh pr create --base main --title "[US-DESIGN-002] Editor + AI chat design tokens & dark-mode polish" --body-file "docs/agile/epics/phase-0-mvp/EPIC-DESIGN-01/stories/US-DESIGN-002/PR_BODY.md"
 ```
 
 ```bash
 # macOS / Linux / Git Bash
 git push -u origin HEAD
-gh pr create --base main --title "[US-DESIGN-002] Editor + AI chat design tokens & dark-mode polish" --body-file docs/agile/epics/EPIC-DESIGN-01/stories/US-DESIGN-002/PR_BODY.md
+gh pr create --base main --title "[US-DESIGN-002] Editor + AI chat design tokens & dark-mode polish" --body-file docs/agile/epics/phase-0-mvp/EPIC-DESIGN-01/stories/US-DESIGN-002/PR_BODY.md
 ```
 
 Or use the helper:
 
 ```powershell
-.\scripts\open-story-pr.ps1 -Title "[US-DESIGN-002] Editor + AI chat design tokens & dark-mode polish" -BodyFile "docs/agile/epics/EPIC-DESIGN-01/stories/US-DESIGN-002/PR_BODY.md"
+.\scripts\open-story-pr.ps1 -Title "[US-DESIGN-002] Editor + AI chat design tokens & dark-mode polish" -BodyFile "docs/agile/epics/phase-0-mvp/EPIC-DESIGN-01/stories/US-DESIGN-002/PR_BODY.md"
 ```
 
 ### Labels (optional)

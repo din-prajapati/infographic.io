@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Plus, Sparkles, Building2, Home, TrendingUp, BarChart3, PieChart, ArrowRight, CheckCircle2, DollarSign, Users, MapPin, Target, TrendingDown } from "lucide-react";
 import { Button } from "../ui/button";
 import { AIChatBox } from "../ai-chat/AIChatBox";
@@ -11,14 +11,18 @@ import { ImageElement } from "../canvas/ImageElement";
 import { sortByZIndex } from "../../lib/canvasUtils";
 import { DimensionsDisplay } from "./DimensionsDisplay";
 import { ContextualToolbar } from "./ContextualToolbar";
-import { ImageElement as ImageElementType } from "../../lib/canvasTypes";
 import { usePanelState } from "../../lib/panelState";
 import { loadTemplateById } from "../../lib/storage";
-import { restoreCanvasData } from "../../lib/canvasState";
+import { ImageElement as ImageElementType } from "../../lib/canvasTypes";
+import { restoreCanvasData, loadAiVariationToCanvas, scheduleFitCanvasZoomToViewport } from "../../lib/canvasState";
 import { toast } from "sonner";
 
-export function CenterCanvas() {
-  
+interface CenterCanvasProps {
+  isPreviewMode?: boolean;
+}
+
+export function CenterCanvas({ isPreviewMode = false }: CenterCanvasProps) {
+
   const [isAIChatExpanded, setIsAIChatExpanded] =
     useState(false);
   const [isPanning, setIsPanning] = useState(false);
@@ -28,7 +32,6 @@ export function CenterCanvas() {
   const selectedElementIds = useCanvasStore((state) => state.selectedElementIds);
   const selectElement = useCanvasStore((state) => state.selectElement);
   const clearSelection = useCanvasStore((state) => state.clearSelection);
-  const addElement = useCanvasStore((state) => state.addElement);
   const canvasWidth = useCanvasStore((state) => state.canvasWidth);
   const canvasHeight = useCanvasStore((state) => state.canvasHeight);
   const backgroundColor = useCanvasStore((state) => state.backgroundColor);
@@ -38,10 +41,34 @@ export function CenterCanvas() {
   const canvasPanX = useCanvasStore((state) => state.canvasPanX);
   const canvasPanY = useCanvasStore((state) => state.canvasPanY);
   const setPan = useCanvasStore((state) => state.setPan);
+  const loadCanvas = useCanvasStore((state) => state.loadCanvas);
 
-  // Get isPreviewMode from parent if needed, for now we'll assume false
-  // In a real implementation, this could be passed as a prop
-  const isPreviewMode = false;
+  const aiImportElement = elements.find(
+    (el): el is ImageElementType =>
+      el.type === 'image' && Boolean((el as ImageElementType).isAiImport),
+  );
+
+  // Keep artboard dimensions in sync with the AI element (landscape, portrait, or square)
+  useEffect(() => {
+    if (!aiImportElement) return;
+    if (
+      canvasWidth !== aiImportElement.width ||
+      canvasHeight !== aiImportElement.height
+    ) {
+      loadCanvas({
+        canvasWidth: aiImportElement.width,
+        canvasHeight: aiImportElement.height,
+      });
+      scheduleFitCanvasZoomToViewport();
+    }
+  }, [
+    aiImportElement?.id,
+    aiImportElement?.width,
+    aiImportElement?.height,
+    canvasWidth,
+    canvasHeight,
+    loadCanvas,
+  ]);
 
   const handleAIButtonClick = () => {
     setIsAIChatExpanded(prev => !prev);
@@ -53,7 +80,28 @@ export function CenterCanvas() {
 
   const handleTemplateLoad = async (template: Template) => {
     try {
-      // Load the full template data (including canvasData) from storage/API
+      // AI-generated variation — replace entire canvas (clears template underneath)
+      if (template.isAiVariation && template.previewImage) {
+        const success = await loadAiVariationToCanvas(
+          template.previewImage,
+          template.name,
+          template.aiOrientation,
+        );
+        if (success) {
+          setIsAIChatExpanded(false);
+          scheduleFitCanvasZoomToViewport();
+          toast.success("AI design loaded", {
+            description: `"${template.name}" has been fitted to the canvas`,
+          });
+        } else {
+          toast.error("Failed to load design", {
+            description: "The image could not be placed on the canvas",
+          });
+        }
+        return;
+      }
+
+      // Saved canvas template — fetch JSON from storage/API
       const fullTemplate = await loadTemplateById(template.id);
 
       if (fullTemplate?.canvasData) {
@@ -70,49 +118,6 @@ export function CenterCanvas() {
             description: "The template data could not be restored",
           });
         }
-      } else if (template.previewImage) {
-        // AI-generated image variation - convert to base64 via proxy to avoid CORS issues
-        let imageSrc = template.previewImage;
-        try {
-          const proxyUrl = `/api/proxy-image?url=${encodeURIComponent(template.previewImage)}`;
-          const imgResponse = await fetch(proxyUrl);
-          if (imgResponse.ok) {
-            const blob = await imgResponse.blob();
-            imageSrc = await new Promise<string>((resolve) => {
-              const reader = new FileReader();
-              reader.onloadend = () => resolve(reader.result as string);
-              reader.readAsDataURL(blob);
-            });
-          }
-        } catch {
-          // If proxy fetch fails, fall back to original URL
-        }
-
-        const imageElement: ImageElementType = {
-          id: `ai-gen-${Date.now()}`,
-          type: 'image',
-          src: imageSrc,
-          x: 0,
-          y: 0,
-          width: canvasWidth,
-          height: canvasHeight,
-          rotation: 0,
-          opacity: 1,
-          locked: false,
-          visible: true,
-          zIndex: 0,
-          name: template.name,
-          cornerRadius: 0,
-          flipHorizontal: false,
-          flipVertical: false,
-          colorOverlay: null,
-          filters: { brightness: 100, contrast: 100, saturation: 100 },
-        };
-        addElement(imageElement);
-        toast.success("AI design loaded", {
-          description: `"${template.name}" has been added to the canvas`,
-        });
-        setIsAIChatExpanded(false);
       } else {
         toast.error("Template not found", {
           description: `Could not load template "${template.name}"`,
@@ -166,17 +171,39 @@ export function CenterCanvas() {
 
   const sortedElements = sortByZIndex(elements);
   const hasElements = elements.length > 0;
-  
+
   // Get selected element for dimensions display and info panel
-  const selectedElement = selectedElementIds.length === 1 
+  const selectedElement = selectedElementIds.length === 1
     ? elements.find((el) => el.id === selectedElementIds[0])
     : null;
+
+  // Ref for the viewport div — used to compute toolbar position in viewport coords
+  const viewportRef = useRef<HTMLDivElement>(null);
+
+  // Compute toolbar center position in viewport-relative coordinates.
+  // The canvas container's layout center is always at (vpW/2, vpH/2) because
+  // flex-center + symmetric padding places it there. The CSS transform then
+  // applies translate(panX,panY) scale(zoom) around that center.
+  const getToolbarCoords = (): { x: number; y: number } | null => {
+    const vp = viewportRef.current;
+    if (!vp || !selectedElement) return null;
+    const vpW = vp.clientWidth;
+    const vpH = vp.clientHeight;
+    const canvasLeft = vpW / 2 - (canvasWidth * zoom) / 2 + canvasPanX;
+    const canvasTop  = vpH / 2 - (canvasHeight * zoom) / 2 + canvasPanY;
+    return {
+      x: canvasLeft + (selectedElement.x + selectedElement.width / 2) * zoom,
+      y: canvasTop + selectedElement.y * zoom,
+    };
+  };
 
   return (
     <div className="flex-1 flex flex-col bg-muted/50 relative overflow-hidden">
       {/* Canvas Area with Dot Grid */}
-      <div 
+      <div
+        ref={viewportRef}
         className="flex-1 dot-grid overflow-hidden flex items-center justify-center p-12 relative"
+        data-canvas-viewport
         onMouseDown={handlePanStart}
         onMouseMove={handlePanMove}
         onMouseUp={handlePanEnd}
@@ -185,7 +212,22 @@ export function CenterCanvas() {
           cursor: activeTool === 'hand' ? (isPanning ? 'grabbing' : 'grab') : 'default'
         }}
       >
-        {/* Canvas Container with Shadow - z-index ensures it stays behind AI ChatBox */}
+        {/* Dimensions badge — viewport-level, bottom-left corner, never overlaps artboard */}
+        {selectedElement && !isPreviewMode && (
+          <DimensionsDisplay element={selectedElement} />
+        )}
+        {/* Contextual toolbar — viewport-level so it stays at natural size regardless of zoom */}
+        {selectedElement && !isPreviewMode && (() => {
+          const coords = getToolbarCoords();
+          return coords ? (
+            <ContextualToolbar
+              element={selectedElement}
+              position={coords}
+              viewportWidth={viewportRef.current?.clientWidth ?? 800}
+            />
+          ) : null;
+        })()}
+        {/* Canvas Container with Shadow */}
         <div
           data-canvas-container
           className="bg-white rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] relative z-0"
@@ -197,27 +239,7 @@ export function CenterCanvas() {
             backgroundColor: backgroundColor,
           }}
         >
-          {/* Contextual Toolbar - appears above selected element */}
-          {selectedElement && !isPreviewMode && (
-            <ContextualToolbar
-              element={selectedElement}
-              position={{
-                x: selectedElement.x + selectedElement.width / 2,
-                y: selectedElement.y,
-              }}
-            />
-          )}
 
-          {/* Dimensions Display - appears beneath selected element */}
-          {selectedElement && !isPreviewMode && (
-            <DimensionsDisplay
-              element={selectedElement}
-              position={{
-                x: selectedElement.x + selectedElement.width / 2,
-                y: selectedElement.y,
-              }}
-            />
-          )}
           
           {/* Canvas Content */}
           <div
@@ -736,22 +758,26 @@ export function CenterCanvas() {
         </div>
       </div>
 
-      {/* AI Button - Purple Gradient */}
-      <div className="absolute bottom-6 right-6">
-        <Button
-          onClick={handleAIButtonClick}
-          aria-label={
-            isAIChatExpanded ? "Close AI Chat" : "Open AI Chat"
-          }
-          aria-expanded={isAIChatExpanded}
-          aria-controls={
-            isAIChatExpanded ? "ai-chat-panel" : undefined
-          }
-          className="h-14 w-14 rounded-full bg-gradient-to-br from-purple-500 to-purple-700 hover:from-purple-600 hover:to-purple-800 shadow-lg hover:shadow-xl transition-all"
-        >
-          <Sparkles className="w-10 h-10 animate-pulse" />
-        </Button>
-      </div>
+      {/* AI Button — sits at bottom-right, panel opens to its left */}
+      {!isPreviewMode && (
+        <div className="absolute bottom-6 right-6 flex flex-col items-center gap-1.5">
+          <Button
+            onClick={handleAIButtonClick}
+            aria-label={isAIChatExpanded ? "Close AI Chat" : "Open AI Chat"}
+            aria-expanded={isAIChatExpanded}
+            aria-controls={isAIChatExpanded ? "ai-chat-panel" : undefined}
+            className={`h-14 w-14 rounded-full bg-gradient-to-br from-ai-accent to-ai-accent/70 hover:from-ai-accent/90 hover:to-ai-accent/60 shadow-lg hover:shadow-xl transition-all ${
+              isAIChatExpanded ? 'ring-2 ring-ai-accent ring-offset-2 ring-offset-background' : ''
+            }`}
+          >
+            <Sparkles className="w-10 h-10 animate-pulse" />
+          </Button>
+          {/* Active indicator dot */}
+          {isAIChatExpanded && (
+            <div className="w-1.5 h-1.5 rounded-full bg-ai-accent" />
+          )}
+        </div>
+      )}
 
       {/* AI Chat Box */}
       <AIChatBox

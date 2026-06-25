@@ -5,6 +5,7 @@ import { prisma } from '../../../database/prisma.client';
 import { OpenAiService } from './openai.service';
 import { IdeogramService } from './ideogram.service';
 import { getTotalCost } from '../../../config/ai-models.config';
+import { normalizeImageModel } from '../../../config/image-generation.config';
 
 @Processor('infographic-generation')
 @Injectable()
@@ -37,8 +38,9 @@ export class InfographicProcessor {
 
         const imagePrompt = await this.openAiService.generateImagePrompt(propertyData, headline);
         console.log(`🎨 [Processor] Calling Ideogram for ${infographicId}...`);
-        const aiModel = propertyData.aiModel || 'ideogram-turbo';
-        imageUrl = await this.ideogramService.generateImage(imagePrompt, aiModel);
+        const aiModel = normalizeImageModel(propertyData.aiModel || 'ideogram-turbo');
+        const orientation = propertyData.orientation || 'landscape';
+        imageUrl = await this.ideogramService.generateImage(imagePrompt, aiModel, orientation);
         console.log(`🖼️ [Processor] Got image URL: ${imageUrl.substring(0, 80)}...`);
       }
 

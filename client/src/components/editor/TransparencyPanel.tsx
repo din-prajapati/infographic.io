@@ -5,7 +5,6 @@ import { Grid3x3 } from "lucide-react";
 import { useCanvasStore } from "../../hooks/useCanvasStore";
 import { CanvasElement } from "../../lib/canvasTypes";
 import { useTransparencyGrid } from "../../lib/transparencyGridState";
-import { usePanelState } from "../../lib/panelState";
 import { Slider } from "../ui/slider";
 import { Input } from "../ui/input";
 import {
@@ -61,10 +60,8 @@ function Divider() {
 export function TransparencyPanel({ element, position, onClose }: TransparencyPanelProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const updateElement = useCanvasStore((state) => state.updateElement);
+  // position is already in viewport-relative coords (passed from ContextualToolbar at viewport level)
   const { isEnabled: showTransparencyGrid, toggle: toggleTransparencyGrid } = useTransparencyGrid();
-  const canvasWidth = useCanvasStore((state) => state.canvasWidth);
-  const canvasPanX = useCanvasStore((state) => state.canvasPanX);
-  const { activePanel } = usePanelState();
 
   // Handle opacity change
   const handleOpacityChange = (value: number[]) => {
@@ -102,17 +99,12 @@ export function TransparencyPanel({ element, position, onClose }: TransparencyPa
     };
   }, [onClose]);
 
-  // Calculate panel position
-  const isPanelOpen = activePanel === 'layers' || activePanel === 'adjustments' || activePanel === 'crop';
-  const panelOffset = isPanelOpen ? 340 : 0;
-  const panelX = position.x + panelOffset;
-  const panelY = position.y + 60; // Position below contextual toolbar
-
-  // Clamp X position within canvas bounds
-  const panelWidth = 280; // Approximate panel width
-  const minX = panelWidth / 2 + panelOffset + 20;
-  const maxX = canvasWidth + panelOffset - panelWidth / 2 - 20;
-  const clampedX = Math.max(minX, Math.min(maxX, panelX));
+  // position is viewport-relative — clamp within viewport bounds
+  const panelWidth = 280;
+  const minX = panelWidth / 2 + 20;
+  const maxX = (typeof window !== 'undefined' ? window.innerWidth : 1200) - panelWidth / 2 - 20;
+  const clampedX = Math.max(minX, Math.min(maxX, position.x));
+  const panelY = position.y; // Already positioned below toolbar by ContextualToolbar
 
   const opacityPercentage = Math.round(element.opacity * 100);
 

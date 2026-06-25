@@ -48,7 +48,7 @@ export function NumberStepper({
   return (
     <div
       className={cn(
-        "inline-flex items-center h-9 rounded-lg border border-border bg-input-background overflow-hidden",
+        "flex items-center h-9 rounded-lg border border-border bg-input-background overflow-hidden",
         disabled && "opacity-50 pointer-events-none",
         className,
       )}
@@ -78,9 +78,8 @@ export function NumberStepper({
         max={max}
         disabled={disabled}
         className={cn(
-          "w-10 h-full text-center text-sm font-medium bg-transparent",
+          "flex-1 min-w-0 h-full text-center text-sm font-medium bg-transparent",
           "text-foreground focus:outline-none focus:ring-0",
-          // hide native spinner arrows
           "[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none",
         )}
       />

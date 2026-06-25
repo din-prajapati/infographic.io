@@ -15,7 +15,7 @@ import {
   loadTemplateById,
   generateId,
 } from "../../lib/storage";
-import { getGalleryTemplateDisplayName } from "../../lib/galleryTemplateCatalog";
+import { getGalleryTemplateDisplayName, isGalleryTemplateId, isAiGenerationId } from "../../lib/galleryTemplateCatalog";
 import { captureCanvasData, generateThumbnailSync, restoreCanvasData } from "../../lib/canvasState";
 import { downloadCanvas } from "../../lib/canvasExport";
 import { useCanvasStore } from "../../hooks/useCanvasStore";
@@ -55,12 +55,15 @@ export function EditorLayout({ onBackClick, designId, templateId }: EditorLayout
 
   // Load design or template on mount
   useEffect(() => {
+    let cancelled = false;
+
     const loadData = async () => {
       if (designId) {
         // Clear canvas first to avoid stale elements from a previous session
         loadCanvas({ elements: [], canvasWidth: 1200, canvasHeight: 800, backgroundColor: '#FFFFFF', zoom: 1 });
         try {
           const design = await loadDesignById(designId);
+          if (cancelled) return;
           if (design) {
             setDesignName(design.name);
             setCurrentDesignId(design.id);
@@ -75,19 +78,36 @@ export function EditorLayout({ onBackClick, designId, templateId }: EditorLayout
           toast.error('Failed to load design');
         }
       } else if (templateId) {
+        const galleryName = getGalleryTemplateDisplayName(templateId);
+        if (galleryName) {
+          setDesignName(`${galleryName} (Template)`);
+          // Gallery cards are preview-only — no API record; start with empty canvas
+          loadCanvas({ elements: [], canvasWidth: 1200, canvasHeight: 800, backgroundColor: '#FFFFFF', zoom: 1 });
+          return;
+        }
+
+        if (isAiGenerationId(templateId)) {
+          // Infographic variation ids are not canvas templates
+          return;
+        }
+
         try {
           const template = await loadTemplateById(templateId);
+          if (cancelled) return;
+
+          const hasAiImport = useCanvasStore.getState().elements.some(
+            (el) => el.type === 'image' && (el as ImageElementType).isAiImport,
+          );
+          if (hasAiImport) return;
+
           if (template) {
             setDesignName(`${template.name} (Copy)`);
 
             if (template.canvasData) {
               restoreCanvasData(template.canvasData);
             }
-          } else {
-            const galleryName = getGalleryTemplateDisplayName(templateId);
-            if (galleryName) {
-              setDesignName(`${galleryName} (Template)`);
-            }
+          } else if (isGalleryTemplateId(templateId)) {
+            setDesignName('Untitled Design');
           }
         } catch (error) {
           console.error('Error loading template:', error);
@@ -96,6 +116,9 @@ export function EditorLayout({ onBackClick, designId, templateId }: EditorLayout
       }
     };
     loadData();
+    return () => {
+      cancelled = true;
+    };
   }, [designId, templateId]);
 
   // Keyboard shortcuts
@@ -149,8 +172,13 @@ export function EditorLayout({ onBackClick, designId, templateId }: EditorLayout
         toast.success('Copied to clipboard');
       }
 
-      // Paste (Cmd/Ctrl + V)
+      // Paste (Cmd/Ctrl + V) — skip when focus is inside a text input so the
+      // AI Chat textarea and other inputs can receive native clipboard paste.
       if (isMod && e.key === 'v') {
+        const tag = (document.activeElement as HTMLElement)?.tagName;
+        if (tag === 'TEXTAREA' || tag === 'INPUT' || (document.activeElement as HTMLElement)?.isContentEditable) {
+          return;
+        }
         e.preventDefault();
         pasteFromClipboard();
       }
@@ -286,9 +314,9 @@ export function EditorLayout({ onBackClick, designId, templateId }: EditorLayout
         )}
         
         {/* Main Editor Area */}
-        <div className={`flex-1 flex overflow-hidden relative min-h-0 ${isPreviewMode ? 'bg-gray-900' : ''}`}>
+        <div className={`flex-1 flex overflow-hidden relative min-h-0 ${isPreviewMode ? 'bg-neutral-950' : ''}`}>
           {/* Center Canvas */}
-          <CenterCanvas />
+          <CenterCanvas isPreviewMode={isPreviewMode} />
           
           {/* Right Sidebar - Design & Properties */}
           {!isPreviewMode && <RightSidebar />}

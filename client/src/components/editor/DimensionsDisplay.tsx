@@ -1,39 +1,26 @@
-// Dimensions display component for canvas and selected elements
+// Dimensions display — fixed to bottom-left of the canvas viewport.
+// Rendered outside the artboard so it never overlaps canvas elements.
 
 import { CanvasElement } from "../../lib/canvasTypes";
 
-// Canvas content div offset constants (must match ContextualToolbar)
-const CANVAS_CONTENT_LEFT_OFFSET = 10;
-const CANVAS_CONTENT_TOP_OFFSET = -30;
-
 interface DimensionsDisplayProps {
   element: CanvasElement;
-  position: { x: number; y: number };
 }
 
-export function DimensionsDisplay({ element, position }: DimensionsDisplayProps) {
-  // Calculate position beneath element
-  // Center horizontally on element, add canvas content offset
-  const panelX = element.x + element.width / 2 + CANVAS_CONTENT_LEFT_OFFSET;
-  // 8px below element, add canvas content offset
-  const panelY = element.y + element.height + 8 + CANVAS_CONTENT_TOP_OFFSET;
-
-  const width = Math.round(element.width);
-  const height = Math.round(element.height);
+export function DimensionsDisplay({ element }: DimensionsDisplayProps) {
+  const w = Math.round(element.width);
+  const h = Math.round(element.height);
+  const x = Math.round(element.x);
+  const y = Math.round(element.y);
 
   return (
-    <div
-      className="absolute bg-blue-600 dark:bg-blue-700 text-white rounded-lg px-3 py-1.5 shadow-lg z-50 pointer-events-none"
-      style={{
-        left: `${panelX}px`,
-        top: `${panelY}px`,
-        transform: 'translateX(-50%)',
-      }}
-    >
-      <span className="text-sm font-medium whitespace-nowrap">
-        {width} × {height}
-      </span>
+    <div className="absolute bottom-3 left-3 z-50 pointer-events-none flex items-center gap-2">
+      <div className="flex items-center gap-1.5 bg-gray-900/90 dark:bg-zinc-700/95 text-white rounded-lg px-3 py-1.5 shadow-lg backdrop-blur-sm ring-1 ring-white/10">
+        <span className="text-xs font-medium tabular-nums">{w} × {h}</span>
+        <span className="text-white/40 text-xs">px</span>
+        <span className="text-white/30 text-xs mx-0.5">·</span>
+        <span className="text-xs text-white/60 tabular-nums">x {x}, y {y}</span>
+      </div>
     </div>
   );
 }
-

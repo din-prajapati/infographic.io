@@ -15,9 +15,10 @@ interface ConversationMessagesProps {
   onRegenerateAll?: () => void;
   selectedPreviewId?: string | null;
   onSelectPreview?: (id: string) => void;
+  onUseVariation?: (id: string) => void;
 }
 
-export function ConversationMessages({ messages, onBackClick, conversationTitle, onRegenerateAll, selectedPreviewId, onSelectPreview }: ConversationMessagesProps) {
+export function ConversationMessages({ messages, onBackClick, conversationTitle, onRegenerateAll, selectedPreviewId, onSelectPreview, onUseVariation }: ConversationMessagesProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom when new messages arrive
@@ -50,12 +51,13 @@ export function ConversationMessages({ messages, onBackClick, conversationTitle,
           {shouldShowTimestamp(index) && (
             <TimestampDivider timestamp={message.timestamp} />
           )}
-          <MessageBubble 
-            message={message} 
+          <MessageBubble
+            message={message}
             index={index}
             onRegenerateAll={onRegenerateAll}
             selectedPreviewId={selectedPreviewId}
             onSelectPreview={onSelectPreview}
+            onUseVariation={onUseVariation}
           />
         </div>
       ))}

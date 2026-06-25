@@ -20,6 +20,7 @@ interface ShapeElementProps {
 
 export function ShapeElement({ element, isSelected, onSelect }: ShapeElementProps) {
   const updateElement = useCanvasStore((state) => state.updateElement);
+  const zoom = useCanvasStore((state) => state.zoom);
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -150,7 +151,13 @@ export function ShapeElement({ element, isSelected, onSelect }: ShapeElementProp
       data-element-id={element.id}
       data-element-type="shape"
     >
-      <div className={`w-full h-full ${isSelected ? 'outline outline-2 outline-blue-500 outline-offset-1 shadow-lg' : ''}`}>
+      <div
+        className="w-full h-full"
+        style={isSelected ? {
+          outline: `${2 / zoom}px solid #3b82f6`,
+          outlineOffset: `${1 / zoom}px`,
+        } : undefined}
+      >
         {renderShape()}
       </div>
     </Rnd>

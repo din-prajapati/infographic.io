@@ -1,0 +1,20 @@
+flowchart LR
+  subgraph Frontend["Frontend (React :5000)"]
+    A["Campaign Mode toggle\n(wired to backend now)"]:::good
+    B["Mockup selector\n(yard sign / phone / billboard)"]:::good
+  end
+  subgraph NestJS["NestJS API (:3001)"]
+    C["CampaignOrchestrator\n(new — 4-piece generation)"]:::good
+    D["MockupService\n(new — scene compositing)"]:::good
+    E["PhotoEnhancementService\n(object removal)"]:::good
+    F["OutpaintService\n(format expand)"]:::good
+  end
+  subgraph Storage["Cloudflare R2"]
+    G["Campaign assets\n(4 images)"]
+    H["Mockup renders"]
+  end
+  A --> C
+  B --> D
+  C --> G
+  D --> H
+  classDef good fill:#0b3b2e,stroke:#14532d,color:#ecfdf5;

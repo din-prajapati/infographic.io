@@ -4,6 +4,7 @@
  */
 
 import { designsApi, canvasTemplatesApi } from './api';
+import { shouldSkipCanvasTemplateApiLookup } from './galleryTemplateCatalog';
 
 export interface DesignMetadata {
   id: string;
@@ -17,9 +18,10 @@ export interface DesignMetadata {
   tags?: string[];
 }
 
-const DESIGNS_KEY = "brainwave_designs";
-const TEMPLATES_KEY = "brainwave_templates";
-const AUTOSAVE_KEY = "brainwave_autosave";
+const STORAGE_PREFIX = import.meta.env.VITE_STORAGE_PREFIX ?? 'infographicai';
+const DESIGNS_KEY = `${STORAGE_PREFIX}_designs`;
+const TEMPLATES_KEY = `${STORAGE_PREFIX}_templates`;
+const AUTOSAVE_KEY = `${STORAGE_PREFIX}_autosave`;
 
 /**
  * Check if user is authenticated
@@ -184,8 +186,12 @@ export async function loadDesignById(id: string): Promise<DesignMetadata | null>
           localStorage.setItem(DESIGNS_KEY, JSON.stringify(filtered));
           return apiResult;
         }
-      } catch (apiError) {
-        console.warn('API load failed, design not found locally either:', apiError);
+      } catch (apiError: unknown) {
+        const message =
+          apiError instanceof Error ? apiError.message : String(apiError);
+        if (!message.toLowerCase().includes('not found')) {
+          console.warn('API load failed, design not found locally either:', apiError);
+        }
       }
     }
     
@@ -201,18 +207,30 @@ export async function loadDesignById(id: string): Promise<DesignMetadata | null>
  */
 export async function loadTemplateById(id: string): Promise<DesignMetadata | null> {
   try {
+    const localTemplates = loadTemplatesFromLocalStorage();
+    const localMatch = localTemplates.find((t) => t.id === id) || null;
+
+    if (shouldSkipCanvasTemplateApiLookup(id)) {
+      return localMatch;
+    }
+
+    if (localMatch?.canvasData) {
+      return localMatch;
+    }
+
     if (isAuthenticated()) {
       try {
         return await canvasTemplatesApi.getOne(id);
-      } catch (apiError) {
-        console.warn('API load failed, using LocalStorage cache:', apiError);
-        // Fall through to LocalStorage
+      } catch (apiError: unknown) {
+        const message =
+          apiError instanceof Error ? apiError.message : String(apiError);
+        if (!message.toLowerCase().includes('not found')) {
+          console.warn('API template load failed, using localStorage cache:', apiError);
+        }
       }
     }
-    
-    // Fallback to LocalStorage
-    const templates = loadTemplatesFromLocalStorage();
-    return templates.find((t) => t.id === id) || null;
+
+    return localMatch;
   } catch (error) {
     console.error("Error loading template:", error);
     return null;
@@ -422,5 +440,19 @@ export function clearAutosaveDraft(): void {
     localStorage.removeItem(AUTOSAVE_KEY);
   } catch (error) {
     console.error("Error clearing autosave draft:", error);
+  }
+}
+
+/**
+ * Clear all user-scoped localStorage data on logout.
+ * Prevents one user's designs/canvas from leaking into the next user's session
+ * on a shared browser.
+ */
+export function clearUserStorage(): void {
+  try {
+    localStorage.removeItem(DESIGNS_KEY);
+    localStorage.removeItem(AUTOSAVE_KEY);
+  } catch (error) {
+    console.error("Error clearing user storage:", error);
   }
 }

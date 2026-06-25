@@ -1,0 +1,154 @@
+# PROJECT_CONTEXT.yaml — AI-SDLC customization layer
+# Migrated from PROJECT_CONTEXT.md — 2026-05-27
+# Schema: .claude/skills/core/reference/project-context-schema.md
+
+project:
+  name: "InfographicAI"
+  type: "SaaS"
+  description: "AI-powered real estate infographic SaaS for solo agents and brokerages"
+  root: "D:/Dinesh/DCloud/GITDrive/Work/Products/InfographicEditor-Unified"
+
+stack:
+  frontend:   ["react", "vite", "tailwind"]
+  backend:    ["nestjs", "prisma"]
+  testing:    ["vitest", "playwright"]
+  deploy:     ["railway"]
+  monitoring: ["sentry"]
+
+load_stacks: []
+
+domains:
+  - prefix: "DESIGN"
+    scope: "UI components, canvas editor, theme system, infographic design"
+  - prefix: "AI"
+    scope: "AI generation pipeline, GPT-4o, Ideogram, conversational AI"
+  - prefix: "AUTH"
+    scope: "JWT, Google OAuth, Passport.js, session management"
+  - prefix: "PAY"
+    scope: "RazorPay subscriptions, Stripe, webhook handling, plan enforcement"
+  - prefix: "EDIT"
+    scope: "Canvas editor CRUD, export, template management"
+  - prefix: "INFRA"
+    scope: "Railway deploy, Sentry monitoring, DB migrations, health checks"
+
+counters:
+  ADR: 1
+  DESIGN: { epic: 4, feature: 2, story: 12 }
+  AI:     { epic: 7, feature: 1, story: 31 }
+  AUTH:   { epic: 2, feature: 1, story: 5 }
+  PAY:    { epic: 2, feature: 1, story: 5 }
+  EDIT:   { epic: 2, feature: 1, story: 5 }
+  INFRA:  { epic: 2, feature: 1, story: 3 }
+
+phases:
+  - id: 0
+    folder: "phase-0-mvp"
+    release: "v1.0"
+    outcome: "Working product in production — auth, payments, AI generation"
+    status: "in-progress"
+  - id: "0.5"
+    folder: "phase-0.5-foundation"
+    release: "v1.0.1"
+    outcome: "Foundation fixes — Socket.io, GPT model, Nano Banana, persistence"
+    status: "planning"
+  - id: 1
+    folder: "phase-1-ai-core"
+    release: "v1.1"
+    outcome: "Conversational AI core + generation control"
+    status: "not-started"
+  - id: 2
+    folder: "phase-2-ai-refine"
+    release: "v1.2"
+    outcome: "Refine loop, element edit, R2 storage"
+    status: "not-started"
+  - id: 3
+    folder: "phase-3-ai-advanced"
+    release: "v1.3"
+    outcome: "Production tools, intelligence enrichment"
+    status: "not-started"
+  - id: 4
+    folder: "phase-4-backlog"
+    release: "v2.0"
+    outcome: "Backlog items"
+    status: "not-started"
+
+gates:
+  - id: 1
+    name: "TypeScript + unit tests"
+    mandatory: true
+    automated: true
+    commands:
+      - "npm run check"
+      - "npm run test:unit"
+  - id: 2
+    name: "Visual checklist"
+    mandatory: false
+    automated: false
+    domains: ["DESIGN"]
+    checklist: ".claude/skills/core/verification-gates/visual-checklist.md"
+  - id: 3
+    name: "E2E"
+    mandatory: false
+    automated: true
+    domains: ["DESIGN"]
+    commands: ["npm run test:e2e"]
+  - id: 4
+    name: "API smoke"
+    mandatory: false
+    automated: true
+    domains: ["AI", "AUTH", "PAY"]
+    commands: ["curl -fsS http://localhost:3001/health"]
+
+plan_tiers:
+  - name: "Free"
+  - name: "Pro"
+  - name: "Business"
+
+git:
+  default_branch: "main"
+  branch_format: "feat/{domain-lower}-{story-id-lower}-{slug}"
+  commit_format: "{type}({scope}): {summary} — {US-ID}"
+  pr_labels:
+    - "epic:{domain-lower}"
+    - "type:{type}"
+    - "priority:{P}"
+  squash_merge: true
+
+paths:
+  agile_root:    "docs/agile"
+  epics:         "docs/agile/epics"
+  templates:     "docs/agile/templates"
+  decisions:     "docs/agile/decisions"
+  history:       "docs/agile/history"
+  roadmap:       "docs/agile/ROADMAP.md"
+  agile_index:   "docs/agile/AGILE_INDEX.md"
+  phase_tracker: "docs/agile/PHASE_TRACKER.md"
+  team_status:   "docs/agile/TEAM_STATUS.md"
+  prd_inbox:     "docs/agile/PRD"
+  north_star:    "docs/NORTH_STAR.md"
+  rules:         ".orion/rules"
+  scaffold:      ".orion/scaffold.json"
+
+agent_flags:
+  code_agent:
+    respect_out_of_scope: true
+    call_back_on_uncertainty: true
+    run_gates_after_implementation: true
+  test_agents:
+    contract_first: true
+    require_negative_tests: true
+  reviewer:
+    block_on_scope_creep: true
+    require_test_evidence: true
+
+sensitive_paths:
+  - ".env"
+  - ".env.local"
+  - ".env.production"
+  - "**/secrets/**"
+
+framework:
+  name: "AI-SDLC"
+  version: "0.1.0"
+  installed_at: "2026-05-27T00:00:00.000Z"
+  context_schema_version: 1

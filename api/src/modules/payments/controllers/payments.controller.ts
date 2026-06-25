@@ -19,6 +19,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { PaymentsService } from '../services/payments.service';
 import { UsageAnalyticsService } from '../services/usage-analytics.service';
 import { PLAN_CONFIG } from '@shared/schema';
+import { prisma } from '../../../database/prisma.client';
 import {
   CreateSubscriptionDto,
   CancelSubscriptionDto,
@@ -103,6 +104,15 @@ export class PaymentsController {
     }
   }
 
+  @Post('subscription/sync')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Force-sync subscription status from payment provider (promotes PENDING → ACTIVE if provider confirms)' })
+  async syncSubscription(@Req() req: any) {
+    const userId = req.user.id;
+    return this.paymentsService.syncSubscriptionFromProvider(userId);
+  }
+
   @Get('subscription')
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth()
@@ -112,13 +122,36 @@ export class PaymentsController {
     const organizationId = req.user.organizationId || userId;
     const subscription = await this.paymentsService.getCurrentSubscription(userId);
 
-    // Include monthly usage for billing display
+    // Include monthly usage for billing display.
+    // Limit resolution order:
+    //   1. Active subscription planTier → PLAN_CONFIG
+    //   2. No subscription → org.monthlyLimit (-1 = unlimited) or org.planTier → PLAN_CONFIG
     let usage: { current: number; limit: number } | undefined;
     try {
       const { count } = await this.usageAnalyticsService.getCurrentMonthUsage(userId, organizationId);
-      const planTier = (subscription?.planTier || 'FREE') as keyof typeof PLAN_CONFIG;
-      const planConfig = PLAN_CONFIG[planTier] || PLAN_CONFIG.FREE;
-      usage = { current: count, limit: planConfig.limit };
+
+      let limit: number;
+      if (subscription?.planTier) {
+        const planConfig = PLAN_CONFIG[subscription.planTier as keyof typeof PLAN_CONFIG] || PLAN_CONFIG.FREE;
+        limit = planConfig.limit;
+      } else {
+        // No subscription row — read the org's direct monthlyLimit (set at user creation / manual seeding).
+        const org = await prisma.organization.findUnique({
+          where: { id: organizationId },
+          select: { monthlyLimit: true, planTier: true },
+        });
+        const orgMonthlyLimit = org?.monthlyLimit ?? 3;
+        if (orgMonthlyLimit === -1) {
+          limit = -1; // unlimited — frontend checkQuota treats limit <= 0 as no cap
+        } else if (orgMonthlyLimit > 0) {
+          limit = orgMonthlyLimit;
+        } else {
+          const tier = (org?.planTier || 'free').toUpperCase() as keyof typeof PLAN_CONFIG;
+          limit = (PLAN_CONFIG[tier] || PLAN_CONFIG.FREE).limit;
+        }
+      }
+
+      usage = { current: count, limit };
     } catch {
       usage = undefined;
     }

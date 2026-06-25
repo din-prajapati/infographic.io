@@ -88,7 +88,7 @@ export function AISuggestionsPanel({ isOpen, onClose, onSuggestionClick, buttonR
               <div className="px-3 py-2 bg-muted rounded-lg border border-border">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
+                    <div className="w-6 h-6 rounded-full bg-gradient-to-br from-ai-accent to-primary flex items-center justify-center">
                       <Sparkles className="w-3.5 h-3.5 text-white" />
                     </div>
                     <div>
@@ -108,7 +108,7 @@ export function AISuggestionsPanel({ isOpen, onClose, onSuggestionClick, buttonR
                       onSuggestionClick('Add warm colors');
                       onClose();
                     }}
-                    className="flex flex-col items-center gap-1.5 p-3 rounded-lg border-2 border-border hover:border-blue-500 hover:bg-blue-500/10 transition-all group"
+                    className="flex flex-col items-center gap-1.5 p-3 rounded-lg border-2 border-border hover:border-primary hover:bg-primary/10 transition-all group"
                   >
                     <div className="w-8 h-8 rounded-full bg-orange-500/15 group-hover:bg-orange-500/25 flex items-center justify-center transition-colors">
                       <div className="w-4 h-4 rounded-full bg-gradient-to-br from-orange-400 to-red-400"></div>
@@ -121,7 +121,7 @@ export function AISuggestionsPanel({ isOpen, onClose, onSuggestionClick, buttonR
                       onSuggestionClick('Make it modern');
                       onClose();
                     }}
-                    className="flex flex-col items-center gap-1.5 p-3 rounded-lg border-2 border-border hover:border-blue-500 hover:bg-blue-500/10 transition-all group"
+                    className="flex flex-col items-center gap-1.5 p-3 rounded-lg border-2 border-border hover:border-primary hover:bg-primary/10 transition-all group"
                   >
                     <div className="w-8 h-8 rounded-full bg-blue-500/15 group-hover:bg-blue-500/25 flex items-center justify-center transition-colors">
                       <Sparkles className="w-4 h-4 text-blue-500" />
@@ -134,7 +134,7 @@ export function AISuggestionsPanel({ isOpen, onClose, onSuggestionClick, buttonR
                       onSuggestionClick('Add agent photo');
                       onClose();
                     }}
-                    className="flex flex-col items-center gap-1.5 p-3 rounded-lg border-2 border-border hover:border-blue-500 hover:bg-blue-500/10 transition-all group"
+                    className="flex flex-col items-center gap-1.5 p-3 rounded-lg border-2 border-border hover:border-primary hover:bg-primary/10 transition-all group"
                   >
                     <div className="w-8 h-8 rounded-full bg-purple-500/15 group-hover:bg-purple-500/25 flex items-center justify-center transition-colors">
                       <svg className="w-4 h-4 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -164,7 +164,7 @@ export function AISuggestionsPanel({ isOpen, onClose, onSuggestionClick, buttonR
                         className="w-full text-left px-3 py-2.5 text-sm rounded-lg hover:bg-muted border border-transparent hover:border-border transition-all group flex items-center justify-between"
                       >
                         <span className="text-foreground">{item}</span>
-                        <svg className="w-4 h-4 text-muted-foreground group-hover:text-blue-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                         </svg>
                       </button>

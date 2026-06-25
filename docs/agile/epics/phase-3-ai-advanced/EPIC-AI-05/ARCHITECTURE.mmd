@@ -1,0 +1,22 @@
+flowchart LR
+  subgraph Frontend["Frontend (React :5000)"]
+    A["Market Data toggle\n(in chat panel)"]:::good
+    B["Agent Profile setup\n(one-time, auto-fills)"]:::good
+    C["In-chat search bar"]:::good
+  end
+  subgraph NestJS["NestJS API (:3001)"]
+    D["MarketDataEnrichmentService\n(walk score, school rating, DOM)"]:::good
+    E["AgentProfileService\n(name, brokerage, colors)"]:::good
+    F["ConversationSearchService\n(full-text search)"]:::good
+    G["openai.service.ts\n(tone routing in system prompt)"]
+  end
+  subgraph External["External APIs"]
+    H["Walk Score API"]
+    I["School Ratings API"]
+  end
+  A --> D --> H
+  D --> I
+  B --> E
+  C --> F
+  G -- "Sold → celebration\nActive → neutral" --> G
+  classDef good fill:#0b3b2e,stroke:#14532d,color:#ecfdf5;

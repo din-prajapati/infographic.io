@@ -54,6 +54,58 @@ This design system prioritizes:
 
 ---
 
+## AI Brand Color — `--ai-accent`
+
+### Rule
+
+> **Purple = AI feature.** Any interactive element that triggers, controls, or represents AI generation uses `ai-accent` tokens. Everything else uses `primary` (blue) or `muted` tokens.
+
+This creates a learnable perceptual boundary for users: **blue = your action, purple = AI action** — the same pattern used by Notion AI, Figma AI, and Cursor.
+
+### Token Definition
+
+| Token | Light | Dark | Tailwind class |
+|-------|-------|------|----------------|
+| `--ai-accent` | `271 81% 56%` (purple-500) | `271 91% 68%` (purple-400) | `bg-ai-accent`, `text-ai-accent`, `border-ai-accent` |
+| `--ai-accent-foreground` | `0 0% 100%` (white) | `0 0% 100%` (white) | `text-ai-accent-foreground` |
+
+**To retheme all AI surfaces at once**, change only `--ai-accent` in `client/src/styles/globals.css` `:root` and `.dark` blocks. Every AI surface below updates automatically.
+
+### Surfaces that use `ai-accent`
+
+| Surface | Component | Class pattern |
+|---------|-----------|---------------|
+| Floating AI chat button | `CenterCanvas.tsx` | `from-ai-accent to-ai-accent/70` |
+| Generation progress bar | `GenerationProgress.tsx`, `GenerationProgressBar.tsx` | `from-ai-accent to-primary` |
+| Generation spinner | `GenerationProgress.tsx`, `GenerationProgressBar.tsx` | `text-ai-accent` |
+| In-progress step indicator | `GenerationProgress.tsx`, `MessageBubble.tsx` | `bg-ai-accent` |
+| "Real Estate Template Generator" label | `MessageBubble.tsx` | `text-ai-accent`, `bg-ai-accent/15` |
+| AI bubble generating state | `MessageBubble.tsx` | `bg-ai-accent/10 border-ai-accent/30` |
+| AI avatar circle (chat messages) | `AIChatInputField.tsx`, `AIPropertyChatInput.tsx`, `AISuggestionsPanel.tsx`, `EnhancedSuggestionsPanel.tsx` | `from-ai-accent to-primary` |
+| AI send button | `AIPropertyChatInput.tsx` | `from-ai-accent to-primary` |
+| Smart suggestion chip | `SmartSuggestionsRow.tsx` | `bg-ai-accent/10 text-ai-accent border-ai-accent/30` |
+| Regenerate button hover | `ConversationToolbar.tsx`, `ResultsVariations.tsx` | `hover:border-ai-accent/60 hover:bg-ai-accent/10` |
+| Brand palette card hover | `RightSidebar.tsx` | `hover:border-ai-accent/40 hover:bg-ai-accent/10` |
+| AI tip Sparkles icon | `RightSidebar.tsx` | `text-ai-accent` |
+| Smart Mode badge | `AISuggestionsPanel.tsx` | `from-ai-accent to-primary` |
+
+### What does NOT use `ai-accent`
+
+| Surface | Why |
+|---------|-----|
+| Category icon tints (orange, teal, indigo…) | Semantic domain colors — use `--chip-*` tokens |
+| Suggestion chip backgrounds (emerald, blue, purple, amber) | Semantic content categories — intentional variety |
+| Palette icon in editor sidebar | UI chrome — not AI-powered |
+| Triangle shape tool icon | Tool palette — not AI-powered |
+| "Sample Preview" badge | Canvas placeholder — not AI feature |
+| Selected layer highlight | Editor state — not AI feature |
+
+### Danger: Don't "fix" these purples
+
+Future developers will see `ai-accent` and non-`ai-accent` purples coexisting. The non-`ai-accent` purples are **category semantic colors** — touching them would break the domain color system from M-DESIGN-04.
+
+---
+
 ## Typography
 
 ### Font Stack

@@ -70,13 +70,23 @@ export const infographicsApi = {
 };
 
 // AI Generations API (Sub-Resource)
+export interface AgentInput {
+  name?: string;
+  brokerage?: string;
+  phone?: string;
+  email?: string;
+  brandColors?: string[];
+}
+
 export interface GenerateFromChatInput {
   prompt: string;
   extractionId?: string;
   conversationId?: string;
   style?: string;
   model?: 'ideogram-turbo' | 'ideogram-v2' | 'nano-banana-pro';
+  orientation?: 'landscape' | 'portrait' | 'square';
   variations?: number;
+  agent?: AgentInput;
 }
 
 export interface GenerationStatus {
@@ -184,6 +194,12 @@ export const paymentsApi = {
       getApiUrl('/payments/verify'),
       { method: 'POST', body: JSON.stringify(data) }
     ),
+
+  syncSubscription: () =>
+    apiRequest<{ localStatus: string; promoted: boolean; message: string }>(
+      getApiUrl('/payments/subscription/sync'),
+      { method: 'POST' }
+    ),
 };
 
 // Usage Analytics API
@@ -237,6 +253,15 @@ export const usageAnalyticsApi = {
 };
 
 export const generationsApi = {
+  getUsageQuota: () =>
+    apiRequest<{
+      organizationId: string | null;
+      planTier: string;
+      current: number;
+      limit: number;
+      remaining: number;
+    }>(getApiUrl('/infographics/generations/usage/quota')),
+
   // Generate from chat prompt
   generate: (data: GenerateFromChatInput) =>
     apiRequest<{ id: string; status: string; conversationId?: string }>(

@@ -18,8 +18,8 @@ export class InfographicsController {
   async generate(@Body() dto: GenerateInfographicDto, @Req() req: any) {
     console.log('📝 [Controller] Received generate request');
     const userId = req.user.id;
-    const organizationId = req.user.organizationId || req.user.id;
-    console.log(`👤 User: ${userId}, Organization: ${organizationId}`);
+    const organizationId = req.user.organizationId ?? null;
+    console.log(`👤 User: ${userId}, Organization: ${organizationId ?? 'none (will create)'}`);
     const result = await this.infographicsService.generate(dto, userId, organizationId);
     console.log(`✅ [Controller] Generate endpoint returning: ${JSON.stringify(result)}`);
     return result;

@@ -110,6 +110,7 @@ const darkFloatingChars = [
 export default function PricingPage() {
   const [, setLocation] = useLocation();
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+  const [isSyncingStatus, setIsSyncingStatus] = useState(false);
   const [selectedCurrency, setSelectedCurrency] = useState<"INR" | "USD">("INR");
   const [planSegment, setPlanSegment] = useState<PlanSegment>("individual");
 
@@ -137,8 +138,8 @@ export default function PricingPage() {
     enabled: !!localStorage.getItem("auth_token"),
   });
 
-  /** Only paid / entitled states count as "current" on pricing cards — PENDING checkout must not show as Current Plan (SOLO appears active after dismissing Razorpay otherwise). */
   const subscription = subscriptionData?.subscription;
+  // ACTIVE/PAST_DUE/HALTED/PAUSED = confirmed current plan. PENDING handled separately below.
   const currentPlan: PlanTier | "FREE" =
     subscription &&
     (subscription.status === "ACTIVE" ||
@@ -147,6 +148,9 @@ export default function PricingPage() {
       subscription.status === "PAUSED")
       ? (subscription.planTier as PlanTier)
       : "FREE";
+  // PENDING: payment captured but webhook not yet confirmed — show "Activating..." and block re-subscribe
+  const pendingPlanTier: PlanTier | null =
+    subscription?.status === "PENDING" ? (subscription.planTier as PlanTier) : null;
 
   const subscriptionBillingIsAnnual = (sub: { billingPeriod?: string }) =>
     String(sub.billingPeriod ?? "MONTHLY").toUpperCase() === "ANNUAL";
@@ -284,6 +288,25 @@ export default function PricingPage() {
       // ignore malformed stored value
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleSyncPendingStatus = async () => {
+    setIsSyncingStatus(true);
+    try {
+      const result = await paymentsApi.syncSubscription();
+      await queryClient.invalidateQueries({ queryKey: ["/api/v1/payments/subscription"] });
+      if (result.promoted || result.localStatus === 'CANCELLED') {
+        // Page will re-render with updated subscription data — toast handled by SubscriptionCard
+        // For abandoned (CANCELLED) case, show a brief message
+        if (result.localStatus === 'CANCELLED') {
+          toast.info('Checkout cleared', { description: result.message });
+        }
+      }
+    } catch {
+      toast.error('Could not check status. Please try again.');
+    } finally {
+      setIsSyncingStatus(false);
+    }
+  };
 
   const handleSubscribe = async (planTier: PlanTier) => {
     if (planTier === "FREE") {
@@ -431,6 +454,7 @@ export default function PricingPage() {
         <div className="grid md:grid-cols-3 gap-6">
           {plans.map((plan) => {
             const isCurrentPlan = currentPlan === plan.tier;
+            const isPendingPlan = pendingPlanTier === plan.tier;
             const isPlanLoading = loadingPlan === plan.tier;
             const PlanIcon = plan.icon;
             const leadIn = featureLeadIn[plan.tier];
@@ -572,11 +596,11 @@ export default function PricingPage() {
                 {/* CTA Button */}
                 <Button
                   className={`w-full h-12 rounded-full font-medium ${
-                    isCurrentPlan
+                    isCurrentPlan || isPendingPlan
                       ? "bg-accent text-muted-foreground"
                       : "bg-primary hover:bg-primary/90 text-primary-foreground"
                   }`}
-                  disabled={isCurrentPlan || isPlanLoading}
+                  disabled={isCurrentPlan || isPendingPlan || isPlanLoading}
                   onClick={() => handleSubscribe(plan.tier)}
                 >
                   {isPlanLoading ? (
@@ -586,10 +610,21 @@ export default function PricingPage() {
                     </>
                   ) : isCurrentPlan ? (
                     "Current Plan"
+                  ) : isPendingPlan ? (
+                    "Activating..."
                   ) : (
                     "Try InfographicAI"
                   )}
                 </Button>
+                {isPendingPlan && (
+                  <button
+                    onClick={handleSyncPendingStatus}
+                    disabled={isSyncingStatus}
+                    className="mt-2 w-full text-xs text-muted-foreground hover:text-foreground underline underline-offset-2 disabled:opacity-50 transition-colors"
+                  >
+                    {isSyncingStatus ? "Checking…" : "Not seeing your plan? Refresh status"}
+                  </button>
+                )}
               </div>
             );
           })}

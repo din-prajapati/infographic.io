@@ -3,29 +3,24 @@
  * Form fields for agent information and branding
  */
 
-import { useState } from "react";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Button } from "../ui/button";
 import { Separator } from "../ui/separator";
 import { ScrollArea } from "../ui/scroll-area";
 import { Upload, User } from "lucide-react";
+import { useAgentStore } from "../../hooks/useAgentStore";
 
 export function AgentInfoForm() {
-  const [agentName, setAgentName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
-  const [license, setLicense] = useState("");
-  const [brokerage, setBrokerage] = useState("");
-  const [website, setWebsite] = useState("");
-  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const { agent, setAgent } = useAgentStore();
+  const { name: agentName, phone, email, license, brokerage, website, logoPreview } = agent;
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setLogoPreview(reader.result as string);
+        setAgent({ logoPreview: reader.result as string });
       };
       reader.readAsDataURL(file);
     }
@@ -98,7 +93,7 @@ export function AgentInfoForm() {
             type="text"
             placeholder="John Doe"
             value={agentName}
-            onChange={(e) => setAgentName(e.target.value)}
+            onChange={(e) => setAgent({ name: e.target.value })}
             className="h-9"
           />
         </div>
@@ -113,7 +108,7 @@ export function AgentInfoForm() {
             type="tel"
             placeholder="(555) 123-4567"
             value={phone}
-            onChange={(e) => setPhone(e.target.value)}
+            onChange={(e) => setAgent({ phone: e.target.value })}
             className="h-9"
           />
         </div>
@@ -128,7 +123,7 @@ export function AgentInfoForm() {
             type="email"
             placeholder="john@realestate.com"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => setAgent({ email: e.target.value })}
             className="h-9"
           />
         </div>
@@ -143,7 +138,7 @@ export function AgentInfoForm() {
             type="text"
             placeholder="RE123456"
             value={license}
-            onChange={(e) => setLicense(e.target.value)}
+            onChange={(e) => setAgent({ license: e.target.value })}
             className="h-9"
           />
         </div>
@@ -158,7 +153,7 @@ export function AgentInfoForm() {
             type="text"
             placeholder="ABC Realty"
             value={brokerage}
-            onChange={(e) => setBrokerage(e.target.value)}
+            onChange={(e) => setAgent({ brokerage: e.target.value })}
             className="h-9"
           />
         </div>
@@ -173,32 +168,11 @@ export function AgentInfoForm() {
             type="url"
             placeholder="www.johnrealestate.com"
             value={website}
-            onChange={(e) => setWebsite(e.target.value)}
+            onChange={(e) => setAgent({ website: e.target.value })}
             className="h-9"
           />
         </div>
 
-        {/* Social Media */}
-        <div className="space-y-2">
-          <Label className="text-sm">Social Media (Optional)</Label>
-          <div className="space-y-2">
-            <Input
-              type="url"
-              placeholder="Facebook URL"
-              className="h-9 text-sm"
-            />
-            <Input
-              type="url"
-              placeholder="Instagram handle"
-              className="h-9 text-sm"
-            />
-            <Input
-              type="url"
-              placeholder="LinkedIn URL"
-              className="h-9 text-sm"
-            />
-          </div>
-        </div>
       </div>
     </ScrollArea>
   );

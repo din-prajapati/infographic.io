@@ -104,6 +104,7 @@ model Infographic {
   status         String       @default("pending") // pending, processing, completed, failed
   errorMessage   String?
   createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
   usageRecord    UsageRecord?
 
   @@index([userId])
@@ -272,6 +273,25 @@ model Payment {
   @@index([externalPaymentId])
   @@index([status])
   @@index([paymentProvider])
+  @@index([createdAt])
+}
+
+model SubscriptionEvent {
+  id             String   @id @default(cuid())
+  userId         String?
+  subscriptionId String?
+  eventType      String   // sync_attempt | status_promoted | webhook_received | sync_error
+  provider       String?
+  providerStatus String?
+  localStatus    String?
+  promoted       Boolean  @default(false)
+  message        String?
+  metadata       Json?
+  createdAt      DateTime @default(now())
+
+  @@index([userId])
+  @@index([subscriptionId])
+  @@index([eventType])
   @@index([createdAt])
 }
 

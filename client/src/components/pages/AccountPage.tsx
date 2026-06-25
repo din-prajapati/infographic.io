@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { User, Mail, Bell, Lock, CreditCard, LogOut, BarChart3, Palette, Users } from "lucide-react";
+import { User, Mail, Bell, Lock, CreditCard, LogOut, BarChart3, Palette, Users, Trash2, UserX } from "lucide-react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
@@ -23,6 +23,11 @@ export function AccountPage() {
   const displayName = user?.name || user?.email?.split('@')[0] || "User";
   const displayEmail = user?.email || "";
   const initials = displayName.split(" ").map((name) => name.charAt(0).toUpperCase()).slice(0, 2).join("");
+
+  // Split stored full name into first / last for the profile form
+  const nameParts = displayName.trim().split(/\s+/);
+  const firstName = nameParts[0] ?? "";
+  const lastName = nameParts.slice(1).join(" ");
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--page-bg)' }}>
@@ -145,16 +150,16 @@ export function AccountPage() {
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="firstName" className="text-muted-foreground">First Name</Label>
-                        <Input id="firstName" defaultValue="John" className="bg-input-background border-border text-foreground" />
+                        <Input id="firstName" defaultValue={firstName} className="bg-input-background border-border text-foreground" />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="lastName" className="text-muted-foreground">Last Name</Label>
-                        <Input id="lastName" defaultValue="Doe" className="bg-input-background border-border text-foreground" />
+                        <Input id="lastName" defaultValue={lastName} className="bg-input-background border-border text-foreground" />
                       </div>
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="email" className="text-muted-foreground">Email Address</Label>
-                      <Input id="email" type="email" defaultValue="john.doe@example.com" className="bg-input-background border-border text-foreground" />
+                      <Input id="email" type="email" defaultValue={displayEmail} readOnly className="bg-input-background border-border text-foreground opacity-70 cursor-not-allowed" />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="bio" className="text-muted-foreground">Bio</Label>
@@ -176,10 +181,12 @@ export function AccountPage() {
                     Irreversible actions that will affect your account
                   </p>
                   <div className="space-y-3">
-                    <Button variant="outline" className="w-full justify-start text-destructive border-destructive/20 hover:bg-destructive/10">
+                    <Button variant="ghost" className="w-full justify-start gap-3 text-destructive hover:text-destructive hover:bg-destructive/10">
+                      <Trash2 className="w-4 h-4" />
                       Delete All Designs
                     </Button>
-                    <Button variant="outline" className="w-full justify-start text-destructive border-destructive/20 hover:bg-destructive/10">
+                    <Button variant="ghost" className="w-full justify-start gap-3 text-destructive hover:text-destructive hover:bg-destructive/10">
+                      <UserX className="w-4 h-4" />
                       Delete Account
                     </Button>
                   </div>

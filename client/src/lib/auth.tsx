@@ -1,5 +1,8 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import type { LegacyUser } from '@shared/schema';
+import { clearUserStorage } from './storage';
+import { useCanvasStore } from '../hooks/useCanvasStore';
+import { queryClient } from './queryClient';
 
 interface AuthContextType {
   user: LegacyUser | null;
@@ -34,6 +37,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = (newUser: LegacyUser, newToken: string) => {
+    queryClient.clear();
     setUser(newUser);
     setToken(newToken);
     localStorage.setItem('auth_token', newToken);
@@ -41,10 +45,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = () => {
+    queryClient.clear();
     setUser(null);
     setToken(null);
     localStorage.removeItem('auth_token');
     localStorage.removeItem('auth_user');
+    clearUserStorage();
+    useCanvasStore.getState().clearCanvas();
   };
 
   return (

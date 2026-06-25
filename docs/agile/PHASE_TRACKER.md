@@ -42,29 +42,36 @@ Each phase requires a gate decision before the next phase starts:
 
 ## Phase 0 — MVP Launch
 
-> **Release:** v1.0 · **Status:** 🟡 98% Complete · **3 human tasks remain**  
+> **Release:** v1.0 · **Status:** 🟡 ~99% Complete · **3 deploy tasks + 2 staging QA items remain**  
 > **Outcome:** Real estate agents can generate branded infographics, manage subscriptions, and export their work.  
-> **Timeline:** Week 1 (human tasks ~3 hours)
+> **Last updated:** 2026-04-29 · **Timeline:** Deploy when staging ready
 
 ### Gate Criteria (Phase 0 → Done)
 - [x] Core infrastructure: auth, API, DB, AI generation pipeline
 - [x] RazorPay payments: SOLO + TEAM × monthly/annual — checkout, webhooks, plan change
 - [x] Canvas editor: add text, shapes, images, drag-resize, export
 - [x] CI/CD: Railway configured, Sentry DSN set
+- [x] Design token system: Blue/Amber/Warm-Cream palette, Outfit font, domain colors ✅ 2026-04-23
+- [x] UI consistency: hover tokens (14 fixes), ai-accent brand token, Danger Zone buttons ✅ 2026-04-29
+- [x] Human QA: US-DESIGN-001 theme toggle + 3 bugs found & fixed ✅ 2026-04-29
+- [x] Auto QA: 44/58 E2E tests pass (10 human-skip, 4 pre-existing auth failures) ✅ 2026-04-29
+- [ ] US-DESIGN-003 AC3 — generation result image on staging — **STAGING QA**
+- [ ] US-DESIGN-004 AC2–4,6 — button heights, card borders, spacing — **STAGING QA**
 - [ ] Critical-path 10-flow manual test — **HUMAN TASK 1**
 - [ ] Staging smoke test (Railway) — **HUMAN TASK 2**
 - [ ] Production go-live + Sentry verify — **HUMAN TASK 3**
 
 ### Epics in Phase 0
 
-| Epic | Domain | Focus | Epics Status | Stories |
-|------|--------|-------|------|---------|
+| Epic | Domain | Focus | Status | Stories / Notes |
+|------|--------|-------|--------|-----------------|
 | EPIC-PAY-01 | Payments | RazorPay subscriptions, webhooks, plan enforcement | ✅ Done | All closed |
-| EPIC-DESIGN-01 | Design | UI theme consistency, editor token fix | 🟡 In Progress | [4 stories →](epics/EPIC-DESIGN-01/EPIC.md) |
 | EPIC-AUTH-01 | Auth | JWT + Google OAuth, user limits | ✅ Done | All closed |
 | EPIC-EDIT-01 | Editor | Canvas CRUD, export | ✅ Done | All closed |
 | EPIC-AI-01 | AI | GPT-4o + Ideogram generation pipeline | ✅ Done | All closed |
-| EPIC-INFRA-01 | Infra | Railway + Sentry + DB migrations | 🟡 In Progress | Deploy tasks pending |
+| [EPIC-DESIGN-01](epics/phase-0-mvp/EPIC-DESIGN-01/EPIC.md) | Design | UI theme consistency, editor token fix | 🟡 In Progress | US-001 ✅ US-002 ✅ US-003 🟡 US-004 🟡 |
+| [EPIC-DESIGN-02](epics/phase-0-mvp/EPIC-DESIGN-02/EPIC.md) | Design | Blue/Amber/Warm-Cream palette + domain colors | ✅ Done (P0 scope) | US-005–008 ✅ · US-009–011 → Phase 4 Backlog |
+| EPIC-INFRA-01 | Infra | Railway + Sentry + DB migrations | 🟡 In Progress | Code ✅ · 3 deploy tasks pending |
 
 > Epics not yet in `docs/agile/epics/` are tracked in [docs/MVP_LAUNCH_TRACKER.md](../MVP_LAUNCH_TRACKER.md) (legacy flat tracker).
 
@@ -75,11 +82,17 @@ Each phase requires a gate decision before the next phase starts:
 | Backend code | 100% | 100% | ✅ |
 | Frontend code | 100% | 100% | ✅ |
 | Payment QA | 40/40 TCs | 40 TCs | ✅ |
-| Automated tests | 43 tests | 43 tests | ✅ |
+| Automated E2E tests | 44 pass / 10 human-skip | 58 | ✅ |
+| Design token system | M-DESIGN-03 + M-DESIGN-04 closed | 2 milestones | ✅ |
+| UI consistency fixes | 14 hover tokens + ai-accent brand token | Done | ✅ |
+| Human QA — US-DESIGN-001 | ✅ Verified + 3 bugs fixed | Done | ✅ |
+| Human QA — US-DESIGN-003 | 5/6 ACs ✅ · AC3 staging | Partial | 🟡 |
+| Human QA — US-DESIGN-004 | AC1,5 ✅ · AC2–4,6 staging | Partial | 🟡 |
 | **Deployment** | 0/3 HUMAN tasks | 3 tasks | ⏳ |
-| **EPIC-DESIGN-01 Phase B** | US-002 merged ✅ ([PR #1](https://github.com/din-prajapati/infographic.io/pull/1)); US-003 + staging | 1 PR merged | 🟡 |
 
-**Overall Phase 0: 98%**
+**Overall Phase 0: ~99%** _(staging + 3 deploy tasks gate the final 1%)_
+
+**Last updated:** 2026-04-29
 
 ---
 

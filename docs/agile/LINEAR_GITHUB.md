@@ -1,4 +1,4 @@
-# Linear + GitHub Integration Guide
+﻿# Linear + GitHub Integration Guide
 
 > **Purpose:** Map the Agile hierarchy (Epic → Milestone → Story → Task → PR) onto Linear issues and GitHub branches/PRs so every delivery artifact is traceable in both tools.
 
@@ -98,7 +98,7 @@ gh pr create \
   --label "epic:design,type:feat,priority:P1" \
   --body "$(cat <<'EOF'
 ## Story
-[US-DESIGN-002](docs/agile/epics/EPIC-DESIGN-01/stories/US-DESIGN-002/STORY.md) — Editor design token adoption
+[US-DESIGN-002](docs/agile/epics/phase-0-mvp/EPIC-DESIGN-01/stories/US-DESIGN-002/STORY.md) — Editor design token adoption
 **Epic:** EPIC-DESIGN-01 | **Linear:** LIN-47
 
 ## Acceptance Criteria
@@ -117,7 +117,7 @@ npm run test:unit
 Manual: open editor in Light + Dark, verify toolbar/sidebar appearance
 
 ## Files Changed
-See [TASKS.md](docs/agile/epics/EPIC-DESIGN-01/stories/US-DESIGN-002/TASKS.md)
+See [TASKS.md](docs/agile/epics/phase-0-mvp/EPIC-DESIGN-01/stories/US-DESIGN-002/TASKS.md)
 
 Closes LIN-47
 🤖 AI-assisted via Claude Code

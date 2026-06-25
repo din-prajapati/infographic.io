@@ -6,6 +6,7 @@ import { InfographicsService } from './services/infographics.service';
 import { GenerationsService } from './services/generations.service';
 import { PromptExtractorService } from './services/prompt-extractor.service';
 import { UsageAlertService } from './services/usage-alert.service';
+import { UsageLimitService } from './services/usage-limit.service';
 import { GenerationProgressGateway } from './gateways/generation-progress.gateway';
 import { AiGenerationModule } from '../ai-generation/ai-generation.module';
 import { TemplatesModule} from '../templates/templates.module';
@@ -22,8 +23,9 @@ import { TemplatesModule} from '../templates/templates.module';
     GenerationsService,
     PromptExtractorService,
     UsageAlertService,
+    UsageLimitService,
     GenerationProgressGateway,
   ],
-  exports: [InfographicsService, GenerationsService, PromptExtractorService, UsageAlertService, GenerationProgressGateway],
+  exports: [InfographicsService, GenerationsService, PromptExtractorService, UsageAlertService, UsageLimitService, GenerationProgressGateway],
 })
 export class InfographicsModule {}

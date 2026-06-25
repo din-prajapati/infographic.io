@@ -5,6 +5,7 @@
 
 import html2canvas from 'html2canvas';
 import { useCanvasStore } from '../hooks/useCanvasStore';
+import type { ImageElement } from './canvasTypes';
 
 /**
  * Capture current canvas state as JSON
@@ -126,6 +127,163 @@ export function restoreCanvasData(canvasData: any): boolean {
     return true;
   } catch (error) {
     console.error('Error restoring canvas data:', error);
+    return false;
+  }
+}
+
+/**
+ * Scale canvas zoom so the full artboard fits in the visible editor viewport.
+ * Preview mode hides sidebars so zoom 1 often works; edit mode needs auto-fit.
+ */
+export function fitCanvasZoomToViewport(): void {
+  const viewport = document.querySelector('[data-canvas-viewport]') as HTMLElement | null;
+  const { canvasWidth, canvasHeight, setZoom, resetPan } = useCanvasStore.getState();
+
+  if (!viewport) {
+    setZoom(1);
+    resetPan();
+    return;
+  }
+
+  const padding = 96; // matches p-12 on canvas viewport
+  const availableW = Math.max(viewport.clientWidth - padding, 200);
+  const availableH = Math.max(viewport.clientHeight - padding, 150);
+  const scale = Math.min(availableW / canvasWidth, availableH / canvasHeight, 1);
+
+  setZoom(Math.max(0.15, Math.round(scale * 100) / 100));
+  resetPan();
+}
+
+/** Run fit after layout settles (e.g. AI chat panel closing changes viewport width). */
+export function scheduleFitCanvasZoomToViewport(): void {
+  const run = () => fitCanvasZoomToViewport();
+  requestAnimationFrame(() => requestAnimationFrame(run));
+  setTimeout(run, 350);
+  setTimeout(run, 700);
+}
+
+/** Standard artboard presets aligned with Ideogram aspect_ratio enums. */
+export const AI_ARTBOARDS = {
+  landscape: { width: 1280, height: 720 }, // ASPECT_16_9
+  portrait: { width: 720, height: 1280 },  // ASPECT_9_16
+  square: { width: 1024, height: 1024 },   // ASPECT_1_1
+} as const;
+
+/** @deprecated Use AI_ARTBOARDS.landscape — kept for callers expecting a single default */
+export const AI_ARTBOARD = AI_ARTBOARDS.landscape;
+
+export type AiOrientation = keyof typeof AI_ARTBOARDS;
+
+/** Pick artboard from decoded image pixels so portrait/landscape/square all fit correctly. */
+export function resolveAiArtboard(
+  naturalWidth: number,
+  naturalHeight: number,
+): { width: number; height: number; orientation: AiOrientation } {
+  if (!naturalWidth || !naturalHeight) {
+    return { ...AI_ARTBOARDS.landscape, orientation: 'landscape' };
+  }
+  const ratio = naturalWidth / naturalHeight;
+  if (ratio < 0.95) {
+    return { ...AI_ARTBOARDS.portrait, orientation: 'portrait' };
+  }
+  if (ratio > 1.05) {
+    return { ...AI_ARTBOARDS.landscape, orientation: 'landscape' };
+  }
+  return { ...AI_ARTBOARDS.square, orientation: 'square' };
+}
+
+function loadImageFromSrc(src: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = async () => {
+      try {
+        if ('decode' in img) {
+          await img.decode();
+        }
+      } catch {
+        // Continue with loaded element
+      }
+      resolve(img);
+    };
+    img.onerror = () => reject(new Error('Failed to load image'));
+    img.src = src;
+  });
+}
+
+/**
+ * Replace the entire canvas with a single AI-generated image, fitted (contain)
+ * and centered. Clears any template elements that were previously loaded.
+ */
+export async function loadAiVariationToCanvas(
+  imageUrl: string,
+  name: string,
+  preferredOrientation?: AiOrientation,
+): Promise<boolean> {
+  try {
+    const { loadCanvas } = useCanvasStore.getState();
+
+    let imageSrc = imageUrl;
+    try {
+      const proxyUrl = `/api/proxy-image?url=${encodeURIComponent(imageUrl)}`;
+      const imgResponse = await fetch(proxyUrl);
+      if (imgResponse.ok) {
+        const blob = await imgResponse.blob();
+        imageSrc = await new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.readAsDataURL(blob);
+        });
+      }
+    } catch {
+      // Fall back to original URL if proxy fails
+    }
+
+    // Fully decode before placing — avoids intermittent 0-dimension / partial paint
+    const img = await loadImageFromSrc(imageSrc);
+    const artboard = preferredOrientation
+      ? { ...AI_ARTBOARDS[preferredOrientation], orientation: preferredOrientation }
+      : resolveAiArtboard(img.naturalWidth, img.naturalHeight);
+    const { width: canvasWidth, height: canvasHeight, orientation } = artboard;
+
+    const imageElement: ImageElement = {
+      id: `ai-gen-${Date.now()}`,
+      type: 'image',
+      src: imageSrc,
+      x: 0,
+      y: 0,
+      width: canvasWidth,
+      height: canvasHeight,
+      rotation: 0,
+      opacity: 1,
+      locked: false,
+      visible: true,
+      zIndex: 0,
+      name,
+      isAiImport: true,
+      aiOrientation: orientation,
+      objectFit: 'contain',
+      cornerRadius: 0,
+      flipHorizontal: false,
+      flipVertical: false,
+      colorOverlay: null,
+      filters: { brightness: 100, contrast: 100, saturation: 100 },
+    };
+
+    loadCanvas({
+      elements: [imageElement],
+      selectedElementIds: [],
+      backgroundColor: '#FFFFFF',
+      canvasWidth,
+      canvasHeight,
+      canvasPanX: 0,
+      canvasPanY: 0,
+      zoom: 1,
+      history: { past: [], future: [] },
+    });
+
+    return true;
+  } catch (error) {
+    console.error('Error loading AI variation to canvas:', error);
     return false;
   }
 }

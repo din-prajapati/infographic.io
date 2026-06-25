@@ -1,0 +1,24 @@
+flowchart LR
+  subgraph Frontend["Frontend (React :5000)"]
+    A["AIChatBox.tsx\n(handleSubmit)"]
+    B["SuggestionChips.tsx\n(static today → dynamic)"]:::bad
+  end
+  subgraph NestJS["NestJS API (:3001)"]
+    C["POST /conversations/:id/chat\n(new endpoint)"]:::good
+    D["ConversationAiService\n(new service)"]:::good
+    E["IntentClassifier\n(classify intent)"]:::good
+    F["openai.service.ts\n(GPT-4o calls)"]
+  end
+  subgraph DB["PostgreSQL"]
+    G["Message table\n(conversation history)"]
+  end
+  A -- "user message" --> C
+  C --> D
+  D --> E
+  E -- "gather_info: ask follow-up" --> F
+  E -- "ready: show task plan → generate" --> F
+  F -- "AI reply" --> D
+  D -- "save + return" --> G
+  D -- "suggestion chips" --> B
+  classDef good fill:#0b3b2e,stroke:#14532d,color:#ecfdf5;
+  classDef bad  fill:#3b0b0b,stroke:#7f1d1d,color:#fef2f2;

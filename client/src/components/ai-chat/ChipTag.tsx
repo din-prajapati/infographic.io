@@ -25,7 +25,7 @@ export function ChipTag({ chip, onRemove }: ChipTagProps) {
       <span className="text-blue-500 font-medium">{chip.name}</span>
       <button
         onClick={onRemove}
-        className="ml-0.5 hover:bg-blue-500/25 rounded-full p-0.5 transition-colors"
+        className="ml-0.5 hover:bg-primary/25 rounded-full p-0.5 transition-colors"
         aria-label="Remove filter"
       >
         <X className="w-3 h-3 text-blue-500" />

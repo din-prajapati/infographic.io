@@ -41,6 +41,10 @@ export interface Template {
   category: TemplateCategory;
   description: string;
   previewImage?: string;
+  /** True when loading an AI-generated variation (not a saved canvas template). */
+  isAiVariation?: boolean;
+  /** Layout used when this variation was generated */
+  aiOrientation?: 'landscape' | 'portrait' | 'square';
   isPopular?: boolean;
   emoji: string;
 }

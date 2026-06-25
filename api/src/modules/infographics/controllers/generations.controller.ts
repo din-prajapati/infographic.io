@@ -2,6 +2,7 @@ import { Controller, Post, Get, Body, Param, UseGuards, Req, Inject } from '@nes
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiSecurity } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { GenerationsService } from '../services/generations.service';
+import { UsageLimitService } from '../services/usage-limit.service';
 import { GenerateFromChatDto, RegenerateDto } from '../dto/generate-from-chat.dto';
 
 @ApiTags('infographics-generations')
@@ -9,7 +10,16 @@ import { GenerateFromChatDto, RegenerateDto } from '../dto/generate-from-chat.dt
 export class GenerationsController {
   constructor(
     @Inject(GenerationsService) private readonly generationsService: GenerationsService,
+    @Inject(UsageLimitService) private readonly usageLimitService: UsageLimitService,
   ) {}
+
+  @Get('usage/quota')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get current monthly generation quota for the organization' })
+  async getUsageQuota(@Req() req: any) {
+    return this.usageLimitService.getUsageQuotaForUser(req.user.id);
+  }
 
   @Post()
   @UseGuards(AuthGuard('jwt'))
@@ -18,7 +28,7 @@ export class GenerationsController {
   async generateFromChat(@Body() dto: GenerateFromChatDto, @Req() req: any) {
     console.log(`📝 [GenerationsController] Received generation request from user ${req.user.id}`);
     const userId = req.user.id;
-    const organizationId = req.user.organizationId || req.user.id;
+    const organizationId = req.user.organizationId ?? null;
     
     try {
       // Validate input

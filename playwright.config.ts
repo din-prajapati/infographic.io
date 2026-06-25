@@ -8,9 +8,15 @@ const baseURL =
 
 const isCi = process.env.CI === "true";
 
+const CROSS_BROWSER_SPEC = /flow6-cross-browser-smoke\.spec\.ts/;
+
 /**
  * Local: headed Google Chrome, maximized (system Chrome).
  * CI: headless bundled Chromium, fixed viewport.
+ *
+ * Cross-browser smoke (local only): Firefox, Edge, and Responsive Chrome
+ * are added as separate projects scoped to flow6-cross-browser-smoke.spec.ts.
+ * Run with: npx playwright test e2e/flow6-cross-browser-smoke.spec.ts
  */
 export default defineConfig({
   testDir: "e2e",
@@ -64,5 +70,36 @@ export default defineConfig({
             },
           },
         },
+    // Cross-browser smoke — local only, scoped to flow6 spec
+    ...(!isCi
+      ? [
+          {
+            name: "firefox-smoke",
+            testMatch: CROSS_BROWSER_SPEC,
+            use: {
+              ...devices["Desktop Firefox"],
+              headless: true,
+            },
+          },
+          {
+            name: "msedge-smoke",
+            testMatch: CROSS_BROWSER_SPEC,
+            use: {
+              channel: "msedge",
+              headless: true,
+              viewport: { width: 1280, height: 800 },
+            },
+          },
+          {
+            name: "responsive-1280",
+            testMatch: CROSS_BROWSER_SPEC,
+            use: {
+              channel: "chrome",
+              headless: false,
+              viewport: { width: 1280, height: 800 },
+            },
+          },
+        ]
+      : []),
   ],
 });

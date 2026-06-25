@@ -180,7 +180,7 @@ export function AIPropertyChatInput({
                         `}
                       >
                         {message.type === 'ai' && (
-                          <div className="w-6 h-6 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center flex-shrink-0">
+                          <div className="w-6 h-6 rounded-full bg-gradient-to-br from-ai-accent to-primary flex items-center justify-center flex-shrink-0">
                             <Sparkles className="w-3.5 h-3.5 text-white" />
                           </div>
                         )}
@@ -244,7 +244,7 @@ export function AIPropertyChatInput({
                   flex items-center gap-1.5 px-3 py-1.5
                   bg-background border border-border rounded-full
                   text-xs text-muted-foreground
-                  hover:border-blue-500 hover:bg-blue-500/10 hover:text-blue-500
+                  hover:border-primary hover:bg-primary/10 hover:text-primary
                   transition-all
                   disabled:opacity-50 disabled:cursor-not-allowed
                 "
@@ -322,8 +322,8 @@ export function AIPropertyChatInput({
               size="sm"
               className="
                 h-8 w-8 p-0 rounded-full
-                bg-gradient-to-br from-purple-500 to-blue-500
-                hover:from-purple-600 hover:to-blue-600
+                bg-gradient-to-br from-ai-accent to-primary
+                hover:from-ai-accent/90 hover:to-primary/90
                 disabled:opacity-40 disabled:cursor-not-allowed
                 shadow-sm
               "

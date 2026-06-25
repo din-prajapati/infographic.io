@@ -1,4 +1,28 @@
-import { IsString, IsOptional, IsEnum, IsNumber, Min, Max } from 'class-validator';
+import { IsString, IsOptional, IsEnum, IsNumber, Min, Max, IsArray, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
+
+class AgentDto {
+  @IsString()
+  @IsOptional()
+  name?: string;
+
+  @IsString()
+  @IsOptional()
+  brokerage?: string;
+
+  @IsString()
+  @IsOptional()
+  phone?: string;
+
+  @IsString()
+  @IsOptional()
+  email?: string;
+
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  brandColors?: string[];
+}
 import { ApiProperty } from '@nestjs/swagger';
 
 export class GenerateFromChatDto {
@@ -47,6 +71,17 @@ export class GenerateFromChatDto {
   @IsOptional()
   model?: 'ideogram-turbo' | 'ideogram-v2' | 'nano-banana-pro';
 
+  @ApiProperty({
+    example: 'landscape',
+    description: 'Infographic layout orientation',
+    required: false,
+    enum: ['landscape', 'portrait', 'square'],
+    default: 'landscape',
+  })
+  @IsEnum(['landscape', 'portrait', 'square'])
+  @IsOptional()
+  orientation?: 'landscape' | 'portrait' | 'square';
+
   @ApiProperty({ 
     example: 3,
     description: 'Number of variations to generate (1-5)',
@@ -58,6 +93,11 @@ export class GenerateFromChatDto {
   @Max(5)
   @IsOptional()
   variations?: number;
+
+  @ValidateNested()
+  @Type(() => AgentDto)
+  @IsOptional()
+  agent?: AgentDto;
 }
 
 export class RegenerateDto {
