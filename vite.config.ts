@@ -11,6 +11,13 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), 'VITE_');
   
   return {
+    define: {
+      // Injected at build time — Railway sets RAILWAY_GIT_COMMIT_SHA automatically.
+      // Shows as "dev" locally. Change with every deploy → visible in UserProfileDropdown.
+      'import.meta.env.VITE_APP_BUILD': JSON.stringify(
+        process.env.RAILWAY_GIT_COMMIT_SHA?.slice(0, 7) ?? 'dev'
+      ),
+    },
     plugins: [react()],
     resolve: {
       extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
