@@ -45,6 +45,15 @@ export interface ShapeElement extends BaseElement {
   stroke: string;
   strokeWidth: number;
   cornerRadius: number;
+  /** Optional text rendered inside the shape */
+  textContent?: string;
+  textStyle?: {
+    fontFamily: string;
+    fontSize: number;
+    fontWeight: number;
+    color: string;
+    align: 'left' | 'center' | 'right';
+  };
 }
 
 export interface ImageElement extends BaseElement {
@@ -64,6 +73,13 @@ export interface ImageElement extends BaseElement {
     brightness: number;
     contrast: number;
     saturation: number;
+  };
+  /** Crop region in original-image pixel coordinates */
+  crop?: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
   };
 }
 

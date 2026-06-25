@@ -14,6 +14,7 @@ import {
   loadDesignById,
   loadTemplateById,
   generateId,
+  type DesignMetadata,
 } from "../../lib/storage";
 import { getGalleryTemplateDisplayName, isGalleryTemplateId, isAiGenerationId } from "../../lib/galleryTemplateCatalog";
 import { captureCanvasData, generateThumbnailSync, restoreCanvasData } from "../../lib/canvasState";
@@ -258,7 +259,7 @@ export function EditorLayout({ onBackClick, designId, templateId }: EditorLayout
         updatedAt: new Date().toISOString(),
       };
 
-      let result: { success: boolean; savedDesign: typeof designData };
+      let result: { success: boolean; savedDesign: DesignMetadata };
       if (data.type === "design") {
         result = await saveDesign(designData);
       } else {

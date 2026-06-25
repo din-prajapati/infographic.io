@@ -235,11 +235,11 @@ test.describe("US-DESIGN-002 — Editor design token adoption", () => {
 
     await openEditorFromTemplate(page);
 
-    // RightSidebar always shows a "Generate Template" button
+    // RightSidebar primary CTA — renamed to "Quick Generate" (model-opacity UX)
     await expect(
-      page.getByRole("button", { name: /generate template/i })
+      page.getByRole("button", { name: /quick generate/i })
     ).toBeVisible({ timeout: 12_000 });
-    console.log("[TC-DS-002-04] RightSidebar 'Generate Template' button visible ✓");
+    console.log("[TC-DS-002-04] RightSidebar 'Quick Generate' button visible ✓");
   });
 
   // TC-DS-002-05 ─────────────────────────────────────────────────────────────

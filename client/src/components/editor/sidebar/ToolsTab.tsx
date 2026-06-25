@@ -67,8 +67,18 @@ export function ToolsTab() {
               y: 200,
               width: 200,
               height: 200,
+              rotation: 0,
+              opacity: 1,
+              locked: false,
+              visible: true,
+              name: 'Image',
               src: event.target?.result as string,
               zIndex: addElement.length || 0,
+              cornerRadius: 0,
+              flipHorizontal: false,
+              flipVertical: false,
+              colorOverlay: null,
+              filters: { brightness: 100, contrast: 100, saturation: 100 },
             };
             addElement(imageElement);
           };

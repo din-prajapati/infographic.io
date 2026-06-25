@@ -16,7 +16,7 @@
 | TC-DS-002-01 | P0 | Light toolbar bg NOT hardcoded `bg-gray-900` | ✅ PASS | `rgb(252, 252, 252)` — correctly uses `--background` |
 | TC-DS-002-02 | P0 | Dark toolbar bg NOT hardcoded white | ✅ PASS | `rgb(252, 252, 252)` — see NOTE-01 below |
 | TC-DS-002-03 | P0 | Layers panel heading visible in Light mode | ✅ PASS | Heading appeared after clicking layers toggle |
-| TC-DS-002-04 | P0 | RightSidebar "Generate Template" button visible | ✅ PASS | Button visible at editor load |
+| TC-DS-002-04 | P0 | RightSidebar "Quick Generate" button visible | ✅ PASS | Renamed from "Generate Template" (model-opacity UX); button visible at editor load |
 | TC-DS-002-05 | P1 | Zoom controls NOT `bg-gray-800` | ✅ PASS | Zoom bg `rgb(240, 240, 240)` — correctly uses `--muted` |
 | TC-DS-002-06 | P1 | FloatingToolbar NOT hardcoded dark gray | ✅ PASS | Panel bg `rgb(252, 252, 252)` — correctly uses `--background` |
 | TC-DS-002-07 | P1 | Add text — canvas element count increases | ✅ PASS | Before: 0, After: 1 |
@@ -113,7 +113,15 @@
 
 ---
 
-## Observed Token Values (Light Mode)
+### NOTE-09 — RightSidebar CTA renamed to "Quick Generate" (2026-06-24)
+**Severity:** INFO (UX copy — not a regression)  
+**File:** `client/src/components/editor/RightSidebar.tsx`  
+**Change:** Primary sidebar button label changed from "Generate Template" to **Quick Generate** per model-opacity rule (users see quality tiers, not model names).  
+**E2E:** `TC-DS-002-04` updated to assert `/quick generate/i`.  
+**Action:** None — intentional product copy.
+
+---
+
 
 | Component | CSS Token | Computed Value | Expected |
 |-----------|-----------|----------------|----------|

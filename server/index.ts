@@ -173,17 +173,19 @@ app.use('/api/v1', createProxyMiddleware({
   target: 'http://localhost:3001/api/v1',
   changeOrigin: true,
   pathRewrite: { '^/api/v1': '' },
-  onProxyReq: (proxyReq: any, req: any) => {
-    log(`Proxying: ${req.method} ${req.url} -> http://localhost:3001/api/v1${req.url}`);
+  on: {
+    proxyReq: (_proxyReq: any, req: any) => {
+      log(`Proxying: ${req.method} ${req.url} -> http://localhost:3001/api/v1${req.url}`);
+    },
+    error: (err: any, _req: any, res: any) => {
+      log(`Proxy error: ${err.message}`);
+      (res as any).status(502).json({ 
+        error: 'Backend API unavailable', 
+        message: 'The NestJS API server is not running. Please start it with: ./start-nestjs.sh'
+      });
+    },
   },
-  onError: (err: any, req: any, res: any) => {
-    log(`Proxy error: ${err.message}`);
-    res.status(502).json({ 
-      error: 'Backend API unavailable', 
-      message: 'The NestJS API server is not running. Please start it with: ./start-nestjs.sh'
-    });
-  },
-}) as any);
+} as any));
 
 // Configure JSON parser with raw body preservation for webhook signature verification
 app.use(express.json({

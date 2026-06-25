@@ -40,7 +40,7 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
     get().pushToHistory(state.elements);
     set({
       elements: state.elements.map((el) =>
-        el.id === id ? { ...el, ...updates } : el
+        el.id === id ? ({ ...el, ...updates } as CanvasElement) : el
       ),
     });
   },
