@@ -208,6 +208,13 @@ export function UserProfileDropdown({
                 <span>Sign out</span>
               </button>
             </div>
+
+            {/* Build identifier — changes with every deploy */}
+            <div className="px-4 py-2 border-t border-border">
+              <p className="text-[10px] text-muted-foreground/40 font-mono">
+                build {import.meta.env.VITE_APP_BUILD}
+              </p>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

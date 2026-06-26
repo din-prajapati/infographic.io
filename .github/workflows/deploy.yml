@@ -138,7 +138,7 @@ jobs:
         run: npm install -g @railway/cli
 
       - name: Deploy to Railway staging
-        run: railway up --service ${{ secrets.RAILWAY_STAGING_SERVICE_ID }} --detach
+        run: railway up --service ${{ secrets.RAILWAY_STAGING_SERVICE_ID }} --environment staging --detach
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
 

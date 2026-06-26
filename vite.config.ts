@@ -11,6 +11,11 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), 'VITE_');
   
   return {
+    define: {
+      'import.meta.env.VITE_APP_BUILD': JSON.stringify(
+        process.env.RAILWAY_GIT_COMMIT_SHA?.slice(0, 7) ?? 'dev'
+      ),
+    },
     plugins: [react()],
     resolve: {
       extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
