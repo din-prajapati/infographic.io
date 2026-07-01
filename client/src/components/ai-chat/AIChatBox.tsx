@@ -5,6 +5,7 @@
 
 import { motion, AnimatePresence } from "motion/react";
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { X, PlusCircle, Clock, Edit, LayoutGrid } from "lucide-react";
 import { Button } from "../ui/button";
 import {
@@ -134,8 +135,39 @@ export function AIChatBox({
     }>
   >([]);
 
-  // NEW: Conversation state
-  const [conversations, setConversations] = useState<Conversation[]>([]);
+  // NEW: Conversation state — backed by React Query
+  const queryClient = useQueryClient();
+
+  const { data: conversations = [] } = useQuery({
+    queryKey: ['conversations'],
+    queryFn: () => conversationsApi.getAll(),
+    select: (data) =>
+      data.map((conv) => ({
+        ...conv,
+        createdAt: new Date(conv.createdAt),
+        updatedAt: new Date(conv.updatedAt),
+        messages: (conv.messages ?? []).map((msg) => ({
+          ...msg,
+          timestamp: new Date(msg.timestamp),
+        })) as Message[],
+      })) as Conversation[],
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => conversationsApi.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
+    },
+  });
+
+  const favoriteMutation = useMutation({
+    mutationFn: ({ id, isFavorite }: { id: string; isFavorite: boolean }) =>
+      conversationsApi.update(id, { isFavorite }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
+    },
+  });
+
   const [currentConversation, setCurrentConversation] =
     useState<Conversation | null>(null);
   const [conversationMessages, setConversationMessages] = useState<Message[]>(
@@ -168,41 +200,6 @@ export function AIChatBox({
     "residential" | "commercial" | "luxury" | "land"
   >("residential");
   const [priceRange] = useState<"low" | "mid" | "high" | "luxury">("mid");
-
-  // Load conversations from LocalStorage on mount
-  useEffect(() => {
-    const stored = localStorage.getItem("ai-chat-conversations");
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        // Convert date strings back to Date objects
-        const conversationsWithDates = parsed.map((conv: any) => ({
-          ...conv,
-          createdAt: new Date(conv.createdAt),
-          updatedAt: new Date(conv.updatedAt),
-          messages: conv.messages.map((msg: any) => ({
-            ...msg,
-            timestamp: new Date(msg.timestamp),
-          })),
-        }));
-        setConversations(conversationsWithDates);
-      } catch (e) {
-        console.error("Failed to load conversations:", e);
-      }
-    }
-  }, []);
-
-  // Save conversations to LocalStorage when they change
-  useEffect(() => {
-    if (conversations.length > 0) {
-      localStorage.setItem(
-        "ai-chat-conversations",
-        JSON.stringify(conversations),
-      );
-    } else {
-      localStorage.removeItem("ai-chat-conversations");
-    }
-  }, [conversations]);
 
   // Sync with parent isExpanded prop
   useEffect(() => {
@@ -342,21 +339,13 @@ export function AIChatBox({
         prev.map((msg) => (msg.id === aiMsgId ? finalAiMessage : msg)),
       );
 
+      // Refresh conversations list and persist the AI message to backend
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
       const conv = currentConversationRef.current;
-      if (conv) {
-        setConversations((prev) =>
-          prev.map((c) =>
-            c.id === conv.id
-              ? {
-                  ...c,
-                  messages: conversationMessagesRef.current.map((msg) =>
-                    msg.id === aiMsgId ? finalAiMessage : msg,
-                  ),
-                  updatedAt: new Date(),
-                }
-              : c,
-          ),
-        );
+      if (conv && !conv.id.startsWith('conv-')) {
+        conversationsApi
+          .addMessage(conv.id, { type: 'ai', content: finalAiMessage.content })
+          .catch((err) => console.warn('[AIChatBox] Failed to persist AI message:', err));
       }
 
       setState((prev) => ({ ...prev, isGenerating: false, inputValue: "" }));
@@ -664,6 +653,8 @@ export function AIChatBox({
           priceRange,
         });
         conversationId = dbConversation.id;
+        // Refresh conversations list in sidebar
+        queryClient.invalidateQueries({ queryKey: ['conversations'] });
       } catch (err) {
         // Fallback to local ID if DB creation fails (e.g. not logged in)
         console.warn(
@@ -683,21 +674,14 @@ export function AIChatBox({
         updatedAt: now,
         isFavorite: false,
       };
-      setConversations((prev) => [newConversation, ...prev]);
       setCurrentConversation(newConversation);
-    } else {
-      // Update existing conversation with new messages
-      setConversations((prev) =>
-        prev.map((conv) =>
-          conv.id === conversationId
-            ? {
-                ...conv,
-                messages: [...conv.messages, userMessage, aiMessage],
-                updatedAt: now,
-              }
-            : conv,
-        ),
-      );
+    }
+
+    // Persist user message to backend (fire-and-forget; skip local-only conv IDs)
+    if (conversationId && !conversationId.startsWith('conv-')) {
+      conversationsApi
+        .addMessage(conversationId, { type: 'user', content: promptText })
+        .catch((err) => console.warn('[AIChatBox] Failed to persist user message:', err));
     }
 
     try {
@@ -978,16 +962,24 @@ export function AIChatBox({
   };
 
   // NEW: Conversation handlers
-  const handleConversationClick = (conversationId: string) => {
+  const handleConversationClick = async (conversationId: string) => {
     const conversation = conversations.find((c) => c.id === conversationId);
     if (conversation) {
       setCurrentConversation(conversation);
-      setConversationMessages(conversation.messages);
+      try {
+        const msgs = await conversationsApi.getMessages(conversationId);
+        setConversationMessages(
+          msgs.map((msg) => ({ ...msg, timestamp: new Date(msg.timestamp) })) as Message[],
+        );
+      } catch (err) {
+        console.error('[AIChatBox] Failed to load messages:', err);
+        setConversationMessages([]);
+      }
     }
   };
 
   const handleDeleteConversation = (conversationId: string) => {
-    setConversations((prev) => prev.filter((c) => c.id !== conversationId));
+    deleteMutation.mutate(conversationId);
     if (currentConversation?.id === conversationId) {
       setCurrentConversation(null);
       setConversationMessages([]);
@@ -995,11 +987,9 @@ export function AIChatBox({
   };
 
   const handleToggleConversationFavorite = (conversationId: string) => {
-    setConversations((prev) =>
-      prev.map((c) =>
-        c.id === conversationId ? { ...c, isFavorite: !c.isFavorite } : c,
-      ),
-    );
+    const conv = conversations.find((c) => c.id === conversationId);
+    if (!conv) return;
+    favoriteMutation.mutate({ id: conversationId, isFavorite: !conv.isFavorite });
   };
 
   const handleSmartSuggestionClick = (text: string) => {
@@ -1022,10 +1012,18 @@ export function AIChatBox({
   };
 
   // NEW: History view handlers
-  const handleSelectConversationFromHistory = (conversation: Conversation) => {
+  const handleSelectConversationFromHistory = async (conversation: Conversation) => {
     setCurrentConversation(conversation);
-    setConversationMessages(conversation.messages);
-    setShowHistoryView(false); // Close history view and show conversation
+    setShowHistoryView(false);
+    try {
+      const msgs = await conversationsApi.getMessages(conversation.id);
+      setConversationMessages(
+        msgs.map((msg) => ({ ...msg, timestamp: new Date(msg.timestamp) })) as Message[],
+      );
+    } catch (err) {
+      console.error('[AIChatBox] Failed to load messages:', err);
+      setConversationMessages([]);
+    }
   };
 
   const handleNewChat = () => {
