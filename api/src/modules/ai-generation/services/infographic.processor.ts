@@ -19,7 +19,25 @@ export class InfographicProcessor {
   async handleInfographicGeneration(job: Job<{ infographicId: string; propertyData: any }>): Promise<void> {
     const { infographicId, propertyData } = job.data;
     const startTime = Date.now();
-    
+
+    // Look up plan tier for LLM routing
+    let planTier = '';
+    try {
+      const inf = await prisma.infographic.findUnique({
+        where: { id: infographicId },
+        select: { organizationId: true },
+      });
+      if (inf?.organizationId) {
+        const org = await prisma.organization.findUnique({
+          where: { id: inf.organizationId },
+          select: { planTier: true },
+        });
+        if (org?.planTier) planTier = org.planTier.toLowerCase();
+      }
+    } catch {
+      // non-fatal — fall back to empty string → GPT-4o safe default
+    }
+
     try {
       console.log(`📝 [Processor] Starting generation for ${infographicId}`);
       
@@ -33,7 +51,7 @@ export class InfographicProcessor {
         imageUrl = this.generateDemoImageUrl(propertyData);
       } else {
         console.log(`📊 [Processor] Calling OpenAI for ${infographicId}...`);
-        headline = await this.openAiService.analyzeProperty(propertyData);
+        headline = await this.openAiService.analyzeProperty(propertyData, planTier);
         console.log(`✍️ [Processor] Generated headline: ${headline}`);
 
         const imagePrompt = await this.openAiService.generateImagePrompt(propertyData, headline);
