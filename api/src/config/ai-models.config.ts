@@ -4,6 +4,26 @@ export interface AIModelPricing {
   description: string;
 }
 
+export interface LLMModelConfig {
+  name: string;
+  costPerRequest: number;
+  description: string;
+}
+
+/** LLM models used for property analysis and prompt generation (text step, not image). */
+export const LLM_MODELS: Record<string, LLMModelConfig> = {
+  'gpt-4o': {
+    name: 'GPT-4o',
+    costPerRequest: 0.0075,
+    description: 'OpenAI GPT-4o — TEAM and BROKERAGE tiers',
+  },
+  'gemini-2.5-flash': {
+    name: 'Gemini 2.5 Flash',
+    costPerRequest: 0.0006,
+    description: 'Google Gemini 2.5 Flash — FREE and SOLO tiers',
+  },
+};
+
 export const AI_MODELS: Record<string, AIModelPricing> = {
   // V2 (current production default)
   'ideogram-turbo': {
