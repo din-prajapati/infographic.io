@@ -26,19 +26,8 @@ export class AiOrchestrator {
     const orientation = options?.orientation || propertyData.orientation || 'landscape';
     const isDemoMode = process.env.DEMO_MODE === 'true';
     const imageModel = normalizeImageModel(propertyData.aiModel || 'ideogram-turbo');
-    const textModel = 'gpt-4o';
 
-    logGen({
-      generationId: infographicId,
-      event: 'gen:start',
-      textModel,
-      imageModel,
-      variations,
-      orientation,
-      isDemoMode,
-    });
-
-    // Look up plan tier for LLM routing
+    // Look up plan tier for LLM routing (must happen before gen:start log so textModel is accurate)
     let planTier = '';
     try {
       const inf = await this.prisma.infographic.findUnique({
@@ -55,6 +44,20 @@ export class AiOrchestrator {
     } catch {
       // non-fatal — fall back to empty string → GPT-4o safe default
     }
+
+    const GEMINI_TIERS = new Set(['free', 'solo', 'team']);
+    const textModel = GEMINI_TIERS.has(planTier) ? 'gemini-2.5-flash' : 'gpt-4o';
+
+    logGen({
+      generationId: infographicId,
+      event: 'gen:start',
+      textModel,
+      imageModel,
+      planTier: planTier || 'unknown',
+      variations,
+      orientation,
+      isDemoMode,
+    });
 
     try {
       let headline: string;

@@ -131,17 +131,22 @@ Return ONLY the headline text. Examples: "Stunning Hilltop Retreat", "Modern Urb
 
     // FREE/SOLO/TEAM: route to Gemini 2.5 Flash
     if (useGemini) {
+      console.log(`🤖 [LLM] Gemini 2.5 Flash selected for tier="${tier}" — calling Google AI`);
       const model = this.gemini!.getGenerativeModel({ model: 'gemini-2.5-flash' });
       const result = await model.generateContent(prompt);
-      return result.response.text().trim() || 'Beautiful Property';
+      const headline = result.response.text().trim() || 'Beautiful Property';
+      console.log(`✅ [LLM] Gemini 2.5 Flash headline: "${headline}"`);
+      return headline;
     }
 
     // BROKERAGE (or Gemini fallback): use GPT-4o
     if (!this.openai) {
       // Demo mode — neither model configured
+      console.log(`🎭 [LLM] Demo mode — no API keys configured, returning static headline`);
       return `Beautiful ${propertyData.beds}BR Property at ${propertyData.address}`;
     }
 
+    console.log(`🤖 [LLM] GPT-4o selected for tier="${tier || 'brokerage/default'}" — calling OpenAI`);
     const response = await this.openai.chat.completions.create({
       model: 'gpt-4o',
       messages: [{ role: 'user', content: prompt }],
