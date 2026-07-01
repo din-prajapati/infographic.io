@@ -80,8 +80,8 @@ function hexToColorName(hex: string): string {
   return 'pink';
 }
 
-/** Plan tiers that use Gemini 2.5 Flash for the LLM step. TEAM/BROKERAGE use GPT-4o. */
-const GEMINI_TIERS = new Set(['free', 'solo']);
+/** Plan tiers that use Gemini 2.5 Flash for the LLM step. BROKERAGE uses GPT-4o. */
+const GEMINI_TIERS = new Set(['free', 'solo', 'team']);
 
 @Injectable()
 export class OpenAiService {
@@ -89,7 +89,7 @@ export class OpenAiService {
   private gemini: GoogleGenerativeAI | null;
 
   constructor() {
-    // OpenAI — used for TEAM and BROKERAGE tier LLM step
+    // OpenAI — used for BROKERAGE tier LLM step
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
       console.warn('⚠️ OPENAI_API_KEY not configured. Running in demo mode. Set OPENAI_API_KEY environment variable to enable real generation.');
@@ -98,7 +98,7 @@ export class OpenAiService {
       this.openai = new OpenAI({ apiKey });
     }
 
-    // Gemini — used for FREE and SOLO tier LLM step (lower cost)
+    // Gemini — used for FREE, SOLO, and TEAM tier LLM step (lower cost)
     const geminiApiKey = process.env.GEMINI_API_KEY;
     if (!geminiApiKey) {
       console.warn('⚠️ GEMINI_API_KEY not configured. FREE/SOLO tier will fall back to GPT-4o. Set GEMINI_API_KEY to enable cost-efficient generation.');
@@ -111,7 +111,7 @@ export class OpenAiService {
   /**
    * Generate a short real estate headline for the property.
    *
-   * Routes to Gemini 2.5 Flash for FREE/SOLO tiers and GPT-4o for TEAM/BROKERAGE.
+   * Routes to Gemini 2.5 Flash for FREE/SOLO/TEAM tiers and GPT-4o for BROKERAGE.
    * Falls back to GPT-4o when Gemini is not configured, and to a static string when
    * neither model is available (demo mode).
    */
@@ -129,14 +129,14 @@ Features: ${propertyData.features?.join(', ') || 'None'}
 
 Return ONLY the headline text. Examples: "Stunning Hilltop Retreat", "Modern Urban Sanctuary", "Sun-Drenched Family Home". No quotes in your response.`;
 
-    // FREE/SOLO: route to Gemini 2.5 Flash
+    // FREE/SOLO/TEAM: route to Gemini 2.5 Flash
     if (useGemini) {
       const model = this.gemini!.getGenerativeModel({ model: 'gemini-2.5-flash' });
       const result = await model.generateContent(prompt);
       return result.response.text().trim() || 'Beautiful Property';
     }
 
-    // TEAM/BROKERAGE (or Gemini fallback): use GPT-4o
+    // BROKERAGE (or Gemini fallback): use GPT-4o
     if (!this.openai) {
       // Demo mode — neither model configured
       return `Beautiful ${propertyData.beds}BR Property at ${propertyData.address}`;
