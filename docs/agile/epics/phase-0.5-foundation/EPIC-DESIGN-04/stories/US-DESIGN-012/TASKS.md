@@ -2,7 +2,7 @@
 
 > **Story:** [STORY.md](./STORY.md)
 > **Branch:** `feat/design-us-design-012-premium-templates`
-> **PR:** #_____ (fill when opened)
+> **PR:** #11
 > **Linear:** LIN-XXX
 > **Type:** feat
 > **Status:** ✅ Done — 2026-07-02
@@ -201,7 +201,7 @@ npm run test:unit
 - [x] `npm run check` passes ✅
 - [x] `npm run test:unit` passes (41/41) ✅
 - [x] Manual test: gallery → editor → customize → export ✅
-- [ ] PR opened with story card as description
+- [x] PR opened with story card as description (#11)
 - [x] STORY.md ACs updated ✅
 
 ---

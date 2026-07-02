@@ -78,7 +78,7 @@ Slot vocabulary (canonical): `brand.logo`, `brand.accentColor`, `brand.name`, `p
 ## Engineering / PR
 
 - **Branch:** `feat/design-us-design-012-premium-templates`
-- **PR:** #_____
+- **PR:** #11
 - **Primary files touched:**
 
 | File | Change |
@@ -130,7 +130,7 @@ Slot vocabulary (canonical): `brand.logo`, `brand.accentColor`, `brand.name`, `p
 - [x] `npm run check` passes
 - [x] `npm run test:unit` passes (41/41)
 - [x] Manual flow verified on `localhost:5000` (gallery → editor → customize → export)
-- [ ] PR opened and merged (PR #{number})
+- [ ] PR opened and merged (PR #11)
 - [x] No console errors for the changed flow
 - [x] TASKS.md task list fully checked
 - [x] AGILE_INDEX.md + PROJECT_CONTEXT counters updated

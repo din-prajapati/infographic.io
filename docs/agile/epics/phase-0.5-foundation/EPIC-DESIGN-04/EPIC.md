@@ -31,7 +31,7 @@
 
 | Story ID | Title | Milestone | Status | PR |
 |----------|-------|-----------|--------|----|
-| [US-DESIGN-012](stories/US-DESIGN-012/STORY.md) | Premium Sample Templates + Slot Customization + Canvas Fit & Scale Fix | M-DESIGN-06 / M-DESIGN-07 | ✅ Done | — |
+| [US-DESIGN-012](stories/US-DESIGN-012/STORY.md) | Premium Sample Templates + Slot Customization + Canvas Fit & Scale Fix | M-DESIGN-06 / M-DESIGN-07 | ✅ Done | #11 |
 
 ---
 
