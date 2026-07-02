@@ -52,6 +52,17 @@ export function ImageElement({ element, isSelected, onSelect }: ImageElementProp
     );
   }
 
+  const handlePx = Math.max(6, Math.round(8 / zoom));
+  const handleStyle = {
+    width: handlePx,
+    height: handlePx,
+    background: '#ffffff',
+    border: `${Math.max(1, Math.round(2 / zoom))}px solid #3b82f6`,
+    borderRadius: Math.max(2, Math.round(3 / zoom)),
+    boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+    zIndex: 10,
+  };
+
   // Build filter style without blur
   const filterStyle = `
     brightness(${element.filters.brightness}%)
@@ -95,10 +106,13 @@ export function ImageElement({ element, isSelected, onSelect }: ImageElementProp
 
   return (
     <Rnd
+      scale={zoom}
       size={{ width: element.width, height: element.height }}
       position={{ x: element.x, y: element.y }}
       onDragStop={(e, d) => {
-        updateElement(element.id, { x: d.x, y: d.y });
+        if (d.x !== element.x || d.y !== element.y) {
+          updateElement(element.id, { x: d.x, y: d.y });
+        }
       }}
       onResizeStop={(e, direction, ref, delta, position) => {
         updateElement(element.id, {
@@ -108,8 +122,18 @@ export function ImageElement({ element, isSelected, onSelect }: ImageElementProp
         });
       }}
       disableDragging={element.locked}
-      enableResizing={!element.locked}
+      enableResizing={isSelected && !element.locked}
       bounds="parent"
+      resizeHandleStyles={{
+        topLeft: handleStyle,
+        topRight: handleStyle,
+        bottomLeft: handleStyle,
+        bottomRight: handleStyle,
+        top: handleStyle,
+        right: handleStyle,
+        bottom: handleStyle,
+        left: handleStyle,
+      }}
       style={{
         zIndex: element.zIndex,
         opacity: element.opacity,

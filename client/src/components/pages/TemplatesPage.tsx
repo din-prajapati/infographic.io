@@ -14,6 +14,8 @@ import { ImageWithFallback } from "../figma/ImageWithFallback";
 import { loadTemplates, DesignMetadata } from "../../lib/storage";
 import { templatesApi } from "../../lib/api";
 import { useQuery } from "@tanstack/react-query";
+import { STARTER_CANVAS_TEMPLATES } from "../../lib/starterCanvasTemplates";
+import { PREMIUM_CANVAS_TEMPLATES } from "../../lib/premiumTemplates";
 
 interface TemplatesPageProps {
   onOpenEditor?: (templateId?: string) => void;
@@ -28,83 +30,29 @@ interface TemplateItem {
   badgeStyle: CSSProperties;
   image: string;
   isCustom?: boolean;
-  isApiTemplate?: boolean;
+  isPremium?: boolean;
 }
 
-const templates: TemplateItem[] = [
-  {
-    id: 1,
-    title: "Modern Real Estate",
-    description: "Luxury property showcase",
-    uses: "2.4k",
-    badge: "Luxury",
-    badgeStyle: { backgroundColor: 'var(--badge-luxury-bg)', color: 'var(--badge-luxury-text)' },
-    image: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBpbnRlcmlvciUyMGRlc2lnbnxlbnwxfHx8fDE3NjQyMzU0NzB8MA&ixlib=rb-4.1.0&q=80&w=1080",
-  },
-  {
-    id: 2,
-    title: "Urban Living",
-    description: "Contemporary apartment layout",
-    uses: "1.8k",
-    badge: "Standard",
-    badgeStyle: { backgroundColor: 'var(--badge-standard-bg)', color: 'var(--badge-standard-text)' },
-    image: "https://images.unsplash.com/photo-1718893389568-22a2a039998c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBhcmNoaXRlY3R1cmUlMjBob3VzZXxlbnwxfHx8fDE3NjQyMjQyODZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
-  },
-  {
-    id: 3,
-    title: "Cozy Home",
-    description: "Affordable housing design",
-    uses: "3.1k",
-    badge: "Budget",
-    badgeStyle: { backgroundColor: 'var(--badge-budget-bg)', color: 'var(--badge-budget-text)' },
-    image: "https://images.unsplash.com/photo-1605191353027-d21e534a419a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb3p5JTIwaG9tZSUyMGludGVyaW9yfGVufDF8fHx8MTc2NDI2NzYzOXww&ixlib=rb-4.1.0&q=80&w=1080",
-  },
-  {
-    id: 4,
-    title: "Penthouse Suite",
-    description: "Premium property template",
-    uses: "1.5k",
-    badge: "Luxury",
-    badgeStyle: { backgroundColor: 'var(--badge-luxury-bg)', color: 'var(--badge-luxury-text)' },
-    image: "https://images.unsplash.com/photo-1686056040370-b5e5c06c4273?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxsdXh1cnklMjBhcGFydG1lbnR8ZW58MXx8fHwxNzY0MjkxODMyfDA&ixlib=rb-4.1.0&q=80&w=1080",
-  },
-  {
-    id: 5,
-    title: "Family Residence",
-    description: "Spacious family home",
-    uses: "2.7k",
-    badge: "Standard",
-    badgeStyle: { backgroundColor: 'var(--badge-standard-bg)', color: 'var(--badge-standard-text)' },
-    image: "https://images.unsplash.com/photo-1720247520862-7e4b14176fa8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb250ZW1wb3JhcnklMjBsaXZpbmclMjByb29tfGVufDF8fHx8MTc2NDIzMzI4NXww&ixlib=rb-4.1.0&q=80&w=1080",
-  },
-  {
-    id: 6,
-    title: "Waterfront Villa",
-    description: "Exclusive coastal property",
-    uses: "1.8k",
-    badge: "Luxury",
-    badgeStyle: { backgroundColor: 'var(--badge-luxury-bg)', color: 'var(--badge-luxury-text)' },
-    image: "https://images.unsplash.com/photo-1704428382583-c9c7c1e55d94?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBiZWRyb29tJTIwZGVzaWdufGVufDF8fHx8MTc2NDIzMzQ4N3ww&ixlib=rb-4.1.0&q=80&w=1080",
-  },
-  {
-    id: 7,
-    title: "Studio Apartment",
-    description: "Compact living space",
-    uses: "4.2k",
-    badge: "Budget",
-    badgeStyle: { backgroundColor: 'var(--badge-budget-bg)', color: 'var(--badge-budget-text)' },
-    image: "https://images.unsplash.com/photo-1713420560043-cc218e86cc86?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx1cmJhbiUyMGFwYXJ0bWVudCUyMGRlc2lnbnxlbnwxfHx8fDE3NjQzMjM2ODF8MA&ixlib=rb-4.1.0&q=80&w=1080",
-  },
-  {
-    id: 8,
-    title: "Downtown Condo",
-    description: "City center residence",
-    uses: "2.3k",
-    badge: "Standard",
-    badgeStyle: { backgroundColor: 'var(--badge-standard-bg)', color: 'var(--badge-standard-text)' },
-    image: "https://images.unsplash.com/photo-1567016376408-0226e4d0c1ea?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtaW5pbWFsaXN0JTIwaW50ZXJpb3J8ZW58MXx8fHwxNzY0MjQwMTk4fDA&ixlib=rb-4.1.0&q=80&w=1080",
-  },
-];
+const templates: TemplateItem[] = STARTER_CANVAS_TEMPLATES.map((template) => ({
+  id: template.id,
+  title: template.name,
+  description: template.description,
+  uses: "Starter",
+  badge: template.badge ?? template.category,
+  badgeStyle: { backgroundColor: "var(--badge-starter-bg, #e0e7ff)", color: "var(--badge-starter-text, #312e81)" },
+  image: template.image,
+}));
+
+const premiumTemplates: TemplateItem[] = PREMIUM_CANVAS_TEMPLATES.map((template) => ({
+  id: template.id,
+  title: template.name,
+  description: template.description,
+  uses: "Premium",
+  badge: template.badge,
+  badgeStyle: { backgroundColor: "var(--badge-premium-bg, #0ca0eb)", color: "var(--badge-premium-text, #ffffff)" },
+  image: template.image,
+  isPremium: true,
+}));
 
 export function TemplatesPage({ onOpenEditor }: TemplatesPageProps) {
   const [searchQuery, setSearchQuery] = useState("");
@@ -113,8 +61,11 @@ export function TemplatesPage({ onOpenEditor }: TemplatesPageProps) {
   const [customTemplates, setCustomTemplates] = useState<DesignMetadata[]>([]);
   const [showCustomOnly, setShowCustomOnly] = useState(false);
 
-  // Load API templates
-  const { data: apiTemplates = [], isLoading: isLoadingApiTemplates } = useQuery({
+  // API templates (DB layout descriptors used internally for AI generation)
+  // are intentionally excluded from the gallery — they have no canvasData or
+  // previewUrl and would open a blank editor. Keep the query for debugging but
+  // do not render them in allTemplates.
+  const { data: _apiTemplates = [] } = useQuery({
     queryKey: ['/api/v1/templates'],
     queryFn: () => templatesApi.getAll(),
   });
@@ -132,7 +83,9 @@ export function TemplatesPage({ onOpenEditor }: TemplatesPageProps) {
     loadCustomTemplates();
   }, []);
 
-  // Combine API templates, built-in templates, and custom templates
+  // Gallery shows: saved custom designs, premium client-side templates, starter templates.
+  // DB API templates (layout descriptors for AI generation) are excluded — they
+  // have no canvasData or thumbnail and would open a blank editor if clicked.
   const allTemplates: TemplateItem[] = [
     ...customTemplates.map(t => ({
       id: t.id,
@@ -144,17 +97,7 @@ export function TemplatesPage({ onOpenEditor }: TemplatesPageProps) {
       image: t.thumbnail,
       isCustom: true,
     })),
-    ...apiTemplates.map(t => ({
-      id: t.id,
-      title: t.name,
-      description: t.category || "Template",
-      uses: "API",
-      badge: t.category || "Template",
-      badgeStyle: { backgroundColor: 'var(--badge-api-bg)', color: 'var(--badge-api-text)' },
-      image: t.previewUrl || "",
-      isCustom: false,
-      isApiTemplate: true,
-    })),
+    ...(!showCustomOnly ? premiumTemplates : []),
     ...(!showCustomOnly ? templates : []),
   ];
 
@@ -167,12 +110,13 @@ export function TemplatesPage({ onOpenEditor }: TemplatesPageProps) {
     const matchesCategory =
       selectedCategory === "all-categories" ||
       (selectedCategory === "custom" && template.isCustom) ||
-      (selectedCategory === "real-estate" && !template.isCustom) ||
-      (selectedCategory === "business" && template.isApiTemplate && template.badge?.toLowerCase() === "business") ||
-      (selectedCategory === "marketing" && template.isApiTemplate && template.badge?.toLowerCase() === "marketing");
+      (selectedCategory === "premium" && template.isPremium) ||
+      (selectedCategory === "real-estate" && !template.isCustom && !template.isPremium) ||
+      (selectedCategory === "business" && template.badge?.toLowerCase() === "business") ||
+      (selectedCategory === "marketing" && template.badge?.toLowerCase() === "marketing");
 
     const matchesStyle =
-      selectedStyle === "all-styles" || 
+      selectedStyle === "all-styles" ||
       template.badge.toLowerCase() === selectedStyle ||
       (selectedStyle === "custom" && template.isCustom);
 
@@ -216,6 +160,7 @@ export function TemplatesPage({ onOpenEditor }: TemplatesPageProps) {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all-categories">All Categories</SelectItem>
+                <SelectItem value="premium">Premium</SelectItem>
                 <SelectItem value="custom">My Templates</SelectItem>
                 <SelectItem value="real-estate">Real Estate</SelectItem>
                 <SelectItem value="business">Business</SelectItem>
@@ -247,26 +192,28 @@ export function TemplatesPage({ onOpenEditor }: TemplatesPageProps) {
         </div>
 
         {/* Template Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 items-stretch">
           {filteredTemplates.length > 0 ? (
             filteredTemplates.map((template) => (
               <div
                 key={template.id}
-                className="glass rounded-2xl border border-border overflow-hidden hover:shadow-lg transition-shadow"
+                className="glass rounded-2xl border border-border overflow-hidden hover:shadow-lg transition-shadow flex flex-col"
               >
-                {/* Template Image */}
-                <div className="relative aspect-[4/3] overflow-hidden">
+                {/* Template Image — uniform 4/3 frame for every card; thumbnails
+                    fit entirely (object-contain) so premium format variety
+                    (Story, Header, A4…) never crops and all cards share height. */}
+                <div className="relative aspect-[4/3] overflow-hidden bg-muted flex items-center justify-center">
                   {template.isCustom ? (
                     <img
                       src={template.image}
                       alt={template.title}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-contain"
                     />
                   ) : (
                     <ImageWithFallback
                       src={template.image}
                       alt={template.title}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-contain"
                     />
                   )}
                   <div className="absolute top-3 right-3">
@@ -274,6 +221,13 @@ export function TemplatesPage({ onOpenEditor }: TemplatesPageProps) {
                       {template.badge}
                     </Badge>
                   </div>
+                  {template.isPremium && (
+                    <div className="absolute top-3 left-3">
+                      <Badge style={{ backgroundColor: "var(--badge-premium-bg, #0ca0eb)", color: "var(--badge-premium-text, #ffffff)" }}>
+                        Premium
+                      </Badge>
+                    </div>
+                  )}
                   {template.isCustom && (
                     <div className="absolute top-3 left-3">
                       <Badge style={{ backgroundColor: 'var(--badge-custom-bg)', color: 'var(--badge-custom-text)' }}>
@@ -284,12 +238,12 @@ export function TemplatesPage({ onOpenEditor }: TemplatesPageProps) {
                 </div>
 
                 {/* Template Info */}
-                <div className="p-4">
+                <div className="p-4 flex-1 flex flex-col">
                   <h3 className="mb-1 text-foreground">{template.title}</h3>
                   <p className="text-xs text-muted-foreground mb-3">
                     {template.description}
                   </p>
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between mt-auto">
                     <span className="text-xs text-muted-foreground">
                       {template.uses} {template.isCustom ? '' : 'uses'}
                     </span>

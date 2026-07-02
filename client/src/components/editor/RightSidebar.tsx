@@ -23,6 +23,12 @@ import { Button } from "../ui/button";
 import { Separator } from "../ui/separator";
 import { PropertyDetailsForm } from "./PropertyDetailsForm";
 import { AgentInfoForm } from "./AgentInfoForm";
+import {
+  TemplateSection,
+  BRAND_SLOT_FIELDS,
+  PROPERTY_SLOT_FIELDS,
+  AGENT_SLOT_FIELDS,
+} from "./TemplateSlotSection";
 import { useCanvasStore } from "../../hooks/useCanvasStore";
 import { createTextElement } from "../../lib/canvasUtils";
 import { TextElement } from "../../lib/canvasTypes";
@@ -282,6 +288,12 @@ export function RightSidebar() {
   const addElement = useCanvasStore((state) => state.addElement);
   const elements = useCanvasStore((state) => state.elements);
   const updateElement = useCanvasStore((state) => state.updateElement);
+
+  // Reactive set of slot tags present on the canvas — drives which template
+  // sections appear in the Design / Property / Agent tabs.
+  const activeSlots: ReadonlySet<string> = new Set(
+    elements.map((el) => el.slot).filter((s): s is string => Boolean(s)),
+  );
   const setBackgroundColor = useCanvasStore((state) => state.setBackgroundColor);
   const setSelectedThemeColors = useCanvasStore((state) => state.setSelectedThemeColors);
   const selectedThemeColors = useCanvasStore((state) => state.selectedThemeColors);
@@ -844,7 +856,7 @@ export function RightSidebar() {
         </button>
       )}
 
-      {/* Tab Switcher */}
+      {/* Tab Switcher — 3 tabs (Customize merged into each tab contextually) */}
       <div className="px-3 pt-3">
         <div className="bg-muted rounded-lg p-0.5 flex text-xs">
           <button
@@ -891,6 +903,14 @@ export function RightSidebar() {
         {activeTab === "design" ? (
           <ScrollArea className="h-full">
             <div className="p-3 space-y-6">
+              {/* Template Brand — only shown when brand.* slots exist on canvas */}
+              <TemplateSection
+                title="Template Brand"
+                subtitle="Swap logo, accent color, and agency name on this template"
+                fields={BRAND_SLOT_FIELDS}
+                activeSlots={activeSlots}
+              />
+
               {/* Brand Styles Section */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
@@ -1068,10 +1088,30 @@ export function RightSidebar() {
           </ScrollArea>
         ) : activeTab === "property-details" ? (
           <ScrollArea className="h-full">
+            {activeSlots.size > 0 && (
+              <div className="px-3 pt-3">
+                <TemplateSection
+                  title="Template Content"
+                  subtitle="Hero, headline, price, and listing details"
+                  fields={PROPERTY_SLOT_FIELDS}
+                  activeSlots={activeSlots}
+                />
+              </div>
+            )}
             <PropertyDetailsForm />
           </ScrollArea>
         ) : (
           <ScrollArea className="h-full">
+            {activeSlots.size > 0 && (
+              <div className="px-3 pt-3">
+                <TemplateSection
+                  title="Template Agent"
+                  subtitle="Swap agent photo, CTA, and contact details"
+                  fields={AGENT_SLOT_FIELDS}
+                  activeSlots={activeSlots}
+                />
+              </div>
+            )}
             <AgentInfoForm />
           </ScrollArea>
         )}

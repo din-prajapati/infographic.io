@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { Plus, Sparkles, Building2, Home, TrendingUp, BarChart3, PieChart, ArrowRight, CheckCircle2, DollarSign, Users, MapPin, Target, TrendingDown } from "lucide-react";
 import { Button } from "../ui/button";
 import { AIChatBox } from "../ai-chat/AIChatBox";
@@ -14,7 +14,7 @@ import { ContextualToolbar } from "./ContextualToolbar";
 import { usePanelState } from "../../lib/panelState";
 import { loadTemplateById } from "../../lib/storage";
 import { ImageElement as ImageElementType } from "../../lib/canvasTypes";
-import { restoreCanvasData, loadAiVariationToCanvas, scheduleFitCanvasZoomToViewport } from "../../lib/canvasState";
+import { restoreCanvasData, loadAiVariationToCanvas, scheduleFitCanvasZoomToViewport, fitCanvasZoomToViewport } from "../../lib/canvasState";
 import { toast } from "sonner";
 
 interface CenterCanvasProps {
@@ -27,6 +27,9 @@ export function CenterCanvas({ isPreviewMode = false }: CenterCanvasProps) {
     useState(false);
   const [isPanning, setIsPanning] = useState(false);
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
+  // Viewport pixel dimensions — updated on mount and on every resize so the
+  // canvas absolute position (canvasLeft/Top) is always computed correctly.
+  const [vpSize, setVpSize] = useState({ w: 0, h: 0 });
   const { closePanel } = usePanelState();
   const elements = useCanvasStore((state) => state.elements);
   const selectedElementIds = useCanvasStore((state) => state.selectedElementIds);
@@ -177,8 +180,62 @@ export function CenterCanvas({ isPreviewMode = false }: CenterCanvasProps) {
     ? elements.find((el) => el.id === selectedElementIds[0])
     : null;
 
+  // Absolute canvas position: centers the scaled artboard inside the viewport.
+  // With transform-origin: 0 0 and scale(zoom), the artboard's visual size is
+  // canvasWidth*zoom × canvasHeight*zoom; centering it means:
+  //   left = (vpW - canvasWidth*zoom) / 2 + panX
+  //   top  = (vpH - canvasHeight*zoom) / 2 + panY
+  // This eliminates the old flex-center layout overflow that caused the large
+  // artboards (A4, 9:16) to extend beyond overflow:hidden and appear clipped.
+  const canvasLeft = vpSize.w > 0
+    ? Math.round((vpSize.w - canvasWidth * zoom) / 2) + canvasPanX
+    : canvasPanX;
+  const canvasTop = vpSize.h > 0
+    ? Math.round((vpSize.h - canvasHeight * zoom) / 2) + canvasPanY
+    : canvasPanY;
+
   // Ref for the viewport div — used to compute toolbar position in viewport coords
   const viewportRef = useRef<HTMLDivElement>(null);
+  const previousElementCountRef = useRef(elements.length);
+
+  // Hard safety net: when canvas goes from empty -> populated, force a fit.
+  // This covers template/design restore timing where viewport settles slightly later.
+  useEffect(() => {
+    const previousCount = previousElementCountRef.current;
+    if (previousCount === 0 && elements.length > 0) {
+      scheduleFitCanvasZoomToViewport();
+    }
+    previousElementCountRef.current = elements.length;
+  }, [elements.length, canvasWidth, canvasHeight]);
+
+  // On mount: read viewport dimensions so the absolute canvas position
+  // (canvasLeft/canvasTop) is correct from the very first paint.
+  useLayoutEffect(() => {
+    const vp = viewportRef.current;
+    if (!vp) return;
+    setVpSize({ w: vp.clientWidth, h: vp.clientHeight });
+    fitCanvasZoomToViewport();
+  }, []);
+
+  // Whenever the artboard dimensions change (template load / AI generation),
+  // recompute the fit zoom synchronously before paint so large artboards
+  // (A4 2480×3508, 9:16 1080×1920, etc.) are never shown at zoom=1.
+  useLayoutEffect(() => {
+    fitCanvasZoomToViewport();
+  }, [canvasWidth, canvasHeight]);
+
+  // Re-fit + update viewport size whenever the viewport resizes (sidebar
+  // toggle, AI panel open/close, window resize).
+  useEffect(() => {
+    const vp = viewportRef.current;
+    if (!vp || typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(() => {
+      setVpSize({ w: vp.clientWidth, h: vp.clientHeight });
+      scheduleFitCanvasZoomToViewport();
+    });
+    ro.observe(vp);
+    return () => ro.disconnect();
+  }, []);
 
   // Compute toolbar center position in viewport-relative coordinates.
   // The canvas container's layout center is always at (vpW/2, vpH/2) because
@@ -202,7 +259,7 @@ export function CenterCanvas({ isPreviewMode = false }: CenterCanvasProps) {
       {/* Canvas Area with Dot Grid */}
       <div
         ref={viewportRef}
-        className="flex-1 dot-grid overflow-hidden flex items-center justify-center p-12 relative"
+        className="flex-1 dot-grid overflow-hidden relative"
         data-canvas-viewport
         onMouseDown={handlePanStart}
         onMouseMove={handlePanMove}
@@ -227,15 +284,25 @@ export function CenterCanvas({ isPreviewMode = false }: CenterCanvasProps) {
             />
           ) : null;
         })()}
-        {/* Canvas Container with Shadow */}
+        {/* Canvas Container with Shadow.
+            Position is absolute so the layout box is removed from flow —
+            this eliminates the CSS overflow issue where a large artboard
+            (e.g. A4 2480×3508) placed as a flex child would have a layout
+            box bigger than the viewport, causing overflow:hidden to clip the
+            visual (even after scale).  With absolute positioning + explicit
+            left/top the scaled artboard is always centered with no overflow. */}
         <div
           data-canvas-container
-          className="bg-white rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] relative z-0"
+          className="bg-white rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.12)]"
           style={{
+            position: 'absolute',
             width: `${canvasWidth}px`,
             height: `${canvasHeight}px`,
-            transform: `translate(${canvasPanX}px, ${canvasPanY}px) scale(${zoom})`,
-            transition: isPanning ? 'none' : "transform 0.2s, background-color 0.3s ease-in-out",
+            left: `${canvasLeft}px`,
+            top: `${canvasTop}px`,
+            transform: `scale(${zoom})`,
+            transformOrigin: '0 0',
+            transition: isPanning ? 'none' : "background-color 0.3s ease-in-out",
             backgroundColor: backgroundColor,
           }}
         >

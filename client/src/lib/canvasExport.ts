@@ -20,24 +20,29 @@ import {
 export async function exportCanvasToImage(
   format: 'png' | 'jpg' = 'png',
   quality: number = 1.0,
-  scale: number = 2
+  scale: number = 0
 ): Promise<string | null> {
   try {
     const state = useCanvasStore.getState();
+    // Auto scale: print-DPI artboards (>=2000px) already have print-density
+    // pixels, so scale 1 keeps memory bounded and avoids multi-hundred-MB
+    // canvases; smaller social/web artboards get scale 2 (retina quality).
+    const effectiveScale =
+      scale > 0 ? scale : Math.max(state.canvasWidth, state.canvasHeight) >= 2000 ? 1 : 2;
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
-    
+
     if (!ctx) {
       console.error('Could not get canvas context');
       return null;
     }
 
     // Set canvas size
-    canvas.width = state.canvasWidth * scale;
-    canvas.height = state.canvasHeight * scale;
-    
+    canvas.width = state.canvasWidth * effectiveScale;
+    canvas.height = state.canvasHeight * effectiveScale;
+
     // Scale context for high DPI
-    ctx.scale(scale, scale);
+    ctx.scale(effectiveScale, effectiveScale);
     
     // Fill background
     ctx.fillStyle = state.backgroundColor;
@@ -105,6 +110,59 @@ export async function exportCanvasToImage(
 }
 
 /**
+ * Word-wrap a single line of text to a max pixel width using the current
+ * ctx font. Long unbreakable words are broken only if they exceed the full
+ * width (mirrors CSS `break-words`). Returns the wrapped sub-lines.
+ */
+function wrapTextToWidth(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  maxWidth: number,
+): string[] {
+  if (maxWidth <= 0 || text.length === 0) return text.length === 0 ? [] : [text];
+  const words = text.split(/(\s+)/); // keep whitespace tokens
+  const lines: string[] = [];
+  let current = '';
+
+  const pushCurrent = () => {
+    if (current.length > 0) lines.push(current);
+    current = '';
+  };
+
+  for (const token of words) {
+    if (token === '') continue;
+    const candidate = current + token;
+    if (ctx.measureText(candidate).width <= maxWidth) {
+      current = candidate;
+      continue;
+    }
+
+    // If the token itself is wider than the max width, hard-break it.
+    if (ctx.measureText(token).width > maxWidth) {
+      // Flush any accumulated current line first.
+      if (current.trim().length > 0) pushCurrent();
+      let chunk = '';
+      for (const ch of token) {
+        if (ctx.measureText(chunk + ch).width <= maxWidth) {
+          chunk += ch;
+        } else {
+          if (chunk) lines.push(chunk);
+          chunk = ch;
+        }
+      }
+      current = chunk;
+      continue;
+    }
+
+    // Otherwise wrap: flush current, start new line with this token.
+    pushCurrent();
+    current = token;
+  }
+  pushCurrent();
+  return lines.length > 0 ? lines : [''];
+}
+
+/**
  * Render text element to canvas
  */
 function renderTextElement(ctx: CanvasRenderingContext2D, element: TextElement): void {
@@ -139,11 +197,24 @@ function renderTextElement(ctx: CanvasRenderingContext2D, element: TextElement):
   } else if (element.listStyle === 'numbered') {
     content = `1. ${content}`;
   }
-  
-  // Split text into lines
-  const lines = content.split('\n');
+
+  // Build the final line list: honor explicit newlines AND word-wrap each
+  // paragraph to the element width so long single-line content (e.g. a
+  // listing description) doesn't overflow the artboard and get clipped on
+  // export. Matches the editor's `whitespace-pre-wrap break-words` behavior.
+  const paragraphs = content.split('\n');
+  const lines: string[] = [];
+  for (const paragraph of paragraphs) {
+    const wrapped = wrapTextToWidth(ctx, paragraph, element.width);
+    if (wrapped.length === 0) {
+      lines.push(''); // preserve blank lines
+    } else {
+      lines.push(...wrapped);
+    }
+  }
+
   const lineHeight = element.fontSize * element.lineHeight;
-  
+
   // Calculate text position based on alignment
   let textX = element.x;
   if (element.align === 'center') {
@@ -151,12 +222,12 @@ function renderTextElement(ctx: CanvasRenderingContext2D, element: TextElement):
   } else if (element.align === 'right') {
     textX = element.x + element.width;
   }
-  
+
   // Add padding for lists
   if (element.listStyle !== 'none') {
     textX += element.align === 'left' ? 24 : 0;
   }
-  
+
   // Draw each line
   lines.forEach((line, index) => {
     const textY = element.y + index * lineHeight;

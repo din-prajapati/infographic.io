@@ -37,6 +37,7 @@ Every PR is traceable from `git log` → Story → Milestone → Epic.
 |---------|-------|--------|---------|---------|
 | [EPIC-DESIGN-01](epics/phase-0-mvp/EPIC-DESIGN-01/EPIC.md) | MVP UI Design Consistency & Theme | 🟡 In Progress | US-001 ✅ · US-002 ✅ · US-003 🟡 · US-004 🟡 | US-003 AC3 + US-004 ACs (staging) |
 | [EPIC-DESIGN-02](epics/phase-0-mvp/EPIC-DESIGN-02/EPIC.md) | UI/UX Redesign — Blue/Amber/Warm-Cream Palette | ✅ Done (Phase 0 scope) | US-005–008 ✅ · US-009–011 → [EPIC-DESIGN-03](epics/phase-4-backlog/EPIC-DESIGN-03/EPIC.md) | — |
+| [EPIC-DESIGN-04](epics/phase-0.5-foundation/EPIC-DESIGN-04/EPIC.md) | Premium Sample Templates & Brand Customization | ✅ Done | US-012 ✅ | — |
 | EPIC-PAY-01 | MVP Payments Live | ✅ Done | All closed | — |
 | EPIC-AUTH-01 | MVP Auth (JWT + Google OAuth) | ✅ Done | All closed | — |
 | EPIC-EDIT-01 | Canvas Editor (CRUD + export) | ✅ Done | All closed | — |

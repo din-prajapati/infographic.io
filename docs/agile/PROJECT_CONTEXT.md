@@ -96,7 +96,7 @@ npm run dev starts:
 
 | Domain | Prefix | Scope | Next Epic # | Next Feature # | Next Story # |
 |--------|--------|-------|:-----------:|:--------------:|:------------:|
-| Design | DESIGN | UI/UX, design tokens, themes, components | 03 | 10 | 012 |
+| Design | DESIGN | UI/UX, design tokens, themes, components | 05 | 03 | 013 |
 | Payments | PAY | Subscription, billing, RazorPay/Stripe | 02 | 01 | 001 |
 | Auth | AUTH | Login, JWT, OAuth, sessions, API keys | 02 | 01 | 001 |
 | Editor | EDIT | Canvas editor, drag-resize, export | 02 | 01 | 001 |

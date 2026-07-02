@@ -38,27 +38,41 @@ export async function generateThumbnail(canvasElement?: HTMLElement): Promise<st
       return generatePlaceholderThumbnail();
     }
 
-    // Use html2canvas to capture the canvas
+    // Use html2canvas to capture the canvas at the artboard's native pixel
+    // dimensions (read from the store) so format-correct templates — e.g.
+    // the A4 flyer at 2480×3508 — export at true print-ready resolution.
+    const { canvasWidth, canvasHeight } = useCanvasStore.getState();
+    const exportW = canvasWidth || 1200;
+    const exportH = canvasHeight || 800;
+
     const canvas = await html2canvas(canvasElement, {
       backgroundColor: null,
-      scale: 0.5, // Reduce quality for thumbnail
+      scale: 0.5, // half-resolution capture is plenty for a thumbnail
       logging: false,
-      width: 1200,
-      height: 800,
+      width: exportW,
+      height: exportH,
     });
 
-    // Create thumbnail canvas
+    // Create thumbnail canvas preserving the artboard aspect ratio.
     const thumbnailCanvas = document.createElement('canvas');
     const ctx = thumbnailCanvas.getContext('2d');
-    
+
     if (!ctx) return generatePlaceholderThumbnail();
 
-    // Set thumbnail size (16:9 aspect ratio)
-    thumbnailCanvas.width = 320;
-    thumbnailCanvas.height = 180;
+    const thumbMaxW = 320;
+    const thumbMaxH = 320;
+    const ratio = exportW / exportH;
+    let thumbW = thumbMaxW;
+    let thumbH = Math.round(thumbMaxW / ratio);
+    if (thumbH > thumbMaxH) {
+      thumbH = thumbMaxH;
+      thumbW = Math.round(thumbMaxH * ratio);
+    }
+    thumbnailCanvas.width = thumbW;
+    thumbnailCanvas.height = thumbH;
 
     // Draw captured canvas scaled down
-    ctx.drawImage(canvas, 0, 0, 320, 180);
+    ctx.drawImage(canvas, 0, 0, thumbW, thumbH);
 
     return thumbnailCanvas.toDataURL('image/png');
   } catch (error) {
@@ -118,11 +132,18 @@ export function restoreCanvasData(canvasData: any): boolean {
     
     loadCanvas({
       elements: canvasData.elements || [],
+      selectedElementIds: [],
       canvasWidth: canvasData.canvasWidth || 1200,
       canvasHeight: canvasData.canvasHeight || 800,
       backgroundColor: canvasData.backgroundColor || '#FFFFFF',
       zoom: canvasData.zoom || 1,
+      canvasPanX: 0,
+      canvasPanY: 0,
+      history: { past: [], future: [] },
     });
+
+    // Ensure loaded templates/infographics are fully visible in the current viewport.
+    scheduleFitCanvasZoomToViewport();
 
     return true;
   } catch (error) {
@@ -145,12 +166,16 @@ export function fitCanvasZoomToViewport(): void {
     return;
   }
 
-  const padding = 96; // matches p-12 on canvas viewport
-  const availableW = Math.max(viewport.clientWidth - padding, 200);
-  const availableH = Math.max(viewport.clientHeight - padding, 150);
+  // Keep breathing room so the artboard never touches the viewport edge.
+  // Math.floor ensures the computed zoom never exceeds the exact fit —
+  // Math.round could round up (e.g. 0.165 → 0.17) causing a ~16px overflow.
+  const horizontalPadding = 80;
+  const verticalPadding = 80;
+  const availableW = Math.max(viewport.clientWidth - horizontalPadding, 200);
+  const availableH = Math.max(viewport.clientHeight - verticalPadding, 150);
   const scale = Math.min(availableW / canvasWidth, availableH / canvasHeight, 1);
 
-  setZoom(Math.max(0.15, Math.round(scale * 100) / 100));
+  setZoom(Math.max(0.15, Math.floor(scale * 100) / 100));
   resetPan();
 }
 
@@ -306,14 +331,24 @@ export async function exportCanvasAsImage(
 
     // Create a clean copy of the canvas element
     const canvasClone = canvasElement.cloneNode(true) as HTMLElement;
-    
+
+    // Derive export dimensions from the artboard (store), not a hardcoded
+    // 1200×800, so format-correct templates export at native resolution —
+    // e.g. the A4 flyer (2480×3508 @ 300 DPI) ships print-ready. Large
+    // print artboards already have print-density pixels, so scale 1 keeps
+    // memory bounded; smaller artboards get scale 2 (retina-quality).
+    const { canvasWidth, canvasHeight, backgroundColor } = useCanvasStore.getState();
+    const exportW = canvasWidth || 1200;
+    const exportH = canvasHeight || 800;
+    const exportScale = Math.max(exportW, exportH) >= 2000 ? 1 : 2;
+
     // Capture canvas with html2canvas
     const canvas = await html2canvas(canvasElement, {
-      backgroundColor: useCanvasStore.getState().backgroundColor,
-      scale: 2, // High quality
+      backgroundColor,
+      scale: exportScale, // High quality (1 for print-DPI artboards)
       logging: false,
-      width: 1200,
-      height: 800,
+      width: exportW,
+      height: exportH,
       useCORS: true,
       allowTaint: true,
       onclone: (clonedDoc, clonedElement) => {

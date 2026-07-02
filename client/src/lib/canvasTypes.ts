@@ -19,6 +19,13 @@ export interface BaseElement {
   visible: boolean;
   zIndex: number;
   name: string;
+  /**
+   * Semantic slot tag (e.g. "brand.logo", "property.price") that links an
+   * element to the sidebar Customize panel so brand/content edits propagate
+   * to the right element without manual selection. Additive — optional on
+   * all elements and absent on legacy designs.
+   */
+  slot?: string;
 }
 
 export interface TextElement extends BaseElement {
