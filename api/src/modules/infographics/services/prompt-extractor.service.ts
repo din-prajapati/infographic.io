@@ -1,6 +1,7 @@
 import { Injectable, Inject, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../../../common/services/prisma.service';
 import { OpenAiService } from '../../ai-generation/services/openai.service';
+import { prisma } from '../../../database/prisma.client';
 
 export interface ExtractedPropertyData {
   propertyType?: 'residential' | 'commercial' | 'land';
@@ -133,55 +134,44 @@ Return the extracted data as JSON.`;
 
       // Persist extraction to database if userId provided
       if (userId) {
-        if (!this.prisma) {
-          console.error('❌ [Extractor] PrismaService is undefined');
-          throw new Error('PrismaService is not available - database module may not be initialized');
-        }
-        
-        if (!this.prisma || typeof (this.prisma as any).extraction === 'undefined') {
-          const availableModels = this.prisma ? Object.keys(this.prisma).filter(k => !k.startsWith('$') && !k.startsWith('_')).join(', ') : 'none (PrismaService undefined)';
-          console.warn('⚠️ [Extractor] Prisma client missing extraction model. Falling back to in-memory result. Available models:', availableModels);
-        } else {
-          // Validate conversationId exists in DB before using as FK
-          let validConversationId: string | null = null;
-          if (conversationId) {
-            const conversation = await this.prisma.conversation.findUnique({
-              where: { id: conversationId },
-              select: { id: true },
-            }).catch(() => null);
+        // Validate conversationId exists in DB before using as FK
+        let validConversationId: string | null = null;
+        if (conversationId) {
+          const conversation = await prisma.conversation.findUnique({
+            where: { id: conversationId },
+            select: { id: true },
+          }).catch(() => null);
 
-            if (conversation) {
-              validConversationId = conversation.id;
-            } else {
-              console.warn(`⚠️ [Extractor] Conversation ${conversationId} not found in DB, storing extraction without conversation link`);
-            }
+          if (conversation) {
+            validConversationId = conversation.id;
+          } else {
+            console.warn(`⚠️ [Extractor] Conversation ${conversationId} not found in DB, storing extraction without conversation link`);
           }
+        }
 
-          const persisted = await this.prisma.extraction.create({
-            data: {
-              userId,
-              conversationId: validConversationId,
-              prompt,
-              extractedData: extractedData as any,
-              confidence,
-              missingFields,
-              suggestions,
-            },
-          });
-
-          console.log(`💾 [Extractor] Extraction persisted: ${persisted.id}`);
-
-
-          return {
-            id: persisted.id,
-            extractedData,
+        const persisted = await prisma.extraction.create({
+          data: {
+            userId,
+            conversationId: validConversationId,
+            prompt,
+            extractedData: extractedData as any,
             confidence,
             missingFields,
             suggestions,
-            createdAt: persisted.createdAt,
-            conversationId: persisted.conversationId,
-          };
-        }
+          },
+        });
+
+        console.log(`💾 [Extractor] Extraction persisted: ${persisted.id}`);
+
+        return {
+          id: persisted.id,
+          extractedData,
+          confidence,
+          missingFields,
+          suggestions,
+          createdAt: persisted.createdAt,
+          conversationId: persisted.conversationId,
+        };
       }
 
       // Fallback: return in-memory result if no userId (backward compatibility)
@@ -252,11 +242,11 @@ Return the extracted data as JSON.`;
     const suggestions = this.generateSuggestions(missingFields, extractedData);
 
     // Persist demo extraction if userId provided
-    if (userId && this.prisma && typeof (this.prisma as any).extraction !== 'undefined') {
+    if (userId) {
       // Validate conversationId exists in DB before using as FK
       let validConversationId: string | null = null;
       if (conversationId) {
-        const conversation = await this.prisma.conversation.findUnique({
+        const conversation = await prisma.conversation.findUnique({
           where: { id: conversationId },
           select: { id: true },
         }).catch(() => null);
@@ -266,7 +256,7 @@ Return the extracted data as JSON.`;
         }
       }
 
-      const persisted = await this.prisma.extraction.create({
+      const persisted = await prisma.extraction.create({
         data: {
           userId,
           conversationId: validConversationId,
@@ -331,11 +321,7 @@ Return the extracted data as JSON.`;
   }
 
   async getExtraction(id: string, userId?: string): Promise<ExtractionResult> {
-    if (!this.prisma || typeof (this.prisma as any).extraction === 'undefined') {
-      throw new NotFoundException(`Extraction ${id} not found - Prisma client not available`);
-    }
-    
-    const extraction = await this.prisma.extraction.findUnique({
+    const extraction = await prisma.extraction.findUnique({
       where: { id },
     });
 
