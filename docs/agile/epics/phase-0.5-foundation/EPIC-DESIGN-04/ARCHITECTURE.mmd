@@ -1,0 +1,35 @@
+flowchart LR
+  subgraph Gallery["Templates Gallery"]
+    TP["TemplatesPage.tsx"]:::good
+  end
+  subgraph Templates["Client-side Template Library"]
+    ST["starterCanvasTemplates.ts"]:::good
+    PT["premiumTemplates.ts (NEW)"]:::good
+    CAT["galleryTemplateCatalog.ts"]:::good
+  end
+  subgraph Editor["Canvas Editor"]
+    EL["EditorLayout.tsx"]:::good
+    RS["RightSidebar.tsx"]:::good
+    CP["CustomizePanel.tsx (NEW)"]:::good
+    CS["useCanvasStore (Zustand)"]:::good
+    TS["templateSlots.ts (NEW)"]:::good
+  end
+  subgraph Export["Export / Persist"]
+    CX["canvasState.ts\nexportCanvasAsImage"]:::bad
+    SD["saveDesign / storage"]:::good
+  end
+
+  TP -->|onOpenEditor id| EL
+  PT --> CAT
+  ST --> CAT
+  CAT -->|getStarterCanvasTemplateById| EL
+  EL -->|restoreCanvasData| CS
+  RS --> CP
+  CP -->|updateSlot/getSlotValue| TS
+  TS -->|elements by slot| CS
+  CP -->|image upload / palette| CS
+  CS --> CX
+  CS --> SD
+
+  classDef good fill:#0b3b2e,stroke:#14532d,color:#ecfdf5;
+  classDef bad  fill:#3b0b0b,stroke:#7f1d1d,color:#fef2f2;

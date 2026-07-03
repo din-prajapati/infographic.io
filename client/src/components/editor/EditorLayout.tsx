@@ -16,8 +16,17 @@ import {
   generateId,
   type DesignMetadata,
 } from "../../lib/storage";
-import { getGalleryTemplateDisplayName, isGalleryTemplateId, isAiGenerationId } from "../../lib/galleryTemplateCatalog";
-import { captureCanvasData, generateThumbnailSync, restoreCanvasData } from "../../lib/canvasState";
+import {
+  getGalleryCanvasTemplateById,
+  isGalleryTemplateId,
+  isAiGenerationId,
+} from "../../lib/galleryTemplateCatalog";
+import {
+  captureCanvasData,
+  generateThumbnailSync,
+  restoreCanvasData,
+  scheduleFitCanvasZoomToViewport,
+} from "../../lib/canvasState";
 import { downloadCanvas } from "../../lib/canvasExport";
 import { useCanvasStore } from "../../hooks/useCanvasStore";
 import { PanelStateProvider } from "../../lib/panelState";
@@ -79,11 +88,11 @@ export function EditorLayout({ onBackClick, designId, templateId }: EditorLayout
           toast.error('Failed to load design');
         }
       } else if (templateId) {
-        const galleryName = getGalleryTemplateDisplayName(templateId);
-        if (galleryName) {
-          setDesignName(`${galleryName} (Template)`);
-          // Gallery cards are preview-only — no API record; start with empty canvas
-          loadCanvas({ elements: [], canvasWidth: 1200, canvasHeight: 800, backgroundColor: '#FFFFFF', zoom: 1 });
+        const starterTemplate = getGalleryCanvasTemplateById(templateId);
+        if (starterTemplate) {
+          setDesignName(`${starterTemplate.name} (Template)`);
+          restoreCanvasData(starterTemplate.canvasData);
+          scheduleFitCanvasZoomToViewport();
           return;
         }
 
@@ -106,6 +115,7 @@ export function EditorLayout({ onBackClick, designId, templateId }: EditorLayout
 
             if (template.canvasData) {
               restoreCanvasData(template.canvasData);
+              scheduleFitCanvasZoomToViewport();
             }
           } else if (isGalleryTemplateId(templateId)) {
             setDesignName('Untitled Design');
@@ -120,6 +130,12 @@ export function EditorLayout({ onBackClick, designId, templateId }: EditorLayout
     return () => {
       cancelled = true;
     };
+  }, [designId, templateId]);
+
+  // Safety fit: when opening via URL params, re-fit once layout settles.
+  useEffect(() => {
+    if (!designId && !templateId) return;
+    scheduleFitCanvasZoomToViewport();
   }, [designId, templateId]);
 
   // Keyboard shortcuts

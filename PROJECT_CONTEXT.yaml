@@ -33,7 +33,7 @@ domains:
 
 counters:
   ADR: 1
-  DESIGN: { epic: 4, feature: 2, story: 12 }
+  DESIGN: { epic: 5, feature: 3, story: 13 }
   AI:     { epic: 7, feature: 1, story: 31 }
   AUTH:   { epic: 2, feature: 1, story: 5 }
   PAY:    { epic: 2, feature: 1, story: 5 }

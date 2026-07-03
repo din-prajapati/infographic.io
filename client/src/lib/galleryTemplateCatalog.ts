@@ -1,26 +1,38 @@
-/**
- * Built-in gallery cards on TemplatesPage (numeric ids 1–8).
- * These are not stored in LocalStorage/API; Editor uses this for URL + title only.
- */
-const GALLERY_BY_ID: Record<string, string> = {
-  "1": "Modern Real Estate",
-  "2": "Urban Living",
-  "3": "Cozy Home",
-  "4": "Penthouse Suite",
-  "5": "Family Residence",
-  "6": "Waterfront Villa",
-  "7": "Studio Apartment",
-  "8": "Downtown Condo",
-};
+import {
+  getStarterCanvasTemplateById,
+  STARTER_CANVAS_TEMPLATES,
+  type StarterCanvasTemplate,
+} from "./starterCanvasTemplates";
+import {
+  PREMIUM_CANVAS_TEMPLATES,
+  getPremiumCanvasTemplateById,
+} from "./premiumTemplates";
+
+/** All client-side gallery templates (starter + premium), keyed by id. */
+const GALLERY_BY_ID: Record<string, string> = Object.fromEntries(
+  [...STARTER_CANVAS_TEMPLATES, ...PREMIUM_CANVAS_TEMPLATES].map((t) => [t.id, t.name]),
+);
 
 export function getGalleryTemplateDisplayName(templateId: string): string | undefined {
   return GALLERY_BY_ID[templateId];
 }
 
-/** Built-in gallery cards use numeric ids 1–8; they are not in the API. */
+/** Built-in gallery cards (starter + premium) are client-side, not stored in API template tables. */
 export function isGalleryTemplateId(templateId: string): boolean {
   return templateId in GALLERY_BY_ID;
 }
+
+/**
+ * Resolve any client-side gallery template (starter or premium) by id.
+ * Falls back to starter-only lookup for callers that imported the old symbol.
+ */
+export function getGalleryCanvasTemplateById(
+  templateId: string,
+): StarterCanvasTemplate | undefined {
+  return getPremiumCanvasTemplateById(templateId) ?? getStarterCanvasTemplateById(templateId);
+}
+
+export { getStarterCanvasTemplateById };
 
 /** AI variation ids (e.g. cmxxx_var_1) are infographics, not canvas templates. */
 export function isAiGenerationId(id: string): boolean {
