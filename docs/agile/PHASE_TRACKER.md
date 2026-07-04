@@ -12,8 +12,8 @@
 | Phase | Release | Business Outcome | Status | Complete | Target |
 |-------|---------|-----------------|--------|----------|--------|
 | [Phase 0](#phase-0--mvp-launch) | v1.0 | Working product in production | 🟡 In Progress | **98%** | Week 1 of launch |
-| [Phase 1](#phase-1--release-11-usage--payments) | v1.1 | Users understand and manage their usage | 🔲 Not Started | 0% | Week 2–3 post-launch |
-| [Phase 2](#phase-2--release-12-billing--quality) | v1.2 | Stripe live, self-serve billing portal, refined AI output | 🔲 Not Started | 0% | Month 2 |
+| [Phase 1](#phase-1--release-11-revenue-strategy) | v1.1 | **Revenue strategy** — real-photo hybrid, listing kits, retention content | 🔲 Not Started | 0% | Post-launch + Phase 0.5 |
+| [Phase 2](#phase-2--release-12-polish--self-serve) | v1.2 | Conversational polish, refine loop, usage/billing self-serve | 🔲 Not Started | 0% | After Phase 1 gate |
 | [Phase 3](#phase-3--release-13-speed--batch) | v1.3 | Fast generation, batch uploads, volume pricing | 🔲 Not Started | 0% | Month 3 |
 | [Phase 4](#phase-4--release-20-b2b-api) | v2.0 | Developers can build on InfographicAI via API | 🔲 Not Started | 0% | Month 3–4 |
 | [Phase 5](#phase-5--release-21-analytics--optimization) | v2.1 | Admin visibility, AI cost optimization, performance | 🔲 Not Started | 0% | Month 5–6 |
@@ -96,61 +96,45 @@ Each phase requires a gate decision before the next phase starts:
 
 ---
 
-## Phase 1 — Release 1.1: Usage & Payments
+## Phase 1 — Release 1.1: Revenue Strategy
 
-> **Release:** v1.1 · **Status:** 🔲 Not Started  
-> **Outcome:** Subscribed users see a live usage dashboard, know when they're approaching limits, and can manage their payment method without contacting support.  
-> **Timeline:** Week 2–3 post-launch · **Effort:** ~15–20 hours
+> **Release:** v1.1 · **Status:** 🔲 Not Started · **Reprioritized 2026-07-03**  
+> **Outcome:** The product earns its price against Canva/Ideogram-direct: agents market with their REAL listing photos, one listing produces a complete multi-format marketing kit, and recurring content retains subscribers between listings.  
+> **Rationale:** [docs/research/2026-07-03-V4-PIPELINE-FIX-AND-PRODUCT-STRATEGY.md](../research/2026-07-03-V4-PIPELINE-FIX-AND-PRODUCT-STRATEGY.md) · **Effort:** ~50–70 hours
 
 ### Gate Criteria (Phase 0 → Phase 1)
 - [ ] Phase 0 production deployed
-- [ ] At least 1 real paying subscriber on production
+- [ ] Phase 0.5 closed (incl. EPIC-GEN-01 V4 pipeline merged)
 
-### Planned Epics
+### Planned Epics (priority order)
 
-| Epic | Domain | Focus | Status |
-|------|--------|-------|--------|
-| EPIC-USAGE-01 | Usage | Monthly chart, cost breakdown, usage alerts | 🔲 Plan |
-| EPIC-PAY-02 | Payments | Payment method management UI | 🔲 Plan |
+| # | Epic | Domain | Focus | Status |
+|---|------|--------|-------|--------|
+| 1 | [EPIC-AI-02](epics/phase-1-ai-core/EPIC-AI-02/EPIC.md) (deps only) | AI | US-AI-010 photo upload + US-AI-011 format selector | 🔲 |
+| 2 | [EPIC-AI-06](epics/phase-1-ai-core/EPIC-AI-06/EPIC.md) | AI | Hybrid Real-Photo Pipeline — real photo background, editable overlay, synthetic guard | 🔲 |
+| 3 | [EPIC-KIT-01](epics/phase-1-ai-core/EPIC-KIT-01/EPIC.md) | KIT | Listing Marketing Kits — multi-format batch, lifecycle, recurring content, compliance | 🔲 |
+| ∥ | [EPIC-OBS-00](epics/phase-1-ai-core/EPIC-OBS-00/EPIC.md) | INFRA | Sentry observability (parallel) | 🔲 |
 
-> Create these epics in `docs/agile/epics/` when Phase 0 gate clears.
-
-### Scope Summary (from PRD)
-
-| # | Feature | Domain | Effort |
-|---|---------|--------|--------|
-| 1.1 | Monthly Usage Chart (by plan tier) | USAGE | 4–6 h |
-| 1.2 | Cost Breakdown by AI Model (GPT-4o vs Ideogram) | USAGE | 3–4 h |
-| 1.3 | Usage Alerts (% threshold notifications) | USAGE | 2–3 h |
-| 1.4 | Payment Method Management UI | PAY | 4–6 h |
-| 1.5 | Unit tests for usage analytics service | USAGE | 2–3 h |
+> Former Phase 1 scope (usage dashboard, payment method UI, EPIC-AI-01 conversational core) moved to Phase 2 — polish follows revenue.
 
 ---
 
-## Phase 2 — Release 1.2: Billing & Quality
+## Phase 2 — Release 1.2: Polish & Self-Serve
 
-> **Release:** v1.2 · **Status:** 🔲 Not Started  
-> **Outcome:** Stripe is live as a second payment option; users can self-serve their billing history; AI-generated infographics are higher quality and more refined.  
-> **Timeline:** Month 2 · **Effort:** ~20–28 hours
+> **Release:** v1.2 · **Status:** 🔲 Not Started · **Rescoped 2026-07-03**  
+> **Outcome:** Conversational UX polish, refine loop, usage dashboard, payment self-serve — the polish that follows the Phase 1 revenue push.  
+> **Timeline:** After Phase 1 gate · **Effort:** ~60–80 hours
 
 ### Planned Epics
 
 | Epic | Domain | Focus | Status |
 |------|--------|-------|--------|
+| [EPIC-AI-01](epics/phase-2-ai-refine/EPIC-AI-01/EPIC.md) | AI | Conversational AI Core (intent · pre-plan · chips) — moved from Phase 1 | 🔲 |
+| [EPIC-AI-03](epics/phase-2-ai-refine/EPIC-AI-03/EPIC.md) | AI | Refine loop, element edit, R2 storage | 🔲 |
+| EPIC-AI-02 remainder | AI | Quality tiers UI · Campaign Mode UI (US-AI-012/013/014) | 🔲 |
+| EPIC-USAGE-01 | Usage | Monthly chart, cost breakdown, usage alerts — moved from old Phase 1 | 🔲 Plan |
+| EPIC-PAY-02 | Payments | Payment method management UI — moved from old Phase 1 | 🔲 Plan |
 | EPIC-PAY-03 | Payments | Stripe activation + billing portal | 🔲 Plan |
-| EPIC-AI-02 | AI | Multi-pass refinement, quality scoring | 🔲 Plan |
-| EPIC-USAGE-02 | Usage | Historical reports, data export | 🔲 Plan |
-
-### Scope Summary
-
-| # | Feature | Domain | Effort |
-|---|---------|--------|--------|
-| 2.1 | Stripe account setup + test checkout | PAY | 1–2 h |
-| 2.2 | Billing Portal UI (invoices, history) | PAY | 6–8 h |
-| 2.3 | Historical Usage Reports | USAGE | 4–6 h |
-| 2.4 | Export Usage Data (CSV) | USAGE | 2–3 h |
-| 2.5 | Multi-pass AI Refinement | AI | 4–6 h |
-| 2.6 | Quality Scoring System | AI | 2–3 h |
 
 ---
 

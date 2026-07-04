@@ -49,13 +49,16 @@ Every PR is traceable from `git log` → Story → Milestone → Epic.
 | Epic ID | Title | Phase Folder | Status | Effort | Stories |
 |---------|-------|-------------|--------|--------|---------|
 | [EPIC-AI-00](epics/phase-0.5-foundation/EPIC-AI-00/EPIC.md) | Foundation Fixes (Socket.io · GPT model · Nano Banana · Persistence) | [phase-0.5-foundation](epics/phase-0.5-foundation/) | 🔲 Not Started | 22h | US-AI-001 to US-AI-006 |
-| [EPIC-AI-01](epics/phase-1-ai-core/EPIC-AI-01/EPIC.md) | Conversational AI Core (intent · pre-plan · chips) | [phase-1-ai-core](epics/phase-1-ai-core/) | 🔲 Not Started | ~27h | US-AI-007 to US-AI-009 |
-| [EPIC-AI-02](epics/phase-1-ai-core/EPIC-AI-02/EPIC.md) | Generation Control (photo · format · quality · Campaign UI) | [phase-1-ai-core](epics/phase-1-ai-core/) | 🔲 Not Started | ~24h | US-AI-010 to US-AI-014 |
+| [EPIC-AI-01](epics/phase-2-ai-refine/EPIC-AI-01/EPIC.md) | Conversational AI Core (intent · pre-plan · chips) — demoted to Phase 2 (2026-07-03) | [phase-2-ai-refine](epics/phase-2-ai-refine/) | 🔲 Not Started | ~27h | US-AI-007 to US-AI-009 |
+| [EPIC-AI-02](epics/phase-1-ai-core/EPIC-AI-02/EPIC.md) | Generation Control — US-AI-010/011 first (deps of AI-06/KIT-01); rest → Phase 2 | [phase-1-ai-core](epics/phase-1-ai-core/) | 🔲 Not Started | ~24h | US-AI-010 to US-AI-014 |
 | [EPIC-AI-03](epics/phase-2-ai-refine/EPIC-AI-03/EPIC.md) | Refine Loop (quick refine · element edit · R2 storage · media tools) | [phase-2-ai-refine](epics/phase-2-ai-refine/) | 🔲 Not Started | ~97h | US-AI-015 to US-AI-022 |
 | [EPIC-AI-04](epics/phase-3-ai-advanced/EPIC-AI-04/EPIC.md) | Production Tools (mockup · outpaint · cleanup · Campaign backend) | [phase-3-ai-advanced](epics/phase-3-ai-advanced/) | 🔲 Not Started | ~72h | US-AI-023 to US-AI-026 |
 | [EPIC-AI-05](epics/phase-3-ai-advanced/EPIC-AI-05/EPIC.md) | Intelligence Enrichment (market data · agent profile · tone · search) | [phase-3-ai-advanced](epics/phase-3-ai-advanced/) | 🔲 Not Started | ~38h | US-AI-027 to US-AI-030 |
+| [EPIC-GEN-01](epics/phase-0.5-foundation/EPIC-GEN-01/EPIC.md) | Generation Quality — V4 Magic-Prompt Pipeline (garble fix · verify/repair · cost markers) | [phase-0.5-foundation](epics/phase-0.5-foundation/) | 🟡 In Progress | ~8h | US-GEN-001 to US-GEN-002 |
+| [EPIC-AI-06](epics/phase-1-ai-core/EPIC-AI-06/EPIC.md) | Hybrid Real-Photo Pipeline (real photo background · editable overlay · synthetic guard) — **promoted to Phase 1** | [phase-1-ai-core](epics/phase-1-ai-core/) | 🔲 Not Started | ~30h | US-AI-031 to US-AI-033 |
+| [EPIC-KIT-01](epics/phase-1-ai-core/EPIC-KIT-01/EPIC.md) | Listing Marketing Kits (multi-format batch · lifecycle · recurring content · compliance) — **promoted to Phase 1** | [phase-1-ai-core](epics/phase-1-ai-core/) | 🔲 Not Started | ~45h | US-KIT-001 to US-KIT-006 |
 
-> **Priority order:** EPIC-AI-00 runs parallel to final 3 MVP human tasks. EPIC-AI-01 + AI-02 start after MVP launch. EPIC-AI-03 follows in Month 3–6. EPIC-AI-04 + AI-05 are Month 6–12.
+> **Priority order (reprioritized 2026-07-03 — revenue strategy first):** EPIC-GEN-01 closes Phase 0.5. Phase 1 = US-AI-010/011 (deps) → EPIC-AI-06 → EPIC-KIT-01, with EPIC-OBS-00 parallel. EPIC-AI-01 + EPIC-AI-02 remainder + EPIC-AI-03 follow in Phase 2. EPIC-AI-04 + AI-05 are Month 6–12. Rationale: [docs/research/2026-07-03-V4-PIPELINE-FIX-AND-PRODUCT-STRATEGY.md](../research/2026-07-03-V4-PIPELINE-FIX-AND-PRODUCT-STRATEGY.md)
 >
 > **Model opacity rule (all AI epics):** Model names (Nano Banana, Gemini, Flash, Pro) must NEVER appear in any UI label, API response, or user-visible message. Users see: "Quick Generate", "Campaign Quality", "Social", "Print Quality".
 
@@ -130,7 +133,7 @@ docs/agile/
 | PR branch | `feat/{domain}-{story-slug}` | `feat/design-us-design-002-editor-tokens` |
 | Linear issue | Sync with story ID in title | `[US-DESIGN-002] Editor token replacement` |
 
-Domain prefixes: `DESIGN` · `PAY` · `AUTH` · `EDIT` · `AI` · `USAGE` · `INFRA` · `ORG`
+Domain prefixes: `DESIGN` · `PAY` · `AUTH` · `EDIT` · `AI` · `USAGE` · `INFRA` · `ORG` · `KIT` (listing kits) · `GEN` (generation quality)
 
 ---
 

@@ -100,13 +100,15 @@ npm run dev starts:
 | Payments | PAY | Subscription, billing, RazorPay/Stripe | 02 | 01 | 001 |
 | Auth | AUTH | Login, JWT, OAuth, sessions, API keys | 02 | 01 | 001 |
 | Editor | EDIT | Canvas editor, drag-resize, export | 02 | 01 | 001 |
-| AI | AI | GPT-4o, Ideogram, generation pipeline, refinement | 06 | 31 | 031 |
+| AI | AI | GPT-4o, Ideogram, generation pipeline, refinement | 07 | 34 | 034 |
 | Usage | USAGE | Usage tracking, analytics, limit alerts | 01 | 01 | 001 |
 | Infrastructure | INFRA | Railway, Sentry, DB migrations, CI/CD | 02 | 01 | 001 |
 | Organisation | ORG | Teams, workspace, multi-user, brand kit | 01 | 01 | 001 |
 | API (B2B) | API | REST API, key management, webhooks, portal | 01 | 01 | 001 |
 | Testing | TEST | Test infrastructure, coverage, QA automation | 01 | 01 | 001 |
 | Mobile | MOBILE | React Native / PWA mobile app | 01 | 01 | 001 |
+| Listing Kits | KIT | Multi-format kits, lifecycle, recurring content, compliance | 02 | 05 | 007 |
+| Generation Quality | GEN | Image-generation pipeline quality, prompt engineering, cost control | 02 | 03 | 003 |
 
 > To add a new domain: append a row here, pick an unused 2-6 char UPPERCASE prefix, start all counters at `01` / `001`.
 
@@ -118,8 +120,8 @@ npm run dev starts:
 |-------|--------|---------|--------|-----------------|
 | Phase 0 | `phase-0-mvp` | v1.0 | 🟡 99% | Working product in production |
 | Phase 0.5 | `phase-0.5-foundation` | (parallel) | 🔲 | AI pipeline stability + model swap |
-| Phase 1 | `phase-1-ai-core` | v1.1 | 🔲 | Conversational AI + generation control |
-| Phase 2 | `phase-2-ai-refine` | v1.2 | 🔲 | Refine loop + element editing |
+| Phase 1 | `phase-1-ai-core` | v1.1 | 🔲 | **Revenue strategy** — real-photo hybrid + listing kits (reprioritized 2026-07-03) |
+| Phase 2 | `phase-2-ai-refine` | v1.2 | 🔲 | Refine loop + conversational polish + usage/payments UI |
 | Phase 3 | `phase-3-ai-advanced` | v1.3 | 🔲 | Production tools + intelligence enrichment |
 | Phase 4 | `phase-4-backlog` | — | 🔲 Deferred | Promoted by business trigger, not calendar |
 
