@@ -1,7 +1,7 @@
 # EPIC-GEN-01 — Generation Quality: V4 Magic-Prompt Pipeline
 
 > **Phase:** Phase 0.5 — Foundation Repair
-> **Status:** 🟡 In Progress (US-GEN-001 implemented on branch, PR pending)
+> **Status:** 🟡 Stories 2/2 done (PRs #12, #13) — staging + invoice DoD pending
 > **Linear Project:** LIN-EPIC-GEN-01
 > **Target date:** 2026-07-05
 > **Owner:** Dinesh
@@ -30,8 +30,8 @@
 
 | Story ID | Title | Milestone | Size | Status | PR |
 |----------|-------|-----------|------|--------|----|
-| [US-GEN-001](stories/US-GEN-001/STORY.md) | V4 magic-prompt pipeline — modular restructure with verified exact text | M-GEN-01 | L | 🟡 In Review | [#12](https://github.com/din-prajapati/infographic.io/pull/12) |
-| [US-GEN-002](stories/US-GEN-002/STORY.md) | Unit tests for prompt builder + verify/repair | M-GEN-01 | S | 🔲 | — |
+| [US-GEN-001](stories/US-GEN-001/STORY.md) | V4 magic-prompt pipeline — modular restructure with verified exact text | M-GEN-01 | L | ✅ Done | [#12](https://github.com/din-prajapati/infographic.io/pull/12) |
+| [US-GEN-002](stories/US-GEN-002/STORY.md) | Unit tests for prompt builder + verify/repair | M-GEN-01 | S | ✅ Done | [#13](https://github.com/din-prajapati/infographic.io/pull/13) |
 
 ---
 
@@ -55,10 +55,10 @@
 
 ## Definition of Done (Epic)
 
-- [ ] All stories have PR merged and STORY.md status = ✅ Done
+- [x] All stories have PR merged and STORY.md status = ✅ Done (PRs #12 + #13, 2026-07-04)
 - [x] E2E verified on localhost (2026-07-03)
 - [ ] Verified on staging environment
-- [x] `npm run check` + `npm run test:unit` passing (41/41)
+- [x] `npm run check` + `npm run test:unit` passing (64/64 incl. 23 prompt-builder tests)
 - [ ] AGILE_INDEX.md epic row updated to ✅ Done
 - [ ] `V4_MAGIC_PROMPT_COST` verified against first Ideogram invoice
 
@@ -79,4 +79,4 @@ Key files relevant to this epic:
 
 ---
 
-*Epic created: 2026-07-03 | Last updated: 2026-07-03*
+*Epic created: 2026-07-03 | Last updated: 2026-07-04*
