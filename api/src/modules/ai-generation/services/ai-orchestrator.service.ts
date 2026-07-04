@@ -5,6 +5,13 @@ import { IdeogramService } from './ideogram.service';
 import { getTotalCost } from '../../../config/ai-models.config';
 import { normalizeImageModel } from '../../../config/image-generation.config';
 import { logGen, elapsed } from '../../../common/utils/ai-gen-logger';
+import {
+  buildImagePrompt,
+  buildExpectedTexts,
+  verifyAndRepairV4JsonPrompt,
+  applyStylePreset,
+  getVariationModifier,
+} from './infographic-prompt.builder';
 
 @Injectable()
 export class AiOrchestrator {
@@ -48,6 +55,10 @@ export class AiOrchestrator {
     const GEMINI_TIERS = new Set(['free', 'solo', 'team']);
     const textModel = GEMINI_TIERS.has(planTier) ? 'gemini-2.5-flash' : 'gpt-4o';
 
+    console.log('\n🔵 ========== ORCHESTRATOR START ==========');
+    console.log(`[Orchestrator] id=${infographicId} model=${imageModel} orient=${orientation} variations=${variations} demo=${isDemoMode}`);
+    console.log('==========================================\n');
+
     logGen({
       generationId: infographicId,
       event: 'gen:start',
@@ -76,16 +87,26 @@ export class AiOrchestrator {
           imageUrls.push(this.generateDemoImageUrl(propertyData, i));
         }
       } else {
-        // Step 1 — Property analysis (text model)
+        // ────────────────────────────────────────────────────────────────
+        // STEP 1 — Headline
+        // User-typed headline → used verbatim, FREE (no AI call).
+        // Otherwise → 💰 AI CALL: LLM headline generation, tier-routed
+        // (FREE/SOLO/TEAM → Gemini 2.5 Flash, BROKERAGE → GPT-4o).
+        // ────────────────────────────────────────────────────────────────
         const t1 = Date.now();
-        logGen({ generationId: infographicId, event: 'gen:headline:start', textModel });
-        try {
-          headline = await this.openAiService.analyzeProperty(propertyData, planTier);
-          logGen({ generationId: infographicId, event: 'gen:headline:ok', textModel, durationMs: elapsed(t1) });
-        } catch (err: any) {
-          logGen({ generationId: infographicId, event: 'gen:headline:error', textModel, durationMs: elapsed(t1), error: err?.message }, 'error');
-          progressGateway?.emitProgress(infographicId, { status: 'failed', errorMessage: 'Generation failed — please try again.' });
-          throw new Error(`OpenAI generation failed: ${err?.message || 'Unknown error'}`);
+        if (propertyData.headline) {
+          headline = propertyData.headline;
+          logGen({ generationId: infographicId, event: 'gen:headline:user-provided', value: headline });
+        } else {
+          logGen({ generationId: infographicId, event: 'gen:headline:start', textModel });
+          try {
+            headline = await this.openAiService.analyzeProperty(propertyData, planTier);
+            logGen({ generationId: infographicId, event: 'gen:headline:ok', textModel, durationMs: elapsed(t1) });
+          } catch (err: any) {
+            logGen({ generationId: infographicId, event: 'gen:headline:error', textModel, durationMs: elapsed(t1), error: err?.message }, 'error');
+            progressGateway?.emitProgress(infographicId, { status: 'failed', errorMessage: 'Generation failed — please try again.' });
+            throw new Error(`OpenAI generation failed: ${err?.message || 'Unknown error'}`);
+          }
         }
 
         progressGateway?.emitProgress(infographicId, {
@@ -94,13 +115,43 @@ export class AiOrchestrator {
           stepLabel: 'Creating image prompt...',
         });
 
-        // Step 2 — Build image prompt + generate images
+        // ────────────────────────────────────────────────────────────────
+        // STEP 2 — Build the canonical text prompt (pure TypeScript — FREE)
+        // Single source of truth for ALL model families. This exact format
+        // is production-proven to render clean text on every Ideogram model.
+        // ────────────────────────────────────────────────────────────────
+        const isV4 = imageModel.startsWith('ideogram-4');
         const t2 = Date.now();
-        logGen({ generationId: infographicId, event: 'gen:prompt:start', textModel });
+        logGen({ generationId: infographicId, event: 'gen:prompt:start', textModel, isV4 });
         try {
-          let imagePrompt = await this.openAiService.generateImagePrompt(propertyData, headline);
-          if (style) imagePrompt = this.applyStylePreset(imagePrompt, style);
-          logGen({ generationId: infographicId, event: 'gen:prompt:ok', textModel, durationMs: elapsed(t2) });
+          const imagePrompt = applyStylePreset(buildImagePrompt(propertyData, headline), style);
+          logGen({ generationId: infographicId, event: 'gen:prompt:ok', durationMs: elapsed(t2) });
+
+          // ────────────────────────────────────────────────────────────────
+          // STEP 3 (V4 only) — Convert text prompt → art-directed json_prompt
+          //   3a. 💰 AI CALL: Ideogram magic-prompt-v4 (1 call, shared by all
+          //       variations). Returns layout scaffolding + typography + exact
+          //       colors — the structure V4 was trained on. Hand-built JSON
+          //       causes garbled filler panels (see experiment 2026-07-03).
+          //   3b. Verify/repair (FREE): confirm our exact strings survived
+          //       conversion; conservatively fix only what drifted.
+          //   Fallback: conversion failure → V3 text path (proven quality)
+          //   instead of failing the generation.
+          // ────────────────────────────────────────────────────────────────
+          let v4JsonPrompt: Record<string, any> | null = null;
+          if (isV4) {
+            try {
+              const converted = await this.ideogramService.convertTextPromptToV4Json(imagePrompt, orientation, infographicId);
+              const { jsonPrompt, repairs } = verifyAndRepairV4JsonPrompt(converted, buildExpectedTexts(propertyData, headline));
+              if (repairs.length > 0) {
+                logGen({ generationId: infographicId, event: 'v4:jsonprompt:repaired', repairs }, 'warn');
+              }
+              v4JsonPrompt = jsonPrompt;
+            } catch (convErr: any) {
+              logGen({ generationId: infographicId, event: 'v4:magicprompt:fallback-v3', error: convErr?.message }, 'warn');
+              // v4JsonPrompt stays null → V3 text path below
+            }
+          }
 
           progressGateway?.emitProgress(infographicId, {
             status: 'processing',
@@ -108,15 +159,34 @@ export class AiOrchestrator {
             stepLabel: `Generating ${variations} image${variations > 1 ? 's' : ''}...`,
           });
 
+          // ────────────────────────────────────────────────────────────────
+          // STEP 4 — 💰 AI CALL(s): generate images (per-image cost × variations)
+          //   V4:    same json_prompt for every variation — diffusion seeds
+          //          differ per call, so photo/background vary while the
+          //          verified layout and exact text stay intact.
+          //   V2/V3: text prompt + per-variation style modifier, magic
+          //          prompt OFF (prompt rendered verbatim).
+          // ────────────────────────────────────────────────────────────────
           const t3 = Date.now();
           logGen({ generationId: infographicId, event: 'gen:image:start', imageModel, variations, orientation });
 
           const generationPromises = [];
           for (let i = 0; i < variations; i++) {
-            const variationPrompt = variations > 1
-              ? `${imagePrompt} Variation ${i + 1}: ${this.getVariationModifier(i, style)}`
-              : imagePrompt;
-            generationPromises.push(this.ideogramService.generateImage(variationPrompt, imageModel, orientation, infographicId));
+            if (v4JsonPrompt) {
+              generationPromises.push(
+                this.ideogramService.generateImageV4(v4JsonPrompt, imageModel, orientation, infographicId),
+              );
+            } else {
+              // V2/V3 — or V4 whose magic-prompt conversion failed (falls back
+              // to the proven V3 endpoint via generateImage's model routing)
+              const effectiveModel = isV4 ? 'ideogram-3' : imageModel;
+              const variationPrompt = variations > 1
+                ? `${imagePrompt}\n- Variation style: ${getVariationModifier(i)}`
+                : imagePrompt;
+              generationPromises.push(
+                this.ideogramService.generateImage(variationPrompt, effectiveModel, orientation, infographicId),
+              );
+            }
           }
 
           imageUrls = await Promise.all(generationPromises);
@@ -219,31 +289,6 @@ export class AiOrchestrator {
       logGen({ generationId: infographicId, event: 'gen:failed', error: error?.message, totalDurationMs: elapsed(t0) }, 'error');
       throw error;
     }
-  }
-
-  private applyStylePreset(prompt: string, style: string): string {
-    const styleModifiers: Record<string, string> = {
-      modern: 'Modern, minimalist design with clean lines and contemporary typography',
-      classic: 'Classic, traditional design with elegant serif fonts and timeless aesthetics',
-      luxury: 'Luxury, high-end design with premium materials and sophisticated color palette',
-      minimal: 'Minimalist design with lots of white space and simple, clean elements',
-      vibrant: 'Vibrant, colorful design with bold typography and energetic color scheme',
-      professional: 'Professional, corporate design with formal typography and conservative colors',
-    };
-
-    const modifier = styleModifiers[style] || '';
-    return modifier ? `${prompt}. Style: ${modifier}` : prompt;
-  }
-
-  private getVariationModifier(index: number, style?: string): string {
-    const modifiers = [
-      'slightly different color scheme',
-      'alternative layout arrangement',
-      'different typography emphasis',
-      'varied visual hierarchy',
-      'alternative composition',
-    ];
-    return modifiers[index % modifiers.length];
   }
 
   private getVariationDescription(index: number, style?: string): string {

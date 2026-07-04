@@ -57,6 +57,25 @@ export function PropertyDetailsForm() {
           </Select>
         </div>
 
+        {/* Headline — optional; blank = AI auto-generates one */}
+        <div className="space-y-2">
+          <Label htmlFor="headline" className="text-sm">
+            Headline
+          </Label>
+          <Input
+            id="headline"
+            type="text"
+            placeholder="e.g. Stunning Hilltop Retreat"
+            value={property.headline}
+            onChange={(e) => setProperty({ headline: e.target.value })}
+            maxLength={35}
+            className="h-9"
+          />
+          <p className="text-xs text-muted-foreground">
+            Max 35 chars · Leave blank and AI will write one for you
+          </p>
+        </div>
+
         {/* Price */}
         <div className="space-y-2">
           <Label htmlFor="price" className="text-sm">

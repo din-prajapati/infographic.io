@@ -4,6 +4,9 @@ export type PropertyType = 'residential' | 'commercial' | 'luxury' | 'land';
 
 export interface PropertyInfo {
   type: PropertyType;
+  /** User-written headline shown on the infographic (max 35 chars).
+   *  When blank the AI generates one automatically. */
+  headline: string;
   price: string;
   beds: number;
   baths: number;
@@ -21,6 +24,7 @@ interface PropertyStore {
 
 const DEFAULT_PROPERTY: PropertyInfo = {
   type: 'residential',
+  headline: '',
   price: '',
   beds: 0,
   baths: 0,

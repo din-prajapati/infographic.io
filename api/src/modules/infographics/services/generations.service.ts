@@ -149,6 +149,8 @@ export class GenerationsService {
       agent: agentData,
       aiModel: dto.model || 'ideogram-turbo',
       orientation: dto.orientation || 'landscape',
+      // undefined = no user headline → orchestrator will call LLM to generate one
+      headline: dto.headline?.trim() || undefined,
     };
 
     // Generate infographic using existing service

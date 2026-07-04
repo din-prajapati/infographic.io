@@ -26,7 +26,9 @@ export class GenerationsController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Generate infographic from AI chat prompt' })
   async generateFromChat(@Body() dto: GenerateFromChatDto, @Req() req: any) {
-    console.log(`📝 [GenerationsController] Received generation request from user ${req.user.id}`);
+    console.log('\n🟢 ========== GENERATION REQUEST RECEIVED ==========');
+    console.log(`📝 [GenerationsController] user=${req.user.id} prompt="${dto.prompt?.substring(0, 80)}" model=${dto.model} orient=${dto.orientation}`);
+    console.log('===================================================\n');
     const userId = req.user.id;
     const organizationId = req.user.organizationId ?? null;
     

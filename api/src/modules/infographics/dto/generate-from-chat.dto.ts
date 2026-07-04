@@ -61,15 +61,24 @@ export class GenerateFromChatDto {
   @IsOptional()
   style?: string;
 
-  @ApiProperty({ 
+  @ApiProperty({
     example: 'ideogram-turbo',
     description: 'AI model to use for image generation',
     required: false,
-    enum: ['ideogram-turbo', 'ideogram-v2', 'nano-banana-pro']
+    enum: ['ideogram-turbo', 'ideogram-v2', 'nano-banana-pro', 'ideogram-3', 'ideogram-4']
   })
-  @IsEnum(['ideogram-turbo', 'ideogram-v2', 'nano-banana-pro'])
+  @IsEnum(['ideogram-turbo', 'ideogram-v2', 'nano-banana-pro', 'ideogram-3', 'ideogram-4'])
   @IsOptional()
-  model?: 'ideogram-turbo' | 'ideogram-v2' | 'nano-banana-pro';
+  model?: 'ideogram-turbo' | 'ideogram-v2' | 'nano-banana-pro' | 'ideogram-3' | 'ideogram-4';
+
+  @ApiProperty({
+    example: 'Stunning Hilltop Retreat',
+    description: 'Optional headline text (max 35 chars). When provided the backend skips the LLM headline call.',
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  headline?: string;
 
   @ApiProperty({
     example: 'landscape',

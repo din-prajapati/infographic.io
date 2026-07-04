@@ -6,6 +6,7 @@ import { OpenAiService } from './openai.service';
 import { IdeogramService } from './ideogram.service';
 import { getTotalCost } from '../../../config/ai-models.config';
 import { normalizeImageModel } from '../../../config/image-generation.config';
+import { buildImagePrompt } from './infographic-prompt.builder';
 
 @Processor('infographic-generation')
 @Injectable()
@@ -54,10 +55,12 @@ export class InfographicProcessor {
         headline = await this.openAiService.analyzeProperty(propertyData, planTier);
         console.log(`✍️ [Processor] Generated headline: ${headline}`);
 
-        const imagePrompt = await this.openAiService.generateImagePrompt(propertyData, headline);
+        // Build canonical text prompt (pure TS — FREE, no AI call)
+        const imagePrompt = buildImagePrompt(propertyData, headline);
         console.log(`🎨 [Processor] Calling Ideogram for ${infographicId}...`);
         const aiModel = normalizeImageModel(propertyData.aiModel || 'ideogram-turbo');
         const orientation = propertyData.orientation || 'landscape';
+        // 💰 AI CALL — Ideogram image generation (text-prompt path)
         imageUrl = await this.ideogramService.generateImage(imagePrompt, aiModel, orientation);
         console.log(`🖼️ [Processor] Got image URL: ${imageUrl.substring(0, 80)}...`);
       }
