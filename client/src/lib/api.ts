@@ -83,10 +83,12 @@ export interface GenerateFromChatInput {
   extractionId?: string;
   conversationId?: string;
   style?: string;
-  model?: 'ideogram-turbo' | 'ideogram-v2' | 'nano-banana-pro';
+  model?: 'ideogram-turbo' | 'ideogram-v2' | 'nano-banana-pro' | 'ideogram-3' | 'ideogram-4';
   orientation?: 'landscape' | 'portrait' | 'square';
   variations?: number;
   agent?: AgentInput;
+  /** User-written headline; if provided the backend skips the LLM headline call. */
+  headline?: string;
 }
 
 export interface GenerationStatus {

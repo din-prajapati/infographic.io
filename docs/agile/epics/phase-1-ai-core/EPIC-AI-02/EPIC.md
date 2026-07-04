@@ -1,6 +1,7 @@
 # EPIC-AI-02 — Generation Control
 
-> **Phase:** Phase 1 — Conversational AI (Month 1–3, parallel with EPIC-AI-01)
+> **Phase:** Phase 1 — Revenue Strategy
+> **Priority note (2026-07-03):** US-AI-010 (photo upload) and US-AI-011 (format selector) are hard dependencies of the promoted revenue epics — implement these two FIRST. Remaining stories (US-AI-012/013/014 quality tiers + Campaign UI, US-PANEL-01) are deprioritized behind EPIC-AI-06 and EPIC-KIT-01.
 > **Status:** 🔲 Not Started
 > **Depends on:** EPIC-AI-00 complete
 > **Linear Project:** LIN-EPIC-AI-02

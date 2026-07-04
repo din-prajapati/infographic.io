@@ -1,6 +1,6 @@
 # EPIC-AI-01 — Conversational AI Core
 
-> **Phase:** Phase 1 — Conversational AI (Month 1–3)
+> **Phase:** Phase 2 — AI Refine (demoted from Phase 1 on 2026-07-03 — conversational polish yields to revenue-strategy epics EPIC-AI-06 + EPIC-KIT-01)
 > **Status:** 🔲 Not Started
 > **Depends on:** EPIC-AI-00 complete (all 6 foundation fixes)
 > **Linear Project:** LIN-EPIC-AI-01

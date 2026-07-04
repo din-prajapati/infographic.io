@@ -69,6 +69,14 @@ export const OPENAI_COSTS = {
   gpt4oPerRequest: 0.004,
 };
 
+/**
+ * Ideogram magic-prompt-v4 conversion — one call per V4 generation
+ * (shared across variations). Not yet priced on Ideogram's public pricing
+ * page; treated as $0 until confirmed. TODO: verify against first
+ * production invoice and fold into getTotalCost() if non-zero.
+ */
+export const V4_MAGIC_PROMPT_COST = 0;
+
 export function getModelCost(modelName: string): number {
   const normalized =
     modelName === 'ideogram-v2' ? 'ideogram-2' : modelName;

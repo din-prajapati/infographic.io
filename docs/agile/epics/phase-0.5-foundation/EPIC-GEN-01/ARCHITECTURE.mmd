@@ -1,0 +1,22 @@
+flowchart LR
+  subgraph Inputs["User"]
+    A["Chat prompt / property form<br/>(optional user headline)"]
+  end
+  subgraph Text["LLM steps (💰 tier-routed)"]
+    B["Extraction<br/>Gemini Flash / GPT-4o"]:::good
+    C["Headline<br/>skipped if user-typed"]:::good
+  end
+  subgraph Build["Pure TS (FREE)"]
+    D["infographic-prompt.builder.ts<br/>buildImagePrompt — single source"]:::new
+    E["verifyAndRepairV4JsonPrompt<br/>conservative repair"]:::new
+  end
+  subgraph Ideogram["Ideogram (💰)"]
+    F["magic-prompt-v4<br/>text → art-directed json_prompt"]:::new
+    G["generate-v4<br/>speed mapped from model tier"]:::new
+    H["V2/V3 generate<br/>text prompt, MP OFF<br/>(also V4 fallback)"]:::good
+  end
+  A --> B --> C --> D
+  D -->|"V4"| F --> E --> G
+  D -->|"V2/V3 or V4 fallback"| H
+  classDef good fill:#0b3b2e,stroke:#14532d,color:#ecfdf5;
+  classDef new  fill:#1e3a5f,stroke:#2563eb,color:#eff6ff;

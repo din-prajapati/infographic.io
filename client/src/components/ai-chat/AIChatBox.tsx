@@ -55,6 +55,7 @@ import {
 } from "../../lib/aiGenerationSettings";
 import { useGenerationWebSocket } from "../../hooks/useGenerationWebSocket";
 import { useAgentStore } from "../../hooks/useAgentStore";
+import { usePropertyStore } from "../../hooks/usePropertyStore";
 import { useCanvasStore } from "../../hooks/useCanvasStore";
 
 interface AIChatBoxProps {
@@ -192,6 +193,8 @@ export function AIChatBox({
 
   // Agent info from the sidebar Agent Info Form (shared Zustand store)
   const agentInfo = useAgentStore((s) => s.agent);
+  // headline from Property Form — empty string means "let AI generate it"
+  const propertyHeadline = usePropertyStore((s) => s.property.headline);
   // Brand colors applied in the sidebar Design tab (canvas store)
   const selectedThemeColors = useCanvasStore((s) => s.selectedThemeColors);
 
@@ -699,6 +702,8 @@ export function AIChatBox({
         variations: 3,
         model: generationQualityModel,
         orientation: generationOrientation,
+        // Pass user-written headline if filled in — backend skips LLM call when present
+        headline: propertyHeadline.trim() || undefined,
         agent: {
           name: agentInfo.name || undefined,
           brokerage: agentInfo.brokerage || undefined,

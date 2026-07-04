@@ -1,0 +1,54 @@
+{
+  "compositional_deconstruction": {
+    "background": "Full-bleed architectural photograph of a sleek contemporary home filling the entire 16:9 frame, slightly desaturated editorial grade with cool-neutral white balance under soft overcast daylight. The house shows clean horizontal lines, floor-to-ceiling glass panels, a warm wood-clad facade in honey-brown tones, and a minimalist landscaped front yard with a single sculptural tree. No warm cast on the facade; the palette reads cool-neutral with warm brown accents from the wood cladding.",
+    "elements": [
+      {
+        "desc": "Charcoal-black semi-transparent panel anchored along the left third of the frame, roughly 85% opacity so the architecture reads faintly through it. Solid rectangular block spanning full frame height, edge-to-edge along the left side.",
+        "type": "obj"
+      },
+      {
+        "desc": "Thin antique-gold hairline rule running horizontally across the charcoal panel, separating the headline block above from the address and agent details below. Single-pixel weight, muted gold #B8924A.",
+        "type": "obj"
+      },
+      {
+        "desc": "Small solid antique-gold square accent mark beside the agent name at the bottom-left of the charcoal panel, acting as a brand flourish. Muted gold #B8924A.",
+        "type": "obj"
+      },
+      {
+        "desc": "Off-white rectangular card anchored in the lower-right corner of the frame, solid warm off-white #F2EDE4 with a subtle soft drop shadow lifting it off the photograph behind. Holds the price and bed/bath specs.",
+        "type": "obj"
+      },
+      {
+        "desc": "Large stacked headline across the upper portion of the charcoal panel, set in an elegant high-contrast Didone-style serif in muted antique gold #B8924A. Tightly tracked caps, three lines, left-aligned, horizontal.",
+        "text": "SLEEK\nCONTEMPORARY\nOASIS",
+        "type": "text"
+      },
+      {
+        "desc": "Medium-sized address text beneath the gold hairline rule on the charcoal panel. Clean geometric sans-serif in warm off-white, tracked caps, regular weight, left-aligned, horizontal.",
+        "text": "123 MAIN ST",
+        "type": "text"
+      },
+      {
+        "desc": "Small agent name at the bottom-left of the charcoal panel, to the right of the gold square accent mark. Geometric sans-serif in pure white, tracked caps, regular weight, left-aligned, horizontal.",
+        "text": "JOHN SMITH",
+        "type": "text"
+      },
+      {
+        "desc": "Smaller broker name directly beneath the agent name. Geometric sans-serif in muted antique gold #B8924A, tightly tracked caps, light weight, left-aligned, horizontal.",
+        "text": "RE/MAX GOLD",
+        "type": "text"
+      },
+      {
+        "desc": "Oversized price numerals centered on the off-white card. Heavy charcoal serif in deep charcoal #1A1A1A, large display size dominating the card, horizontal, centered.",
+        "text": "$520K",
+        "type": "text"
+      },
+      {
+        "desc": "Small bed and bath specs beneath the price on the off-white card. Tracked geometric sans-serif caps in charcoal #1A1A1A, separated by a thin antique-gold vertical pipe, horizontal, centered.",
+        "text": "3 BED  |  2 BATH",
+        "type": "text"
+      }
+    ]
+  },
+  "high_level_description": "A modern luxury real estate listing infographic with editorial typography overlaid on a hero photograph of a sleek contemporary home, featuring a charcoal left-third panel with gold serif headline and an off-white lower-right price card."
+}

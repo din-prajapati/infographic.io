@@ -1,0 +1,10 @@
+Professional real estate listing infographic:
+- Headline: "Sleek Contemporary Oasis"
+- Address: 123 Main St
+- Price: $520K
+- Details: 3 BED | 2 BATH
+- Agent: John Smith, RE/MAX Gold
+- Color scheme: use charcoal black, gold, white, off-white, warm brown as the primary colors throughout the design
+- Style: modern luxury real estate marketing, photo-overlay layout, editorial typography
+- Layout: property photo as full background, text elements overlaid with strong hierarchy
+- Render every text element accurately and legibly

@@ -1,0 +1,13 @@
+{
+  "response_type": "url",
+  "created": "2026-07-03T13:20:30.274036+00:00",
+  "data": [
+    {
+      "url": "https://ideogram.ai/api/images/ephemeral/goDB0c0PUUCjEsXJIZPIFQ.png?exp=1783171237&sig=737987e5136340c3f194a5f33a591a4f3a2c6c50f076813921027de0efac8821",
+      "prompt": "{\n \"high_level_description\": \"Professional real estate listing infographic. Modern luxury marketing design, photo overlay layout. Color scheme: charcoal black, gold, white, off-white, warm brown. Strong typographic hierarchy. All text must be rendered with perfect legibility.\",\n \"style_description\": {\n \"aesthetics\": \"modern luxury real estate marketing, charcoal black, gold, white, off-white, warm brown color palette\",\n \"art_style\": \"contemporary editorial graphic design\",\n \"lighting\": \"natural daylight, clean and bright\",\n \"medium\": \"digital marketing material\"\n },\n \"compositional_deconstruction\": {\n \"background\": \"Exterior photo of a residential property, attractive architecture, professional real estate photography\",\n \"elements\": [\n {\n \"type\": \"text\",\n \"text\": \"Sleek Contemporary Oasis\",\n \"desc\": \"Large headline in elegant serif font, positioned prominently in upper area\"\n },\n {\n \"type\": \"text\",\n \"text\": \"123 Main St\",\n \"desc\": \"Property address in smaller text below headline\"\n },\n {\n \"type\": \"text\",\n \"text\": \"$520K\",\n \"desc\": \"Listing price in bold large text, visually prominent\"\n },\n {\n \"type\": \"text\",\n \"text\": \"3 BED | 2 BATH\",\n \"desc\": \"Property details — beds, baths, square footage in small caps\"\n },\n {\n \"type\": \"text\",\n \"text\": \"John Smith, RE/MAX Gold\",\n \"desc\": \"Agent name and brokerage in footer area, smaller text\"\n }\n ]\n }\n}",
+      "resolution": "2560x1440",
+      "is_image_safe": true,
+      "seed": 1931638708
+    }
+  ]
+}

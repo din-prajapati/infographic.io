@@ -1,0 +1,39 @@
+{
+  "high_level_description": "Professional real estate listing infographic. Modern luxury marketing design, photo overlay layout. Color scheme: charcoal black, gold, white, off-white, warm brown. Strong typographic hierarchy. All text must be rendered with perfect legibility.",
+  "style_description": {
+    "aesthetics": "modern luxury real estate marketing, charcoal black, gold, white, off-white, warm brown color palette",
+    "art_style": "contemporary editorial graphic design",
+    "lighting": "natural daylight, clean and bright",
+    "medium": "digital marketing material"
+  },
+  "compositional_deconstruction": {
+    "background": "Exterior photo of a residential property, attractive architecture, professional real estate photography",
+    "elements": [
+      {
+        "type": "text",
+        "text": "Sleek Contemporary Oasis",
+        "desc": "Large headline in elegant serif font, positioned prominently in upper area"
+      },
+      {
+        "type": "text",
+        "text": "123 Main St",
+        "desc": "Property address in smaller text below headline"
+      },
+      {
+        "type": "text",
+        "text": "$520K",
+        "desc": "Listing price in bold large text, visually prominent"
+      },
+      {
+        "type": "text",
+        "text": "3 BED | 2 BATH",
+        "desc": "Property details — beds, baths, square footage in small caps"
+      },
+      {
+        "type": "text",
+        "text": "John Smith, RE/MAX Gold",
+        "desc": "Agent name and brokerage in footer area, smaller text"
+      }
+    ]
+  }
+}
