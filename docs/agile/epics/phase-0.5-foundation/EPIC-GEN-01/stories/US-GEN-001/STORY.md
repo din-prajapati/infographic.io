@@ -1,8 +1,8 @@
 # US-GEN-001 — V4 Magic-Prompt Pipeline: Modular Restructure with Verified Exact Text
 
 > **Epic:** [EPIC-GEN-01](../../EPIC.md) · **Milestone:** [M-GEN-01](../../milestones/M-GEN-01-v4-magic-prompt-pipeline.md)
-> **Size:** L · **Status:** 🟡 Implemented — PR pending
-> **Branch:** `fix/ai-ideogram-v4-text-quality`
+> **Size:** L · **Status:** 🟡 In Review — PR #12
+> **Branch:** `fix/ai-ideogram-v4-text-quality` · **PR:** [#12](https://github.com/din-prajapati/infographic.io/pull/12)
 
 ---
 

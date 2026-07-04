@@ -30,7 +30,7 @@
 
 | Story ID | Title | Milestone | Size | Status | PR |
 |----------|-------|-----------|------|--------|----|
-| [US-GEN-001](stories/US-GEN-001/STORY.md) | V4 magic-prompt pipeline — modular restructure with verified exact text | M-GEN-01 | L | 🟡 Implemented — PR pending | — |
+| [US-GEN-001](stories/US-GEN-001/STORY.md) | V4 magic-prompt pipeline — modular restructure with verified exact text | M-GEN-01 | L | 🟡 In Review | [#12](https://github.com/din-prajapati/infographic.io/pull/12) |
 | [US-GEN-002](stories/US-GEN-002/STORY.md) | Unit tests for prompt builder + verify/repair | M-GEN-01 | S | 🔲 | — |
 
 ---

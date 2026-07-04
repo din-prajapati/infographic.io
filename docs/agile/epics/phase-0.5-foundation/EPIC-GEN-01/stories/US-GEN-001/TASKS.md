@@ -2,9 +2,9 @@
 
 > **Story:** [STORY.md](./STORY.md)
 > **Branch:** `fix/ai-ideogram-v4-text-quality`
-> **PR:** pending
+> **PR:** #12
 > **Type:** fix
-> **Status:** 🟡 Implemented — PR pending
+> **Status:** 🟡 In Review
 
 ---
 
@@ -70,7 +70,7 @@ cd api && npx vitest run --config vitest.config.ts   # ✅ 41/41
 - [x] `npm run check` ✅ · unit tests 41/41 ✅
 - [x] E2E app verification ✅ (`APP-TEST-e2e-result.png`)
 - [x] Live magic-prompt JSON-body call verified (HTTP 200)
-- [ ] PR opened with story card as description
+- [x] PR opened with story card as description (#12)
 - [ ] STORY.md AC10 checked after merge
 
 ---
