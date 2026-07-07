@@ -1,7 +1,8 @@
 # US-GEN-002 — Unit Tests for Prompt Builder + Verify/Repair
 
 > **Epic:** [EPIC-GEN-01](../../EPIC.md) · **Milestone:** [M-GEN-01](../../milestones/M-GEN-01-v4-magic-prompt-pipeline.md)
-> **Size:** S · **Status:** 🔲 Not Started
+> **Size:** S · **Status:** ✅ Done · **Closed:** 2026-07-04
+> **Branch:** `test/gen-us-gen-002-prompt-builder-tests` · **PR:** [#13](https://github.com/din-prajapati/infographic.io/pull/13)
 
 ---
 
@@ -11,11 +12,11 @@ As a **developer changing the generation pipeline**, I want **unit coverage on t
 
 ## Acceptance Criteria
 
-- [ ] **AC1** — `buildImagePrompt`: snapshot/contract tests for full property data, minimal data (no agent/price), placeholder agent name excluded
-- [ ] **AC2** — `buildExpectedTexts`: emits only present fields; headline truncation at 32 chars
-- [ ] **AC3** — `verifyAndRepairV4JsonPrompt`: faithful conversion → zero repairs (E3 case); split fields (name/brokerage separate, `\n` headline) → still zero repairs; drifted price → targeted overwrite only; missing element → append with neutral desc (E4 regression cases)
-- [ ] **AC4** — `formatPriceShort` / `formatSqft` edge cases (string input, 0, ≥1M)
-- [ ] **AC5** — All tests mock-free (pure functions), run in `npm run test:unit`
+- [x] **AC1** — `buildImagePrompt`: snapshot/contract tests for full property data, minimal data (no agent/price), placeholder agent name excluded
+- [x] **AC2** — `buildExpectedTexts`: emits only present fields; headline truncation at 32 chars
+- [x] **AC3** — `verifyAndRepairV4JsonPrompt`: faithful conversion → zero repairs (E3 case); split fields (name/brokerage separate, `\n` headline) → still zero repairs; drifted price → targeted overwrite only; missing element → append with neutral desc (E4 regression cases)
+- [x] **AC4** — `formatPriceShort` / `formatSqft` edge cases (string input, 0, ≥1M)
+- [x] **AC5** — All tests mock-free (pure functions), run in `npm run test:unit`
 
 ## Out of Scope
 

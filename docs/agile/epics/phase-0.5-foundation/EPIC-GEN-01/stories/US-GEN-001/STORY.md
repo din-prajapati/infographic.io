@@ -1,7 +1,7 @@
 # US-GEN-001 — V4 Magic-Prompt Pipeline: Modular Restructure with Verified Exact Text
 
 > **Epic:** [EPIC-GEN-01](../../EPIC.md) · **Milestone:** [M-GEN-01](../../milestones/M-GEN-01-v4-magic-prompt-pipeline.md)
-> **Size:** L · **Status:** 🟡 In Review — PR #12
+> **Size:** L · **Status:** ✅ Done · **Closed:** 2026-07-04 (PR #12 merged)
 > **Branch:** `fix/ai-ideogram-v4-text-quality` · **PR:** [#12](https://github.com/din-prajapati/infographic.io/pull/12)
 
 ---
@@ -29,7 +29,7 @@ V4 generations produced garbled pseudo-text. A 4-image isolation experiment ([do
 - [x] **AC8** — V2/V3 text-prompt paths unchanged in behavior
 - [x] **AC9** — E2E: app generation renders all strings exactly with zero invented panels
       ✅ Verified 2026-07-03 — generation `cmr515lmh0006gp10cg3sphwi`: 34.3s, $0.064, zero repairs, `APP-TEST-e2e-result.png`
-- [ ] **AC10** — PR merged with story card as description
+- [x] **AC10** — PR merged with story card as description ✅ merged 2026-07-04
 
 ## Out of Scope
 
