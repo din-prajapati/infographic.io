@@ -33,7 +33,7 @@ Chat prompt → extraction (Gemini) → headline "Sleek Kitchen Pool Sanctuary" 
 
 ### Known follow-up issues
 - Model invents a **synthetic agent headshot** (fake face) and **synthetic property photo** — a legal/liability problem for real listings (misrepresentation). → EPIC-AI-06.
-- `magic-prompt-v4` cost not on Ideogram pricing page — assumed $0, verify on first invoice (`V4_MAGIC_PROMPT_COST` TODO in ai-models.config.ts).
+- ~~`magic-prompt-v4` cost not on Ideogram pricing page — assumed $0, verify on first invoice (`V4_MAGIC_PROMPT_COST` TODO in ai-models.config.ts).~~ ✅ RESOLVED 2026-07-07: verified $0 empirically — 10 prompt-only calls produced zero credit-balance delta on the API dashboard.
 - Default 3 variations/generation = 3× image cost but `creditsUsed: 1`.
 
 ---

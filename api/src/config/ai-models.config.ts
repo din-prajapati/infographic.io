@@ -71,9 +71,10 @@ export const OPENAI_COSTS = {
 
 /**
  * Ideogram magic-prompt-v4 conversion — one call per V4 generation
- * (shared across variations). Not yet priced on Ideogram's public pricing
- * page; treated as $0 until confirmed. TODO: verify against first
- * production invoice and fold into getTotalCost() if non-zero.
+ * (shared across variations). FREE — verified empirically 2026-07-07:
+ * 10 prompt-only calls produced zero credit-balance delta on the API
+ * dashboard (resolution ≤$0.005/call); endpoint absent from
+ * https://ideogram.ai/api-pricing/. Re-verify if Ideogram adds it there.
  */
 export const V4_MAGIC_PROMPT_COST = 0;
 

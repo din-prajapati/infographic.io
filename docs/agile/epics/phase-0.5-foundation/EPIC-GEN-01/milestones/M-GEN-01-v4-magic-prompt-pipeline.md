@@ -1,6 +1,6 @@
 # M-GEN-01 — V4 Magic-Prompt Pipeline
 
-> **Epic:** [EPIC-GEN-01](../EPIC.md) · **Status:** 🟡 Stories 2/2 done — invoice DoD pending · **Target:** 2026-07-05
+> **Epic:** [EPIC-GEN-01](../EPIC.md) · **Status:** ✅ Done · **Closed:** 2026-07-07 · **Target:** 2026-07-05
 
 ## Scope
 Fix garbled V4 text by adopting Ideogram's reference flow (text prompt → magic-prompt-v4 → verified generation), restructure the generation pipeline into a modular cost-transparent architecture, and cover the new pure-function layer with unit tests.
@@ -16,6 +16,6 @@ Fix garbled V4 text by adopting Ideogram's reference flow (text prompt → magic
 - [x] E2E app verification: exact strings, zero garble (generation cmr515lmh0006gp10cg3sphwi)
 - [x] Unit tests for `verifyAndRepairV4JsonPrompt` + `buildImagePrompt` (23 tests, PR #13)
 - [x] PR merged; STORY.md statuses ✅ (PRs #12 + #13, 2026-07-04)
-- [ ] `V4_MAGIC_PROMPT_COST` verified against first invoice
+- [x] `V4_MAGIC_PROMPT_COST` verified — $0, empirical 10-call balance-delta test 2026-07-07 (endpoint free; not on Ideogram pricing page)
 
 *Created: 2026-07-03*
