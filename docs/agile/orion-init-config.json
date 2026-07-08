@@ -1,0 +1,29 @@
+{
+  "projectName": "InfographicAI",
+  "projectType": "SaaS",
+  "stack": {
+    "frontend": ["react", "vite", "tailwind", "shadcn"],
+    "backend": ["nestjs", "prisma", "postgres"],
+    "testing": ["vitest", "playwright"],
+    "deploy": ["railway"],
+    "monitoring": ["sentry"]
+  },
+  "domains": [
+    { "prefix": "DESIGN", "scope": "UI/UX, design tokens, themes, components" },
+    { "prefix": "PAY",    "scope": "Subscription, billing, RazorPay/Stripe" },
+    { "prefix": "AUTH",   "scope": "Login, JWT, OAuth, sessions, API keys" },
+    { "prefix": "EDIT",   "scope": "Canvas editor, drag-resize, export" },
+    { "prefix": "AI",     "scope": "GPT-4o, Ideogram, generation pipeline, refinement" },
+    { "prefix": "USAGE",  "scope": "Usage tracking, analytics, limit alerts" },
+    { "prefix": "INFRA",  "scope": "Railway, Sentry, DB migrations, CI/CD" },
+    { "prefix": "ORG",    "scope": "Teams, workspace, multi-user, brand kit" },
+    { "prefix": "API",    "scope": "REST API, key management, webhooks, portal" },
+    { "prefix": "TEST",   "scope": "Test infrastructure, coverage, QA automation" },
+    { "prefix": "MOBILE", "scope": "React Native / PWA mobile app" },
+    { "prefix": "KIT",    "scope": "Multi-format kits, lifecycle, recurring content, compliance" },
+    { "prefix": "GEN",    "scope": "Image-generation pipeline quality, prompt engineering, cost control" },
+    { "prefix": "LAUNCH", "scope": "Go-live ops: live payments, transactional email, legal pages, beta gating, metering policy" }
+  ],
+  "firstPhaseSlug": "mvp",
+  "branch": "main"
+}

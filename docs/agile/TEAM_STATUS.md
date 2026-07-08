@@ -3,7 +3,7 @@
 > **Audience:** Engineering leads and domain teams  
 > **Purpose:** Per-domain view of what's in progress, what's next, and what's blocked — mapped to epics and stories.  
 > **Update cadence:** When a story status changes (start / block / complete).  
-> **Last updated:** 2026-04-17
+> **Last updated:** 2026-07-07 (added LAUNCH domain — EPIC-LAUNCH-01; AI Chat Panel audit + hardening logged as PT-08)
 
 ---
 
@@ -15,9 +15,10 @@
 | [Design (DESIGN)](#-design--frontend-design) | EPIC-DESIGN-01 + EPIC-DESIGN-02 | 🟡 US-003/004 staging | Live Ideogram API | Staging deploy unblocks both |
 | [Auth (AUTH)](#-auth-auth) | EPIC-AUTH-01 | ✅ Done | — | Full invite flow post-MVP |
 | [Canvas Editor (EDIT)](#-canvas-editor-edit) | EPIC-EDIT-01 | ✅ Done | — | Batch upload Phase 3 |
-| [AI Generation (AI)](#-ai-generation-ai) | EPIC-AI-01 | ✅ Done | — | EPIC-AI-00 (Phase 0.5 Foundation) |
+| [AI Generation (AI)](#-ai-generation-ai) | EPIC-AI-00 | ✅ Done (closed 2026-07-03) | — | EPIC-AI-02 deps (US-AI-010/011) → EPIC-AI-06 |
 | [Infrastructure (INFRA)](#-infrastructure-infra) | EPIC-INFRA-01 | 🟡 3 deploy tasks | Human tasks | Admin dashboard Phase 5 |
-| [Organization (ORG)](#-organization--team-org) | — | Post-MVP | No email provider | EPIC-ORG-01 post-launch |
+| [Launch Readiness (LAUNCH)](#-launch-readiness-launch) | EPIC-LAUNCH-01 | 🔲 Ready after Phase 0 deploy | Phase 0 HUMAN tasks | M-LAUNCH-01 → beta · M-LAUNCH-02 → revenue |
+| [Organization (ORG)](#-organization--team-org) | — | Post-MVP | No email provider (US-LAUNCH-002 will fix) | EPIC-ORG-01 post-launch |
 
 ---
 
@@ -43,7 +44,7 @@
 ### Blocked / Deferred
 | Issue | Description | Unblocked by |
 |-------|-------------|--------------|
-| PT-06 | BROKERAGE plan IDs not configured in RazorPay | Create plans in RazorPay dashboard + update `.env` |
+| PT-06 | BROKERAGE plan IDs not configured in RazorPay | Resolution scheduled: [US-LAUNCH-007](epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-007/STORY.md) gates the tier behind "Contact us"; plan creation deferred to first brokerage demand |
 
 ### Next (Phase 1 — post Phase 0 gate)
 | Epic | Story | Focus |
@@ -151,13 +152,13 @@
 ## 🤖 AI Generation (AI)
 
 **Epic lead:** Dinesh  
-**Active epic:** EPIC-AI-01 — MVP AI Pipeline  
-**Phase:** 0 (MVP) ✅ Done
+**Active epic:** EPIC-AI-01 (MVP, Phase 0) + [EPIC-AI-00](epics/phase-0.5-foundation/EPIC-AI-00/EPIC.md) (Foundation Fixes, Phase 0.5)  
+**Phase:** 0 (MVP) ✅ Done · 0.5 ✅ Done (closed 2026-07-03)
 
 ### Now
-> No active development.
+> No active development. Next up is EPIC-AI-02 deps (US-AI-010/011) as prerequisites for EPIC-AI-06 — see [PHASE_TRACKER.md](PHASE_TRACKER.md).
 
-### Done
+### Done — Phase 0 (EPIC-AI-01)
 | Area | Status |
 |------|--------|
 | GPT-4o layout orchestration | ✅ |
@@ -165,16 +166,40 @@
 | Socket.io progress streaming | ✅ |
 | AI chat conversation history | ✅ |
 | Usage enforcement per plan tier | ✅ |
-| AI model selector (ideogram-turbo vs ideogram-2) | ✅ |
+| AI model selector (ideogram-turbo vs ideogram-2, later V3/V4 tiers under EPIC-GEN-01) | ✅ |
+
+### Done — Phase 0.5 (EPIC-AI-00, closed 2026-07-03, PRs #7–#10)
+| Area | Status |
+|------|--------|
+| Socket.io gateway wired into AppModule (US-AI-001) | ✅ |
+| GPT model ID fixed: gpt-5 → gpt-4o (US-AI-002/002a) | ✅ |
+| FREE/SOLO/TEAM LLM text calls routed to Gemini 2.5 Flash, BROKERAGE stays GPT-4o (US-AI-003/004 — scope pivoted from a planned Nano Banana *image* swap; Ideogram remains the image engine, see [M-AI-02-model-swap](epics/phase-0.5-foundation/EPIC-AI-00/milestones/M-AI-02-model-swap.md)) | ✅ |
+| Extraction persisted to DB (US-AI-005) | ✅ |
+| Conversations wired to backend API, localStorage removed (US-AI-006) | ✅ |
+
+### Done — AI Chat Panel audit + hardening (2026-07-07, PT-08)
+> Full code audit of `client/src/components/ai-chat/` (26 files) found 7 working features, 3 dead-end stubs, 1 active bug, and 6 orphaned files. Fixed/cleaned this session:
+
+| Area | Status |
+|------|--------|
+| Paperclip double-trigger (native file picker *and* styled panel opened together) | ✅ Fixed |
+| Image Upload panel rendering off-screen (wrong anchor edge for a left-side button) | ✅ Fixed |
+| Conversation delete/favorite — backend existed, no UI trigger after history-view redesign | ✅ Restored |
+| Quick Actions + Style Presets icons — `console.log`-only stubs, never applied to generation | ✅ Removed (deferred to Phase 2 / EPIC-AI-01, not rebuilt now) |
+| 6 dead/orphaned files (`SmartSuggestionsRow`, `ConversationToolbar`, `GenerationSettingsBar`, `ConversationHistoryPanel`, `QuickActionsPanel`, `StylePresetsPanel`) | ✅ Deleted |
+| Image Upload → real backend wiring (no DTO field exists yet) | 🔲 Not done — folded into [US-AI-010](epics/phase-1-ai-core/EPIC-AI-02/stories/US-AI-010/STORY.md), not fixed in isolation |
+| EnhancedSuggestionsPanel — fully built, still has no trigger | 🔲 Left dormant — deferred to Phase 2 / EPIC-AI-01 |
 
 ### AI Generation UX QA (in progress under DESIGN)
 > US-DESIGN-003 (EPIC-DESIGN-01) handles the visual UX QA for generation flow states.  
 > TC-DS-003-03 to 08 need live Ideogram API — blocked until staging deploy.
 
-### Next (Phase 2+)
+### Next (Phase 1 — see PHASE_TRACKER.md for full sequencing)
 
-| Feature | Phase | Story |
+| Feature | Phase | Story/Epic |
 |---------|-------|-------|
+| Photo upload + format selector (deps only) | Phase 1 | EPIC-AI-02 (US-AI-010/011) |
+| Hybrid real-photo pipeline (chargeability gate) | Phase 1 | EPIC-AI-06 |
 | Multi-pass AI refinement | Phase 2 | AI story TBD |
 | Quality scoring system | Phase 2 | AI story TBD |
 | Intelligent caching (prompt dedup) | Phase 3 | AI story TBD |
@@ -214,6 +239,38 @@
 | Performance monitoring (New Relic / DataDog) | Phase 5 | EPIC-INFRA-02 |
 | Security audit | Phase 6 | EPIC-INFRA-03 |
 | Load testing | Phase 6 | EPIC-INFRA-03 |
+
+---
+
+## 🚀 Launch Readiness (LAUNCH)
+
+**Epic lead:** Dinesh
+**Active epic:** [EPIC-LAUNCH-01](epics/phase-1-ai-core/EPIC-LAUNCH-01/EPIC.md) — Go-Live & Revenue Readiness
+**Phase:** 1 (Revenue Strategy) 🔲 Ready to start after Phase 0 deploy · **Created:** 2026-07-07
+
+### Next — M-LAUNCH-01 public beta (start immediately after Phase 0 deploy)
+
+| Story | Title | Size | Depends on |
+|-------|-------|------|------------|
+| [US-LAUNCH-001](epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-001/STORY.md) | Legal & policy pages (Terms · Privacy · Refund) | M | — |
+| [US-LAUNCH-002](epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-002/STORY.md) | Transactional email foundation | M | — |
+| [US-LAUNCH-003](epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-003/STORY.md) | Forgot / reset password flow | M | US-LAUNCH-002 |
+| [US-LAUNCH-004](epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-004/STORY.md) | Beta launch mode (checkout off · disclaimer) | S | — |
+
+### Then — M-LAUNCH-02 revenue on (prep parallel to EPIC-AI-06; flip gated by AI-06)
+
+| Story | Title | Size | Depends on |
+|-------|-------|------|------------|
+| [US-LAUNCH-005](epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-005/STORY.md) | RazorPay live-mode activation (HUMAN-heavy) | M | US-LAUNCH-001 live |
+| [US-LAUNCH-006](epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-006/STORY.md) | Payment receipt email | S | US-LAUNCH-002 |
+| [US-LAUNCH-007](epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-007/STORY.md) | BROKERAGE tier gate (PT-06) | S | — |
+| [US-LAUNCH-008](epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-008/STORY.md) | Metering policy guard (1 gen = 1 credit) | S | — |
+
+### Blocked
+| Item | Blocked by |
+|------|-----------|
+| All stories | Phase 0 production deploy (EPIC-INFRA-01 — 3 HUMAN tasks) |
+| Revenue-on flip (`BETA_MODE=false`) | EPIC-AI-06 + all M-LAUNCH-02 stories |
 
 ---
 

@@ -1,0 +1,37 @@
+{
+  "$schema": "https://schemastore.org/claude-code-settings.json",
+  "_comment": "ORION enterprise-managed settings. Deploy via MDM/IT to lock policies across all developers. Path: Windows = C:\\ProgramData\\ClaudeCode\\managed-settings.json | macOS = /Library/Application Support/ClaudeCode/managed-settings.json | Linux = /etc/claude-code/managed-settings.json. Wins over user + project + local settings.",
+  "permissions": {
+    "deny": [
+      "Bash(rm -rf /:*)",
+      "Bash(curl * | sh:*)",
+      "Bash(curl * | bash:*)",
+      "Bash(wget * | sh:*)",
+      "Write(**/.env)",
+      "Write(**/.env.production)",
+      "Write(**/secrets/**)"
+    ],
+    "allow": [
+      "Bash(npm run check)",
+      "Bash(npm run test:unit)",
+      "Bash(npm run test:e2e)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "command_pattern": "git push*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PROJECT_DIR}/.claude/hooks/pre-push-gate1.sh"
+          }
+        ]
+      }
+    ]
+  }
+}

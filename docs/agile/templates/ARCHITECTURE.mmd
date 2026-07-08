@@ -1,0 +1,60 @@
+%% ARCHITECTURE.mmd — Mermaid flowchart for one Epic
+%% Produced by `architect-agent` during `/design-epic`.
+%% Renders inline in GitHub markdown and VS Code Mermaid preview.
+%%
+%% Conventions:
+%%   classDef good  — file/component that exists and is being modified
+%%   classDef new   — file/component that needs to be created
+%%   classDef bad   — file with known technical debt or high risk
+%%   classDef ext   — external service (API, third-party)
+%%
+%% Replace placeholders with concrete values when filling.
+
+flowchart LR
+  subgraph Inputs["User / External"]
+    A["[describe main trigger or input]"]
+  end
+
+  subgraph Frontend["Frontend ([stack from PROJECT_CONTEXT.yaml])"]
+    B["[component or file]"]:::good
+    C["[component or file]"]:::new
+  end
+
+  subgraph API["Backend ([stack from PROJECT_CONTEXT.yaml])"]
+    D["[controller]"]:::good
+    E["[service]"]:::good
+    F["[new service]"]:::new
+  end
+
+  subgraph External["External Services"]
+    G["[third-party API name]"]:::ext
+  end
+
+  subgraph DB["Database ([db stack])"]
+    H["[model / table]"]:::good
+    I["[new model / table]"]:::new
+  end
+
+  A --> B
+  B --> C
+  C --> D
+  D --> E
+  E --> F
+  F --> G
+  G --> F
+  E --> H
+  F --> I
+
+  classDef good fill:#0b3b2e,stroke:#14532d,color:#ecfdf5;
+  classDef bad  fill:#3b0b0b,stroke:#7f1d1d,color:#fef2f2;
+  classDef new  fill:#1e3a5f,stroke:#2563eb,color:#eff6ff;
+  classDef ext  fill:#3b2e0b,stroke:#a16207,color:#fef3c7;
+
+%% ─────────────────────────────────────────────────────────────────────
+%% Legend (for reference — remove this section in real diagrams):
+%%
+%%   good (green)  — file exists, being modified
+%%   new  (blue)   — file to be created
+%%   bad  (red)    — flagged for risk or known debt
+%%   ext  (amber)  — external dependency outside our codebase
+%% ─────────────────────────────────────────────────────────────────────
