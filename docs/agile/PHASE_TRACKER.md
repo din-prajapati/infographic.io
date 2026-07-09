@@ -42,9 +42,9 @@ Each phase requires a gate decision before the next phase starts:
 
 ## Phase 0 — MVP Launch
 
-> **Release:** v1.0 · **Status:** 🟡 ~99% Complete · **3 deploy tasks + 2 staging QA items remain**  
+> **Release:** v1.0 · **Status:** 🔴 Staging QA found a launch blocker · **3 deploy tasks + 2 staging QA items + PT-09 fix remain**  
 > **Outcome:** Real estate agents can generate branded infographics, manage subscriptions, and export their work.  
-> **Last updated:** 2026-04-29 · **Timeline:** Deploy when staging ready
+> **Last updated:** 2026-07-09 · **Timeline:** Blocked on PT-09 (EPIC-AI-07) before Task 2 can sign off
 
 ### Gate Criteria (Phase 0 → Done)
 - [x] Core infrastructure: auth, API, DB, AI generation pipeline
@@ -55,10 +55,13 @@ Each phase requires a gate decision before the next phase starts:
 - [x] UI consistency: hover tokens (14 fixes), ai-accent brand token, Danger Zone buttons ✅ 2026-04-29
 - [x] Human QA: US-DESIGN-001 theme toggle + 3 bugs found & fixed ✅ 2026-04-29
 - [x] Auto QA: 44/58 E2E tests pass (10 human-skip, 4 pre-existing auth failures) ✅ 2026-04-29
-- [ ] US-DESIGN-003 AC3 — generation result image on staging — **STAGING QA**
+- [x] Staging infra live (Neon + Railway) — verified 2026-07-09
+- [x] Staging E2E suite run — 87/91 non-skipped passed, 5 network-flakiness, 0 real app failures — 2026-07-09
+- [ ] **🔴 PT-09 — generation results never render in the browser on staging (backend completes fine; UI stays frozen). Launch blocker. See [EPIC-AI-07](epics/phase-0-mvp/EPIC-AI-07/EPIC.md).**
+- [ ] US-DESIGN-003 AC3 — generation result image on staging — **STAGING QA** (blocked by PT-09 — can't judge image fidelity through a UI that never shows results)
 - [ ] US-DESIGN-004 AC2–4,6 — button heights, card borders, spacing — **STAGING QA**
 - [ ] Critical-path 10-flow manual test — **HUMAN TASK 1**
-- [ ] Staging smoke test (Railway) — **HUMAN TASK 2**
+- [ ] Staging smoke test (Railway) — **HUMAN TASK 2** — infra done, PT-09 blocks final sign-off
 - [ ] Production go-live + Sentry verify — **HUMAN TASK 3**
 
 ### Epics in Phase 0
@@ -72,6 +75,7 @@ Each phase requires a gate decision before the next phase starts:
 | [EPIC-DESIGN-01](epics/phase-0-mvp/EPIC-DESIGN-01/EPIC.md) | Design | UI theme consistency, editor token fix | 🟡 In Progress | US-001 ✅ US-002 ✅ US-003 🟡 US-004 🟡 |
 | [EPIC-DESIGN-02](epics/phase-0-mvp/EPIC-DESIGN-02/EPIC.md) | Design | Blue/Amber/Warm-Cream palette + domain colors | ✅ Done (P0 scope) | US-005–008 ✅ · US-009–011 → Phase 4 Backlog |
 | EPIC-INFRA-01 | Infra | Railway + Sentry + DB migrations | 🟡 In Progress | Code ✅ · 3 deploy tasks pending |
+| [EPIC-AI-07](epics/phase-0-mvp/EPIC-AI-07/EPIC.md) | AI | Generation Progress Delivery Fix — **PT-09** | 🔴 Not Started | US-AI-034 (root cause+fix) · US-AI-035 (fallback) — the current critical path |
 
 > Epics not yet in `docs/agile/epics/` are tracked in [docs/MVP_LAUNCH_TRACKER.md](../MVP_LAUNCH_TRACKER.md) (legacy flat tracker).
 

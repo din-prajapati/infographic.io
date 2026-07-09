@@ -3,7 +3,7 @@
  * Attach + chips | Layout toggles | Quality toggles | Utility icons | Send
  */
 
-import { Lightbulb, Zap, Palette, Paperclip, Monitor, Smartphone, Square, Sparkles, Crown } from 'lucide-react';
+import { Lightbulb, Paperclip, Monitor, Smartphone, Square, Sparkles, Crown } from 'lucide-react';
 import { Button } from '../ui/button';
 import { CategoryChip } from './types';
 import { ChipTag } from './ChipTag';
@@ -29,14 +29,10 @@ interface AIChatIconBarProps {
   selectedChips: CategoryChip[];
   onRemoveChip: (chipId: string) => void;
   onSuggestionsClick: () => void;
-  onQuickActionsClick: () => void;
-  onStylePresetsClick: () => void;
   onUploadClick: () => void;
   lightbulbRef?: React.RefObject<HTMLButtonElement>;
-  zapRef?: React.RefObject<HTMLButtonElement>;
-  paletteRef?: React.RefObject<HTMLButtonElement>;
   paperclipRef?: React.RefObject<HTMLButtonElement>;
-  // Layout + Quality (moved from GenerationSettingsBar)
+  // Layout + Quality controls, inline in the icon bar
   orientation: InfographicOrientation;
   qualityModel: ImageQualityModel;
   onOrientationChange: (o: InfographicOrientation) => void;
@@ -51,12 +47,8 @@ export function AIChatIconBar({
   selectedChips,
   onRemoveChip,
   onSuggestionsClick,
-  onQuickActionsClick,
-  onStylePresetsClick,
   onUploadClick,
   lightbulbRef,
-  zapRef,
-  paletteRef,
   paperclipRef,
   orientation,
   qualityModel,
@@ -162,30 +154,6 @@ export function AIChatIconBar({
           onClick={onSuggestionsClick}
         >
           <Lightbulb className="w-4 h-4" />
-        </Button>
-
-        <Button
-          ref={zapRef}
-          type="button"
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 hover:bg-muted text-muted-foreground"
-          title="Quick Actions"
-          onClick={onQuickActionsClick}
-        >
-          <Zap className="w-4 h-4" />
-        </Button>
-
-        <Button
-          ref={paletteRef}
-          type="button"
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 hover:bg-muted text-muted-foreground"
-          title="Style Presets"
-          onClick={onStylePresetsClick}
-        >
-          <Palette className="w-4 h-4" />
         </Button>
 
         {/* Send */}

@@ -155,8 +155,10 @@
 **Active epic:** EPIC-AI-01 (MVP, Phase 0) + [EPIC-AI-00](epics/phase-0.5-foundation/EPIC-AI-00/EPIC.md) (Foundation Fixes, Phase 0.5)  
 **Phase:** 0 (MVP) ✅ Done · 0.5 ✅ Done (closed 2026-07-03)
 
-### Now
-> No active development. Next up is EPIC-AI-02 deps (US-AI-010/011) as prerequisites for EPIC-AI-06 — see [PHASE_TRACKER.md](PHASE_TRACKER.md).
+### Now — 🔴 PT-09 launch blocker (fix in code, staging re-test pending)
+> **[EPIC-AI-07](epics/phase-0-mvp/EPIC-AI-07/EPIC.md) — Generation Progress Delivery Fix.** Found 2026-07-09 during Task 2 staging QA: generation completes server-side but the result never renders in the browser (the REST fallback poll was gated behind the socket's `onError`, which never fires on silent non-delivery; also timer-throttled in background tabs). **[US-AI-034](epics/phase-0-mvp/EPIC-AI-07/stories/US-AI-034/STORY.md)** fix implemented in `AIChatBox.tsx` (always-on poll + `visibilitychange` catch-up + completion guard) — locally verified (typecheck, 64/64 unit, mocked E2E 3/3). **AC3 pending:** needs deploy to staging + live re-test (foreground **and** backgrounded tab). **[US-AI-035](epics/phase-0-mvp/EPIC-AI-07/stories/US-AI-035/STORY.md)** ⏭️ superseded. Blocks Task 2 sign-off → Task 3.
+
+> After PT-09 closes: EPIC-AI-02 deps (US-AI-010/011) as prerequisites for EPIC-AI-06 — see [PHASE_TRACKER.md](PHASE_TRACKER.md).
 
 ### Done — Phase 0 (EPIC-AI-01)
 | Area | Status |
@@ -327,3 +329,159 @@
 ---
 
 *See also: [PHASE_TRACKER.md](PHASE_TRACKER.md) · [AGILE_INDEX.md](AGILE_INDEX.md) · [../MVP_LAUNCH_TRACKER.md](../MVP_LAUNCH_TRACKER.md)*
+
+<!-- ai-sdlc:session-log -->
+**2026-07-08 13:11** · branch: `main`
+  - Last commit: a19cdd5 chore: migrate InfographicEditor to ORION v0.4.1
+
+<!-- ai-sdlc:session-log -->
+**2026-07-08 13:17** · branch: `main`
+  - Last commit: a19cdd5 chore: migrate InfographicEditor to ORION v0.4.1
+
+<!-- ai-sdlc:session-log -->
+**2026-07-08 13:31** · branch: `main`
+  - Last commit: a19cdd5 chore: migrate InfographicEditor to ORION v0.4.1
+
+<!-- ai-sdlc:session-log -->
+**2026-07-08 13:34** · branch: `main`
+  - Last commit: 9e009a5 docs: restore webhook/plan-enforcement and template-management keywords to PAY/EDIT domain scopes
+
+<!-- ai-sdlc:session-log -->
+**2026-07-08 13:36** · branch: `main`
+  - Last commit: 9e009a5 docs: restore webhook/plan-enforcement and template-management keywords to PAY/EDIT domain scopes
+
+<!-- ai-sdlc:session-log -->
+**2026-07-08 15:22** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-08 15:26** · branch: `main`
+  - Last commit: 3848f33 chore: remove .claude/hooks stub — superseded by orion doctor fix (orion-ai-sdlc@8387a66)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-08 16:01** · branch: `main`
+  - Last commit: 97ec629 chore: remove docs superseded by existing archive + 3 empty dirs
+
+<!-- ai-sdlc:session-log -->
+**2026-07-08 16:18** · branch: `main`
+  - Last commit: 3ab211b fix: revert over-eager archive of live-referenced docs
+
+<!-- ai-sdlc:session-log -->
+**2026-07-08 16:26** · branch: `main`
+  - Last commit: 3ab211b fix: revert over-eager archive of live-referenced docs
+
+<!-- ai-sdlc:session-log -->
+**2026-07-08 17:00** · branch: `main`
+  - Last commit: 3ab211b fix: revert over-eager archive of live-referenced docs
+
+<!-- ai-sdlc:session-log -->
+**2026-07-08 17:06** · branch: `main`
+  - Last commit: 3ab211b fix: revert over-eager archive of live-referenced docs
+
+<!-- ai-sdlc:session-log -->
+**2026-07-08 17:09** · branch: `main`
+  - Last commit: 3ab211b fix: revert over-eager archive of live-referenced docs
+
+<!-- ai-sdlc:session-log -->
+**2026-07-08 17:13** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-08 17:56** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-08 18:02** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-08 18:13** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-08 19:56** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-08 19:57** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-08 20:22** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-08 23:57** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-09 12:36** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-09 15:32** · branch: `main`
+  - Last commit: b0fd7a3 chore(agents): add missing orion agent personas
+
+<!-- ai-sdlc:session-log -->
+**2026-07-09 15:40** · branch: `main`
+  - Last commit: b0fd7a3 chore(agents): add missing orion agent personas
+
+<!-- ai-sdlc:session-log -->
+**2026-07-09 15:56** · branch: `main`
+  - Last commit: b0fd7a3 chore(agents): add missing orion agent personas
+
+<!-- ai-sdlc:session-log -->
+**2026-07-09 16:14** · branch: `main`
+  - Last commit: b0fd7a3 chore(agents): add missing orion agent personas
+
+<!-- ai-sdlc:session-log -->
+**2026-07-09 16:18** · branch: `main`
+  - Last commit: b0fd7a3 chore(agents): add missing orion agent personas
+
+<!-- ai-sdlc:session-log -->
+**2026-07-09 16:20** · branch: `main`
+  - Last commit: b0fd7a3 chore(agents): add missing orion agent personas
+
+<!-- ai-sdlc:session-log -->
+**2026-07-09 16:34** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-09 16:35** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-09 17:04** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-09 17:23** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-09 17:33** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-09 17:43** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-09 17:46** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-09 17:58** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-09 18:02** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-09 18:09** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-09 18:41** · branch: `main`
+  - Last commit: (no commits this session)

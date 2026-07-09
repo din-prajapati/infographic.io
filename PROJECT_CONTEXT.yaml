@@ -57,7 +57,7 @@ counters:
   PAY: { epic: 5, feature: 1, story: 102 }
   AUTH: { epic: 2, feature: 1, story: 5 }
   EDIT: { epic: 3, feature: 1, story: 5 }
-  AI: { epic: 7, feature: 34, story: 34 }
+  AI: { epic: 8, feature: 35, story: 36 }
   USAGE: { epic: 2, feature: 1, story: 1 }
   INFRA: { epic: 4, feature: 1, story: 3 }
   ORG: { epic: 3, feature: 1, story: 1 }

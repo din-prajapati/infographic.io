@@ -43,6 +43,7 @@ Every PR is traceable from `git log` → Story → Milestone → Epic.
 | EPIC-EDIT-01 | Canvas Editor (CRUD + export) | ✅ Done | All closed | — |
 | EPIC-AI-01 | MVP AI Pipeline (GPT-4o + Ideogram) | ✅ Done | All closed | — |
 | EPIC-INFRA-01 | Railway + Sentry + DB migrations | 🟡 In Progress | Code ✅ | 3 human deploy tasks |
+| [EPIC-AI-07](epics/phase-0-mvp/EPIC-AI-07/EPIC.md) | Generation Progress Delivery Fix — **PT-09, launch blocker** | 🟡 Fix in code | US-AI-034 🟡 (fix done, staging re-test pending deploy) · US-AI-035 ⏭️ superseded | Fix implemented + locally verified 2026-07-09; needs deploy to staging to close AC3 |
 
 ## AI Capability Epics (Phase 0.5 → Phase 3)
 
