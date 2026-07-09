@@ -17,14 +17,16 @@ interface ImageUploadPanelProps {
 export function ImageUploadPanel({ isOpen, onClose, onImageUpload, buttonRef }: ImageUploadPanelProps) {
   const [dragActive, setDragActive] = useState(false);
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
-  const [position, setPosition] = useState({ bottom: '8rem', right: '2rem' });
+  const [position, setPosition] = useState({ bottom: '8rem', left: '2rem' });
 
   useEffect(() => {
     if (isOpen && buttonRef?.current) {
       const rect = buttonRef.current.getBoundingClientRect();
+      // Panel is w-80 (320px) — clamp so it never runs off the left edge of the viewport.
+      const left = Math.max(8, Math.min(rect.left, window.innerWidth - 320 - 8));
       setPosition({
         bottom: `${window.innerHeight - rect.top + 8}px`, // 8px above button
-        right: `${window.innerWidth - rect.right}px`, // align with right edge of button
+        left: `${left}px`, // align with left edge of button (paperclip sits at the left of the icon bar)
       });
     }
   }, [isOpen, buttonRef]);
@@ -66,24 +68,6 @@ export function ImageUploadPanel({ isOpen, onClose, onImageUpload, buttonRef }: 
     setUploadedImages((prev) => prev.filter((_, i) => i !== index));
   };
 
-  useEffect(() => {
-    if (buttonRef && buttonRef.current) {
-      buttonRef.current.addEventListener('click', () => {
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.accept = 'image/*';
-        input.multiple = true;
-        input.onchange = (e) => {
-          const files = (e.target as HTMLInputElement | null)?.files;
-          if (files) {
-            handleFiles(files);
-          }
-        };
-        input.click();
-      });
-    }
-  }, [buttonRef]);
-
   return (
     <AnimatePresence>
       {isOpen && (
@@ -102,8 +86,8 @@ export function ImageUploadPanel({ isOpen, onClose, onImageUpload, buttonRef }: 
             initial={{ opacity: 0, y: 10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
-            className="fixed bottom-32 right-8 w-80 bg-background rounded-xl shadow-xl border border-border z-[110]"
-            style={position}
+            className="fixed w-80 bg-background rounded-xl shadow-xl border border-border z-[110]"
+            style={{ bottom: position.bottom, left: position.left }}
           >
             <div className="p-4 border-b border-border">
               <h3 className="font-semibold text-sm">Upload Reference 📷</h3>

@@ -100,7 +100,7 @@ npm run dev starts:
 | Payments | PAY | Subscription, billing, RazorPay/Stripe | 02 | 01 | 001 |
 | Auth | AUTH | Login, JWT, OAuth, sessions, API keys | 02 | 01 | 001 |
 | Editor | EDIT | Canvas editor, drag-resize, export | 02 | 01 | 001 |
-| AI | AI | GPT-4o, Ideogram, generation pipeline, refinement | 07 | 34 | 034 |
+| AI | AI | GPT-4o, Ideogram, generation pipeline, refinement | 08 | 35 | 036 |
 | Usage | USAGE | Usage tracking, analytics, limit alerts | 01 | 01 | 001 |
 | Infrastructure | INFRA | Railway, Sentry, DB migrations, CI/CD | 02 | 01 | 001 |
 | Organisation | ORG | Teams, workspace, multi-user, brand kit | 01 | 01 | 001 |
@@ -109,6 +109,7 @@ npm run dev starts:
 | Mobile | MOBILE | React Native / PWA mobile app | 01 | 01 | 001 |
 | Listing Kits | KIT | Multi-format kits, lifecycle, recurring content, compliance | 02 | 05 | 007 |
 | Generation Quality | GEN | Image-generation pipeline quality, prompt engineering, cost control | 02 | 03 | 003 |
+| Launch Readiness | LAUNCH | Go-live ops: live payments, transactional email, legal pages, beta gating, metering policy | 02 | 06 | 009 |
 
 > To add a new domain: append a row here, pick an unused 2-6 char UPPERCASE prefix, start all counters at `01` / `001`.
 
@@ -232,8 +233,11 @@ npm run verify:payment-prereqs  # Payment config smoke test
 | PT-03 | ✅ Fixed | Old subscription cancelled before upgrade |
 | PT-04 | ✅ Fixed | Subscription PENDING until webhook fires |
 | PT-05 | ✅ Verified | TEAM plan ₹6,999 / 699900 paise confirmed in RazorPay Dashboard |
-| PT-06 | ⏸ Deferred | BROKERAGE plan IDs not configured in env |
+| PT-06 | 🔲 Scheduled | BROKERAGE plan IDs not configured — resolution planned as [US-LAUNCH-007](epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-007/STORY.md) (gate tier behind Contact-us, defer plan creation to first brokerage demand) |
+| PT-07 | ✅ Fixed | Canvas session leak — User 1's "Use This Design" canvas visible to User 2 on same browser. Fixed 2026-06-17: `logout()` now calls `clearUserStorage()` + `useCanvasStore.getState().clearCanvas()` |
+| PT-08 | ✅ Fixed | AI Chat Panel audit (2026-07-07): paperclip button opened both the native OS file picker *and* the styled upload panel (stray uncleaned listener); Image Upload panel rendered off-screen behind the editor toolbar (wrong anchor edge for a left-side button); conversation delete/favorite existed on the backend but had no UI trigger after a history-view redesign. All three fixed. Quick Actions and Style Presets icons removed (were `console.log`-only stubs — deferred to Phase 2 / EPIC-AI-01); 6 dead/orphaned files deleted from `client/src/components/ai-chat/` |
+| PT-09 | 🟡 Fix in code — staging re-test pending deploy | **Generation-completion delivery to the browser was unreliable on staging.** Root cause (confirmed 2026-07-09 via code read + live claude-in-chrome pass): the REST-fallback poll in `AIChatBox.tsx` was gated behind the socket's `onError`, which does NOT fire when the socket connects but silently stops delivering events — so nothing caught completion and the UI hung. Even when it did fire, the `setTimeout`-loop poll was throttled by Chrome in background/headless tabs. **Fix:** replaced the error-gated fallback with an always-on REST status poll (runs regardless of socket health) + a `visibilitychange` immediate catch-up + a completion guard — `client/src/components/ai-chat/AIChatBox.tsx`. Locally verified (typecheck, 64/64 unit, mocked E2E 3/3). Still needs deploy to staging + live re-test (foreground **and** backgrounded tab) to close [US-AI-034](epics/phase-0-mvp/EPIC-AI-07/stories/US-AI-034/STORY.md) AC3. [US-AI-035](epics/phase-0-mvp/EPIC-AI-07/stories/US-AI-035/STORY.md) superseded. Blocks Task 2 sign-off → Task 3. |
 
 ---
 
-*Last updated: 2026-05-18 | Maintained by: Dinesh + Claude Code*
+*Last updated: 2026-07-07 (added LAUNCH domain + EPIC-LAUNCH-01; PT-07/PT-08 logged from AI Chat Panel audit) | Maintained by: Dinesh + Claude Code*

@@ -5,7 +5,7 @@
  */
 
 import { motion } from 'motion/react';
-import { ArrowLeft, MessageSquare, Star } from 'lucide-react';
+import { ArrowLeft, MessageSquare, Star, Trash2 } from 'lucide-react';
 import { Conversation } from './types';
 import { Button } from '../ui/button';
 
@@ -13,12 +13,16 @@ interface ConversationHistoryViewProps {
   conversations: Conversation[];
   onSelectConversation: (conversation: Conversation) => void;
   onBack: () => void;
+  onToggleFavorite: (conversationId: string) => void;
+  onDeleteConversation: (conversationId: string) => void;
 }
 
 export function ConversationHistoryView({
   conversations,
   onSelectConversation,
   onBack,
+  onToggleFavorite,
+  onDeleteConversation,
 }: ConversationHistoryViewProps) {
   
   // Group conversations by time
@@ -63,6 +67,8 @@ export function ConversationHistoryView({
                 title="Today"
                 conversations={groupedConversations.today}
                 onSelect={onSelectConversation}
+                onToggleFavorite={onToggleFavorite}
+                onDelete={onDeleteConversation}
               />
             )}
 
@@ -72,6 +78,8 @@ export function ConversationHistoryView({
                 title="Yesterday"
                 conversations={groupedConversations.yesterday}
                 onSelect={onSelectConversation}
+                onToggleFavorite={onToggleFavorite}
+                onDelete={onDeleteConversation}
               />
             )}
 
@@ -81,6 +89,8 @@ export function ConversationHistoryView({
                 title="Last 7 Days"
                 conversations={groupedConversations.lastWeek}
                 onSelect={onSelectConversation}
+                onToggleFavorite={onToggleFavorite}
+                onDelete={onDeleteConversation}
               />
             )}
 
@@ -90,6 +100,8 @@ export function ConversationHistoryView({
                 title="Last 30 Days"
                 conversations={groupedConversations.lastMonth}
                 onSelect={onSelectConversation}
+                onToggleFavorite={onToggleFavorite}
+                onDelete={onDeleteConversation}
               />
             )}
 
@@ -99,6 +111,8 @@ export function ConversationHistoryView({
                 title="Older"
                 conversations={groupedConversations.older}
                 onSelect={onSelectConversation}
+                onToggleFavorite={onToggleFavorite}
+                onDelete={onDeleteConversation}
               />
             )}
           </div>
@@ -112,9 +126,11 @@ interface TimeSectionProps {
   title: string;
   conversations: Conversation[];
   onSelect: (conversation: Conversation) => void;
+  onToggleFavorite: (conversationId: string) => void;
+  onDelete: (conversationId: string) => void;
 }
 
-function TimeSection({ title, conversations, onSelect }: TimeSectionProps) {
+function TimeSection({ title, conversations, onSelect, onToggleFavorite, onDelete }: TimeSectionProps) {
   return (
     <div className="mb-6">
       <h3 className="text-xs font-medium text-muted-foreground mb-2 px-1 uppercase tracking-wide">{title}</h3>
@@ -124,6 +140,8 @@ function TimeSection({ title, conversations, onSelect }: TimeSectionProps) {
             key={conv.id}
             conversation={conv}
             onClick={() => onSelect(conv)}
+            onToggleFavorite={() => onToggleFavorite(conv.id)}
+            onDelete={() => onDelete(conv.id)}
           />
         ))}
       </div>
@@ -134,44 +152,74 @@ function TimeSection({ title, conversations, onSelect }: TimeSectionProps) {
 interface ConversationItemProps {
   conversation: Conversation;
   onClick: () => void;
+  onToggleFavorite: () => void;
+  onDelete: () => void;
 }
 
-function ConversationItem({ conversation, onClick }: ConversationItemProps) {
+function ConversationItem({ conversation, onClick, onToggleFavorite, onDelete }: ConversationItemProps) {
   const messageCount = conversation.messages.length;
   const timestamp = new Date(conversation.updatedAt);
   const timeStr = formatTime(timestamp);
 
   return (
-    <button
-      onClick={onClick}
-      className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-muted active:bg-muted transition-colors group"
-    >
-      <div className="flex items-start justify-between gap-2 mb-1">
-        <p className="text-sm text-foreground font-medium line-clamp-1 flex-1 group-hover:text-primary transition-colors">
-          {conversation.title}
-        </p>
-        {conversation.isFavorite && (
-          <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500 shrink-0" />
-        )}
-      </div>
-      
-      <div className="flex items-center gap-2">
-        <span className="text-xs text-muted-foreground">{timeStr}</span>
-        <span className="text-xs text-muted-foreground/40">•</span>
-        <div className="flex items-center gap-1">
-          <MessageSquare className="w-3 h-3 text-muted-foreground/60" />
-          <span className="text-xs text-muted-foreground">{messageCount}</span>
+    <div className="group/item flex items-center gap-1 px-1.5 py-1 rounded-lg hover:bg-muted transition-colors">
+      <button
+        onClick={onClick}
+        className="flex-1 min-w-0 text-left px-1.5 py-1.5 rounded-md active:bg-muted/60 transition-colors"
+      >
+        <div className="flex items-start justify-between gap-2 mb-1">
+          <p className="text-sm text-foreground font-medium line-clamp-1 flex-1 group-hover/item:text-primary transition-colors">
+            {conversation.title}
+          </p>
         </div>
-        {conversation.propertyType && (
-          <>
-            <span className="text-xs text-muted-foreground/40">•</span>
-            <span className="text-xs px-1.5 py-0.5 bg-blue-500/10 text-blue-500 rounded capitalize">
-              {conversation.propertyType}
-            </span>
-          </>
-        )}
+
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-muted-foreground">{timeStr}</span>
+          <span className="text-xs text-muted-foreground/40">•</span>
+          <div className="flex items-center gap-1">
+            <MessageSquare className="w-3 h-3 text-muted-foreground/60" />
+            <span className="text-xs text-muted-foreground">{messageCount}</span>
+          </div>
+          {conversation.propertyType && (
+            <>
+              <span className="text-xs text-muted-foreground/40">•</span>
+              <span className="text-xs px-1.5 py-0.5 bg-blue-500/10 text-blue-500 rounded capitalize">
+                {conversation.propertyType}
+              </span>
+            </>
+          )}
+        </div>
+      </button>
+
+      <div className="flex items-center gap-0.5 shrink-0 pr-0.5">
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleFavorite();
+          }}
+          className="p-1.5 rounded hover:bg-background transition-colors"
+          title={conversation.isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+        >
+          <Star
+            className={`w-3.5 h-3.5 ${
+              conversation.isFavorite
+                ? 'fill-amber-500 text-amber-500'
+                : 'text-muted-foreground/40 group-hover/item:text-muted-foreground'
+            }`}
+          />
+        </button>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete();
+          }}
+          className="p-1.5 rounded hover:bg-background transition-colors opacity-0 group-hover/item:opacity-100"
+          title="Delete conversation"
+        >
+          <Trash2 className="w-3.5 h-3.5 text-muted-foreground hover:text-red-500" />
+        </button>
       </div>
-    </button>
+    </div>
   );
 }
 

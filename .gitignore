@@ -49,3 +49,9 @@ __generated__
 /test-results/
 /blob-report/
 /playwright/.cache/
+
+# ORION
+.ai-sdlc-backup/
+.claude/settings.local.json
+.orion/state/
+.orion-migration-backup/

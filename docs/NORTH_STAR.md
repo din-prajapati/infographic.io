@@ -129,7 +129,7 @@
 | [US-DESIGN-004](agile/epics/EPIC-DESIGN-01/stories/US-DESIGN-004/STORY.md) | 🟡 AC1,5 ✅, AC2–4,6 🔲 human | Page consistency — human spot-checks pending |
 
 **Epic:** [EPIC-DESIGN-01 — MVP UI Design Consistency](agile/epics/EPIC-DESIGN-01/EPIC.md)  
-**Legacy combined story card:** [stories/DESIGN-001_ui-design-consistency.md](stories/DESIGN-001_ui-design-consistency.md) (archived — individual stories above are canonical)
+**Legacy combined story card:** [ARCHIVE/stories/DESIGN-001_ui-design-consistency.md](ARCHIVE/stories/DESIGN-001_ui-design-consistency.md) (archived — individual stories above are canonical)
 
 ---
 

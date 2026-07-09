@@ -17,8 +17,6 @@ export { PromptSuggestionCard } from './PromptSuggestionCard';
 
 // Phase 2.1: Icon Bar Panels
 export { AISuggestionsPanel } from './AISuggestionsPanel';
-export { QuickActionsPanel } from './QuickActionsPanel';
-export { StylePresetsPanel } from './StylePresetsPanel';
 export { ImageUploadPanel } from './ImageUploadPanel';
 
 // Phase 2.2: History & Favorites (components removed — files deleted)
@@ -34,10 +32,7 @@ export { EnhancedSuggestionsPanel } from './EnhancedSuggestionsPanel';
 // Phase 2.5: Conversation UI
 export { ConversationMessages } from './ConversationMessages';
 export { MessageBubble } from './MessageBubble';
-export { ConversationHistoryPanel } from './ConversationHistoryPanel';
 export { ConversationHistoryView } from './ConversationHistoryView';
-export { SmartSuggestionsRow } from './SmartSuggestionsRow';
-export { ConversationToolbar } from './ConversationToolbar';
 export { GenerationProgressBar } from './GenerationProgressBar';
 export { TimestampDivider } from './TimestampDivider';
 

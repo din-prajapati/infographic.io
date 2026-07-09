@@ -1,0 +1,109 @@
+{
+  "$schema": "https://schemastore.org/claude-code-settings.json",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PROJECT_DIR}/.orion/hooks/pre-edit-env-secret.sh"
+          }
+        ],
+        "matcher": "Edit|Write",
+        "path_pattern": ".env"
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PROJECT_DIR}/.orion/hooks/pre-edit-env-secret.sh"
+          }
+        ],
+        "matcher": "Edit|Write",
+        "path_pattern": ".env.*"
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PROJECT_DIR}/.orion/hooks/pre-edit-env-secret.sh"
+          }
+        ],
+        "matcher": "Edit|Write",
+        "path_pattern": "**/.env"
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PROJECT_DIR}/.orion/hooks/pre-edit-env-secret.sh"
+          }
+        ],
+        "matcher": "Edit|Write",
+        "path_pattern": "**/secrets/**"
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PROJECT_DIR}/.orion/hooks/pre-edit-schema-warn.sh"
+          }
+        ],
+        "matcher": "Edit|Write",
+        "path_pattern": "PROJECT_CONTEXT.yaml"
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PROJECT_DIR}/.orion/hooks/pre-edit-schema-warn.sh"
+          }
+        ],
+        "matcher": "Edit|Write",
+        "path_pattern": "**/.orion/orion.yaml"
+      }
+    ],
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PROJECT_DIR}/.orion/hooks/post-edit-tasks-sync.sh"
+          }
+        ],
+        "matcher": "Edit|Write",
+        "path_pattern": "**/TASKS.md"
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PROJECT_DIR}/.orion/hooks/post-edit-story-close-check.sh"
+          }
+        ],
+        "matcher": "Edit|Write",
+        "path_pattern": "**/STORY.md"
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PROJECT_DIR}/.orion/hooks/session-start-recall.sh"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PROJECT_DIR}/.orion/hooks/stop-session-summary.sh"
+          }
+        ]
+      }
+    ]
+  }
+}

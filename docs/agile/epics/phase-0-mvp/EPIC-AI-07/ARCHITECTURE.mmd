@@ -1,0 +1,30 @@
+flowchart LR
+  subgraph Backend["NestJS API — CONFIRMED WORKING"]
+    A["ai-orchestrator.service.ts\ngen:start → gen:complete\n(22-27s, verified via logs)"]:::good
+    B["generation-progress.gateway.ts\nConnects + subscribes fine\nEmits 'completed' — but socket\nis already gone by then"]:::warn
+    C["infographics.controller.ts\nGET .../status · .../variations\n(REST fallback — DOES catch\nthe miss in a foreground tab)"]:::good
+  end
+
+  subgraph Frontend["React client"]
+    D["useGenerationWebSocket.ts\nConnects OK (~21s, slow)\nDISCONNECTS ~7s later —\nright at completion boundary"]:::bad
+    E["AIChatBox.tsx\n(or a sibling hook — location\nTBD) REST-poll fallback,\nlikely timer-driven"]:::warn
+    F["Renders result cards\n— via REST path, confirmed\nworking in foreground tab"]:::good
+  end
+
+  subgraph Gap["OPEN QUESTIONS — US-AI-034"]
+    G["Why does the socket drop\n~7s post-subscribe, right at\ncompletion? Railway WS proxy\ntimeout? Re-render tearing\ndown the subscription?"]:::new
+    H["Is the REST fallback\ntimer-driven in a way Chrome's\nbackground-tab throttling\ncan suppress? (theory for the\noriginal headless 3/3 stuck repro)"]:::new
+  end
+
+  A --> B
+  A --> C
+  B -.->|"connects+subscribes OK,\nthen disconnects"| D
+  D -.-> G
+  C -.->|"poll catches completion\nafter socket drops"| E
+  E --> F
+  E -.-> H
+
+  classDef good fill:#0b3b2e,stroke:#14532d,color:#ecfdf5;
+  classDef bad  fill:#3b0b0b,stroke:#7f1d1d,color:#fef2f2;
+  classDef warn fill:#4a3b0b,stroke:#a16207,color:#fefce8;
+  classDef new  fill:#1e3a5f,stroke:#2563eb,color:#eff6ff;

@@ -1,0 +1,16 @@
+{
+  "$schema": "https://github.com/din-prajapati/orion/raw/main/templates/scaffold.schema.json",
+  "version": "0.2.0",
+  "project": "{PROJECT_NAME}",
+  "layers": ["frontend", "backend", "database", "testing", "platform", "integrations"],
+  "techs": {
+    "frontend": ["react", "tailwind"],
+    "backend": ["nestjs"],
+    "database": ["prisma"],
+    "testing": ["vitest", "playwright"],
+    "platform": ["railway"],
+    "integrations": ["sentry"]
+  },
+  "always_load": ["AGILE.md", "DOMAIN.md", "SECURITY.md", "OBSERVABILITY.md"],
+  "_notes": "Edit this file when you add/remove a tech. ORION agents read it to selectively load only relevant rules. Token-efficient by construction. See docs/reference/scaffold-schema.md."
+}

@@ -1,0 +1,218 @@
+# PROJECT_CONTEXT.yaml — AI-SDLC customization layer
+#
+# This single file configures the AI-SDLC framework for your project.
+# Every agent and skill reads it before acting.
+# Update this file when your stack changes, you add a domain, or you change conventions.
+#
+# Schema reference: aine/docs/reference/project-context-schema.md
+
+# ─────────────────────────────────────────────────────────────────────────
+# PROJECT IDENTITY
+# ─────────────────────────────────────────────────────────────────────────
+project:
+  name: "YourProductName"
+  type: "SaaS"                          # SaaS | CLI | Library | Mobile | Other
+  description: "One-sentence product description."
+  root: "/absolute/path/to/repo"        # used for cross-OS path normalization
+
+# ─────────────────────────────────────────────────────────────────────────
+# TECH STACK
+# Used by agents to apply correct idioms and by stack packs to load.
+# ─────────────────────────────────────────────────────────────────────────
+stack:
+  frontend: ["react", "vite", "tailwind"]    # or omit if no frontend
+  backend: ["nestjs", "prisma", "postgres"]  # or fastapi, express, django, etc.
+  testing: ["vitest", "playwright"]
+  deploy: ["railway"]                         # vercel, fly, aws, etc.
+  monitoring: ["sentry"]
+
+# Stack packs to auto-load from .orion/skills/stacks/
+# DEPRECATED in v0.1.2: use .orion/scaffold.json (layers + techs) instead.
+# This field is kept for backward compatibility and may be removed in v0.2.
+load_stacks: []
+
+# ─────────────────────────────────────────────────────────────────────────
+# DOMAINS
+# Logical groupings used in ID prefixes (e.g., EPIC-DESIGN-01).
+# ─────────────────────────────────────────────────────────────────────────
+domains:
+  - prefix: "CORE"
+    scope: "Default domain for shared/cross-cutting work"
+  # Add project-specific domains:
+  # - prefix: "AUTH"
+  #   scope: "Login, sessions, OAuth, JWT, API keys"
+  # - prefix: "BILLING"
+  #   scope: "Subscriptions, invoices, payment providers"
+
+# ID counters — auto-updated by skills (do not edit manually unless reconciling)
+counters:
+  ADR: 1                                  # next ADR number (incremented by /new-adr)
+  # Per-domain counters added by skills:
+  # AUTH:    { epic: 1, feature: 1, story: 1 }
+  # BILLING: { epic: 1, feature: 1, story: 1 }
+
+# ─────────────────────────────────────────────────────────────────────────
+# PHASES
+# Business release milestones. Phase N → folder phase-N-<slug>/
+# ─────────────────────────────────────────────────────────────────────────
+phases:
+  - id: 0
+    folder: "phase-0-mvp"
+    release: "v1.0"
+    outcome: "Working product in production"
+    status: "planning"
+
+# ─────────────────────────────────────────────────────────────────────────
+# VERIFICATION GATES
+# Run by /verification-gates and code-agent before declaring work done.
+# ─────────────────────────────────────────────────────────────────────────
+gates:
+  - id: 1
+    name: "TypeScript + unit tests"
+    mandatory: true
+    automated: true
+    commands:
+      - "npm run check"
+      - "npm run test:unit"
+  - id: 2
+    name: "Visual checklist"
+    automated: false
+    domains: ["frontend"]
+    checklist: ".claude/skills/core/verification-gates/visual-checklist.md"
+  - id: 3
+    name: "E2E"
+    automated: true
+    domains: ["frontend"]
+    commands:
+      - "npm run test:e2e"
+  - id: 4
+    name: "API smoke"
+    automated: true
+    domains: ["backend"]
+    commands:
+      - "curl -fsS http://localhost:3001/health"
+
+# ─────────────────────────────────────────────────────────────────────────
+# PLAN TIERS (optional — for SaaS products with paid plans)
+# ─────────────────────────────────────────────────────────────────────────
+plan_tiers: []
+  # Example:
+  # - { id: "FREE",  limit_per_month: 3,      price: 0 }
+  # - { id: "PRO",   limit_per_month: 100,    price_inr: 999 }
+  # - { id: "TEAM",  limit_per_month: 1000,   price_inr: 6999 }
+
+# ─────────────────────────────────────────────────────────────────────────
+# GIT & PR CONVENTIONS
+# Default branching unit is the milestone (groups 3-7 stories per the agile
+# framework). Per-story branching is an escape hatch (XL, parallel agents,
+# hotfix, spike). See .orion/rules/AGILE.md §"Git Standards" for the
+# full policy.
+# ─────────────────────────────────────────────────────────────────────────
+git:
+  default_branch: "main"
+  # Default branch unit: milestone. All stories of the milestone commit here.
+  branch_format: "feat/{domain-lower}/{milestone-slug}"
+  # Escape hatches:
+  branch_format_story: "feat/{domain-lower}/{story-id-lower}-{slug}"   # XL / parallel agents / risky one-off
+  branch_format_hotfix: "hotfix/{domain-lower}/{slug}"
+  branch_format_spike: "spike/{slug}"                                   # never merges
+  # Per-task commits inside the milestone branch: T{n} traces back to TASKS.md row.
+  commit_format: "{type}({scope}): T{n} {summary} — {US-ID}"
+  pr_labels:
+    - "epic:{domain-lower}"
+    - "milestone:{milestone-id-lower}"
+    - "type:{type}"
+    - "priority:{P}"
+  # Milestone branches: rebase-and-merge to preserve per-story/per-task history on main.
+  # Story escape-hatch branches: squash-merge.
+  merge_strategy:
+    milestone: "rebase"
+    story: "squash"
+    hotfix: "squash"
+  squash_merge: true  # legacy field; superseded by merge_strategy.* above
+  # Optional override (rare): "milestone" | "story" | "trunk".
+  # Default is milestone. Set to "story" only if your team has a hard reason
+  # (e.g., entirely independent stories, no shared services).
+  # branching_unit: "milestone"
+
+# ─────────────────────────────────────────────────────────────────────────
+# AGILE FILE LOCATIONS
+# ─────────────────────────────────────────────────────────────────────────
+paths:
+  agile_root: "docs/agile"
+  epics: "docs/agile/epics"
+  templates: "docs/agile/templates"
+  decisions: "docs/agile/decisions"
+  history: "docs/agile/history"
+  roadmap: "docs/agile/ROADMAP.md"
+  agile_index: "docs/agile/AGILE_INDEX.md"
+  phase_tracker: "docs/agile/PHASE_TRACKER.md"
+  team_status: "docs/agile/TEAM_STATUS.md"
+  prd_inbox: "docs/agile/PRD"
+  north_star: "docs/NORTH_STAR.md"
+  # ORION-owned config (v0.1.2+)
+  rules: ".orion/rules"
+  scaffold: ".orion/scaffold.json"
+
+# ─────────────────────────────────────────────────────────────────────────
+# AGENT BEHAVIOR FLAGS
+# ─────────────────────────────────────────────────────────────────────────
+agent_flags:
+  # Code agent
+  code_agent:
+    respect_out_of_scope: true            # never touch files outside TASKS.md
+    call_back_on_uncertainty: true        # ask instead of guessing
+    run_gates_after_implementation: true  # auto-run gate 1 when done
+  # Test agents
+  test_agents:
+    contract_first: true                  # write tests from AC, not from code
+    require_negative_tests: true          # always include error-path tests
+  # Reviewer
+  reviewer:
+    block_on_scope_creep: true            # flag any file outside TASKS.md
+    require_test_evidence: true           # PR must show passing test output
+
+# ─────────────────────────────────────────────────────────────────────────
+# SECRETS & SENSITIVE PATHS (for pre-edit-env-secret hook)
+# ─────────────────────────────────────────────────────────────────────────
+sensitive_paths:
+  - ".env"
+  - ".env.local"
+  - ".env.production"
+  - "**/secrets/**"
+  - "**/credentials.json"
+
+# ─────────────────────────────────────────────────────────────────────────
+# AC COVERAGE REQUIREMENTS  (v0.4.0+)
+# Defines which Acceptance Criteria types are required per domain before a
+# story can be locked for implementation.  `harden` reads this section.
+#
+# Built-in types: happy-path, error-path, security, session-expiry,
+#   idempotency, currency-edge, rate-limit, null-input, concurrent,
+#   rollback, offline, edge-case
+#
+# Rule: default types apply to every story.  per_domain entries are additive.
+# ─────────────────────────────────────────────────────────────────────────
+ac_coverage:
+  # Required for every story regardless of domain.
+  default: [happy-path, error-path]
+
+  # Per-domain additions — domain prefix must match a value in domains[].prefix.
+  # Comment-in the domains your project uses and extend with custom types as needed.
+  per_domain: {}
+  # Example (uncomment and adjust):
+  # per_domain:
+  #   AUTH:     [security, session-expiry]
+  #   PAYMENTS: [security, idempotency, currency-edge]
+  #   API:      [rate-limit, error-path]
+  #   DATA:     [null-input, concurrent]
+  #   CORE:     []    # default only
+
+# ─────────────────────────────────────────────────────────────────────────
+# FRAMEWORK METADATA (do not edit by hand)
+# ─────────────────────────────────────────────────────────────────────────
+framework:
+  name: "AI-SDLC"
+  version: "0.2.0"
+  installed_at: ""                    # populated by install.sh
+  context_schema_version: 1

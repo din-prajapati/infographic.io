@@ -43,12 +43,13 @@ Every PR is traceable from `git log` → Story → Milestone → Epic.
 | EPIC-EDIT-01 | Canvas Editor (CRUD + export) | ✅ Done | All closed | — |
 | EPIC-AI-01 | MVP AI Pipeline (GPT-4o + Ideogram) | ✅ Done | All closed | — |
 | EPIC-INFRA-01 | Railway + Sentry + DB migrations | 🟡 In Progress | Code ✅ | 3 human deploy tasks |
+| [EPIC-AI-07](epics/phase-0-mvp/EPIC-AI-07/EPIC.md) | Generation Progress Delivery Fix — **PT-09, launch blocker** | 🟡 Fix in code | US-AI-034 🟡 (fix done, staging re-test pending deploy) · US-AI-035 ⏭️ superseded | Fix implemented + locally verified 2026-07-09; needs deploy to staging to close AC3 |
 
 ## AI Capability Epics (Phase 0.5 → Phase 3)
 
 | Epic ID | Title | Phase Folder | Status | Effort | Stories |
 |---------|-------|-------------|--------|--------|---------|
-| [EPIC-AI-00](epics/phase-0.5-foundation/EPIC-AI-00/EPIC.md) | Foundation Fixes (Socket.io · GPT model · Nano Banana · Persistence) | [phase-0.5-foundation](epics/phase-0.5-foundation/) | 🔲 Not Started | 22h | US-AI-001 to US-AI-006 |
+| [EPIC-AI-00](epics/phase-0.5-foundation/EPIC-AI-00/EPIC.md) | Foundation Fixes (Socket.io · GPT model · Gemini LLM routing · Persistence) | [phase-0.5-foundation](epics/phase-0.5-foundation/) | ✅ Done (closed 2026-07-03, PRs #7–#10) | 22h | US-AI-001 to US-AI-006 |
 | [EPIC-AI-01](epics/phase-2-ai-refine/EPIC-AI-01/EPIC.md) | Conversational AI Core (intent · pre-plan · chips) — demoted to Phase 2 (2026-07-03) | [phase-2-ai-refine](epics/phase-2-ai-refine/) | 🔲 Not Started | ~27h | US-AI-007 to US-AI-009 |
 | [EPIC-AI-02](epics/phase-1-ai-core/EPIC-AI-02/EPIC.md) | Generation Control — US-AI-010/011 first (deps of AI-06/KIT-01); rest → Phase 2 | [phase-1-ai-core](epics/phase-1-ai-core/) | 🔲 Not Started | ~24h | US-AI-010 to US-AI-014 |
 | [EPIC-AI-03](epics/phase-2-ai-refine/EPIC-AI-03/EPIC.md) | Refine Loop (quick refine · element edit · R2 storage · media tools) | [phase-2-ai-refine](epics/phase-2-ai-refine/) | 🔲 Not Started | ~97h | US-AI-015 to US-AI-022 |
@@ -57,8 +58,9 @@ Every PR is traceable from `git log` → Story → Milestone → Epic.
 | [EPIC-GEN-01](epics/phase-0.5-foundation/EPIC-GEN-01/EPIC.md) | Generation Quality — V4 Magic-Prompt Pipeline (garble fix · verify/repair · cost markers) | [phase-0.5-foundation](epics/phase-0.5-foundation/) | 🟡 M-GEN-01 ✅ done (2/2 stories, cost verified $0) — staging DoD pending | ~8h | US-GEN-001 to US-GEN-002 |
 | [EPIC-AI-06](epics/phase-1-ai-core/EPIC-AI-06/EPIC.md) | Hybrid Real-Photo Pipeline (real photo background · editable overlay · synthetic guard) — **promoted to Phase 1** | [phase-1-ai-core](epics/phase-1-ai-core/) | 🔲 Not Started | ~30h | US-AI-031 to US-AI-033 |
 | [EPIC-KIT-01](epics/phase-1-ai-core/EPIC-KIT-01/EPIC.md) | Listing Marketing Kits (multi-format batch · lifecycle · recurring content · compliance) — **promoted to Phase 1** | [phase-1-ai-core](epics/phase-1-ai-core/) | 🔲 Not Started | ~45h | US-KIT-001 to US-KIT-006 |
+| [EPIC-LAUNCH-01](epics/phase-1-ai-core/EPIC-LAUNCH-01/EPIC.md) | Go-Live & Revenue Readiness (RazorPay live · email + password reset · legal pages · beta mode · metering) — **Phase 1 priority #1, added 2026-07-07** | [phase-1-ai-core](epics/phase-1-ai-core/) | 🔲 Not Started | ~20h + ops | US-LAUNCH-001 to US-LAUNCH-008 |
 
-> **Priority order (reprioritized 2026-07-03 — revenue strategy first):** EPIC-GEN-01 closes Phase 0.5. Phase 1 = US-AI-010/011 (deps) → EPIC-AI-06 → EPIC-KIT-01, with EPIC-OBS-00 parallel. EPIC-AI-01 + EPIC-AI-02 remainder + EPIC-AI-03 follow in Phase 2. EPIC-AI-04 + AI-05 are Month 6–12. Rationale: [docs/research/2026-07-03-V4-PIPELINE-FIX-AND-PRODUCT-STRATEGY.md](../research/2026-07-03-V4-PIPELINE-FIX-AND-PRODUCT-STRATEGY.md)
+> **Priority order (re-ranked 2026-07-07 — launch-readiness assessment; see [ROADMAP.md](ROADMAP.md)):** ① Phase 0 close (3 HUMAN deploy tasks + staging QA — EPIC-INFRA-01). ② EPIC-LAUNCH-01 M-LAUNCH-01 (public beta: legal pages, email, password reset, beta flag) with EPIC-OBS-00 M-OBS-01 in parallel — beta goes live here. ③ US-AI-010/011 (deps) → EPIC-AI-06 (real-photo pipeline — the chargeability gate), with EPIC-LAUNCH-01 M-LAUNCH-02 prep (RazorPay live activation) in parallel. ④ Revenue-on flip: BETA_MODE off once AI-06 + M-LAUNCH-02 close. ⑤ EPIC-KIT-01. EPIC-AI-01 + EPIC-AI-02 remainder + EPIC-AI-03 follow in Phase 2; EPIC-AI-04/05 Month 6–12. Rationale: [docs/research/2026-07-03-V4-PIPELINE-FIX-AND-PRODUCT-STRATEGY.md](../research/2026-07-03-V4-PIPELINE-FIX-AND-PRODUCT-STRATEGY.md) + 2026-07-07 launch-readiness verdict.
 >
 > **Model opacity rule (all AI epics):** Model names (Nano Banana, Gemini, Flash, Pro) must NEVER appear in any UI label, API response, or user-visible message. Users see: "Quick Generate", "Campaign Quality", "Social", "Print Quality".
 
@@ -133,7 +135,7 @@ docs/agile/
 | PR branch | `feat/{domain}-{story-slug}` | `feat/design-us-design-002-editor-tokens` |
 | Linear issue | Sync with story ID in title | `[US-DESIGN-002] Editor token replacement` |
 
-Domain prefixes: `DESIGN` · `PAY` · `AUTH` · `EDIT` · `AI` · `USAGE` · `INFRA` · `ORG` · `KIT` (listing kits) · `GEN` (generation quality)
+Domain prefixes: `DESIGN` · `PAY` · `AUTH` · `EDIT` · `AI` · `USAGE` · `INFRA` · `ORG` · `KIT` (listing kits) · `GEN` (generation quality) · `LAUNCH` (go-live & revenue readiness)
 
 ---
 

@@ -1,0 +1,53 @@
+# ORION — auto-close-on-merge
+# Copies to .github/workflows/close-story-on-merge.yml during `ai-sdlc init`.
+# When a PR is merged AND the title/body contains US-{DOMAIN}-{NNN}, runs the
+# shell equivalent of /close-story: cascades status to MILESTONE/EPIC/PHASE/AGILE.
+# Pure shell + sed/awk — no LLM cost.
+
+name: ORION — Close Story on PR Merge
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  close-story:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.base.ref }}
+
+      - name: Extract story IDs from PR
+        id: ids
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY:  ${{ github.event.pull_request.body }}
+        run: |
+          IDS=$(printf '%s\n%s' "$PR_TITLE" "$PR_BODY" \
+            | grep -oE 'US-[A-Z]+-[0-9]+' | sort -u | tr '\n' ' ')
+          echo "ids=$IDS" >> "$GITHUB_OUTPUT"
+          echo "Found: $IDS"
+
+      - name: Cascade status updates
+        if: steps.ids.outputs.ids != ''
+        env:
+          PR_NUM: ${{ github.event.pull_request.number }}
+          IDS: ${{ steps.ids.outputs.ids }}
+        run: bash .claude/hooks/cascade-close-story.sh
+
+      - name: Commit cascade
+        if: steps.ids.outputs.ids != ''
+        run: |
+          if [ -n "$(git status --porcelain docs/agile)" ]; then
+            git config user.name "orion-bot"
+            git config user.email "orion-bot@users.noreply.github.com"
+            git add docs/agile
+            git commit -m "chore(orion): close ${{ steps.ids.outputs.ids }} after PR #${{ github.event.pull_request.number }} merge"
+            git push
+          fi

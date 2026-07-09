@@ -1,0 +1,41 @@
+{
+  "$schema": "https://github.com/din-prajapati/orion/raw/main/templates/scaffold.schema.json",
+  "version": "0.1.2",
+  "project": "InfographicAI",
+  "layers": [
+    "frontend",
+    "backend",
+    "database",
+    "testing",
+    "platform",
+    "integrations"
+  ],
+  "techs": {
+    "frontend": [
+      "react",
+      "tailwind"
+    ],
+    "backend": [
+      "nestjs"
+    ],
+    "database": [
+      "prisma"
+    ],
+    "testing": [
+      "vitest",
+      "playwright"
+    ],
+    "platform": [
+      "railway"
+    ],
+    "integrations": [
+      "sentry"
+    ]
+  },
+  "always_load": [
+    "AGILE.md",
+    "DOMAIN.md",
+    "SECURITY.md",
+    "OBSERVABILITY.md"
+  ]
+}

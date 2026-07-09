@@ -1,0 +1,9 @@
+{
+  "story": "{US-ID}",
+  "touches": {
+    "layers": [],
+    "techs": []
+  },
+  "rules_loaded": [],
+  "_notes": "Written by /new-story from STORY.md 'Primary files touched'. Agents load only files listed in rules_loaded. Empty arrays default to project-wide scaffold."
+}

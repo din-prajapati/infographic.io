@@ -15,12 +15,8 @@ interface AIChatInputFieldProps {
   onRemoveChip: (chipId: string) => void;
   isGenerating: boolean;
   onSuggestionsClick: () => void;
-  onQuickActionsClick: () => void;
-  onStylePresetsClick: () => void;
   onUploadClick: () => void;
   lightbulbRef?: React.RefObject<HTMLButtonElement>;
-  zapRef?: React.RefObject<HTMLButtonElement>;
-  paletteRef?: React.RefObject<HTMLButtonElement>;
   paperclipRef?: React.RefObject<HTMLButtonElement>;
   orientation: InfographicOrientation;
   qualityModel: ImageQualityModel;
@@ -36,12 +32,8 @@ export function AIChatInputField({
   onRemoveChip,
   isGenerating,
   onSuggestionsClick,
-  onQuickActionsClick,
-  onStylePresetsClick,
   onUploadClick,
   lightbulbRef,
-  zapRef,
-  paletteRef,
   paperclipRef,
   orientation,
   qualityModel,
@@ -80,12 +72,8 @@ export function AIChatInputField({
           selectedChips={selectedChips}
           onRemoveChip={onRemoveChip}
           onSuggestionsClick={onSuggestionsClick}
-          onQuickActionsClick={onQuickActionsClick}
-          onStylePresetsClick={onStylePresetsClick}
           onUploadClick={onUploadClick}
           lightbulbRef={lightbulbRef}
-          zapRef={zapRef}
-          paletteRef={paletteRef}
           paperclipRef={paperclipRef}
           orientation={orientation}
           qualityModel={qualityModel}

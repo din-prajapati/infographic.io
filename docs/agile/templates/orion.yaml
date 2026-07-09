@@ -1,0 +1,555 @@
+# yaml-language-server: $schema=https://github.com/din-prajapati/orion-ai-sdlc/raw/main/templates/orion.schema.json
+# .orion/orion.yaml — ORION manifest.
+# This is the SINGLE SOURCE OF TRUTH for every skill, hook, rule, and agent.
+# Hand-edited. Everything in .claude/, .cursor/, .codex/, .husky/, CLAUDE.md,
+# and AGENTS.md is GENERATED from this file by `orion install` / `orion sync`.
+#
+# Install: npx orion install --tools=claude-code
+# Docs:    https://github.com/din-prajapati/orion-ai-sdlc
+
+version: 1
+orion: "0.4.0"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# PROJECT — identity of the host project.
+# Mirrors the top-level fields of PROJECT_CONTEXT.yaml.
+# ─────────────────────────────────────────────────────────────────────────────
+project:
+  name: "{PROJECT_NAME}"
+  type: "SaaS"                   # SaaS | CLI | Library | Mobile | Other
+  root: "."
+  stack:
+    frontend: []
+    backend: []
+    database: []
+    testing: []
+    platform: []
+    integrations: []
+
+# ─────────────────────────────────────────────────────────────────────────────
+# ADAPTERS — which IDEs ORION compiles for.
+# Run `orion install --tools=claude-code` to generate the 4 IDE artifacts.
+# ─────────────────────────────────────────────────────────────────────────────
+adapters:
+  claude-code:
+    enabled: true
+    install_dir: ".claude"
+    naming:
+      router_name: "orion"       # /orion in the IDE; `orion run <skill>` in the terminal
+    options:
+      session_start: native      # Claude Code fires SessionStart natively
+      per_skill_stubs: false     # opt-in: generate one 3-line stub per skill for per-skill autocomplete
+  cursor:
+    enabled: false               # enable in Phase 6: orion install --tools=cursor
+    install_dir: ".cursor"
+    options:
+      session_start: first-turn-marker
+      per_skill_stubs: false
+  codex:
+    enabled: false               # enable in Phase 7: orion install --tools=codex
+    install_dir: ".codex"
+    options:
+      session_start: first-turn-marker
+      agents_md_target: "AGENTS.md"
+      per_skill_stubs: false
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SKILLS — the routing table.
+# The router skill reads this at invocation time to dispatch to the canonical
+# SKILL.md at .orion/<source>/SKILL.md. The CLI reads the same table for
+# `orion run`, `orion list`, and `orion describe`.
+# ─────────────────────────────────────────────────────────────────────────────
+skills:
+
+  # ── Stage 1: Discover ──────────────────────────────────────────────────────
+
+  - name: annotate-prd
+    source: skills/core/annotate-prd
+    description: >
+      Insert <!-- orion:phase=N --> lens markers into a large PRD (> 1000 lines)
+      so that prd-to-roadmap can process one phase at a time without context loss.
+    tools: [Read, Write, Edit]
+    triggers:
+      - "annotate prd"
+      - "annotate this prd"
+      - "prepare prd for roadmap"
+      - "mark prd phases"
+      - "prd too large"
+    profiles: [core, planning]
+
+  - name: prd-to-roadmap
+    source: skills/core/prd-to-roadmap
+    description: >
+      Convert a PRD into a full roadmap + epics + features + milestones + stories
+      with folder/file scaffolding, EPIC tables, DAGs, and agile indexes.
+    tools: [Read, Write, Edit, Bash, Glob, Grep]
+    triggers:
+      - "prd to roadmap"
+      - "generate roadmap"
+      - "decompose this prd"
+      - "roadmap from prd"
+    agents: [pm-agent, architect-agent, story-writer]
+    profiles: [core, planning]
+
+  - name: new-epic
+    source: skills/core/new-epic
+    description: >
+      Create a new Epic under an existing Phase: scaffold EPIC.md, add row to
+      PHASE_TRACKER.md and AGILE_INDEX.md, increment the epic counter.
+    tools: [Read, Write, Edit, Glob, Grep]
+    triggers:
+      - "create epic"
+      - "new epic"
+      - "add epic"
+      - "scaffold epic"
+    agents: [architect-agent]
+    profiles: [core, planning]
+
+  - name: new-feature
+    source: skills/core/new-feature
+    description: >
+      Add a Feature under an existing Epic: scaffold FEATURE.md, update the
+      parent EPIC.md features table, and prime the milestone list.
+    tools: [Read, Write, Edit, Glob, Grep]
+    triggers:
+      - "create feature"
+      - "new feature"
+      - "add feature"
+      - "scaffold feature"
+    profiles: [core, planning]
+
+  - name: new-milestone
+    source: skills/core/new-milestone
+    description: >
+      Create a Milestone under an existing Epic (or Feature): scaffold
+      MILESTONE.md, add row to parent EPIC.md and FEATURE.md, update the
+      global milestone counter.
+    tools: [Read, Write, Edit, Glob, Grep]
+    triggers:
+      - "create milestone"
+      - "new milestone"
+      - "add milestone"
+      - "scaffold milestone"
+    profiles: [core, planning]
+
+  # ── Stage 2: Design ────────────────────────────────────────────────────────
+
+  - name: design-epic
+    source: skills/core/design-epic
+    description: >
+      Produce ARCHITECTURE.mmd + ENV.yaml for an Epic: system diagram, tech
+      risk register, effort estimates, and open-question checklist.
+    tools: [Read, Write, Edit, Glob, Grep]
+    triggers:
+      - "design epic"
+      - "architecture for"
+      - "architect epic"
+      - "design architecture"
+    agents: [architect-agent]
+    profiles: [core, planning]
+
+  - name: new-adr
+    source: skills/core/new-adr
+    description: >
+      Create a new Architecture Decision Record from the DECISION.md template,
+      auto-increment the ADR counter, cross-link STORY or EPIC if provided.
+    tools: [Read, Write, Edit, Glob, Grep]
+    triggers:
+      - "new adr"
+      - "record decision"
+      - "log decision"
+      - "create adr"
+      - "architecture decision"
+    profiles: [core, planning]
+
+  # ── Stage 3: Define ────────────────────────────────────────────────────────
+
+  - name: new-story
+    source: skills/core/new-story
+    description: >
+      Write a STORY.md + TASKS.md + scaffold.json under a Milestone, using
+      story-writer to fill INVEST acceptance criteria and file-specific tasks.
+    tools: [Read, Write, Edit, Glob, Grep]
+    triggers:
+      - "create story"
+      - "write story card"
+      - "add story"
+      - "story for"
+      - "new story"
+    agents: [story-writer]
+    profiles: [core, planning]
+
+  # ── Stage 3.5: Certify ────────────────────────────────────────────────────
+
+  - name: harden
+    source: skills/core/harden
+    lock_required: true
+    description: >
+      Audit AC type coverage for a story, fill missing typed ACs with a
+      targeted LLM call, generate TC-ID rows, and lock the story as
+      implement-ready. Replaces validate-story + adversarial-review +
+      find-edge-cases.
+    tools: [Read, Write, Edit, Glob]
+    triggers:
+      - "harden story"
+      - "harden"
+      - "prepare story"
+      - "certify story"
+      - "ready for implementation"
+    profiles: [core, quality]
+
+  # ── Stage 4: Develop ───────────────────────────────────────────────────────
+
+  - name: implement-story
+    source: skills/core/implement-story
+    hard_block: [harden]
+    description: >
+      Execute one story end-to-end with code-agent: read STORY.md + TASKS.md,
+      apply tasks file-by-file with contract-first tests, run Gate 1 on
+      completion.
+    tools: [Read, Write, Edit, Bash, Glob, Grep, Task]
+    triggers:
+      - "implement story"
+      - "implement"
+      - "code this story"
+      - "build story"
+      - "build this"
+    agents: [code-agent, qa-agent]
+    profiles: [core, execution]
+
+  - name: runtime-first-implementation
+    source: skills/core/runtime-first-implementation
+    description: >
+      Guard for the runtime-first principle: verify the runtime contract
+      (type signatures, interface files) exists before writing implementation
+      code for any task.
+    tools: [Read, Write, Edit, Bash, Glob, Grep]
+    triggers:
+      - "implement"
+      - "edit file"
+      - "write code"
+    profiles: [core, execution]
+
+  - name: enumerate-and-confirm-scope
+    source: skills/core/enumerate-and-confirm-scope
+    description: >
+      Before a "fix all" or "check everywhere" request, enumerate every
+      affected site and get explicit confirmation of scope before touching
+      any file.
+    tools: [Read, Glob, Grep]
+    triggers:
+      - "fix all"
+      - "check everywhere"
+      - "update all"
+      - "rename everywhere"
+    profiles: [core, execution]
+
+  # ── Stage 5: Test ──────────────────────────────────────────────────────────
+
+  - name: test-story
+    source: skills/core/test-story
+    description: >
+      Write unit tests + E2E tests for a story: unit-test-agent covers
+      mock-based contract tests; e2e-test-agent covers black-box user flows.
+    tools: [Read, Write, Edit, Bash, Glob, Grep, Task]
+    triggers:
+      - "test story"
+      - "write tests"
+      - "add tests for"
+    agents: [unit-test-agent, e2e-test-agent]
+    profiles: [core, execution]
+
+  - name: contract-first-testing
+    source: skills/core/contract-first-testing
+    description: >
+      Enforce the contract-first testing principle: write the interface/type
+      contract and a failing test before writing any implementation code.
+    tools: [Read, Write, Edit, Glob, Grep]
+    triggers:
+      - "write test"
+      - "add test"
+      - "test before implement"
+    profiles: [core, execution]
+
+  - name: verification-gates
+    source: skills/core/verification-gates
+    description: >
+      Run the project's verification gates (Gate 1–4) and report pass/fail
+      with actionable output. Triggered when a story is nearly done.
+    tools: [Read, Bash, Glob, Grep]
+    triggers:
+      - "done"
+      - "ready to pr"
+      - "run gates"
+      - "verification gates"
+      - "check gates"
+    profiles: [core, execution]
+
+  # ── Stage 6: Review ────────────────────────────────────────────────────────
+
+  - name: review-pr
+    source: skills/core/review-pr
+    description: >
+      Review a PR with reviewer-agent: check AC coverage, scope adherence,
+      code quality, and gate status; produce a structured review verdict.
+    tools: [Read, Bash, Glob, Grep]
+    triggers:
+      - "review pr"
+      - "review this branch"
+      - "code review"
+      - "review pull request"
+    agents: [reviewer-agent]
+    profiles: [core, execution]
+
+  - name: agile-pr
+    source: skills/core/agile-pr
+    description: >
+      Open a PR with full agile context: story ID, AC checklist, gate status,
+      and a pre-filled PR body from the STORY_PR_WORKFLOW template.
+    tools: [Read, Bash, Glob, Grep]
+    triggers:
+      - "open pr"
+      - "create pr"
+      - "agile pr"
+      - "open pull request"
+    profiles: [core, execution]
+
+  # ── Stage 7: Ship ──────────────────────────────────────────────────────────
+
+  - name: ship-it
+    source: skills/core/ship-it
+    description: >
+      Deploy a story to the target environment with devops-agent: validate
+      ENV.yaml, run smoke checks, and confirm production health.
+    tools: [Read, Bash, Glob]
+    triggers:
+      - "ship"
+      - "deploy"
+      - "ship it"
+      - "go live"
+    agents: [devops-agent]
+    profiles: [core, execution]
+
+  - name: close-story
+    source: skills/core/close-story
+    description: >
+      Mark a story Done and cascade all status updates: STORY.md, MILESTONE.md,
+      EPIC.md (implementation log), TEAM_STATUS.md, PHASE_TRACKER.md,
+      AGILE_INDEX.md. Checks DoD before closing.
+    tools: [Read, Write, Edit, Glob, Grep]
+    triggers:
+      - "close story"
+      - "mark done"
+      - "story complete"
+      - "mark story done"
+      - "wrap up story"
+    profiles: [core, execution]
+
+  # ── Cross-stage utilities ──────────────────────────────────────────────────
+
+  - name: next
+    source: skills/core/orion-next
+    description: >
+      Show what to implement next in a milestone: reads lock state, file-overlap
+      graph, and AC coverage gaps to classify stories into four actionable buckets —
+      IMPLEMENT NOW, PARALLEL-ELIGIBLE, NEEDS HARDENING, and BLOCKED.
+    tools: [Read, Glob, Grep]
+    triggers:
+      - "orion next"
+      - "what should i implement next"
+      - "what's ready"
+      - "what's next"
+      - "next story"
+      - "next implementation"
+    profiles: [core, execution]
+
+  - name: standup
+    source: skills/core/standup
+    description: >
+      Generate a structured daily standup from TASKS.md + STORY.md files:
+      Done, In Progress, Blocked, Ready to Start, Near DoD, Milestone Pulse.
+    tools: [Read, Bash, Glob, Grep]
+    triggers:
+      - "standup"
+      - "daily standup"
+      - "morning check"
+      - "what did we do"
+      - "team status update"
+    profiles: [core]
+
+  - name: plan-tomorrow
+    source: skills/core/plan-tomorrow
+    description: >
+      Pick the single highest-value story for the next session and write a
+      5-line plan block under ai-sdlc:tomorrow in TEAM_STATUS.md.
+    tools: [Read, Write, Glob, Grep]
+    triggers:
+      - "plan tomorrow"
+      - "plan next session"
+      - "north star"
+      - "end of day"
+      - "what should i do next"
+    profiles: [core]
+
+  # ── Package quality ───────────────────────────────────────────────────────
+
+  - name: validate-npm-package
+    source: skills/core/validate-npm-package
+    description: >
+      Pre-publish checklist for npm CLI packages: verifies bin paths, file
+      extensions, execute bits, .gitattributes LF enforcement, pathToFileURL
+      usage, runtime-vs-content separation, and package.json field hygiene.
+      Reports pass/fail per check; auto-fixes safe items on request.
+    tools: [Read, Glob, Grep, Bash]
+    triggers:
+      - "validate npm package"
+      - "check npm package"
+      - "pre-publish check"
+      - "ready to publish"
+      - "npm publish check"
+    agents: [reviewer-agent]
+    profiles: [core, quality]
+
+# ─────────────────────────────────────────────────────────────────────────────
+# HOOKS — declared once; adapter maps each intent to IDE-native events.
+# Scripts live at .orion/<script> (relative to .orion/).
+# ─────────────────────────────────────────────────────────────────────────────
+hooks:
+
+  - script: hooks/pre-push-gate1.sh
+    intents: [git.pre-push]
+    blocks: true
+
+  - script: hooks/pre-edit-env-secret.sh
+    intents: [before-file-edit]
+    matchers:
+      file_patterns: [".env", ".env.*", "**/.env", "**/secrets/**"]
+    blocks: true
+
+  - script: hooks/pre-edit-schema-warn.sh
+    intents: [before-file-edit]
+    matchers:
+      file_patterns: ["PROJECT_CONTEXT.yaml", "**/.orion/orion.yaml"]
+    blocks: false
+
+  - script: hooks/post-edit-tasks-sync.sh
+    intents: [after-file-edit]
+    matchers:
+      file_patterns: ["**/TASKS.md"]
+
+  - script: hooks/post-edit-story-close-check.sh
+    intents: [after-file-edit]
+    matchers:
+      file_patterns: ["**/STORY.md"]
+
+  - script: hooks/session-start-recall.sh
+    intents: [session-start]
+    fallback: [first-turn-marker]
+
+  - script: hooks/stop-session-summary.sh
+    intents: [session-stop]
+
+  - script: hooks/compact-session-log.sh
+    intents: []           # manual-only; invoke via: bash .orion/hooks/compact-session-log.sh
+
+  - script: hooks/cascade-close-story.sh
+    intents: []           # GitHub Action only; wired in .github/workflows/close-story-on-merge.yml
+
+# Intent → IDE-event map. Adapter uses this when emitting hook bindings.
+intent_map:
+  claude-code:
+    git.pre-push:       { surface: husky,  file: .husky/pre-push }
+    before-file-edit:   { surface: native, event: PreToolUse,  matcher: "Edit|Write" }
+    after-file-edit:    { surface: native, event: PostToolUse, matcher: "Edit|Write" }
+    session-start:      { surface: native, event: SessionStart }
+    session-stop:       { surface: native, event: Stop }
+  cursor:
+    git.pre-push:       { surface: husky,  file: .husky/pre-push }
+    before-file-edit:   { surface: native, event: beforeReadFile }
+    after-file-edit:    { surface: native, event: afterFileEdit }
+    session-start:      { surface: first-turn-marker }
+    session-stop:       { surface: native, event: stop }
+  codex:
+    git.pre-push:       { surface: husky,  file: .husky/pre-push }
+    before-file-edit:   { surface: native, event: PreToolUse,  matcher: "Edit|Write|Apply" }
+    after-file-edit:    { surface: native, event: PostToolUse, matcher: "Edit|Write|Apply" }
+    session-start:      { surface: first-turn-marker }
+    session-stop:       { surface: native, event: Stop }
+
+# ─────────────────────────────────────────────────────────────────────────────
+# RULES — canonical markdown in .orion/rules/; compiled per IDE by `orion install`.
+# Cross-cutting rules go into CLAUDE.md (merged) or .cursor/rules/*.mdc (scoped).
+# ─────────────────────────────────────────────────────────────────────────────
+rules:
+  - source: rules/AGILE.md
+    scope:
+      globs: ["docs/agile/**", "**/STORY.md", "**/EPIC.md", "**/MILESTONE.md", "**/TASKS.md"]
+    targets: [claude-code, cursor, codex]
+
+  - source: rules/DOMAIN.md
+    scope:
+      globs: ["src/**", "app/**", "lib/**"]
+    targets: [claude-code, cursor, codex]
+
+  - source: rules/SECURITY.md
+    scope:
+      globs: ["**/.env*", "**/secrets/**", "src/auth/**", "**/middleware/**"]
+    targets: [claude-code, cursor, codex]
+
+  - source: rules/OBSERVABILITY.md
+    scope:
+      globs: ["src/**/*.ts", "src/**/*.py", "src/**/*.js"]
+    targets: [claude-code, cursor, codex]
+
+# ─────────────────────────────────────────────────────────────────────────────
+# AGENTS — role definitions. Referenced by skills[].agents.
+# ─────────────────────────────────────────────────────────────────────────────
+agents:
+  - { name: pm-agent,          source: agents/pm-agent.md }
+  - { name: architect-agent,   source: agents/architect-agent.md }
+  - { name: story-writer,      source: agents/story-writer.md }
+  - { name: code-agent,        source: agents/code-agent.md }
+  - { name: unit-test-agent,   source: agents/unit-test-agent.md }
+  - { name: e2e-test-agent,    source: agents/e2e-test-agent.md }
+  - { name: qa-agent,          source: agents/qa-agent.md }
+  - { name: reviewer-agent,    source: agents/reviewer-agent.md }
+  - { name: devops-agent,      source: agents/devops-agent.md }
+
+# ─────────────────────────────────────────────────────────────────────────────
+# PROFILES — named subsets. orion install --profile=<name> installs a subset.
+# ─────────────────────────────────────────────────────────────────────────────
+profiles:
+  core:
+    description: "All 22 core skills + 4 cross-cutting rules. Minimum viable ORION."
+    include_skills_with_profile: [core]
+    include_rules: [AGILE, DOMAIN]
+
+  fullstack-ts:
+    description: "Core + all 4 cross-cutting rules. Suitable for TypeScript monorepos."
+    extends: [core]
+    include_rules: [AGILE, DOMAIN, SECURITY, OBSERVABILITY]
+
+  planning-only:
+    description: "Planning skills only (Stage 1–3). No execution skills."
+    include_skills_with_profile: [planning]
+    include_rules: [AGILE]
+
+# ─────────────────────────────────────────────────────────────────────────────
+# CLI — runtime settings for `orion run`, `orion fleet`, etc.
+# ─────────────────────────────────────────────────────────────────────────────
+cli:
+  default_backend: claude         # claude | codex | api
+  fleet:
+    max_parallel: 3               # safe default; use --max=5 for aggressive
+  replay:
+    max_records_per_skill: 100
+    max_age_days: 30
+
+# ─────────────────────────────────────────────────────────────────────────────
+# STATE — written by `orion install`. Do not hand-edit except to reconcile drift.
+# ─────────────────────────────────────────────────────────────────────────────
+# state:
+#   installed_at: ""
+#   installed_by: ""
+#   installed_adapters: []
+#   source_sha: ""

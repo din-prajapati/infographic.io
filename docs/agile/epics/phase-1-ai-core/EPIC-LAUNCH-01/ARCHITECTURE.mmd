@@ -1,0 +1,32 @@
+flowchart LR
+  subgraph Inputs["User / External"]
+    U["Agent (browser)"]
+    RZP["RazorPay LIVE (webhooks)"]
+    RES["Resend API (email)"]
+  end
+
+  subgraph Frontend["Frontend (client/src)"]
+    APP["App.tsx — /terms /privacy /refund-policy /auth/forgot /auth/reset"]:::new
+    PRICE["pages/PricingPage.tsx — beta flag · BROKERAGE gate"]:::good
+    AUTHP["pages/AuthPage.tsx — forgot-password link"]:::good
+  end
+
+  subgraph API["NestJS API (api/src/modules)"]
+    AUTH["auth — forgot/reset endpoints + PasswordResetToken"]:::good
+    PAY["payments — webhook subscription.charged → receipt · beta guard · live-key startup assert"]:::good
+    EMAIL["email (NEW) — EmailService interface + Resend impl + console fallback"]:::new
+    USAGE["infographics/usage-limit — creditsUsed: 1 per generation (guarded by test)"]:::good
+  end
+
+  DB[("Prisma / Neon — PasswordResetToken · Subscription · UsageRecord")]
+
+  U --> APP --> AUTHP
+  U --> PRICE --> PAY
+  RZP --> PAY --> EMAIL --> RES
+  AUTH --> EMAIL
+  AUTH --> DB
+  PAY --> DB
+  USAGE --> DB
+
+  classDef good fill:#0b3b2e,stroke:#14532d,color:#ecfdf5;
+  classDef new  fill:#1e3a5f,stroke:#2563eb,color:#eff6ff;

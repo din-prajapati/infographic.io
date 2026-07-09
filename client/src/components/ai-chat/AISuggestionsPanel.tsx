@@ -84,21 +84,6 @@ export function AISuggestionsPanel({ isOpen, onClose, onSuggestionClick, buttonR
             </div>
 
             <div className="p-3 space-y-3">
-              {/* Property Context Badge - Dynamic */}
-              <div className="px-3 py-2 bg-muted rounded-lg border border-border">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-full bg-gradient-to-br from-ai-accent to-primary flex items-center justify-center">
-                      <Sparkles className="w-3.5 h-3.5 text-white" />
-                    </div>
-                    <div>
-                      <p className="text-xs font-medium text-foreground">Smart Mode Active</p>
-                      <p className="text-xs text-muted-foreground">Optimized for Residential · Mid-range</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
               {/* Top 3 Contextual Quick Actions */}
               <div>
                 <h4 className="text-xs font-medium text-foreground mb-2 px-1">⚡ Quick Actions</h4>

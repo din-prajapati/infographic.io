@@ -1,0 +1,369 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/din-prajapati/orion-ai-sdlc/raw/main/templates/orion.schema.json",
+  "title": "ORION manifest",
+  "description": "Schema for .orion/orion.yaml — the single source of truth for ORION skills, hooks, rules, agents, and adapters.",
+  "type": "object",
+  "required": ["version", "orion", "project", "adapters", "skills"],
+  "additionalProperties": false,
+  "properties": {
+
+    "version": {
+      "const": 1,
+      "description": "Schema version. Currently always 1."
+    },
+
+    "orion": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "description": "Minimum ORION CLI version required to read this manifest."
+    },
+
+    "project": {
+      "type": "object",
+      "required": ["name", "type"],
+      "additionalProperties": false,
+      "description": "Host-project identity. Mirrors the top-level fields of PROJECT_CONTEXT.yaml.",
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "type": {
+          "enum": ["SaaS", "CLI", "Library", "Mobile", "Other"],
+          "description": "Project classification used by skills to adjust output."
+        },
+        "root": {
+          "type": "string",
+          "default": ".",
+          "description": "Root directory relative to the project root. Almost always '.'."
+        },
+        "stack": {
+          "type": "object",
+          "description": "Tech stack declared per layer. Migrated from scaffold.json on `orion migrate`.",
+          "additionalProperties": false,
+          "properties": {
+            "frontend":   { "type": "array", "items": { "type": "string" } },
+            "backend":    { "type": "array", "items": { "type": "string" } },
+            "database":   { "type": "array", "items": { "type": "string" } },
+            "testing":    { "type": "array", "items": { "type": "string" } },
+            "platform":   { "type": "array", "items": { "type": "string" } },
+            "integrations": { "type": "array", "items": { "type": "string" } }
+          }
+        }
+      }
+    },
+
+    "adapters": {
+      "type": "object",
+      "description": "Which IDEs ORION compiles for and per-adapter preferences.",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^(claude-code|cursor|codex|windsurf)$": {
+          "type": "object",
+          "required": ["enabled"],
+          "additionalProperties": false,
+          "properties": {
+            "enabled":     { "type": "boolean" },
+            "install_dir": {
+              "type": "string",
+              "description": "Target directory under project root. e.g. '.claude', '.cursor'."
+            },
+            "naming": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "router_name": {
+                  "type": "string",
+                  "default": "orion",
+                  "description": "The slash-command name for the router skill. Default: 'orion' → /orion."
+                }
+              }
+            },
+            "options": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "session_start": {
+                  "enum": ["native", "first-turn-marker"],
+                  "description": "'native' for IDEs with a SessionStart event; 'first-turn-marker' otherwise."
+                },
+                "per_skill_stubs": {
+                  "type": "boolean",
+                  "default": false,
+                  "description": "Generate one 3-line stub per skill for per-skill IDE autocomplete. Off by default."
+                },
+                "agents_md_target": {
+                  "type": "string",
+                  "description": "Path for merged rules file when IDE uses AGENTS.md instead of CLAUDE.md. e.g. 'AGENTS.md'."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "skills": {
+      "type": "array",
+      "minItems": 1,
+      "description": "The routing table. Each entry declares one skill the router can dispatch to.",
+      "items": {
+        "type": "object",
+        "required": ["name", "source", "description"],
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*$",
+            "description": "Kebab-case skill name. Used as the sub-command: /orion <name>."
+          },
+          "source": {
+            "type": "string",
+            "pattern": "^skills/",
+            "description": "Path to the skill directory relative to .orion/. Must start with 'skills/'."
+          },
+          "description": {
+            "type": "string",
+            "minLength": 10,
+            "description": "One-sentence description. Aggregated into the router stub's description field."
+          },
+          "tools": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Tools this skill may use. Enforced by the router and by orion run."
+          },
+          "triggers": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Natural-language phrases that auto-route to this skill in the IDE."
+          },
+          "agents": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Agent names this skill may invoke as sub-agents."
+          },
+          "profiles": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Profile tags. Skills are filtered by profile on orion install --profile=<name>."
+          },
+          "hard_block": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Skills that are blocked until this skill passes. e.g. validate-story blocks implement-story."
+          },
+          "threshold": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Numeric threshold used with hard_block. Block triggers when score < threshold."
+          },
+          "lock_required": {
+            "type": "boolean",
+            "default": false,
+            "description": "If true, this skill produces a .orion/state/locks/<id>.json as its output artifact. The CLI recognises this to enforce the lock gate in implement-story. Replaces score-based threshold for harden-style certification skills."
+          },
+          "options": {
+            "type": "object",
+            "description": "Skill-specific configuration key/value pairs."
+          },
+          "inline": {
+            "type": "boolean",
+            "default": false,
+            "description": "If true, embed the full SKILL.md body in the IDE-native file instead of routing. Use for tiny skills."
+          }
+        }
+      }
+    },
+
+    "hooks": {
+      "type": "array",
+      "description": "Shell scripts declared once; adapter maps each intent to the IDE's native event.",
+      "items": {
+        "type": "object",
+        "required": ["script", "intents"],
+        "additionalProperties": false,
+        "properties": {
+          "script": {
+            "type": "string",
+            "pattern": "\\.(sh|ps1|bat)$",
+            "description": "Path to the hook script relative to .orion/. e.g. 'hooks/pre-push-gate1.sh'."
+          },
+          "intents": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "git.pre-push", "git.pre-commit",
+                "before-file-edit", "after-file-edit",
+                "before-tool-use", "after-tool-use",
+                "session-start", "session-stop"
+              ]
+            },
+            "description": "IDE-agnostic intent names. Adapter translates to IDE events."
+          },
+          "matchers": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "file_patterns": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Glob patterns filtering which file edits trigger this hook."
+              },
+              "tool_patterns": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Regex patterns filtering which tool names trigger this hook."
+              }
+            }
+          },
+          "blocks": {
+            "type": "boolean",
+            "default": false,
+            "description": "If true, a non-zero exit from the script blocks the triggering operation."
+          },
+          "fallback": {
+            "type": "array",
+            "items": { "enum": ["first-turn-marker"] },
+            "description": "Fallback strategies when the IDE doesn't support the intent natively."
+          }
+        }
+      }
+    },
+
+    "intent_map": {
+      "type": "object",
+      "description": "Maps IDE-agnostic intents to each IDE's native event vocabulary. Consumed by adapters.",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+
+    "rules": {
+      "type": "array",
+      "description": "Canonical rule files compiled per IDE. Each entry becomes part of CLAUDE.md / AGENTS.md / .mdc.",
+      "items": {
+        "type": "object",
+        "required": ["source"],
+        "additionalProperties": false,
+        "properties": {
+          "source": {
+            "type": "string",
+            "pattern": "^rules/",
+            "description": "Path to rule markdown relative to .orion/. e.g. 'rules/AGILE.md'."
+          },
+          "scope": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "globs": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "File globs. For Cursor: compiled to .mdc frontmatter. For Claude Code / Codex: merged into context unconditionally."
+              }
+            }
+          },
+          "targets": {
+            "type": "array",
+            "items": { "enum": ["claude-code", "cursor", "codex", "windsurf"] },
+            "description": "Which adapters compile this rule. Defaults to all enabled adapters."
+          }
+        }
+      }
+    },
+
+    "agents": {
+      "type": "array",
+      "description": "Agent role definitions. Referenced by skills[].agents.",
+      "items": {
+        "type": "object",
+        "required": ["name", "source"],
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*$"
+          },
+          "source": {
+            "type": "string",
+            "pattern": "^agents/",
+            "description": "Path to agent markdown relative to .orion/. e.g. 'agents/pm-agent.md'."
+          }
+        }
+      }
+    },
+
+    "profiles": {
+      "type": "object",
+      "description": "Named skill bundles. orion install --profile=<name> installs a subset.",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "description": { "type": "string" },
+          "extends": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Profile names this profile extends."
+          },
+          "include_skills_with_profile": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "include_rules": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "stack_packs": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Stack pack names (Phase 8 stack-packs proposal)."
+          }
+        }
+      }
+    },
+
+    "cli": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "CLI runtime settings.",
+      "properties": {
+        "default_backend": {
+          "enum": ["claude", "codex", "api"],
+          "default": "claude"
+        },
+        "default_model": { "type": "string" },
+        "fleet": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "max_parallel": { "type": "integer", "minimum": 1, "maximum": 20, "default": 3 }
+          }
+        },
+        "replay": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "max_records_per_skill": { "type": "integer", "default": 100 },
+            "max_age_days": { "type": "integer", "default": 30 }
+          }
+        }
+      }
+    },
+
+    "state": {
+      "type": "object",
+      "description": "Written by orion install. Hand-edit only when reconciling drift.",
+      "additionalProperties": false,
+      "properties": {
+        "installed_at":       { "type": "string", "format": "date-time" },
+        "installed_by":       { "type": "string" },
+        "installed_adapters": { "type": "array", "items": { "type": "string" } },
+        "source_sha": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        }
+      }
+    }
+
+  }
+}

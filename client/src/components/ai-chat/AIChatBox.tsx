@@ -26,17 +26,13 @@ import { CategoryChipList } from "./CategoryChipList";
 import { PromptSuggestionGrid } from "./PromptSuggestionGrid";
 import { TemplateCategoryView } from "./TemplateCategoryView";
 import { AISuggestionsPanel } from "./AISuggestionsPanel";
-import { QuickActionsPanel } from "./QuickActionsPanel";
-import { StylePresetsPanel, StylePreset } from "./StylePresetsPanel";
 import { ImageUploadPanel } from "./ImageUploadPanel";
 import { GenerationProgress, GenerationStep } from "./GenerationProgress";
 import { ResultsVariations, ResultVariation } from "./ResultsVariations";
 import { ConversationMessages } from "./ConversationMessages";
 import { ConversationHistoryView } from "./ConversationHistoryView";
 import { EnhancedSuggestionsPanel } from "./EnhancedSuggestionsPanel";
-import { ConversationToolbar } from "./ConversationToolbar";
 import { GenerationProgressBar } from "./GenerationProgressBar";
-import { getSmartSuggestions } from "./smartSuggestionsData";
 import {
   loadTestConversations,
   clearConversations,
@@ -85,15 +81,11 @@ export function AIChatBox({
 
   // Panel visibility states
   const [showSuggestionsPanel, setShowSuggestionsPanel] = useState(false);
-  const [showQuickActionsPanel, setShowQuickActionsPanel] = useState(false);
-  const [showStylePresetsPanel, setShowStylePresetsPanel] = useState(false);
   const [showImageUploadPanel, setShowImageUploadPanel] = useState(false);
   const [showCategoryBrowse, setShowCategoryBrowse] = useState(false);
 
   // Refs for icon buttons (for panel positioning)
   const lightbulbRef = useRef<HTMLButtonElement>(null);
-  const zapRef = useRef<HTMLButtonElement>(null);
-  const paletteRef = useRef<HTMLButtonElement>(null);
   const paperclipRef = useRef<HTMLButtonElement>(null);
 
   // History and favorites
@@ -174,6 +166,9 @@ export function AIChatBox({
   const [conversationMessages, setConversationMessages] = useState<Message[]>(
     [],
   );
+  // Built but intentionally not surfaced — deferred to Phase 2 (EPIC-AI-01
+  // conversational core) per 2026-07-07 AI Chat Panel audit. No trigger sets
+  // this true yet; that is deliberate, not an oversight.
   const [showEnhancedSuggestions, setShowEnhancedSuggestions] = useState(false);
 
   // NEW: History view state
@@ -190,6 +185,9 @@ export function AIChatBox({
   currentAiMessageIdRef.current = currentAiMessageId;
   const currentConversationRef = useRef(currentConversation);
   currentConversationRef.current = currentConversation;
+  // Guards against the socket and the REST safety-net poll both processing the
+  // same completion (double getVariations). Reset when a new generation starts.
+  const completionHandledRef = useRef(false);
 
   // Agent info from the sidebar Agent Info Form (shared Zustand store)
   const agentInfo = useAgentStore((s) => s.agent);
@@ -287,11 +285,12 @@ export function AIChatBox({
       }
     },
     onError: (error) => {
-      console.error("WebSocket error:", error);
-      // Fallback to polling if WebSocket fails
-      if (currentGenerationId) {
-        pollStatusFallback(currentGenerationId);
-      }
+      // The socket is best-effort for granular progress. Terminal-state delivery
+      // is guaranteed by the always-on REST poll below, so a socket error is not
+      // itself fatal — just log it. (Historically the poll was started HERE, which
+      // meant a socket that connected but silently stopped delivering events — the
+      // PT-09 staging failure — never triggered any fallback. See EPIC-AI-07.)
+      console.warn("[AIChatBox] WebSocket error (REST poll will still deliver result):", error);
     },
   });
 
@@ -299,6 +298,11 @@ export function AIChatBox({
     const genId = currentGenerationIdRef.current;
     const aiMsgId = currentAiMessageIdRef.current;
     if (!genId || !aiMsgId) return;
+    // The socket path and the REST safety-net poll can both observe completion.
+    // Whichever arrives first wins; the second is a no-op (guard set synchronously
+    // so there's no window for a duplicate getVariations fetch).
+    if (completionHandledRef.current) return;
+    completionHandledRef.current = true;
 
     try {
       const variations = await generationsApi.getVariations(genId);
@@ -363,6 +367,8 @@ export function AIChatBox({
   const handleGenerationFailed = useCallback((errorMessage: string) => {
     const aiMsgId = currentAiMessageIdRef.current;
     if (!aiMsgId) return;
+    if (completionHandledRef.current) return;
+    completionHandledRef.current = true;
 
     setState((prev) => ({ ...prev, isGenerating: false, error: errorMessage }));
 
@@ -383,39 +389,69 @@ export function AIChatBox({
     setCurrentAiMessageId(null);
   }, []);
 
-  // Fallback polling function if WebSocket fails
-  const pollStatusFallback = async (generationId: string) => {
-    let statusCheckCount = 0;
-    const maxStatusChecks = 60;
-    let currentStatus = "processing";
+  // Always-on REST status poll — the reliable terminal-state safety net.
+  //
+  // The WebSocket is best-effort: on staging it was observed to connect and
+  // subscribe successfully but never deliver the `completed` event, then drop
+  // silently (PT-09 / EPIC-AI-07). Because the old fallback was gated behind the
+  // socket's `onError` (which does NOT fire on silent non-delivery), the UI hung
+  // forever. This poll runs whenever a generation is in flight, regardless of
+  // socket health, so completion/failure is always delivered.
+  //
+  // Background-tab resilience: browsers throttle timers in hidden tabs (the
+  // headless/backgrounded reproduction of PT-09). A `visibilitychange` listener
+  // fires an immediate catch-up poll the moment the tab is refocused, so a user
+  // who tabs away while waiting sees their result as soon as they return.
+  const checkStatusOnce = useCallback(async (): Promise<"processing" | "done"> => {
+    const genId = currentGenerationIdRef.current;
+    if (!genId || completionHandledRef.current) return "done";
+    try {
+      const status = await generationsApi.getStatus(genId);
+      if (status.status === "completed") {
+        await handleGenerationComplete();
+        return "done";
+      }
+      if (status.status === "failed") {
+        handleGenerationFailed(status.errorMessage || "Generation failed");
+        return "done";
+      }
+    } catch (error: any) {
+      console.error("[AIChatBox] Status poll error (will retry):", error);
+    }
+    return "processing";
+  }, [handleGenerationComplete, handleGenerationFailed]);
 
-    const poll = async () => {
-      while (
-        statusCheckCount < maxStatusChecks &&
-        currentStatus === "processing"
-      ) {
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-        statusCheckCount++;
+  useEffect(() => {
+    if (!currentGenerationId) return;
 
-        try {
-          const status = await generationsApi.getStatus(generationId);
-          currentStatus = status.status;
+    let cancelled = false;
+    const POLL_INTERVAL_MS = 2500;
+    const MAX_POLLS = 80; // ~3.3 min ceiling before giving up
 
-          if (status.status === "completed") {
-            await handleGenerationComplete();
-            break;
-          } else if (status.status === "failed") {
-            handleGenerationFailed(status.errorMessage || "Generation failed");
-            break;
-          }
-        } catch (error: any) {
-          console.error("Status check error:", error);
-        }
+    let polls = 0;
+    const intervalId = setInterval(async () => {
+      if (cancelled) return;
+      polls += 1;
+      const result = await checkStatusOnce();
+      if (result === "done" || polls >= MAX_POLLS) {
+        clearInterval(intervalId);
+      }
+    }, POLL_INTERVAL_MS);
+
+    // Immediate catch-up when the tab regains focus (defeats background throttle).
+    const onVisible = () => {
+      if (!cancelled && document.visibilityState === "visible") {
+        void checkStatusOnce();
       }
     };
+    document.addEventListener("visibilitychange", onVisible);
 
-    await poll();
-  };
+    return () => {
+      cancelled = true;
+      clearInterval(intervalId);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [currentGenerationId, checkStatusOnce]);
 
   const handleInputChange = (value: string) => {
     setState((prev) => ({ ...prev, inputValue: value }));
@@ -716,7 +752,11 @@ export function AIChatBox({
       const generationId = generationResult.id;
       console.log(`🚀 [AIChatBox] Generation started: ${generationId}`);
 
-      // Set generation ID and message ID for WebSocket hook
+      // Arm the terminal-state handlers for this new generation (socket + poll
+      // both feed handleGenerationComplete/Failed; the guard lets the first win).
+      completionHandledRef.current = false;
+      // Set generation ID and message ID — drives both the WebSocket hook and the
+      // always-on REST status poll (see the useEffect above).
       setCurrentGenerationId(generationId);
       setCurrentAiMessageId(aiMessageId);
 
@@ -868,8 +908,6 @@ export function AIChatBox({
     setGenerationSteps([]);
     setResultVariations([]);
     setShowSuggestionsPanel(false);
-    setShowQuickActionsPanel(false);
-    setShowStylePresetsPanel(false);
     setShowImageUploadPanel(false);
     setShowCategoryBrowse(false);
     onClose();
@@ -897,16 +935,6 @@ export function AIChatBox({
 
   const handleAISuggestionClick = (suggestion: string) => {
     setState((prev) => ({ ...prev, inputValue: suggestion }));
-  };
-
-  const handleQuickActionClick = (action: string) => {
-    console.log("Quick action:", action);
-    // Handle quick actions
-  };
-
-  const handleStylePresetClick = (preset: StylePreset) => {
-    console.log("Style preset:", preset);
-    // Apply style preset to generation
   };
 
   const handleImageUpload = (imageUrl: string) => {
@@ -997,10 +1025,6 @@ export function AIChatBox({
     favoriteMutation.mutate({ id: conversationId, isFavorite: !conv.isFavorite });
   };
 
-  const handleSmartSuggestionClick = (text: string) => {
-    setState((prev) => ({ ...prev, inputValue: text }));
-  };
-
   const handleEnhancedSuggestionClick = (suggestion: string) => {
     setState((prev) => ({ ...prev, inputValue: suggestion }));
     setShowEnhancedSuggestions(false);
@@ -1053,8 +1077,6 @@ export function AIChatBox({
   const currentSuggestions = state.activeChipId
     ? getPromptsByCategoryId(state.activeChipId)
     : [];
-
-  const smartSuggestions = getSmartSuggestions(propertyType, priceRange);
 
   // Determine if we should show conversation messages
   const hasActiveConversation = conversationMessages.length > 0;
@@ -1128,6 +1150,8 @@ export function AIChatBox({
                 conversations={conversations}
                 onSelectConversation={handleSelectConversationFromHistory}
                 onBack={() => setShowHistoryView(false)}
+                onToggleFavorite={handleToggleConversationFavorite}
+                onDeleteConversation={handleDeleteConversation}
               />
             </div>
           ) : hasActiveConversation ? (
@@ -1172,12 +1196,8 @@ export function AIChatBox({
                   onRemoveChip={handleRemoveChip}
                   isGenerating={state.isGenerating}
                   onSuggestionsClick={() => setShowSuggestionsPanel(true)}
-                  onQuickActionsClick={() => setShowQuickActionsPanel(true)}
-                  onStylePresetsClick={() => setShowStylePresetsPanel(true)}
                   onUploadClick={() => setShowImageUploadPanel(true)}
                   lightbulbRef={lightbulbRef}
-                  zapRef={zapRef}
-                  paletteRef={paletteRef}
                   paperclipRef={paperclipRef}
                   {...inputFieldSettings}
                 />
@@ -1269,12 +1289,8 @@ export function AIChatBox({
                   onRemoveChip={handleRemoveChip}
                   isGenerating={state.isGenerating}
                   onSuggestionsClick={() => setShowSuggestionsPanel(true)}
-                  onQuickActionsClick={() => setShowQuickActionsPanel(true)}
-                  onStylePresetsClick={() => setShowStylePresetsPanel(true)}
                   onUploadClick={() => setShowImageUploadPanel(true)}
                   lightbulbRef={lightbulbRef}
-                  zapRef={zapRef}
-                  paletteRef={paletteRef}
                   paperclipRef={paperclipRef}
                   {...inputFieldSettings}
                 />
@@ -1288,18 +1304,6 @@ export function AIChatBox({
             onClose={() => setShowSuggestionsPanel(false)}
             onSuggestionClick={handleAISuggestionClick}
             buttonRef={lightbulbRef}
-          />
-          <QuickActionsPanel
-            isOpen={showQuickActionsPanel}
-            onClose={() => setShowQuickActionsPanel(false)}
-            onActionClick={handleQuickActionClick}
-            buttonRef={zapRef}
-          />
-          <StylePresetsPanel
-            isOpen={showStylePresetsPanel}
-            onClose={() => setShowStylePresetsPanel(false)}
-            onPresetClick={handleStylePresetClick}
-            buttonRef={paletteRef}
           />
           <ImageUploadPanel
             isOpen={showImageUploadPanel}
