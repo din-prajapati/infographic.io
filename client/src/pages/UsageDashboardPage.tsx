@@ -15,6 +15,7 @@ import {
 import { Button } from '../components/ui/button';
 import { AppHeader } from '../components/navigation/AppHeader';
 import { usageAnalyticsApi, paymentsApi } from '../lib/api';
+import { modelDisplayLabel } from '../lib/modelLabels';
 
 interface MonthlyUsageData {
   month: string;
@@ -231,7 +232,7 @@ export default function UsageDashboardPage() {
                   {costBreakdown.map((item, index) => (
                     <div key={index} className="p-4 bg-accent/50 rounded-lg">
                       <div className="flex items-center justify-between mb-2">
-                        <span className="font-medium text-foreground">{item.aiModel}</span>
+                        <span className="font-medium text-foreground">{modelDisplayLabel(item.aiModel)}</span>
                         <span className="text-sm text-muted-foreground">{item.count} generations</span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
@@ -283,7 +284,7 @@ export default function UsageDashboardPage() {
                             minute: '2-digit'
                           })}
                         </td>
-                        <td className="py-3 px-4 text-sm text-foreground">{item.aiModel}</td>
+                        <td className="py-3 px-4 text-sm text-foreground">{modelDisplayLabel(item.aiModel)}</td>
                         <td className="py-3 px-4 text-sm text-right text-foreground">{item.count}</td>
                         <td className="py-3 px-4 text-sm text-right text-foreground">${item.costUsd.toFixed(4)}</td>
                       </tr>

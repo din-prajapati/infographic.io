@@ -12,6 +12,7 @@ import {
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from "recharts";
 import { useQuery } from "@tanstack/react-query";
 import { usageAnalyticsApi, type MonthlyUsageData, type CostBreakdown, type UsageHistoryItem } from "@/lib/api";
+import { modelDisplayLabel } from "@/lib/modelLabels";
 import { toast } from "sonner";
 
 export function UsageScreen() {
@@ -106,7 +107,7 @@ export function UsageScreen() {
     id: index + 1,
     type: "Used",
     date: new Date(item.date).toLocaleString(),
-    tool: item.aiModel,
+    tool: modelDisplayLabel(item.aiModel),
     amount: item.count,
     purchased: 0,
     plan: usageHistory.slice(0, index + 1).reduce((sum, i) => sum + i.count, 0),
@@ -384,7 +385,7 @@ export function UsageScreen() {
               {costBreakdown.map((item) => (
                 <div key={item.aiModel} className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
                   <div>
-                    <p className="font-medium text-foreground">{item.aiModel}</p>
+                    <p className="font-medium text-foreground">{modelDisplayLabel(item.aiModel)}</p>
                     <p className="text-sm text-muted-foreground">{item.count} infographics</p>
                   </div>
                   <div className="text-right">
