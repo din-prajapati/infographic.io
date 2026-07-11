@@ -31,8 +31,10 @@
 
 | Story ID | Title | Milestone | Status | PR |
 |----------|-------|-----------|--------|----|
-| [US-AI-034](stories/US-AI-034/STORY.md) | Diagnose and fix generation-progress delivery on staging | M-AI-19 | 🟡 Fix implemented + locally verified; AC3 staging re-test pending deploy | — |
+| [US-AI-034](stories/US-AI-034/STORY.md) | Diagnose and fix generation-progress delivery on staging | M-AI-19 | ✅ Done — deployed (PR #14) + staging-verified (fg + bg tab) 2026-07-09 | [#14](https://github.com/din-prajapati/infographic.io/pull/14) |
 | [US-AI-035](stories/US-AI-035/STORY.md) | Client-side fallback re-sync for stalled progress UI | M-AI-19 | ⏭️ Superseded by US-AI-034 (its fix already covers this scope) | — |
+
+> **Cosmetic follow-up spun out to backlog:** the socket still delivers no live progress events (bar is cosmetic; poll does the work) — tracked as [BL-01](../../../BACKLOG.md) for Phase 1, non-blocking.
 
 ---
 

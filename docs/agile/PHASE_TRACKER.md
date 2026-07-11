@@ -57,8 +57,8 @@ Each phase requires a gate decision before the next phase starts:
 - [x] Auto QA: 44/58 E2E tests pass (10 human-skip, 4 pre-existing auth failures) ✅ 2026-04-29
 - [x] Staging infra live (Neon + Railway) — verified 2026-07-09
 - [x] Staging E2E suite run — 87/91 non-skipped passed, 5 network-flakiness, 0 real app failures — 2026-07-09
-- [ ] **🔴 PT-09 — generation results never render in the browser on staging (backend completes fine; UI stays frozen). Launch blocker. See [EPIC-AI-07](epics/phase-0-mvp/EPIC-AI-07/EPIC.md).**
-- [ ] US-DESIGN-003 AC3 — generation result image on staging — **STAGING QA** (blocked by PT-09 — can't judge image fidelity through a UI that never shows results)
+- [x] **🟢 PT-09 — generation results now render on staging.** Fixed via [EPIC-AI-07](epics/phase-0-mvp/EPIC-AI-07/EPIC.md) US-AI-034 (PR #14, deployed `9eed346`); re-verified live 2026-07-09 (foreground). Backgrounded-tab AC3 run still recommended.
+- [ ] US-DESIGN-003 AC3 — generation result image on staging — **STAGING QA** — I-05 unblocked ✅; I-06 (image proportions) now awaits human sign-off
 - [ ] US-DESIGN-004 AC2–4,6 — button heights, card borders, spacing — **STAGING QA**
 - [ ] Critical-path 10-flow manual test — **HUMAN TASK 1**
 - [ ] Staging smoke test (Railway) — **HUMAN TASK 2** — infra done, PT-09 blocks final sign-off

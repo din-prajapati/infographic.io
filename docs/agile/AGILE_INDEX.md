@@ -11,6 +11,7 @@
 | **Domain team board (what's now / next / blocked)** | [TEAM_STATUS.md](TEAM_STATUS.md) |
 | **Active story to implement next** | [TEAM_STATUS.md → Design → Ready to Start](TEAM_STATUS.md) |
 | **Git branch/commit/PR conventions** | [GIT_STRATEGY.md](GIT_STRATEGY.md) |
+| **Phase-assigned non-blocking backlog (BL-NN)** | [BACKLOG.md](BACKLOG.md) |
 | **Open a story PR (`gh`, `PR_BODY.md`, templates)** | [guides/STORY_PR_WORKFLOW.md](guides/STORY_PR_WORKFLOW.md) |
 | **AI agile cycle: Story → PR (diagram + checklist)** | [guides/STORY_PR_WORKFLOW.md §0](guides/STORY_PR_WORKFLOW.md#0-in-the-ai-assisted-agile-cycle) |
 | **Linear + GitHub integration setup** | [LINEAR_GITHUB.md](LINEAR_GITHUB.md) |

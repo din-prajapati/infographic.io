@@ -1,6 +1,6 @@
 # Story Card — US-AI-034
 
-> **Status:** 🟡 In Progress — fix implemented + locally verified 2026-07-09; AC3 (live staging re-verification) pending a deploy
+> **Status:** ✅ Done — fix deployed (PR #14 / `9eed346`); staging re-verified 2026-07-09 (foreground + backgrounded tab). Cosmetic socket-progress follow-up moved to Phase 1 backlog ([BL-01](../../../../BACKLOG.md)).
 > **Feature:** F-AI-34 — Real-time progress delivery reliability
 > **Epic:** [EPIC-AI-07](../../EPIC.md)
 > **Milestone:** [M-AI-19-generation-progress-delivery](../../milestones/M-AI-19-generation-progress-delivery.md)
@@ -22,7 +22,7 @@
 
 - [x] **AC1:** Root cause identified and documented in "Root Cause Findings" below — the true cause turned out to be the *client-side fallback gating*, not the socket disconnect (which is a symptom of completion, not the cause). See "✅ Confirmed root cause + fix (2026-07-09)".
 - [x] **AC2:** Fix makes completion delivery resilient to the socket dropping/not-delivering — an always-on REST status poll now runs whenever a generation is in flight (independent of socket health), plus a `visibilitychange` immediate catch-up poll to defeat background-tab timer throttling. `client/src/components/ai-chat/AIChatBox.tsx`.
-- [ ] **AC3:** Given a real (unmocked) generation submitted on staging, when the backend emits `gen:complete`, the browser renders the 3 result cards within 30 seconds — verified with **both** an active foreground tab and a deliberately backgrounded tab, 3 consecutive real generations each. **⏳ Pending — requires deploying this change to staging first (client bundle change; staging serves the old bundle until redeployed). Cannot be verified pre-deploy.**
+- [x] **AC3:** Given a real (unmocked) generation submitted on staging, the browser renders the 3 result cards within 30s. **✅ Both cases verified live 2026-07-09** on the deployed fix (bundle `index-BeUPdNjs.js`, commit `9eed346`): **Foreground** — `gen:complete` 14:34:34 UTC, chat rendered "Complete → Created 3 design variations", real result on canvas. **Backgrounded** — submitted, immediately switched to another tab for the full ~45s generation, returned to find the result fully rendered (3 cards "Charming Palm Oasis $2.4M"); completion was handled at 8:15:04 while hidden (poll ran despite throttling; `visibilitychange` provides additional catch-up on return). In both cases the socket delivered zero `progress` events — the poll delivered completion, confirming the fix.
 - [x] **AC4:** The existing mocked E2E test (`e2e/us-design-003-generation-ux.spec.ts`) still passes unmodified — **verified 2026-07-09, 3/3 pass.** Notably test #1 now completes via the new always-on poll path (E2E poll-only mode skips the socket), directly exercising the fix.
 - [x] **AC5:** No regression in local dev — `npm run check` clean, `npm run test:unit` 64/64 pass. Socket path is unchanged (still connects locally); the poll is purely additive.
 

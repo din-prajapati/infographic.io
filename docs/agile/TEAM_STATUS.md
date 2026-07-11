@@ -3,7 +3,7 @@
 > **Audience:** Engineering leads and domain teams  
 > **Purpose:** Per-domain view of what's in progress, what's next, and what's blocked — mapped to epics and stories.  
 > **Update cadence:** When a story status changes (start / block / complete).  
-> **Last updated:** 2026-07-07 (added LAUNCH domain — EPIC-LAUNCH-01; AI Chat Panel audit + hardening logged as PT-08)
+> **Last updated:** 2026-07-11 (Task 2 signed off ✅; PT-09 closed, PT-10/PT-11 logged from Task 2 QA fixes PR #15; added US-LAUNCH-009/010 env & secrets)
 
 ---
 
@@ -16,8 +16,8 @@
 | [Auth (AUTH)](#-auth-auth) | EPIC-AUTH-01 | ✅ Done | — | Full invite flow post-MVP |
 | [Canvas Editor (EDIT)](#-canvas-editor-edit) | EPIC-EDIT-01 | ✅ Done | — | Batch upload Phase 3 |
 | [AI Generation (AI)](#-ai-generation-ai) | EPIC-AI-00 | ✅ Done (closed 2026-07-03) | — | EPIC-AI-02 deps (US-AI-010/011) → EPIC-AI-06 |
-| [Infrastructure (INFRA)](#-infrastructure-infra) | EPIC-INFRA-01 | 🟡 3 deploy tasks | Human tasks | Admin dashboard Phase 5 |
-| [Launch Readiness (LAUNCH)](#-launch-readiness-launch) | EPIC-LAUNCH-01 | 🔲 Ready after Phase 0 deploy | Phase 0 HUMAN tasks | M-LAUNCH-01 → beta · M-LAUNCH-02 → revenue |
+| [Infrastructure (INFRA)](#-infrastructure-infra) | EPIC-INFRA-01 | 🟡 Task 1 ✅ · Task 2 ✅ (2026-07-11) · Task 3 (prod) next | Human task | Admin dashboard Phase 5 |
+| [Launch Readiness (LAUNCH)](#-launch-readiness-launch) | EPIC-LAUNCH-01 | 🔲 Ready after Phase 0 deploy | Phase 0 HUMAN Task 3 | M-LAUNCH-01 → beta (now incl. US-LAUNCH-009/010 env & secrets) · M-LAUNCH-02 → revenue |
 | [Organization (ORG)](#-organization--team-org) | — | Post-MVP | No email provider (US-LAUNCH-002 will fix) | EPIC-ORG-01 post-launch |
 
 ---
@@ -155,10 +155,15 @@
 **Active epic:** EPIC-AI-01 (MVP, Phase 0) + [EPIC-AI-00](epics/phase-0.5-foundation/EPIC-AI-00/EPIC.md) (Foundation Fixes, Phase 0.5)  
 **Phase:** 0 (MVP) ✅ Done · 0.5 ✅ Done (closed 2026-07-03)
 
-### Now — 🔴 PT-09 launch blocker (fix in code, staging re-test pending)
-> **[EPIC-AI-07](epics/phase-0-mvp/EPIC-AI-07/EPIC.md) — Generation Progress Delivery Fix.** Found 2026-07-09 during Task 2 staging QA: generation completes server-side but the result never renders in the browser (the REST fallback poll was gated behind the socket's `onError`, which never fires on silent non-delivery; also timer-throttled in background tabs). **[US-AI-034](epics/phase-0-mvp/EPIC-AI-07/stories/US-AI-034/STORY.md)** fix implemented in `AIChatBox.tsx` (always-on poll + `visibilitychange` catch-up + completion guard) — locally verified (typecheck, 64/64 unit, mocked E2E 3/3). **AC3 pending:** needs deploy to staging + live re-test (foreground **and** backgrounded tab). **[US-AI-035](epics/phase-0-mvp/EPIC-AI-07/stories/US-AI-035/STORY.md)** ⏭️ superseded. Blocks Task 2 sign-off → Task 3.
+### Now
+> No active development. **PT-09 closed** (below). Next: EPIC-AI-02 deps (US-AI-010/011) as prerequisites for EPIC-AI-06 — see [PHASE_TRACKER.md](PHASE_TRACKER.md).
 
-> After PT-09 closes: EPIC-AI-02 deps (US-AI-010/011) as prerequisites for EPIC-AI-06 — see [PHASE_TRACKER.md](PHASE_TRACKER.md).
+### Done — Generation delivery fixes (EPIC-AI-07 + Task 2 QA)
+> **PT-09 ✅ Fixed & verified on staging 2026-07-09** ([US-AI-034](epics/phase-0-mvp/EPIC-AI-07/stories/US-AI-034/STORY.md), [PR #14](https://github.com/din-prajapati/infographic.io/pull/14) `9eed346`). Generation completed server-side but never rendered — REST fallback poll was gated behind the socket's `onError` (never fires on silent non-delivery) + timer-throttled in background tabs. Fix: always-on REST poll + `visibilitychange` catch-up + completion guard in `AIChatBox.tsx`. [US-AI-035](epics/phase-0-mvp/EPIC-AI-07/stories/US-AI-035/STORY.md) superseded.
+>
+> **PT-10 ✅ Fixed & verified on staging 2026-07-11** ([PR #15](https://github.com/din-prajapati/infographic.io/pull/15) `6494d88`, direct QA fix — no orion story). The *error-path* twin: a failed generation stayed frozen on "Generating…" with no error (found in Task 2 I-10). `handleGenerationFailed` now rewrites the bubble to a styled red `Error: <message>` + fails closed on poll timeout — `AIChatBox.tsx`.
+>
+> **PT-11 ✅ Fixed 2026-07-11** ([PR #15](https://github.com/din-prajapati/infographic.io/pull/15), direct QA fix — no orion story). Model-opacity (Rule #5): `/usage` showed raw `ideogram-4`. New `client/src/lib/modelLabels.ts` maps ids → friendly tier labels; wired into `UsageDashboardPage.tsx` + `UsageScreen.tsx`.
 
 ### Done — Phase 0 (EPIC-AI-01)
 | Area | Status |
@@ -215,13 +220,13 @@
 **Active epic:** EPIC-INFRA-01 — MVP Deployment  
 **Phase:** 0 (MVP) 🟡 In Progress
 
-### Now (3 Human Tasks — Phase 0 Blockers)
+### Now (Phase 0 deploy — 2 of 3 tasks signed off)
 
 | Task | Owner | Status | Reference |
 |------|-------|--------|-----------|
-| Critical-path 10-flow manual test | HUMAN | ⏳ Pending | [testing/MVP_CRITICAL_PATH_QA.md](../testing/MVP_CRITICAL_PATH_QA.md) |
-| Staging smoke test (Railway) | HUMAN | ⏳ Pending | [setup/COMPLETE_SETUP_GUIDE.md](../setup/COMPLETE_SETUP_GUIDE.md) |
-| Production go-live + Sentry verify | HUMAN | ⏳ Pending (blocked by staging) | Same |
+| Task 1 — Critical-path manual QA | HUMAN | ✅ PASS 2026-06-20 | [testing/PHASE_0_HUMAN_QA_CHECKLIST.md](../testing/PHASE_0_HUMAN_QA_CHECKLIST.md) |
+| Task 2 — Staging smoke test (Railway) | HUMAN | ✅ PASS 2026-07-11 (incl. live Ideogram I-05/I-06, I-10 error state; 2 bugs fixed PT-10/PT-11) | [testing/PHASE_0_HUMAN_QA_CHECKLIST.md](../testing/PHASE_0_HUMAN_QA_CHECKLIST.md) |
+| Task 3 — Production go-live + Sentry verify | HUMAN | ⏳ Next (unblocked) — ~1 hr | Same |
 
 ### Done
 | Area | Status |
@@ -258,6 +263,8 @@
 | [US-LAUNCH-002](epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-002/STORY.md) | Transactional email foundation | M | — |
 | [US-LAUNCH-003](epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-003/STORY.md) | Forgot / reset password flow | M | US-LAUNCH-002 |
 | [US-LAUNCH-004](epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-004/STORY.md) | Beta launch mode (checkout off · disclaimer) | S | — |
+| [US-LAUNCH-009](epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-009/STORY.md) | Environment & secrets management convention (docs/config) | M | — |
+| [US-LAUNCH-010](epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-010/STORY.md) | Config hardening — APP_ENV + boot validation + RazorPay guard | M | US-LAUNCH-009 |
 
 ### Then — M-LAUNCH-02 revenue on (prep parallel to EPIC-AI-06; flip gated by AI-06)
 
@@ -484,4 +491,84 @@
 
 <!-- ai-sdlc:session-log -->
 **2026-07-09 18:41** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-09 19:59** · branch: `main`
+  - Last commit: 9eed346 Merge pull request #14 from din-prajapati/fix/ai-us-ai-034-generation-progress-delivery
+
+<!-- ai-sdlc:session-log -->
+**2026-07-09 20:09** · branch: `main`
+  - Last commit: 9eed346 Merge pull request #14 from din-prajapati/fix/ai-us-ai-034-generation-progress-delivery
+
+<!-- ai-sdlc:session-log -->
+**2026-07-09 20:19** · branch: `main`
+  - Last commit: 9eed346 Merge pull request #14 from din-prajapati/fix/ai-us-ai-034-generation-progress-delivery
+
+<!-- ai-sdlc:session-log -->
+**2026-07-09 22:50** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-09 23:15** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-11 13:22** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-11 15:59** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-11 16:00** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-11 16:11** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-11 16:16** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-11 16:20** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-11 16:28** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-11 16:32** · branch: `main`
+  - Last commit: 6494d88 [QA] Fix /usage model opacity + generation error bubble (#15)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-11 16:35** · branch: `main`
+  - Last commit: 6494d88 [QA] Fix /usage model opacity + generation error bubble (#15)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-11 16:43** · branch: `main`
+  - Last commit: 7ba96d1 docs(testing): sign off Task 2 — staging PASS (I-06 + I-10 verified)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-11 17:13** · branch: `main`
+  - Last commit: 7ba96d1 docs(testing): sign off Task 2 — staging PASS (I-06 + I-10 verified)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-11 17:20** · branch: `main`
+  - Last commit: 7ba96d1 docs(testing): sign off Task 2 — staging PASS (I-06 + I-10 verified)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-11 17:50** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-11 17:55** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-11 18:07** · branch: `main`
   - Last commit: (no commits this session)
