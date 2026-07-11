@@ -371,6 +371,31 @@ PLAYWRIGHT_BASE_URL=https://infographic-production-staging.up.railway.app npx pl
 
 ---
 
+### 3.0 — Decide your production URL (do this FIRST)
+
+> Everything URL-dependent below (`GOOGLE_CALLBACK_URL`, `BASE_URL`, `CLIENT_URL`, the RazorPay webhook, `VITE_*`) derives from **one** value: your production URL. Decide it before P-04 so you set those variables — and register the OAuth redirect + webhook — exactly once.
+
+| Option | What | Cost | When it's right | URL-var rework later? |
+| ------ | ---- | ---- | --------------- | --------------------- |
+| **A — Railway free URL** | Production gets a `*.up.railway.app` URL (see P-08); optionally rename the prefix with `railway domain` | $0, launch now | Free beta (M-LAUNCH-01, no payments) | Yes — re-set ~5 URL vars + re-register OAuth/webhook once if you add a domain later |
+| **B — Custom domain** *(recommended before revenue)* | Buy a domain (~$12/yr) → Railway → service → **Settings → Networking → Custom Domain** → add CNAME (auto-TLS, no redeploy) | ~$12/yr | Needed for RazorPay **LIVE** activation credibility + email DKIM reputation (both M-LAUNCH-02) | No — configure prod once with the final URL |
+
+> **Recommendation:** the free beta runs fine on the Railway URL; buy the domain **before M-LAUNCH-02 (revenue)**. If you're buying soon anyway, buy it **before P-04** to configure production once and skip the double-config.
+
+**➡️ Write your chosen production URL here — every `<PROD_URL>` placeholder below refers to it:**
+
+```
+PROD_URL = _______________________________________________
+   (e.g.  https://app.infographicai.com   — Option B
+    or    https://infographic-production-production.up.railway.app   — Option A)
+```
+
+| #    | Step                                                                                     | Done? | Notes |
+| ---- | ---------------------------------------------------------------------------------------- | ----- | ----- |
+| P-00 | Choose Option A or B above and record `PROD_URL`                                          | ☐     | If Option B: buy domain + add CNAME in Railway **before** P-04 to avoid rework |
+
+---
+
 ### 3A. Neon Production Branch
 
 
@@ -392,7 +417,7 @@ PLAYWRIGHT_BASE_URL=https://infographic-production-staging.up.railway.app npx pl
 | P-05 | In Railway service settings → Deploy → set **Deploy Trigger = Git tag (`v`*)**                   | ☐     | Per strategy §3: production deploys from a version tag, not branch push |
 | P-06 | **Bootstrap first deploy:** `railway up --detach` from the `production` environment *(one-time)* | ☐     | Creates the service; subsequent deploys are tag-triggered               |
 | P-07 | `railway logs` → confirm clean startup                                                           | ☐     |                                                                         |
-| P-08 | `railway domain` → set custom domain or note Railway URL                                         | ☐     |                                                                         |
+| P-08 | `railway domain` → set custom domain (Option B) or note the generated Railway URL (Option A) → this **is** your `PROD_URL` from §3.0 | ☐     | Confirm every URL var in the worksheet uses this exact value |
 
 
 ---
@@ -410,28 +435,72 @@ PLAYWRIGHT_BASE_URL=https://infographic-production-staging.up.railway.app npx pl
 | P-12 | Railway deploy completes → `railway logs` shows clean startup (production environment) | ☐     |                                   |
 
 
-**Required Railway production variables (P-04):**
+**Required Railway production variables (P-04) — fill-in-the-blank worksheet:**
 
+> Set each in Railway **production** env (dashboard → env dropdown = `production` → service → Variables, **or** `railway variables --set "KEY=value" --environment production`). Fill the "Set to" column, then check ✅. `<PROD_URL>` = the value you recorded in §3.0. **Do not** paste real secrets into this doc — set them directly in Railway; use this only to track *which shape* goes where.
 
-| Variable                                    | Value                                                      |
-| ------------------------------------------- | ---------------------------------------------------------- |
-| `DATABASE_URL`                              | Neon **production** branch direct URL (`?sslmode=require`) |
-| `NODE_ENV`                                  | `production`                                               |
-| `JWT_SECRET`                                | **New** random 32-byte — **different from staging**        |
-| `SESSION_SECRET`                            | **New** random 32-byte — **different from staging**        |
-| `OPENAI_API_KEY`                            | Your OpenAI key                                            |
-| `IDEOGRAM_API_KEY`                          | Your Ideogram key                                          |
-| `RAZORPAY_KEY_ID` / `RAZORPAY_KEY_SECRET`   | **LIVE** Razorpay keys — not test                          |
-| `RAZORPAY_PLAN_SOLO_MONTHLY` etc.           | **LIVE** plan IDs from Razorpay Dashboard                  |
-| `VITE_RAZORPAY_KEY_ID`                      | **LIVE** key (browser-exposed)                             |
-| `RAZORPAY_WEBHOOK_SECRET`                   | Live webhook secret                                        |
-| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | OAuth credentials                                          |
-| `GOOGLE_CALLBACK_URL`                       | `https://<prod-url>/api/v1/auth/google/callback`           |
-| `SENTRY_DSN`                                | Paste from Sentry project dashboard                        |
-| `VITE_SENTRY_DSN`                           | Same value (browser-exposed)                               |
+**Group 1 — Core / DB / env**
 
+| Variable | Set to (shape) | Where the value comes from | ✅ |
+| -------- | -------------- | -------------------------- | -- |
+| `DATABASE_URL` | Neon **production** branch **direct** URL, ends `?sslmode=require`, host has **no** `-pooler` | Neon dashboard → prod branch → Connection string (Direct) | ☐ |
+| `NODE_ENV` | `production` | literal | ☐ |
+| `APP_ENV`¹ | `production` | literal — distinguishes prod from staging (both use `NODE_ENV=production`) | ☐ |
+| `PORT` / `API_PORT` | `5000` / `3001` | literal (match staging) | ☐ |
+| `JWT_SECRET` | **NEW** random 32-byte base64 — **different from staging** | `openssl rand -base64 32` | ☐ |
+| `SESSION_SECRET` | **NEW** random 32-byte base64 — **different from staging** | `openssl rand -base64 32` | ☐ |
 
-> ⚠️ LIVE Razorpay keys must **never** appear in staging variables. If that happens, rotate them immediately in the Razorpay Dashboard.
+**Group 2 — URL-derived (all from `<PROD_URL>`)**
+
+| Variable | Set to (shape) | ✅ |
+| -------- | -------------- | -- |
+| `BASE_URL` | `<PROD_URL>` | ☐ |
+| `CLIENT_URL` | `<PROD_URL>` | ☐ |
+| `GOOGLE_CALLBACK_URL` | `<PROD_URL>/api/v1/auth/google/callback` | ☐ |
+
+**Group 3 — AI keys**
+
+| Variable | Set to (shape) | ✅ |
+| -------- | -------------- | -- |
+| `OPENAI_API_KEY` | prod OpenAI key (own key ideally, for cost isolation) | ☐ |
+| `IDEOGRAM_API_KEY` | prod Ideogram key | ☐ |
+| `GEMINI_API_KEY` | prod Gemini key (FREE/SOLO/TEAM text routing) | ☐ |
+
+**Group 4 — Payments (LIVE) ⚠️**
+
+| Variable | Set to (shape) | ✅ |
+| -------- | -------------- | -- |
+| `RAZORPAY_KEY_ID` | **`rzp_live_*`** — NOT test | ☐ |
+| `RAZORPAY_KEY_SECRET` | LIVE secret (paired with the live key) | ☐ |
+| `VITE_RAZORPAY_KEY_ID` | **`rzp_live_*`** (browser-exposed — same as above) | ☐ |
+| `RAZORPAY_WEBHOOK_SECRET` | LIVE webhook secret — **must exactly match** the secret set on the prod webhook endpoint in the RazorPay **Live** Dashboard (webhook URL = `<PROD_URL>/api/webhooks/razorpay`)² | ☐ |
+| `RAZORPAY_PLAN_SOLO_MONTHLY` | **LIVE** plan ID | ☐ |
+| `RAZORPAY_PLAN_SOLO_ANNUAL` | **LIVE** plan ID | ☐ |
+| `RAZORPAY_PLAN_TEAM_MONTHLY` | **LIVE** plan ID | ☐ |
+| `RAZORPAY_PLAN_TEAM_ANNUAL` | **LIVE** plan ID | ☐ |
+| `RAZORPAY_PLAN_BROKERAGE*` | — leave unset (PT-06; tier gated by US-LAUNCH-007) | ☐ |
+| `STRIPE_ENABLED` | `false` (Stripe disabled) | ☐ |
+
+**Group 5 — Auth (Google OAuth — prod client)**
+
+| Variable | Set to (shape) | ✅ |
+| -------- | -------------- | -- |
+| `GOOGLE_CLIENT_ID` | your **"Prod"** Google OAuth client ID | ☐ |
+| `GOOGLE_CLIENT_SECRET` | your **"Prod"** Google OAuth client secret | ☐ |
+
+**Group 6 — Observability / Frontend**
+
+| Variable | Set to (shape) | ✅ |
+| -------- | -------------- | -- |
+| `SENTRY_DSN` | prod Sentry DSN (or reuse project with `environment: production` tag) | ☐ |
+| `VITE_SENTRY_DSN` | same value (browser-exposed) | ☐ |
+| `VITE_STORAGE_PREFIX` | match staging | ☐ |
+
+> ¹ `APP_ENV` is introduced by [US-LAUNCH-010](../agile/epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-010/STORY.md). If that story hasn't merged when you set up prod, it's harmless to set `APP_ENV=production` now (the app ignores unknown vars) — and once US-LAUNCH-010 lands, its RazorPay test/live guard will *require* prod to carry `rzp_live_*`, catching a mistake at boot.
+> ² Webhook path is `/api/webhooks/razorpay` (Express), **not** `/api/v1/...` — this exact mismatch was the F2-02 bug. Set the live webhook endpoint to `<PROD_URL>/api/webhooks/razorpay` in the RazorPay Live Dashboard.
+
+> ⚠️ **LIVE Razorpay keys must never appear in staging variables.** If that ever happens, rotate them immediately in the RazorPay Dashboard. (US-LAUNCH-010's guard enforces this automatically once merged.)
+> ⚠️ **Do not set** `RAILWAY_*` — Railway injects those. **Do not** add a Railway Postgres service — the DB is on Neon.
 
 ---
 
@@ -440,7 +509,7 @@ PLAYWRIGHT_BASE_URL=https://infographic-production-staging.up.railway.app npx pl
 
 | #    | Check                                                                          | Pass? | Notes                                          |
 | ---- | ------------------------------------------------------------------------------ | ----- | ---------------------------------------------- |
-| P-13 | `GET https://<prod-url>/api/health` returns `{"status":"ok","db":"connected"}` | ☐     |                                                |
+| P-13 | `GET <PROD_URL>/api/health` returns `{"status":"ok","db":"connected"}` | ☐     |                                                |
 | P-14 | Register a real account → lands on `/templates`                                | ☐     | `prisma db push` at first boot seeds templates |
 | P-15 | Open template → Editor loads                                                   | ☐     |                                                |
 | P-16 | Generate one infographic (uses live Ideogram key)                              | ☐     | Costs ~$0.025 per image                        |
@@ -470,7 +539,7 @@ PLAYWRIGHT_BASE_URL=https://infographic-production-staging.up.railway.app npx pl
 
 | #    | Check                                                                       | Pass? | Notes                                            |
 | ---- | --------------------------------------------------------------------------- | ----- | ------------------------------------------------ |
-| P-25 | Google Cloud Console: add production domain to **Authorized redirect URIs** | ☐     | `https://<prod-url>/api/v1/auth/google/callback` |
+| P-25 | Google Cloud Console (your **"Prod"** client): add **Authorized redirect URI** — must exactly equal `GOOGLE_CALLBACK_URL` | ☐     | `<PROD_URL>/api/v1/auth/google/callback` |
 | P-26 | Google sign-in works on production                                          | ☐     |                                                  |
 
 
