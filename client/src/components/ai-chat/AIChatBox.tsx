@@ -372,15 +372,22 @@ export function AIChatBox({
 
     setState((prev) => ({ ...prev, isGenerating: false, error: errorMessage }));
 
-    const failedSteps = generationStepsRef.current.map((step) => ({
-      ...step,
-      status: "pending" as const,
-    }));
-
+    // Surface the failure in the bubble itself. MessageBubble renders a styled
+    // red error bubble when an AI message's content starts with "Error:" — so we
+    // rewrite the frozen "Generating your infographic..." placeholder into the
+    // actual error and drop the progress steps. Without this the bubble stayed
+    // stuck on the generating text (state.error is only shown in the default
+    // view, not the conversation view). See I-10 / error-path twin of PT-09.
     setConversationMessages((prev) =>
       prev.map((msg) =>
         msg.id === aiMsgId
-          ? { ...msg, isGenerating: false, generationSteps: failedSteps }
+          ? {
+              ...msg,
+              isGenerating: false,
+              content: `Error: ${errorMessage}`,
+              generationSteps: undefined,
+              currentStep: undefined,
+            }
           : msg,
       ),
     );
@@ -435,6 +442,13 @@ export function AIChatBox({
       const result = await checkStatusOnce();
       if (result === "done" || polls >= MAX_POLLS) {
         clearInterval(intervalId);
+        // Timed out without a terminal status — surface a styled error rather
+        // than leaving the bubble stuck on "Generating..." forever.
+        if (result !== "done" && !completionHandledRef.current) {
+          handleGenerationFailed(
+            "Generation timed out. Please try again — you have not been charged.",
+          );
+        }
       }
     }, POLL_INTERVAL_MS);
 
