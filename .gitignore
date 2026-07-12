@@ -1,4 +1,11 @@
 
+# Secrets master-copy directory — env files are gitignored; README is committed
+# See secrets/README.md for the master-copy convention.
+secrets/*.env
+secrets/local.env
+secrets/staging.env
+secrets/production.env
+
 # Environment variables
 # Note: .env.example files are committed (templates)
 # Actual .env files are ignored (contain secrets)

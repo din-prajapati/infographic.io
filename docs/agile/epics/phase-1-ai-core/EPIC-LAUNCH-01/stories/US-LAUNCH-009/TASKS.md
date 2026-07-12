@@ -120,13 +120,13 @@ diff /tmp/staging-before.txt /tmp/staging-after.txt && echo "staging identical"
 
 ## Task Checklist
 
-- [ ] T1 — enumerate variable set
-- [ ] T2 — `docs/setup/ENVIRONMENTS.md`
-- [ ] T3 — `.env.example` rewrite + prune
-- [ ] T4 — `secrets/` convention + gitignore
-- [ ] `npm run check` passes ✅
-- [ ] `git diff --name-only` shows no `.ts`/`.tsx` ✅
-- [ ] Staging variables identical before/after ✅
+- [x] T1 — enumerate variable set
+- [x] T2 — `docs/setup/ENVIRONMENTS.md`
+- [x] T3 — `.env.example` rewrite + prune
+- [x] T4 — `secrets/` convention + gitignore
+- [x] `npm run check` passes ✅
+- [x] `git diff --name-only` shows no `.ts`/`.tsx` ✅
+- [ ] Staging variables identical before/after ✅ (manual verification — requires `railway` CLI)
 - [ ] PR opened with story card as description ✅
 
 ---
