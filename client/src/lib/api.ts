@@ -51,6 +51,18 @@ export const authApi = {
       method: 'POST',
       body: JSON.stringify(data),
     }),
+
+  forgotPassword: (data: { email: string }) =>
+    apiRequest<{ message: string }>(getApiUrl('/auth/forgot-password'), {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  resetPassword: (data: { token: string; newPassword: string }) =>
+    apiRequest<{ message: string }>(getApiUrl('/auth/reset-password'), {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
 };
 
 export const templatesApi = {

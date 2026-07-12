@@ -14,6 +14,8 @@ import PricingPage from "./pages/PricingPage";
 import LandingPage from "./pages/LandingPage";
 import UsageDashboardPage from "./pages/UsageDashboardPage";
 import AuthCallbackPage from "./pages/AuthCallbackPage";
+import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/auth/ResetPasswordPage";
 import TermsPage from "./pages/legal/TermsPage";
 import PrivacyPage from "./pages/legal/PrivacyPage";
 import RefundPolicyPage from "./pages/legal/RefundPolicyPage";
@@ -92,6 +94,8 @@ function Router() {
   return (
     <Switch>
       <Route path="/auth/callback" component={AuthCallbackPage} />
+      <Route path="/auth/forgot" component={ForgotPasswordPage} />
+      <Route path="/auth/reset" component={ResetPasswordPage} />
       <Route path="/auth" component={AuthPage} />
       <Route path="/pricing" component={PricingPage} />
       <Route path="/templates" component={() => <ProtectedRoute component={() => <AppLayoutWithHeader component={TemplatesPageWrapper} />} />} />

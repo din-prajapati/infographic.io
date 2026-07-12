@@ -221,7 +221,12 @@ export default function AuthPage() {
                     <Checkbox id="remember" className="border-white/30 data-[state=checked]:bg-white/20 data-[state=checked]:border-white/40" />
                     <label htmlFor="remember" className="text-xs text-white/60 cursor-pointer">Remember me</label>
                   </div>
-                  <button type="button" className="text-xs text-white/70 hover:text-white underline transition-colors">
+                  <button
+                    type="button"
+                    onClick={() => navigate('/auth/forgot')}
+                    className="text-xs text-white/70 hover:text-white underline transition-colors"
+                    data-testid="link-forgot-password"
+                  >
                     Forgot Password?
                   </button>
                 </div>
