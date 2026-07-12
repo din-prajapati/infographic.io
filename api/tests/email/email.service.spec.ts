@@ -17,13 +17,15 @@ vi.mock('resend', () => ({
 }));
 
 // ---------------------------------------------------------------------------
-// Helper: build EmailService with controlled config (no NestJS test harness)
+// Helper: build EmailService with controlled env (service reads process.env at
+// construction — matches the app's config-via-process.env convention)
 // ---------------------------------------------------------------------------
 function buildService(env: Record<string, string | undefined>): EmailService {
-  const mockConfig = {
-    get: (key: string) => env[key] ?? undefined,
-  };
-  return new EmailService(mockConfig as any);
+  for (const key of ['RESEND_API_KEY', 'EMAIL_FROM']) {
+    if (env[key] === undefined) delete process.env[key];
+    else process.env[key] = env[key];
+  }
+  return new EmailService();
 }
 
 // ---------------------------------------------------------------------------
@@ -34,6 +36,8 @@ describe('EmailService', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockEmailsSend.mockResolvedValue({ id: 'test-email-id-123' });
+    delete process.env.RESEND_API_KEY;
+    delete process.env.EMAIL_FROM;
   });
 
   // TC-LAUNCH-002-01 — Provider called with correct payload when key is set

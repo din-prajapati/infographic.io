@@ -1,5 +1,4 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { Resend } from 'resend';
 
 export interface SendEmailParams {
@@ -32,10 +31,12 @@ export class EmailService {
   private readonly apiKey: string | undefined;
   private readonly fromAddress: string;
 
-  constructor(private readonly config: ConfigService) {
-    this.apiKey = this.config.get<string>('RESEND_API_KEY');
-    this.fromAddress =
-      this.config.get<string>('EMAIL_FROM') ?? 'noreply@example.com';
+  // Reads process.env directly — consistent with the rest of the app (which does
+  // not use ConfigService). Injecting ConfigService here failed at boot because
+  // it is not provided in this app's DI graph.
+  constructor() {
+    this.apiKey = process.env.RESEND_API_KEY;
+    this.fromAddress = process.env.EMAIL_FROM ?? 'noreply@example.com';
 
     if (this.apiKey) {
       this.client = new Resend(this.apiKey);
