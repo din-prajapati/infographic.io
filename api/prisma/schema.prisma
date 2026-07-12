@@ -24,13 +24,14 @@ model User {
   paddleCustomerId   String?        @unique
   createdAt          DateTime       @default(now())
   updatedAt          DateTime       @updatedAt
-  infographics       Infographic[]
-  usageRecords       UsageRecord[]
-  conversations      Conversation[]
-  extractions        Extraction[]
-  subscriptions      Subscription[]
-  payments           Payment[]
-  invoices           Invoice[]
+  infographics        Infographic[]
+  usageRecords        UsageRecord[]
+  conversations       Conversation[]
+  extractions         Extraction[]
+  subscriptions       Subscription[]
+  payments            Payment[]
+  invoices            Invoice[]
+  passwordResetTokens PasswordResetToken[]
 
   @@index([email])
   @@index([organizationId])
@@ -322,4 +323,17 @@ model Invoice {
   @@index([status])
   @@index([paymentProvider])
   @@index([issuedAt])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@index([tokenHash])
 }
