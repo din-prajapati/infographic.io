@@ -20,11 +20,11 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC1:** With `VITE_BETA_MODE=true`, the PricingPage shows a "Free during beta" notice and paid tiers render **without** checkout buttons (replaced by a disabled "Available after beta" state) — FREE tier signup unaffected
-- [ ] **AC2:** With `BETA_MODE=true` on the backend, the subscription-creation endpoint returns 403 with a clear `BETA_MODE_ACTIVE` error code (defense in depth — the UI hiding alone is not the gate)
-- [ ] **AC3:** Generation results (editor result view and/or export flow) display a disclaimer: imagery may include AI-generated visuals and must be verified before being published to represent a real listing — exact copy in the story PR, no AI vendor names
-- [ ] **AC4:** Setting both flags to `false` (or unset) restores current paid behavior with no other code change — single-switch revenue-on
-- [ ] **AC5:** `npm run test:unit` includes a test for the 403 beta guard
+- [ ] **AC1 [happy-path]:** With `VITE_BETA_MODE=true`, the PricingPage shows a "Free during beta" notice and paid tiers render **without** checkout buttons (replaced by a disabled "Available after beta" state) — FREE tier signup unaffected
+- [ ] **AC2 [error-path]:** With `BETA_MODE=true` on the backend, the subscription-creation endpoint returns 403 with a clear `BETA_MODE_ACTIVE` error code (defense in depth — the UI hiding alone is not the gate)
+- [ ] **AC3 [happy-path]:** Generation results (editor result view and/or export flow) display a disclaimer: imagery may include AI-generated visuals and must be verified before being published to represent a real listing — exact copy in the story PR, no AI vendor names
+- [ ] **AC4 [edge-case]:** Setting both flags to `false` (or unset) restores current paid behavior with no other code change — single-switch revenue-on
+- [ ] **AC5 [happy-path]:** `npm run test:unit` includes a test for the 403 beta guard
 
 ---
 

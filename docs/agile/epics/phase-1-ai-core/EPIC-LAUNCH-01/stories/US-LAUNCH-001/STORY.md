@@ -20,11 +20,11 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC1:** `/terms`, `/privacy`, and `/refund-policy` routes render in `client/src/App.tsx` (Wouter `<Route>`), publicly accessible without auth, returning styled content (no 404, no ProtectedRoute wrapper)
-- [ ] **AC2:** Refund & Cancellation page states the subscription model (INR, monthly/annual via RazorPay), cancellation behavior (access until period end), and refund terms — the three things RazorPay's activation review looks for
-- [ ] **AC3:** Privacy page discloses: account data stored, payment processing by RazorPay (no card data stored by us), AI providers process listing text/images to generate output
-- [ ] **AC4:** Footer links to all three pages appear on LandingPage, PricingPage, and AuthPage
-- [ ] **AC5:** Pages use the existing design token system (Warm-Cream palette, Outfit font) and are responsive — no horizontal scroll at 375px width
+- [x] **AC1 [happy-path]:** `/terms`, `/privacy`, and `/refund-policy` routes render in `client/src/App.tsx` (Wouter `<Route>`), publicly accessible without auth, returning styled content (no 404, no ProtectedRoute wrapper)
+- [x] **AC2 [happy-path]:** Refund & Cancellation page states the subscription model (INR, monthly/annual via RazorPay), cancellation behavior (access until period end), and refund terms — the three things RazorPay's activation review looks for
+- [x] **AC3 [happy-path]:** Privacy page discloses: account data stored, payment processing by RazorPay (no card data stored by us), AI providers process listing text/images to generate output
+- [x] **AC4 [happy-path]:** Footer links to all three pages appear on LandingPage, PricingPage, and AuthPage
+- [x] **AC5 [edge-case]:** Pages use the existing design token system (Warm-Cream palette, Outfit font) and are responsive — no horizontal scroll at 375px width
 
 ---
 
@@ -81,9 +81,9 @@ Implementation rules:
 | TC ID | Type | Priority | Scenario | Status | Finding |
 |-------|------|----------|----------|--------|---------|
 | TC-LAUNCH-001-01 | Auto (E2E) | P0 | Given a logged-out browser, when visiting /terms, /privacy, /refund-policy, then each returns styled content with page title (no 404, no auth redirect) | 🔲 | |
-| TC-LAUNCH-001-02 | Manual | P0 | Given the pricing page, when scrolling to footer, then links to all three legal pages exist and navigate correctly | 🔲 | |
+| TC-LAUNCH-001-02 | Auto (E2E) | P0 | Given the pricing page, when scrolling to footer, then links to all three legal pages exist and navigate correctly | 🔲 | |
 | TC-LAUNCH-001-03 | Manual | P1 | Given /refund-policy, then cancellation + refund terms and INR/RazorPay billing are explicitly stated | 🔲 | |
-| TC-LAUNCH-001-04 | Manual | P1 | Given a 375px viewport, when viewing each legal page, then no horizontal scroll and readable typography | 🔲 | |
+| TC-LAUNCH-001-04 | Auto (E2E) | P1 | Given a 375px viewport, when viewing each legal page, then no horizontal scroll and readable typography | 🔲 | |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 

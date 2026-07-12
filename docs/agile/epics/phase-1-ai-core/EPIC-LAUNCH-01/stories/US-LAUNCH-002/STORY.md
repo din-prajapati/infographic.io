@@ -20,11 +20,11 @@
 
 ## Acceptance Criteria
 
-- [x] **AC1:** New NestJS module `api/src/modules/email/` exports an `EmailService` with a provider-agnostic interface: `send({ to, subject, html, text })` — callers never reference the provider by name (same generic-naming rule as `promptTemplate`)
-- [x] **AC2:** Resend implementation used when `RESEND_API_KEY` is set; reads `EMAIL_FROM` for the from-address; no provider SDK import outside the email module
-- [x] **AC3:** When `RESEND_API_KEY` is absent (local dev), `EmailService.send()` logs the full message to console and resolves successfully — the app never crashes or blocks on missing email config
-- [x] **AC4:** `send()` failures are caught and logged (returns `{ sent: false }`), never thrown to callers — email must not break auth or webhook flows
-- [x] **AC5:** Unit tests (`api/tests/email/email.service.spec.ts`) cover: provider called with correct payload, console fallback path, and error swallowing — all mock-based, no network
+- [x] **AC1 [happy-path]:** New NestJS module `api/src/modules/email/` exports an `EmailService` with a provider-agnostic interface: `send({ to, subject, html, text })` — callers never reference the provider by name (same generic-naming rule as `promptTemplate`)
+- [x] **AC2 [happy-path]:** Resend implementation used when `RESEND_API_KEY` is set; reads `EMAIL_FROM` for the from-address; no provider SDK import outside the email module
+- [x] **AC3 [edge-case]:** When `RESEND_API_KEY` is absent (local dev), `EmailService.send()` logs the full message to console and resolves successfully — the app never crashes or blocks on missing email config
+- [x] **AC4 [error-path]:** `send()` failures are caught and logged (returns `{ sent: false }`), never thrown to callers — email must not break auth or webhook flows
+- [x] **AC5 [happy-path]:** Unit tests (`api/tests/email/email.service.spec.ts`) cover: provider called with correct payload, console fallback path, and error swallowing — all mock-based, no network
 
 ---
 
