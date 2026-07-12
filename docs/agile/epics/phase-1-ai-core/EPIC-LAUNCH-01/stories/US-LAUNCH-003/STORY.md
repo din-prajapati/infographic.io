@@ -21,11 +21,11 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC1:** `POST /api/v1/auth/forgot-password` accepts `{ email }`, always returns 200 with a generic message (no user enumeration), and for existing local-password accounts creates a `PasswordResetToken` row (new Prisma model: hashed token, userId, `expiresAt` = +1h, `usedAt` nullable)
-- [ ] **AC2:** Reset email sent via `EmailService` containing a link to `/auth/reset?token={rawToken}`; the raw token is never stored (store SHA-256 hash)
-- [ ] **AC3:** `POST /api/v1/auth/reset-password` with `{ token, newPassword }` validates token (exists, unexpired, unused), updates the user's bcrypt hash, marks token used — expired/used/unknown tokens return 400 with a safe message
-- [ ] **AC4:** Frontend: "Forgot password?" link on the AuthPage login form → `/auth/forgot` (email form) and `/auth/reset` (new-password form) pages, both public routes, with success/error states
-- [ ] **AC5:** Google-OAuth-only accounts (no local password) receive an email saying "this account signs in with Google" instead of a reset link — still 200 to the caller
+- [ ] **AC1 [happy-path]:** `POST /api/v1/auth/forgot-password` accepts `{ email }`, always returns 200 with a generic message (no user enumeration), and for existing local-password accounts creates a `PasswordResetToken` row (new Prisma model: hashed token, userId, `expiresAt` = +1h, `usedAt` nullable)
+- [ ] **AC2 [security]:** Reset email sent via `EmailService` containing a link to `/auth/reset?token={rawToken}`; the raw token is never stored (store SHA-256 hash)
+- [ ] **AC3 [error-path]:** `POST /api/v1/auth/reset-password` with `{ token, newPassword }` validates token (exists, unexpired, unused), updates the user's bcrypt hash, marks token used — expired/used/unknown tokens return 400 with a safe message
+- [ ] **AC4 [happy-path]:** Frontend: "Forgot password?" link on the AuthPage login form → `/auth/forgot` (email form) and `/auth/reset` (new-password form) pages, both public routes, with success/error states
+- [ ] **AC5 [edge-case]:** Google-OAuth-only accounts (no local password) receive an email saying "this account signs in with Google" instead of a reset link — still 200 to the caller
 
 ---
 
