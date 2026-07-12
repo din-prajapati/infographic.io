@@ -14,6 +14,7 @@ import { PaymentsModule } from './modules/payments/payments.module';
 import { UsersModule } from './modules/users/users.module';
 import { DatabaseModule } from './database/database.module';
 import { HealthModule } from './modules/health/health.module';
+import { EmailModule } from './modules/email/email.module';
 
 
 @Module({
@@ -45,6 +46,7 @@ import { HealthModule } from './modules/health/health.module';
     PaymentsModule,
     UsersModule,
     HealthModule,
+    EmailModule,
   ],
   providers: [
     Reflector,
