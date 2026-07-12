@@ -86,7 +86,7 @@ Implementation rules:
 | TC-LAUNCH-003-02 | Auto (unit) | P0 | Given a valid unexpired token, when reset-password called, then bcrypt hash updated and token marked used; reusing same token → 400 | 🔲 | |
 | TC-LAUNCH-003-03 | Auto (unit) | P0 | Given an unknown email, when forgot-password called, then 200 returned and no token created (no enumeration) | 🔲 | |
 | TC-LAUNCH-003-04 | Auto (unit) | P1 | Given an expired token, when reset-password called, then 400 and password unchanged | 🔲 | |
-| TC-LAUNCH-003-05 | E2E | P0 | Full flow on localhost: request reset → console-logged email link → open → set new password → login works with new password, old fails | ⏸ | E2E written, `test.skip`'d until deploy (needs `PasswordResetToken` table via `prisma db push`) — `e2e/us-launch-003-password-reset.spec.ts` |
+| TC-LAUNCH-003-05 | E2E | P0 | Full flow on localhost: request reset → console-logged email link → open → set new password → login works with new password, old fails | ✅ | **Verified live 2026-07-12** against dev server + real DB: forgot→200+token row (AC1), reset→200 password updated (AC3), new pw logs in / old rejected (401), reused token→400. Reset half used an injected token (emailed raw token is console-only); linkage `sha256`-covered by unit tests. Automated Playwright version still `test.skip`'d pending a token-capture hook. |
 | TC-LAUNCH-003-06 | Auto (unit) | P1 | Given a Google-OAuth-only account, when forgot-password called, then "signs in with Google" email sent, no token created | 🔲 | |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
