@@ -819,6 +819,11 @@ export default function PricingPage() {
                     Privacy Policy
                   </a>
                 </li>
+                <li>
+                  <a href="/refund-policy" className="hover:text-white">
+                    Refund &amp; Cancellation
+                  </a>
+                </li>
               </ul>
             </div>
           </div>

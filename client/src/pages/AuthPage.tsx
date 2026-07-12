@@ -12,6 +12,7 @@ import { useAuth } from '@/lib/auth';
 import { authApi } from '@/lib/api';
 import { registerSchema, loginSchema, type RegisterInput, type LoginInput } from '@shared/schema';
 import { Building2, Eye, EyeOff } from 'lucide-react';
+import { SiteFooter } from '@/components/SiteFooter';
 
 import property1 from '@/assets/images/carousel/property-1.jpg';
 import property2 from '@/assets/images/carousel/property-2.jpg';
@@ -86,6 +87,7 @@ export default function AuthPage() {
   };
 
   return (
+    <>
     <div className="min-h-screen w-full relative flex items-center justify-center p-4 md:p-8">
       {carouselImages.map((img, i) => (
         <div
@@ -392,5 +394,8 @@ export default function AuthPage() {
         </div>
       </div>
     </div>
+
+    <SiteFooter />
+  </>
   );
 }

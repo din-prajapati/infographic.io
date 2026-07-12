@@ -14,6 +14,9 @@ import PricingPage from "./pages/PricingPage";
 import LandingPage from "./pages/LandingPage";
 import UsageDashboardPage from "./pages/UsageDashboardPage";
 import AuthCallbackPage from "./pages/AuthCallbackPage";
+import TermsPage from "./pages/legal/TermsPage";
+import PrivacyPage from "./pages/legal/PrivacyPage";
+import RefundPolicyPage from "./pages/legal/RefundPolicyPage";
 import { ErrorBoundary } from "./components/ui/error-boundary";
 import { ThemeProvider } from "./lib/theme-provider";
 
@@ -96,6 +99,9 @@ function Router() {
       <Route path="/account" component={() => <ProtectedRoute component={() => <AppLayoutWithHeader component={AccountPage} />} />} />
       <Route path="/usage" component={() => <ProtectedRoute component={() => <UsageDashboardPage />} />} />
       <Route path="/editor" component={EditorRoute} />
+      <Route path="/terms" component={TermsPage} />
+      <Route path="/privacy" component={PrivacyPage} />
+      <Route path="/refund-policy" component={RefundPolicyPage} />
       <Route path="/" component={HomeRoute} />
       <Route component={() => <div className="min-h-screen flex items-center justify-center"><div>404 - Page Not Found</div></div>} />
     </Switch>
