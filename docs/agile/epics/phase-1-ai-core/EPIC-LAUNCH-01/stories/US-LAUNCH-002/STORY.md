@@ -1,6 +1,6 @@
 # Story Card — US-LAUNCH-002
 
-> **Status:** ✅ Implementation Complete (pre-PR)
+> **Status:** 🟡 Implemented — merged to `main` (ec166fb, 2026-07-12); ACs met, Gate 1 + 7/7 unit tests green. Awaiting M-LAUNCH-01 close (blocked by Phase 0 Task 3 deploy).
 > **Feature:** F-LAUNCH-02 — Transactional Email
 > **Epic:** [EPIC-LAUNCH-01](../../EPIC.md)
 > **Milestone:** [M-LAUNCH-01-public-beta](../../milestones/M-LAUNCH-01-public-beta.md)

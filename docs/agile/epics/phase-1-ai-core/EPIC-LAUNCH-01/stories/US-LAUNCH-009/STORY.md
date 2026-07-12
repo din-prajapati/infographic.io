@@ -1,6 +1,6 @@
 # Story Card — US-LAUNCH-009
 
-> **Status:** 🔲 Not Started
+> **Status:** 🟡 Implemented — merged to `main` (ec166fb, 2026-07-12); ACs met, Gate 1 green. Awaiting M-LAUNCH-01 close (blocked by Phase 0 Task 3 deploy).
 > **Feature:** F-LAUNCH-06 — Environment & Secrets Management
 > **Epic:** [EPIC-LAUNCH-01](../../EPIC.md)
 > **Milestone:** [M-LAUNCH-01-public-beta](../../milestones/M-LAUNCH-01-public-beta.md)

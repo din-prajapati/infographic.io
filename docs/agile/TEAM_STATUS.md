@@ -266,6 +266,8 @@
 | [US-LAUNCH-009](epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-009/STORY.md) | Environment & secrets management convention (docs/config) | M | — |
 | [US-LAUNCH-010](epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-010/STORY.md) | Config hardening — APP_ENV + boot validation + RazorPay guard | M | US-LAUNCH-009 |
 
+> **🟡 US-LAUNCH-009 + US-LAUNCH-002 implemented ahead of milestone** — merged to `main` (`ec166fb`, 2026-07-12) via a parallel-worktree wave (two `code-agent` lanes, disjoint files, two-level squash-merge; Gate 1 + 7/7 email unit tests green). Code is on `main` but **not deployed** — M-LAUNCH-01 stays blocked by Phase 0 Task 3, and `EmailService` isn't wired to a caller until US-LAUNCH-003. Milestone close is deferred to the real M-LAUNCH-01 pass.
+
 ### Then — M-LAUNCH-02 revenue on (prep parallel to EPIC-AI-06; flip gated by AI-06)
 
 | Story | Title | Size | Depends on |
@@ -572,3 +574,43 @@
 <!-- ai-sdlc:session-log -->
 **2026-07-11 18:07** · branch: `main`
   - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-11 18:11** · branch: `main`
+  - Last commit: f627272 docs(agile): log PT-10/PT-11, Task 2 sign-off, add US-LAUNCH-009/010
+
+<!-- ai-sdlc:session-log -->
+**2026-07-11 18:27** · branch: `main`
+  - Last commit: b1d174b docs(testing): make Task 3 go-live fill-in-the-blank (domain decision + prod var worksheet)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-11 18:30** · branch: `main`
+  - Last commit: b1d174b docs(testing): make Task 3 go-live fill-in-the-blank (domain decision + prod var worksheet)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-11 19:32** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-11 19:33** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-12 10:35** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-12 10:39** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-12 10:56** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-12 11:05** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-12 11:22** · branch: `main`
+  - Last commit: ec166fb feat(email): US-LAUNCH-002 — transactional email foundation (EmailService)
