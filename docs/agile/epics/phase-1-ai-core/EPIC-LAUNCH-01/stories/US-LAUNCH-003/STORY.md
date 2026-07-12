@@ -1,6 +1,6 @@
 # Story Card — US-LAUNCH-003
 
-> **Status:** 🔲 Not Started
+> **Status:** 🟡 Implemented — code complete, Gate 1 + 8 unit tests green, merged to `main`. ⚠️ Live DB migration (`PasswordResetToken` table via `prisma db push`) runs on next deploy (`db:deploy`); manual E2E (TC-05) pending. Awaiting M-LAUNCH-01 close (Task 3).
 > **Feature:** F-LAUNCH-02 — Transactional Email
 > **Epic:** [EPIC-LAUNCH-01](../../EPIC.md)
 > **Milestone:** [M-LAUNCH-01-public-beta](../../milestones/M-LAUNCH-01-public-beta.md)
@@ -21,11 +21,11 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC1 [happy-path]:** `POST /api/v1/auth/forgot-password` accepts `{ email }`, always returns 200 with a generic message (no user enumeration), and for existing local-password accounts creates a `PasswordResetToken` row (new Prisma model: hashed token, userId, `expiresAt` = +1h, `usedAt` nullable)
-- [ ] **AC2 [security]:** Reset email sent via `EmailService` containing a link to `/auth/reset?token={rawToken}`; the raw token is never stored (store SHA-256 hash)
-- [ ] **AC3 [error-path]:** `POST /api/v1/auth/reset-password` with `{ token, newPassword }` validates token (exists, unexpired, unused), updates the user's bcrypt hash, marks token used — expired/used/unknown tokens return 400 with a safe message
-- [ ] **AC4 [happy-path]:** Frontend: "Forgot password?" link on the AuthPage login form → `/auth/forgot` (email form) and `/auth/reset` (new-password form) pages, both public routes, with success/error states
-- [ ] **AC5 [edge-case]:** Google-OAuth-only accounts (no local password) receive an email saying "this account signs in with Google" instead of a reset link — still 200 to the caller
+- [x] **AC1 [happy-path]:** `POST /api/v1/auth/forgot-password` accepts `{ email }`, always returns 200 with a generic message (no user enumeration), and for existing local-password accounts creates a `PasswordResetToken` row (new Prisma model: hashed token, userId, `expiresAt` = +1h, `usedAt` nullable)
+- [x] **AC2 [security]:** Reset email sent via `EmailService` containing a link to `/auth/reset?token={rawToken}`; the raw token is never stored (store SHA-256 hash)
+- [x] **AC3 [error-path]:** `POST /api/v1/auth/reset-password` with `{ token, newPassword }` validates token (exists, unexpired, unused), updates the user's bcrypt hash, marks token used — expired/used/unknown tokens return 400 with a safe message
+- [x] **AC4 [happy-path]:** Frontend: "Forgot password?" link on the AuthPage login form → `/auth/forgot` (email form) and `/auth/reset` (new-password form) pages, both public routes, with success/error states
+- [x] **AC5 [edge-case]:** Google-OAuth-only accounts (no local password) receive an email saying "this account signs in with Google" instead of a reset link — still 200 to the caller
 
 ---
 
@@ -95,14 +95,14 @@ Implementation rules:
 
 ## Definition of Done
 
-- [ ] All ACs checked ✅
+- [x] All ACs checked ✅
 - [ ] All test cases run and recorded
-- [ ] `npm run check` passes
-- [ ] `npm run test:unit` passes
+- [x] `npm run check` passes
+- [x] `npm run test:unit` passes
 - [ ] Manual flow verified on `localhost:5000`
 - [ ] PR merged (PR #_____)
 - [ ] No console errors for the changed flow
-- [ ] [TASKS.md](./TASKS.md) task list fully checked
+- [x] [TASKS.md](./TASKS.md) task list fully checked
 
 ---
 

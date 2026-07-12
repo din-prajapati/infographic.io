@@ -75,12 +75,12 @@ cd api && npx vitest run tests/auth/password-reset.spec.ts --reporter=verbose
 
 ## Task Checklist
 
-- [ ] T1 — Prisma model + db push
-- [ ] T2 — auth endpoints
-- [ ] T3 — frontend pages + routes
-- [ ] T4 — unit tests
-- [ ] `npm run check` passes ✅
-- [ ] `npm run test:unit` passes ✅
+- [x] T1 — Prisma model + db push
+- [x] T2 — auth endpoints
+- [x] T3 — frontend pages + routes
+- [x] T4 — unit tests
+- [x] `npm run check` passes ✅
+- [x] `npm run test:unit` passes ✅
 - [ ] Manual test recorded ✅
 - [ ] PR opened with story card as description ✅
 - [ ] STORY.md ACs updated ✅
