@@ -19,7 +19,7 @@ A real estate agent who is a total stranger can sign up on production, generate 
 | 1 | [US-LAUNCH-001](../stories/US-LAUNCH-001/STORY.md) | Legal & policy pages (Terms · Privacy · Refund) | — | 🟡 impl (merged) | 51b0040 |
 | 1 | [US-LAUNCH-002](../stories/US-LAUNCH-002/STORY.md) | Transactional email foundation | — | 🟡 impl (merged) | ec166fb |
 | 1 | [US-LAUNCH-004](../stories/US-LAUNCH-004/STORY.md) | Beta launch mode | — | 🔲 | — |
-| 2 | [US-LAUNCH-003](../stories/US-LAUNCH-003/STORY.md) | Forgot / reset password flow | US-LAUNCH-002 | 🔲 | — |
+| 2 | [US-LAUNCH-003](../stories/US-LAUNCH-003/STORY.md) | Forgot / reset password flow | US-LAUNCH-002 | 🟡 impl (merged) | 1bc7346 |
 | 1 | [US-LAUNCH-009](../stories/US-LAUNCH-009/STORY.md) | Environment & secrets management convention (docs/config) | — | 🟡 impl (merged) | ec166fb |
 | 2 | [US-LAUNCH-010](../stories/US-LAUNCH-010/STORY.md) | Config hardening — APP_ENV + boot validation + RazorPay guard | US-LAUNCH-009 | 🔲 | — |
 

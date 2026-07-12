@@ -266,10 +266,11 @@
 | [US-LAUNCH-009](epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-009/STORY.md) | Environment & secrets management convention (docs/config) | M | — |
 | [US-LAUNCH-010](epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-010/STORY.md) | Config hardening — APP_ENV + boot validation + RazorPay guard | M | US-LAUNCH-009 |
 
-> **🟡 M-LAUNCH-01 is 3/6 implemented ahead of milestone** (all on `main`, 2026-07-12, **none deployed** — milestone still blocked by Phase 0 Task 3):
+> **🟡 M-LAUNCH-01 is 4/6 implemented ahead of milestone** (all on `main`, 2026-07-12, **none deployed** — milestone still blocked by Phase 0 Task 3):
 > - **US-LAUNCH-009 + US-LAUNCH-002** — parallel-worktree wave (`ec166fb`; two `code-agent` lanes, disjoint files, two-level squash-merge; Gate 1 + 7/7 email tests green).
 > - **US-LAUNCH-001** — legal pages + footer landed (`51b0040`) from its stale branch; Gate 1 green.
-> - **US-LAUNCH-003** (password reset) — 🔒 **hardened** (ACs typed, coverage complete); unblocked now 002 is merged. **US-LAUNCH-010** likewise unblocked by 009.
+> - **US-LAUNCH-003** (password reset) — 🟡 **implemented** (`1bc7346`; token model + forgot/reset endpoints + 2 pages + 8 unit tests; Gate 1 green). ⚠️ `PasswordResetToken` table created on next deploy (`db:deploy` → `prisma db push`); manual E2E pending.
+> - Remaining: **US-LAUNCH-010** (config hardening — unblocked by 009) and **US-LAUNCH-004** (beta mode).
 > - Not started: **US-LAUNCH-004** (beta mode). `EmailService` isn't wired to a caller until 003 ships.
 
 ### Then — M-LAUNCH-02 revenue on (prep parallel to EPIC-AI-06; flip gated by AI-06)
@@ -634,3 +635,7 @@
 <!-- ai-sdlc:session-log -->
 **2026-07-12 12:11** · branch: `main`
   - Last commit: 2e05e7c docs(agile): reconcile tracker — US-LAUNCH-009/002 implemented ahead of milestone
+
+<!-- ai-sdlc:session-log -->
+**2026-07-12 12:17** · branch: `main`
+  - Last commit: 6459130 docs(agile): reconcile tracker — US-LAUNCH-001 landed; M-LAUNCH-01 now 3/6
