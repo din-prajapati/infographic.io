@@ -36,3 +36,20 @@ export class LoginDto {
   @IsString()
   password: string;
 }
+
+export class ForgotPasswordDto {
+  @ApiProperty({ example: 'user@example.com' })
+  @IsEmail()
+  email: string;
+}
+
+export class ResetPasswordDto {
+  @ApiProperty({ example: 'a1b2c3d4e5f6...', description: 'Raw reset token from the email link' })
+  @IsString()
+  token: string;
+
+  @ApiProperty({ example: 'newpassword123', minLength: 6 })
+  @IsString()
+  @MinLength(6)
+  newPassword: string;
+}
