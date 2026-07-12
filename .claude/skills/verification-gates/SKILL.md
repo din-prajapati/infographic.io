@@ -132,7 +132,10 @@ npx playwright test e2e/m-design-03-token-foundation.spec.ts --reporter=list
 **Run after any change to a NestJS module, controller, service, Prisma schema, or middleware.**
 
 ```bash
-# Always: health check
+# 4a — MANDATORY for any DI/module/provider change: does the app actually boot?
+npm run smoke:boot
+
+# 4b — Always: health check
 curl http://localhost:3001/api/v1/health
 
 # Changed module: run its unit test
@@ -142,7 +145,14 @@ cd api && npx vitest run tests/<module>/<service>.spec.ts --reporter=verbose
 npm run test:integration
 ```
 
+> **Why 4a is mandatory:** `tsc` + mocked unit tests can BOTH pass while the app
+> crashes at startup — e.g. a service injecting a provider that isn't in the DI
+> graph. That's PT-12: `EmailService`→`ConfigService` left `main` un-bootable with
+> all of tsc + 7 unit tests green. `npm run smoke:boot` boots the real app on a
+> scratch port and is the only gate that catches it.
+
 **Pass criteria:**
+- `npm run smoke:boot` → `✅ BOOT OK` (exit 0)
 - Health endpoint returns `200 { status: 'ok' }`
 - Unit tests for the changed module all green
 - No `404` on previously-working routes

@@ -88,12 +88,23 @@ Commands from `PROJECT_CONTEXT.yaml.gates[id=3].commands`. Typical:
 
 **Run after any change to a backend module, controller, service, schema, or middleware.**
 
-Commands from `PROJECT_CONTEXT.yaml.gates[id=4].commands`. Typical:
+**4a — Boot smoke (MANDATORY for any DI/module/provider change):**
+```bash
+npm run smoke:boot
+```
+Starts the real NestJS app on a scratch port and confirms it boots and serves. This
+catches the class of bug that passes `tsc` **and** mocked unit tests but crashes at
+startup — e.g. a service injecting a provider that isn't in the DI graph (see PT-12:
+`EmailService`→`ConfigService` left `main` un-bootable; tsc + 7 mocked unit tests were
+all green). **A boot crash cannot reach `main` if this gate runs.**
+
+**4b — Endpoint smoke:**
 - Health check: `curl -fsS {api-url}/health`
 - Module unit test
 - Integration tests (if schema changed)
 
 **Pass criteria:**
+- `npm run smoke:boot` → `✅ BOOT OK` (exit 0)
 - Health endpoint returns success
 - Unit tests for changed module pass
 - No `404` on previously-working routes

@@ -164,6 +164,8 @@
 > **PT-10 ✅ Fixed & verified on staging 2026-07-11** ([PR #15](https://github.com/din-prajapati/infographic.io/pull/15) `6494d88`, direct QA fix — no orion story). The *error-path* twin: a failed generation stayed frozen on "Generating…" with no error (found in Task 2 I-10). `handleGenerationFailed` now rewrites the bubble to a styled red `Error: <message>` + fails closed on poll timeout — `AIChatBox.tsx`.
 >
 > **PT-11 ✅ Fixed 2026-07-11** ([PR #15](https://github.com/din-prajapati/infographic.io/pull/15), direct QA fix — no orion story). Model-opacity (Rule #5): `/usage` showed raw `ideogram-4`. New `client/src/lib/modelLabels.ts` maps ids → friendly tier labels; wired into `UsageDashboardPage.tsx` + `UsageScreen.tsx`.
+>
+> **PT-12 ✅ Fixed 2026-07-12** (`5b38ebd`). **NestJS API un-bootable on `main`** — `EmailService` (US-LAUNCH-002, parallel wave) injected `ConfigService` (not in this app's DI graph) → boot crash since `ec166fb`; passed `tsc` + 7 mocked unit tests but crashed at real startup. Fixed to read `process.env`. **Prevention:** new `npm run smoke:boot` gate (Gate 4a) — boots the real app so a "compiles + unit-passes but won't start" bug can't reach `main`. Found during US-LAUNCH-003 Path-A walkthrough; concrete proof of the wave's skipped runtime/test-story gate.
 
 ### Done — Phase 0 (EPIC-AI-01)
 | Area | Status |
@@ -639,3 +641,39 @@
 <!-- ai-sdlc:session-log -->
 **2026-07-12 12:17** · branch: `main`
   - Last commit: 6459130 docs(agile): reconcile tracker — US-LAUNCH-001 landed; M-LAUNCH-01 now 3/6
+
+<!-- ai-sdlc:session-log -->
+**2026-07-12 13:57** · branch: `main`
+  - Last commit: 2e1a361 docs(agile): US-LAUNCH-003 implemented — M-LAUNCH-01 now 4/6
+
+<!-- ai-sdlc:session-log -->
+**2026-07-12 14:01** · branch: `main`
+  - Last commit: 2e1a361 docs(agile): US-LAUNCH-003 implemented — M-LAUNCH-01 now 4/6
+
+<!-- ai-sdlc:session-log -->
+**2026-07-12 14:16** · branch: `main`
+  - Last commit: fc17bd2 test(launch): harden 001/002/004/009 (AC types) + E2E for legal pages
+
+<!-- ai-sdlc:session-log -->
+**2026-07-12 14:30** · branch: `main`
+  - Last commit: fc17bd2 test(launch): harden 001/002/004/009 (AC types) + E2E for legal pages
+
+<!-- ai-sdlc:session-log -->
+**2026-07-12 16:02** · branch: `main`
+  - Last commit: 25b8f3b test(auth): E2E for US-LAUNCH-003 password-reset pages (4 run + 1 skip-until-deploy)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-12 16:20** · branch: `main`
+  - Last commit: 25b8f3b test(auth): E2E for US-LAUNCH-003 password-reset pages (4 run + 1 skip-until-deploy)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-12 16:35** · branch: `main`
+  - Last commit: 25b8f3b test(auth): E2E for US-LAUNCH-003 password-reset pages (4 run + 1 skip-until-deploy)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-12 16:57** · branch: `main`
+  - Last commit: 25b8f3b test(auth): E2E for US-LAUNCH-003 password-reset pages (4 run + 1 skip-until-deploy)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-12 17:13** · branch: `main`
+  - Last commit: 48cefbe docs(auth): US-LAUNCH-003 TC-05 verified live (full reset flow)

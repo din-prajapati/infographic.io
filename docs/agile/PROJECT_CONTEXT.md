@@ -242,4 +242,6 @@ npm run verify:payment-prereqs  # Payment config smoke test
 
 ---
 
-*Last updated: 2026-07-11 (PT-10/PT-11 logged from Task 2 QA fixes, PR #15; Task 2 signed off; added F-LAUNCH-06 / US-LAUNCH-009/010) | Maintained by: Dinesh + Claude Code*
+| PT-12 | ✅ Fixed 2026-07-12 (`5b38ebd`) | **NestJS API un-bootable on `main`.** `EmailService` (US-LAUNCH-002, built in the parallel wave) injected `ConfigService`, which is **not provided** in this app's DI graph (the codebase reads `process.env` directly — 0 `ConfigService` usages). At real startup Nest threw `Cannot read properties of undefined (reading 'get')` and the API failed to boot — `main` had been un-bootable since the wave merged (`ec166fb`), undetected because the API was never restarted. **Passed `tsc` + 7 mocked unit tests but crashed at runtime** — the exact gap a boot/runtime check catches. **Fix:** `EmailService` reads `process.env` directly; test sets env instead of mocking config. **Prevention:** added `npm run smoke:boot` (`scripts/smoke-boot.mjs`) — boots the real app on a scratch port — and made it a mandatory Gate 4a for DI/module changes (see `verification-gates`). Found while running US-LAUNCH-003 Path-A manual walkthrough. |
+
+*Last updated: 2026-07-12 (PT-12 boot-crash fix + smoke:boot gate added; US-LAUNCH-001/002/004/009 hardened, 003 verified live) | Maintained by: Dinesh + Claude Code*
