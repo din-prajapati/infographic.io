@@ -1,5 +1,7 @@
 # Story Card — US-LAUNCH-010
 
+> ⚠️ **Blocked by:** [Pre-requisite-story.md](./Pre-requisite-story.md) — do NOT run `/implement-story` until its P0–P2 remediation + sign-off checklist are complete. A naive implementation will brick the live staging boot (fail-closed validation + RazorPay guard). That doc is the Definition of Ready.
+>
 > **Status:** 🔲 Not Started
 > **Feature:** F-LAUNCH-06 — Environment & Secrets Management
 > **Epic:** [EPIC-LAUNCH-01](../../EPIC.md)
