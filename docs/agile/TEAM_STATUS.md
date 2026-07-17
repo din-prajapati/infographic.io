@@ -677,3 +677,203 @@
 <!-- ai-sdlc:session-log -->
 **2026-07-12 17:13** · branch: `main`
   - Last commit: 48cefbe docs(auth): US-LAUNCH-003 TC-05 verified live (full reset flow)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-12 17:20** · branch: `main`
+  - Last commit: 04a91bd chore(gates): add boot smoke-check + log PT-12 (prevent un-bootable main)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-12 17:22** · branch: `main`
+  - Last commit: 04a91bd chore(gates): add boot smoke-check + log PT-12 (prevent un-bootable main)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-12 17:29** · branch: `main`
+  - Last commit: 04a91bd chore(gates): add boot smoke-check + log PT-12 (prevent un-bootable main)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-13 08:36** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-13 08:46** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-13 10:51** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-13 11:01** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-13 11:08** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-13 12:16** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-13 12:34** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-13 12:57** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-13 18:00** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-13 18:03** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-13 18:48** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-13 19:09** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-13 19:33** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-13 19:53** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-14 10:43** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-14 13:07** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-14 13:37** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-14 13:41** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-14 16:17** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-14 16:25** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-14 16:31** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-14 22:04** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-14 22:14** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-15 12:16** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-15 15:51** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-15 15:54** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-15 16:01** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-15 16:02** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-15 16:07** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-16 18:57** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-16 18:59** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-16 19:01** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-16 19:06** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-16 19:08** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-16 19:10** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-16 19:26** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-16 19:31** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-16 19:32** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-17 12:45** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-17 12:47** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-17 12:49** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-17 17:14** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-17 17:27** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-17 17:31** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-17 17:35** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-17 17:37** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-17 17:56** · branch: `main`
+  - Last commit: (no commits this session)

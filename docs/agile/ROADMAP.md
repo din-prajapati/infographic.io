@@ -2,7 +2,7 @@
 
 > **Created:** 2026-07-07, from the launch-readiness assessment (code done, operations not; charging irresponsible until real-photo pipeline ships).
 > **Governing principle:** Two launch moments, not one. **Beta live** (free, disclosed limitations) comes as fast as possible; **revenue on** waits for EPIC-AI-06 — you cannot sell real-estate marketing that can't depict the real estate.
-> **See also:** [PHASE_TRACKER.md](PHASE_TRACKER.md) (executive view) · [AGILE_INDEX.md](AGILE_INDEX.md) (epic registry)
+> **See also:** [PHASE_TRACKER.md](PHASE_TRACKER.md) (executive view) · [AGILE_INDEX.md](AGILE_INDEX.md) (epic registry) · [LAUNCH_TIMELINE.md](LAUNCH_TIMELINE.md) (dated timeline: marketable beta in 1–2 days · deploy maturity ~2 wks parallel · revenue ~3–4 wks)
 
 ---
 
