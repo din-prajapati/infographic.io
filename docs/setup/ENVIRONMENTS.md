@@ -92,6 +92,15 @@
 
 ---
 
+## 6a. Email — Resend (transactional)
+
+| Variable | Local | Staging | Production | Per-env / Shared | Source | Notes |
+|----------|-------|---------|------------|-----------------|--------|-------|
+| `RESEND_API_KEY` | empty (console fallback) | `re_...` | `re_...` | per-env | Resend Dashboard → API Keys | **Optional.** When absent, `EmailService` logs the full message to console and never crashes (US-LAUNCH-002 AC3). Sending to real users requires the verified domain below. |
+| `EMAIL_FROM` | empty (defaults to `noreply@example.com`) | `Buildographic <noreply@buildographic.com>` | `Buildographic <noreply@buildographic.com>` | shared | you choose; domain must be verified in Resend | Sending domain `buildographic.com` verified in Resend via SPF/DKIM DNS records (purchased 2026-07-17). Until verification, Resend only delivers from `onboarding@resend.dev` to the account owner's own inbox. |
+
+---
+
 ## 7. Payments — RazorPay
 
 | Variable | Local | Staging | Production | Per-env / Shared | Source | Notes |
