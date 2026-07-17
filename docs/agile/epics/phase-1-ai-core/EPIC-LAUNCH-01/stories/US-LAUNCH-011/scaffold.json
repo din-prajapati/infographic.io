@@ -1,0 +1,21 @@
+{
+  "story": "US-LAUNCH-011",
+  "touches": {
+    "layers": ["frontend", "backend", "testing"],
+    "techs": ["react", "nestjs", "vitest", "playwright"]
+  },
+  "rules_loaded": [
+    "AGILE.md",
+    "DOMAIN.md",
+    "SECURITY.md",
+    "OBSERVABILITY.md",
+    ".orion/rules/frontend/RULES.md",
+    ".orion/rules/frontend/react/RULES.md",
+    ".orion/rules/backend/RULES.md",
+    ".orion/rules/backend/nestjs/RULES.md",
+    ".orion/rules/testing/RULES.md",
+    ".orion/rules/testing/vitest/RULES.md",
+    ".orion/rules/testing/playwright/RULES.md"
+  ],
+  "_notes": "Written by /new-story from STORY.md 'Primary files touched'. Agents load only files listed in rules_loaded. Empty arrays default to project-wide scaffold."
+}

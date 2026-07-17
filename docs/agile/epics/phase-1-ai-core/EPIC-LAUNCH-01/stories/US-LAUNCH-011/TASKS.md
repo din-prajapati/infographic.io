@@ -1,0 +1,151 @@
+# PR Task List — US-LAUNCH-011
+
+> **Story:** [STORY.md](./STORY.md)
+> **Branch:** `feat/launch/us-launch-011-rebrand-buildographic`
+> **PR:** #_____ (fill when opened)
+> **Linear:** LIN-XXX
+> **Type:** feat
+
+---
+
+## Three Pillars Pre-flight (check before starting AI session)
+
+- [x] **Brain** — STORY.md is filled: ACs written, out-of-scope listed, "AI Implementation Prompt" ready
+- [x] **Muscle** — This TASKS.md has file list + ordered tasks + exact test commands
+- [ ] **Map** — [ARCHITECTURE.mmd](../../ARCHITECTURE.mmd) exists for this epic (AI has spatial context)
+- [ ] **Env** — [ENV.yaml](../../ENV.yaml) loaded (paths not guessed)
+
+> If any pillar is missing, fill it before opening the AI chat. Incomplete context = wasted session.
+
+---
+
+## PR Scope Summary
+
+**One-liner:** Rename the product on all user-facing surfaces from InfographicAI to Buildographic (42 occurrences, 12 files) — strings only, no behavior change.
+```
+feat(brand): rebrand user-facing surfaces to Buildographic — US-LAUNCH-011
+```
+
+---
+
+## Task Breakdown
+
+### T1 — Marketing surfaces + app shell
+**Files:** `client/index.html` (1) · `client/src/pages/LandingPage.tsx` (10) · `client/src/pages/PricingPage.tsx` (8) · `client/src/components/SiteFooter.tsx` (1)
+**AC(s) covered:** AC1
+**Changes:** replace `InfographicAI` → `Buildographic` (counts above); title becomes `Buildographic - AI Infographic Generator`.
+
+---
+
+### T2 — Auth surfaces
+**Files:** `client/src/pages/AuthPage.tsx` (2 — header span + signup toast) · `client/src/pages/auth/ForgotPasswordPage.tsx` (1) · `client/src/pages/auth/ResetPasswordPage.tsx` (1)
+**AC(s) covered:** AC1
+
+---
+
+### T3 — Legal pages (name-only diff)
+**Files:** `client/src/pages/legal/TermsPage.tsx` (6) · `client/src/pages/legal/PrivacyPage.tsx` (5) · `client/src/pages/legal/RefundPolicyPage.tsx` (4)
+**AC(s) covered:** AC3
+**Rule:** the diff on these three files must contain ONLY the name substitution — no wording, punctuation, or structure edits.
+
+---
+
+### T4 — Backend strings: email subjects + Swagger title
+**Files:** `api/src/modules/auth/services/auth.service.ts` (`:257` → `Signing in to Buildographic`, `:281` → `Reset your Buildographic password`) · `api/src/main.ts` (`:93` → `Buildographic API`)
+**AC(s) covered:** AC2, AC4
+
+---
+
+### T5 — Tests: new brand as contract
+**Files:** password-reset unit spec under `api/tests/` — assert new email subject; legal-pages E2E spec under `e2e/` — assert "Buildographic" header brand + © line on all 3 routes *(confirm exact filenames at implementation start; both exist from US-LAUNCH-001/003 work)*
+**AC(s) covered:** AC2, AC4
+
+---
+
+## File-to-Task Mapping
+
+| File | Task(s) | AC(s) | Notes |
+|------|---------|-------|-------|
+| `client/index.html` | T1 | AC1 | 1 occurrence |
+| `client/src/pages/LandingPage.tsx` | T1 | AC1 | 10 |
+| `client/src/pages/PricingPage.tsx` | T1 | AC1 | 8 |
+| `client/src/components/SiteFooter.tsx` | T1 | AC1 | 1 |
+| `client/src/pages/AuthPage.tsx` | T2 | AC1 | 2 |
+| `client/src/pages/auth/ForgotPasswordPage.tsx` | T2 | AC1 | 1 |
+| `client/src/pages/auth/ResetPasswordPage.tsx` | T2 | AC1 | 1 |
+| `client/src/pages/legal/TermsPage.tsx` | T3 | AC3 | 6 — name-only diff |
+| `client/src/pages/legal/PrivacyPage.tsx` | T3 | AC3 | 5 — name-only diff |
+| `client/src/pages/legal/RefundPolicyPage.tsx` | T3 | AC3 | 4 — name-only diff |
+| `api/src/modules/auth/services/auth.service.ts` | T4 | AC2 | 2 email subjects |
+| `api/src/main.ts` | T4 | AC4 | Swagger title |
+| `api/tests/…password-reset….spec.ts` | T5 | AC2 | update subject assertion |
+| `e2e/…legal….spec.ts` | T5 | AC4 | add brand assertions |
+
+---
+
+## Exact Test Commands
+
+```bash
+# 1. TypeScript check — must pass before PR
+npm run check
+
+# 2. Unit tests — must pass before PR
+npm run test:unit
+
+# 3. E2E — legal pages + auth pages suites
+npm run test:e2e -- --grep "legal|password"
+
+# 4. Leftover-brand sweep (should return ONLY out-of-scope internal files)
+grep -rn "InfographicAI" client/src client/index.html api/src
+
+# 5. Manual flow
+# Open localhost:5000 → sweep /, /pricing, /auth (+ signup toast), /forgot-password,
+# /reset-password, /terms, /privacy, /refund-policy — zero visible "InfographicAI"
+```
+
+---
+
+## Task Checklist
+
+- [ ] T1 — Marketing + shell (index.html, LandingPage, PricingPage, SiteFooter)
+- [ ] T2 — Auth surfaces (AuthPage, ForgotPasswordPage, ResetPasswordPage)
+- [ ] T3 — Legal pages, name-only diff (Terms, Privacy, RefundPolicy)
+- [ ] T4 — Email subjects + Swagger title (auth.service.ts, main.ts)
+- [ ] T5 — Tests updated/added (unit subject + E2E brand)
+- [ ] `npm run check` passes ✅
+- [ ] `npm run test:unit` passes ✅
+- [ ] Manual test: TC-LAUNCH-011-04 sweep ✅
+- [ ] PR opened with story card as description ✅
+- [ ] STORY.md ACs updated ✅
+
+---
+
+## Test Is Truth
+
+> **Rule (non-negotiable):** Do not weaken, skip, or modify a failing test to make it pass. Fix the code. Do not open a PR until all commands in "Exact Test Commands" pass or are explicitly marked N/A with a reason.
+>
+> Note for this story: changing existing test expectations from "InfographicAI" to "Buildographic" is a **legitimate contract change** (the story redefines the brand contract) — but only for brand-string assertions listed in T5. Any other failing test = fix the code.
+
+---
+
+## Anti-Patterns to Avoid in This Story
+
+- Do NOT touch `VITE_STORAGE_PREFIX`, `brainwave_*` keys, or anything in `client/src/lib/storage.ts` — out of scope (needs data migration).
+- Do NOT rename internal identifiers, docs, CLAUDE.md, PROJECT_CONTEXT.yaml, package.json — user-facing strings only.
+- Do NOT "improve" legal wording, fix the hardcoded copyright year, or reflow copy while replacing names — name-only diffs.
+- Do NOT do a blind repo-wide find-and-replace — the 12-file list is the scope lock.
+
+---
+
+## PR Open Command
+
+```bash
+gh pr create \
+  --title "[US-LAUNCH-011] Rebrand user-facing surfaces to Buildographic" \
+  --label "epic:launch,milestone:m-launch-01,type:feat,priority:P1" \
+  --body "$(cat docs/agile/epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-011/STORY.md)"
+```
+
+---
+
+*Tasks created: 2026-07-17*

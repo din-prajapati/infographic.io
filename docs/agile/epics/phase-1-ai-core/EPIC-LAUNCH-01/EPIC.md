@@ -44,6 +44,7 @@
 | [US-LAUNCH-008](stories/US-LAUNCH-008/STORY.md) | Metering policy guard (1 generation = 1 credit) | M-LAUNCH-02 | S | 🔲 | — |
 | [US-LAUNCH-009](stories/US-LAUNCH-009/STORY.md) | Environment & secrets management convention (docs/config) | M-LAUNCH-01 | M | 🟡 impl | ec166fb |
 | [US-LAUNCH-010](stories/US-LAUNCH-010/STORY.md) | Config hardening — APP_ENV + boot validation + RazorPay guard | M-LAUNCH-01 | M | 🔲 | — |
+| [US-LAUNCH-011](stories/US-LAUNCH-011/STORY.md) | Rebrand user-facing surfaces to Buildographic | M-LAUNCH-01 | S | 🔲 | — |
 
 ---
 
@@ -57,6 +58,7 @@
 | F-LAUNCH-04 | Payments Go-Live | US-LAUNCH-005, US-LAUNCH-007 |
 | F-LAUNCH-05 | Metering Policy | US-LAUNCH-008 |
 | F-LAUNCH-06 | Environment & Secrets Management | US-LAUNCH-009, US-LAUNCH-010 |
+| F-LAUNCH-07 | Brand Identity (Buildographic) | US-LAUNCH-011 |
 
 ---
 

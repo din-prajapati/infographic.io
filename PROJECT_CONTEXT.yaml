@@ -66,7 +66,7 @@ counters:
   MOBILE: { epic: 2, feature: 1, story: 1 }
   KIT: { epic: 2, feature: 5, story: 7 }
   GEN: { epic: 2, feature: 3, story: 3 }
-  LAUNCH: { epic: 2, feature: 6, story: 9 }
+  LAUNCH: { epic: 2, feature: 8, story: 12 } # reconciled 2026-07-17: F-LAUNCH-07 + US-LAUNCH-011 created; counters were stale (009/010 + F-06 already existed)
 
 phases:
   - id: 0
