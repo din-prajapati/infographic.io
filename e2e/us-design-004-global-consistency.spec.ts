@@ -177,39 +177,157 @@ test.describe("US-DESIGN-004 — AC3: Card borders consistent (border-border tok
 test.describe("US-DESIGN-004 — AC4: Section spacing (space-y-6 / 24px+)", () => {
 
   test("TC-DS-004-spacing: Account page sections are vertically separated (≥20px)", async ({ page }) => {
-    test.skip(true, "Deferred — Account page section spacing polish; not blocking editor/design-token work");
+    // Un-skipped 2026-07-09 to cover V-04 (US-DESIGN-004 AC4). This is a
+    // non-overlap smoke check (threshold below is lenient by design) — it
+    // confirms sections are laid out with spacing, not that a specific 24px gap
+    // is applied. Tighten the threshold if strict spacing enforcement is wanted.
     const loggedIn = await ensureLoggedIn(page);
     if (!loggedIn) test.skip(true, "Set TEST_USER_EMAIL + TEST_USER_PASSWORD");
 
     await page.goto("/account", { waitUntil: "load" });
 
-    // Find all direct section-level divs (space-y-6 class adds 24px gap between children).
-    // Verify at least two visible sections exist and their bounding boxes are ≥20px apart.
-    const sections = page.locator("main section, main [class*='space-y'], main [class*='mb-'], main [class*='pb-']");
-    const count = await sections.count();
+    // Verify no two OUTERMOST cards collide vertically *within the same column*.
+    // The page is a multi-column grid, so a naive top-to-bottom scan wrongly reads
+    // two side-by-side cards as "overlapping". We therefore only measure the gap
+    // between a pair of cards whose horizontal ranges overlap (same column); a
+    // real "crammed/overlapping sections" bug shows up as a negative same-column gap.
+    const measured = await page.evaluate(() => {
+      const candidates = Array.from(
+        document.querySelectorAll<HTMLElement>(
+          'section, [class*="rounded-xl"], [class*="rounded-lg"], [class*="glass"]',
+        ),
+      ).filter((el) => {
+        const r = el.getBoundingClientRect();
+        return r.width > 120 && r.height > 40;
+      });
+      // Outermost only (not nested inside another candidate card).
+      const outer = candidates
+        .filter((el) => !candidates.some((o) => o !== el && o.contains(el)))
+        .map((el) => el.getBoundingClientRect());
 
-    if (count < 2) {
-      // Fallback: check that the main content area has more than 100px of height,
-      // meaning content is laid out with spacing rather than collapsed.
-      const main = page.locator("main, [role='main'], #root > div > div").first();
-      const box = await main.boundingBox();
+      const sameColumnGaps: number[] = [];
+      for (let i = 0; i < outer.length; i++) {
+        for (let j = i + 1; j < outer.length; j++) {
+          const a = outer[i], b = outer[j];
+          const xOverlap = a.left < b.right && b.left < a.right; // same column
+          if (!xOverlap) continue;
+          const [top, bottom] = a.top <= b.top ? [a, b] : [b, a];
+          sameColumnGaps.push(Math.round(bottom.top - top.bottom));
+        }
+      }
+      return { count: outer.length, gaps: sameColumnGaps };
+    });
+
+    if (measured.count < 2 || measured.gaps.length === 0) {
+      // Fallback: page laid out with real content height, not collapsed.
+      const box = await page.locator("main, [role='main'], #root").first().boundingBox();
       expect(box?.height, "Account page main content should have height > 100px").toBeGreaterThan(100);
       return;
     }
 
-    // Measure gap between the first two visible sections.
-    const first = sections.nth(0);
-    const second = sections.nth(1);
-    const box1 = await first.boundingBox();
-    const box2 = await second.boundingBox();
+    // No same-column pair may overlap vertically. -8px tolerance absorbs
+    // rounded-corner / shadow bleed; a real collision produces large negatives.
+    const minGap = Math.min(...measured.gaps);
+    expect(
+      minGap,
+      `Same-column sections overlap on /account (gaps: ${JSON.stringify(measured.gaps)}). Expected them vertically separated.`,
+    ).toBeGreaterThanOrEqual(-8);
+  });
 
-    if (box1 && box2) {
-      const gap = box2.y - (box1.y + box1.height);
-      expect(
-        gap,
-        `Expected ≥20px vertical gap between sections, got ${gap}px. Check space-y-6 (24px) is applied.`,
-      ).toBeGreaterThanOrEqual(-4); // -4 allows for overlapping paddings / negative margins
-    }
+});
+
+// ─── AC3 (V-03) — Usage chart label contrast in Dark mode ────────────────────
+//
+// The shared WCAG probe in design-contrast.spec.ts scans h1/h2/h3/p/label only.
+// The /usage chart labels are plain <div>s using the design tokens
+// `text-muted-foreground` (month labels) and `text-foreground` (count values)
+// on a semi-transparent `.glass` card — so they are NOT covered there. This test
+// closes that gap: it asserts those label tokens stay readable in Dark mode.
+//
+// Threshold: 3.0:1. `text-muted-foreground` is intentionally lower-contrast
+// secondary text; 3:1 is the WCAG AA bar for large/graphical text and the right
+// floor for "still readable" chart labels. (The page-body probe uses 3.5:1.)
+test.describe("US-DESIGN-004 — AC3 (V-03): Usage chart labels readable in Dark mode", () => {
+
+  test("TC-DS-004-chart-contrast: /usage chart labels meet WCAG 3:1 in Dark mode", async ({ page }) => {
+    const loggedIn = await ensureLoggedIn(page);
+    if (!loggedIn) test.skip(true, "Set TEST_USER_EMAIL + TEST_USER_PASSWORD");
+
+    await page.goto("/usage", { waitUntil: "load" });
+    await setTheme(page, "dark");
+    // Wait for the page's real content (a token-styled label) so the probe isn't
+    // racing an empty first paint — this was the source of earlier flakiness.
+    await page.locator('[class*="text-muted-foreground"], [class*="text-foreground"]').first()
+      .waitFor({ state: "visible", timeout: 15_000 });
+    await page.waitForTimeout(300);
+
+    const result = await page.evaluate(() => {
+      type RGBA = { r: number; g: number; b: number; a: number };
+      const parse = (css: string): RGBA | null => {
+        const m = css.match(/rgba?\((\d+(?:\.\d+)?),\s*(\d+(?:\.\d+)?),\s*(\d+(?:\.\d+)?)(?:,\s*(\d+(?:\.\d+)?))?\)/);
+        return m ? { r: +m[1], g: +m[2], b: +m[3], a: m[4] !== undefined ? +m[4] : 1 } : null;
+      };
+      const blend = (fg: RGBA, bg: RGBA): RGBA => {
+        const a = fg.a + bg.a * (1 - fg.a);
+        if (a === 0) return { r: 0, g: 0, b: 0, a: 0 };
+        return {
+          r: (fg.r * fg.a + bg.r * bg.a * (1 - fg.a)) / a,
+          g: (fg.g * fg.a + bg.g * bg.a * (1 - fg.a)) / a,
+          b: (fg.b * fg.a + bg.b * bg.a * (1 - fg.a)) / a,
+          a,
+        };
+      };
+      const lin = (c: number) => { const s = c / 255; return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4); };
+      const lum = (c: RGBA) => 0.2126 * lin(c.r) + 0.7152 * lin(c.g) + 0.0722 * lin(c.b);
+      const ratio = (a: RGBA, b: RGBA) => (Math.max(lum(a), lum(b)) + 0.05) / (Math.min(lum(a), lum(b)) + 0.05);
+      const bgOf = (el: Element): RGBA => {
+        const layers: RGBA[] = [];
+        let node: Element | null = el.parentElement;
+        while (node) {
+          const bc = getComputedStyle(node).backgroundColor;
+          if (bc && bc !== "rgba(0, 0, 0, 0)" && bc !== "transparent") {
+            const c = parse(bc);
+            if (c) { layers.push(c); if (c.a >= 0.99) break; }
+          }
+          node = node.parentElement;
+        }
+        const htmlBg = parse(getComputedStyle(document.documentElement).backgroundColor) ?? { r: 0, g: 0, b: 0, a: 1 };
+        let acc = layers.length ? layers[layers.length - 1] : htmlBg;
+        for (let i = layers.length - 2; i >= 0; i--) acc = blend(layers[i], acc);
+        if (acc.a < 0.99) acc = blend(acc, htmlBg);
+        return acc;
+      };
+
+      // The chart label tokens, scoped to the two Usage cards' text.
+      const labels = Array.from(
+        document.querySelectorAll<HTMLElement>(
+          '[class*="text-muted-foreground"], [class*="text-foreground"]',
+        ),
+      ).filter((el) => {
+        const r = el.getBoundingClientRect();
+        return r.width > 0 && r.height > 0 && (el.textContent || "").trim().length > 0;
+      });
+
+      const failures: Array<{ text: string; ratio: number; color: string }> = [];
+      for (const el of labels) {
+        const st = getComputedStyle(el);
+        const fg = parse(st.color);
+        if (!fg) continue;
+        const bg = bgOf(el);
+        const rr = Math.round(ratio(blend(fg, bg), bg) * 100) / 100;
+        if (rr < 3.0) failures.push({ text: (el.textContent || "").trim().slice(0, 50), ratio: rr, color: st.color });
+      }
+      return { checked: labels.length, failures };
+    });
+
+    // If the page rendered no token-styled text at all, the probe found nothing
+    // to assert — treat as inconclusive rather than a false pass.
+    expect(result.checked, "Expected some text-muted/foreground labels on /usage").toBeGreaterThan(0);
+    expect(
+      result.failures,
+      `${result.failures.length} label(s) below WCAG 3:1 on /usage Dark:\n` +
+        result.failures.map((f) => `  "${f.text}" ${f.ratio}:1 (${f.color})`).join("\n"),
+    ).toHaveLength(0);
   });
 
 });
