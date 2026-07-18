@@ -1,6 +1,6 @@
 # Story Card — US-LAUNCH-011
 
-> **Status:** 🔲 Not Started
+> **Status:** 🟡 impl
 > **Feature:** F-LAUNCH-07 — Brand Identity
 > **Epic:** [EPIC-LAUNCH-01](../../EPIC.md)
 > **Milestone:** [M-LAUNCH-01-public-beta](../../milestones/M-LAUNCH-01-public-beta.md)
@@ -21,10 +21,10 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC1 [happy-path]:** The brand renders as **"Buildographic"** on every user-visible app surface: `client/index.html:7` `<title>` reads `Buildographic - AI Infographic Generator`; the header/footer brand spans and body copy in `client/src/pages/LandingPage.tsx` (10 occurrences), `client/src/pages/PricingPage.tsx` (8), `client/src/pages/AuthPage.tsx` (header + signup toast), `client/src/pages/auth/ForgotPasswordPage.tsx:30`, `client/src/pages/auth/ResetPasswordPage.tsx:40`, and `client/src/components/SiteFooter.tsx:25` contain zero `InfographicAI` occurrences (verify: `grep -ri "infographicai" client/src client/index.html` over these files returns empty).
-- [ ] **AC2 [error-path]:** With `RESEND_API_KEY` unset (EmailService console-fallback mode), triggering forgot-password logs an email whose subject is `Reset your Buildographic password` — the rebrand holds even on the degraded email path. Subjects at `api/src/modules/auth/services/auth.service.ts:257` (`Signing in to Buildographic`) and `:281` are updated; unit test asserts the new subject string.
-- [ ] **AC3 [edge-case]:** All three legal pages (`client/src/pages/legal/TermsPage.tsx` — 6 occurrences, `PrivacyPage.tsx` — 5, `RefundPolicyPage.tsx` — 4) say Buildographic in header brand, body text, and `©` line, with **no other change to legal wording** — the diff on these files touches only the product name.
-- [ ] **AC4 [edge-case]:** Developer-visible but public surfaces follow: Swagger docs title at `api/src/main.ts:93` reads `Buildographic API`. New assertions added to the existing legal-pages E2E spec (brand text on `/terms`, `/privacy`, `/refund-policy`) pass; `npm run check` and `npm run test:unit` pass.
+- [x] **AC1 [happy-path]:** The brand renders as **"Buildographic"** on every user-visible app surface: `client/index.html:7` `<title>` reads `Buildographic - AI Infographic Generator`; the header/footer brand spans and body copy in `client/src/pages/LandingPage.tsx` (10 occurrences), `client/src/pages/PricingPage.tsx` (8), `client/src/pages/AuthPage.tsx` (header + signup toast), `client/src/pages/auth/ForgotPasswordPage.tsx:30`, `client/src/pages/auth/ResetPasswordPage.tsx:40`, and `client/src/components/SiteFooter.tsx:25` contain zero `InfographicAI` occurrences (verify: `grep -ri "infographicai" client/src client/index.html` over these files returns empty).
+- [x] **AC2 [error-path]:** With `RESEND_API_KEY` unset (EmailService console-fallback mode), triggering forgot-password logs an email whose subject is `Reset your Buildographic password` — the rebrand holds even on the degraded email path. Subjects at `api/src/modules/auth/services/auth.service.ts:257` (`Signing in to Buildographic`) and `:281` are updated; unit test asserts the new subject string.
+- [x] **AC3 [edge-case]:** All three legal pages (`client/src/pages/legal/TermsPage.tsx` — 6 occurrences, `PrivacyPage.tsx` — 5, `RefundPolicyPage.tsx` — 4) say Buildographic in header brand, body text, and `©` line, with **no other change to legal wording** — the diff on these files touches only the product name.
+- [x] **AC4 [edge-case]:** Developer-visible but public surfaces follow: Swagger docs title at `api/src/main.ts:93` reads `Buildographic API`. New assertions added to the existing legal-pages E2E spec (brand text on `/terms`, `/privacy`, `/refund-policy`) pass; `npm run check` and `npm run test:unit` pass.
 
 ---
 
@@ -55,8 +55,8 @@
   - `client/src/pages/legal/RefundPolicyPage.tsx`
   - `api/src/main.ts`
   - `api/src/modules/auth/services/auth.service.ts`
-  - `api/tests/auth/password-reset.spec.ts` (subject assertion) `(TBC — confirm exact spec filename)`
-  - `e2e/us-launch-001-legal-pages.spec.ts` (brand assertions) `(TBC — confirm exact spec filename)`
+  - `api/tests/auth/password-reset.spec.ts` (subject assertion)
+  - `e2e/us-launch-001-legal-pages.spec.ts` (brand assertions)
 
 ---
 

@@ -12,8 +12,8 @@
 
 - [x] **Brain** — STORY.md is filled: ACs written, out-of-scope listed, "AI Implementation Prompt" ready
 - [x] **Muscle** — This TASKS.md has file list + ordered tasks + exact test commands
-- [ ] **Map** — [ARCHITECTURE.mmd](../../ARCHITECTURE.mmd) exists for this epic (AI has spatial context)
-- [ ] **Env** — [ENV.yaml](../../ENV.yaml) loaded (paths not guessed)
+- [x] **Map** — [ARCHITECTURE.mmd](../../ARCHITECTURE.mmd) exists for this epic (AI has spatial context)
+- [x] **Env** — [ENV.yaml](../../ENV.yaml) loaded (paths not guessed)
 
 > If any pillar is missing, fill it before opening the AI chat. Incomplete context = wasted session.
 
@@ -107,16 +107,16 @@ grep -rn "InfographicAI" client/src client/index.html api/src
 
 ## Task Checklist
 
-- [ ] T1 — Marketing + shell (index.html, LandingPage, PricingPage, SiteFooter)
-- [ ] T2 — Auth surfaces (AuthPage, ForgotPasswordPage, ResetPasswordPage)
-- [ ] T3 — Legal pages, name-only diff (Terms, Privacy, RefundPolicy)
-- [ ] T4 — Email subjects + Swagger title (auth.service.ts, main.ts)
-- [ ] T5 — Tests updated/added (unit subject + E2E brand)
-- [ ] `npm run check` passes ✅
-- [ ] `npm run test:unit` passes ✅
+- [x] T1 — Marketing + shell (index.html, LandingPage, PricingPage, SiteFooter)
+- [x] T2 — Auth surfaces (AuthPage, ForgotPasswordPage, ResetPasswordPage)
+- [x] T3 — Legal pages, name-only diff (Terms, Privacy, RefundPolicy)
+- [x] T4 — Email subjects + Swagger title (auth.service.ts, main.ts)
+- [x] T5 — Tests updated/added (unit subject + E2E brand)
+- [x] `npm run check` passes ✅
+- [x] `npm run test:unit` passes ✅
 - [ ] Manual test: TC-LAUNCH-011-04 sweep ✅
 - [ ] PR opened with story card as description ✅
-- [ ] STORY.md ACs updated ✅
+- [x] STORY.md ACs updated ✅
 
 ---
 
