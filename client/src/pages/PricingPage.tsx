@@ -75,7 +75,7 @@ const faqs = [
   {
     question: "Is this built for real estate?",
     answer:
-      "Yes. InfographicAI is built for agents, teams, and brokerages. Templates are designed specifically for property listings and marketing.",
+      "Yes. Buildographic is built for agents, teams, and brokerages. Templates are designed specifically for property listings and marketing.",
   },
   {
     question: "What formats can I download?",
@@ -219,7 +219,7 @@ export default function PricingPage() {
     const options = {
       key: import.meta.env.VITE_RAZORPAY_KEY_ID,
       subscription_id: subscriptionId,
-      name: "InfographicAI",
+      name: "Buildographic",
       description: `${planTierLabel} Plan Subscription`,
       handler: async (response: any) => {
         try {
@@ -358,7 +358,7 @@ export default function PricingPage() {
             className="flex items-center gap-2 font-bold text-lg text-foreground"
           >
             <Building2 className="h-7 w-7 text-foreground" />
-            <span>InfographicAI</span>
+            <span>Buildographic</span>
           </Link>
           <div className="flex items-center gap-8">
             <a
@@ -613,7 +613,7 @@ export default function PricingPage() {
                   ) : isPendingPlan ? (
                     "Activating..."
                   ) : (
-                    "Try InfographicAI"
+                    "Try Buildographic"
                   )}
                 </Button>
                 {isPendingPlan && (
@@ -656,7 +656,7 @@ export default function PricingPage() {
               FREQUENTLY ASKED QUESTIONS
             </p>
             <h2 className="text-2xl md:text-4xl font-bold text-foreground">
-              Curious about InfographicAI?
+              Curious about Buildographic?
             </h2>
             <p className="text-xl md:text-2xl font-bold text-foreground">
               We got you covered
@@ -697,7 +697,7 @@ export default function PricingPage() {
             Start creating
           </h2>
           <h2 className="text-4xl md:text-6xl font-bold text-white mb-10 drop-shadow-lg">
-            on InfographicAI today.
+            on Buildographic today.
           </h2>
           <Link href="/auth">
             <Button
@@ -721,7 +721,7 @@ export default function PricingPage() {
                 className="flex items-center gap-2 font-bold text-xl text-white mb-4"
               >
                 <Building2 className="h-6 w-6" />
-                <span>InfographicAI</span>
+                <span>Buildographic</span>
               </Link>
               <p className="text-sm text-gray-400 leading-relaxed">
                 Create stunning property infographics for your listings.
@@ -829,7 +829,7 @@ export default function PricingPage() {
           </div>
 
           <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-sm text-gray-500">COPYRIGHT InfographicAI 2025</p>
+            <p className="text-sm text-gray-500">COPYRIGHT Buildographic 2025</p>
             <p className="text-sm text-gray-500">
               DESIGNED FOR REAL ESTATE PROFESSIONALS
             </p>

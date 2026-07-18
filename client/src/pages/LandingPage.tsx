@@ -83,12 +83,12 @@ const painPointCards = [
 
 const faqs = [
   {
-    question: "What is InfographicAI and how does it work?",
+    question: "What is Buildographic and how does it work?",
     answer:
-      "InfographicAI transforms your property listings into stunning visual infographics. Enter your property details, choose a template, and our system creates professional marketing materials ready for social media, MLS, and print.",
+      "Buildographic transforms your property listings into stunning visual infographics. Enter your property details, choose a template, and our system creates professional marketing materials ready for social media, MLS, and print.",
   },
   {
-    question: "What can I create with InfographicAI?",
+    question: "What can I create with Buildographic?",
     answer:
       "Property listing infographics, open house flyers, market reports, neighborhood guides, agent branding materials, and social media graphics. All templates are designed specifically for real estate professionals.",
   },
@@ -206,7 +206,7 @@ export default function LandingPage() {
           <div className="container flex h-16 items-center justify-between px-6 max-w-6xl mx-auto">
             <Link href="/" className="flex items-center gap-2 font-bold text-lg text-white">
               <Building2 className="h-7 w-7 text-white" />
-              <span>InfographicAI</span>
+              <span>Buildographic</span>
             </Link>
             <div className="hidden md:flex items-center gap-8">
               <a href="#templates" className="text-sm font-medium text-white/80 hover:text-white">Templates</a>
@@ -258,7 +258,7 @@ export default function LandingPage() {
               <Building2 className="h-12 w-12 md:h-16 md:w-16 text-white" />
             </div>
             <div className="text-center">
-              <h3 className="text-3xl md:text-4xl font-bold text-white">InfographicAI</h3>
+              <h3 className="text-3xl md:text-4xl font-bold text-white">Buildographic</h3>
               <p className="text-gray-400 text-lg mt-2">Real Estate Marketing Made Easy</p>
             </div>
           </div>
@@ -343,7 +343,7 @@ export default function LandingPage() {
         {/* Pain Point Cards */}
         <div className="container px-6 max-w-6xl mx-auto mt-20">
           <div className="text-center mb-12">
-            <p className="text-xs uppercase tracking-widest text-primary/70 mb-4">WHY INFOGRAPHICAI</p>
+            <p className="text-xs uppercase tracking-widest text-primary/70 mb-4">WHY BUILDOGRAPHIC</p>
             <h2 className="text-3xl md:text-4xl font-bold text-white">Solve Your Marketing Challenges</h2>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -518,7 +518,7 @@ export default function LandingPage() {
         <div className="container px-6 max-w-3xl mx-auto relative z-10">
           <div className="text-center mb-12">
             <p className="text-xs uppercase tracking-widest text-gray-500 mb-2">FREQUENTLY ASKED QUESTIONS</p>
-            <h2 className="text-2xl md:text-4xl font-bold text-white">Curious about InfographicAI?</h2>
+            <h2 className="text-2xl md:text-4xl font-bold text-white">Curious about Buildographic?</h2>
             <p className="text-xl md:text-2xl font-bold text-white">We got you covered</p>
           </div>
 
@@ -549,7 +549,7 @@ export default function LandingPage() {
         <div className="absolute inset-0 bg-sky-400/20" />
         <div className="container px-6 max-w-4xl mx-auto relative z-10 text-center">
           <h2 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-4 drop-shadow-lg">Start creating</h2>
-          <h2 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-10 drop-shadow-lg">on InfographicAI today.</h2>
+          <h2 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-10 drop-shadow-lg">on Buildographic today.</h2>
           <Link href="/auth">
             <Button size="lg" className="h-14 px-8 gap-2 rounded-full bg-white hover:bg-gray-100 text-black font-medium text-lg shadow-xl">
               Get Started <ArrowRight className="h-5 w-5" />
@@ -566,7 +566,7 @@ export default function LandingPage() {
             <div className="col-span-2 md:col-span-1">
               <Link href="/" className="flex items-center gap-2 font-bold text-xl text-black mb-4">
                 <Building2 className="h-6 w-6" />
-                <span>InfographicAI</span>
+                <span>Buildographic</span>
               </Link>
               <p className="text-sm text-gray-600 leading-relaxed">
                 Create stunning property infographics for your listings.
@@ -607,7 +607,7 @@ export default function LandingPage() {
             </div>
           </div>
           <div className="pt-8 border-t border-gray-200 flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-sm text-gray-500">COPYRIGHT InfographicAI 2025</p>
+            <p className="text-sm text-gray-500">COPYRIGHT Buildographic 2025</p>
             <div className="flex items-center gap-4">
               <a href="#" className="text-gray-500 hover:text-black transition-colors"><Linkedin className="h-5 w-5" /></a>
               <a href="#" className="text-gray-500 hover:text-black transition-colors"><Twitter className="h-5 w-5" /></a>

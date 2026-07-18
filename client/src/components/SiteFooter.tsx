@@ -22,7 +22,7 @@ export function SiteFooter({ className }: { className?: string }) {
           </Link>
         </div>
         <p className="text-center text-xs text-gray-400 mt-2">
-          &copy; {new Date().getFullYear()} InfographicAI. All rights reserved.
+          &copy; {new Date().getFullYear()} Buildographic. All rights reserved.
         </p>
       </div>
     </footer>
