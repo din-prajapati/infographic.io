@@ -37,7 +37,7 @@ export default function ResetPasswordPage() {
       <div className="w-full max-w-md rounded-2xl border border-border bg-card p-8 shadow-sm">
         <div className="flex items-center gap-2 mb-6 justify-center">
           <Building2 className="h-7 w-7 text-primary" />
-          <span className="text-lg font-bold text-foreground">InfographicAI</span>
+          <span className="text-lg font-bold text-foreground">Buildographic</span>
         </div>
 
         {!token ? (
