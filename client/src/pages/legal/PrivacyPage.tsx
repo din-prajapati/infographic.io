@@ -7,7 +7,7 @@ function LegalNav() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 font-bold text-lg text-black">
           <Building2 className="h-6 w-6" />
-          <span>InfographicAI</span>
+          <span>Buildographic</span>
         </Link>
         <Link href="/" className="text-sm text-gray-600 hover:text-black transition-colors">
           &larr; Back to Home
@@ -33,7 +33,7 @@ function LegalFooter() {
           </Link>
         </div>
         <p className="text-center text-xs text-gray-400 mt-3">
-          &copy; {new Date().getFullYear()} InfographicAI. All rights reserved.
+          &copy; {new Date().getFullYear()} Buildographic. All rights reserved.
         </p>
       </div>
     </footer>
@@ -51,7 +51,7 @@ export default function PrivacyPage() {
           <p className="text-gray-500 text-sm">Effective date: 8 July 2026</p>
 
           <p>
-            InfographicAI (&ldquo;we&rdquo;, &ldquo;us&rdquo;, or &ldquo;our&rdquo;) is committed
+            Buildographic (&ldquo;we&rdquo;, &ldquo;us&rdquo;, or &ldquo;our&rdquo;) is committed
             to protecting your privacy. This Privacy Policy explains how we collect, use, store, and
             share your personal information when you use our service.
           </p>
@@ -84,7 +84,7 @@ export default function PrivacyPage() {
           <h2>2. How We Use Your Information</h2>
           <p>We use your information to:</p>
           <ul>
-            <li>Provide, maintain, and improve the InfographicAI service.</li>
+            <li>Provide, maintain, and improve the Buildographic service.</li>
             <li>Process subscription payments and manage billing.</li>
             <li>Send transactional emails such as receipts and password reset links.</li>
             <li>Respond to your support requests.</li>

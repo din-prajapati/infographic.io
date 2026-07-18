@@ -7,7 +7,7 @@ function LegalNav() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 font-bold text-lg text-black">
           <Building2 className="h-6 w-6" />
-          <span>InfographicAI</span>
+          <span>Buildographic</span>
         </Link>
         <Link href="/" className="text-sm text-gray-600 hover:text-black transition-colors">
           &larr; Back to Home
@@ -33,7 +33,7 @@ function LegalFooter() {
           </Link>
         </div>
         <p className="text-center text-xs text-gray-400 mt-3">
-          &copy; {new Date().getFullYear()} InfographicAI. All rights reserved.
+          &copy; {new Date().getFullYear()} Buildographic. All rights reserved.
         </p>
       </div>
     </footer>
@@ -51,14 +51,14 @@ export default function TermsPage() {
           <p className="text-gray-500 text-sm">Effective date: 8 July 2026</p>
 
           <p>
-            Welcome to InfographicAI. By accessing or using our service you agree to be bound by
+            Welcome to Buildographic. By accessing or using our service you agree to be bound by
             these Terms of Service (&ldquo;Terms&rdquo;). If you do not agree, please do not use
             the service.
           </p>
 
           <h2>1. Description of Service</h2>
           <p>
-            InfographicAI is an AI-powered tool that converts real estate listing information into
+            Buildographic is an AI-powered tool that converts real estate listing information into
             visual infographics. The service is provided on a subscription basis as described on
             our&nbsp;<Link href="/pricing" className="text-primary hover:underline">Pricing</Link>&nbsp;page.
           </p>
@@ -117,7 +117,7 @@ export default function TermsPage() {
 
           <h2>7. Intellectual Property</h2>
           <p>
-            InfographicAI and its licensors retain all intellectual property rights in the service,
+            Buildographic and its licensors retain all intellectual property rights in the service,
             including software, templates, and AI models. You retain ownership of any original
             listing data you provide. You grant us a limited licence to use that data solely to
             provide the service to you.
@@ -130,7 +130,7 @@ export default function TermsPage() {
           <h2>8. AI-Generated Content</h2>
           <p>
             Outputs are generated using AI providers and may occasionally contain inaccuracies.
-            You are responsible for reviewing all generated content before publication. InfographicAI
+            You are responsible for reviewing all generated content before publication. Buildographic
             does not guarantee the accuracy, completeness, or fitness for any particular purpose of
             AI-generated outputs.
           </p>
@@ -144,7 +144,7 @@ export default function TermsPage() {
 
           <h2>10. Limitation of Liability</h2>
           <p>
-            To the maximum extent permitted by applicable law, InfographicAI and its directors,
+            To the maximum extent permitted by applicable law, Buildographic and its directors,
             employees, and agents shall not be liable for any indirect, incidental, special,
             consequential, or punitive damages arising from your use of or inability to use the
             service, even if we have been advised of the possibility of such damages.

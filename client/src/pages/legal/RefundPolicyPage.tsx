@@ -7,7 +7,7 @@ function LegalNav() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 font-bold text-lg text-black">
           <Building2 className="h-6 w-6" />
-          <span>InfographicAI</span>
+          <span>Buildographic</span>
         </Link>
         <Link href="/" className="text-sm text-gray-600 hover:text-black transition-colors">
           &larr; Back to Home
@@ -33,7 +33,7 @@ function LegalFooter() {
           </Link>
         </div>
         <p className="text-center text-xs text-gray-400 mt-3">
-          &copy; {new Date().getFullYear()} InfographicAI. All rights reserved.
+          &copy; {new Date().getFullYear()} Buildographic. All rights reserved.
         </p>
       </div>
     </footer>
@@ -52,12 +52,12 @@ export default function RefundPolicyPage() {
 
           <p>
             This policy explains how subscriptions, cancellations, and refunds work for
-            InfographicAI. Please read it carefully before purchasing a paid plan.
+            Buildographic. Please read it carefully before purchasing a paid plan.
           </p>
 
           <h2>1. Subscription Model</h2>
           <p>
-            InfographicAI offers paid plans billed in <strong>Indian Rupees (INR)</strong> on a
+            Buildographic offers paid plans billed in <strong>Indian Rupees (INR)</strong> on a
             <strong> monthly or annual</strong> basis. Subscriptions are managed through&nbsp;
             <strong>RazorPay</strong>, a PCI-DSS compliant payment gateway. Current plan pricing is
             shown on our&nbsp;
