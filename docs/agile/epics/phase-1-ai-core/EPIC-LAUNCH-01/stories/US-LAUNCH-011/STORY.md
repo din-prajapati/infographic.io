@@ -1,6 +1,6 @@
 # Story Card — US-LAUNCH-011
 
-> **Status:** 🟡 impl
+> **Status:** 🟡 In Review (PR #16)
 > **Feature:** F-LAUNCH-07 — Brand Identity
 > **Epic:** [EPIC-LAUNCH-01](../../EPIC.md)
 > **Milestone:** [M-LAUNCH-01-public-beta](../../milestones/M-LAUNCH-01-public-beta.md)
@@ -41,7 +41,7 @@
 ## Engineering / PR
 
 - **Branch:** `feat/launch/us-launch-011-rebrand-buildographic`
-- **PR:** #_____ (fill when opened)
+- **PR:** [#16](https://github.com/din-prajapati/infographic.io/pull/16)
 - **Primary files touched:**
   - `client/index.html`
   - `client/src/components/SiteFooter.tsx`
