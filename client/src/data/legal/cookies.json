@@ -1,0 +1,110 @@
+{
+  "title": "Cookie Policy",
+  "effectiveDate": "8 July 2026",
+  "intro": "Buildographic (\"we\", \"us\", or \"our\") uses cookies and similar technologies such as browser local storage on our website and application. This Cookie Policy explains what these technologies are, how we use them, and how you can manage them. It should be read together with our Privacy Policy.",
+  "contactEmail": "privacy@infographicai.in",
+  "sections": [
+    {
+      "key": "what_are_cookies",
+      "title": "What Are Cookies and Local Storage?",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "Cookies are small text files stored on your device when you visit a website. Local storage is a similar browser technology that lets a site store data on your device between visits. We use both to make the service function and to keep you signed in."
+        }
+      ]
+    },
+    {
+      "key": "how_we_use",
+      "title": "How We Use These Technologies",
+      "blocks": [
+        {
+          "type": "subheading",
+          "text": "Essential — authentication and session"
+        },
+        {
+          "type": "paragraph",
+          "text": "We store a signed-in session token (JWT) in your browser's local storage so you stay logged in as you navigate the app. Without this, you would need to sign in again on every page."
+        },
+        {
+          "type": "subheading",
+          "text": "Essential — app data"
+        },
+        {
+          "type": "paragraph",
+          "text": "The canvas editor stores your designs, templates, and autosave data in local storage as a fallback when you are not signed in, and to speed up loading when you are. This data is used only to run the product for you."
+        },
+        {
+          "type": "subheading",
+          "text": "Essential — payment checkout"
+        },
+        {
+          "type": "paragraph",
+          "text": "When you subscribe to a paid plan, our payment processor RazorPay (and, where enabled, Stripe) loads its own secure checkout script, which may set its own cookies to process your payment and prevent fraud. We do not control these cookies directly; see RazorPay's privacy policy for details."
+        },
+        {
+          "type": "subheading",
+          "text": "Functional — error monitoring"
+        },
+        {
+          "type": "paragraph",
+          "text": "In production, we use Sentry to capture application errors and performance data so we can diagnose and fix bugs. This is a diagnostic tool, not an advertising or tracking technology, and is not active in development."
+        }
+      ]
+    },
+    {
+      "key": "no_advertising",
+      "title": "No Advertising or Marketing Cookies",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "We do not use advertising or marketing cookies, and we do not run third-party tracking pixels such as Google Ads, Meta, or LinkedIn Insight Tag on our site. We do not sell your data to advertisers. If this changes in the future, we will update this Policy and request your consent where required by law before activating any such technology."
+        }
+      ]
+    },
+    {
+      "key": "cookie_duration",
+      "title": "Duration",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "Your session token remains in local storage until you log out, it expires, or you clear your browser data. Design and template data persist in local storage until you delete them or clear your browser data. Payment-processor cookies follow the duration set by that processor."
+        }
+      ]
+    },
+    {
+      "key": "managing",
+      "title": "Managing Cookies and Local Storage",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "Most browsers let you view, block, or delete cookies and local storage through their settings. Refer to your browser's help section for instructions."
+        },
+        {
+          "type": "paragraph",
+          "text": "Because we rely on local storage for sign-in and for the editor to function, blocking or clearing it will sign you out and may remove unsaved local designs. It will not affect designs already saved to your account."
+        }
+      ]
+    },
+    {
+      "key": "changes",
+      "title": "Changes to This Policy",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "We may update this Policy to reflect changes in the technologies we use or in applicable law. We will post the revised Policy on this page and update the effective date above."
+        }
+      ]
+    },
+    {
+      "key": "contact",
+      "title": "Contact",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "Questions about this Cookie Policy: privacy@infographicai.in."
+        }
+      ]
+    }
+  ]
+}

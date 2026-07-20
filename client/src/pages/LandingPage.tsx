@@ -603,6 +603,7 @@ export default function LandingPage() {
                 <li><a href="/terms" className="hover:text-black">Terms of Service</a></li>
                 <li><a href="/privacy" className="hover:text-black">Privacy Policy</a></li>
                 <li><a href="/refund-policy" className="hover:text-black">Refund &amp; Cancellation</a></li>
+                <li><a href="/cookies" className="hover:text-black">Cookie Policy</a></li>
               </ul>
             </div>
           </div>

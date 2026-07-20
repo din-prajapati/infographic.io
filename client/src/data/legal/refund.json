@@ -1,0 +1,146 @@
+{
+  "title": "Refund & Cancellation Policy",
+  "effectiveDate": "8 July 2026",
+  "intro": "This policy explains how subscriptions, cancellations, and refunds work for Buildographic. Please read it carefully before purchasing a paid plan.",
+  "contactEmail": "billing@infographicai.in",
+  "sections": [
+    {
+      "key": "short_version",
+      "title": "The Short Version",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "The Free plan costs nothing. Paid subscriptions do not offer prorated refunds for unused time when you cancel voluntarily — access simply continues until your paid period ends, then reverts to Free. We do issue full refunds for billing errors, activation failures, and extended outages. See below for details."
+        }
+      ]
+    },
+    {
+      "key": "subscription_model",
+      "title": "Subscription Model",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "Buildographic offers paid plans billed in Indian Rupees (INR) on a monthly or annual basis. Subscriptions are managed through RazorPay, a PCI-DSS compliant payment gateway. Current plan pricing is shown on our Pricing page."
+        },
+        {
+          "type": "paragraph",
+          "text": "Annual plans are billed as a single upfront payment covering 12 months and are offered at a discount compared to paying monthly. Monthly plans are billed on the same date each month."
+        }
+      ]
+    },
+    {
+      "key": "free_plan",
+      "title": "Free Plan",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "The Free plan includes a limited number of infographic generations per month at no cost. No payment details are required for the Free plan, and no charges apply."
+        }
+      ]
+    },
+    {
+      "key": "cancellation",
+      "title": "Cancellation",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "You may cancel your subscription at any time from your account settings. Cancellation takes effect at the end of your current billing period:"
+        },
+        {
+          "type": "list",
+          "style": "bullet",
+          "items": [
+            "Monthly plans: access continues until the last day of the month you have paid for",
+            "Annual plans: access continues until the last day of the 12-month period you have paid for"
+          ]
+        },
+        {
+          "type": "paragraph",
+          "text": "After the billing period ends, your account reverts to the Free plan. You will not be charged again after cancellation."
+        }
+      ]
+    },
+    {
+      "key": "refund_terms",
+      "title": "Refund Terms",
+      "blocks": [
+        {
+          "type": "subheading",
+          "text": "General policy"
+        },
+        {
+          "type": "paragraph",
+          "text": "Because our service delivers immediate value upon subscription activation (access to AI-powered generation and premium templates), we do not offer prorated refunds for unused time within a paid billing period when you cancel voluntarily."
+        },
+        {
+          "type": "subheading",
+          "text": "Exceptions — when refunds apply"
+        },
+        {
+          "type": "paragraph",
+          "text": "We will issue a full refund in the following circumstances:"
+        },
+        {
+          "type": "list",
+          "style": "bullet",
+          "items": [
+            "Duplicate charge: if you were billed more than once for the same subscription period due to a technical error",
+            "Technical failure at activation: if your payment was captured successfully but your account was never upgraded to the paid plan within 24 hours and you report the issue within 7 days of payment",
+            "Service unavailability: if the service was unavailable for more than 72 consecutive hours during your paid period due to issues on our end and you request a refund within 14 days of the outage"
+          ]
+        },
+        {
+          "type": "subheading",
+          "text": "Refund processing"
+        },
+        {
+          "type": "paragraph",
+          "text": "Approved refunds are processed via RazorPay back to the original payment method. Please allow 5–10 business days for the refund to appear, depending on your bank."
+        }
+      ]
+    },
+    {
+      "key": "upgrades_downgrades",
+      "title": "Plan Upgrades and Downgrades",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "If you upgrade to a higher plan mid-cycle, you will be billed for the new plan at the next renewal. Access to the higher plan is granted immediately upon upgrade. Downgrading takes effect at the start of your next billing period."
+        }
+      ]
+    },
+    {
+      "key": "how_to_request",
+      "title": "How to Request a Refund",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "To request a refund, email us at billing@infographicai.in with:"
+        },
+        {
+          "type": "list",
+          "style": "bullet",
+          "items": [
+            "Your registered email address",
+            "The RazorPay payment or subscription ID",
+            "A description of the issue"
+          ]
+        },
+        {
+          "type": "paragraph",
+          "text": "We will acknowledge your request within 2 business days and aim to resolve it within 7 business days."
+        }
+      ]
+    },
+    {
+      "key": "contact",
+      "title": "Contact",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "For billing questions or to request a refund, contact billing@infographicai.in."
+        }
+      ]
+    }
+  ]
+}

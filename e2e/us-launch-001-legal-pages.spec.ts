@@ -14,6 +14,7 @@ const legalPages = [
   { path: "/terms", heading: "Terms of Service" },
   { path: "/privacy", heading: "Privacy Policy" },
   { path: "/refund-policy", heading: "Refund & Cancellation Policy" },
+  { path: "/cookies", heading: "Cookie Policy" },
 ];
 
 test.describe("US-LAUNCH-001 — legal & policy pages", () => {

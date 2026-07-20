@@ -19,6 +19,7 @@ import ResetPasswordPage from "./pages/auth/ResetPasswordPage";
 import TermsPage from "./pages/legal/TermsPage";
 import PrivacyPage from "./pages/legal/PrivacyPage";
 import RefundPolicyPage from "./pages/legal/RefundPolicyPage";
+import CookiesPage from "./pages/legal/CookiesPage";
 import { ErrorBoundary } from "./components/ui/error-boundary";
 import { ThemeProvider } from "./lib/theme-provider";
 
@@ -106,6 +107,7 @@ function Router() {
       <Route path="/terms" component={TermsPage} />
       <Route path="/privacy" component={PrivacyPage} />
       <Route path="/refund-policy" component={RefundPolicyPage} />
+      <Route path="/cookies" component={CookiesPage} />
       <Route path="/" component={HomeRoute} />
       <Route component={() => <div className="min-h-screen flex items-center justify-center"><div>404 - Page Not Found</div></div>} />
     </Switch>

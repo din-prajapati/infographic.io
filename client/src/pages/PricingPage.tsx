@@ -824,6 +824,11 @@ export default function PricingPage() {
                     Refund &amp; Cancellation
                   </a>
                 </li>
+                <li>
+                  <a href="/cookies" className="hover:text-white">
+                    Cookie Policy
+                  </a>
+                </li>
               </ul>
             </div>
           </div>

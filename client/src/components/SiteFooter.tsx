@@ -20,6 +20,9 @@ export function SiteFooter({ className }: { className?: string }) {
           <Link href="/refund-policy" className="hover:text-foreground transition-colors">
             Refund &amp; Cancellation Policy
           </Link>
+          <Link href="/cookies" className="hover:text-foreground transition-colors">
+            Cookie Policy
+          </Link>
         </div>
         <p className="text-center text-xs text-gray-400 mt-2">
           &copy; {new Date().getFullYear()} Buildographic. All rights reserved.
