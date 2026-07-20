@@ -114,9 +114,12 @@ grep -rn "InfographicAI" client/src client/index.html api/src
 - [x] T5 — Tests updated/added (unit subject + E2E brand)
 - [x] `npm run check` passes ✅
 - [x] `npm run test:unit` passes ✅
-- [ ] Manual test: TC-LAUNCH-011-04 sweep ✅
+- [x] E2E: `npm run test:e2e -- --grep "legal|password"` passes (13 passed, 1 pre-existing unrelated skip) — run with `PLAYWRIGHT_BASE_URL=http://localhost:5000`, see note below
+- [x] Manual test: TC-LAUNCH-011-04 sweep ✅ (pass with finding — see STORY.md Test Cases)
 - [ ] PR opened with story card as description ✅
 - [x] STORY.md ACs updated ✅
+
+**Note on E2E run:** repo `.env` sets `PLAYWRIGHT_BASE_URL` to the Railway staging URL by default, so plain `npm run test:e2e` exercises staging (still on old branding, unrelated to this change) rather than the local dev server. Override with `PLAYWRIGHT_BASE_URL=http://localhost:5000` to test this branch's changes locally, as TC-LAUNCH-011-04 requires.
 
 ---
 

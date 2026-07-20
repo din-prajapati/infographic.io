@@ -90,11 +90,11 @@ Implementation rules:
 
 | TC ID | Type | Priority | Scenario | Status | Finding |
 |-------|------|----------|----------|--------|---------|
-| TC-LAUNCH-011-01 | Auto | P0 | Given the app is built, when `/` and `/pricing` render, then header/footer brand spans and `<title>` say "Buildographic" and contain no "InfographicAI" | 🔲 | |
-| TC-LAUNCH-011-02 | Auto | P0 | Given `RESEND_API_KEY` is unset, when forgot-password is triggered for a known user, then the console-logged email subject is exactly `Reset your Buildographic password` | 🔲 | |
-| TC-LAUNCH-011-03 | Auto | P1 | Given the E2E suite runs, when `/terms`, `/privacy`, `/refund-policy` load, then each shows "Buildographic" in header brand and © line | 🔲 | |
-| TC-LAUNCH-011-04 | Manual | P1 | Sweep `localhost:5000` — `/`, `/pricing`, `/auth`, `/auth` signup toast, forgot/reset pages, all 3 legal pages: zero visible "InfographicAI" | 🔲 | |
-| TC-LAUNCH-011-05 | Auto | P2 | `GET /api/docs` (Swagger UI) page title shows "Buildographic API" | 🔲 | |
+| TC-LAUNCH-011-01 | Auto | P0 | Given the app is built, when `/` and `/pricing` render, then header/footer brand spans and `<title>` say "Buildographic" and contain no "InfographicAI" | ✅ | |
+| TC-LAUNCH-011-02 | Auto | P0 | Given `RESEND_API_KEY` is unset, when forgot-password is triggered for a known user, then the console-logged email subject is exactly `Reset your Buildographic password` | ✅ | |
+| TC-LAUNCH-011-03 | Auto | P1 | Given the E2E suite runs, when `/terms`, `/privacy`, `/refund-policy` load, then each shows "Buildographic" in header brand and © line | ✅ | `npm run test:e2e -- --grep "legal\|password"` run against `PLAYWRIGHT_BASE_URL=http://localhost:5000` (repo `.env` defaults `PLAYWRIGHT_BASE_URL` to the Railway staging URL — override needed to test locally) — 13 passed, 1 pre-existing skip unrelated to this story |
+| TC-LAUNCH-011-04 | Manual | P1 | Sweep `localhost:5000` — `/`, `/pricing`, `/auth`, `/auth` signup toast, forgot/reset pages, all 3 legal pages: zero visible "InfographicAI" | ⚠️ | Brand name is clean on every route. Contact emails `support@`/`privacy@`/`billing@infographicai.in` still render on the 3 legal pages (2 occurrences each) — pre-existing, out of scope (mailbox/DNS migration, not a text rebrand); signup toast verified by source grep only (not clicked, to avoid creating a live account) |
+| TC-LAUNCH-011-05 | Auto | P2 | `GET /api/docs` (Swagger UI) page title shows "Buildographic API" | ✅ | Verified via source (`api/src/main.ts:93`) + `npm run check` pass; Swagger UI itself not opened in browser |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 
@@ -102,14 +102,14 @@ Implementation rules:
 
 ## Definition of Done
 
-- [ ] All ACs checked ✅
-- [ ] All test cases run and recorded
-- [ ] `npm run check` passes
-- [ ] `npm run test:unit` passes
-- [ ] Manual flow verified on `localhost:5000` (TC-04 sweep)
+- [x] All ACs checked ✅
+- [x] All test cases run and recorded
+- [x] `npm run check` passes
+- [x] `npm run test:unit` passes
+- [x] Manual flow verified on `localhost:5000` (TC-04 sweep) — pass with finding, see TC-LAUNCH-011-04
 - [ ] PR merged (PR #{number})
 - [ ] No console errors for the changed flow
-- [ ] [TASKS.md](./TASKS.md) task list fully checked
+- [x] [TASKS.md](./TASKS.md) task list fully checked
 
 ---
 
