@@ -25,6 +25,13 @@ export default function ForgotPasswordPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-md rounded-2xl border border-border bg-card p-8 shadow-sm">
+        <Link
+          href="/auth"
+          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-6"
+        >
+          <ArrowLeft className="h-4 w-4" /> Back to login
+        </Link>
+
         <div className="flex items-center gap-2 mb-6 justify-center">
           <Building2 className="h-7 w-7 text-primary" />
           <span className="text-lg font-bold text-foreground">Buildographic</span>
@@ -39,12 +46,6 @@ export default function ForgotPasswordPage() {
               <span className="font-medium text-foreground">{email}</span>, we've sent a
               password reset link. It's valid for 1 hour.
             </p>
-            <Link
-              href="/auth"
-              className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
-            >
-              <ArrowLeft className="h-4 w-4" /> Back to login
-            </Link>
           </div>
         ) : (
           <>
@@ -84,12 +85,6 @@ export default function ForgotPasswordPage() {
                 {mutation.isPending ? 'Sending…' : 'Send reset link'}
               </Button>
             </form>
-            <Link
-              href="/auth"
-              className="mt-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
-            >
-              <ArrowLeft className="h-4 w-4" /> Back to login
-            </Link>
           </>
         )}
       </div>
