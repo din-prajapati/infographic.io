@@ -1,5 +1,5 @@
 import privacy from "@/data/legal/privacy.json";
-import { LegalLayout } from "@/components/legal/LegalLayout";
+import { LegalLayout, PolicyContactCard } from "@/components/legal/LegalLayout";
 import { PolicySections, type PolicySection } from "@/components/legal/PolicySections";
 
 export default function PrivacyPage() {
@@ -8,6 +8,7 @@ export default function PrivacyPage() {
   return (
     <LegalLayout title={privacy.title} effectiveDate={privacy.effectiveDate} intro={privacy.intro}>
       <PolicySections sections={sections} />
+      <PolicyContactCard email={privacy.contactEmail} responseTime={privacy.responseTime} />
     </LegalLayout>
   );
 }

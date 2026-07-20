@@ -1,5 +1,5 @@
 import terms from "@/data/legal/terms.json";
-import { LegalLayout } from "@/components/legal/LegalLayout";
+import { LegalLayout, PolicyContactCard } from "@/components/legal/LegalLayout";
 import { PolicySections, type PolicySection } from "@/components/legal/PolicySections";
 
 export default function TermsPage() {
@@ -8,6 +8,7 @@ export default function TermsPage() {
   return (
     <LegalLayout title={terms.title} effectiveDate={terms.effectiveDate} intro={terms.intro}>
       <PolicySections sections={sections} />
+      <PolicyContactCard email={terms.contactEmail} responseTime={terms.responseTime} />
     </LegalLayout>
   );
 }

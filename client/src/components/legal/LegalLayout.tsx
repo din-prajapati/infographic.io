@@ -44,6 +44,31 @@ function LegalFooter() {
   );
 }
 
+export function PolicyContactCard({
+  email,
+  responseTime,
+  website = "https://buildographic.com",
+}: {
+  email: string;
+  responseTime: string;
+  website?: string;
+}) {
+  return (
+    <div className="mt-12 mb-8 rounded-2xl border border-gray-200 bg-white p-8 text-center">
+      <h3 className="text-2xl font-bold text-gray-900 mb-3">Questions about this policy?</h3>
+      <p className="text-gray-600 mb-6">We typically respond within {responseTime}.</p>
+      <div className="text-gray-700 space-y-1">
+        <p>
+          <span className="font-medium text-gray-900">Website:</span> {website}
+        </p>
+        <p>
+          <span className="font-medium text-gray-900">Email:</span> {email}
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export function LegalLayout({
   title,
   effectiveDate,
