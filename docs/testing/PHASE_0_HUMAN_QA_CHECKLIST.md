@@ -14,7 +14,7 @@
 | —   | [Automation Already Done](#automation-already-done--skip-these)                                   | Playwright + unit tests — skip these                                 | ✅ All green (2026-06-19)                                                        |
 | 1   | [Task 1 — Local QA](#task-1--critical-path-manual-qa-local-before-staging-deploy)                 | Flows 1A–1G: auth, generation, canvas, payments, team, cross-browser | ✅ **SIGNED OFF — 2026-06-20 · PASS**                                            |
 | 2   | [Task 2 — Staging](#task-2--staging-smoke-test-railway--neon)                                     | Railway + Neon staging deploy + E2E + live Ideogram verify           | ✅ **SIGNED OFF — 2026-07-11 · PASS** |
-| 3   | [Task 3 — Production](#task-3--production-go-live--sentry-verify)                                 | Live keys, v1.0.0 tag, Sentry, Google OAuth prod                     | 🔲 **Unblocked — next** — ~1 hr                                                 |
+| 3   | [Task 3 — Production](#task-3--production-go-live--sentry-verify)                                 | Live keys, v1.0.0 tag, Sentry, Google OAuth prod                     | 🟡 **IN PROGRESS** — PROD_URL decided + custom domain added 2026-07-21 (DNS propagating); Neon/Railway env vars next |
 | 7   | [Flow 7 — Right Sidebar](#flow-7--right-sidebar-design--property--agent-panel)                    | RightSidebar.tsx 44-point checklist                                  | ⏸ **DEFERRED to Phase 1** — all stale bugs verified as implemented (2026-06-20) |
 | —   | [Deferred Feature Backlog](#deferred-feature-backlog--architectural-gaps-found-during-phase-0-qa) | GAP-01 (lightbox) · GAP-02 (editable canvas layers)                  | GAP-01 ✅ Implemented · GAP-02 🔲 Phase 1                                        |
 | —   | [Deployment Strategy](#deployment-strategy--work-sizing--timeline)                                | Work sizing and timeline for infra                                   | 📋 Reference                                                                    |
@@ -385,14 +385,45 @@ PLAYWRIGHT_BASE_URL=https://infographic-production-staging.up.railway.app npx pl
 **➡️ Write your chosen production URL here — every `<PROD_URL>` placeholder below refers to it:**
 
 ```
-PROD_URL = _______________________________________________
-   (e.g.  https://app.infographicai.com   — Option B
-    or    https://infographic-production-production.up.railway.app   — Option A)
+PROD_URL = https://app.buildographic.com
+   (Option B — domain buildographic.com purchased 2026-07-17, see ADR-001)
 ```
 
 | #    | Step                                                                                     | Done? | Notes |
 | ---- | ---------------------------------------------------------------------------------------- | ----- | ----- |
-| P-00 | Choose Option A or B above and record `PROD_URL`                                          | ☐     | If Option B: buy domain + add CNAME in Railway **before** P-04 to avoid rework |
+| P-00 | Choose Option A or B above and record `PROD_URL`                                          | ☑     | **Option B chosen 2026-07-21.** `PROD_URL = https://app.buildographic.com`. Apex `buildographic.com` reserved for a future public landing page (separate, unscoped story). |
+
+---
+
+## 🔴 LIVE — Go-Live DNS & Domain Configuration Record (2026-07-21)
+
+> Running record of every DNS record and value set during Task 3, so the exact state is reconstructable without re-deriving it. Update this table as each step completes — don't just tick boxes elsewhere and lose the values.
+
+**Registrar:** Namecheap (`buildographic.com`) · **Mail/sending provider:** Resend · **Host:** Railway (project `infographic-ai`, service `infographic-production`)
+
+| # | Purpose | Record | Host/Name | Value | Status |
+|---|---------|--------|-----------|-------|--------|
+| 1 | Resend DKIM | TXT | `resend._domainkey` | `p=MIGfMA0GCSqG...` (Resend-generated, verified byte-for-byte) | ✅ Added to Namecheap 2026-07-21 |
+| 2 | Resend bounce/complaint MX | MX (priority 10) | `send` | `feedback-smtp.ap-northeast-1.amazonses.com` | ✅ Added — required switching Namecheap Mail Settings mode "Email Forwarding" → **Custom MX** (no forwarders were configured, so this was safe) |
+| 3 | Resend SPF | TXT | `send` | `v=spf1 include:amazonses.com ~all` | ✅ Added |
+| 4 | DMARC (monitor-only) | TXT | `_dmarc` | `v=DMARC1; p=none;` | ✅ Added — optional but recommended; tighten to `p=quarantine`/`p=reject` after a clean monitoring period |
+| 5 | Resend domain verification | — | — | — | 🟡 **Pending** — Resend status showed "Pending" as of last check; DNS propagation can take up to a few hours |
+| 6 | Railway production custom domain | CNAME | `app` | `9rcq9erg.up.railway.app` | ✅ Added on Railway (`app.buildographic.com` → port `5000`) and at Namecheap 2026-07-21; 🟡 propagation pending — Railway still shows "Waiting for DNS update" |
+| 7 | Railway domain ownership verification | TXT | `_railway-verify.app` | `railway-verify=915accba7691576d49bb2da5aa4d3f4279004c9901290e125b33f193ea7106d4` | ✅ Added at Namecheap 2026-07-21; 🟡 propagation pending |
+
+**Resend API keys (Railway env vars, values not reproduced here — secrets):**
+
+| Env var | Staging | Production |
+|---|---|---|
+| `RESEND_API_KEY` | `BG_RESEND_API_KEY_STAGING` | `BG_RESEND_API_KEY_PRODUCTION` |
+| `EMAIL_FROM` | `Buildographic (Staging) <noreply@buildographic.com>` | `Buildographic <noreply@buildographic.com>` |
+
+**Other Railway variable changes made during this pass (both environments unless noted):**
+- `STRIPE_ENABLED=false` — added to production (was already on staging)
+- `VITE_STORAGE_PREFIX=buildographic` — changed from `infographicai` on **both** staging and production (safe pre-launch, no user data yet — see `US-LAUNCH-011/STORY.md`)
+- `VITE_RAZORPAY_KEY_ID` — converted to a **Railway variable reference** `${{RAZORPAY_KEY_ID}}` on **both** environments (was a literal copy on staging, missing entirely on production) — guarantees it never drifts from the backend key
+
+**Full reference:** [ADR-001 — Email sending domain & DNS record scoping](../agile/decisions/ADR-001-email-sending-domain-dns.md)
 
 ---
 
@@ -417,7 +448,7 @@ PROD_URL = _______________________________________________
 | P-05 | In Railway service settings → Deploy → set **Deploy Trigger = Git tag (`v`*)**                   | ☐     | Per strategy §3: production deploys from a version tag, not branch push |
 | P-06 | **Bootstrap first deploy:** `railway up --detach` from the `production` environment *(one-time)* | ☐     | Creates the service; subsequent deploys are tag-triggered               |
 | P-07 | `railway logs` → confirm clean startup                                                           | ☐     |                                                                         |
-| P-08 | `railway domain` → set custom domain (Option B) or note the generated Railway URL (Option A) → this **is** your `PROD_URL` from §3.0 | ☐     | Confirm every URL var in the worksheet uses this exact value |
+| P-08 | `railway domain` → set custom domain (Option B) or note the generated Railway URL (Option A) → this **is** your `PROD_URL` from §3.0 | ☑     | `app.buildographic.com` added in Railway (Settings → Networking → Custom Domain, port `5000`) 2026-07-21; CNAME + TXT verification records added at Namecheap same day. **Propagation pending** — Railway still shows "Waiting for DNS update" as of last check. Re-check `railway domain` / dashboard before proceeding to P-13 smoke test. |
 
 
 ---

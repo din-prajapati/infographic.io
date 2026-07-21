@@ -1,8 +1,8 @@
 # M-LAUNCH-01-public-beta — Public Free Beta Live
 
 > **Epic:** [EPIC-LAUNCH-01](../EPIC.md)
-> **Status:** 🔲 Not Started
-> **Target date:** 2026-07-21
+> **Status:** 🟡 In Progress — 4/7 stories implemented or in review; Phase 0 Task 3 (production go-live) underway
+> **Target date:** 2026-07-21 (slipping — Task 3 + US-LAUNCH-004/010/011 still open; see [PHASE_0_HUMAN_QA_CHECKLIST.md](../../../../testing/PHASE_0_HUMAN_QA_CHECKLIST.md) for live Task 3 status)
 
 ---
 
