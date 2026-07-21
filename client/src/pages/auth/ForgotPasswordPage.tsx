@@ -4,7 +4,7 @@ import { useMutation } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { authApi } from '@/lib/api';
-import { Building2, ArrowLeft, MailCheck } from 'lucide-react';
+import { ArrowLeft, MailCheck } from 'lucide-react';
 
 /**
  * Public page — request a password reset link (US-LAUNCH-003, AC4).
@@ -33,7 +33,8 @@ export default function ForgotPasswordPage() {
         </Link>
 
         <div className="flex items-center gap-2 mb-6 justify-center">
-          <Building2 className="h-7 w-7 text-primary" />
+          <img src="/logo-icon-option6.png" alt="" className="h-7 w-7 dark:hidden" />
+          <img src="/logo-icon-option6-light.png" alt="" className="h-7 w-7 hidden dark:block" />
           <span className="text-lg font-bold text-foreground">Buildographic</span>
         </div>
 

@@ -10,7 +10,6 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import {
-  Building2,
   Check,
   ArrowRight,
   Gift,
@@ -357,7 +356,8 @@ export default function PricingPage() {
             href="/"
             className="flex items-center gap-2 font-bold text-lg text-foreground"
           >
-            <Building2 className="h-7 w-7 text-foreground" />
+            <img src="/logo-icon-option6.png" alt="" className="h-7 w-7 dark:hidden" />
+            <img src="/logo-icon-option6-light.png" alt="" className="h-7 w-7 hidden dark:block" />
             <span>Buildographic</span>
           </Link>
           <div className="flex items-center gap-8">
@@ -720,7 +720,7 @@ export default function PricingPage() {
                 href="/"
                 className="flex items-center gap-2 font-bold text-xl text-white mb-4"
               >
-                <Building2 className="h-6 w-6" />
+                <img src="/logo-icon-option6-light.png" alt="" className="h-6 w-6" />
                 <span>Buildographic</span>
               </Link>
               <p className="text-sm text-gray-400 leading-relaxed">

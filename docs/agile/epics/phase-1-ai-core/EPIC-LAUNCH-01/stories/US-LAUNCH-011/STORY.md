@@ -60,6 +60,7 @@
   - `client/src/components/legal/LegalLayout.tsx` (logo exploration, see below)
   - `client/public/logo-icon-option{1,2,3,4,5,6,7,8}.png` (new)
   - `client/public/logo-icon-option6-original-backup.png` (new)
+  - `client/public/logo-icon-option6-light.png` (new — white/light variant for dark surfaces)
   - `client/public/logo-option3-lockup.png` (new)
 
 ---
@@ -83,9 +84,24 @@ Not covered by the original ACs — recorded here for traceability rather than r
 - **Final decision (2026-07-21): Option 6 (recolored)** — `LegalLayout.tsx` now renders
   `logo-icon-option6.png` (navy house + teal upward arrow, gradient shading preserved) in the stacked
   icon-over-wordmark layout, 80px header. This is the confirmed choice, not an in-progress comparison.
-- This only touches the **legal-page header** (`LegalLayout.tsx`); the logo has not been propagated to
-  `LandingPage.tsx`, `PricingPage.tsx`, `SiteFooter.tsx`, or the auth pages, which still use the lucide
-  `Building2` icon placeholder. Propagating a final choice everywhere is follow-up work.
+- **Propagated site-wide (2026-07-21).** Replaced every brand-logo `Building2` (lucide) usage with the
+  Option 6 mark: `LandingPage.tsx` (nav header, footer, and the video-hero "logo reveal" moment),
+  `PricingPage.tsx` (nav header + footer), `AuthPage.tsx`, `ForgotPasswordPage.tsx`, `ResetPasswordPage.tsx`.
+  `SiteFooter.tsx` has no icon at all (text links only) — nothing to change there.
+- **Light/dark contrast:** the extracted PNG is a fixed-color bitmap, unlike the old `Building2` SVG
+  (which adapted via `text-*` classes). Added `logo-icon-option6-light.png` (navy → white recolor, teal
+  kept) for dark surfaces. Fixed-dark contexts (video hero overlay, glass auth panel, hardcoded
+  `text-white` footers) use the light variant directly; genuinely theme-reactive surfaces (Pricing nav,
+  Forgot/Reset password cards — all `bg-card`/`bg-background`/`text-foreground`) render both variants
+  with Tailwind `dark:` classes so the correct one shows automatically in either theme.
+- **Left untouched, deliberately:** four other `Building2` usages in the editor UI
+  (`CustomizePanel.tsx`, `CenterCanvas.tsx`, `EnhancedSuggestionsPanel.tsx`, `AIPropertyChatInput.tsx`,
+  plus one on `LandingPage.tsx`'s "Multi-Agent — Coming soon" card) are generic feature icons, not the
+  brand mark — out of scope.
+- **Email templates checked, none exist to update.** Searched `api/src`, `server/`, and the repo for
+  `.hbs`/template files and any `<img>`/logo reference in email content. The only HTML email
+  (password-reset, in `auth.service.ts`) is a plain two-paragraph string with a text link — no logo
+  image, no template file, nothing to change.
 
 ---
 

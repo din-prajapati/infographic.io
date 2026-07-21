@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { authApi } from '@/lib/api';
-import { Building2, ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 
 /**
  * Public page — set a new password using the emailed token (US-LAUNCH-003, AC4).
@@ -43,7 +43,8 @@ export default function ResetPasswordPage() {
         </Link>
 
         <div className="flex items-center gap-2 mb-6 justify-center">
-          <Building2 className="h-7 w-7 text-primary" />
+          <img src="/logo-icon-option6.png" alt="" className="h-7 w-7 dark:hidden" />
+          <img src="/logo-icon-option6-light.png" alt="" className="h-7 w-7 hidden dark:block" />
           <span className="text-lg font-bold text-foreground">Buildographic</span>
         </div>
 

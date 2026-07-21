@@ -205,7 +205,7 @@ export default function LandingPage() {
         <nav className="relative z-20 border-b border-white/10">
           <div className="container flex h-16 items-center justify-between px-6 max-w-6xl mx-auto">
             <Link href="/" className="flex items-center gap-2 font-bold text-lg text-white">
-              <Building2 className="h-7 w-7 text-white" />
+              <img src="/logo-icon-option6-light.png" alt="" className="h-7 w-7" />
               <span>Buildographic</span>
             </Link>
             <div className="hidden md:flex items-center gap-8">
@@ -255,7 +255,7 @@ export default function LandingPage() {
         <div className={`absolute inset-0 flex items-center justify-center bg-black/80 backdrop-blur-sm z-40 transition-all duration-1000 ease-out ${showLogoReveal ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
           <div className={`flex flex-col items-center gap-4 transition-all duration-700 delay-300 ${showLogoReveal ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-8 opacity-0 scale-95'}`}>
             <div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center shadow-2xl shadow-teal-500/30">
-              <Building2 className="h-12 w-12 md:h-16 md:w-16 text-white" />
+              <img src="/logo-icon-option6-light.png" alt="" className="h-12 w-12 md:h-16 md:w-16" />
             </div>
             <div className="text-center">
               <h3 className="text-3xl md:text-4xl font-bold text-white">Buildographic</h3>
@@ -565,7 +565,7 @@ export default function LandingPage() {
           <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
             <div className="col-span-2 md:col-span-1">
               <Link href="/" className="flex items-center gap-2 font-bold text-xl text-black mb-4">
-                <Building2 className="h-6 w-6" />
+                <img src="/logo-icon-option6.png" alt="" className="h-6 w-6" />
                 <span>Buildographic</span>
               </Link>
               <p className="text-sm text-gray-600 leading-relaxed">

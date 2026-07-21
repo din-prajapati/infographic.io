@@ -119,6 +119,7 @@ grep -rn "InfographicAI" client/src client/index.html api/src
 - [x] PR opened with story card as description ✅ ([#16](https://github.com/din-prajapati/infographic.io/pull/16))
 - [x] STORY.md ACs updated ✅
 - [x] T6 (follow-up) — Logo exploration: extracted 8 icon-only PNGs, iterated live on Options 1 & 3 in `LegalLayout.tsx` (baseline fix, size, stacked layout, taller header), recolored Option 6 to Option 3's palette. **Final pick: Option 6 (recolored)** — applied in `LegalLayout.tsx`. See STORY.md "Logo Exploration" section.
+- [x] T7 (follow-up) — Propagated Option 6 across the whole site: `LandingPage.tsx`, `PricingPage.tsx`, `AuthPage.tsx`, `ForgotPasswordPage.tsx`, `ResetPasswordPage.tsx`. Added `logo-icon-option6-light.png` for dark surfaces; theme-reactive surfaces use both variants gated by Tailwind `dark:`. Non-brand `Building2` icons left untouched. Confirmed no email templates exist to update.
 
 **Note on E2E run:** repo `.env` sets `PLAYWRIGHT_BASE_URL` to the Railway staging URL by default, so plain `npm run test:e2e` exercises staging (still on old branding, unrelated to this change) rather than the local dev server. Override with `PLAYWRIGHT_BASE_URL=http://localhost:5000` to test this branch's changes locally, as TC-LAUNCH-011-04 requires.
 
