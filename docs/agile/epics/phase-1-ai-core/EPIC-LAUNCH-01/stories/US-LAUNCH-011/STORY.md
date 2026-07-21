@@ -32,7 +32,7 @@
 
 - **localStorage prefix migration** — `VITE_STORAGE_PREFIX=infographicai` and legacy `brainwave_*` keys (`client/src/lib/storage.ts`) stay untouched; renaming them requires a one-time user-data migration → separate post-launch story.
 - **Internal/tooling naming** — CLAUDE.md, PROJECT_CONTEXT.yaml `project.name`, `.orion/orion.yaml`, agile docs, `package.json` name, repo/folder names all keep *InfographicAI*; a docs-wide rename is deliberate churn with zero user value right now.
-- **Logo / visual identity** — this is a text rebrand only; no new logo, colors, or favicon artwork.
+- ~~**Logo / visual identity** — this is a text rebrand only; no new logo, colors, or favicon artwork.~~ **Superseded 2026-07-20** — see "Logo Exploration (follow-up)" below. The user supplied 8 candidate logo images mid-implementation and asked to explore/apply them; that work now lives on this branch.
 - **Landing page for apex `buildographic.com`** — separate unscoped story; this story only renames the existing in-app `LandingPage.tsx`.
 - **Stale copyright year** — `COPYRIGHT InfographicAI 2025` on Landing/Pricing pages becomes `COPYRIGHT Buildographic 2025`; fixing the hardcoded year is a separate cleanup.
 
@@ -57,6 +57,36 @@
   - `api/src/modules/auth/services/auth.service.ts`
   - `api/tests/auth/password-reset.spec.ts` (subject assertion)
   - `e2e/us-launch-001-legal-pages.spec.ts` (brand assertions)
+  - `client/src/components/legal/LegalLayout.tsx` (logo exploration, see below)
+  - `client/public/logo-icon-option{1,2,3,4,5,6,7,8}.png` (new)
+  - `client/public/logo-icon-option6-original-backup.png` (new)
+  - `client/public/logo-option3-lockup.png` (new)
+
+---
+
+## Logo Exploration (follow-up, 2026-07-20/21)
+
+Added mid-implementation at the user's request, after the text rebrand above was already complete.
+Not covered by the original ACs — recorded here for traceability rather than retrofitted into AC1–AC4.
+
+- User supplied 8 candidate logo images (WhatsApp exports). Reviewed via a side-by-side artifact
+  comparison mocked into the real `LegalLayout.tsx` header; recommended Option 1 (flat house+bars,
+  navy/teal) with Option 3 as runner-up.
+- Extracted icon-only, transparent-background PNGs for all 8 candidates into `client/public/`
+  (background-removal + crop, since the source JPEGs are full lockups with wordmark + tagline baked in).
+- Iterated live on Options 1 & 3 in `LegalLayout.tsx`: fixed a baseline-alignment issue (switched the
+  flex container from `items-center` to `items-baseline` — more robust than a manual pixel offset),
+  enlarged the icon, moved to a stacked icon-over-wordmark layout with live text (not baked into the
+  image), and increased the nav bar height (`h-14` → `h-20`) so the stack has breathing room.
+- Recolored Option 6 (gold/navy "arrow" mark) to the Option 3 navy/teal brand palette, preserving the
+  original gradient/highlight shading. Original backed up as `logo-icon-option6-original-backup.png`.
+- **Current state on this branch:** `LegalLayout.tsx` has Option 3 applied (stacked layout, 80px header)
+  — this reflects the last option reviewed live, not a confirmed final decision. All 8 extracted icons
+  ship on this branch regardless of which is ultimately chosen, so switching is a one-line `src` change
+  in `LegalNav`.
+- This only touches the **legal-page header** (`LegalLayout.tsx`); the logo has not been propagated to
+  `LandingPage.tsx`, `PricingPage.tsx`, `SiteFooter.tsx`, or the auth pages, which still use the lucide
+  `Building2` icon placeholder. Propagating a final choice everywhere is follow-up work.
 
 ---
 

@@ -1,14 +1,13 @@
 import { Link } from "wouter";
-import { Building2 } from "lucide-react";
 import type { ReactNode } from "react";
 
 function LegalNav() {
   return (
     <nav className="border-b border-gray-200 bg-[#f5f5f0]">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 font-bold text-lg text-black">
-          <Building2 className="h-6 w-6" />
-          <span>Buildographic</span>
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
+        <Link href="/" className="flex flex-col items-center justify-center leading-none">
+          <img src="/logo-icon-option3.png" alt="" className="h-10 w-10" />
+          <span className="text-xs leading-none font-extrabold tracking-tight text-black mt-0.5">Buildographic</span>
         </Link>
         <Link href="/" className="text-sm text-gray-600 hover:text-black transition-colors">
           &larr; Back to Home
