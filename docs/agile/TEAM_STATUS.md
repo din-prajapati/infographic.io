@@ -1065,3 +1065,19 @@
 <!-- ai-sdlc:session-log -->
 **2026-07-21 17:59** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
   - Last commit: 4fe4c56 feat(brand): rename VITE_STORAGE_PREFIX from infographicai to buildographic
+
+<!-- ai-sdlc:session-log -->
+**2026-07-21 18:05** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: c4541c2 docs(launch): sync stale status docs — Task 3 in-progress, M-LAUNCH-01 slipping, record ADR-001
+
+<!-- ai-sdlc:session-log -->
+**2026-07-21 18:27** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: c4541c2 docs(launch): sync stale status docs — Task 3 in-progress, M-LAUNCH-01 slipping, record ADR-001
+
+<!-- ai-sdlc:session-log -->
+**2026-07-21 18:37** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: d1f13db docs(env): point CLIENT_URL/BASE_URL/VITE_CLIENT_URL prod templates at buildographic.com
+
+<!-- ai-sdlc:session-log -->
+**2026-07-21 18:46** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: d1f13db docs(env): point CLIENT_URL/BASE_URL/VITE_CLIENT_URL prod templates at buildographic.com

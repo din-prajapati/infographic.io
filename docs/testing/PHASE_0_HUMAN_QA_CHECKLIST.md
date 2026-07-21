@@ -14,7 +14,7 @@
 | —   | [Automation Already Done](#automation-already-done--skip-these)                                   | Playwright + unit tests — skip these                                 | ✅ All green (2026-06-19)                                                        |
 | 1   | [Task 1 — Local QA](#task-1--critical-path-manual-qa-local-before-staging-deploy)                 | Flows 1A–1G: auth, generation, canvas, payments, team, cross-browser | ✅ **SIGNED OFF — 2026-06-20 · PASS**                                            |
 | 2   | [Task 2 — Staging](#task-2--staging-smoke-test-railway--neon)                                     | Railway + Neon staging deploy + E2E + live Ideogram verify           | ✅ **SIGNED OFF — 2026-07-11 · PASS** |
-| 3   | [Task 3 — Production](#task-3--production-go-live--sentry-verify)                                 | Live keys, v1.0.0 tag, Sentry, Google OAuth prod                     | 🟡 **IN PROGRESS** — PROD_URL decided + custom domain added 2026-07-21 (DNS propagating); Neon/Railway env vars next |
+| 3   | [Task 3 — Production](#task-3--production-go-live--sentry-verify)                                 | Live keys, v1.0.0 tag, Sentry, Google OAuth prod                     | 🟡 **IN PROGRESS** — domain live + verified, Neon/Railway env vars set (3A/3B ✅, found+fixed a real `BASE_URL`/`CLIENT_URL` bug on both envs); remaining: confirm Prod OAuth client (3F), tag `v1.0.0` (3C), smoke test (3D), Sentry (3E) |
 | 7   | [Flow 7 — Right Sidebar](#flow-7--right-sidebar-design--property--agent-panel)                    | RightSidebar.tsx 44-point checklist                                  | ⏸ **DEFERRED to Phase 1** — all stale bugs verified as implemented (2026-06-20) |
 | —   | [Deferred Feature Backlog](#deferred-feature-backlog--architectural-gaps-found-during-phase-0-qa) | GAP-01 (lightbox) · GAP-02 (editable canvas layers)                  | GAP-01 ✅ Implemented · GAP-02 🔲 Phase 1                                        |
 | —   | [Deployment Strategy](#deployment-strategy--work-sizing--timeline)                                | Work sizing and timeline for infra                                   | 📋 Reference                                                                    |
@@ -408,8 +408,8 @@ PROD_URL = https://app.buildographic.com
 | 3 | Resend SPF | TXT | `send` | `v=spf1 include:amazonses.com ~all` | ✅ Added |
 | 4 | DMARC (monitor-only) | TXT | `_dmarc` | `v=DMARC1; p=none;` | ✅ Added — optional but recommended; tighten to `p=quarantine`/`p=reject` after a clean monitoring period |
 | 5 | Resend domain verification | — | — | — | 🟡 **Pending** — Resend status showed "Pending" as of last check; DNS propagation can take up to a few hours |
-| 6 | Railway production custom domain | CNAME | `app` | `9rcq9erg.up.railway.app` | ✅ Added on Railway (`app.buildographic.com` → port `5000`) and at Namecheap 2026-07-21; 🟡 propagation pending — Railway still shows "Waiting for DNS update" |
-| 7 | Railway domain ownership verification | TXT | `_railway-verify.app` | `railway-verify=915accba7691576d49bb2da5aa4d3f4279004c9901290e125b33f193ea7106d4` | ✅ Added at Namecheap 2026-07-21; 🟡 propagation pending |
+| 6 | Railway production custom domain | CNAME | `app` | `9rcq9erg.up.railway.app` | ✅ **Verified — 2026-07-21.** `app.buildographic.com` shows a green checkmark on Railway Settings → Networking |
+| 7 | Railway domain ownership verification | TXT | `_railway-verify.app` | `railway-verify=915accba7691576d49bb2da5aa4d3f4279004c9901290e125b33f193ea7106d4` | ✅ **Verified — 2026-07-21** |
 
 **Resend API keys (Railway env vars, values not reproduced here — secrets):**
 
@@ -423,6 +423,22 @@ PROD_URL = https://app.buildographic.com
 - `VITE_STORAGE_PREFIX=buildographic` — changed from `infographicai` on **both** staging and production (safe pre-launch, no user data yet — see `US-LAUNCH-011/STORY.md`)
 - `VITE_RAZORPAY_KEY_ID` — converted to a **Railway variable reference** `${{RAZORPAY_KEY_ID}}` on **both** environments (was a literal copy on staging, missing entirely on production) — guarantees it never drifts from the backend key
 
+**🔴 Bug found & fixed 2026-07-21 — `BASE_URL` empty on both environments, `CLIENT_URL` missing entirely.** `frontendUrl()` (`api/src/modules/auth/services/auth.service.ts:26`) reads `CLIENT_URL || BASE_URL || 'http://localhost:5000'` — used for password-reset email links and the post-OAuth-login redirect (`auth.controller.ts:62`). With both unset, these silently fell back to `localhost:5000` on **both staging and production** (Google OAuth itself still worked, because `GOOGLE_CALLBACK_URL` was correctly set separately). This calls into question whether US-LAUNCH-003's staging TC-05 "verified live" pass actually exercised a real-host reset link — worth a re-check.
+
+Fixed on both environments:
+
+| Var | Staging | Production |
+|---|---|---|
+| `BASE_URL` | `https://infographic-production-staging.up.railway.app` | `https://app.buildographic.com` |
+| `CLIENT_URL` (new) | `https://infographic-production-staging.up.railway.app` | `https://app.buildographic.com` |
+| `GOOGLE_CALLBACK_URL` | already correct, unchanged | `https://app.buildographic.com/api/v1/auth/google/callback` (was empty) |
+
+**`GEMINI_API_KEY` gap (from the earlier env audit) — ✅ closed 2026-07-21.** Added and deployed on **both** staging and production; FREE/SOLO tier generation was silently paying GPT-4o pricing instead of Gemini (`openai.service.ts:29-31` graceful fallback, not a hard failure — now resolved).
+
+**Housekeeping incident:** a stray Railway "function-bun" quick-create service was accidentally spun up in `production` mid-session (misclick, never deployed) — found and deleted via Settings → Danger before any build ran. No impact.
+
+**Env template files updated to match** (`.env.production.example`, `client/.env.production`, `client/.env.production.example`) — `BASE_URL`/`CLIENT_URL`/`VITE_CLIENT_URL` placeholders now point at `app.buildographic.com`. Also flagged in `client/.env.example`: `VITE_CLIENT_URL` has **zero usages** in `client/src` — dead config, distinct from the real (and now-fixed) backend `CLIENT_URL`.
+
 **Full reference:** [ADR-001 — Email sending domain & DNS record scoping](../agile/decisions/ADR-001-email-sending-domain-dns.md)
 
 ---
@@ -432,8 +448,8 @@ PROD_URL = https://app.buildographic.com
 
 | #    | Step                                                                         | Done? | Notes                                                        |
 | ---- | ---------------------------------------------------------------------------- | ----- | ------------------------------------------------------------ |
-| P-01 | Confirm the Neon `main` branch is the production branch (default)            | ☐     | Or create a `production` branch if you want named separation |
-| P-02 | Copy the production branch **direct connection string** (`?sslmode=require`) | ☐     |                                                              |
+| P-01 | Confirm the Neon `main` branch is the production branch (default)            | ☑     | Branch is literally named `production` (not `main`) — `br-silent-pond-aokkkcfo`, compute endpoint `ep-aged-king-aoc76bhz`. Confirmed 2026-07-21. |
+| P-02 | Copy the production branch **direct connection string** (`?sslmode=require`) | ☑     | Confirmed 2026-07-21 — Railway's `DATABASE_URL` on production **already** pointed to `ep-aged-king-aoc76bhz` (direct, no `-pooler`, `sslmode=require` present) — matches Neon's production branch exactly. No change needed. |
 
 
 ---
@@ -443,12 +459,12 @@ PROD_URL = https://app.buildographic.com
 
 | #    | Step                                                                                             | Done? | Notes                                                                   |
 | ---- | ------------------------------------------------------------------------------------------------ | ----- | ----------------------------------------------------------------------- |
-| P-03 | In Railway dashboard: create `production` environment (mark as **Protected**)                    | ☐     | Protected = no accidental deploys                                       |
-| P-04 | Set all production variables (see table below)                                                   | ☐     | **LIVE keys only — never TEST keys here**                               |
+| P-03 | In Railway dashboard: create `production` environment (mark as **Protected**)                    | ☑     | **Already existed** before this session — confirmed 2026-07-21 (contrary to this doc's prior unchecked state). ⚠️ Not yet confirmed **Protected** — check Settings toggle. |
+| P-04 | Set all production variables (see table below)                                                   | 🟡     | **Mostly done** — see "🔴 LIVE" record above for full detail. Group 1 (core): done. Group 2 (URLs): done, incl. the `BASE_URL`/`CLIENT_URL` bug fix. Group 3 (AI): done incl. `GEMINI_API_KEY`. Group 4 (payments): **deliberately staying on TEST keys** for the free beta per `LAUNCH_TIMELINE.md` — do NOT switch to `rzp_live_*` yet. Group 5 (Google OAuth): vars present, **but not yet confirmed as a genuinely separate "Prod" OAuth client** in Google Cloud Console — that's Task 3F, needs your eyes there. Group 6 (observability): done. `APP_ENV` intentionally still unset (harmless per footnote, pending US-LAUNCH-010). |
 | P-05 | In Railway service settings → Deploy → set **Deploy Trigger = Git tag (`v`*)**                   | ☐     | Per strategy §3: production deploys from a version tag, not branch push |
 | P-06 | **Bootstrap first deploy:** `railway up --detach` from the `production` environment *(one-time)* | ☐     | Creates the service; subsequent deploys are tag-triggered               |
 | P-07 | `railway logs` → confirm clean startup                                                           | ☐     |                                                                         |
-| P-08 | `railway domain` → set custom domain (Option B) or note the generated Railway URL (Option A) → this **is** your `PROD_URL` from §3.0 | ☑     | `app.buildographic.com` added in Railway (Settings → Networking → Custom Domain, port `5000`) 2026-07-21; CNAME + TXT verification records added at Namecheap same day. **Propagation pending** — Railway still shows "Waiting for DNS update" as of last check. Re-check `railway domain` / dashboard before proceeding to P-13 smoke test. |
+| P-08 | `railway domain` → set custom domain (Option B) or note the generated Railway URL (Option A) → this **is** your `PROD_URL` from §3.0 | ☑     | `app.buildographic.com` added in Railway (Settings → Networking → Custom Domain, port `5000`) 2026-07-21. **DNS propagated and verified same day** — green checkmark on Railway dashboard. |
 
 
 ---
