@@ -354,11 +354,11 @@ export default function PricingPage() {
         <div className="container flex h-16 items-center justify-between px-6 max-w-6xl mx-auto">
           <Link
             href="/"
-            className="flex items-center gap-2 font-bold text-lg text-foreground"
+            className="flex flex-col items-center justify-center leading-none font-bold text-foreground"
           >
             <img src="/logo-icon-option6.png" alt="" className="h-7 w-7 dark:hidden" />
             <img src="/logo-icon-option6-light.png" alt="" className="h-7 w-7 hidden dark:block" />
-            <span>Buildographic</span>
+            <span className="text-[10px] leading-none font-extrabold tracking-tight mt-0.5">Buildographic</span>
           </Link>
           <div className="flex items-center gap-8">
             <a
@@ -718,9 +718,9 @@ export default function PricingPage() {
             <div className="col-span-2 md:col-span-1">
               <Link
                 href="/"
-                className="flex items-center gap-2 font-bold text-xl text-white mb-4"
+                className="flex flex-col items-start gap-1 font-bold text-xl text-white mb-4"
               >
-                <img src="/logo-icon-option6-light.png" alt="" className="h-6 w-6" />
+                <img src="/logo-icon-option6-light.png" alt="" className="h-8 w-8" />
                 <span>Buildographic</span>
               </Link>
               <p className="text-sm text-gray-400 leading-relaxed">

@@ -204,9 +204,9 @@ export default function LandingPage() {
 
         <nav className="relative z-20 border-b border-white/10">
           <div className="container flex h-16 items-center justify-between px-6 max-w-6xl mx-auto">
-            <Link href="/" className="flex items-center gap-2 font-bold text-lg text-white">
+            <Link href="/" className="flex flex-col items-center justify-center leading-none font-bold text-white">
               <img src="/logo-icon-option6-light.png" alt="" className="h-7 w-7" />
-              <span>Buildographic</span>
+              <span className="text-[10px] leading-none font-extrabold tracking-tight mt-0.5">Buildographic</span>
             </Link>
             <div className="hidden md:flex items-center gap-8">
               <a href="#templates" className="text-sm font-medium text-white/80 hover:text-white">Templates</a>
@@ -564,8 +564,8 @@ export default function LandingPage() {
         <div className="container px-6 max-w-6xl mx-auto">
           <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
             <div className="col-span-2 md:col-span-1">
-              <Link href="/" className="flex items-center gap-2 font-bold text-xl text-black mb-4">
-                <img src="/logo-icon-option6.png" alt="" className="h-6 w-6" />
+              <Link href="/" className="flex flex-col items-start gap-1 font-bold text-xl text-black mb-4">
+                <img src="/logo-icon-option6.png" alt="" className="h-8 w-8" />
                 <span>Buildographic</span>
               </Link>
               <p className="text-sm text-gray-600 leading-relaxed">

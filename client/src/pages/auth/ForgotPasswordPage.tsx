@@ -32,9 +32,9 @@ export default function ForgotPasswordPage() {
           <ArrowLeft className="h-4 w-4" /> Back to login
         </Link>
 
-        <div className="flex items-center gap-2 mb-6 justify-center">
-          <img src="/logo-icon-option6.png" alt="" className="h-7 w-7 dark:hidden" />
-          <img src="/logo-icon-option6-light.png" alt="" className="h-7 w-7 hidden dark:block" />
+        <div className="flex flex-col items-center gap-1 mb-6">
+          <img src="/logo-icon-option6.png" alt="" className="h-9 w-9 dark:hidden" />
+          <img src="/logo-icon-option6-light.png" alt="" className="h-9 w-9 hidden dark:block" />
           <span className="text-lg font-bold text-foreground">Buildographic</span>
         </div>
 

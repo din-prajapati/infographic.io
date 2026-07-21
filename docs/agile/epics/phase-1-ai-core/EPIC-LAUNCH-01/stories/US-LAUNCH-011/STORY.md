@@ -102,6 +102,17 @@ Not covered by the original ACs — recorded here for traceability rather than r
   `.hbs`/template files and any `<img>`/logo reference in email content. The only HTML email
   (password-reset, in `auth.service.ts`) is a plain two-paragraph string with a text link — no logo
   image, no template file, nothing to change.
+- **Stacked lockup made consistent site-wide (2026-07-21).** The legal pages already used a
+  stacked icon-over-wordmark treatment; matched it everywhere else the logo appears so the brand
+  lockup reads the same across the whole site:
+  - `LandingPage.tsx` and `PricingPage.tsx` top nav — compact stacked lockup (icon `h-7`,
+    `text-[10px] font-extrabold`) sized to fit the existing `h-16` toolbar without changing its height.
+  - `LandingPage.tsx` and `PricingPage.tsx` footer brand column — stacked but left-aligned
+    (`items-start`, not centered) to match the surrounding footer columns' left-aligned convention.
+  - `AuthPage.tsx`, `ForgotPasswordPage.tsx`, `ResetPasswordPage.tsx` — stacked, matching the same
+    scale already used on the legal pages.
+  - The video-hero "logo reveal" moment on `LandingPage.tsx` was already icon-above-heading in spirit
+    (badge icon + separate "Buildographic" `<h3>` + tagline below) — left as is, no change needed.
 
 ---
 
@@ -142,6 +153,12 @@ Implementation rules:
 | TC-LAUNCH-011-05 | Auto | P2 | `GET /api/docs` (Swagger UI) page title shows "Buildographic API" | ✅ | Verified via source (`api/src/main.ts:93`) + `npm run check` pass; Swagger UI itself not opened in browser |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
+
+---
+
+## References
+
+- ADR-001 — Email sending domain & DNS record scoping for buildographic.com  (docs/agile/decisions/ADR-001-email-sending-domain-dns.md)
 
 ---
 
