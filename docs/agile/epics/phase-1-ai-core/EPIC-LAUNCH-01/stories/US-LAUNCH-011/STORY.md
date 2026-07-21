@@ -80,10 +80,9 @@ Not covered by the original ACs — recorded here for traceability rather than r
   image), and increased the nav bar height (`h-14` → `h-20`) so the stack has breathing room.
 - Recolored Option 6 (gold/navy "arrow" mark) to the Option 3 navy/teal brand palette, preserving the
   original gradient/highlight shading. Original backed up as `logo-icon-option6-original-backup.png`.
-- **Current state on this branch:** `LegalLayout.tsx` has Option 3 applied (stacked layout, 80px header)
-  — this reflects the last option reviewed live, not a confirmed final decision. All 8 extracted icons
-  ship on this branch regardless of which is ultimately chosen, so switching is a one-line `src` change
-  in `LegalNav`.
+- **Final decision (2026-07-21): Option 6 (recolored)** — `LegalLayout.tsx` now renders
+  `logo-icon-option6.png` (navy house + teal upward arrow, gradient shading preserved) in the stacked
+  icon-over-wordmark layout, 80px header. This is the confirmed choice, not an in-progress comparison.
 - This only touches the **legal-page header** (`LegalLayout.tsx`); the logo has not been propagated to
   `LandingPage.tsx`, `PricingPage.tsx`, `SiteFooter.tsx`, or the auth pages, which still use the lucide
   `Building2` icon placeholder. Propagating a final choice everywhere is follow-up work.

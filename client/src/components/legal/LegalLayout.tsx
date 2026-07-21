@@ -6,7 +6,7 @@ function LegalNav() {
     <nav className="border-b border-gray-200 bg-[#f5f5f0]">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
         <Link href="/" className="flex flex-col items-center justify-center leading-none">
-          <img src="/logo-icon-option3.png" alt="" className="h-10 w-10" />
+          <img src="/logo-icon-option6.png" alt="" className="h-10 w-10" />
           <span className="text-xs leading-none font-extrabold tracking-tight text-black mt-0.5">Buildographic</span>
         </Link>
         <Link href="/" className="text-sm text-gray-600 hover:text-black transition-colors">
