@@ -1101,3 +1101,11 @@
 <!-- ai-sdlc:session-log -->
 **2026-07-21 19:32** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
   - Last commit: fad0341 docs(launch): record Task 3A/3B progress — Neon confirmed, BASE_URL/CLIENT_URL bug found+fixed on both envs
+
+<!-- ai-sdlc:session-log -->
+**2026-07-21 19:34** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: 9906d4c docs(launch): re-verify reset link against production + confirm HTTPS — US-LAUNCH-003
+
+<!-- ai-sdlc:session-log -->
+**2026-07-21 19:35** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: 9906d4c docs(launch): re-verify reset link against production + confirm HTTPS — US-LAUNCH-003
