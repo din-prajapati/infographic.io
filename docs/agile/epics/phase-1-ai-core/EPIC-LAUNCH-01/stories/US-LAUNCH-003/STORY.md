@@ -1,6 +1,6 @@
 # Story Card — US-LAUNCH-003
 
-> **Status:** 🟡 Implemented — code complete, Gate 1 + 8 unit tests green, merged to `main`. ⚠️ Live DB migration (`PasswordResetToken` table via `prisma db push`) runs on next deploy (`db:deploy`); manual E2E (TC-05) pending. Awaiting M-LAUNCH-01 close (Task 3).
+> **Status:** 🟡 Implemented — code complete, Gate 1 + 8 unit tests green, merged to `main`. TC-05 verified live against dev server 2026-07-12, then **re-verified against production** (`app.buildographic.com`) 2026-07-21 after a `BASE_URL`/`CLIENT_URL` bug fix — see Finding below. Awaiting M-LAUNCH-01 close (Task 3).
 > **Feature:** F-LAUNCH-02 — Transactional Email
 > **Epic:** [EPIC-LAUNCH-01](../../EPIC.md)
 > **Milestone:** [M-LAUNCH-01-public-beta](../../milestones/M-LAUNCH-01-public-beta.md)
@@ -86,7 +86,7 @@ Implementation rules:
 | TC-LAUNCH-003-02 | Auto (unit) | P0 | Given a valid unexpired token, when reset-password called, then bcrypt hash updated and token marked used; reusing same token → 400 | 🔲 | |
 | TC-LAUNCH-003-03 | Auto (unit) | P0 | Given an unknown email, when forgot-password called, then 200 returned and no token created (no enumeration) | 🔲 | |
 | TC-LAUNCH-003-04 | Auto (unit) | P1 | Given an expired token, when reset-password called, then 400 and password unchanged | 🔲 | |
-| TC-LAUNCH-003-05 | E2E | P0 | Full flow on localhost: request reset → console-logged email link → open → set new password → login works with new password, old fails | ✅ | **Verified live 2026-07-12** against dev server + real DB: forgot→200+token row (AC1), reset→200 password updated (AC3), new pw logs in / old rejected (401), reused token→400. Reset half used an injected token (emailed raw token is console-only); linkage `sha256`-covered by unit tests. Automated Playwright version still `test.skip`'d pending a token-capture hook. |
+| TC-LAUNCH-003-05 | E2E | P0 | Full flow on localhost: request reset → console-logged email link → open → set new password → login works with new password, old fails | ✅ | **Verified live 2026-07-12** against dev server + real DB: forgot→200+token row (AC1), reset→200 password updated (AC3), new pw logs in / old rejected (401), reused token→400. Reset half used an injected token (emailed raw token is console-only); linkage `sha256`-covered by unit tests. Automated Playwright version still `test.skip`'d pending a token-capture hook. **Re-verified live against production 2026-07-21** (see finding below): registered `din.prajapati+prodreset@gmail.com` on `app.buildographic.com`, triggered forgot-password, received the real Resend email, and the link correctly used `https://app.buildographic.com/auth/reset?token=...` — no `localhost` fallback. Manually completed the reset and logged in with the new password. This is the first time TC-05 exercised a real host end-to-end; the earlier "verified live" pass only ever ran against the dev server, which is how the `BASE_URL`/`CLIENT_URL` bug (fad0341, 2026-07-21) went undetected. |
 | TC-LAUNCH-003-06 | Auto (unit) | P1 | Given a Google-OAuth-only account, when forgot-password called, then "signs in with Google" email sent, no token created | 🔲 | |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked

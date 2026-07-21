@@ -1081,3 +1081,23 @@
 <!-- ai-sdlc:session-log -->
 **2026-07-21 18:46** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
   - Last commit: d1f13db docs(env): point CLIENT_URL/BASE_URL/VITE_CLIENT_URL prod templates at buildographic.com
+
+<!-- ai-sdlc:session-log -->
+**2026-07-21 18:50** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: fad0341 docs(launch): record Task 3A/3B progress — Neon confirmed, BASE_URL/CLIENT_URL bug found+fixed on both envs
+
+<!-- ai-sdlc:session-log -->
+**2026-07-21 19:22** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: fad0341 docs(launch): record Task 3A/3B progress — Neon confirmed, BASE_URL/CLIENT_URL bug found+fixed on both envs
+
+<!-- ai-sdlc:session-log -->
+**2026-07-21 19:25** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: fad0341 docs(launch): record Task 3A/3B progress — Neon confirmed, BASE_URL/CLIENT_URL bug found+fixed on both envs
+
+<!-- ai-sdlc:session-log -->
+**2026-07-21 19:28** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: fad0341 docs(launch): record Task 3A/3B progress — Neon confirmed, BASE_URL/CLIENT_URL bug found+fixed on both envs
+
+<!-- ai-sdlc:session-log -->
+**2026-07-21 19:32** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: fad0341 docs(launch): record Task 3A/3B progress — Neon confirmed, BASE_URL/CLIENT_URL bug found+fixed on both envs
