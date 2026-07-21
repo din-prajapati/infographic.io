@@ -30,7 +30,7 @@
 
 ## Out of Scope
 
-- **localStorage prefix migration** — `VITE_STORAGE_PREFIX=infographicai` and legacy `brainwave_*` keys (`client/src/lib/storage.ts`) stay untouched; renaming them requires a one-time user-data migration → separate post-launch story.
+- ~~**localStorage prefix migration** — `VITE_STORAGE_PREFIX=infographicai` stays untouched; renaming requires a one-time user-data migration.~~ **Superseded 2026-07-21** — decided pre-launch (no production users yet, so no migration needed): `VITE_STORAGE_PREFIX` changed to `buildographic` in `client/src/lib/storage.ts` fallback default + `.env.example`/`.env.development.example`/`.env.production.example`/`ENVIRONMENTS.md`, and the Railway staging + production variables. Legacy `brainwave_*` keys remain untouched (dead code path, no live data references them).
 - **Internal/tooling naming** — CLAUDE.md, PROJECT_CONTEXT.yaml `project.name`, `.orion/orion.yaml`, agile docs, `package.json` name, repo/folder names all keep *InfographicAI*; a docs-wide rename is deliberate churn with zero user value right now.
 - ~~**Logo / visual identity** — this is a text rebrand only; no new logo, colors, or favicon artwork.~~ **Superseded 2026-07-20** — see "Logo Exploration (follow-up)" below. The user supplied 8 candidate logo images mid-implementation and asked to explore/apply them; that work now lives on this branch.
 - **Landing page for apex `buildographic.com`** — separate unscoped story; this story only renames the existing in-app `LandingPage.tsx`.

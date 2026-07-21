@@ -18,7 +18,7 @@ export interface DesignMetadata {
   tags?: string[];
 }
 
-const STORAGE_PREFIX = import.meta.env.VITE_STORAGE_PREFIX ?? 'infographicai';
+const STORAGE_PREFIX = import.meta.env.VITE_STORAGE_PREFIX ?? 'buildographic';
 const DESIGNS_KEY = `${STORAGE_PREFIX}_designs`;
 const TEMPLATES_KEY = `${STORAGE_PREFIX}_templates`;
 const AUTOSAVE_KEY = `${STORAGE_PREFIX}_autosave`;
