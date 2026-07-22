@@ -254,7 +254,7 @@ export class AuthService {
         // AC5 — no local password to reset
         await this.emailService.send({
           to: user.email,
-          subject: 'Signing in to InfographicAI',
+          subject: 'Signing in to Buildographic',
           text:
             `You requested a password reset, but this account signs in with Google — ` +
             `there is no password to reset. Just use "Continue with Google" on the login page.`,
@@ -278,7 +278,7 @@ export class AuthService {
         const link = `${this.frontendUrl()}/auth/reset?token=${rawToken}`;
         await this.emailService.send({
           to: user.email,
-          subject: 'Reset your InfographicAI password',
+          subject: 'Reset your Buildographic password',
           text:
             `Reset your password using this link (valid for 1 hour):\n${link}\n\n` +
             `If you didn't request this, you can safely ignore this email.`,

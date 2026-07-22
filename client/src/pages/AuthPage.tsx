@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/lib/auth';
 import { authApi } from '@/lib/api';
 import { registerSchema, loginSchema, type RegisterInput, type LoginInput } from '@shared/schema';
-import { Building2, Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
 import { SiteFooter } from '@/components/SiteFooter';
 
 import property1 from '@/assets/images/carousel/property-1.jpg';
@@ -75,7 +75,7 @@ export default function AuthPage() {
     mutationFn: authApi.register,
     onSuccess: (data) => {
       login(data.user, data.token);
-      toast.success('Account created!', { description: 'Welcome to InfographicAI.' });
+      toast.success('Account created!', { description: 'Welcome to Buildographic.' });
     },
     onError: (error: Error) => {
       toast.error('Registration failed', { description: error.message });
@@ -124,9 +124,9 @@ export default function AuthPage() {
           }}
         >
           <div className="flex flex-col items-center mb-8">
-            <div className="flex items-center gap-2.5 mb-6">
-              <Building2 className="h-9 w-9 text-white" />
-              <span className="text-xl font-bold text-white tracking-tight">InfographicAI</span>
+            <div className="flex flex-col items-center gap-1 mb-6">
+              <img src="/logo-icon-option6-light.png" alt="" className="h-9 w-9" />
+              <span className="text-xl font-bold text-white tracking-tight">Buildographic</span>
             </div>
             <h1 className="text-3xl md:text-4xl font-bold text-white mb-2 text-center">
               {isLoginMode ? 'Welcome Back' : 'Create Account'}

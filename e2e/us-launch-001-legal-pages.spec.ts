@@ -14,6 +14,7 @@ const legalPages = [
   { path: "/terms", heading: "Terms of Service" },
   { path: "/privacy", heading: "Privacy Policy" },
   { path: "/refund-policy", heading: "Refund & Cancellation Policy" },
+  { path: "/cookies", heading: "Cookie Policy" },
 ];
 
 test.describe("US-LAUNCH-001 — legal & policy pages", () => {
@@ -25,6 +26,9 @@ test.describe("US-LAUNCH-001 — legal & policy pages", () => {
       await expect(page).toHaveURL(new RegExp(`${path.replace("/", "\\/")}$`));
       await expect(page.getByRole("heading", { name: heading })).toBeVisible();
       await expect(page.getByText("404 - Page Not Found")).toHaveCount(0);
+      // US-LAUNCH-011: brand must say "Buildographic" in nav and footer
+      await expect(page.getByRole("navigation").getByText("Buildographic")).toBeVisible();
+      await expect(page.locator("footer")).toContainText("Buildographic");
     });
   }
 

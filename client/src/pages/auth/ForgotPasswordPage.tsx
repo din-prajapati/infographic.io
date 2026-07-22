@@ -4,7 +4,7 @@ import { useMutation } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { authApi } from '@/lib/api';
-import { Building2, ArrowLeft, MailCheck } from 'lucide-react';
+import { ArrowLeft, MailCheck } from 'lucide-react';
 
 /**
  * Public page — request a password reset link (US-LAUNCH-003, AC4).
@@ -25,9 +25,17 @@ export default function ForgotPasswordPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-md rounded-2xl border border-border bg-card p-8 shadow-sm">
-        <div className="flex items-center gap-2 mb-6 justify-center">
-          <Building2 className="h-7 w-7 text-primary" />
-          <span className="text-lg font-bold text-foreground">InfographicAI</span>
+        <Link
+          href="/auth"
+          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-6"
+        >
+          <ArrowLeft className="h-4 w-4" /> Back to login
+        </Link>
+
+        <div className="flex flex-col items-center gap-1 mb-6">
+          <img src="/logo-icon-option6.png" alt="" className="h-9 w-9 dark:hidden" />
+          <img src="/logo-icon-option6-light.png" alt="" className="h-9 w-9 hidden dark:block" />
+          <span className="text-lg font-bold text-foreground">Buildographic</span>
         </div>
 
         {sent ? (
@@ -39,12 +47,6 @@ export default function ForgotPasswordPage() {
               <span className="font-medium text-foreground">{email}</span>, we've sent a
               password reset link. It's valid for 1 hour.
             </p>
-            <Link
-              href="/auth"
-              className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
-            >
-              <ArrowLeft className="h-4 w-4" /> Back to login
-            </Link>
           </div>
         ) : (
           <>
@@ -84,12 +86,6 @@ export default function ForgotPasswordPage() {
                 {mutation.isPending ? 'Sending…' : 'Send reset link'}
               </Button>
             </form>
-            <Link
-              href="/auth"
-              className="mt-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
-            >
-              <ArrowLeft className="h-4 w-4" /> Back to login
-            </Link>
           </>
         )}
       </div>

@@ -10,7 +10,6 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import {
-  Building2,
   Check,
   ArrowRight,
   Gift,
@@ -75,7 +74,7 @@ const faqs = [
   {
     question: "Is this built for real estate?",
     answer:
-      "Yes. InfographicAI is built for agents, teams, and brokerages. Templates are designed specifically for property listings and marketing.",
+      "Yes. Buildographic is built for agents, teams, and brokerages. Templates are designed specifically for property listings and marketing.",
   },
   {
     question: "What formats can I download?",
@@ -219,7 +218,7 @@ export default function PricingPage() {
     const options = {
       key: import.meta.env.VITE_RAZORPAY_KEY_ID,
       subscription_id: subscriptionId,
-      name: "InfographicAI",
+      name: "Buildographic",
       description: `${planTierLabel} Plan Subscription`,
       handler: async (response: any) => {
         try {
@@ -355,10 +354,11 @@ export default function PricingPage() {
         <div className="container flex h-16 items-center justify-between px-6 max-w-6xl mx-auto">
           <Link
             href="/"
-            className="flex items-center gap-2 font-bold text-lg text-foreground"
+            className="flex flex-col items-center justify-center leading-none font-bold text-foreground"
           >
-            <Building2 className="h-7 w-7 text-foreground" />
-            <span>InfographicAI</span>
+            <img src="/logo-icon-option6.png" alt="" className="h-7 w-7 dark:hidden" />
+            <img src="/logo-icon-option6-light.png" alt="" className="h-7 w-7 hidden dark:block" />
+            <span className="text-[10px] leading-none font-extrabold tracking-tight mt-0.5">Buildographic</span>
           </Link>
           <div className="flex items-center gap-8">
             <a
@@ -613,7 +613,7 @@ export default function PricingPage() {
                   ) : isPendingPlan ? (
                     "Activating..."
                   ) : (
-                    "Try InfographicAI"
+                    "Try Buildographic"
                   )}
                 </Button>
                 {isPendingPlan && (
@@ -656,7 +656,7 @@ export default function PricingPage() {
               FREQUENTLY ASKED QUESTIONS
             </p>
             <h2 className="text-2xl md:text-4xl font-bold text-foreground">
-              Curious about InfographicAI?
+              Curious about Buildographic?
             </h2>
             <p className="text-xl md:text-2xl font-bold text-foreground">
               We got you covered
@@ -697,7 +697,7 @@ export default function PricingPage() {
             Start creating
           </h2>
           <h2 className="text-4xl md:text-6xl font-bold text-white mb-10 drop-shadow-lg">
-            on InfographicAI today.
+            on Buildographic today.
           </h2>
           <Link href="/auth">
             <Button
@@ -718,10 +718,10 @@ export default function PricingPage() {
             <div className="col-span-2 md:col-span-1">
               <Link
                 href="/"
-                className="flex items-center gap-2 font-bold text-xl text-white mb-4"
+                className="flex flex-col items-start gap-1 font-bold text-xl text-white mb-4"
               >
-                <Building2 className="h-6 w-6" />
-                <span>InfographicAI</span>
+                <img src="/logo-icon-option6-light.png" alt="" className="h-8 w-8" />
+                <span>Buildographic</span>
               </Link>
               <p className="text-sm text-gray-400 leading-relaxed">
                 Create stunning property infographics for your listings.
@@ -824,12 +824,17 @@ export default function PricingPage() {
                     Refund &amp; Cancellation
                   </a>
                 </li>
+                <li>
+                  <a href="/cookies" className="hover:text-white">
+                    Cookie Policy
+                  </a>
+                </li>
               </ul>
             </div>
           </div>
 
           <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-sm text-gray-500">COPYRIGHT InfographicAI 2025</p>
+            <p className="text-sm text-gray-500">COPYRIGHT Buildographic 2025</p>
             <p className="text-sm text-gray-500">
               DESIGNED FOR REAL ESTATE PROFESSIONALS
             </p>

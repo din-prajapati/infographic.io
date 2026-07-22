@@ -101,4 +101,14 @@ Key files relevant to this epic:
 
 ---
 
-*Epic created: 2026-07-07 | Last updated: 2026-07-07*
+*Epic created: 2026-07-07 | Last updated: 2026-07-18*
+
+---
+
+## Implementation Update (log)
+
+### 2026-07-18 — US-LAUNCH-011 implementation complete (pre-PR)
+- **Files touched:** `client/index.html`, `client/src/pages/LandingPage.tsx`, `client/src/pages/PricingPage.tsx`, `client/src/components/SiteFooter.tsx`, `client/src/pages/AuthPage.tsx`, `client/src/pages/auth/ForgotPasswordPage.tsx`, `client/src/pages/auth/ResetPasswordPage.tsx`, `client/src/pages/legal/TermsPage.tsx`, `client/src/pages/legal/PrivacyPage.tsx`, `client/src/pages/legal/RefundPolicyPage.tsx`, `api/src/modules/auth/services/auth.service.ts`, `api/src/main.ts`, `api/tests/auth/password-reset.spec.ts`, `e2e/us-launch-001-legal-pages.spec.ts`
+- **ACs covered:** AC1, AC2, AC3, AC4 (E2E assertions written; actual E2E run deferred to /test-story — needs running server)
+- **Commits:** 5 on branch `feat/launch/us-launch-011-rebrand-buildographic` (bc1a72e T1, 10c2851 T2, a343157 T3, 4a82384 T4, 3d88e45 T5)
+- **Notes:** grep sweep `grep -rn "InfographicAI" client/src client/index.html api/src` returns zero hits. Occurrence count discrepancies found vs story: TermsPage.tsx has 7 non-email occurrences (story stated 6); PrivacyPage.tsx has 4 non-email occurrences (story stated 5) — all were replaced per instruction. Email addresses (`support@infographicai.in`, etc.) in legal pages intentionally left unchanged (they are domain/contact addresses, not user-facing brand name occurrences, and changing them would require new email infrastructure). The all-caps "WHY INFOGRAPHICAI" label in LandingPage.tsx was replaced to "WHY BUILDOGRAPHIC" to preserve the display style.

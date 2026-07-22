@@ -2,7 +2,7 @@
 
 > **Story:** [STORY.md](./STORY.md)
 > **Branch:** `feat/launch/us-launch-011-rebrand-buildographic`
-> **PR:** #_____ (fill when opened)
+> **PR:** [#16](https://github.com/din-prajapati/infographic.io/pull/16)
 > **Linear:** LIN-XXX
 > **Type:** feat
 
@@ -12,8 +12,8 @@
 
 - [x] **Brain** — STORY.md is filled: ACs written, out-of-scope listed, "AI Implementation Prompt" ready
 - [x] **Muscle** — This TASKS.md has file list + ordered tasks + exact test commands
-- [ ] **Map** — [ARCHITECTURE.mmd](../../ARCHITECTURE.mmd) exists for this epic (AI has spatial context)
-- [ ] **Env** — [ENV.yaml](../../ENV.yaml) loaded (paths not guessed)
+- [x] **Map** — [ARCHITECTURE.mmd](../../ARCHITECTURE.mmd) exists for this epic (AI has spatial context)
+- [x] **Env** — [ENV.yaml](../../ENV.yaml) loaded (paths not guessed)
 
 > If any pillar is missing, fill it before opening the AI chat. Incomplete context = wasted session.
 
@@ -107,16 +107,23 @@ grep -rn "InfographicAI" client/src client/index.html api/src
 
 ## Task Checklist
 
-- [ ] T1 — Marketing + shell (index.html, LandingPage, PricingPage, SiteFooter)
-- [ ] T2 — Auth surfaces (AuthPage, ForgotPasswordPage, ResetPasswordPage)
-- [ ] T3 — Legal pages, name-only diff (Terms, Privacy, RefundPolicy)
-- [ ] T4 — Email subjects + Swagger title (auth.service.ts, main.ts)
-- [ ] T5 — Tests updated/added (unit subject + E2E brand)
-- [ ] `npm run check` passes ✅
-- [ ] `npm run test:unit` passes ✅
-- [ ] Manual test: TC-LAUNCH-011-04 sweep ✅
-- [ ] PR opened with story card as description ✅
-- [ ] STORY.md ACs updated ✅
+- [x] T1 — Marketing + shell (index.html, LandingPage, PricingPage, SiteFooter)
+- [x] T2 — Auth surfaces (AuthPage, ForgotPasswordPage, ResetPasswordPage)
+- [x] T3 — Legal pages, name-only diff (Terms, Privacy, RefundPolicy)
+- [x] T4 — Email subjects + Swagger title (auth.service.ts, main.ts)
+- [x] T5 — Tests updated/added (unit subject + E2E brand)
+- [x] `npm run check` passes ✅
+- [x] `npm run test:unit` passes ✅
+- [x] E2E: `npm run test:e2e -- --grep "legal|password"` passes (13 passed, 1 pre-existing unrelated skip) — run with `PLAYWRIGHT_BASE_URL=http://localhost:5000`, see note below
+- [x] Manual test: TC-LAUNCH-011-04 sweep ✅ (pass with finding — see STORY.md Test Cases)
+- [x] PR opened with story card as description ✅ ([#16](https://github.com/din-prajapati/infographic.io/pull/16))
+- [x] STORY.md ACs updated ✅
+- [x] T6 (follow-up) — Logo exploration: extracted 8 icon-only PNGs, iterated live on Options 1 & 3 in `LegalLayout.tsx` (baseline fix, size, stacked layout, taller header), recolored Option 6 to Option 3's palette. **Final pick: Option 6 (recolored)** — applied in `LegalLayout.tsx`. See STORY.md "Logo Exploration" section.
+- [x] T7 (follow-up) — Propagated Option 6 across the whole site: `LandingPage.tsx`, `PricingPage.tsx`, `AuthPage.tsx`, `ForgotPasswordPage.tsx`, `ResetPasswordPage.tsx`. Added `logo-icon-option6-light.png` for dark surfaces; theme-reactive surfaces use both variants gated by Tailwind `dark:`. Non-brand `Building2` icons left untouched. Confirmed no email templates exist to update.
+- [x] T8 (follow-up) — Made the stacked icon-over-wordmark lockup (already used on legal pages) consistent site-wide: compact version for the fixed-height Landing/Pricing top nav, left-aligned stacked version for their footer brand columns, full-scale stacked version for Auth/Forgot/Reset password cards.
+- [x] T9 (follow-up) — Apex/app host routing: new `client/src/lib/hostRouting.ts` (`isApexHost()`/`isAppHost()`/`APP_ORIGIN`) + `App.tsx` `AppOnlyRoute` wrapper redirecting app-only routes from `buildographic.com` to `app.buildographic.com`, and `HomeRoute` sending unauthenticated app-host visitors to `/auth` instead of the marketing page. See STORY.md "Apex/App Host Routing" section.
+
+**Note on E2E run:** repo `.env` sets `PLAYWRIGHT_BASE_URL` to the Railway staging URL by default, so plain `npm run test:e2e` exercises staging (still on old branding, unrelated to this change) rather than the local dev server. Override with `PLAYWRIGHT_BASE_URL=http://localhost:5000` to test this branch's changes locally, as TC-LAUNCH-011-04 requires.
 
 ---
 

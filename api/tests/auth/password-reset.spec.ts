@@ -68,6 +68,7 @@ describe('AuthService — password reset (US-LAUNCH-003)', () => {
     // email carries the raw-token link
     const email = mockEmailService.send.mock.calls[0][0];
     expect(email.to).toBe('a@b.com');
+    expect(email.subject).toBe('Reset your Buildographic password');
     expect(email.text).toContain('/auth/reset?token=');
     // generic response
     expect(res.message).toContain('If an account exists');

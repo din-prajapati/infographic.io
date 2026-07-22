@@ -1,8 +1,8 @@
 # M-LAUNCH-01-public-beta — Public Free Beta Live
 
 > **Epic:** [EPIC-LAUNCH-01](../EPIC.md)
-> **Status:** 🔲 Not Started
-> **Target date:** 2026-07-21
+> **Status:** 🟡 In Progress — 4/7 stories implemented or in review; Phase 0 Task 3 (production go-live) underway
+> **Target date:** 2026-07-21 (slipping — Task 3 + US-LAUNCH-004/010/011 still open; see [PHASE_0_HUMAN_QA_CHECKLIST.md](../../../../testing/PHASE_0_HUMAN_QA_CHECKLIST.md) for live Task 3 status)
 
 ---
 
@@ -22,7 +22,7 @@ A real estate agent who is a total stranger can sign up on production, generate 
 | 2 | [US-LAUNCH-003](../stories/US-LAUNCH-003/STORY.md) | Forgot / reset password flow | US-LAUNCH-002 | 🟡 impl (merged) | 1bc7346 |
 | 1 | [US-LAUNCH-009](../stories/US-LAUNCH-009/STORY.md) | Environment & secrets management convention (docs/config) | — | 🟡 impl (merged) | ec166fb |
 | 2 | [US-LAUNCH-010](../stories/US-LAUNCH-010/STORY.md) | Config hardening — APP_ENV + boot validation + RazorPay guard | US-LAUNCH-009 | 🔲 | — |
-| 3 | [US-LAUNCH-011](../stories/US-LAUNCH-011/STORY.md) | Rebrand user-facing surfaces to Buildographic | — | 🔲 | — |
+| 3 | [US-LAUNCH-011](../stories/US-LAUNCH-011/STORY.md) | Rebrand user-facing surfaces to Buildographic | — | 🟡 in review | [#16](https://github.com/din-prajapati/infographic.io/pull/16) |
 
 > **Order** = wave. Same order = no known file overlap, safe to run in parallel worktrees. **Blocked By** = genuine logical dependency (must be ✅ Done, not just merged-and-mergeable). File-overlap safety within an order is verified automatically by `orion run next M-LAUNCH-01`, not by this column.
 

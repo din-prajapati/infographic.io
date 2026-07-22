@@ -52,7 +52,7 @@ domains:
 # sweep of highest IDs actually referenced in docs/agile/ — highest source wins
 # (a skipped number is harmless; a reused one collides).
 counters:
-  ADR: 1
+  ADR: 2
   DESIGN: { epic: 5, feature: 3, story: 13 }
   PAY: { epic: 5, feature: 1, story: 102 }
   AUTH: { epic: 2, feature: 1, story: 5 }

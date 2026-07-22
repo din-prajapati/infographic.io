@@ -877,3 +877,335 @@
 <!-- ai-sdlc:session-log -->
 **2026-07-17 17:56** · branch: `main`
   - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-17 18:07** · branch: `main`
+  - Last commit: 3c0726a docs: garbled-text debug log, AI image model comparison, flow1 QA report
+
+<!-- ai-sdlc:session-log -->
+**2026-07-17 18:09** · branch: `main`
+  - Last commit: 3c0726a docs: garbled-text debug log, AI image model comparison, flow1 QA report
+
+<!-- ai-sdlc:session-log -->
+**2026-07-17 18:12** · branch: `main`
+  - Last commit: 3c0726a docs: garbled-text debug log, AI image model comparison, flow1 QA report
+
+<!-- ai-sdlc:session-log -->
+**2026-07-17 18:15** · branch: `main`
+  - Last commit: 3c0726a docs: garbled-text debug log, AI image model comparison, flow1 QA report
+
+<!-- ai-sdlc:session-log -->
+**2026-07-18 18:05** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-18 18:35** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: b4dce52 docs(brand): tick US-LAUNCH-011 tasks/ACs + epic log — US-LAUNCH-011
+
+<!-- ai-sdlc:session-log -->
+**2026-07-20 16:50** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: 23ca54c docs(brand): record E2E + manual sweep results for US-LAUNCH-011
+
+<!-- ai-sdlc:session-log -->
+**2026-07-20 17:19** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: 23ca54c docs(brand): record E2E + manual sweep results for US-LAUNCH-011
+
+<!-- ai-sdlc:session-log -->
+**2026-07-20 17:30** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: 23ca54c docs(brand): record E2E + manual sweep results for US-LAUNCH-011
+
+<!-- ai-sdlc:session-log -->
+**2026-07-20 18:09** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: add9eed feat(legal): rebuild legal pages on a JSON-driven section architecture
+
+<!-- ai-sdlc:session-log -->
+**2026-07-20 18:17** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: 97d51cc feat(legal): add contact card to all four legal pages
+
+<!-- ai-sdlc:session-log -->
+**2026-07-20 18:22** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: 0557e45 fix(auth): move Back to login to top of card on forgot/reset password
+
+<!-- ai-sdlc:session-log -->
+**2026-07-20 18:25** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: 0557e45 fix(auth): move Back to login to top of card on forgot/reset password
+
+<!-- ai-sdlc:session-log -->
+**2026-07-20 18:33** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: 0557e45 fix(auth): move Back to login to top of card on forgot/reset password
+
+<!-- ai-sdlc:session-log -->
+**2026-07-20 18:47** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: 304118a docs(brand): record PR #16 for US-LAUNCH-011
+
+<!-- ai-sdlc:session-log -->
+**2026-07-20 19:07** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: 304118a docs(brand): record PR #16 for US-LAUNCH-011
+
+<!-- ai-sdlc:session-log -->
+**2026-07-20 19:11** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: 304118a docs(brand): record PR #16 for US-LAUNCH-011
+
+<!-- ai-sdlc:session-log -->
+**2026-07-20 19:25** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: 304118a docs(brand): record PR #16 for US-LAUNCH-011
+
+<!-- ai-sdlc:session-log -->
+**2026-07-20 19:31** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: 304118a docs(brand): record PR #16 for US-LAUNCH-011
+
+<!-- ai-sdlc:session-log -->
+**2026-07-20 19:47** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-20 19:52** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-20 19:58** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-20 19:59** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-20 20:05** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-20 20:27** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-21 10:55** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-21 11:29** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-21 11:52** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: 88afc38 feat(brand): logo exploration for US-LAUNCH-011 — 8 candidates, live iteration
+
+<!-- ai-sdlc:session-log -->
+**2026-07-21 12:23** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: c5da0e4 feat(brand): finalize logo choice — Option 6 (recolored) — US-LAUNCH-011
+
+<!-- ai-sdlc:session-log -->
+**2026-07-21 15:34** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-21 15:45** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-21 15:49** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-21 15:56** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-21 15:59** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: 5487bb7 feat(brand): propagate Option 6 logo site-wide — US-LAUNCH-011
+
+<!-- ai-sdlc:session-log -->
+**2026-07-21 16:00** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: 5487bb7 feat(brand): propagate Option 6 logo site-wide — US-LAUNCH-011
+
+<!-- ai-sdlc:session-log -->
+**2026-07-21 16:04** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: 5487bb7 feat(brand): propagate Option 6 logo site-wide — US-LAUNCH-011
+
+<!-- ai-sdlc:session-log -->
+**2026-07-21 16:08** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: 5487bb7 feat(brand): propagate Option 6 logo site-wide — US-LAUNCH-011
+
+<!-- ai-sdlc:session-log -->
+**2026-07-21 16:16** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: 5487bb7 feat(brand): propagate Option 6 logo site-wide — US-LAUNCH-011
+
+<!-- ai-sdlc:session-log -->
+**2026-07-21 16:19** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: c390479 feat(brand): consistent stacked logo lockup site-wide — US-LAUNCH-011
+
+<!-- ai-sdlc:session-log -->
+**2026-07-21 16:48** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: c390479 feat(brand): consistent stacked logo lockup site-wide — US-LAUNCH-011
+
+<!-- ai-sdlc:session-log -->
+**2026-07-21 16:59** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: c390479 feat(brand): consistent stacked logo lockup site-wide — US-LAUNCH-011
+
+<!-- ai-sdlc:session-log -->
+**2026-07-21 17:05** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: c390479 feat(brand): consistent stacked logo lockup site-wide — US-LAUNCH-011
+
+<!-- ai-sdlc:session-log -->
+**2026-07-21 17:08** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: c390479 feat(brand): consistent stacked logo lockup site-wide — US-LAUNCH-011
+
+<!-- ai-sdlc:session-log -->
+**2026-07-21 17:20** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: 4fe4c56 feat(brand): rename VITE_STORAGE_PREFIX from infographicai to buildographic
+
+<!-- ai-sdlc:session-log -->
+**2026-07-21 17:42** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: 4fe4c56 feat(brand): rename VITE_STORAGE_PREFIX from infographicai to buildographic
+
+<!-- ai-sdlc:session-log -->
+**2026-07-21 17:56** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: 4fe4c56 feat(brand): rename VITE_STORAGE_PREFIX from infographicai to buildographic
+
+<!-- ai-sdlc:session-log -->
+**2026-07-21 17:59** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: 4fe4c56 feat(brand): rename VITE_STORAGE_PREFIX from infographicai to buildographic
+
+<!-- ai-sdlc:session-log -->
+**2026-07-21 18:05** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: c4541c2 docs(launch): sync stale status docs — Task 3 in-progress, M-LAUNCH-01 slipping, record ADR-001
+
+<!-- ai-sdlc:session-log -->
+**2026-07-21 18:27** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: c4541c2 docs(launch): sync stale status docs — Task 3 in-progress, M-LAUNCH-01 slipping, record ADR-001
+
+<!-- ai-sdlc:session-log -->
+**2026-07-21 18:37** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: d1f13db docs(env): point CLIENT_URL/BASE_URL/VITE_CLIENT_URL prod templates at buildographic.com
+
+<!-- ai-sdlc:session-log -->
+**2026-07-21 18:46** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: d1f13db docs(env): point CLIENT_URL/BASE_URL/VITE_CLIENT_URL prod templates at buildographic.com
+
+<!-- ai-sdlc:session-log -->
+**2026-07-21 18:50** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: fad0341 docs(launch): record Task 3A/3B progress — Neon confirmed, BASE_URL/CLIENT_URL bug found+fixed on both envs
+
+<!-- ai-sdlc:session-log -->
+**2026-07-21 19:22** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: fad0341 docs(launch): record Task 3A/3B progress — Neon confirmed, BASE_URL/CLIENT_URL bug found+fixed on both envs
+
+<!-- ai-sdlc:session-log -->
+**2026-07-21 19:25** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: fad0341 docs(launch): record Task 3A/3B progress — Neon confirmed, BASE_URL/CLIENT_URL bug found+fixed on both envs
+
+<!-- ai-sdlc:session-log -->
+**2026-07-21 19:28** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: fad0341 docs(launch): record Task 3A/3B progress — Neon confirmed, BASE_URL/CLIENT_URL bug found+fixed on both envs
+
+<!-- ai-sdlc:session-log -->
+**2026-07-21 19:32** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: fad0341 docs(launch): record Task 3A/3B progress — Neon confirmed, BASE_URL/CLIENT_URL bug found+fixed on both envs
+
+<!-- ai-sdlc:session-log -->
+**2026-07-21 19:34** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: 9906d4c docs(launch): re-verify reset link against production + confirm HTTPS — US-LAUNCH-003
+
+<!-- ai-sdlc:session-log -->
+**2026-07-21 19:35** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: 9906d4c docs(launch): re-verify reset link against production + confirm HTTPS — US-LAUNCH-003
+
+<!-- ai-sdlc:session-log -->
+**2026-07-21 19:36** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: 07d21c3 docs(launch): sync session log — TEAM_STATUS.md
+
+<!-- ai-sdlc:session-log -->
+**2026-07-21 19:36** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: 07d21c3 docs(launch): sync session log — TEAM_STATUS.md
+
+<!-- ai-sdlc:session-log -->
+**2026-07-21 19:38** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: 07d21c3 docs(launch): sync session log — TEAM_STATUS.md
+
+<!-- ai-sdlc:session-log -->
+**2026-07-21 19:45** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: 07d21c3 docs(launch): sync session log — TEAM_STATUS.md
+
+<!-- ai-sdlc:session-log -->
+**2026-07-21 19:53** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: 07d21c3 docs(launch): sync session log — TEAM_STATUS.md
+
+<!-- ai-sdlc:session-log -->
+**2026-07-22 12:57** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-22 13:09** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-22 13:12** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-22 13:24** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-22 13:28** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-22 13:30** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-22 13:33** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-22 13:37** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-22 13:43** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-22 13:58** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-22 14:08** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-22 14:08** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-22 15:23** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-22 15:23** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-22 15:26** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-22 15:33** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-22 15:41** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-22 15:44** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-22 16:03** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-22 16:05** · branch: `feat/launch/us-launch-011-rebrand-buildographic`
+  - Last commit: (no commits this session)

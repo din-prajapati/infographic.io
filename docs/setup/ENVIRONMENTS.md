@@ -167,7 +167,7 @@
 | `VITE_API_URL` | `http://localhost:3001` | `https://<staging-domain>` | `https://<prod-domain>` | per-env | `.env` / Railway | WebSocket/Socket.io base URL |
 | `VITE_APP_BUILD` | `dev` or git sha | git sha / tag | git sha / tag | per-env | CI / Railway | Displayed in UI footer (UserProfileDropdown) |
 | `VITE_E2E_GENERATION_POLL_ONLY` | `false` | `false` | `false` | per-env | `.env` / CI | Set to `true` only in E2E test runs to disable WebSocket and use polling |
-| `VITE_STORAGE_PREFIX` | `infographicai` | `infographicai` | `infographicai` | shared | `.env` | localStorage key prefix; change only for multi-tenant deployments |
+| `VITE_STORAGE_PREFIX` | `buildographic` | `buildographic` | `buildographic` | shared | `.env` | localStorage key prefix; changed 2026-07-21 from `infographicai` to match the Buildographic rebrand — safe pre-launch (no production users yet, no migration needed) |
 
 ---
 

@@ -90,7 +90,7 @@ async function bootstrap() {
   );
 
   const config = new DocumentBuilder()
-    .setTitle('InfographicAI API')
+    .setTitle('Buildographic API')
     .setDescription('AI-powered Real Estate infographic generation API')
     .setVersion('1.0')
     .addBearerAuth()

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { authApi } from '@/lib/api';
-import { Building2, ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 
 /**
  * Public page — set a new password using the emailed token (US-LAUNCH-003, AC4).
@@ -35,9 +35,17 @@ export default function ResetPasswordPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-md rounded-2xl border border-border bg-card p-8 shadow-sm">
-        <div className="flex items-center gap-2 mb-6 justify-center">
-          <Building2 className="h-7 w-7 text-primary" />
-          <span className="text-lg font-bold text-foreground">InfographicAI</span>
+        <Link
+          href="/auth"
+          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-6"
+        >
+          <ArrowLeft className="h-4 w-4" /> Back to login
+        </Link>
+
+        <div className="flex flex-col items-center gap-1 mb-6">
+          <img src="/logo-icon-option6.png" alt="" className="h-9 w-9 dark:hidden" />
+          <img src="/logo-icon-option6-light.png" alt="" className="h-9 w-9 hidden dark:block" />
+          <span className="text-lg font-bold text-foreground">Buildographic</span>
         </div>
 
         {!token ? (
@@ -105,12 +113,6 @@ export default function ResetPasswordPage() {
                 {mutation.isPending ? 'Updating…' : 'Update password'}
               </Button>
             </form>
-            <Link
-              href="/auth"
-              className="mt-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
-            >
-              <ArrowLeft className="h-4 w-4" /> Back to login
-            </Link>
           </>
         )}
       </div>

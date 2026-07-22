@@ -1,6 +1,6 @@
 # Story Card — US-LAUNCH-011
 
-> **Status:** 🔲 Not Started
+> **Status:** 🟡 In Review (PR #16)
 > **Feature:** F-LAUNCH-07 — Brand Identity
 > **Epic:** [EPIC-LAUNCH-01](../../EPIC.md)
 > **Milestone:** [M-LAUNCH-01-public-beta](../../milestones/M-LAUNCH-01-public-beta.md)
@@ -21,19 +21,19 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC1 [happy-path]:** The brand renders as **"Buildographic"** on every user-visible app surface: `client/index.html:7` `<title>` reads `Buildographic - AI Infographic Generator`; the header/footer brand spans and body copy in `client/src/pages/LandingPage.tsx` (10 occurrences), `client/src/pages/PricingPage.tsx` (8), `client/src/pages/AuthPage.tsx` (header + signup toast), `client/src/pages/auth/ForgotPasswordPage.tsx:30`, `client/src/pages/auth/ResetPasswordPage.tsx:40`, and `client/src/components/SiteFooter.tsx:25` contain zero `InfographicAI` occurrences (verify: `grep -ri "infographicai" client/src client/index.html` over these files returns empty).
-- [ ] **AC2 [error-path]:** With `RESEND_API_KEY` unset (EmailService console-fallback mode), triggering forgot-password logs an email whose subject is `Reset your Buildographic password` — the rebrand holds even on the degraded email path. Subjects at `api/src/modules/auth/services/auth.service.ts:257` (`Signing in to Buildographic`) and `:281` are updated; unit test asserts the new subject string.
-- [ ] **AC3 [edge-case]:** All three legal pages (`client/src/pages/legal/TermsPage.tsx` — 6 occurrences, `PrivacyPage.tsx` — 5, `RefundPolicyPage.tsx` — 4) say Buildographic in header brand, body text, and `©` line, with **no other change to legal wording** — the diff on these files touches only the product name.
-- [ ] **AC4 [edge-case]:** Developer-visible but public surfaces follow: Swagger docs title at `api/src/main.ts:93` reads `Buildographic API`. New assertions added to the existing legal-pages E2E spec (brand text on `/terms`, `/privacy`, `/refund-policy`) pass; `npm run check` and `npm run test:unit` pass.
+- [x] **AC1 [happy-path]:** The brand renders as **"Buildographic"** on every user-visible app surface: `client/index.html:7` `<title>` reads `Buildographic - AI Infographic Generator`; the header/footer brand spans and body copy in `client/src/pages/LandingPage.tsx` (10 occurrences), `client/src/pages/PricingPage.tsx` (8), `client/src/pages/AuthPage.tsx` (header + signup toast), `client/src/pages/auth/ForgotPasswordPage.tsx:30`, `client/src/pages/auth/ResetPasswordPage.tsx:40`, and `client/src/components/SiteFooter.tsx:25` contain zero `InfographicAI` occurrences (verify: `grep -ri "infographicai" client/src client/index.html` over these files returns empty).
+- [x] **AC2 [error-path]:** With `RESEND_API_KEY` unset (EmailService console-fallback mode), triggering forgot-password logs an email whose subject is `Reset your Buildographic password` — the rebrand holds even on the degraded email path. Subjects at `api/src/modules/auth/services/auth.service.ts:257` (`Signing in to Buildographic`) and `:281` are updated; unit test asserts the new subject string.
+- [x] **AC3 [edge-case]:** All three legal pages (`client/src/pages/legal/TermsPage.tsx` — 6 occurrences, `PrivacyPage.tsx` — 5, `RefundPolicyPage.tsx` — 4) say Buildographic in header brand, body text, and `©` line, with **no other change to legal wording** — the diff on these files touches only the product name.
+- [x] **AC4 [edge-case]:** Developer-visible but public surfaces follow: Swagger docs title at `api/src/main.ts:93` reads `Buildographic API`. New assertions added to the existing legal-pages E2E spec (brand text on `/terms`, `/privacy`, `/refund-policy`) pass; `npm run check` and `npm run test:unit` pass.
 
 ---
 
 ## Out of Scope
 
-- **localStorage prefix migration** — `VITE_STORAGE_PREFIX=infographicai` and legacy `brainwave_*` keys (`client/src/lib/storage.ts`) stay untouched; renaming them requires a one-time user-data migration → separate post-launch story.
+- ~~**localStorage prefix migration** — `VITE_STORAGE_PREFIX=infographicai` stays untouched; renaming requires a one-time user-data migration.~~ **Superseded 2026-07-21** — decided pre-launch (no production users yet, so no migration needed): `VITE_STORAGE_PREFIX` changed to `buildographic` in `client/src/lib/storage.ts` fallback default + `.env.example`/`.env.development.example`/`.env.production.example`/`ENVIRONMENTS.md`, and the Railway staging + production variables. Legacy `brainwave_*` keys remain untouched (dead code path, no live data references them).
 - **Internal/tooling naming** — CLAUDE.md, PROJECT_CONTEXT.yaml `project.name`, `.orion/orion.yaml`, agile docs, `package.json` name, repo/folder names all keep *InfographicAI*; a docs-wide rename is deliberate churn with zero user value right now.
-- **Logo / visual identity** — this is a text rebrand only; no new logo, colors, or favicon artwork.
-- **Landing page for apex `buildographic.com`** — separate unscoped story; this story only renames the existing in-app `LandingPage.tsx`.
+- ~~**Logo / visual identity** — this is a text rebrand only; no new logo, colors, or favicon artwork.~~ **Superseded 2026-07-20** — see "Logo Exploration (follow-up)" below. The user supplied 8 candidate logo images mid-implementation and asked to explore/apply them; that work now lives on this branch.
+- ~~**Landing page for apex `buildographic.com`** — separate unscoped story; this story only renames the existing in-app `LandingPage.tsx`.~~ **Superseded 2026-07-22** — see "Apex/App Host Routing (follow-up)" below. The apex/app domain split needed a routing decision before the two hosts could safely diverge, so that groundwork was done here rather than blocked on a separate story.
 - **Stale copyright year** — `COPYRIGHT InfographicAI 2025` on Landing/Pricing pages becomes `COPYRIGHT Buildographic 2025`; fixing the hardcoded year is a separate cleanup.
 
 ---
@@ -41,7 +41,7 @@
 ## Engineering / PR
 
 - **Branch:** `feat/launch/us-launch-011-rebrand-buildographic`
-- **PR:** #_____ (fill when opened)
+- **PR:** [#16](https://github.com/din-prajapati/infographic.io/pull/16)
 - **Primary files touched:**
   - `client/index.html`
   - `client/src/components/SiteFooter.tsx`
@@ -55,8 +55,83 @@
   - `client/src/pages/legal/RefundPolicyPage.tsx`
   - `api/src/main.ts`
   - `api/src/modules/auth/services/auth.service.ts`
-  - `api/tests/auth/password-reset.spec.ts` (subject assertion) `(TBC — confirm exact spec filename)`
-  - `e2e/us-launch-001-legal-pages.spec.ts` (brand assertions) `(TBC — confirm exact spec filename)`
+  - `api/tests/auth/password-reset.spec.ts` (subject assertion)
+  - `e2e/us-launch-001-legal-pages.spec.ts` (brand assertions)
+  - `client/src/components/legal/LegalLayout.tsx` (logo exploration, see below)
+  - `client/public/logo-icon-option{1,2,3,4,5,6,7,8}.png` (new)
+  - `client/public/logo-icon-option6-original-backup.png` (new)
+  - `client/public/logo-icon-option6-light.png` (new — white/light variant for dark surfaces)
+  - `client/public/logo-option3-lockup.png` (new)
+
+---
+
+## Logo Exploration (follow-up, 2026-07-20/21)
+
+Added mid-implementation at the user's request, after the text rebrand above was already complete.
+Not covered by the original ACs — recorded here for traceability rather than retrofitted into AC1–AC4.
+
+- User supplied 8 candidate logo images (WhatsApp exports). Reviewed via a side-by-side artifact
+  comparison mocked into the real `LegalLayout.tsx` header; recommended Option 1 (flat house+bars,
+  navy/teal) with Option 3 as runner-up.
+- Extracted icon-only, transparent-background PNGs for all 8 candidates into `client/public/`
+  (background-removal + crop, since the source JPEGs are full lockups with wordmark + tagline baked in).
+- Iterated live on Options 1 & 3 in `LegalLayout.tsx`: fixed a baseline-alignment issue (switched the
+  flex container from `items-center` to `items-baseline` — more robust than a manual pixel offset),
+  enlarged the icon, moved to a stacked icon-over-wordmark layout with live text (not baked into the
+  image), and increased the nav bar height (`h-14` → `h-20`) so the stack has breathing room.
+- Recolored Option 6 (gold/navy "arrow" mark) to the Option 3 navy/teal brand palette, preserving the
+  original gradient/highlight shading. Original backed up as `logo-icon-option6-original-backup.png`.
+- **Final decision (2026-07-21): Option 6 (recolored)** — `LegalLayout.tsx` now renders
+  `logo-icon-option6.png` (navy house + teal upward arrow, gradient shading preserved) in the stacked
+  icon-over-wordmark layout, 80px header. This is the confirmed choice, not an in-progress comparison.
+- **Propagated site-wide (2026-07-21).** Replaced every brand-logo `Building2` (lucide) usage with the
+  Option 6 mark: `LandingPage.tsx` (nav header, footer, and the video-hero "logo reveal" moment),
+  `PricingPage.tsx` (nav header + footer), `AuthPage.tsx`, `ForgotPasswordPage.tsx`, `ResetPasswordPage.tsx`.
+  `SiteFooter.tsx` has no icon at all (text links only) — nothing to change there.
+- **Light/dark contrast:** the extracted PNG is a fixed-color bitmap, unlike the old `Building2` SVG
+  (which adapted via `text-*` classes). Added `logo-icon-option6-light.png` (navy → white recolor, teal
+  kept) for dark surfaces. Fixed-dark contexts (video hero overlay, glass auth panel, hardcoded
+  `text-white` footers) use the light variant directly; genuinely theme-reactive surfaces (Pricing nav,
+  Forgot/Reset password cards — all `bg-card`/`bg-background`/`text-foreground`) render both variants
+  with Tailwind `dark:` classes so the correct one shows automatically in either theme.
+- **Left untouched, deliberately:** four other `Building2` usages in the editor UI
+  (`CustomizePanel.tsx`, `CenterCanvas.tsx`, `EnhancedSuggestionsPanel.tsx`, `AIPropertyChatInput.tsx`,
+  plus one on `LandingPage.tsx`'s "Multi-Agent — Coming soon" card) are generic feature icons, not the
+  brand mark — out of scope.
+- **Email templates checked, none exist to update.** Searched `api/src`, `server/`, and the repo for
+  `.hbs`/template files and any `<img>`/logo reference in email content. The only HTML email
+  (password-reset, in `auth.service.ts`) is a plain two-paragraph string with a text link — no logo
+  image, no template file, nothing to change.
+- **Stacked lockup made consistent site-wide (2026-07-21).** The legal pages already used a
+  stacked icon-over-wordmark treatment; matched it everywhere else the logo appears so the brand
+  lockup reads the same across the whole site:
+  - `LandingPage.tsx` and `PricingPage.tsx` top nav — compact stacked lockup (icon `h-7`,
+    `text-[10px] font-extrabold`) sized to fit the existing `h-16` toolbar without changing its height.
+  - `LandingPage.tsx` and `PricingPage.tsx` footer brand column — stacked but left-aligned
+    (`items-start`, not centered) to match the surrounding footer columns' left-aligned convention.
+  - `AuthPage.tsx`, `ForgotPasswordPage.tsx`, `ResetPasswordPage.tsx` — stacked, matching the same
+    scale already used on the legal pages.
+  - The video-hero "logo reveal" moment on `LandingPage.tsx` was already icon-above-heading in spirit
+    (badge icon + separate "Buildographic" `<h3>` + tagline below) — left as is, no change needed.
+
+---
+
+## Apex/App Host Routing (follow-up, 2026-07-22)
+
+Added mid-implementation after Task 3 (production go-live) put a real domain split in place:
+`buildographic.com` (apex, reserved for a future marketing landing page) vs
+`app.buildographic.com` (the actual product). Not covered by the original ACs — recorded here
+for traceability rather than retrofitted into AC1–AC4.
+
+- New `client/src/lib/hostRouting.ts`: `isApexHost()` / `isAppHost()` (hostname checks, no-op on
+  localhost/staging so dev behavior is unchanged) + `APP_ORIGIN` constant.
+- `App.tsx`: new `AppOnlyRoute` wrapper — on the apex host, app-only routes (`/auth*`, `/templates`,
+  `/my-designs`, `/account`, `/usage`, `/editor`) redirect to the same path on `app.buildographic.com`
+  instead of rendering. `HomeRoute` on the app host skips the marketing `LandingPage` and redirects
+  unauthenticated visitors straight to `/auth`.
+- Today, both hosts still serve the same build (no separate landing page exists yet), so this is
+  routing groundwork only — it makes the eventual apex landing page safe to ship without a second,
+  larger routing change.
 
 ---
 
@@ -90,26 +165,32 @@ Implementation rules:
 
 | TC ID | Type | Priority | Scenario | Status | Finding |
 |-------|------|----------|----------|--------|---------|
-| TC-LAUNCH-011-01 | Auto | P0 | Given the app is built, when `/` and `/pricing` render, then header/footer brand spans and `<title>` say "Buildographic" and contain no "InfographicAI" | 🔲 | |
-| TC-LAUNCH-011-02 | Auto | P0 | Given `RESEND_API_KEY` is unset, when forgot-password is triggered for a known user, then the console-logged email subject is exactly `Reset your Buildographic password` | 🔲 | |
-| TC-LAUNCH-011-03 | Auto | P1 | Given the E2E suite runs, when `/terms`, `/privacy`, `/refund-policy` load, then each shows "Buildographic" in header brand and © line | 🔲 | |
-| TC-LAUNCH-011-04 | Manual | P1 | Sweep `localhost:5000` — `/`, `/pricing`, `/auth`, `/auth` signup toast, forgot/reset pages, all 3 legal pages: zero visible "InfographicAI" | 🔲 | |
-| TC-LAUNCH-011-05 | Auto | P2 | `GET /api/docs` (Swagger UI) page title shows "Buildographic API" | 🔲 | |
+| TC-LAUNCH-011-01 | Auto | P0 | Given the app is built, when `/` and `/pricing` render, then header/footer brand spans and `<title>` say "Buildographic" and contain no "InfographicAI" | ✅ | |
+| TC-LAUNCH-011-02 | Auto | P0 | Given `RESEND_API_KEY` is unset, when forgot-password is triggered for a known user, then the console-logged email subject is exactly `Reset your Buildographic password` | ✅ | |
+| TC-LAUNCH-011-03 | Auto | P1 | Given the E2E suite runs, when `/terms`, `/privacy`, `/refund-policy` load, then each shows "Buildographic" in header brand and © line | ✅ | `npm run test:e2e -- --grep "legal\|password"` run against `PLAYWRIGHT_BASE_URL=http://localhost:5000` (repo `.env` defaults `PLAYWRIGHT_BASE_URL` to the Railway staging URL — override needed to test locally) — 13 passed, 1 pre-existing skip unrelated to this story |
+| TC-LAUNCH-011-04 | Manual | P1 | Sweep `localhost:5000` — `/`, `/pricing`, `/auth`, `/auth` signup toast, forgot/reset pages, all 3 legal pages: zero visible "InfographicAI" | ⚠️ | Brand name is clean on every route. Contact emails `support@`/`privacy@`/`billing@infographicai.in` still render on the 3 legal pages (2 occurrences each) — pre-existing, out of scope (mailbox/DNS migration, not a text rebrand); signup toast verified by source grep only (not clicked, to avoid creating a live account) |
+| TC-LAUNCH-011-05 | Auto | P2 | `GET /api/docs` (Swagger UI) page title shows "Buildographic API" | ✅ | Verified via source (`api/src/main.ts:93`) + `npm run check` pass; Swagger UI itself not opened in browser |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 
 ---
 
+## References
+
+- ADR-001 — Email sending domain & DNS record scoping for buildographic.com  (docs/agile/decisions/ADR-001-email-sending-domain-dns.md)
+
+---
+
 ## Definition of Done
 
-- [ ] All ACs checked ✅
-- [ ] All test cases run and recorded
-- [ ] `npm run check` passes
-- [ ] `npm run test:unit` passes
-- [ ] Manual flow verified on `localhost:5000` (TC-04 sweep)
+- [x] All ACs checked ✅
+- [x] All test cases run and recorded
+- [x] `npm run check` passes
+- [x] `npm run test:unit` passes
+- [x] Manual flow verified on `localhost:5000` (TC-04 sweep) — pass with finding, see TC-LAUNCH-011-04
 - [ ] PR merged (PR #{number})
 - [ ] No console errors for the changed flow
-- [ ] [TASKS.md](./TASKS.md) task list fully checked
+- [x] [TASKS.md](./TASKS.md) task list fully checked
 
 ---
 
