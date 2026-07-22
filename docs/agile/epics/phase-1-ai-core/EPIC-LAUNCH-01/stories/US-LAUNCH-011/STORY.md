@@ -33,7 +33,7 @@
 - ~~**localStorage prefix migration** — `VITE_STORAGE_PREFIX=infographicai` stays untouched; renaming requires a one-time user-data migration.~~ **Superseded 2026-07-21** — decided pre-launch (no production users yet, so no migration needed): `VITE_STORAGE_PREFIX` changed to `buildographic` in `client/src/lib/storage.ts` fallback default + `.env.example`/`.env.development.example`/`.env.production.example`/`ENVIRONMENTS.md`, and the Railway staging + production variables. Legacy `brainwave_*` keys remain untouched (dead code path, no live data references them).
 - **Internal/tooling naming** — CLAUDE.md, PROJECT_CONTEXT.yaml `project.name`, `.orion/orion.yaml`, agile docs, `package.json` name, repo/folder names all keep *InfographicAI*; a docs-wide rename is deliberate churn with zero user value right now.
 - ~~**Logo / visual identity** — this is a text rebrand only; no new logo, colors, or favicon artwork.~~ **Superseded 2026-07-20** — see "Logo Exploration (follow-up)" below. The user supplied 8 candidate logo images mid-implementation and asked to explore/apply them; that work now lives on this branch.
-- **Landing page for apex `buildographic.com`** — separate unscoped story; this story only renames the existing in-app `LandingPage.tsx`.
+- ~~**Landing page for apex `buildographic.com`** — separate unscoped story; this story only renames the existing in-app `LandingPage.tsx`.~~ **Superseded 2026-07-22** — see "Apex/App Host Routing (follow-up)" below. The apex/app domain split needed a routing decision before the two hosts could safely diverge, so that groundwork was done here rather than blocked on a separate story.
 - **Stale copyright year** — `COPYRIGHT InfographicAI 2025` on Landing/Pricing pages becomes `COPYRIGHT Buildographic 2025`; fixing the hardcoded year is a separate cleanup.
 
 ---
@@ -113,6 +113,25 @@ Not covered by the original ACs — recorded here for traceability rather than r
     scale already used on the legal pages.
   - The video-hero "logo reveal" moment on `LandingPage.tsx` was already icon-above-heading in spirit
     (badge icon + separate "Buildographic" `<h3>` + tagline below) — left as is, no change needed.
+
+---
+
+## Apex/App Host Routing (follow-up, 2026-07-22)
+
+Added mid-implementation after Task 3 (production go-live) put a real domain split in place:
+`buildographic.com` (apex, reserved for a future marketing landing page) vs
+`app.buildographic.com` (the actual product). Not covered by the original ACs — recorded here
+for traceability rather than retrofitted into AC1–AC4.
+
+- New `client/src/lib/hostRouting.ts`: `isApexHost()` / `isAppHost()` (hostname checks, no-op on
+  localhost/staging so dev behavior is unchanged) + `APP_ORIGIN` constant.
+- `App.tsx`: new `AppOnlyRoute` wrapper — on the apex host, app-only routes (`/auth*`, `/templates`,
+  `/my-designs`, `/account`, `/usage`, `/editor`) redirect to the same path on `app.buildographic.com`
+  instead of rendering. `HomeRoute` on the app host skips the marketing `LandingPage` and redirects
+  unauthenticated visitors straight to `/auth`.
+- Today, both hosts still serve the same build (no separate landing page exists yet), so this is
+  routing groundwork only — it makes the eventual apex landing page safe to ship without a second,
+  larger routing change.
 
 ---
 
