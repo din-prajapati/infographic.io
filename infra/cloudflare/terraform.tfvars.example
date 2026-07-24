@@ -1,0 +1,29 @@
+# Example values = buildographic.com's actual live configuration as of 2026-07-24.
+# Copy to terraform.tfvars, then edit for the domain you're onboarding.
+# terraform.tfvars is gitignored — never commit real DKIM keys or account IDs here.
+
+cloudflare_account_id = "d84f6c3d301dbd8fb220248c5784a6e7"
+domain_name            = "buildographic.com"
+
+apex_target = "96mro795.up.railway.app" # Railway-assigned hostname for the apex domain's service
+app_target  = "9rcq9erg.up.railway.app" # Railway-assigned hostname for the app subdomain's service
+
+enable_www_redirect = true
+
+enable_email_records   = true
+email_sending_subdomain = "send"
+email_spf_value         = "v=spf1 include:amazonses.com ~all"
+email_dkim_selector     = "resend"
+# Pull the real DKIM value for the NEW domain from the Resend dashboard — do not reuse this one.
+email_dkim_value = "p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDWj3J5DTwZ3G6pGRbjUwiSV8pqzydNUSUNDhCndTnDqEIRdyCico4xu61loYIvsSWuwmm2yW5oa3wqnxLSJiNpwBQWKz3A05od10JFpOIFVjSfT0/+e8DlCo8vDi2+YmVPBeN89L1Vt2sOtZ/TiflcCIztqCDVw8n+hnOwI7u45QIDAQAB"
+email_dmarc_value = "v=DMARC1; p=none;"
+email_mx_target    = "feedback-smtp.ap-northeast-1.amazonses.com"
+email_mx_priority  = 10
+
+ssl_mode         = "strict"
+always_use_https = true
+enable_dnssec    = false
+
+enable_bot_fight_mode   = false
+enable_webhook_waf_skip = true
+webhook_path_contains   = "/api/v1/webhooks/"
