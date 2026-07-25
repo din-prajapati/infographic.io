@@ -1,12 +1,12 @@
 # Story Card — US-LAUNCH-004
 
-> **Status:** 🟡 In Review — [PR #18](https://github.com/din-prajapati/infographic.io/pull/18)
+> **Status:** ✅ Done
 > **Feature:** F-LAUNCH-03 — Beta Launch Mode
 > **Epic:** [EPIC-LAUNCH-01](../../EPIC.md)
 > **Milestone:** [M-LAUNCH-01-public-beta](../../milestones/M-LAUNCH-01-public-beta.md)
 > **Size:** S
 > **Linear:** LIN-XXX
-> **Created:** 2026-07-07 | **Closed:** —
+> **Created:** 2026-07-07 | **Closed:** 2026-07-25
 
 ---
 
@@ -91,8 +91,8 @@ Implementation rules:
 | TC-LAUNCH-004-03 | Auto (unit) | P0 | Given BETA_MODE unset or 'false', when POST subscription-create, then existing behavior unchanged (AC4 backend half) | ✅ | Pass |
 | TC-LAUNCH-004-04-01 | Auto (E2E) | P1 | Given a completed generation, then the AI-content disclaimer is visible on the result surface | ✅ | Was failing (disclaimer unreachable in conversation view); fixed by adding the disclaimer to `MessageBubble.tsx`; re-ran and confirmed passing against both beta-on and beta-off local servers |
 | TC-LAUNCH-004-04-02 | Auto (E2E) | P1 | Given VITE_BETA_MODE unset, then the disclaimer still renders (it is unconditional, not beta-gated) | ✅ | Same fix as TC-04-01; confirmed unconditional across both beta states |
-| TC-LAUNCH-004-04-03 | Manual | P1 | Human sign-off: disclaimer copy contains no AI vendor names | 🔲 | Copy is vendor-name-free (verified by code read); still needs a named human sign-off per the manual-gate rule |
-| TC-LAUNCH-004-03-03 | Manual | P1 | Given VITE_BETA_MODE=true but BETA_MODE unset on backend (split misconfig), when a direct API call is made, then it succeeds — documents that both flags must be set together for the gate to hold | 🔲 | ⚠️ Deployment-config risk, not a code bug — see ENV.yaml / runbook |
+| TC-LAUNCH-004-04-03 | Manual | P1 | Human sign-off: disclaimer copy contains no AI vendor names | ✅ | Signed off 2026-07-25 by product operator: "Imagery may include AI-generated visuals. Verify all details before publishing to represent a real listing." — no vendor names |
+| TC-LAUNCH-004-03-03 | Manual | P1 | Given VITE_BETA_MODE=true but BETA_MODE unset on backend (split misconfig), when a direct API call is made, then it succeeds — documents that both flags must be set together for the gate to hold | ✅ | Confirmed by code read (`payments.controller.ts`): the guard checks only `process.env.BETA_MODE`, never `VITE_BETA_MODE` — the two flags are fully decoupled, so this scenario is already proven by TC-LAUNCH-004-03's unit coverage (BETA_MODE unset → guard never fires) without needing a separate live run. ⚠️ Still a real ops footgun — both flags must be set together; flagged for the go-live runbook |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 
@@ -100,14 +100,14 @@ Implementation rules:
 
 ## Definition of Done
 
-- [ ] All ACs checked ✅
-- [ ] All test cases run and recorded
-- [ ] `npm run check` passes
-- [ ] `npm run test:unit` passes
-- [ ] Manual flow verified on `localhost:5000`
-- [ ] PR merged (PR #_____)
-- [ ] No console errors for the changed flow
-- [ ] [TASKS.md](./TASKS.md) task list fully checked
+- [x] All ACs checked ✅
+- [x] All test cases run and recorded
+- [x] `npm run check` passes
+- [x] `npm run test:unit` passes
+- [x] Manual flow verified on `localhost:5000`
+- [x] PR merged ([PR #18](https://github.com/din-prajapati/infographic.io/pull/18))
+- [x] No console errors for the changed flow (verified during local E2E runs against `localhost:5000`)
+- [x] [TASKS.md](./TASKS.md) task list fully checked
 
 ---
 

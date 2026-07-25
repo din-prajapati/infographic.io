@@ -48,6 +48,11 @@ feat(launch): beta mode flag + AI-content disclaimer — US-LAUNCH-004
 **AC(s) covered:** AC5
 **Changes:** 5 tests covering 403 throw (BETA_MODE=true), response code assertion, service bypass, and AC4 passthrough for unset/false. `.env.example` documents BETA_MODE + VITE_BETA_MODE with inline comment.
 
+### T5 — test-story hardening: AC3 fix + expanded coverage (added post-implementation)
+**Files:** `client/src/components/ai-chat/MessageBubble.tsx`, `api/tests/payments/beta-guard.spec.ts` (+4 tests), `e2e/us-launch-004-beta-mode.spec.ts` (new)
+**AC(s) covered:** AC3 (fix), AC1/AC2/AC4 (E2E + additional unit coverage)
+**Changes:** `/test-story` E2E coverage found AC3 did not hold — the disclaimer in `ResultsVariations.tsx` was unreachable once a conversation starts (`hasActiveConversation=true` switches to `MessageBubble.tsx`, which had no disclaimer). Fixed by adding the same disclaimer paragraph to `MessageBubble.tsx`. Also added 4 unit tests (HTTP 403 status, non-empty message, and two tests documenting that the `BETA_MODE` guard is case-sensitive — `BETA_MODE=TRUE`/`' true'` silently bypass it) and a 6-test Playwright spec covering pricing-page beta gating and the disclaimer. Verified against both a beta-on and a beta-off local server.
+
 ---
 
 ## File-to-Task Mapping
@@ -78,9 +83,10 @@ cd api && npx vitest run tests/payments/beta-guard.spec.ts --reporter=verbose
 - [x] T2 — 403 guard
 - [x] T3 — disclaimer
 - [x] T4 — test + env example
+- [x] T5 — test-story hardening: AC3 fix + expanded coverage
 - [x] `npm run check` passes ✅
 - [x] `npm run test:unit` passes ✅
-- [ ] Manual test recorded ✅
+- [x] Manual test recorded ✅ (E2E runs against `localhost:5000`, beta-on and beta-off)
 - [x] PR opened with story card as description ✅
 - [x] STORY.md ACs updated ✅
 

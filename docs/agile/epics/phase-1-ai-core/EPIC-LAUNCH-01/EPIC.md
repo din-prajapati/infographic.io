@@ -37,7 +37,7 @@
 | [US-LAUNCH-001](stories/US-LAUNCH-001/STORY.md) | Legal & policy pages (Terms · Privacy · Refund) | M-LAUNCH-01 | M | 🟡 impl | 51b0040 |
 | [US-LAUNCH-002](stories/US-LAUNCH-002/STORY.md) | Transactional email foundation (provider-agnostic EmailService) | M-LAUNCH-01 | M | 🟡 impl | ec166fb |
 | [US-LAUNCH-003](stories/US-LAUNCH-003/STORY.md) | Forgot / reset password flow | M-LAUNCH-01 | M | 🟡 impl | 1bc7346 |
-| [US-LAUNCH-004](stories/US-LAUNCH-004/STORY.md) | Beta launch mode (checkout off · AI-content disclaimer) | M-LAUNCH-01 | S | 🟡 impl | — |
+| [US-LAUNCH-004](stories/US-LAUNCH-004/STORY.md) | Beta launch mode (checkout off · AI-content disclaimer) | M-LAUNCH-01 | S | ✅ Done | [#18](https://github.com/din-prajapati/infographic.io/pull/18) |
 | [US-LAUNCH-005](stories/US-LAUNCH-005/STORY.md) | RazorPay live-mode activation | M-LAUNCH-02 | M | 🔲 | — |
 | [US-LAUNCH-006](stories/US-LAUNCH-006/STORY.md) | Payment receipt email on subscription charge | M-LAUNCH-02 | S | 🔲 | — |
 | [US-LAUNCH-007](stories/US-LAUNCH-007/STORY.md) | BROKERAGE tier gate on pricing page (resolves PT-06) | M-LAUNCH-02 | S | 🔲 | — |
@@ -119,6 +119,12 @@ Key files relevant to this epic:
 - **ACs covered:** AC1 (beta banner + disabled paid CTA), AC2 (403 BETA_MODE_ACTIVE guard), AC3 (AI-content disclaimer — see finding below), AC4 (flags off = current paid behavior, verified by unit + E2E), AC5 (9 unit tests in beta-guard.spec.ts, 88/88 full suite pass)
 - **Commits:** 7 on branch `feat/launch-us-launch-004-beta-mode`
 - **Notes:** Guard lives in the controller (not the service) so it fires before any payment-provider call. `test-story` E2E coverage found AC3 did not actually hold: the disclaimer in `ResultsVariations.tsx` only rendered in `AIChatBox`'s default view (`!hasActiveConversation`), unreachable once a prompt is submitted and the conversation view (`MessageBubble.tsx`) takes over. Fixed by adding the same disclaimer to `MessageBubble.tsx`; verified against both beta-on and beta-off local servers. Also found (documented, not fixed — out of this story's scope): the `BETA_MODE` guard is case-sensitive, so `BETA_MODE=TRUE` in a Railway dashboard would silently bypass it — flagged for the ops runbook.
+
+### 2026-07-25 — US-LAUNCH-004 closed (PR #18 merged)
+- **PR:** [#18](https://github.com/din-prajapati/infographic.io/pull/18) — squash-merged into `main`
+- **ACs:** all checked ✅ (AC1–AC5)
+- **Closed by:** /close-story
+- **Notes:** Both remaining manual DoD items resolved at closure: disclaimer copy signed off (no vendor names); the VITE_BETA_MODE-on/BETA_MODE-off split-misconfig scenario confirmed by code read (the guard reads only `process.env.BETA_MODE`, never the frontend flag — already proven by existing unit coverage) rather than a fresh live run. Both flags must still be set together in ops — noted as a runbook risk, not a code gap.
 
 ---
 

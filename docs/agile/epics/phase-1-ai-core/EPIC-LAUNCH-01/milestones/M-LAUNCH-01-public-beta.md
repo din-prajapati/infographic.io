@@ -1,7 +1,7 @@
 # M-LAUNCH-01-public-beta — Public Free Beta Live
 
 > **Epic:** [EPIC-LAUNCH-01](../EPIC.md)
-> **Status:** 🟡 In Progress — 6/7 stories done, merged, or in review (only US-LAUNCH-004 still 🔲); Phase 0 Task 3 (production go-live) underway
+> **Status:** 🟡 In Progress — 7/7 stories done, merged, or in review (US-LAUNCH-004 ✅ Done — PR #18 merged 2026-07-25; only US-LAUNCH-011 still in review); Phase 0 Task 3 (production go-live) underway
 > **Target date:** 2026-07-21 (slipping — Task 3 + US-LAUNCH-004/011 still open; see [PHASE_0_HUMAN_QA_CHECKLIST.md](../../../../testing/PHASE_0_HUMAN_QA_CHECKLIST.md) for live Task 3 status)
 
 ---
@@ -18,7 +18,7 @@ A real estate agent who is a total stranger can sign up on production, generate 
 |:-----:|-------|-------|------------|--------|----|
 | 1 | [US-LAUNCH-001](../stories/US-LAUNCH-001/STORY.md) | Legal & policy pages (Terms · Privacy · Refund) | — | 🟡 impl (merged) | 51b0040 |
 | 1 | [US-LAUNCH-002](../stories/US-LAUNCH-002/STORY.md) | Transactional email foundation | — | 🟡 impl (merged) | ec166fb |
-| 1 | [US-LAUNCH-004](../stories/US-LAUNCH-004/STORY.md) | Beta launch mode | — | 🔲 | — |
+| 1 | [US-LAUNCH-004](../stories/US-LAUNCH-004/STORY.md) | Beta launch mode | — | ✅ Done | [#18](https://github.com/din-prajapati/infographic.io/pull/18) |
 | 2 | [US-LAUNCH-003](../stories/US-LAUNCH-003/STORY.md) | Forgot / reset password flow | US-LAUNCH-002 | 🟡 impl (merged) | 1bc7346 |
 | 1 | [US-LAUNCH-009](../stories/US-LAUNCH-009/STORY.md) | Environment & secrets management convention (docs/config) | — | 🟡 impl (merged) | ec166fb |
 | 2 | [US-LAUNCH-010](../stories/US-LAUNCH-010/STORY.md) | Config hardening — APP_ENV + boot validation + RazorPay guard | US-LAUNCH-009 | ✅ Done | [#17](https://github.com/din-prajapati/infographic.io/pull/17) |
