@@ -1,6 +1,6 @@
 # Story Card — US-LAUNCH-004
 
-> **Status:** ✅ Implementation Complete, incl. test-story fix (pre-PR)
+> **Status:** 🟡 In Review — [PR #18](https://github.com/din-prajapati/infographic.io/pull/18)
 > **Feature:** F-LAUNCH-03 — Beta Launch Mode
 > **Epic:** [EPIC-LAUNCH-01](../../EPIC.md)
 > **Milestone:** [M-LAUNCH-01-public-beta](../../milestones/M-LAUNCH-01-public-beta.md)
@@ -40,7 +40,7 @@
 ## Engineering / PR
 
 - **Branch:** `feat/launch-us-launch-004-beta-mode`
-- **PR:** #_____ (fill when opened)
+- **PR:** [#18](https://github.com/din-prajapati/infographic.io/pull/18)
 - **Primary files touched:**
   - `client/src/pages/PricingPage.tsx`
   - `api/src/modules/payments/controllers/payments.controller.ts`

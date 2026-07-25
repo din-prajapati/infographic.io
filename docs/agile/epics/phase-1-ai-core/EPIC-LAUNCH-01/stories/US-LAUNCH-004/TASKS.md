@@ -2,7 +2,7 @@
 
 > **Story:** [STORY.md](./STORY.md)
 > **Branch:** `feat/launch-us-launch-004-beta-mode`
-> **PR:** #_____ (fill when opened)
+> **PR:** [#18](https://github.com/din-prajapati/infographic.io/pull/18)
 > **Linear:** LIN-XXX
 > **Type:** feat
 
@@ -81,7 +81,7 @@ cd api && npx vitest run tests/payments/beta-guard.spec.ts --reporter=verbose
 - [x] `npm run check` passes ✅
 - [x] `npm run test:unit` passes ✅
 - [ ] Manual test recorded ✅
-- [ ] PR opened with story card as description ✅
+- [x] PR opened with story card as description ✅
 - [x] STORY.md ACs updated ✅
 
 ---
