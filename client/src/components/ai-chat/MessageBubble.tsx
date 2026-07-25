@@ -278,6 +278,11 @@ export function MessageBubble({ message, index, onRegenerateAll, selectedPreview
                       );
                     })}
                   </div>
+
+                  {/* AI-content disclaimer */}
+                  <p className="text-[11px] text-muted-foreground/70 pt-2 leading-snug">
+                    Imagery may include AI-generated visuals. Verify all details before publishing to represent a real listing.
+                  </p>
                 </div>
               )}
             </>

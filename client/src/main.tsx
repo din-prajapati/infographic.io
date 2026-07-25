@@ -3,6 +3,7 @@ import { browserTracingIntegration } from '@sentry/react';
 
 Sentry.init({
   dsn: import.meta.env.VITE_SENTRY_DSN,
+  environment: import.meta.env.VITE_APP_ENV || import.meta.env.MODE,
   integrations: [browserTracingIntegration()],
   tracesSampleRate: 1.0,
   enabled: import.meta.env.PROD,

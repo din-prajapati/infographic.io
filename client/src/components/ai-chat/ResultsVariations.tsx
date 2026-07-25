@@ -216,6 +216,11 @@ export function ResultsVariations({
             Regenerate all
           </Button>
         </div>
+
+        {/* AI-content disclaimer */}
+        <p className="text-[11px] text-muted-foreground/70 pt-1 leading-snug">
+          Imagery may include AI-generated visuals. Verify all details before publishing to represent a real listing.
+        </p>
       </motion.div>
     </>
   );

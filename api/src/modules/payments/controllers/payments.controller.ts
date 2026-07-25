@@ -13,6 +13,7 @@ import {
   Logger,
   BadRequestException,
   NotFoundException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiSecurity, ApiQuery } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
@@ -58,6 +59,13 @@ export class PaymentsController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create a new subscription for authenticated user' })
   async createSubscription(@Body() dto: CreateSubscriptionDto, @Req() req: any) {
+    if (process.env.BETA_MODE === 'true') {
+      throw new ForbiddenException({
+        code: 'BETA_MODE_ACTIVE',
+        message: 'Paid subscriptions are not available during beta.',
+      });
+    }
+
     const userId = req.user.id;
     try {
       const result = await this.paymentsService.createSubscription(

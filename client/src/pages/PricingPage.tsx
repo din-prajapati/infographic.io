@@ -107,6 +107,8 @@ const darkFloatingChars = [
 ];
 
 export default function PricingPage() {
+  const isBetaMode = import.meta.env.VITE_BETA_MODE === 'true';
+
   const [, setLocation] = useLocation();
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
   const [isSyncingStatus, setIsSyncingStatus] = useState(false);
@@ -425,6 +427,19 @@ export default function PricingPage() {
           </div>
         </div>
 
+        {/* Beta mode notice */}
+        {isBetaMode && (
+          <div className="mx-auto max-w-2xl rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-4 mb-4">
+            <div className="flex items-center justify-center gap-2 text-emerald-400 font-semibold mb-1">
+              <Info className="h-4 w-4 shrink-0" />
+              Free during beta
+            </div>
+            <p className="text-sm text-muted-foreground text-center">
+              Paid plans are coming soon. Create an account and start generating — no credit card needed.
+            </p>
+          </div>
+        )}
+
         {/* Test mode: show Razorpay test card details and expected amounts */}
         {typeof import.meta.env.VITE_RAZORPAY_KEY_ID === "string" &&
           import.meta.env.VITE_RAZORPAY_KEY_ID.startsWith("rzp_test_") && (
@@ -594,28 +609,37 @@ export default function PricingPage() {
                 </ul>
 
                 {/* CTA Button */}
-                <Button
-                  className={`w-full h-12 rounded-full font-medium ${
-                    isCurrentPlan || isPendingPlan
-                      ? "bg-accent text-muted-foreground"
-                      : "bg-primary hover:bg-primary/90 text-primary-foreground"
-                  }`}
-                  disabled={isCurrentPlan || isPendingPlan || isPlanLoading}
-                  onClick={() => handleSubscribe(plan.tier)}
-                >
-                  {isPlanLoading ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Processing...
-                    </>
-                  ) : isCurrentPlan ? (
-                    "Current Plan"
-                  ) : isPendingPlan ? (
-                    "Activating..."
-                  ) : (
-                    "Try Buildographic"
-                  )}
-                </Button>
+                {isBetaMode && plan.price > 0 ? (
+                  <Button
+                    className="w-full h-12 rounded-full font-medium bg-accent text-muted-foreground cursor-not-allowed"
+                    disabled
+                  >
+                    Available after beta
+                  </Button>
+                ) : (
+                  <Button
+                    className={`w-full h-12 rounded-full font-medium ${
+                      isCurrentPlan || isPendingPlan
+                        ? "bg-accent text-muted-foreground"
+                        : "bg-primary hover:bg-primary/90 text-primary-foreground"
+                    }`}
+                    disabled={isCurrentPlan || isPendingPlan || isPlanLoading}
+                    onClick={() => handleSubscribe(plan.tier)}
+                  >
+                    {isPlanLoading ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Processing...
+                      </>
+                    ) : isCurrentPlan ? (
+                      "Current Plan"
+                    ) : isPendingPlan ? (
+                      "Activating..."
+                    ) : (
+                      "Try Buildographic"
+                    )}
+                  </Button>
+                )}
                 {isPendingPlan && (
                   <button
                     onClick={handleSyncPendingStatus}

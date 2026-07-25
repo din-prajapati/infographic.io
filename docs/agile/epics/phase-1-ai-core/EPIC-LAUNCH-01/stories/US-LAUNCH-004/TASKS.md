@@ -2,7 +2,7 @@
 
 > **Story:** [STORY.md](./STORY.md)
 > **Branch:** `feat/launch-us-launch-004-beta-mode`
-> **PR:** #_____ (fill when opened)
+> **PR:** [#18](https://github.com/din-prajapati/infographic.io/pull/18)
 > **Linear:** LIN-XXX
 > **Type:** feat
 
@@ -10,10 +10,10 @@
 
 ## Three Pillars Pre-flight (check before starting AI session)
 
-- [ ] **Brain** — STORY.md filled
-- [ ] **Muscle** — file list + ordered tasks + exact test commands
-- [ ] **Map** — [ARCHITECTURE.mmd](../../ARCHITECTURE.mmd) exists
-- [ ] **Env** — [ENV.yaml](../../ENV.yaml) loaded (BETA_MODE, VITE_BETA_MODE)
+- [x] **Brain** — STORY.md filled
+- [x] **Muscle** — file list + ordered tasks + exact test commands
+- [x] **Map** — [ARCHITECTURE.mmd](../../ARCHITECTURE.mmd) exists
+- [x] **Env** — [ENV.yaml](../../ENV.yaml) loaded (BETA_MODE, VITE_BETA_MODE)
 
 ---
 
@@ -31,22 +31,22 @@ feat(launch): beta mode flag + AI-content disclaimer — US-LAUNCH-004
 ### T1 — PricingPage beta rendering
 **File:** `client/src/pages/PricingPage.tsx`
 **AC(s) covered:** AC1, AC4
-**Changes:** *(fill during implementation session)*
+**Changes:** Added `isBetaMode = import.meta.env.VITE_BETA_MODE === 'true'`; green "Free during beta" banner when true; paid-tier CTA buttons replaced with disabled "Available after beta" state; FREE tier unaffected.
 
 ### T2 — Backend 403 beta guard
-**File:** payments controller/service `(TBC)`
+**File:** `api/src/modules/payments/controllers/payments.controller.ts`
 **AC(s) covered:** AC2, AC4
-**Changes:** *(fill during implementation session)*
+**Changes:** Added `ForbiddenException` import; guard check `process.env.BETA_MODE === 'true'` at top of `createSubscription()` — throws 403 `{ code: 'BETA_MODE_ACTIVE' }` before any service call.
 
 ### T3 — Disclaimer on generation result surface
-**File:** `(TBC — locate result/export component)`
+**File:** `client/src/components/ai-chat/ResultsVariations.tsx`
 **AC(s) covered:** AC3
-**Changes:** *(fill during implementation session)*
+**Changes:** Added disclaimer paragraph after "Regenerate all" button: "Imagery may include AI-generated visuals. Verify all details before publishing to represent a real listing." No vendor names.
 
 ### T4 — Unit test + .env.example
 **Files:** `api/tests/payments/beta-guard.spec.ts` (new), `.env.example`
 **AC(s) covered:** AC5
-**Changes:** *(fill during implementation session)*
+**Changes:** 5 tests covering 403 throw (BETA_MODE=true), response code assertion, service bypass, and AC4 passthrough for unset/false. `.env.example` documents BETA_MODE + VITE_BETA_MODE with inline comment.
 
 ---
 
@@ -74,15 +74,15 @@ cd api && npx vitest run tests/payments/beta-guard.spec.ts --reporter=verbose
 
 ## Task Checklist
 
-- [ ] T1 — pricing beta state
-- [ ] T2 — 403 guard
-- [ ] T3 — disclaimer
-- [ ] T4 — test + env example
-- [ ] `npm run check` passes ✅
-- [ ] `npm run test:unit` passes ✅
+- [x] T1 — pricing beta state
+- [x] T2 — 403 guard
+- [x] T3 — disclaimer
+- [x] T4 — test + env example
+- [x] `npm run check` passes ✅
+- [x] `npm run test:unit` passes ✅
 - [ ] Manual test recorded ✅
-- [ ] PR opened with story card as description ✅
-- [ ] STORY.md ACs updated ✅
+- [x] PR opened with story card as description ✅
+- [x] STORY.md ACs updated ✅
 
 ---
 

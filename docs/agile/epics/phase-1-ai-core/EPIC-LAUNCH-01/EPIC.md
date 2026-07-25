@@ -37,7 +37,7 @@
 | [US-LAUNCH-001](stories/US-LAUNCH-001/STORY.md) | Legal & policy pages (Terms · Privacy · Refund) | M-LAUNCH-01 | M | 🟡 impl | 51b0040 |
 | [US-LAUNCH-002](stories/US-LAUNCH-002/STORY.md) | Transactional email foundation (provider-agnostic EmailService) | M-LAUNCH-01 | M | 🟡 impl | ec166fb |
 | [US-LAUNCH-003](stories/US-LAUNCH-003/STORY.md) | Forgot / reset password flow | M-LAUNCH-01 | M | 🟡 impl | 1bc7346 |
-| [US-LAUNCH-004](stories/US-LAUNCH-004/STORY.md) | Beta launch mode (checkout off · AI-content disclaimer) | M-LAUNCH-01 | S | 🔲 | — |
+| [US-LAUNCH-004](stories/US-LAUNCH-004/STORY.md) | Beta launch mode (checkout off · AI-content disclaimer) | M-LAUNCH-01 | S | 🟡 impl | — |
 | [US-LAUNCH-005](stories/US-LAUNCH-005/STORY.md) | RazorPay live-mode activation | M-LAUNCH-02 | M | 🔲 | — |
 | [US-LAUNCH-006](stories/US-LAUNCH-006/STORY.md) | Payment receipt email on subscription charge | M-LAUNCH-02 | S | 🔲 | — |
 | [US-LAUNCH-007](stories/US-LAUNCH-007/STORY.md) | BROKERAGE tier gate on pricing page (resolves PT-06) | M-LAUNCH-02 | S | 🔲 | — |
@@ -45,6 +45,9 @@
 | [US-LAUNCH-009](stories/US-LAUNCH-009/STORY.md) | Environment & secrets management convention (docs/config) | M-LAUNCH-01 | M | 🟡 impl | ec166fb |
 | [US-LAUNCH-010](stories/US-LAUNCH-010/STORY.md) | Config hardening — APP_ENV + boot validation + RazorPay guard | M-LAUNCH-01 | M | ✅ Done | [#17](https://github.com/din-prajapati/infographic.io/pull/17) |
 | [US-LAUNCH-011](stories/US-LAUNCH-011/STORY.md) | Rebrand user-facing surfaces to Buildographic | M-LAUNCH-01 | S | 🔲 | — |
+| [US-LAUNCH-012](stories/US-LAUNCH-012/STORY.md) | Payment-failed (dunning) email notification | M-LAUNCH-02 | S | 🔲 | — |
+| [US-LAUNCH-013](stories/US-LAUNCH-013/STORY.md) | Subscription renewal reminder email (3-day notice) | M-LAUNCH-02 | S | 🔲 | — |
+| [US-LAUNCH-014](stories/US-LAUNCH-014/STORY.md) | Email verification for new local accounts (backlog, non-blocking) | M-LAUNCH-01 | M | 🔲 | — |
 
 ---
 
@@ -53,7 +56,7 @@
 | Feature ID | Scope | Stories |
 |------------|-------|---------|
 | F-LAUNCH-01 | Legal & Trust Pages | US-LAUNCH-001 |
-| F-LAUNCH-02 | Transactional Email | US-LAUNCH-002, US-LAUNCH-003, US-LAUNCH-006 |
+| F-LAUNCH-02 | Transactional Email | US-LAUNCH-002, US-LAUNCH-003, US-LAUNCH-006, US-LAUNCH-012, US-LAUNCH-013, US-LAUNCH-014 |
 | F-LAUNCH-03 | Beta Launch Mode | US-LAUNCH-004 |
 | F-LAUNCH-04 | Payments Go-Live | US-LAUNCH-005, US-LAUNCH-007 |
 | F-LAUNCH-05 | Metering Policy | US-LAUNCH-008 |
@@ -101,8 +104,6 @@ Key files relevant to this epic:
 
 ---
 
-*Epic created: 2026-07-07 | Last updated: 2026-07-18*
-
 ---
 
 ## Implementation Update (log)
@@ -112,3 +113,13 @@ Key files relevant to this epic:
 - **ACs covered:** AC1, AC2, AC3, AC4 (E2E assertions written; actual E2E run deferred to /test-story — needs running server)
 - **Commits:** 5 on branch `feat/launch/us-launch-011-rebrand-buildographic` (bc1a72e T1, 10c2851 T2, a343157 T3, 4a82384 T4, 3d88e45 T5)
 - **Notes:** grep sweep `grep -rn "InfographicAI" client/src client/index.html api/src` returns zero hits. Occurrence count discrepancies found vs story: TermsPage.tsx has 7 non-email occurrences (story stated 6); PrivacyPage.tsx has 4 non-email occurrences (story stated 5) — all were replaced per instruction. Email addresses (`support@infographicai.in`, etc.) in legal pages intentionally left unchanged (they are domain/contact addresses, not user-facing brand name occurrences, and changing them would require new email infrastructure). The all-caps "WHY INFOGRAPHICAI" label in LandingPage.tsx was replaced to "WHY BUILDOGRAPHIC" to preserve the display style.
+
+### 2026-07-25 — US-LAUNCH-004 implementation complete, incl. test-story AC3 fix (pre-PR)
+- **Files touched:** `client/src/pages/PricingPage.tsx`, `api/src/modules/payments/controllers/payments.controller.ts`, `client/src/components/ai-chat/ResultsVariations.tsx`, `client/src/components/ai-chat/MessageBubble.tsx`, `api/tests/payments/beta-guard.spec.ts`, `e2e/us-launch-004-beta-mode.spec.ts`, `.env.example`
+- **ACs covered:** AC1 (beta banner + disabled paid CTA), AC2 (403 BETA_MODE_ACTIVE guard), AC3 (AI-content disclaimer — see finding below), AC4 (flags off = current paid behavior, verified by unit + E2E), AC5 (9 unit tests in beta-guard.spec.ts, 88/88 full suite pass)
+- **Commits:** 7 on branch `feat/launch-us-launch-004-beta-mode`
+- **Notes:** Guard lives in the controller (not the service) so it fires before any payment-provider call. `test-story` E2E coverage found AC3 did not actually hold: the disclaimer in `ResultsVariations.tsx` only rendered in `AIChatBox`'s default view (`!hasActiveConversation`), unreachable once a prompt is submitted and the conversation view (`MessageBubble.tsx`) takes over. Fixed by adding the same disclaimer to `MessageBubble.tsx`; verified against both beta-on and beta-off local servers. Also found (documented, not fixed — out of this story's scope): the `BETA_MODE` guard is case-sensitive, so `BETA_MODE=TRUE` in a Railway dashboard would silently bypass it — flagged for the ops runbook.
+
+---
+
+*Epic created: 2026-07-07 | Last updated: 2026-07-25*

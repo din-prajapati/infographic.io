@@ -23,8 +23,11 @@ A real estate agent who is a total stranger can sign up on production, generate 
 | 1 | [US-LAUNCH-009](../stories/US-LAUNCH-009/STORY.md) | Environment & secrets management convention (docs/config) | — | 🟡 impl (merged) | ec166fb |
 | 2 | [US-LAUNCH-010](../stories/US-LAUNCH-010/STORY.md) | Config hardening — APP_ENV + boot validation + RazorPay guard | US-LAUNCH-009 | ✅ Done | [#17](https://github.com/din-prajapati/infographic.io/pull/17) |
 | 3 | [US-LAUNCH-011](../stories/US-LAUNCH-011/STORY.md) | Rebrand user-facing surfaces to Buildographic | — | 🟡 in review | [#16](https://github.com/din-prajapati/infographic.io/pull/16) |
+| Backlog | [US-LAUNCH-014](../stories/US-LAUNCH-014/STORY.md) | Email verification for new local accounts | — | 🔲 | — |
 
 > **Order** = wave. Same order = no known file overlap, safe to run in parallel worktrees. **Blocked By** = genuine logical dependency (must be ✅ Done, not just merged-and-mergeable). File-overlap safety within an order is verified automatically by `orion run next M-LAUNCH-01`, not by this column.
+>
+> **US-LAUNCH-014 is Backlog, not a wave** — should-have, not launch-blocking (see its STORY.md header). It is explicitly excluded from the Acceptance checklist below; do not treat it as required for this milestone to close.
 
 ---
 
@@ -34,7 +37,7 @@ A real estate agent who is a total stranger can sign up on production, generate 
 - [ ] A password-reset email arrives in a real inbox from production and the reset link works
 - [ ] With `BETA_MODE=true`, no paid checkout can be initiated from UI **or** API
 - [ ] AI-content disclaimer visible on generation results/export
-- [ ] All stories above have status ✅ Done
+- [ ] All stories above have status ✅ Done, **except US-LAUNCH-014** (Backlog — non-blocking, may close after this milestone)
 
 ---
 

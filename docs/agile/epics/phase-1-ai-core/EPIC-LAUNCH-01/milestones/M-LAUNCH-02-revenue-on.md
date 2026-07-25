@@ -20,8 +20,10 @@ The first real rupee can be collected defensibly: live RazorPay checkout → web
 | 1 | [US-LAUNCH-007](../stories/US-LAUNCH-007/STORY.md) | BROKERAGE tier gate on pricing page (PT-06) | — | 🔲 | — |
 | 1 | [US-LAUNCH-008](../stories/US-LAUNCH-008/STORY.md) | Metering policy guard (1 generation = 1 credit) | — | 🔲 | — |
 | 2 | [US-LAUNCH-006](../stories/US-LAUNCH-006/STORY.md) | Payment receipt email on subscription charge | US-LAUNCH-002 | 🔲 | — |
+| 2 | [US-LAUNCH-012](../stories/US-LAUNCH-012/STORY.md) | Payment-failed (dunning) email notification | US-LAUNCH-002 | 🔲 | — |
+| 2 | [US-LAUNCH-013](../stories/US-LAUNCH-013/STORY.md) | Subscription renewal reminder email (3-day notice) | US-LAUNCH-002 | 🔲 | — |
 
-> US-LAUNCH-006 and US-LAUNCH-007 both touch `payments.service.ts` (cluster C2) — `orion run next` will correctly withhold 006 from PARALLEL-ELIGIBLE while 007 is in progress even though there's no formal Blocked-By between them; that's the file-overlap engine working as designed, not a bug.
+> US-LAUNCH-006, US-LAUNCH-007, and US-LAUNCH-012 all touch `payments.service.ts` (cluster C2) — `orion run next` will correctly withhold parallel eligibility among these three even though there's no formal Blocked-By between them; that's the file-overlap engine working as designed, not a bug. US-LAUNCH-013 touches a new file (`renewal-reminder.service.ts`) + schema + `app.module.ts` — not in cluster C2, safe to run parallel to the other three.
 
 ---
 
