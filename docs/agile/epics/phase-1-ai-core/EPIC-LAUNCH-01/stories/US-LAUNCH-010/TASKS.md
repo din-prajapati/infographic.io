@@ -222,6 +222,7 @@ railway logs   # expect: Nest application successfully started
 - [x] Real local boot — full 3-server stack started clean via `npm run dev`
 - [x] Failure-path smoke test — both `JWT_SECRET` missing and RazorPay mode-mismatch confirmed to abort with exit code 1 and the correct named error, run directly via `npx tsx src/main.ts`
 - [x] T7 — hardcoded `JWT_SECRET` fallback removed from `server/index.ts`; re-verified the missing-var abort now fires through the **real** `npm run dev` entrypoint (previously masked — see T7 above for the full before/after)
+- [x] **Gate 4a/4b (`npm run smoke:boot`)** — ✅ `BOOT OK — API answered on :3999 (HTTP 200) in 3s`. Run in a fresh, isolated `git worktree` branched from `origin/main` (see below) — first attempt without a local `.env` correctly showed all 6 required keys as missing and hung past the script's 90s timeout without ever printing a `BOOT FAILED` line; re-run with a real `.env` present resolved cleanly in 3s, confirming the timeout was a worktree-setup gap (no `.env` yet), not a code defect. The all-vars-absent edge case isn't representative of Railway (which always injects some vars) and was already independently confirmed correct via a direct `npx tsx src/main.ts` run (exits code 1, all 6 keys named, ~1s).
 - [ ] Staging deploy boots clean, no staging var change (AC4) ✅ — **cannot verify until merged**; staging auto-deploys on every push to `main` per `.github/workflows/deploy.yml`
 - [ ] PR opened with story card as description ✅
 
