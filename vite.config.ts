@@ -1,5 +1,6 @@
 import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
+import { sentryVitePlugin } from "@sentry/vite-plugin";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -16,7 +17,22 @@ export default defineConfig(({ mode }) => {
         process.env.RAILWAY_GIT_COMMIT_SHA?.slice(0, 7) ?? 'dev'
       ),
     },
-    plugins: [react()],
+    plugins: [
+      react(),
+      // Uploads source maps to Sentry at build time so stack traces show real
+      // filenames instead of minified bundle hashes. No-ops (and deletes no
+      // files) when SENTRY_AUTH_TOKEN isn't set, so local/CI builds without
+      // the token are unaffected.
+      sentryVitePlugin({
+        org: process.env.SENTRY_ORG,
+        project: process.env.SENTRY_PROJECT,
+        authToken: process.env.SENTRY_AUTH_TOKEN,
+        disable: !process.env.SENTRY_AUTH_TOKEN,
+        sourcemaps: {
+          filesToDeleteAfterUpload: ['**/*.map'],
+        },
+      }),
+    ],
     resolve: {
       extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
       alias: {
@@ -30,6 +46,7 @@ export default defineConfig(({ mode }) => {
       outDir: path.resolve(__dirname, "dist/public"),
       emptyOutDir: true,
       target: 'esnext',
+      sourcemap: true,
     },
     server: {
       port: 3000,
