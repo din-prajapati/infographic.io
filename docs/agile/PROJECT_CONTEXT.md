@@ -109,7 +109,7 @@ npm run dev starts:
 | Mobile | MOBILE | React Native / PWA mobile app | 01 | 01 | 001 |
 | Listing Kits | KIT | Multi-format kits, lifecycle, recurring content, compliance | 02 | 05 | 007 |
 | Generation Quality | GEN | Image-generation pipeline quality, prompt engineering, cost control | 02 | 03 | 003 |
-| Launch Readiness | LAUNCH | Go-live ops: live payments, transactional email, legal pages, beta gating, metering policy, env/secrets management | 02 | 07 | 011 |
+| Launch Readiness | LAUNCH | Go-live ops: live payments, transactional email, legal pages, beta gating, metering policy, env/secrets management | 02 | 07 | 015 |
 
 > To add a new domain: append a row here, pick an unused 2-6 char UPPERCASE prefix, start all counters at `01` / `001`.
 
