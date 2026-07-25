@@ -109,8 +109,10 @@ for ID in $IDS; do
     ' "$TRACKER" > "${TRACKER}.tmp" && mv "${TRACKER}.tmp" "$TRACKER"
   done
 
-  # Also touch MILESTONE.md if it sits beside the story folder
-  for MS in $(find "$EPICS_DIR/$PARENT_EPIC" -maxdepth 3 -name MILESTONE.md 2>/dev/null); do
+  # Also touch the milestone doc if it sits beside the story folder.
+  # Actual filenames are "M-{DOMAIN}-{NN}-{slug}.md" (e.g. M-LAUNCH-01-public-beta.md),
+  # not a literal "MILESTONE.md" — match the real convention.
+  for MS in $(find "$EPICS_DIR/$PARENT_EPIC/milestones" -maxdepth 1 -name "M-*.md" 2>/dev/null); do
     awk -v id="$ID" '{ if (index($0, id) > 0) gsub(/🔲|🟡/, "✅"); print }' \
       "$MS" > "${MS}.tmp" && mv "${MS}.tmp" "$MS"
   done

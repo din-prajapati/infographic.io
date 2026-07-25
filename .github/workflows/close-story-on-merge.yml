@@ -39,7 +39,7 @@ jobs:
         env:
           PR_NUM: ${{ github.event.pull_request.number }}
           IDS: ${{ steps.ids.outputs.ids }}
-        run: bash .claude/hooks/cascade-close-story.sh
+        run: bash .orion/hooks/cascade-close-story.sh
 
       - name: Commit cascade
         if: steps.ids.outputs.ids != ''
