@@ -1,11 +1,11 @@
 # Story Card — US-LAUNCH-011
 
-> **Status:** 🟡 In Review (PR #16)
+> **Status:** ✅ Done
 > **Feature:** F-LAUNCH-07 — Brand Identity
 > **Epic:** [EPIC-LAUNCH-01](../../EPIC.md)
 > **Milestone:** [M-LAUNCH-01-public-beta](../../milestones/M-LAUNCH-01-public-beta.md)
 > **Linear:** LIN-XXX
-> **Created:** 2026-07-17 | **Closed:** —
+> **Created:** 2026-07-17 | **Closed:** 2026-07-25
 >
 > **Context:** Official product name **Buildographic** (domain `buildographic.com` purchased 2026-07-17) replaces the working code name *InfographicAI* on every user-facing surface. Ship **before marketing traffic** — legal pages carrying the wrong product name undermine their purpose, and the first password-reset emails should carry the real brand. Enumerated 2026-07-17: **42 occurrences across 12 files** (marketing pages, auth pages, legal pages, footer, HTML title, Swagger title, email subjects). Internal naming (repo, docs, config, storage keys) is deliberately out of scope.
 
@@ -188,8 +188,8 @@ Implementation rules:
 - [x] `npm run check` passes
 - [x] `npm run test:unit` passes
 - [x] Manual flow verified on `localhost:5000` (TC-04 sweep) — pass with finding, see TC-LAUNCH-011-04
-- [ ] PR merged (PR #{number})
-- [ ] No console errors for the changed flow
+- [x] PR merged ([PR #16](https://github.com/din-prajapati/infographic.io/pull/16), merged 2026-07-22)
+- [x] No console errors for the changed flow (string-only rebrand; no new runtime code paths; TC-04 manual sweep found no errors)
 - [x] [TASKS.md](./TASKS.md) task list fully checked
 
 ---

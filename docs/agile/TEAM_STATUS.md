@@ -17,7 +17,7 @@
 | [Canvas Editor (EDIT)](#-canvas-editor-edit) | EPIC-EDIT-01 | ✅ Done | — | Batch upload Phase 3 |
 | [AI Generation (AI)](#-ai-generation-ai) | EPIC-AI-00 | ✅ Done (closed 2026-07-03) | — | EPIC-AI-02 deps (US-AI-010/011) → EPIC-AI-06 |
 | [Infrastructure (INFRA)](#-infrastructure-infra) | EPIC-INFRA-01 | 🟡 Task 1 ✅ · Task 2 ✅ (2026-07-11) · Task 3 (prod) next | Human task | Admin dashboard Phase 5 |
-| [Launch Readiness (LAUNCH)](#-launch-readiness-launch) | EPIC-LAUNCH-01 | 🟡 US-LAUNCH-004 ✅ Done (PR #18) | Phase 0 HUMAN Task 3 | M-LAUNCH-01 → beta (now incl. US-LAUNCH-009/010 env & secrets) · M-LAUNCH-02 → revenue |
+| [Launch Readiness (LAUNCH)](#-launch-readiness-launch) | EPIC-LAUNCH-01 | 🟡 3/14 stories ✅ Done (004, 010, 011) | Phase 0 HUMAN Task 3 | M-LAUNCH-01 → beta (now incl. US-LAUNCH-009/010 env & secrets) · M-LAUNCH-02 → revenue |
 | [Organization (ORG)](#-organization--team-org) | — | Post-MVP | No email provider (US-LAUNCH-002 will fix) | EPIC-ORG-01 post-launch |
 
 ---
@@ -265,19 +265,22 @@
 | [US-LAUNCH-002](epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-002/STORY.md) | Transactional email foundation | M | — |
 | [US-LAUNCH-003](epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-003/STORY.md) | Forgot / reset password flow | M | US-LAUNCH-002 |
 | [US-LAUNCH-009](epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-009/STORY.md) | Environment & secrets management convention (docs/config) | M | — |
-| [US-LAUNCH-010](epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-010/STORY.md) | Config hardening — APP_ENV + boot validation + RazorPay guard | M | US-LAUNCH-009 |
 
 ### Done
 | Story | Title | PR | Closed |
 |-------|-------|-----|--------|
 | [US-LAUNCH-004](epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-004/STORY.md) | Beta launch mode (checkout off · AI-content disclaimer) | [#18](https://github.com/din-prajapati/infographic.io/pull/18) | 2026-07-25 ✅ |
+| [US-LAUNCH-010](epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-010/STORY.md) | Config hardening — APP_ENV + boot validation + RazorPay guard | [#17](https://github.com/din-prajapati/infographic.io/pull/17) | 2026-07-25 ✅ |
+| [US-LAUNCH-011](epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-011/STORY.md) | Rebrand user-facing surfaces to Buildographic | [#16](https://github.com/din-prajapati/infographic.io/pull/16) | 2026-07-25 ✅ |
 
 > **🟡 M-LAUNCH-01 is 4/6 implemented ahead of milestone** (all on `main`, 2026-07-12, **none deployed** — milestone still blocked by Phase 0 Task 3):
 > - **US-LAUNCH-009 + US-LAUNCH-002** — parallel-worktree wave (`ec166fb`; two `code-agent` lanes, disjoint files, two-level squash-merge; Gate 1 + 7/7 email tests green).
 > - **US-LAUNCH-001** — legal pages + footer landed (`51b0040`) from its stale branch; Gate 1 green.
 > - **US-LAUNCH-003** (password reset) — 🟡 **implemented** (`1bc7346`; token model + forgot/reset endpoints + 2 pages + 8 unit tests; Gate 1 green). ⚠️ `PasswordResetToken` table created on next deploy (`db:deploy` → `prisma db push`); manual E2E pending.
 > - **US-LAUNCH-004** (beta mode) — ✅ **Done**, PR #18 merged 2026-07-25.
-> - Remaining: **US-LAUNCH-010** (config hardening — unblocked by 009).
+> - **US-LAUNCH-010** (config hardening) — ✅ **Done**, PR #17 merged 2026-07-25 (closed late — see EPIC.md log for the CI automation bug that delayed it).
+> - **US-LAUNCH-011** (Buildographic rebrand) — ✅ **Done**, PR #16 merged 2026-07-22, closed 2026-07-25.
+> - Remaining: **US-LAUNCH-001, 002, 003, 009** — implemented and merged but not yet formally closed.
 
 ### Then — M-LAUNCH-02 revenue on (prep parallel to EPIC-AI-06; flip gated by AI-06)
 

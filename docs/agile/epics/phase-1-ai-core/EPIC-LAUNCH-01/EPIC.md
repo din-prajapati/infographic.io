@@ -44,7 +44,7 @@
 | [US-LAUNCH-008](stories/US-LAUNCH-008/STORY.md) | Metering policy guard (1 generation = 1 credit) | M-LAUNCH-02 | S | 🔲 | — |
 | [US-LAUNCH-009](stories/US-LAUNCH-009/STORY.md) | Environment & secrets management convention (docs/config) | M-LAUNCH-01 | M | 🟡 impl | ec166fb |
 | [US-LAUNCH-010](stories/US-LAUNCH-010/STORY.md) | Config hardening — APP_ENV + boot validation + RazorPay guard | M-LAUNCH-01 | M | ✅ Done | [#17](https://github.com/din-prajapati/infographic.io/pull/17) |
-| [US-LAUNCH-011](stories/US-LAUNCH-011/STORY.md) | Rebrand user-facing surfaces to Buildographic | M-LAUNCH-01 | S | 🔲 | — |
+| [US-LAUNCH-011](stories/US-LAUNCH-011/STORY.md) | Rebrand user-facing surfaces to Buildographic | M-LAUNCH-01 | S | ✅ Done | [#16](https://github.com/din-prajapati/infographic.io/pull/16) |
 | [US-LAUNCH-012](stories/US-LAUNCH-012/STORY.md) | Payment-failed (dunning) email notification | M-LAUNCH-02 | S | 🔲 | — |
 | [US-LAUNCH-013](stories/US-LAUNCH-013/STORY.md) | Subscription renewal reminder email (3-day notice) | M-LAUNCH-02 | S | 🔲 | — |
 | [US-LAUNCH-014](stories/US-LAUNCH-014/STORY.md) | Email verification for new local accounts (backlog, non-blocking) | M-LAUNCH-01 | M | 🔲 | — |
@@ -125,6 +125,12 @@ Key files relevant to this epic:
 - **ACs:** all checked ✅ (AC1–AC5)
 - **Closed by:** /close-story
 - **Notes:** Both remaining manual DoD items resolved at closure: disclaimer copy signed off (no vendor names); the VITE_BETA_MODE-on/BETA_MODE-off split-misconfig scenario confirmed by code read (the guard reads only `process.env.BETA_MODE`, never the frontend flag — already proven by existing unit coverage) rather than a fresh live run. Both flags must still be set together in ops — noted as a runbook risk, not a code gap.
+
+### 2026-07-25 — US-LAUNCH-011 closed (PR #16 merged)
+- **PR:** [#16](https://github.com/din-prajapati/infographic.io/pull/16) — merged 2026-07-22
+- **ACs:** all checked ✅ (AC1–AC4), plus three unscoped follow-ups completed on the same branch: logo exploration/selection, site-wide logo propagation, and apex/app host routing groundwork
+- **Closed by:** /close-story
+- **Notes:** Closed 3 days after merge — the automated "Close Story on PR Merge" GitHub Action failed on this PR (and on #17, #18) because the workflow calls `.claude/hooks/cascade-close-story.sh`, which doesn't exist; the real script lives at `.orion/hooks/cascade-close-story.sh`. Manually verified DoD: Gate 1 green, E2E legal-pages suite passed locally (13/14, 1 pre-existing unrelated skip), manual sweep found no remaining "InfographicAI" strings (contact emails intentionally left, out of scope).
 
 ---
 
