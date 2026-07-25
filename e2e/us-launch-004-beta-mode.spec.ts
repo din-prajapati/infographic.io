@@ -16,7 +16,7 @@
  *
  * AC coverage:
  *   AC1 (frontend half): TC-01, TC-02, TC-03, TC-04 (beta-ON) + TC-05 (beta-OFF)
- *   AC3 (disclaimer):    TC-04-01/02 — see KNOWN DISCREPANCY below
+ *   AC3 (disclaimer):    TC-04-01/02 — see [D-2] below (fixed)
  *   AC4 (frontend half): TC-05 (flags off restores current paid behavior)
  *   AC2 + AC5:           covered by unit tests (api/tests/payments/beta-guard.spec.ts)
  *
@@ -28,17 +28,15 @@
  *   (current PricingPage.tsx source). TC-05 uses a brand-agnostic regex selector
  *   /^try\s/i to remain stable across both values.
  *
- * [D-2] AC3 disclaimer unreachable in conversation flow (TC-04-01/02):
- *   The disclaimer <p> in ResultsVariations.tsx (line 220-223) is only rendered
+ * [D-2] AC3 disclaimer unreachable in conversation flow — FIXED:
+ *   The disclaimer <p> in ResultsVariations.tsx (line 220-223) was only rendered
  *   in AIChatBox's DEFAULT view, gated on !hasActiveConversation. After a user
  *   submits a prompt, hasActiveConversation becomes true and the panel switches
  *   to the conversation view (ConversationMessages + MessageBubble.tsx), which
- *   has NO disclaimer. ResultsVariations — and its disclaimer — is therefore
- *   architecturally unreachable in the standard generation flow. Page snapshot
- *   from the failing run confirmed: the disclaimer text is absent from the DOM.
- *   TC-04-01/02 is marked test.fail() to track this AC3 implementation gap.
- *   Fix path: add the disclaimer to MessageBubble.tsx after resultPreviews, or
- *   expose a shared <GenerationDisclaimer /> component in ConversationMessages.
+ *   had NO disclaimer — ResultsVariations was architecturally unreachable in the
+ *   standard generation flow. Fixed by adding the same disclaimer paragraph to
+ *   MessageBubble.tsx, directly after the resultPreviews grid, so it renders in
+ *   the conversation view too. TC-04-01/02 no longer use test.fail().
  */
 import { test, expect, type Page } from "@playwright/test";
 import process from "node:process";
@@ -397,26 +395,14 @@ test.describe("US-LAUNCH-004 — AC3: AI-content disclaimer after generation (au
     //   skip guard so it can catch any regression that moves the disclaimer behind
     //   a feature flag.
     //
-    // ⚠ KNOWN IMPLEMENTATION GAP (see [D-2] in file header):
-    //   The disclaimer in ResultsVariations.tsx (line 220-223) is gated on
-    //   !hasActiveConversation in AIChatBox.tsx (line 1171-1274). Once a user
-    //   submits a prompt, hasActiveConversation becomes true and the conversation
-    //   view renders (ConversationMessages + MessageBubble.tsx) instead. That path
-    //   has no disclaimer text. Page snapshot from the failing run confirmed the
-    //   disclaimer is absent from the DOM in the conversation flow.
-    //
-    //   This test is marked test.fail() to track the AC3 gap without hiding it.
-    //   Remove test.fail() once the disclaimer is added to the conversation view.
-    //   Fix path: add the disclaimer to MessageBubble.tsx after resultPreviews, or
-    //   render a shared <GenerationDisclaimer /> in ConversationMessages.
+    // Note (see [D-2] in file header): the disclaimer was previously only
+    // rendered in AIChatBox's default view and unreachable once a prompt was
+    // submitted (hasActiveConversation=true switches to MessageBubble.tsx,
+    // which had no disclaimer). Fixed by adding the same paragraph to
+    // MessageBubble.tsx after the resultPreviews grid.
     //
     // Mock-backed: intercepts REST contract so no live Ideogram API call is made.
     // Poll-only mode (localStorage flag) replaces socket.io progress events.
-    test.fail(
-      true,
-      "AC3 gap: disclaimer in ResultsVariations.tsx is unreachable in the conversation flow — see [D-2] in file header",
-    );
-
     await mockGeneration(page);
     await openEditorWithChat(page);
 

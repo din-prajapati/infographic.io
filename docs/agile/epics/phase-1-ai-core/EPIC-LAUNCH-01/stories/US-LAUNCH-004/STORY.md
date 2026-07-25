@@ -1,6 +1,6 @@
 # Story Card — US-LAUNCH-004
 
-> **Status:** ⚠️ Implementation Complete, AC3 Regression Found (pre-PR) — testing surfaced a real gap, not yet fixed
+> **Status:** ✅ Implementation Complete, incl. test-story fix (pre-PR)
 > **Feature:** F-LAUNCH-03 — Beta Launch Mode
 > **Epic:** [EPIC-LAUNCH-01](../../EPIC.md)
 > **Milestone:** [M-LAUNCH-01-public-beta](../../milestones/M-LAUNCH-01-public-beta.md)
@@ -22,7 +22,7 @@
 
 - [x] **AC1 [happy-path]:** With `VITE_BETA_MODE=true`, the PricingPage shows a "Free during beta" notice and paid tiers render **without** checkout buttons (replaced by a disabled "Available after beta" state) — FREE tier signup unaffected
 - [x] **AC2 [error-path]:** With `BETA_MODE=true` on the backend, the subscription-creation endpoint returns 403 with a clear `BETA_MODE_ACTIVE` error code (defense in depth — the UI hiding alone is not the gate)
-- [ ] **AC3 [happy-path]:** Generation results (editor result view and/or export flow) display a disclaimer: imagery may include AI-generated visuals and must be verified before being published to represent a real listing — exact copy in the story PR, no AI vendor names — ❌ **regression found by test-story:** the disclaimer in `ResultsVariations.tsx` only renders in `AIChatBox`'s default view (`!hasActiveConversation`); once a prompt is submitted the conversation view (`MessageBubble.tsx`) takes over and has no disclaimer — see TC-LAUNCH-004-04-01/02
+- [x] **AC3 [happy-path]:** Generation results (editor result view and/or export flow) display a disclaimer: imagery may include AI-generated visuals and must be verified before being published to represent a real listing — exact copy in the story PR, no AI vendor names — fixed: same disclaimer paragraph added to `MessageBubble.tsx` (the conversation-view result surface), not just `ResultsVariations.tsx` (the pre-conversation default view)
 - [x] **AC4 [edge-case]:** Setting both flags to `false` (or unset) restores current paid behavior with no other code change — single-switch revenue-on
 - [x] **AC5 [happy-path]:** `npm run test:unit` includes a test for the 403 beta guard
 
@@ -43,10 +43,12 @@
 - **PR:** #_____ (fill when opened)
 - **Primary files touched:**
   - `client/src/pages/PricingPage.tsx`
-  - `api/src/modules/payments/controllers/payments.controller.ts` `(TBC — subscription create endpoint)`
-  - `client/src/components/editor/` result/export component `(TBC — locate generation result surface)`
+  - `api/src/modules/payments/controllers/payments.controller.ts`
+  - `client/src/components/ai-chat/ResultsVariations.tsx` (pre-conversation result surface)
+  - `client/src/components/ai-chat/MessageBubble.tsx` (conversation-view result surface — added post-implementation, during test-story, when E2E testing found the disclaimer was unreachable once a conversation starts)
   - `.env.example`
   - `api/tests/payments/beta-guard.spec.ts` (new)
+  - `e2e/us-launch-004-beta-mode.spec.ts` (new)
 
 ---
 
@@ -79,17 +81,17 @@ Implementation rules:
 
 | TC ID | Type | Priority | Scenario | Status | Finding |
 |-------|------|----------|----------|--------|---------|
-| TC-LAUNCH-004-01-01 | Auto (E2E) | P0 | Given VITE_BETA_MODE=true, when viewing /pricing (Individual), then "Free during beta" banner is visible | 🔲 | Written; needs a server run with `VITE_BETA_MODE=true` to execute (skip-guarded by default) |
-| TC-LAUNCH-004-01-02 | Auto (E2E) | P0 | Given VITE_BETA_MODE=true, when viewing SOLO card, then CTA reads "Available after beta" and is disabled | 🔲 | Written; needs a server run with `VITE_BETA_MODE=true` to execute (skip-guarded by default) |
-| TC-LAUNCH-004-01-03 | Auto (E2E) | P1 | Given VITE_BETA_MODE=true, when viewing Enterprise segment, then TEAM and BROKERAGE CTAs are also disabled | 🔲 | Written; needs a server run with `VITE_BETA_MODE=true` to execute (skip-guarded by default) |
-| TC-LAUNCH-004-01-04 | Auto (E2E) | P0 | Given VITE_BETA_MODE=true, when viewing FREE card, then its CTA is unaffected (enabled, normal label) | 🔲 | Written; needs a server run with `VITE_BETA_MODE=true` to execute (skip-guarded by default) |
-| TC-LAUNCH-004-01-05 | Auto (E2E) | P0 | Given VITE_BETA_MODE unset/false, when viewing /pricing, then no beta banner and normal paid CTAs render (AC4 frontend half) | ✅ | Ran against live server, passed |
+| TC-LAUNCH-004-01-01 | Auto (E2E) | P0 | Given VITE_BETA_MODE=true, when viewing /pricing (Individual), then "Free during beta" banner is visible | ✅ | Ran against a local server started with `VITE_BETA_MODE=true` |
+| TC-LAUNCH-004-01-02 | Auto (E2E) | P0 | Given VITE_BETA_MODE=true, when viewing SOLO card, then CTA reads "Available after beta" and is disabled | ✅ | Ran against a local server started with `VITE_BETA_MODE=true` |
+| TC-LAUNCH-004-01-03 | Auto (E2E) | P1 | Given VITE_BETA_MODE=true, when viewing Enterprise segment, then TEAM and BROKERAGE CTAs are also disabled | ✅ | Ran against a local server started with `VITE_BETA_MODE=true` |
+| TC-LAUNCH-004-01-04 | Auto (E2E) | P0 | Given VITE_BETA_MODE=true, when viewing FREE card, then its CTA is unaffected (enabled, normal label) | ✅ | Ran against a local server started with `VITE_BETA_MODE=true` |
+| TC-LAUNCH-004-01-05 | Auto (E2E) | P0 | Given VITE_BETA_MODE unset/false, when viewing /pricing, then no beta banner and normal paid CTAs render (AC4 frontend half) | ✅ | Ran against default (beta-off) local server, passed |
 | TC-LAUNCH-004-02 | Auto (unit) | P0 | Given BETA_MODE=true, when POST subscription-create, then 403 BETA_MODE_ACTIVE, status 403, non-empty message | ✅ | 5/5 sub-assertions pass |
 | TC-LAUNCH-004-02-06 | Auto (unit) | P1 | Given BETA_MODE='TRUE' (uppercase), when POST subscription-create, then guard is bypassed (case-sensitive — ops must set lowercase `true`) | ⚠️ | Confirmed: guard is case-sensitive, `BETA_MODE=TRUE` silently does NOT lock checkout. Real footgun for Railway dashboard entry — flag in ops runbook |
 | TC-LAUNCH-004-03 | Auto (unit) | P0 | Given BETA_MODE unset or 'false', when POST subscription-create, then existing behavior unchanged (AC4 backend half) | ✅ | Pass |
-| TC-LAUNCH-004-04-01 | Auto (E2E) | P1 | Given a completed generation, then the AI-content disclaimer is visible on the result surface | ❌ | **AC3 regression** — disclaimer unreachable once conversation view takes over (`hasActiveConversation=true`); confirmed via source read (`AIChatBox.tsx:1171`, `MessageBubble.tsx` has no disclaimer). Test marked `test.fail()` pending fix |
-| TC-LAUNCH-004-04-02 | Auto (E2E) | P1 | Given VITE_BETA_MODE unset, then the disclaimer still renders (it is unconditional, not beta-gated) | ❌ | Same root cause as TC-04-01 — disclaimer is unconditional in code but unreachable in the conversation view regardless of beta flag |
-| TC-LAUNCH-004-04-03 | Manual | P1 | Human sign-off: disclaimer copy contains no AI vendor names | 🔲 | Blocked on AC3 fix — copy itself is vendor-name-free, but surface is currently unreachable |
+| TC-LAUNCH-004-04-01 | Auto (E2E) | P1 | Given a completed generation, then the AI-content disclaimer is visible on the result surface | ✅ | Was failing (disclaimer unreachable in conversation view); fixed by adding the disclaimer to `MessageBubble.tsx`; re-ran and confirmed passing against both beta-on and beta-off local servers |
+| TC-LAUNCH-004-04-02 | Auto (E2E) | P1 | Given VITE_BETA_MODE unset, then the disclaimer still renders (it is unconditional, not beta-gated) | ✅ | Same fix as TC-04-01; confirmed unconditional across both beta states |
+| TC-LAUNCH-004-04-03 | Manual | P1 | Human sign-off: disclaimer copy contains no AI vendor names | 🔲 | Copy is vendor-name-free (verified by code read); still needs a named human sign-off per the manual-gate rule |
 | TC-LAUNCH-004-03-03 | Manual | P1 | Given VITE_BETA_MODE=true but BETA_MODE unset on backend (split misconfig), when a direct API call is made, then it succeeds — documents that both flags must be set together for the gate to hold | 🔲 | ⚠️ Deployment-config risk, not a code bug — see ENV.yaml / runbook |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
