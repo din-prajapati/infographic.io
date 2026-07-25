@@ -15,6 +15,7 @@ import { UsersModule } from './modules/users/users.module';
 import { DatabaseModule } from './database/database.module';
 import { HealthModule } from './modules/health/health.module';
 import { EmailModule } from './modules/email/email.module';
+import { validate } from './config/env.validation';
 
 
 @Module({
@@ -28,6 +29,7 @@ import { EmailModule } from './modules/email/email.module';
       ],
       // In production, prefer system environment variables over .env files
       ignoreEnvFile: process.env.NODE_ENV === 'production' && !!process.env.DATABASE_URL,
+      validate,
     }),
     ThrottlerModule.forRoot({
       throttlers: [{
