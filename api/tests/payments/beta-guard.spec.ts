@@ -95,6 +95,41 @@ describe('PaymentsController — beta guard (US-LAUNCH-004)', () => {
 
       expect(mockPaymentsService.createSubscription).not.toHaveBeenCalled();
     });
+
+    it('thrown exception HTTP status is exactly 403', async () => {
+      // Contract:
+      //   Expected: thrown.getStatus() === 403
+      //   Location: PaymentsController.createSubscription()
+      //   Condition: process.env.BETA_MODE === 'true'
+      // NestJS ForbiddenException is HTTP 403 by definition; this test makes the
+      // exact status code an explicit, verifiable contract rather than an implicit assumption.
+      process.env.BETA_MODE = 'true';
+
+      const thrown = await controller
+        .createSubscription(soloDto, mockReq)
+        .catch((e) => e);
+
+      expect(thrown).toBeInstanceOf(ForbiddenException);
+      expect(thrown.getStatus()).toBe(403);
+    });
+
+    it('exception response includes a non-empty message string alongside the code', async () => {
+      // Contract:
+      //   Expected: thrown.response.message is a non-empty string
+      //   Location: PaymentsController.createSubscription()
+      //   Condition: process.env.BETA_MODE === 'true'
+      // The error shape must carry a human-readable message (not just a machine code)
+      // so that API callers and monitoring tools can surface meaningful context.
+      process.env.BETA_MODE = 'true';
+
+      const thrown = await controller
+        .createSubscription(soloDto, mockReq)
+        .catch((e) => e);
+
+      expect(thrown).toBeInstanceOf(ForbiddenException);
+      expect(thrown.response.message).toBeTruthy();
+      expect(typeof thrown.response.message).toBe('string');
+    });
   });
 
   // -------------------------------------------------------------------------
@@ -133,6 +168,78 @@ describe('PaymentsController — beta guard (US-LAUNCH-004)', () => {
       const result = await controller.createSubscription(soloDto, mockReq);
 
       expect(result.success).toBe(true);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // Case-sensitivity gap documentation — PRODUCTION RISK
+  //
+  // The guard checks `process.env.BETA_MODE === 'true'` (strict lowercase).
+  // Setting BETA_MODE=TRUE in a Railway / Render / Vercel dashboard would silently
+  // bypass the lock — the endpoint would accept paid subscriptions while the ops
+  // team believes beta mode is active.
+  //
+  // This test does NOT assert a bug to fix; it documents the existing strict-match
+  // behavior so that any future change to a case-insensitive check is a visible,
+  // intentional decision rather than a silent mutation.
+  // -------------------------------------------------------------------------
+  describe('BETA_MODE=TRUE (uppercase) — case-sensitivity bypass documentation', () => {
+    it('does NOT throw when BETA_MODE is "TRUE" (uppercase) — strict === check does not match', async () => {
+      // Contract:
+      //   Expected: no exception thrown; PaymentsService.createSubscription IS called
+      //   Location: PaymentsController.createSubscription()
+      //   Condition: process.env.BETA_MODE = 'TRUE'
+      // The guard uses === 'true'; uppercase 'TRUE' falls through to the service.
+      // Mutation check: if the guard were changed to .toLowerCase() === 'true',
+      // the service would NOT be called and this test would fail — making the
+      // behavioral change visible.
+      process.env.BETA_MODE = 'TRUE';
+
+      mockPaymentsService.createSubscription.mockResolvedValue({
+        subscription: { id: 'sub_003', status: 'PENDING', planTier: 'SOLO' },
+        provider: 'RAZORPAY',
+        providerSubscription: { id: 'rzp_sub_003' },
+        shortUrl: null,
+        checkoutUrl: null,
+      });
+
+      const result = await controller.createSubscription(soloDto, mockReq);
+
+      expect(result.success).toBe(true);
+      expect(mockPaymentsService.createSubscription).toHaveBeenCalledOnce();
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // Whitespace-padded value — strict === bypass documentation
+  //
+  // Setting BETA_MODE=' true' (e.g. from a copy-paste with a leading space) does
+  // not match the strict === 'true' check. The guard is silent and the endpoint
+  // accepts paid subscriptions. Same class of risk as the uppercase case above.
+  // -------------------------------------------------------------------------
+  describe('BETA_MODE=" true" (leading space) — whitespace bypass documentation', () => {
+    it('does NOT throw when BETA_MODE has a leading space — strict === check does not match', async () => {
+      // Contract:
+      //   Expected: no exception thrown; PaymentsService.createSubscription IS called
+      //   Location: PaymentsController.createSubscription()
+      //   Condition: process.env.BETA_MODE = ' true' (one leading space)
+      // The guard uses === 'true'; ' true' !== 'true' so the check is skipped.
+      // Mutation check: if the guard were changed to .trim() === 'true',
+      // the service would NOT be called and this test would fail.
+      process.env.BETA_MODE = ' true';
+
+      mockPaymentsService.createSubscription.mockResolvedValue({
+        subscription: { id: 'sub_004', status: 'PENDING', planTier: 'SOLO' },
+        provider: 'RAZORPAY',
+        providerSubscription: { id: 'rzp_sub_004' },
+        shortUrl: null,
+        checkoutUrl: null,
+      });
+
+      const result = await controller.createSubscription(soloDto, mockReq);
+
+      expect(result.success).toBe(true);
+      expect(mockPaymentsService.createSubscription).toHaveBeenCalledOnce();
     });
   });
 });
