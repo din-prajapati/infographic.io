@@ -2,7 +2,7 @@
 
 > ⚠️ **Blocked by:** [Pre-requisite-story.md](./Pre-requisite-story.md) — do NOT run `/implement-story` until its full remediation + sign-off checklist (§5–§6) are complete. A naive implementation risks crash-looping the **live production** deploy at the next release tag (not staging — see the doc's §0 for why). That doc is the Definition of Ready.
 >
-> **Status:** 🔲 Not Started
+> **Status:** 🟡 In Progress
 > **Feature:** F-LAUNCH-06 — Environment & Secrets Management
 > **Epic:** [EPIC-LAUNCH-01](../../EPIC.md)
 > **Milestone:** [M-LAUNCH-01-public-beta](../../milestones/M-LAUNCH-01-public-beta.md)
@@ -44,7 +44,7 @@
 ## Engineering / PR
 
 - **Branch:** `feat/launch-us-launch-010-config-hardening`
-- **PR:** #_____ (fill when opened)
+- **PR:** #17
 - **Primary files touched:**
   - `api/src/config/env.validation.ts` (new — Zod schema + RazorPay guard + success/failure Logger messages)
   - `api/src/config/app-env.ts` (new — `getAppEnv()` helper + inference)

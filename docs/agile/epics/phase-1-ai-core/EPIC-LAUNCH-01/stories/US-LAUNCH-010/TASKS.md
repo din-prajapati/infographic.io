@@ -2,7 +2,7 @@
 
 > **Story:** [STORY.md](./STORY.md)
 > **Branch:** `feat/launch-us-launch-010-config-hardening`
-> **PR:** #_____ (fill when opened)
+> **PR:** #17
 > **Linear:** LIN-XXX
 > **Type:** feat
 >
