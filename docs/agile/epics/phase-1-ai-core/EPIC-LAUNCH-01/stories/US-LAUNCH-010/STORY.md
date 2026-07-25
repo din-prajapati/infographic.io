@@ -2,12 +2,12 @@
 
 > ⚠️ **Blocked by:** [Pre-requisite-story.md](./Pre-requisite-story.md) — do NOT run `/implement-story` until its full remediation + sign-off checklist (§5–§6) are complete. A naive implementation risks crash-looping the **live production** deploy at the next release tag (not staging — see the doc's §0 for why). That doc is the Definition of Ready.
 >
-> **Status:** 🟡 In Progress
+> **Status:** ✅ Done
 > **Feature:** F-LAUNCH-06 — Environment & Secrets Management
 > **Epic:** [EPIC-LAUNCH-01](../../EPIC.md)
 > **Milestone:** [M-LAUNCH-01-public-beta](../../milestones/M-LAUNCH-01-public-beta.md)
 > **Linear:** LIN-XXX
-> **Created:** 2026-07-11 | **Closed:** —
+> **Created:** 2026-07-11 | **Closed:** 2026-07-25
 >
 > **Depends on:** [US-LAUNCH-009](../US-LAUNCH-009/STORY.md) must be merged before this story starts (the `.env.example` contract + matrix define the required-variable set this story validates against).
 
@@ -116,13 +116,13 @@ Hard rules:
 
 ## Definition of Done
 
-- [x] All ACs checked ✅ (AC4 stays unchecked until the staging deploy in its own text is confirmed — see below)
-- [x] All test cases run and recorded (TC-05 stays 🔲, blocked on merge — see Test Cases table)
+- [x] All ACs checked ✅ (AC1–AC5, including AC4, confirmed against a real staging deploy)
+- [x] All test cases run and recorded (TC-01–TC-07, including TC-05 — see Test Cases table)
 - [x] `npm run check` passes (2 pre-existing, unrelated `main.ts` errors — see `TASKS.md` note)
 - [x] `npm run test:unit` passes (incl. new `env.validation.spec.ts`) — 105/105
 - [x] Staging deploy boots cleanly with no staging variable change (AC4) — confirmed 2026-07-25, see TC-LAUNCH-010-05
 - [x] PR merged (PR #17, squash-merged `d3570fa`, 2026-07-25 13:07 UTC)
-- [x] [TASKS.md](./TASKS.md) task list fully checked (T1–T6; PR/merge items remain, as expected)
+- [x] [TASKS.md](./TASKS.md) task list fully checked (T1–T7)
 
 ---
 

@@ -12,10 +12,10 @@
 
 ## Three Pillars Pre-flight (check before starting AI session)
 
-- [ ] **Brain** — STORY.md filled: ACs written, out-of-scope listed, AI Implementation Prompt ready
-- [ ] **Muscle** — This TASKS.md has file list + ordered tasks + exact commands
-- [ ] **Map** — [ARCHITECTURE.mmd](../../ARCHITECTURE.mmd) exists for this epic
-- [ ] **Env** — [ENV.yaml](../../ENV.yaml) loaded; US-LAUNCH-009 `ENVIRONMENTS.md` read (required-var set)
+- [x] **Brain** — STORY.md filled: ACs written, out-of-scope listed, AI Implementation Prompt ready
+- [x] **Muscle** — This TASKS.md has file list + ordered tasks + exact commands
+- [x] **Map** — [ARCHITECTURE.mmd](../../ARCHITECTURE.mmd) exists for this epic
+- [x] **Env** — [ENV.yaml](../../ENV.yaml) loaded; US-LAUNCH-009 `ENVIRONMENTS.md` read (required-var set)
 
 ---
 
