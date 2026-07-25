@@ -4,6 +4,11 @@ name: Build & Test
 #   staging    → watches branch: main   (auto-deploy on every push)
 #   production → watches tag:   v*      (deploy on git tag push)
 # No RAILWAY_TOKEN or CLI needed here — Railway handles deploys directly.
+#
+# BEFORE PUSHING A v* TAG: production only redeploys on tag push, so config drift can sit
+# unnoticed since the last tag. Run `railway variables --environment production --kv` and
+# confirm it still satisfies api/src/config/env.validation.ts's required set (US-LAUNCH-010)
+# before tagging — a boot-validation failure there crash-loops the live production site.
 
 on:
   push:

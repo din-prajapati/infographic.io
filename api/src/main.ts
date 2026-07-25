@@ -31,6 +31,7 @@ if (typeof process !== 'undefined' && process.stderr) {
 }
 
 import './instrument';
+import * as Sentry from '@sentry/nestjs';
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
@@ -119,7 +120,14 @@ async function bootstrap() {
   });
 }
 
-bootstrap().catch((error) => {
+bootstrap().catch(async (error) => {
   console.error('Failed to start server:', error);
+  // US-LAUNCH-010 T6: a boot-time abort (e.g. env.validation.ts's fail-closed guard) previously
+  // only reached console.error — invisible unless someone was watching deploy logs at that exact
+  // moment. Report it to Sentry (already initialized via ./instrument, enabled on staging/prod
+  // only) and flush before exiting, since captureException is async and process.exit(1) below
+  // would otherwise kill the process before the event actually reaches Sentry.
+  Sentry.captureException(error);
+  await Sentry.flush(2000);
   process.exit(1);
 });

@@ -34,6 +34,7 @@
 | Variable | Local | Staging | Production | Per-env / Shared | Source | Notes |
 |----------|-------|---------|------------|-----------------|--------|-------|
 | `NODE_ENV` | `development` | `production` | `production` | per-env | hardcoded / Railway env | NestJS skips `.env` file when `NODE_ENV=production` AND `DATABASE_URL` is set |
+| `APP_ENV` | unset (infers `local`) | `staging` | `production` | per-env | `.env` / Railway | US-LAUNCH-010. Distinct from `NODE_ENV` — needed because staging and production share `NODE_ENV=production`. Optional: `api/src/config/app-env.ts`'s `getAppEnv()` infers it from `RAILWAY_ENVIRONMENT_NAME` then `NODE_ENV` when unset, so a deploy boots even before this is explicitly set. Boot-time Zod validation (`api/src/config/env.validation.ts`) uses it to key the RazorPay test/live key guard. |
 | `PORT` | `5000` | `5000` | `5000` | shared | Railway / `.env` | Express proxy port |
 | `API_PORT` | `3001` | `3001` | `3001` | shared | Railway / `.env` | NestJS port (internal, proxied) |
 | `BASE_URL` | `http://localhost:5000` | `https://<staging-domain>` | `https://<prod-domain>` | per-env | `.env` / Railway | Used for absolute URLs (OAuth callbacks, webhook URLs) |
