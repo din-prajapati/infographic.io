@@ -1,122 +1,115 @@
-# .env as Single Source of Truth
+# Environment & Secrets Management — Single Source of Truth
 
-This guide explains how to use your `.env` file as the single source of truth across Replit and other AI IDEs like Cursor.
-
----
-
-## Overview
-
-The project uses environment variables for configuration. To avoid duplication and sync issues:
-
-1. **`.env` file** - Your local source of truth (not committed to git)
-2. **Replit Secrets** - Where sensitive values are stored for deployment
-3. **AI IDEs** - Read from `.env` automatically
+> **Supersedes** the earlier Replit-era version of this doc. The project moved off Replit to
+> Railway + Neon; this rewrite (2026-07-25) reflects that and captures the process fix behind a
+> real incident: a manual Railway-dashboard edit to staging's Google OAuth vars appeared to succeed
+> but silently didn't deploy — caught only by a later `railway variables` audit, not by any process.
 
 ---
 
-## Setup Instructions
+## The core problem this solves
 
-### Step 1: Create Your .env File
+Right now, for a 3-environment project (local / staging / production), a value like `GOOGLE_CLIENT_ID`
+can live in up to 4 places: `.env.example` (template), local `.env`, Railway's staging dashboard, Railway's
+production dashboard. When someone hand-edits one of those directly, there is:
+- no diff (you can't see what changed vs. what it was)
+- no confirmation the edit actually saved (this bit us — an edit looked complete, staging kept serving
+  stale values, three separate `railway variables` pulls confirmed it)
+- no single place to answer "what does staging actually have right now" without opening a dashboard
+
+**The fix is not more files or a new paid tool — it's making exactly one of those places authoritative
+per environment, and never hand-editing Railway's dashboard again.**
+
+---
+
+## The model: one master file per environment, one script to publish it
+
+This pattern already exists in this repo (built in US-LAUNCH-009) — it just isn't being used day-to-day.
+From today, use it every time:
+
+```
+.env.example              committed — the CONTRACT. Every key the app reads, with placeholder values.
+                           (docs/setup/ENVIRONMENTS.md is the human-readable version of this contract.)
+
+secrets/local.env          gitignored — YOUR local master copy. `cp .env.example secrets/local.env`, fill in real values.
+secrets/staging.env        gitignored — the staging master copy.
+secrets/production.env     gitignored — the production master copy. Handle with extra care.
+
+.env                       gitignored — copy/symlink of secrets/local.env; what `npm run dev` actually reads.
+```
+
+> ⚠️ If your repo root is cloud-synced (this one is — `.../GITDrive/...`), keep the real
+> `secrets/*.env` files **outside** the synced tree (e.g. `~/secrets/infographicai/`) per
+> `secrets/README.md`, and symlink or copy them in only on machines you trust.
+
+**To change anything on Railway, the only supported path is:**
 
 ```bash
-cp .env.example .env
+# 1. Edit the master file (never the Railway dashboard directly)
+#    e.g. secrets/staging.env — update GOOGLE_CLIENT_ID etc.
+
+# 2. Push it
+bash scripts/railway-env-sync.sh secrets/staging.env staging
+
+# 3. Redeploy so the running process picks it up (the script reminds you)
+railway redeploy --environment staging
+
+# 4. Verify what actually landed — don't trust the dashboard, pull it back
+railway variables --service Buildographic --environment staging --kv | grep GOOGLE
 ```
 
-Edit `.env` with your actual values.
+Step 4 is not optional. It's the step that was skipped today and is exactly what caught the
+still-stale values after the first "I updated it" — a 10-second habit that eliminates the entire
+class of "did that actually save" uncertainty.
 
-### Step 2: Sync to Replit Secrets
-
-For secrets (API keys, passwords), add them to Replit:
-
-1. Click the **lock icon** (Secrets) in the left sidebar
-2. Add each secret variable:
-
-| Variable | Type | Notes |
-|----------|------|-------|
-| `OPENAI_API_KEY` | Secret | Required for AI Chat |
-| `IDEOGRAM_API_KEY` | Secret | Required for image generation |
-| `RAZORPAY_KEY_ID` | Secret | RazorPay public key |
-| `RAZORPAY_KEY_SECRET` | Secret | RazorPay private key |
-| `RAZORPAY_WEBHOOK_SECRET` | Secret | For webhook verification |
-| `JWT_SECRET` | Secret | For auth tokens |
-| `SESSION_SECRET` | Secret | For session management |
-
-### Step 3: Set Non-Secret Environment Variables
-
-For non-sensitive config, you can add to Replit's environment:
-
-Option A: Use the Secrets tab (works for all variables)
-
-Option B: Add to `.replit` file:
-```toml
-[env]
-NODE_ENV = "development"
-PORT = "5000"
-API_PORT = "3001"
-```
+**Why this collapses the "3 different files" overwhelm:** you don't manage 3 environments by hand —
+you manage 1 template (`.env.example`) and edit each environment's *one* master file only when a value
+actually needs to change, then let the script do the mechanical part. The Railway dashboard becomes
+read-only in practice (only used for step 4's verification), never a place you type into.
 
 ---
 
-## For Cursor / Other AI IDEs
+## The safety net: boot-time validation (US-LAUNCH-010)
 
-Your `.env` file works automatically:
-
-1. Keep `.env` in project root
-2. It's already in `.gitignore`
-3. AI tools will read from it
-
----
-
-## Variable Categories
-
-### Database (Auto-set by Replit)
-- `DATABASE_URL` - Automatically set when you create a Replit DB
-- `PGHOST`, `PGPORT`, `PGUSER`, `PGPASSWORD`, `PGDATABASE`
-
-### AI Services (Must Add)
-- `OPENAI_API_KEY` - Get from https://platform.openai.com/api-keys
-- `IDEOGRAM_API_KEY` - Get from https://ideogram.ai/api
-
-### Payment - RazorPay (Must Add)
-- `RAZORPAY_KEY_ID` - From RazorPay Dashboard > Settings > API Keys
-- `RAZORPAY_KEY_SECRET` - From RazorPay Dashboard
-- `RAZORPAY_WEBHOOK_SECRET` - After setting up webhook
-- `RAZORPAY_PLAN_*` - Plan IDs from RazorPay Products > Plans
-
-### Payment - Stripe (Optional)
-- `STRIPE_SECRET_KEY` - From Stripe Dashboard
-- `STRIPE_PUBLISHABLE_KEY` - From Stripe Dashboard
-- `STRIPE_WEBHOOK_SECRET` - From Stripe Webhooks
-
-### Frontend Variables
-For client-side variables, prefix with `VITE_`:
-- `VITE_RAZORPAY_KEY_ID` - Add to `client/.env`
+Even with the process above, someone will eventually hand-edit the dashboard again, or a sync will be
+run against the wrong environment. That's what `api/src/config/env.validation.ts` (US-LAUNCH-010) is
+for: if a required value is missing or a RazorPay key is the wrong mode for its environment, the app
+**refuses to boot** and says exactly which key is wrong — instead of the misconfiguration sitting there
+silently until a user hits the broken feature. Process (this doc) prevents the mistake; validation
+(US-LAUNCH-010) catches it if process is skipped. Keep both.
 
 ---
 
-## Quick Commands
+## Checklist: adding a brand-new secret/variable
 
-### View current environment:
-```bash
-env | grep -E "(OPENAI|RAZORPAY|STRIPE|DATABASE)" | sort
-```
-
-### Export .env to current shell:
-```bash
-export $(grep -v '^#' .env | xargs)
-```
-
-### Run the sync script:
-```bash
-./scripts/sync-env.sh
-```
+1. Add it to `.env.example` with a placeholder value and a one-line comment (the contract).
+2. Add its row to `docs/setup/ENVIRONMENTS.md`'s variable matrix (shape per environment, per-env/shared, source).
+3. Add it to your local `secrets/local.env` (or `.env` directly) and to `secrets/staging.env` /
+   `secrets/production.env` if those master files exist on your machine.
+4. Push via `railway-env-sync.sh` to each Railway environment that needs it.
+5. `railway variables --environment <env> --kv | grep <KEY>` to confirm it actually landed.
+6. If the app should refuse to boot without it, add it to the required set in `env.validation.ts`
+   (US-LAUNCH-010) — only if it's present with a real value on **every** environment that will boot
+   with it required (check current values first, not assumptions — see
+   `stories/US-LAUNCH-010/Pre-requisite-story.md` §2 for how to pull live values safely).
 
 ---
 
-## Best Practices
+## If this ever needs to scale beyond one operator
 
-1. **Never commit `.env`** - Already in `.gitignore`
-2. **Use `.env.example`** - Template without real values
-3. **Match Replit Secrets to .env** - Keep them in sync manually
-4. **Use VITE_ prefix** - For any client-side variables
-5. **Separate dev/prod** - Use `.env.development.example` and `.env.production.example` as templates
+The file+script pattern above costs nothing beyond what's already running and is enough for a solo/small
+team. If the team grows and manual `secrets/*.env` files become their own source of drift, the natural
+next step (not needed now) is a dedicated secrets sync tool with a generous free tier for small projects —
+e.g. Doppler or Infisical, both of which sync directly to Railway and show a live diff between
+environments (which would have caught today's mismatch instantly, before any redeploy). Evaluate only
+if the file-based process above starts breaking down in practice — don't add tooling ahead of the pain
+it solves.
+
+---
+
+## Reference
+
+- [`secrets/README.md`](../../secrets/README.md) — the master-copy convention in detail
+- [`scripts/railway-env-sync.sh`](../../scripts/railway-env-sync.sh) — the publish script
+- [`ENVIRONMENTS.md`](./ENVIRONMENTS.md) — the full per-variable matrix (the human-readable contract)
+- [`US-LAUNCH-010/Pre-requisite-story.md`](../../agile/epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-010/Pre-requisite-story.md) — how to safely audit live Railway values without exposing secrets in logs/chat
