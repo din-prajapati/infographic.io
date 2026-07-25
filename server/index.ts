@@ -75,7 +75,7 @@ const startNestJSServer = () => {
       DATABASE_URL: process.env.DATABASE_URL,
       OPENAI_API_KEY: process.env.OPENAI_API_KEY,
       IDEOGRAM_API_KEY: process.env.IDEOGRAM_API_KEY,
-      JWT_SECRET: process.env.JWT_SECRET || 'infographic-jwt-secret',
+      JWT_SECRET: process.env.JWT_SECRET, // US-LAUNCH-010 T7: no hardcoded fallback — a missing secret must fail closed via api/src/config/env.validation.ts, never silently run with a known, committed value
       API_PORT: '3001',
       DEMO_MODE: process.env.DEMO_MODE || 'false',
       RAZORPAY_KEY_ID: process.env.RAZORPAY_KEY_ID,
