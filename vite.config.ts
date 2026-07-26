@@ -10,12 +10,16 @@ const __dirname = path.dirname(__filename);
 export default defineConfig(({ mode }) => {
   // Load env vars based on mode
   const env = loadEnv(mode, process.cwd(), 'VITE_');
-  
+
+  // Single source of truth for the Sentry release name — must be identical to what
+  // Sentry.init({ release }) reports at runtime (client/src/main.tsx reads it back via
+  // import.meta.env.VITE_APP_BUILD), or Sentry cannot match a live event to the source
+  // maps this plugin uploads and falls back to raw minified stack frames.
+  const releaseName = process.env.RAILWAY_GIT_COMMIT_SHA?.slice(0, 7) ?? 'dev';
+
   return {
     define: {
-      'import.meta.env.VITE_APP_BUILD': JSON.stringify(
-        process.env.RAILWAY_GIT_COMMIT_SHA?.slice(0, 7) ?? 'dev'
-      ),
+      'import.meta.env.VITE_APP_BUILD': JSON.stringify(releaseName),
     },
     plugins: [
       react(),
@@ -28,6 +32,9 @@ export default defineConfig(({ mode }) => {
         project: process.env.SENTRY_PROJECT,
         authToken: process.env.SENTRY_AUTH_TOKEN,
         disable: !process.env.SENTRY_AUTH_TOKEN,
+        release: {
+          name: releaseName,
+        },
         sourcemaps: {
           filesToDeleteAfterUpload: ['**/*.map'],
         },

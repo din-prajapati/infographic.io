@@ -4,6 +4,9 @@ import { browserTracingIntegration } from '@sentry/react';
 Sentry.init({
   dsn: import.meta.env.VITE_SENTRY_DSN,
   environment: import.meta.env.VITE_APP_ENV || import.meta.env.MODE,
+  // Must match the release name the vite plugin uploads source maps under
+  // (see vite.config.ts's releaseName) or Sentry can't symbolicate stack traces.
+  release: import.meta.env.VITE_APP_BUILD,
   integrations: [browserTracingIntegration()],
   tracesSampleRate: 1.0,
   enabled: import.meta.env.PROD,
