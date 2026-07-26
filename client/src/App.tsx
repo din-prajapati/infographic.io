@@ -24,6 +24,7 @@ import RefundPolicyPage from "./pages/legal/RefundPolicyPage";
 import CookiesPage from "./pages/legal/CookiesPage";
 import { ErrorBoundary } from "./components/ui/error-boundary";
 import { ThemeProvider } from "./lib/theme-provider";
+import SentryTestPage from "./pages/dev/SentryTestPage"; // TEMPORARY — Task 3E P-24 re-verify v2, delete after check
 
 function ProtectedRoute({ component: Component }: { component: () => JSX.Element }) {
   const { isAuthenticated, isLoading } = useAuth();
@@ -123,6 +124,7 @@ function Router() {
       <Route path="/privacy" component={PrivacyPage} />
       <Route path="/refund-policy" component={RefundPolicyPage} />
       <Route path="/cookies" component={CookiesPage} />
+      <Route path="/dev/sentry-test-temp" component={SentryTestPage} /> {/* TEMPORARY — Task 3E P-24 re-verify v2, delete after check */}
       <Route path="/" component={HomeRoute} />
       <Route component={() => <div className="min-h-screen flex items-center justify-center"><div>404 - Page Not Found</div></div>} />
     </Switch>
