@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { SubscriptionStatus } from '@prisma/client';
+import { SubscriptionStatus, PlanTier } from '@prisma/client';
 import { RenewalReminderService } from '../../src/modules/payments/services/renewal-reminder.service';
 
 // ---------------------------------------------------------------------------
@@ -150,5 +150,24 @@ describe('RenewalReminderService — renewal reminder email (US-LAUNCH-013)', ()
 
     expect(mockEmailService.send).not.toHaveBeenCalled();
     expect(mockPrisma.subscription.update).not.toHaveBeenCalled();
+  });
+
+  // -------------------------------------------------------------------------
+  // TC-LAUNCH-013-05: FREE-tier subscriptions are excluded from the query (AC1)
+  // -------------------------------------------------------------------------
+  it('TC-LAUNCH-013-05: FREE-tier subscriptions are excluded via the query filter, not an in-memory check', async () => {
+    await service.sendRenewalReminders();
+
+    // The service has no in-memory planTier guard — FREE-tier exclusion is enforced
+    // entirely by the Prisma WHERE clause, so this asserts that clause directly rather
+    // than mocking a FREE-tier row through findMany (which the service would not
+    // actually filter itself, since that responsibility belongs to the DB query).
+    expect(mockPrisma.subscription.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          planTier: { not: PlanTier.FREE },
+        }),
+      }),
+    );
   });
 });

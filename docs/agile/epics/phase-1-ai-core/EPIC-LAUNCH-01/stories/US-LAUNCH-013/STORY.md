@@ -1,6 +1,6 @@
 # Story Card — US-LAUNCH-013
 
-> **Status:** 🟡 Implementation Complete, pending TC-05 unit test + manual verification
+> **Status:** 🟡 Implementation Complete, pending manual verification (TC-06/07)
 > **Feature:** F-LAUNCH-02 — Transactional Email
 > **Epic:** [EPIC-LAUNCH-01](../../EPIC.md)
 > **Milestone:** [M-LAUNCH-02-revenue-on](../../milestones/M-LAUNCH-02-revenue-on.md)
@@ -148,7 +148,7 @@ Rules:
 | TC-LAUNCH-013-02 | Auto (unit) | P0 | Given EmailService.send returns { sent: false } — when sendRenewalReminders() runs for a qualifying subscription — then renewalReminderSentAt is NOT updated and no exception propagates from the method | ✅ | |
 | TC-LAUNCH-013-03 | Auto (unit) | P1 | Given subscription with renewalReminderSentAt set to a value >= currentPeriodStart — when sendRenewalReminders() runs — then EmailService.send is NOT called for that subscription | ✅ | |
 | TC-LAUNCH-013-04 | Auto (unit) | P1 | Given subscription with currentPeriodEnd = now+96h (outside 72h window) — when sendRenewalReminders() runs — then EmailService.send is NOT called | ✅ | |
-| TC-LAUNCH-013-05 | Auto (unit) | P1 | Given subscription with planTier=FREE and status=ACTIVE — when sendRenewalReminders() runs — then EmailService.send is NOT called | 🔲 | **Gap found during merge verification:** the FREE-tier exclusion IS implemented (`planTier: { not: PlanTier.FREE }` in the DB query, `renewal-reminder.service.ts`), but no dedicated unit test exercises it — the spec file only covers TC-01–04. Recommend adding this test before closing the story. |
+| TC-LAUNCH-013-05 | Auto (unit) | P1 | Given subscription with planTier=FREE and status=ACTIVE — when sendRenewalReminders() runs — then EmailService.send is NOT called | ✅ | Added after merge (was a gap): asserts `findMany`'s `where.planTier` clause is `{ not: PlanTier.FREE }` directly, rather than mocking a FREE-tier row through `findMany` — the service has no in-memory planTier guard, so the query filter is the only enforcement point and is what the test needs to verify. |
 | TC-LAUNCH-013-06 | Manual | P1 | Given RESEND_API_KEY absent in dev environment — when sendRenewalReminders() is invoked directly (e.g., via a one-off NestJS bootstrap script or test call) against a qualifying subscription row — then a [DEV EMAIL] log line appears in console containing plan name, ₹ amount, and renewal date | ⏸ | Deferred — requires a running server + qualifying DB row |
 | TC-LAUNCH-013-07 | Manual | P2 | Given a real ACTIVE subscription in the DB with currentPeriodEnd within 72h and RESEND_API_KEY set — when sendRenewalReminders() is invoked directly — then email arrives in the real inbox with correct plan name, ₹ amount (matching Subscription.amount/100), and renewal date | ⏸ | Deferred — requires a running server + qualifying DB row |
 
@@ -159,7 +159,7 @@ Rules:
 ## Definition of Done
 
 - [x] All ACs checked ✅
-- [ ] All test cases run and recorded — **TC-05 gap**: FREE-tier exclusion is implemented but untested; TC-06/07 (manual) deferred
+- [ ] All test cases run and recorded — TC-01–05 auto, all pass; TC-06/07 (manual) still deferred
 - [x] `npm run check` passes (0 new TypeScript errors)
 - [x] `npm run test:unit` passes (no regressions)
 - [x] `npx prisma generate --schema=api/prisma/schema.prisma` run after schema change

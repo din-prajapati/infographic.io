@@ -46,7 +46,7 @@
 | [US-LAUNCH-010](stories/US-LAUNCH-010/STORY.md) | Config hardening — APP_ENV + boot validation + RazorPay guard | M-LAUNCH-01 | M | ✅ Done | [#17](https://github.com/din-prajapati/infographic.io/pull/17) |
 | [US-LAUNCH-011](stories/US-LAUNCH-011/STORY.md) | Rebrand user-facing surfaces to Buildographic | M-LAUNCH-01 | S | ✅ Done | [#16](https://github.com/din-prajapati/infographic.io/pull/16) |
 | [US-LAUNCH-012](stories/US-LAUNCH-012/STORY.md) | Payment-failed (dunning) email notification | M-LAUNCH-02 | S | 🟡 impl | — |
-| [US-LAUNCH-013](stories/US-LAUNCH-013/STORY.md) | Subscription renewal reminder email (3-day notice) | M-LAUNCH-02 | S | 🟡 impl (TC-05 gap) | — |
+| [US-LAUNCH-013](stories/US-LAUNCH-013/STORY.md) | Subscription renewal reminder email (3-day notice) | M-LAUNCH-02 | S | 🟡 impl (manual TCs pending) | — |
 | [US-LAUNCH-014](stories/US-LAUNCH-014/STORY.md) | Email verification for new local accounts (backlog, non-blocking) | M-LAUNCH-01 | M | 🔲 | — |
 
 ---
@@ -116,7 +116,7 @@ Key files relevant to this epic:
 
 ### 2026-07-27 — US-LAUNCH-013 implementation complete (pre-PR)
 - **Files touched:** `package.json`, `package-lock.json`, `api/prisma/schema.prisma`, `api/src/app.module.ts`, `api/src/modules/payments/services/renewal-reminder.service.ts`, `api/src/modules/payments/payments.module.ts`, `api/tests/payments/renewal-reminder.spec.ts`
-- **ACs covered:** AC1, AC2, AC3, AC4, AC5, AC6, AC7, AC8 (4 of 5 unit-testable scenarios pass: send+update, sent=false, cycle-guard, window-guard; TC-05 FREE-tier exclusion is implemented in the DB query but not yet covered by a dedicated test — flagged in STORY.md)
+- **ACs covered:** AC1, AC2, AC3, AC4, AC5, AC6, AC7, AC8 (5 of 5 unit-testable scenarios pass: send+update, sent=false, cycle-guard, window-guard, FREE-tier query-filter check added post-merge)
 - **Commits:** 4 on branch `feat/launch/m-02-emails-and-gate` (T1 package.json+schema, T2 AppModule, T3 service+module, T4 tests)
 - **Notes:** npm install was interrupted in a prior attempt leaving node_modules with `@nestjs/schedule` but no package.json entry — re-ran install to reconcile. Used `vi.hoisted` for Prisma singleton mock to avoid hoisting error. Prisma two-step approach (DB query + in-memory filter) implemented correctly — Prisma cannot compare two columns in WHERE. `prisma generate` regenerated after schema change. TC-LAUNCH-013-06/07 manual verification deferred (require running server + qualifying DB row).
 
