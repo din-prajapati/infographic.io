@@ -132,6 +132,22 @@ export default function PricingPage() {
     queryFn: () => paymentsApi.getProviderInfo(selectedCurrency),
   });
 
+  // Fetch plan availability — gate tiers without a configured plan ID (AC2 US-LAUNCH-007)
+  const { data: plansData } = useQuery({
+    queryKey: ["/api/v1/payments/plans"],
+    queryFn: () => paymentsApi.getPlans(),
+  });
+
+  // Set of plan tiers that are paid but NOT yet configured with a payment-provider plan ID.
+  // Driven by the backend "configured" flag — not hardcoded to any specific tier.
+  const unconfiguredPaidTiers = new Set<string>(
+    (plansData?.plans ?? [])
+      .filter((p: { tier: string; price?: number; configured?: boolean }) =>
+        (p.price ?? 0) > 0 && !p.configured
+      )
+      .map((p: { tier: string }) => p.tier),
+  );
+
   // Fetch current subscription if logged in
   const { data: subscriptionData } = useQuery({
     queryKey: ["/api/v1/payments/subscription"],
@@ -616,6 +632,14 @@ export default function PricingPage() {
                   >
                     Available after beta
                   </Button>
+                ) : unconfiguredPaidTiers.has(plan.tier) ? (
+                  /* AC1/AC2 US-LAUNCH-007: no plan ID configured → Contact us instead of checkout */
+                  <a
+                    href="mailto:hello@buildographic.com"
+                    className="w-full h-12 rounded-full font-medium flex items-center justify-center gap-2 bg-accent text-foreground hover:bg-accent/80 transition-colors"
+                  >
+                    Contact us
+                  </a>
                 ) : (
                   <Button
                     className={`w-full h-12 rounded-full font-medium ${

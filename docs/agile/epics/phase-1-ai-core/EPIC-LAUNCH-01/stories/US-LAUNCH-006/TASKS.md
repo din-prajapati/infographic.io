@@ -62,10 +62,10 @@ cd api && npx vitest run tests/payments/receipt-email.spec.ts --reporter=verbose
 
 ## Task Checklist
 
-- [ ] T1 — webhook receipt send
-- [ ] T2 — unit tests
-- [ ] `npm run check` passes ✅
-- [ ] `npm run test:unit` passes ✅
+- [x] T1 — webhook receipt send
+- [x] T2 — unit tests
+- [x] `npm run check` passes ✅
+- [x] `npm run test:unit` passes ✅
 - [ ] PR opened with story card as description ✅
 - [ ] STORY.md ACs updated ✅
 

@@ -38,15 +38,15 @@
 | [US-LAUNCH-002](stories/US-LAUNCH-002/STORY.md) | Transactional email foundation (provider-agnostic EmailService) | M-LAUNCH-01 | M | 🟡 impl | ec166fb |
 | [US-LAUNCH-003](stories/US-LAUNCH-003/STORY.md) | Forgot / reset password flow | M-LAUNCH-01 | M | 🟡 impl | 1bc7346 |
 | [US-LAUNCH-004](stories/US-LAUNCH-004/STORY.md) | Beta launch mode (checkout off · AI-content disclaimer) | M-LAUNCH-01 | S | ✅ Done | [#18](https://github.com/din-prajapati/infographic.io/pull/18) |
-| [US-LAUNCH-005](stories/US-LAUNCH-005/STORY.md) | RazorPay live-mode activation | M-LAUNCH-02 | M | 🔲 | — |
-| [US-LAUNCH-006](stories/US-LAUNCH-006/STORY.md) | Payment receipt email on subscription charge | M-LAUNCH-02 | S | 🔲 | — |
-| [US-LAUNCH-007](stories/US-LAUNCH-007/STORY.md) | BROKERAGE tier gate on pricing page (resolves PT-06) | M-LAUNCH-02 | S | 🔲 | — |
-| [US-LAUNCH-008](stories/US-LAUNCH-008/STORY.md) | Metering policy guard (1 generation = 1 credit) | M-LAUNCH-02 | S | 🔲 | — |
+| [US-LAUNCH-005](stories/US-LAUNCH-005/STORY.md) | RazorPay live-mode activation | M-LAUNCH-02 | M | ⏸ paused (RazorPay approval pending) | — |
+| [US-LAUNCH-006](stories/US-LAUNCH-006/STORY.md) | Payment receipt email on subscription charge | M-LAUNCH-02 | S | 🟡 impl | — |
+| [US-LAUNCH-007](stories/US-LAUNCH-007/STORY.md) | BROKERAGE tier gate on pricing page (resolves PT-06) | M-LAUNCH-02 | S | 🟡 impl | — |
+| [US-LAUNCH-008](stories/US-LAUNCH-008/STORY.md) | Metering policy guard (1 generation = 1 credit) | M-LAUNCH-02 | S | ✅ merged (`aaf3aef`) | — |
 | [US-LAUNCH-009](stories/US-LAUNCH-009/STORY.md) | Environment & secrets management convention (docs/config) | M-LAUNCH-01 | M | 🟡 impl | ec166fb |
 | [US-LAUNCH-010](stories/US-LAUNCH-010/STORY.md) | Config hardening — APP_ENV + boot validation + RazorPay guard | M-LAUNCH-01 | M | ✅ Done | [#17](https://github.com/din-prajapati/infographic.io/pull/17) |
 | [US-LAUNCH-011](stories/US-LAUNCH-011/STORY.md) | Rebrand user-facing surfaces to Buildographic | M-LAUNCH-01 | S | ✅ Done | [#16](https://github.com/din-prajapati/infographic.io/pull/16) |
-| [US-LAUNCH-012](stories/US-LAUNCH-012/STORY.md) | Payment-failed (dunning) email notification | M-LAUNCH-02 | S | 🔲 | — |
-| [US-LAUNCH-013](stories/US-LAUNCH-013/STORY.md) | Subscription renewal reminder email (3-day notice) | M-LAUNCH-02 | S | 🔲 | — |
+| [US-LAUNCH-012](stories/US-LAUNCH-012/STORY.md) | Payment-failed (dunning) email notification | M-LAUNCH-02 | S | 🟡 impl | — |
+| [US-LAUNCH-013](stories/US-LAUNCH-013/STORY.md) | Subscription renewal reminder email (3-day notice) | M-LAUNCH-02 | S | 🟡 impl (TC-05 gap) | — |
 | [US-LAUNCH-014](stories/US-LAUNCH-014/STORY.md) | Email verification for new local accounts (backlog, non-blocking) | M-LAUNCH-01 | M | 🔲 | — |
 
 ---
@@ -108,10 +108,34 @@ Key files relevant to this epic:
 
 ## Implementation Update (log)
 
+### 2026-07-27 — US-LAUNCH-007 implementation complete (pre-PR)
+- **Files touched:** `client/src/pages/PricingPage.tsx`, `api/src/modules/payments/services/payments.service.ts`, `api/tests/payments/plan-availability.spec.ts`, `docs/agile/PROJECT_CONTEXT.md`
+- **ACs covered:** AC1, AC2, AC3, AC4 (all covered; AC1/AC2 require manual visual verification on localhost)
+- **Commits:** 3 on branch `feat/launch/m-02-emails-and-gate` (T1 pricing gate, T2 BROKERAGE fallback+PLAN_NOT_AVAILABLE+configured field, T3 tests+PT-06 close-out)
+- **Notes:** PT-06 root cause was non-empty `'plan_brokerage'` string fallback bypassing the `!externalPlanId` check. Fixed to empty string. `getAvailablePlans()` now returns `configured: boolean` driven by `getExternalPlanId()` — FREE tier always configured (price=0), paid tiers only configured when env vars set. PricingPage uses `paymentsApi.getPlans()` query result for gate — not hardcoded to BROKERAGE tier name.
+
+### 2026-07-27 — US-LAUNCH-013 implementation complete (pre-PR)
+- **Files touched:** `package.json`, `package-lock.json`, `api/prisma/schema.prisma`, `api/src/app.module.ts`, `api/src/modules/payments/services/renewal-reminder.service.ts`, `api/src/modules/payments/payments.module.ts`, `api/tests/payments/renewal-reminder.spec.ts`
+- **ACs covered:** AC1, AC2, AC3, AC4, AC5, AC6, AC7, AC8 (4 of 5 unit-testable scenarios pass: send+update, sent=false, cycle-guard, window-guard; TC-05 FREE-tier exclusion is implemented in the DB query but not yet covered by a dedicated test — flagged in STORY.md)
+- **Commits:** 4 on branch `feat/launch/m-02-emails-and-gate` (T1 package.json+schema, T2 AppModule, T3 service+module, T4 tests)
+- **Notes:** npm install was interrupted in a prior attempt leaving node_modules with `@nestjs/schedule` but no package.json entry — re-ran install to reconcile. Used `vi.hoisted` for Prisma singleton mock to avoid hoisting error. Prisma two-step approach (DB query + in-memory filter) implemented correctly — Prisma cannot compare two columns in WHERE. `prisma generate` regenerated after schema change. TC-LAUNCH-013-06/07 manual verification deferred (require running server + qualifying DB row).
+
+### 2026-07-27 — US-LAUNCH-012 implementation complete (pre-PR)
+- **Files touched:** `api/src/modules/payments/services/payments.service.ts`, `api/tests/payments/payment-failed-email.spec.ts`
+- **ACs covered:** AC1, AC2, AC3, AC4, AC5 (3 unit tests pass: email fields, failure isolation, duplicate skip)
+- **Commits:** 2 on branch `feat/launch/m-02-emails-and-gate` (T1 skipped — EmailModule already wired by US-LAUNCH-006)
+- **Notes:** Email appended after `updateSubscription PAST_DUE` in a try/catch block. PaymentsModule T1 was a no-op since US-LAUNCH-006 already added EmailModule + EmailService. Manual inbox verification (TC-LAUNCH-012-04) requires live-mode failure simulation.
+
+### 2026-07-27 — US-LAUNCH-006 implementation complete (pre-PR)
+- **Files touched:** `api/src/modules/payments/services/payments.service.ts`, `api/src/modules/payments/payments.module.ts`, `api/tests/payments/receipt-email.spec.ts`
+- **ACs covered:** AC1, AC2, AC3, AC4, AC5 (3 unit tests pass: receipt fields, failure isolation, renewal)
+- **Commits:** 2 on branch `feat/launch/m-02-emails-and-gate`
+- **Notes:** EmailService injected as optional constructor parameter so pre-existing tests (`new PaymentsService(mockStorage)`) remain unbroken. Receipt email fires after both the PENDING→ACTIVE and renewal (ACTIVE) branches of `handleSubscriptionCharged`. Prisma client was not pre-generated in this worktree — ran `npx prisma generate` to unblock tests. HTML amount formatted with `en-IN` locale (₹2,999, not 2999). Manual inbox verification (TC-LAUNCH-006-04) requires live-mode environment.
+
 ### 2026-07-27 — US-LAUNCH-008 implementation complete (pre-PR)
 - **Files touched:** `api/tests/ai/metering-policy.spec.ts` (new), `docs/agile/PROJECT_CONTEXT.md`, `CLAUDE.md`, `docs/agile/epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-008/TASKS.md`, `docs/agile/epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-008/STORY.md`
 - **ACs covered:** AC1 (policy blockquote in PROJECT_CONTEXT.md + one-line note in CLAUDE.md), AC2 (unit tests pin creditsUsed: 1 at both creation sites), AC3 (unit tests pin costUsd = actual provider cost at both sites), AC4 (UsageLimitService test demonstrates FREE=3/mo credit counting + error-path ForbiddenException)
-- **Commits:** 2 on branch `feat/launch/us-launch-008` — d9a39a4 (T1 tests), d8b8279 (T2 docs)
+- **Commits:** 2 on branch `feat/launch/us-launch-008` — d9a39a4 (T1 tests), d8b8279 (T2 docs) — merged to `main` at `aaf3aef`
 - **Notes:** No production logic changed — story pins existing behavior as policy. Discovered a pre-existing Vitest module-load ordering quirk: importing `AiOrchestrator` alongside `UsageLimitService` in the same test file caused `SubscriptionStatus` from `@prisma/client` to be undefined. Fixed with a passthrough `vi.mock('@prisma/client', async (importOriginal) => importOriginal())` in the spec file (does not affect production code). Gate 1: `npm run check` clean, `npm run test:unit` 111/111 pass (9 test files).
 
 ### 2026-07-18 — US-LAUNCH-011 implementation complete (pre-PR)

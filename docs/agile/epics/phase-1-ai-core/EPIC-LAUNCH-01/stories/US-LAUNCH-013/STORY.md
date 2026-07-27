@@ -1,6 +1,6 @@
 # Story Card — US-LAUNCH-013
 
-> **Status:** 🔲 Not Started
+> **Status:** 🟡 Implementation Complete, pending TC-05 unit test + manual verification
 > **Feature:** F-LAUNCH-02 — Transactional Email
 > **Epic:** [EPIC-LAUNCH-01](../../EPIC.md)
 > **Milestone:** [M-LAUNCH-02-revenue-on](../../milestones/M-LAUNCH-02-revenue-on.md)
@@ -22,21 +22,21 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC1 [happy-path]:** When `RenewalReminderService.sendRenewalReminders()` executes, `EmailService.send()` is called only for subscriptions satisfying ALL of the following conditions: `status = ACTIVE`, `planTier != FREE`, `currentPeriodEnd` is after `now` and at or before `now + 72 hours`, AND no reminder has been sent for the current billing cycle — defined as `renewalReminderSentAt IS NULL` or `renewalReminderSentAt` is earlier than `currentPeriodStart`. Any subscription failing one or more of these conditions receives zero `EmailService.send()` calls.
+- [x] **AC1 [happy-path]:** When `RenewalReminderService.sendRenewalReminders()` executes, `EmailService.send()` is called only for subscriptions satisfying ALL of the following conditions: `status = ACTIVE`, `planTier != FREE`, `currentPeriodEnd` is after `now` and at or before `now + 72 hours`, AND no reminder has been sent for the current billing cycle — defined as `renewalReminderSentAt IS NULL` or `renewalReminderSentAt` is earlier than `currentPeriodStart`. Any subscription failing one or more of these conditions receives zero `EmailService.send()` calls.
 
-- [ ] **AC2 [happy-path]:** For each subscription satisfying AC1, `EmailService.send()` is called exactly once with: `to` set to the subscription owner's `User.email`, a `subject` containing the word "renew" (case-insensitive), and a body that includes the subscription owner's `User.name`, the plan name (e.g., SOLO / TEAM / BROKERAGE), the renewal date formatted from `currentPeriodEnd` (human-readable, not a raw timestamp), and the renewal amount in ₹ derived from `Subscription.amount / 100`. No RazorPay vendor names and no internal subscription or user IDs appear in the email body.
+- [x] **AC2 [happy-path]:** For each subscription satisfying AC1, `EmailService.send()` is called exactly once with: `to` set to the subscription owner's `User.email`, a `subject` containing the word "renew" (case-insensitive), and a body that includes the subscription owner's `User.name`, the plan name (e.g., SOLO / TEAM / BROKERAGE), the renewal date formatted from `currentPeriodEnd` (human-readable, not a raw timestamp), and the renewal amount in ₹ derived from `Subscription.amount / 100`. No RazorPay vendor names and no internal subscription or user IDs appear in the email body.
 
-- [ ] **AC3 [happy-path]:** When `EmailService.send()` returns `{ sent: true }` for a qualifying subscription, `Subscription.renewalReminderSentAt` is immediately written to the current UTC timestamp via a Prisma `update` call — such that a subsequent invocation of `sendRenewalReminders()` with identical data excludes that subscription via the AC1 cycle guard and does not re-dispatch the email.
+- [x] **AC3 [happy-path]:** When `EmailService.send()` returns `{ sent: true }` for a qualifying subscription, `Subscription.renewalReminderSentAt` is immediately written to the current UTC timestamp via a Prisma `update` call — such that a subsequent invocation of `sendRenewalReminders()` with identical data excludes that subscription via the AC1 cycle guard and does not re-dispatch the email.
 
-- [ ] **AC4 [error-path]:** When `EmailService.send()` returns `{ sent: false }` or throws, `Subscription.renewalReminderSentAt` is NOT written, the failure is logged via `Logger.warn`, and the method continues processing any remaining qualifying subscriptions — it does not throw or halt the cron job.
+- [x] **AC4 [error-path]:** When `EmailService.send()` returns `{ sent: false }` or throws, `Subscription.renewalReminderSentAt` is NOT written, the failure is logged via `Logger.warn`, and the method continues processing any remaining qualifying subscriptions — it does not throw or halt the cron job.
 
-- [ ] **AC5 [regression]:** The `sendRenewalReminders()` method carries a `@Cron('0 8 * * *')` decorator from `@nestjs/schedule`, visible by inspection of `RenewalReminderService` — this schedules the job at 08:00 UTC daily.
+- [x] **AC5 [regression]:** The `sendRenewalReminders()` method carries a `@Cron('0 8 * * *')` decorator from `@nestjs/schedule`, visible by inspection of `RenewalReminderService` — this schedules the job at 08:00 UTC daily.
 
-- [ ] **AC6 [regression]:** `@nestjs/schedule` is present in `package.json` `dependencies`, `ScheduleModule.forRoot()` is registered in `AppModule`, `RenewalReminderService` is declared in `PaymentsModule` providers, and `EmailModule` is imported into `PaymentsModule` — `npm run check` passes and `npm run dev` boots without error after these changes.
+- [x] **AC6 [regression]:** `@nestjs/schedule` is present in `package.json` `dependencies`, `ScheduleModule.forRoot()` is registered in `AppModule`, `RenewalReminderService` is declared in `PaymentsModule` providers, and `EmailModule` is imported into `PaymentsModule` — `npm run check` passes and `npm run dev` boots without error after these changes.
 
-- [ ] **AC7 [regression]:** The new field `renewalReminderSentAt DateTime?` is added to the `Subscription` model in `api/prisma/schema.prisma` and `npx prisma generate --schema=api/prisma/schema.prisma` completes without error — the field is nullable and has no default value.
+- [x] **AC7 [regression]:** The new field `renewalReminderSentAt DateTime?` is added to the `Subscription` model in `api/prisma/schema.prisma` and `npx prisma generate --schema=api/prisma/schema.prisma` completes without error — the field is nullable and has no default value.
 
-- [ ] **AC8 [regression]:** Unit tests in `api/tests/payments/renewal-reminder.spec.ts` cover: (a) `EmailService.send` is called exactly once for a qualifying subscription and `renewalReminderSentAt` is written via the Prisma mock; (b) when `EmailService.send` returns `{ sent: false }`, `renewalReminderSentAt` is NOT written and no exception propagates; (c) a subscription where `renewalReminderSentAt` is equal to or later than `currentPeriodStart` is excluded — zero email calls; (d) a subscription with `currentPeriodEnd` more than 72 hours away is excluded — zero email calls.
+- [x] **AC8 [regression]:** Unit tests in `api/tests/payments/renewal-reminder.spec.ts` cover: (a) `EmailService.send` is called exactly once for a qualifying subscription and `renewalReminderSentAt` is written via the Prisma mock; (b) when `EmailService.send` returns `{ sent: false }`, `renewalReminderSentAt` is NOT written and no exception propagates; (c) a subscription where `renewalReminderSentAt` is equal to or later than `currentPeriodStart` is excluded — zero email calls; (d) a subscription with `currentPeriodEnd` more than 72 hours away is excluded — zero email calls.
 
 ---
 
@@ -144,13 +144,13 @@ Rules:
 
 | TC ID | Type | Priority | Scenario | Status | Finding |
 |-------|------|----------|----------|--------|---------|
-| TC-LAUNCH-013-01 | Auto (unit) | P0 | Given subscription with status=ACTIVE, planTier=SOLO, currentPeriodEnd=now+48h, renewalReminderSentAt=null — when sendRenewalReminders() runs — then EmailService.send called once and renewalReminderSentAt written via Prisma mock | 🔲 | |
-| TC-LAUNCH-013-02 | Auto (unit) | P0 | Given EmailService.send returns { sent: false } — when sendRenewalReminders() runs for a qualifying subscription — then renewalReminderSentAt is NOT updated and no exception propagates from the method | 🔲 | |
-| TC-LAUNCH-013-03 | Auto (unit) | P1 | Given subscription with renewalReminderSentAt set to a value >= currentPeriodStart — when sendRenewalReminders() runs — then EmailService.send is NOT called for that subscription | 🔲 | |
-| TC-LAUNCH-013-04 | Auto (unit) | P1 | Given subscription with currentPeriodEnd = now+96h (outside 72h window) — when sendRenewalReminders() runs — then EmailService.send is NOT called | 🔲 | |
-| TC-LAUNCH-013-05 | Auto (unit) | P1 | Given subscription with planTier=FREE and status=ACTIVE — when sendRenewalReminders() runs — then EmailService.send is NOT called | 🔲 | |
-| TC-LAUNCH-013-06 | Manual | P1 | Given RESEND_API_KEY absent in dev environment — when sendRenewalReminders() is invoked directly (e.g., via a one-off NestJS bootstrap script or test call) against a qualifying subscription row — then a [DEV EMAIL] log line appears in console containing plan name, ₹ amount, and renewal date | 🔲 | |
-| TC-LAUNCH-013-07 | Manual | P2 | Given a real ACTIVE subscription in the DB with currentPeriodEnd within 72h and RESEND_API_KEY set — when sendRenewalReminders() is invoked directly — then email arrives in the real inbox with correct plan name, ₹ amount (matching Subscription.amount/100), and renewal date | 🔲 | |
+| TC-LAUNCH-013-01 | Auto (unit) | P0 | Given subscription with status=ACTIVE, planTier=SOLO, currentPeriodEnd=now+48h, renewalReminderSentAt=null — when sendRenewalReminders() runs — then EmailService.send called once and renewalReminderSentAt written via Prisma mock | ✅ | |
+| TC-LAUNCH-013-02 | Auto (unit) | P0 | Given EmailService.send returns { sent: false } — when sendRenewalReminders() runs for a qualifying subscription — then renewalReminderSentAt is NOT updated and no exception propagates from the method | ✅ | |
+| TC-LAUNCH-013-03 | Auto (unit) | P1 | Given subscription with renewalReminderSentAt set to a value >= currentPeriodStart — when sendRenewalReminders() runs — then EmailService.send is NOT called for that subscription | ✅ | |
+| TC-LAUNCH-013-04 | Auto (unit) | P1 | Given subscription with currentPeriodEnd = now+96h (outside 72h window) — when sendRenewalReminders() runs — then EmailService.send is NOT called | ✅ | |
+| TC-LAUNCH-013-05 | Auto (unit) | P1 | Given subscription with planTier=FREE and status=ACTIVE — when sendRenewalReminders() runs — then EmailService.send is NOT called | 🔲 | **Gap found during merge verification:** the FREE-tier exclusion IS implemented (`planTier: { not: PlanTier.FREE }` in the DB query, `renewal-reminder.service.ts`), but no dedicated unit test exercises it — the spec file only covers TC-01–04. Recommend adding this test before closing the story. |
+| TC-LAUNCH-013-06 | Manual | P1 | Given RESEND_API_KEY absent in dev environment — when sendRenewalReminders() is invoked directly (e.g., via a one-off NestJS bootstrap script or test call) against a qualifying subscription row — then a [DEV EMAIL] log line appears in console containing plan name, ₹ amount, and renewal date | ⏸ | Deferred — requires a running server + qualifying DB row |
+| TC-LAUNCH-013-07 | Manual | P2 | Given a real ACTIVE subscription in the DB with currentPeriodEnd within 72h and RESEND_API_KEY set — when sendRenewalReminders() is invoked directly — then email arrives in the real inbox with correct plan name, ₹ amount (matching Subscription.amount/100), and renewal date | ⏸ | Deferred — requires a running server + qualifying DB row |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 
@@ -158,14 +158,14 @@ Rules:
 
 ## Definition of Done
 
-- [ ] All ACs checked ✅
-- [ ] All test cases run and recorded
-- [ ] `npm run check` passes (0 new TypeScript errors)
-- [ ] `npm run test:unit` passes (no regressions)
-- [ ] `npx prisma generate --schema=api/prisma/schema.prisma` run after schema change
+- [x] All ACs checked ✅
+- [ ] All test cases run and recorded — **TC-05 gap**: FREE-tier exclusion is implemented but untested; TC-06/07 (manual) deferred
+- [x] `npm run check` passes (0 new TypeScript errors)
+- [x] `npm run test:unit` passes (no regressions)
+- [x] `npx prisma generate --schema=api/prisma/schema.prisma` run after schema change
 - [ ] Manual flow verified (TC-LAUNCH-013-06 minimum)
 - [ ] PR merged (PR #_____)
-- [ ] [TASKS.md](./TASKS.md) task list fully checked
+- [x] [TASKS.md](./TASKS.md) task list fully checked
 
 ---
 

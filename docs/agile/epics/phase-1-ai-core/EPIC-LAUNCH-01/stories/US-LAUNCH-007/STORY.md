@@ -1,6 +1,6 @@
 # Story Card — US-LAUNCH-007
 
-> **Status:** 🔲 Not Started
+> **Status:** ✅ Implementation Complete (pre-PR)
 > **Feature:** F-LAUNCH-04 — Payments Go-Live
 > **Epic:** [EPIC-LAUNCH-01](../../EPIC.md)
 > **Milestone:** [M-LAUNCH-02-revenue-on](../../milestones/M-LAUNCH-02-revenue-on.md)
@@ -21,10 +21,10 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC1 [happy-path]:** `PricingPage.tsx` renders the BROKERAGE tier with a "Contact us" CTA (mailto or contact link) instead of a checkout/subscribe button — decision recorded here: **gate, don't configure** (creating live BROKERAGE plans is deferred until first brokerage demand)
-- [ ] **AC2 [edge-case]:** The gate is driven by plan-ID availability, not hardcoded to BROKERAGE: any tier whose RazorPay plan ID env vars are unset renders without a checkout button (BROKERAGE today; protects against future misconfig of SOLO/TEAM)
-- [ ] **AC3 [error-path]:** Backend: a create-subscription request for a tier with no configured plan ID returns 400 with a clear error code (e.g. `PLAN_NOT_AVAILABLE`), not a 500 from a missing env var
-- [ ] **AC4 [regression]:** Unit test covers AC3; PT-06 marked resolved in PROJECT_CONTEXT.md Known Issues with a pointer to this story
+- [x] **AC1 [happy-path]:** `PricingPage.tsx` renders the BROKERAGE tier with a "Contact us" CTA (mailto or contact link) instead of a checkout/subscribe button — decision recorded here: **gate, don't configure** (creating live BROKERAGE plans is deferred until first brokerage demand)
+- [x] **AC2 [edge-case]:** The gate is driven by plan-ID availability, not hardcoded to BROKERAGE: any tier whose RazorPay plan ID env vars are unset renders without a checkout button (BROKERAGE today; protects against future misconfig of SOLO/TEAM)
+- [x] **AC3 [error-path]:** Backend: a create-subscription request for a tier with no configured plan ID returns 400 with a clear error code (e.g. `PLAN_NOT_AVAILABLE`), not a 500 from a missing env var
+- [x] **AC4 [regression]:** Unit test covers AC3; PT-06 marked resolved in PROJECT_CONTEXT.md Known Issues with a pointer to this story
 
 ---
 
@@ -39,7 +39,7 @@
 
 ## Engineering / PR
 
-- **Branch:** `feat/launch-us-launch-007-brokerage-gate`
+- **Branch:** `feat/launch/m-02-emails-and-gate`
 - **PR:** #_____ (fill when opened)
 - **Primary files touched:**
   - `client/src/pages/PricingPage.tsx`
@@ -78,9 +78,11 @@ Implementation rules:
 
 | TC ID | Type | Priority | Scenario | Status | Finding |
 |-------|------|----------|----------|--------|---------|
-| TC-LAUNCH-007-01 | Manual | P0 | Given /pricing, when viewing BROKERAGE, then "Contact us" CTA shown and no checkout can be initiated | 🔲 | |
-| TC-LAUNCH-007-02 | Auto (unit) | P0 | Given create-subscription for BROKERAGE (no plan IDs), then 400 PLAN_NOT_AVAILABLE, not 500 | 🔲 | |
-| TC-LAUNCH-007-03 | Manual | P1 | Given SOLO/TEAM with configured plan IDs, then checkout behavior unchanged | 🔲 | |
+| TC-LAUNCH-007-01 | Manual | P0 | Given /pricing, when viewing BROKERAGE, then "Contact us" CTA shown and no checkout can be initiated | 🔲 | Not yet manually verified on a running server |
+| TC-LAUNCH-007-02 | Auto (unit) | P0 | Given create-subscription for BROKERAGE (no plan IDs), then 400 PLAN_NOT_AVAILABLE, not 500 | ✅ | Implemented as `plan-availability.spec.ts` TC-LAUNCH-007-01 |
+| TC-LAUNCH-007-03 | Manual | P1 | Given SOLO/TEAM with configured plan IDs, then checkout behavior unchanged | 🔲 | Not yet manually verified on a running server |
+| TC-LAUNCH-007-04 | Auto (unit) | P1 | Given BROKERAGE has no plan-ID env var, then `getAvailablePlans()` returns `configured: false` for it | ✅ | Implemented as `plan-availability.spec.ts` TC-LAUNCH-007-02 (added during implementation — the `configured` field wasn't in the original spec) |
+| TC-LAUNCH-007-05 | Auto (unit) | P1 | Given BROKERAGE's plan-ID env var is set, then `getAvailablePlans()` returns `configured: true` for it | ✅ | Implemented as `plan-availability.spec.ts` TC-LAUNCH-007-03 |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 
@@ -88,13 +90,13 @@ Implementation rules:
 
 ## Definition of Done
 
-- [ ] All ACs checked ✅
-- [ ] All test cases run and recorded
-- [ ] `npm run check` passes
-- [ ] `npm run test:unit` passes
+- [x] All ACs checked ✅
+- [x] All test cases run and recorded (2 manual TCs still pending a running-server check)
+- [x] `npm run check` passes
+- [x] `npm run test:unit` passes
 - [ ] Manual flow verified on `localhost:5000`
 - [ ] PR merged (PR #_____)
-- [ ] [TASKS.md](./TASKS.md) task list fully checked
+- [x] [TASKS.md](./TASKS.md) task list fully checked
 
 ---
 

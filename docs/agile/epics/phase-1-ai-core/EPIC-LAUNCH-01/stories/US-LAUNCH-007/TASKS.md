@@ -68,14 +68,14 @@ cd api && npx vitest run tests/payments/plan-availability.spec.ts --reporter=ver
 
 ## Task Checklist
 
-- [ ] T1 — pricing gate
-- [ ] T2 — 400 path
-- [ ] T3 — test + PT-06 close-out
-- [ ] `npm run check` passes ✅
-- [ ] `npm run test:unit` passes ✅
+- [x] T1 — pricing gate
+- [x] T2 — 400 path
+- [x] T3 — test + PT-06 close-out
+- [x] `npm run check` passes ✅
+- [x] `npm run test:unit` passes ✅
 - [ ] Manual test recorded ✅
 - [ ] PR opened with story card as description ✅
-- [ ] STORY.md ACs updated ✅
+- [x] STORY.md ACs updated ✅
 
 ---
 

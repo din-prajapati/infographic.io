@@ -82,7 +82,7 @@ npm run dev starts:
 | FREE | 3 | — | Default for all new users |
 | SOLO | 50 | — | |
 | TEAM | 200 | ₹6,999/mo | 699900 paise; RazorPay verified |
-| BROKERAGE | 1,000 | — | Plan IDs not configured (PT-06 deferred) |
+| BROKERAGE | 1,000 | — | Plan IDs not configured; tier gated behind Contact-us CTA (PT-06 resolved US-LAUNCH-007) |
 | API_STARTER | 5,000 | — | B2B tier |
 | API_GROWTH | 20,000 | — | B2B tier |
 | API_ENTERPRISE | unlimited | — | B2B tier |
@@ -235,7 +235,7 @@ npm run verify:payment-prereqs  # Payment config smoke test
 | PT-03 | ✅ Fixed | Old subscription cancelled before upgrade |
 | PT-04 | ✅ Fixed | Subscription PENDING until webhook fires |
 | PT-05 | ✅ Verified | TEAM plan ₹6,999 / 699900 paise confirmed in RazorPay Dashboard |
-| PT-06 | 🔲 Scheduled | BROKERAGE plan IDs not configured — resolution planned as [US-LAUNCH-007](epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-007/STORY.md) (gate tier behind Contact-us, defer plan creation to first brokerage demand) |
+| PT-06 | ✅ Resolved | BROKERAGE tier gated behind "Contact us" CTA; empty fallback so checkout blocks cleanly with PLAN_NOT_AVAILABLE 400 — [US-LAUNCH-007](epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-007/STORY.md) |
 | PT-07 | ✅ Fixed | Canvas session leak — User 1's "Use This Design" canvas visible to User 2 on same browser. Fixed 2026-06-17: `logout()` now calls `clearUserStorage()` + `useCanvasStore.getState().clearCanvas()` |
 | PT-08 | ✅ Fixed | AI Chat Panel audit (2026-07-07): paperclip button opened both the native OS file picker *and* the styled upload panel (stray uncleaned listener); Image Upload panel rendered off-screen behind the editor toolbar (wrong anchor edge for a left-side button); conversation delete/favorite existed on the backend but had no UI trigger after a history-view redesign. All three fixed. Quick Actions and Style Presets icons removed (were `console.log`-only stubs — deferred to Phase 2 / EPIC-AI-01); 6 dead/orphaned files deleted from `client/src/components/ai-chat/` |
 | PT-09 | ✅ Fixed & fully verified on staging (foreground + backgrounded tab), 2026-07-09 | **Generation-completion delivery to the browser was unreliable on staging.** Root cause (confirmed 2026-07-09 via code read + live claude-in-chrome pass): the REST-fallback poll in `AIChatBox.tsx` was gated behind the socket's `onError`, which does NOT fire when the socket connects but silently stops delivering events — so nothing caught completion and the UI hung. Even when it did fire, the `setTimeout`-loop poll was throttled by Chrome in background/headless tabs. **Fix:** replaced the error-gated fallback with an always-on REST status poll (runs regardless of socket health) + a `visibilitychange` immediate catch-up + a completion guard — `client/src/components/ai-chat/AIChatBox.tsx`. Locally verified (typecheck, 64/64 unit, mocked E2E 3/3). Still needs deploy to staging + live re-test (foreground **and** backgrounded tab) to close [US-AI-034](epics/phase-0-mvp/EPIC-AI-07/stories/US-AI-034/STORY.md) AC3. [US-AI-035](epics/phase-0-mvp/EPIC-AI-07/stories/US-AI-035/STORY.md) superseded. Blocks Task 2 sign-off → Task 3. |

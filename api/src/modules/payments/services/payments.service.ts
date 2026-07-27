@@ -8,6 +8,7 @@ import {
 import { randomUUID } from 'crypto';
 import { PaymentProvider, SubscriptionStatus, PaymentStatus, PlanTier } from '@prisma/client';
 import { SubscriptionStorageService } from './subscription-storage.service';
+import { EmailService } from '../../email/email.service';
 import { prisma } from '../../../database/prisma.client';
 import { PLAN_CONFIG } from '@shared/schema';
 
@@ -100,7 +101,8 @@ export class PaymentsService {
       PAYPAL: '',
     },
     BROKERAGE: {
-      RAZORPAY: process.env.RAZORPAY_PLAN_BROKERAGE || 'plan_brokerage',
+      /* PT-06 fix: empty fallback so missing env var is detected as unconfigured */
+      RAZORPAY: process.env.RAZORPAY_PLAN_BROKERAGE || '',
       STRIPE: process.env.STRIPE_PLAN_BROKERAGE || '',
       PADDLE: '',
       PAYPAL: '',
@@ -160,6 +162,7 @@ export class PaymentsService {
 
   constructor(
     @Inject(SubscriptionStorageService) private readonly storage: SubscriptionStorageService,
+    private readonly emailService?: EmailService,
   ) {}
 
   /**
@@ -232,7 +235,10 @@ export class PaymentsService {
     // Get provider-specific plan ID (for Razorpay: use _MONTHLY/_ANNUAL when set, else default)
     const externalPlanId = this.getExternalPlanId(planTier, providerName, billingPeriod);
     if (!externalPlanId) {
-      throw new BadRequestException(`Plan ${planTier} not configured for ${providerName}`);
+      throw new BadRequestException({
+        code: 'PLAN_NOT_AVAILABLE',
+        message: `Plan ${planTier} is not available for ${providerName}. Contact us to enable this plan.`,
+      });
     }
 
     // PT-03 fix: Cancel any existing active or pending subscription before creating a new one
@@ -745,13 +751,18 @@ export class PaymentsService {
   }
 
   /**
-   * Get available plans
+   * Get available plans. `configured: true` means the tier has a payment provider plan ID
+   * set up (or is free). Frontend uses this to gate checkout vs Contact-us CTA.
    */
   getAvailablePlans() {
-    return Object.entries(PLAN_CONFIG).map(([tier, config]) => ({
-      tier,
-      ...config,
-    }));
+    return Object.entries(PLAN_CONFIG).map(([tier, config]) => {
+      const externalPlanId = this.getExternalPlanId(tier as PlanTier, 'RAZORPAY', 'monthly');
+      return {
+        tier,
+        ...config,
+        configured: config.price === 0 || externalPlanId.length > 0,
+      };
+    });
   }
 
   // ==========================================
@@ -853,6 +864,38 @@ export class PaymentsService {
     } else {
       await this.storage.updateSubscription(subscription.id, periodUpdate);
     }
+
+    // AC1/AC4: Send receipt email for both initial activation and renewal charges.
+    // Wrapped in try/catch so email failure never breaks webhook processing (AC3).
+    try {
+      const amountInRupees = Math.round(paymentData.amount / 100);
+      const orgName = subscription.organization?.name ?? subscription.user?.name ?? '';
+      const paymentDate = new Date().toLocaleDateString('en-IN', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      });
+      await this.emailService?.send({
+        to: subscription.user.email,
+        subject: `Payment receipt — ${subscription.planTier} plan`,
+        html: `<p>Dear ${subscription.user.name ?? subscription.user.email},</p>
+<p>Thank you for subscribing to Buildographic. Here are your payment details:</p>
+<ul>
+  <li><strong>Plan:</strong> ${subscription.planTier}</li>
+  <li><strong>Billing period:</strong> ${subscription.billingPeriod ?? 'MONTHLY'}</li>
+  <li><strong>Amount:</strong> &#x20B9;${amountInRupees.toLocaleString('en-IN')}</li>
+  <li><strong>Date:</strong> ${paymentDate}</li>
+  <li><strong>Payment ID:</strong> ${paymentData.id}</li>
+  <li><strong>Organisation:</strong> ${orgName}</li>
+</ul>
+<p>If you have any questions, please contact our support team.</p>`,
+      });
+    } catch (receiptErr: unknown) {
+      this.logger.warn(
+        `Failed to send receipt email for payment ${paymentData.id}: ` +
+          (receiptErr instanceof Error ? receiptErr.message : String(receiptErr)),
+      );
+    }
   }
 
   /**
@@ -919,6 +962,30 @@ export class PaymentsService {
 
     // Update subscription status
     await this.storage.updateSubscription(subscription.id, { status: SubscriptionStatus.PAST_DUE });
+
+    // AC1/AC2: Send payment-failed email. Wrapped in try/catch so failures never
+    // break webhook processing (AC3) — subscription remains PAST_DUE regardless.
+    try {
+      const amountInRupees = Math.round(paymentData.amount / 100);
+      await this.emailService?.send({
+        to: subscription.user.email,
+        subject: `Payment failed — ${subscription.planTier} plan renewal`,
+        html: `<p>Dear ${subscription.user.name ?? subscription.user.email},</p>
+<p>We were unable to process the renewal charge for your <strong>${subscription.planTier}</strong> plan subscription.</p>
+<ul>
+  <li><strong>Amount:</strong> &#x20B9;${amountInRupees.toLocaleString('en-IN')}</li>
+  <li><strong>Payment ID:</strong> ${paymentData.id}</li>
+</ul>
+<p>To keep your access, please update your payment method on your
+<a href="/account">account page</a>.</p>
+<p>If you need help, contact our support team.</p>`,
+      });
+    } catch (failedEmailErr: unknown) {
+      this.logger.warn(
+        `Failed to send payment-failed email for payment ${paymentData.id}: ` +
+          (failedEmailErr instanceof Error ? failedEmailErr.message : String(failedEmailErr)),
+      );
+    }
   }
 
   // ==========================================

@@ -4,11 +4,14 @@ import { UsageAnalyticsController } from './controllers/usage-analytics.controll
 import { PaymentsService } from './services/payments.service';
 import { SubscriptionStorageService } from './services/subscription-storage.service';
 import { UsageAnalyticsService } from './services/usage-analytics.service';
+import { RenewalReminderService } from './services/renewal-reminder.service';
 import { PrismaService } from '../../common/services/prisma.service';
 import { DatabaseModule } from '../../database/database.module';
+import { EmailModule } from '../email/email.module';
+import { EmailService } from '../email/email.service';
 
 @Module({
-  imports: [DatabaseModule],
+  imports: [DatabaseModule, EmailModule],
   controllers: [PaymentsController, UsageAnalyticsController],
   providers: [
     // Use global PrismaService from DatabaseModule (inject below); do not re-provide to avoid duplicate instances
@@ -20,8 +23,14 @@ import { DatabaseModule } from '../../database/database.module';
     UsageAnalyticsService,
     {
       provide: PaymentsService,
-      useFactory: (storage: SubscriptionStorageService) => new PaymentsService(storage),
-      inject: [SubscriptionStorageService],
+      useFactory: (storage: SubscriptionStorageService, emailService: EmailService) =>
+        new PaymentsService(storage, emailService),
+      inject: [SubscriptionStorageService, EmailService],
+    },
+    {
+      provide: RenewalReminderService,
+      useFactory: (emailService: EmailService) => new RenewalReminderService(emailService),
+      inject: [EmailService],
     },
   ],
   exports: [PaymentsService, UsageAnalyticsService],

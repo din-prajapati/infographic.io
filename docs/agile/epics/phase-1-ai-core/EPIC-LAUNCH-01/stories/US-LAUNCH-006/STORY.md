@@ -1,6 +1,6 @@
 # Story Card — US-LAUNCH-006
 
-> **Status:** 🔲 Not Started
+> **Status:** ✅ Implementation Complete (pre-PR)
 > **Feature:** F-LAUNCH-02 — Transactional Email
 > **Epic:** [EPIC-LAUNCH-01](../../EPIC.md)
 > **Milestone:** [M-LAUNCH-02-revenue-on](../../milestones/M-LAUNCH-02-revenue-on.md)
@@ -21,11 +21,11 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC1 [happy-path]:** When the RazorPay webhook processes a successful subscription charge (`subscription.charged` — the same event that flips `PENDING → ACTIVE`), a receipt email is sent via `EmailService` to the subscription owner's email
-- [ ] **AC2 [happy-path]:** Receipt contains: plan name (SOLO/TEAM), billing period, amount in ₹ (from the webhook payload, paise → rupees), payment date, RazorPay payment ID, and organization name — no AI vendor names, no internal IDs beyond the payment ID
-- [ ] **AC3 [error-path]:** Email failure never breaks webhook processing — subscription still activates, webhook still returns 200, failure logged (Sentry once EPIC-OBS-00 lands)
-- [ ] **AC4 [edge-case]:** Renewal charges (subsequent `subscription.charged` events on an ACTIVE subscription) also send a receipt — same template
-- [ ] **AC5 [regression]:** Unit tests cover: receipt sent on charge with correct fields, webhook survives EmailService failure
+- [x] **AC1 [happy-path]:** When the RazorPay webhook processes a successful subscription charge (`subscription.charged` — the same event that flips `PENDING → ACTIVE`), a receipt email is sent via `EmailService` to the subscription owner's email
+- [x] **AC2 [happy-path]:** Receipt contains: plan name (SOLO/TEAM), billing period, amount in ₹ (from the webhook payload, paise → rupees), payment date, RazorPay payment ID, and organization name — no AI vendor names, no internal IDs beyond the payment ID
+- [x] **AC3 [error-path]:** Email failure never breaks webhook processing — subscription still activates, webhook still returns 200, failure logged (Sentry once EPIC-OBS-00 lands)
+- [x] **AC4 [edge-case]:** Renewal charges (subsequent `subscription.charged` events on an ACTIVE subscription) also send a receipt — same template
+- [x] **AC5 [regression]:** Unit tests cover: receipt sent on charge with correct fields, webhook survives EmailService failure
 
 ---
 
@@ -40,7 +40,7 @@
 
 ## Engineering / PR
 
-- **Branch:** `feat/launch-us-launch-006-receipt-email`
+- **Branch:** `feat/launch/m-02-emails-and-gate`
 - **PR:** #_____ (fill when opened)
 - **Primary files touched:**
   - `api/src/modules/payments/services/payments.service.ts` (webhook charge handler)
@@ -79,10 +79,10 @@ Implementation rules:
 
 | TC ID | Type | Priority | Scenario | Status | Finding |
 |-------|------|----------|----------|--------|---------|
-| TC-LAUNCH-006-01 | Auto (unit) | P0 | Given a subscription.charged webhook, when processed, then EmailService.send called with plan, ₹ amount, payment ID, org name | 🔲 | |
-| TC-LAUNCH-006-02 | Auto (unit) | P0 | Given EmailService.send rejects/fails, when webhook processed, then subscription still ACTIVE and handler does not throw | 🔲 | |
-| TC-LAUNCH-006-03 | Auto (unit) | P1 | Given a renewal charge on an ACTIVE subscription, then a receipt is also sent | 🔲 | |
-| TC-LAUNCH-006-04 | Manual | P1 | Given the live-mode real ₹ test (US-LAUNCH-005 AC6), then the receipt arrives in a real inbox with correct amount | 🔲 | |
+| TC-LAUNCH-006-01 | Auto (unit) | P0 | Given a subscription.charged webhook, when processed, then EmailService.send called with plan, ₹ amount, payment ID, org name | ✅ | |
+| TC-LAUNCH-006-02 | Auto (unit) | P0 | Given EmailService.send rejects/fails, when webhook processed, then subscription still ACTIVE and handler does not throw | ✅ | |
+| TC-LAUNCH-006-03 | Auto (unit) | P1 | Given a renewal charge on an ACTIVE subscription, then a receipt is also sent | ✅ | |
+| TC-LAUNCH-006-04 | Manual | P1 | Given the live-mode real ₹ test (US-LAUNCH-005 AC6), then the receipt arrives in a real inbox with correct amount | ⏸ | Blocked — US-LAUNCH-005 (RazorPay live-mode) is paused pending RazorPay approval |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 
@@ -90,13 +90,13 @@ Implementation rules:
 
 ## Definition of Done
 
-- [ ] All ACs checked ✅
-- [ ] All test cases run and recorded
-- [ ] `npm run check` passes
-- [ ] `npm run test:unit` passes
-- [ ] Manual flow verified
+- [x] All ACs checked ✅
+- [x] All test cases run and recorded
+- [x] `npm run check` passes
+- [x] `npm run test:unit` passes
+- [ ] Manual flow verified — blocked on US-LAUNCH-005 (RazorPay live mode paused)
 - [ ] PR merged (PR #_____)
-- [ ] [TASKS.md](./TASKS.md) task list fully checked
+- [x] [TASKS.md](./TASKS.md) task list fully checked
 
 ---
 

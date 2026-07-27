@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD, Reflector } from '@nestjs/core';
 import { SentryModule, SentryGlobalFilter } from '@sentry/nestjs/setup';
 import { ThrottlerModule, ThrottlerGuard, ThrottlerStorage } from '@nestjs/throttler';
+import { ScheduleModule } from '@nestjs/schedule';
 import { resolve } from 'path';
 import { AuthModule } from './modules/auth/auth.module';
 import { InfographicsModule } from './modules/infographics/infographics.module';
@@ -38,6 +39,7 @@ import { validate } from './config/env.validation';
         limit: 100,
       }],
     }),
+    ScheduleModule.forRoot(),
     DatabaseModule,
     AuthModule,
     InfographicsModule,
