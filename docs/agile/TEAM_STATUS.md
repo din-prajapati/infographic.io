@@ -1561,3 +1561,203 @@
 <!-- ai-sdlc:session-log -->
 **2026-07-25 19:10** · branch: `feat/launch-us-launch-004-beta-mode`
   - Last commit: 8690844 docs(launch): record PR #18 — US-LAUNCH-004
+
+<!-- ai-sdlc:session-log -->
+**2026-07-25 23:35** · branch: `main`
+  - Last commit: e4bb116 fix(ci): correct cascade-close-story.sh path + milestone glob
+
+<!-- ai-sdlc:session-log -->
+**2026-07-25 23:39** · branch: `main`
+  - Last commit: e4bb116 fix(ci): correct cascade-close-story.sh path + milestone glob
+
+<!-- ai-sdlc:session-log -->
+**2026-07-25 23:41** · branch: `main`
+  - Last commit: e4bb116 fix(ci): correct cascade-close-story.sh path + milestone glob
+
+<!-- ai-sdlc:session-log -->
+**2026-07-25 23:47** · branch: `main`
+  - Last commit: 07de873 docs(testing): reconcile Task 3 env-var worksheet + flag prod boot-abort risk
+
+<!-- ai-sdlc:session-log -->
+**2026-07-25 23:54** · branch: `main`
+  - Last commit: 07de873 docs(testing): reconcile Task 3 env-var worksheet + flag prod boot-abort risk
+
+<!-- ai-sdlc:session-log -->
+**2026-07-25 23:59** · branch: `main`
+  - Last commit: 7996719 docs(testing): verify Task 3E Sentry live via browser automation
+
+<!-- ai-sdlc:session-log -->
+**2026-07-26 12:17** · branch: `main`
+  - Last commit: 27df58b test(sentry): remove temp throw button, record confirmed P-24 failure
+
+<!-- ai-sdlc:session-log -->
+**2026-07-26 12:33** · branch: `main`
+  - Last commit: 4519951 test(sentry): remove re-verify button, record real root cause (403 on token)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-26 13:28** · branch: `main`
+  - Last commit: 4519951 test(sentry): remove re-verify button, record real root cause (403 on token)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-26 13:31** · branch: `main`
+  - Last commit: 4519951 test(sentry): remove re-verify button, record real root cause (403 on token)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-26 15:27** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-26 16:01** · branch: `main`
+  - Last commit: d2b7a21 test(sentry): re-verify source-map fix with new-scoped auth token
+
+<!-- ai-sdlc:session-log -->
+**2026-07-26 16:31** · branch: `main`
+  - Last commit: 72c86cf test(sentry): P-24 fixed and verified — Task 3E fully done
+
+<!-- ai-sdlc:session-log -->
+**2026-07-26 16:33** · branch: `main`
+  - Last commit: 72c86cf test(sentry): P-24 fixed and verified — Task 3E fully done
+
+<!-- ai-sdlc:session-log -->
+**2026-07-26 17:43** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-26 17:56** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-26 18:11** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-26 18:17** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-26 18:34** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-26 22:32** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-26 22:38** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-26 23:00** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-27 00:09** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-27 12:25** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-27 12:30** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-27 12:34** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-27 12:36** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-27 13:48** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-27 14:03** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-27 14:07** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-27 15:27** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-27 15:38** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-27 15:51** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-27 15:58** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-27 16:03** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-27 16:05** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-27 16:55** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-27 16:59** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-27 17:02** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-27 17:04** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-27 17:25** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-27 17:37** · branch: `main`
+  - Last commit: 204634e test(agile): harden AC-type coverage for 17 Phase-1 stories
+
+<!-- ai-sdlc:session-log -->
+**2026-07-27 18:12** · branch: `main`
+  - Last commit: 204634e test(agile): harden AC-type coverage for 17 Phase-1 stories
+
+<!-- ai-sdlc:session-log -->
+**2026-07-27 18:20** · branch: `main`
+  - Last commit: 204634e test(agile): harden AC-type coverage for 17 Phase-1 stories
+
+<!-- ai-sdlc:session-log -->
+**2026-07-27 18:23** · branch: `main`
+  - Last commit: 204634e test(agile): harden AC-type coverage for 17 Phase-1 stories
+
+<!-- ai-sdlc:session-log -->
+**2026-07-27 18:37** · branch: `main`
+  - Last commit: aaf3aef feat(launch): metering policy guard (1 generation = 1 credit) — US-LAUNCH-008
+
+<!-- ai-sdlc:session-log -->
+**2026-07-27 19:19** · branch: `main`
+  - Last commit: aaf3aef feat(launch): metering policy guard (1 generation = 1 credit) — US-LAUNCH-008
+
+<!-- ai-sdlc:session-log -->
+**2026-07-27 19:25** · branch: `main`
+  - Last commit: fa1d345 feat(launch): payment emails + BROKERAGE gate cluster — US-LAUNCH-006/012/013/007
+
+<!-- ai-sdlc:session-log -->
+**2026-07-27 19:42** · branch: `main`
+  - Last commit: fa1d345 feat(launch): payment emails + BROKERAGE gate cluster — US-LAUNCH-006/012/013/007
+
+<!-- ai-sdlc:session-log -->
+**2026-07-27 19:52** · branch: `main`
+  - Last commit: 5c52dc0 test(launch): close TC-05 gap — FREE-tier exclusion test for US-LAUNCH-013
