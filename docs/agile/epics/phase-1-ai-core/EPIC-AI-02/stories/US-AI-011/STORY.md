@@ -19,12 +19,13 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC1:** A format selector appears in the chat panel showing: Instagram Square, Facebook Cover, Story (9:16), Print (4:3)
-- [ ] **AC2:** The selected format is sent with the generation request and the output image matches the correct aspect ratio
-- [ ] **AC3:** Instagram Square (1:1) and Print (4:3) generate correctly verified by image dimensions
-- [ ] **AC4:** Format selection is persisted per conversation (not reset when navigating away)
-- [ ] **AC5:** Format labels are user-friendly — no aspect ratio numbers or technical specs visible to users
-- [ ] **AC6:** `npm run check` passes
+- [ ] **AC1 [happy-path]:** A format selector appears in the chat panel showing: Instagram Square, Facebook Cover, Story (9:16), Print (4:3)
+- [ ] **AC2 [happy-path]:** The selected format is sent with the generation request and the output image matches the correct aspect ratio
+- [ ] **AC3 [happy-path]:** Instagram Square (1:1) and Print (4:3) generate correctly verified by image dimensions
+- [ ] **AC4 [edge-case]:** Format selection is persisted per conversation (not reset when navigating away)
+- [ ] **AC5 [compliance]:** Format labels are user-friendly — no aspect ratio numbers or technical specs visible to users
+- [ ] **AC6 [error-path]:** When a persisted format value is missing, malformed, or not one of the four known formats on conversation load, `AIChatBox.tsx` falls back to the default "Instagram Square" instead of erroring or leaving no selection.
+- [ ] **AC7 [regression]:** `npm run check` passes
 
 ---
 
@@ -84,6 +85,7 @@ Never show: "1:1", "1024×1024", or any resolution/model details.
 | TC-AI-011-01 | Manual | P0 | Select Instagram Square → generate → verify 1:1 image | 🔲 | |
 | TC-AI-011-02 | Manual | P0 | Select Print → generate → verify 4:3 image | 🔲 | |
 | TC-AI-011-03 | Manual | P1 | Format selection persists after navigating away and back | 🔲 | |
+| TC-AI-011-04 | Manual | P2 | Load a conversation with a corrupted/missing format value → selector falls back to Instagram Square | 🔲 | |
 
 ---
 

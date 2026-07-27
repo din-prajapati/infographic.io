@@ -21,12 +21,12 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC1 (HUMAN):** RazorPay account activation (KYC + website review) approved for live mode — requires US-LAUNCH-001 legal pages live on the production domain
-- [ ] **AC2 (HUMAN):** Live plans re-created in the live-mode dashboard — SOLO monthly/annual, TEAM monthly/annual (test-mode plans do not carry over); TEAM re-verified at ₹6,999 / 699900 paise (PT-05 equivalent in live mode)
-- [ ] **AC3 (HUMAN):** Railway production env vars set: `RAZORPAY_KEY_ID`/`SECRET`/`VITE_RAZORPAY_KEY_ID` = `rzp_live_*`, all four `RAZORPAY_PLAN_*` = live plan IDs, `RAZORPAY_WEBHOOK_SECRET` = secret of a live webhook pointing at `https://{prod-domain}/api/v1/webhooks/razorpay`
-- [ ] **AC4 (CODE):** Startup assert — when `NODE_ENV=production`, boot fails fast with a clear error if `RAZORPAY_KEY_ID` starts with `rzp_test_` or any configured `RAZORPAY_PLAN_*` var is empty; local dev with test keys is unaffected
-- [ ] **AC5:** `npm run verify:payment-prereqs` passes against production config
-- [ ] **AC6 (HUMAN):** One real ₹ subscription completed on production (smallest plan): checkout → `subscription.charged` webhook received & signature-verified → Subscription `PENDING → ACTIVE` — then refunded/cancelled from the dashboard
+- [ ] **AC1 [happy-path] (HUMAN):** RazorPay account activation (KYC + website review) approved for live mode — requires US-LAUNCH-001 legal pages live on the production domain
+- [ ] **AC2 [happy-path] (HUMAN):** Live plans re-created in the live-mode dashboard — SOLO monthly/annual, TEAM monthly/annual (test-mode plans do not carry over); TEAM re-verified at ₹6,999 / 699900 paise (PT-05 equivalent in live mode)
+- [ ] **AC3 [happy-path] (HUMAN):** Railway production env vars set: `RAZORPAY_KEY_ID`/`SECRET`/`VITE_RAZORPAY_KEY_ID` = `rzp_live_*`, all four `RAZORPAY_PLAN_*` = live plan IDs, `RAZORPAY_WEBHOOK_SECRET` = secret of a live webhook pointing at `https://{prod-domain}/api/v1/webhooks/razorpay`
+- [ ] **AC4 [error-path] (CODE):** Startup assert — when `NODE_ENV=production`, boot fails fast with a clear error if `RAZORPAY_KEY_ID` starts with `rzp_test_` or any configured `RAZORPAY_PLAN_*` var is empty; local dev with test keys is unaffected
+- [ ] **AC5 [regression]:** `npm run verify:payment-prereqs` passes against production config
+- [ ] **AC6 [happy-path] (HUMAN):** One real ₹ subscription completed on production (smallest plan): checkout → `subscription.charged` webhook received & signature-verified → Subscription `PENDING → ACTIVE` — then refunded/cancelled from the dashboard
 
 ---
 

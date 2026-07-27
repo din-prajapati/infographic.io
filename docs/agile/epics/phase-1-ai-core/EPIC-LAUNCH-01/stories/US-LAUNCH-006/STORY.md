@@ -21,11 +21,11 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC1:** When the RazorPay webhook processes a successful subscription charge (`subscription.charged` — the same event that flips `PENDING → ACTIVE`), a receipt email is sent via `EmailService` to the subscription owner's email
-- [ ] **AC2:** Receipt contains: plan name (SOLO/TEAM), billing period, amount in ₹ (from the webhook payload, paise → rupees), payment date, RazorPay payment ID, and organization name — no AI vendor names, no internal IDs beyond the payment ID
-- [ ] **AC3:** Email failure never breaks webhook processing — subscription still activates, webhook still returns 200, failure logged (Sentry once EPIC-OBS-00 lands)
-- [ ] **AC4:** Renewal charges (subsequent `subscription.charged` events on an ACTIVE subscription) also send a receipt — same template
-- [ ] **AC5:** Unit tests cover: receipt sent on charge with correct fields, webhook survives EmailService failure
+- [ ] **AC1 [happy-path]:** When the RazorPay webhook processes a successful subscription charge (`subscription.charged` — the same event that flips `PENDING → ACTIVE`), a receipt email is sent via `EmailService` to the subscription owner's email
+- [ ] **AC2 [happy-path]:** Receipt contains: plan name (SOLO/TEAM), billing period, amount in ₹ (from the webhook payload, paise → rupees), payment date, RazorPay payment ID, and organization name — no AI vendor names, no internal IDs beyond the payment ID
+- [ ] **AC3 [error-path]:** Email failure never breaks webhook processing — subscription still activates, webhook still returns 200, failure logged (Sentry once EPIC-OBS-00 lands)
+- [ ] **AC4 [edge-case]:** Renewal charges (subsequent `subscription.charged` events on an ACTIVE subscription) also send a receipt — same template
+- [ ] **AC5 [regression]:** Unit tests cover: receipt sent on charge with correct fields, webhook survives EmailService failure
 
 ---
 

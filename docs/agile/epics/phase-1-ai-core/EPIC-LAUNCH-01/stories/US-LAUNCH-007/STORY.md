@@ -21,10 +21,10 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC1:** `PricingPage.tsx` renders the BROKERAGE tier with a "Contact us" CTA (mailto or contact link) instead of a checkout/subscribe button — decision recorded here: **gate, don't configure** (creating live BROKERAGE plans is deferred until first brokerage demand)
-- [ ] **AC2:** The gate is driven by plan-ID availability, not hardcoded to BROKERAGE: any tier whose RazorPay plan ID env vars are unset renders without a checkout button (BROKERAGE today; protects against future misconfig of SOLO/TEAM)
-- [ ] **AC3:** Backend: a create-subscription request for a tier with no configured plan ID returns 400 with a clear error code (e.g. `PLAN_NOT_AVAILABLE`), not a 500 from a missing env var
-- [ ] **AC4:** Unit test covers AC3; PT-06 marked resolved in PROJECT_CONTEXT.md Known Issues with a pointer to this story
+- [ ] **AC1 [happy-path]:** `PricingPage.tsx` renders the BROKERAGE tier with a "Contact us" CTA (mailto or contact link) instead of a checkout/subscribe button — decision recorded here: **gate, don't configure** (creating live BROKERAGE plans is deferred until first brokerage demand)
+- [ ] **AC2 [edge-case]:** The gate is driven by plan-ID availability, not hardcoded to BROKERAGE: any tier whose RazorPay plan ID env vars are unset renders without a checkout button (BROKERAGE today; protects against future misconfig of SOLO/TEAM)
+- [ ] **AC3 [error-path]:** Backend: a create-subscription request for a tier with no configured plan ID returns 400 with a clear error code (e.g. `PLAN_NOT_AVAILABLE`), not a 500 from a missing env var
+- [ ] **AC4 [regression]:** Unit test covers AC3; PT-06 marked resolved in PROJECT_CONTEXT.md Known Issues with a pointer to this story
 
 ---
 

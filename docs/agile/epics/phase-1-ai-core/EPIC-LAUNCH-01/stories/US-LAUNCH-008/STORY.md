@@ -20,10 +20,11 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC1:** Policy documented in `docs/agile/PROJECT_CONTEXT.md` (Plan Tiers section) and CLAUDE.md plan-tier line: plan limits count **generations** (user-facing unit), `creditsUsed = 1` per generation; `costUsd` records true provider spend for margin analytics — the two are intentionally different numbers
-- [ ] **AC2:** Unit test asserts both `UsageRecord` creation sites (`ai-orchestrator.service.ts` and `infographic.processor.ts`) write `creditsUsed: 1` per generation — a future multi-image pipeline change that silently writes 3 fails the test
-- [ ] **AC3:** Unit test asserts `costUsd` still receives the actual per-call provider cost (not zeroed or averaged) at the same sites
-- [ ] **AC4:** Usage-limit enforcement (`usage-limit.service.ts`) demonstrated by test to count credits, so FREE=3/mo means 3 generations even if each generation makes multiple image calls
+- [ ] **AC1 [documentation]:** Policy documented in `docs/agile/PROJECT_CONTEXT.md` (Plan Tiers section) and CLAUDE.md plan-tier line: plan limits count **generations** (user-facing unit), `creditsUsed = 1` per generation; `costUsd` records true provider spend for margin analytics — the two are intentionally different numbers
+- [ ] **AC2 [regression]:** Unit test asserts both `UsageRecord` creation sites (`ai-orchestrator.service.ts` and `infographic.processor.ts`) write `creditsUsed: 1` per generation — a future multi-image pipeline change that silently writes 3 fails the test
+- [ ] **AC3 [regression]:** Unit test asserts `costUsd` still receives the actual per-call provider cost (not zeroed or averaged) at the same sites
+- [ ] **AC4 [happy-path]:** Usage-limit enforcement (`usage-limit.service.ts`) demonstrated by test to count credits, so FREE=3/mo means 3 generations even if each generation makes multiple image calls
+- [ ] **AC5 [error-path]:** When an org's monthly credit count has already reached its plan limit, a new generation request is rejected by `usage-limit.service.ts` (not silently allowed through) and no additional `UsageRecord` is created.
 
 ---
 
@@ -81,6 +82,7 @@ Implementation rules:
 | TC-LAUNCH-008-01 | Auto (unit) | P0 | Given a completed generation (orchestrator path), then exactly one UsageRecord with creditsUsed: 1 | 🔲 | |
 | TC-LAUNCH-008-02 | Auto (unit) | P0 | Given a completed generation (processor path), then creditsUsed: 1 and costUsd = actual provider cost | 🔲 | |
 | TC-LAUNCH-008-03 | Auto (unit) | P1 | Given 3 UsageRecords this month for a FREE org, then usage-limit reports the limit reached | 🔲 | |
+| TC-LAUNCH-008-04 | Auto (unit) | P1 | Given a FREE org already at 3 UsageRecords this month, when a new generation is requested, then it is rejected and no 4th UsageRecord is created | 🔲 | |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 

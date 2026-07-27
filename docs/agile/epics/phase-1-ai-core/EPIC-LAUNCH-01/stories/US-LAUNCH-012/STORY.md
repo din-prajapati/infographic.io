@@ -21,15 +21,15 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC1:** When `handlePaymentFailed` in `payments.service.ts` successfully executes `updateSubscription(subscription.id, { status: PAST_DUE })` for the first time for a given payment ID (i.e., the idempotency check at the top of the method did not fire an early return), `EmailService.send()` is called exactly once with `to` set to `subscription.user.email`.
+- [ ] **AC1 [happy-path]:** When `handlePaymentFailed` in `payments.service.ts` successfully executes `updateSubscription(subscription.id, { status: PAST_DUE })` for the first time for a given payment ID (i.e., the idempotency check at the top of the method did not fire an early return), `EmailService.send()` is called exactly once with `to` set to `subscription.user.email`.
 
-- [ ] **AC2:** The email passed to `EmailService.send()` satisfies all four content requirements: (a) `subject` contains the words "payment" and "failed" (case-insensitive); (b) `html` or `text` body contains the plan name derived from `subscription.planTier` (e.g., "SOLO", "TEAM"); (c) body contains the failed charge amount in ₹, computed as `paymentData.amount / 100` (paise-to-rupee conversion, no fractional rupees needed); (d) body contains the string `/account` as the call-to-action URL pointing to the subscriber's account page.
+- [ ] **AC2 [happy-path]:** The email passed to `EmailService.send()` satisfies all four content requirements: (a) `subject` contains the words "payment" and "failed" (case-insensitive); (b) `html` or `text` body contains the plan name derived from `subscription.planTier` (e.g., "SOLO", "TEAM"); (c) body contains the failed charge amount in ₹, computed as `paymentData.amount / 100` (paise-to-rupee conversion, no fractional rupees needed); (d) body contains the string `/account` as the call-to-action URL pointing to the subscriber's account page.
 
-- [ ] **AC3:** If `EmailService.send()` throws or returns `{ sent: false }`, `handlePaymentFailed` does not rethrow — the method completes normally, the webhook handler can return HTTP 200, and the subscription record in the database retains `PAST_DUE` status.
+- [ ] **AC3 [error-path]:** If `EmailService.send()` throws or returns `{ sent: false }`, `handlePaymentFailed` does not rethrow — the method completes normally, the webhook handler can return HTTP 200, and the subscription record in the database retains `PAST_DUE` status.
 
-- [ ] **AC4:** When `handlePaymentFailed` is called with a RazorPay payment ID that `getPaymentByExternalId` already has on record (duplicate webhook event — the early-return idempotency guard at the top of the method fires), `EmailService.send()` is NOT called.
+- [ ] **AC4 [edge-case]:** When `handlePaymentFailed` is called with a RazorPay payment ID that `getPaymentByExternalId` already has on record (duplicate webhook event — the early-return idempotency guard at the top of the method fires), `EmailService.send()` is NOT called.
 
-- [ ] **AC5:** Unit tests in `api/tests/payments/payment-failed-email.spec.ts` cover: (a) first-time failure event → `EmailService.send` mock asserted called with `to = subscription.user.email`, plan name, ₹ amount, and `/account` in the body; (b) `EmailService.send` throws → handler resolves without throwing, `updateSubscription` still called with `PAST_DUE`; (c) duplicate event (idempotency path) → `EmailService.send` mock asserted never called.
+- [ ] **AC5 [regression]:** Unit tests in `api/tests/payments/payment-failed-email.spec.ts` cover: (a) first-time failure event → `EmailService.send` mock asserted called with `to = subscription.user.email`, plan name, ₹ amount, and `/account` in the body; (b) `EmailService.send` throws → handler resolves without throwing, `updateSubscription` still called with `PAST_DUE`; (c) duplicate event (idempotency path) → `EmailService.send` mock asserted never called.
 
 ---
 
