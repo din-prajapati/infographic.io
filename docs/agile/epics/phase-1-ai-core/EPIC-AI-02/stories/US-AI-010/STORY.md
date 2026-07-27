@@ -41,10 +41,12 @@
 
 - **Branch:** `feat/ai-us-ai-010-photo-upload`
 - **PR:** #_____ (fill when opened)
-- **Primary files touched:**
+- **Primary files touched** (corrected 2026-07-27 — the backend has been restructured since this story was written; `infographics.controller.ts` moved into a `controllers/` subfolder and `image-generation.service.ts` no longer exists as a single file, split across the files below):
   - `client/src/components/ai-chat/AIChatBox.tsx`
-  - `api/src/modules/infographics/infographics.controller.ts` (or new upload endpoint)
-  - `api/src/modules/ai-generation/services/image-generation.service.ts` (pass photo ref)
+  - `api/src/modules/infographics/controllers/infographics.controller.ts` (new `POST /infographics/upload-photo` endpoint — general-purpose controller; `controllers/generations.controller.ts` is the alternative home if this should live alongside the chat-generation endpoint instead, code-agent's call)
+  - `api/src/modules/infographics/dto/generate-from-chat.dto.ts` (add `photoReference`/`photoId` field)
+  - `api/src/modules/ai-generation/services/ai-orchestrator.service.ts` (thread the photo reference through `generateInfographic()`, alongside the existing `orientation` option)
+  - `api/src/modules/ai-generation/services/ideogram.service.ts` (attach the reference image to the actual Ideogram API call — confirmed 2026-07-27: no reference/style-image support exists yet, this is genuinely new capability, not a small addition; research Ideogram's image-to-image / style-reference API shape during implementation)
 
 ---
 
@@ -59,11 +61,14 @@ See CLAUDE.md for architecture. CAP-06: Property photo upload.
 Story: US-AI-010 — Property photo upload + reference in generation
 
 BACKEND:
-1. Add POST /infographics/upload-photo endpoint that accepts multipart/form-data
+1. Add POST /infographics/upload-photo endpoint (in infographics.controller.ts, see Primary
+   files touched for the exact current path) that accepts multipart/form-data
    - Store photo temporarily (local disk, /tmp or uploads/) for this session
    - Return { photoUrl: string, photoId: string }
-2. In image-generation.service.ts: accept optional photoReference in the generation request
-   - Include photo in the image generation prompt as a reference image
+2. Add photoReference to generate-from-chat.dto.ts; thread it through
+   ai-orchestrator.service.ts's generateInfographic() alongside the existing orientation
+   option, down to ideogram.service.ts, which must attach it as a reference image on the
+   actual Ideogram API call (net-new capability — no reference-image support exists today)
 
 FRONTEND:
 3. Add upload button (📎 icon) next to chat input in AIChatBox.tsx

@@ -18,14 +18,15 @@ feat(ai): add property photo upload to chat with backend reference in generation
 ## Task Breakdown
 
 ### T1 — Backend: photo upload endpoint
-**File:** `api/src/modules/infographics/infographics.controller.ts`
-- Add `POST /infographics/upload-photo` with `@UseInterceptors(FileInterceptor('photo'))`
+**File:** `api/src/modules/infographics/controllers/infographics.controller.ts` (corrected path 2026-07-27 — moved into `controllers/` subfolder since this story was written; `controllers/generations.controller.ts` is the alternative if this should live with the chat-generation endpoint instead)
+- Add `POST /infographics/upload-photo` with `@UseInterceptors(FileInterceptor('photo'))` (no multer/FileInterceptor exists anywhere in the backend yet — this is net-new infra, not reuse)
 - Store to `/tmp/uploads/{uuid}.jpg`, return `{ photoUrl, photoId }`
 
 ### T2 — Backend: pass photo reference to generation
-**File:** `api/src/modules/ai-generation/services/image-generation.service.ts`
-- Accept optional `photoReference?: string` in request
-- Include photo URL in generation prompt as style/reference image
+**Files** (corrected 2026-07-27 — `image-generation.service.ts` no longer exists, this responsibility is now split):
+- `api/src/modules/infographics/dto/generate-from-chat.dto.ts` — add optional `photoReference?: string`
+- `api/src/modules/ai-generation/services/ai-orchestrator.service.ts` — thread `photoReference` through `generateInfographic()` the same way `orientation` is threaded today
+- `api/src/modules/ai-generation/services/ideogram.service.ts` — attach the reference image to the actual Ideogram API call (confirmed: no reference/style-image support exists yet — research Ideogram's image-to-image API shape, this is genuinely new capability)
 
 ### T3 — Frontend: upload button + thumbnail
 **File:** `client/src/components/ai-chat/AIChatBox.tsx`

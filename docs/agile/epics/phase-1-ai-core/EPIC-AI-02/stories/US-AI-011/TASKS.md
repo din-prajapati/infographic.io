@@ -23,9 +23,10 @@ feat(ai): add output format selector (Instagram/Facebook/Story/Print) — US-AI-
 - Store selected format in local state
 
 ### T2 — Backend: accept outputFormat in generation request
-**File:** `api/src/modules/ai-generation/services/image-generation.service.ts`
-- Add format→dimensions map
-- Pass correct width/height to Nano Banana API
+**Files** (corrected 2026-07-27 — `image-generation.service.ts` no longer exists; see ⚠️ overlap note in STORY.md before starting this task):
+- `api/src/modules/infographics/dto/generate-from-chat.dto.ts` — add `outputFormat` (or extend the existing `orientation` field, pending the overlap decision)
+- `api/src/config/image-generation.config.ts` — add format→dimensions map, following the existing `ORIENTATION_TO_IDEOGRAM_ASPECT` pattern
+- `api/src/modules/ai-generation/services/ai-orchestrator.service.ts` + `ideogram.service.ts` — thread the resolved dimensions through the same path `orientation` already uses
 
 ### T3 — Persist format per conversation
 **File:** `client/src/components/ai-chat/AIChatBox.tsx`

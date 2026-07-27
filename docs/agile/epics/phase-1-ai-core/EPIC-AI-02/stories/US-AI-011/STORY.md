@@ -41,9 +41,14 @@
 
 - **Branch:** `feat/ai-us-ai-011-format-selector`
 - **PR:** #_____ (fill when opened)
-- **Primary files touched:**
-  - `client/src/components/ai-chat/AIChatBox.tsx`
-  - `api/src/modules/ai-generation/services/image-generation.service.ts`
+- **Primary files touched** (corrected 2026-07-27 — `image-generation.service.ts` no longer exists; also see the ⚠️ note below about an existing overlapping feature, unresolved as of this correction):
+  - `client/src/components/ai-chat/AIChatBox.tsx` (⚠️ already has a fully-built `generationOrientation` state / orientation picker — see note below)
+  - `api/src/modules/infographics/dto/generate-from-chat.dto.ts` (already has an `orientation?: 'landscape'|'portrait'|'square'` field — decide whether `outputFormat` is additive or replaces it)
+  - `api/src/modules/ai-generation/services/ai-orchestrator.service.ts` (already threads `orientation` through `generateInfographic()`)
+  - `api/src/modules/ai-generation/services/ideogram.service.ts` (already maps `orientation` → Ideogram aspect ratio in `generateImage()`/`generateImageV4()`)
+  - `api/src/config/image-generation.config.ts` (already holds `ORIENTATION_TO_IDEOGRAM_ASPECT` / `ORIENTATION_TO_IDEOGRAM_ASPECT_V3` dimension maps — the new format→dimension mapping likely belongs here too)
+
+> ⚠️ **Unresolved overlap, flagged 2026-07-27, not yet decided:** `AIChatBox.tsx` already has a live, end-to-end orientation picker (`landscape | portrait | square`) wired through the DTO, orchestrator, Ideogram service, and its own icon-bar UI — built after this story was written. This story's 4-option format selector (Instagram/Facebook/Story/Print) is a different, more granular abstraction over the same underlying concept (output aspect ratio / dimensions). **Before implementing:** decide whether to (a) extend the existing orientation picker with named platform presets, (b) replace it outright, or (c) add a genuinely separate second control. Implementing this story verbatim without that decision risks a redundant or conflicting UI.
 
 ---
 
