@@ -10,10 +10,10 @@
 
 ## Three Pillars Pre-flight (check before starting AI session)
 
-- [ ] **Brain** — STORY.md filled
-- [ ] **Muscle** — file list + ordered tasks + exact test commands
-- [ ] **Map** — [ARCHITECTURE.mmd](../../ARCHITECTURE.mmd) exists
-- [ ] **Env** — [ENV.yaml](../../ENV.yaml) loaded
+- [x] **Brain** — STORY.md filled
+- [x] **Muscle** — file list + ordered tasks + exact test commands
+- [x] **Map** — [ARCHITECTURE.mmd](../../ARCHITECTURE.mmd) exists
+- [x] **Env** — [ENV.yaml](../../ENV.yaml) loaded
 
 ---
 
@@ -31,12 +31,12 @@ test(ai): metering policy guard — US-LAUNCH-008
 ### T1 — Metering policy unit tests
 **File:** `api/tests/ai/metering-policy.spec.ts` (new)
 **AC(s) covered:** AC2, AC3, AC4
-**Changes:** *(fill during implementation session)*
+**Changes:** 6 tests covering orchestrator path (creditsUsed: 1, costUsd = actual), processor path (same), and UsageLimitService credit-based enforcement (FREE=3, error-path + happy-path). Passthrough `vi.mock('@prisma/client')` added to fix Vitest module-load ordering when AI services are imported alongside UsageLimitService.
 
 ### T2 — Policy documentation
 **Files:** `docs/agile/PROJECT_CONTEXT.md`, `CLAUDE.md`
 **AC(s) covered:** AC1
-**Changes:** *(fill during implementation session)*
+**Changes:** Added metering policy blockquote to Plan Tiers section of PROJECT_CONTEXT.md; added one-line policy note after the plan-tiers line in CLAUDE.md. Both state: generations = user unit, creditsUsed: 1 per generation, costUsd = true provider spend (intentionally different).
 
 ---
 
@@ -61,10 +61,10 @@ cd api && npx vitest run tests/ai/metering-policy.spec.ts --reporter=verbose
 
 ## Task Checklist
 
-- [ ] T1 — tests
-- [ ] T2 — docs
-- [ ] `npm run check` passes ✅
-- [ ] `npm run test:unit` passes ✅
+- [x] T1 — tests
+- [x] T2 — docs
+- [x] `npm run check` passes ✅
+- [x] `npm run test:unit` passes ✅
 - [ ] PR opened with story card as description ✅
 - [ ] STORY.md ACs updated ✅
 

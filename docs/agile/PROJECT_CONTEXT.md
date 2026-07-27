@@ -87,6 +87,8 @@ npm run dev starts:
 | API_GROWTH | 20,000 | — | B2B tier |
 | API_ENTERPRISE | unlimited | — | B2B tier |
 
+> **Metering policy (US-LAUNCH-008):** Limits count **generations** (the user-facing unit). Each generation writes `creditsUsed: 1` in `UsageRecord`, regardless of how many internal image API calls it makes (V4 multi-variation runs can cost 3× in provider spend while still consuming exactly 1 credit). `costUsd` records the true provider spend for margin analytics — these two numbers are intentionally different. Do not zero or average `costUsd` to match `creditsUsed`.
+
 ---
 
 ## Domain Prefixes & ID Counters

@@ -109,6 +109,7 @@ In production, Vite's output is served as static files by Express.
 
 ### Plan tiers and limits
 `FREE=3/mo | SOLO=50/mo | TEAM=200/mo | BROKERAGE=1000/mo | API_STARTER=5000 | API_GROWTH=20000 | API_ENTERPRISE=unlimited`
+> Metering policy (US-LAUNCH-008): limits count **generations** (user unit); each generation writes `creditsUsed: 1` regardless of internal image-call count. `costUsd` = true provider spend for margin analytics — intentionally different from `creditsUsed`. Never zero or average `costUsd`.
 
 ### Testing
 - **Unit tests**: `api/tests/**/*.spec.ts` (exclude `*.integration.spec.ts`) — all mock-based, no DB

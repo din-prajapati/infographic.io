@@ -1,6 +1,6 @@
 # Story Card — US-LAUNCH-008
 
-> **Status:** 🔲 Not Started
+> **Status:** 🟡 impl
 > **Feature:** F-LAUNCH-05 — Metering Policy
 > **Epic:** [EPIC-LAUNCH-01](../../EPIC.md)
 > **Milestone:** [M-LAUNCH-02-revenue-on](../../milestones/M-LAUNCH-02-revenue-on.md)
@@ -20,11 +20,11 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC1 [documentation]:** Policy documented in `docs/agile/PROJECT_CONTEXT.md` (Plan Tiers section) and CLAUDE.md plan-tier line: plan limits count **generations** (user-facing unit), `creditsUsed = 1` per generation; `costUsd` records true provider spend for margin analytics — the two are intentionally different numbers
-- [ ] **AC2 [regression]:** Unit test asserts both `UsageRecord` creation sites (`ai-orchestrator.service.ts` and `infographic.processor.ts`) write `creditsUsed: 1` per generation — a future multi-image pipeline change that silently writes 3 fails the test
-- [ ] **AC3 [regression]:** Unit test asserts `costUsd` still receives the actual per-call provider cost (not zeroed or averaged) at the same sites
-- [ ] **AC4 [happy-path]:** Usage-limit enforcement (`usage-limit.service.ts`) demonstrated by test to count credits, so FREE=3/mo means 3 generations even if each generation makes multiple image calls
-- [ ] **AC5 [error-path]:** When an org's monthly credit count has already reached its plan limit, a new generation request is rejected by `usage-limit.service.ts` (not silently allowed through) and no additional `UsageRecord` is created.
+- [x] **AC1 [documentation]:** Policy documented in `docs/agile/PROJECT_CONTEXT.md` (Plan Tiers section) and CLAUDE.md plan-tier line: plan limits count **generations** (user-facing unit), `creditsUsed = 1` per generation; `costUsd` records true provider spend for margin analytics — the two are intentionally different numbers
+- [x] **AC2 [regression]:** Unit test asserts both `UsageRecord` creation sites (`ai-orchestrator.service.ts` and `infographic.processor.ts`) write `creditsUsed: 1` per generation — a future multi-image pipeline change that silently writes 3 fails the test
+- [x] **AC3 [regression]:** Unit test asserts `costUsd` still receives the actual per-call provider cost (not zeroed or averaged) at the same sites
+- [x] **AC4 [happy-path]:** Usage-limit enforcement (`usage-limit.service.ts`) demonstrated by test to count credits, so FREE=3/mo means 3 generations even if each generation makes multiple image calls
+- [x] **AC5 [error-path]:** When an org's monthly credit count has already reached its plan limit, a new generation request is rejected by `usage-limit.service.ts` (not silently allowed through) and no additional `UsageRecord` is created.
 
 ---
 
@@ -39,7 +39,7 @@
 
 ## Engineering / PR
 
-- **Branch:** `test/launch-us-launch-008-metering-guard`
+- **Branch:** `feat/launch/us-launch-008`
 - **PR:** #_____ (fill when opened)
 - **Primary files touched:**
   - `api/tests/ai/metering-policy.spec.ts` (new)
@@ -79,10 +79,10 @@ Implementation rules:
 
 | TC ID | Type | Priority | Scenario | Status | Finding |
 |-------|------|----------|----------|--------|---------|
-| TC-LAUNCH-008-01 | Auto (unit) | P0 | Given a completed generation (orchestrator path), then exactly one UsageRecord with creditsUsed: 1 | 🔲 | |
-| TC-LAUNCH-008-02 | Auto (unit) | P0 | Given a completed generation (processor path), then creditsUsed: 1 and costUsd = actual provider cost | 🔲 | |
-| TC-LAUNCH-008-03 | Auto (unit) | P1 | Given 3 UsageRecords this month for a FREE org, then usage-limit reports the limit reached | 🔲 | |
-| TC-LAUNCH-008-04 | Auto (unit) | P1 | Given a FREE org already at 3 UsageRecords this month, when a new generation is requested, then it is rejected and no 4th UsageRecord is created | 🔲 | |
+| TC-LAUNCH-008-01 | Auto (unit) | P0 | Given a completed generation (orchestrator path), then exactly one UsageRecord with creditsUsed: 1 | ✅ | Implemented as `TC-LAUNCH-008-01a`/`01b` in `api/tests/ai/metering-policy.spec.ts` |
+| TC-LAUNCH-008-02 | Auto (unit) | P0 | Given a completed generation (processor path), then creditsUsed: 1 and costUsd = actual provider cost | ✅ | Implemented as `TC-LAUNCH-008-02a`/`02b` |
+| TC-LAUNCH-008-03 | Auto (unit) | P1 | Given 3 UsageRecords this month for a FREE org, then usage-limit reports the limit reached | ✅ | |
+| TC-LAUNCH-008-04 | Auto (unit) | P1 | Given a FREE org already at 3 UsageRecords this month, when a new generation is requested, then it is rejected and no 4th UsageRecord is created | ✅ | Implemented as `TC-LAUNCH-008-03` in the spec file (`assertCanGenerate` rejects at the limit) — same intent, different local numbering since the test was written before this story's harden pass added AC5/TC-04 |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 
@@ -90,12 +90,12 @@ Implementation rules:
 
 ## Definition of Done
 
-- [ ] All ACs checked ✅
-- [ ] All test cases run and recorded
-- [ ] `npm run check` passes
-- [ ] `npm run test:unit` passes
+- [x] All ACs checked ✅
+- [x] All test cases run and recorded
+- [x] `npm run check` passes
+- [x] `npm run test:unit` passes (111/111)
 - [ ] PR merged (PR #_____)
-- [ ] [TASKS.md](./TASKS.md) task list fully checked
+- [x] [TASKS.md](./TASKS.md) task list fully checked
 
 ---
 

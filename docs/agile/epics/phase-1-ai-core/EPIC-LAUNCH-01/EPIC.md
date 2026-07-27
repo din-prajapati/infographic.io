@@ -108,6 +108,12 @@ Key files relevant to this epic:
 
 ## Implementation Update (log)
 
+### 2026-07-27 — US-LAUNCH-008 implementation complete (pre-PR)
+- **Files touched:** `api/tests/ai/metering-policy.spec.ts` (new), `docs/agile/PROJECT_CONTEXT.md`, `CLAUDE.md`, `docs/agile/epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-008/TASKS.md`, `docs/agile/epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-008/STORY.md`
+- **ACs covered:** AC1 (policy blockquote in PROJECT_CONTEXT.md + one-line note in CLAUDE.md), AC2 (unit tests pin creditsUsed: 1 at both creation sites), AC3 (unit tests pin costUsd = actual provider cost at both sites), AC4 (UsageLimitService test demonstrates FREE=3/mo credit counting + error-path ForbiddenException)
+- **Commits:** 2 on branch `feat/launch/us-launch-008` — d9a39a4 (T1 tests), d8b8279 (T2 docs)
+- **Notes:** No production logic changed — story pins existing behavior as policy. Discovered a pre-existing Vitest module-load ordering quirk: importing `AiOrchestrator` alongside `UsageLimitService` in the same test file caused `SubscriptionStatus` from `@prisma/client` to be undefined. Fixed with a passthrough `vi.mock('@prisma/client', async (importOriginal) => importOriginal())` in the spec file (does not affect production code). Gate 1: `npm run check` clean, `npm run test:unit` 111/111 pass (9 test files).
+
 ### 2026-07-18 — US-LAUNCH-011 implementation complete (pre-PR)
 - **Files touched:** `client/index.html`, `client/src/pages/LandingPage.tsx`, `client/src/pages/PricingPage.tsx`, `client/src/components/SiteFooter.tsx`, `client/src/pages/AuthPage.tsx`, `client/src/pages/auth/ForgotPasswordPage.tsx`, `client/src/pages/auth/ResetPasswordPage.tsx`, `client/src/pages/legal/TermsPage.tsx`, `client/src/pages/legal/PrivacyPage.tsx`, `client/src/pages/legal/RefundPolicyPage.tsx`, `api/src/modules/auth/services/auth.service.ts`, `api/src/main.ts`, `api/tests/auth/password-reset.spec.ts`, `e2e/us-launch-001-legal-pages.spec.ts`
 - **ACs covered:** AC1, AC2, AC3, AC4 (E2E assertions written; actual E2E run deferred to /test-story — needs running server)
