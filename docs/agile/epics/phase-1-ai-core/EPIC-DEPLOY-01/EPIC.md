@@ -58,12 +58,13 @@ it to a % of users → a bad release auto-rolls-back on health check.
 | Story ID | Title | Size | Est. | Status | Depends on |
 |----------|-------|------|------|--------|-----------|
 | [US-DEPLOY-001](stories/US-DEPLOY-001/STORY.md) | Harden the CI gate (fast, mandatory, + E2E) | S | 0.5 day | 🔲 | — |
-| [US-DEPLOY-002](stories/US-DEPLOY-002/STORY.md) | Preview environment per PR (Railway PR env + Neon branch) | L | 1.5 days | 🔲 | US-LAUNCH-010 (`APP_ENV`) |
 | [US-DEPLOY-003](stories/US-DEPLOY-003/STORY.md) | Feature-flag mechanism (env-var first, table later) | S | 0.5 day | 🔲 | US-LAUNCH-004 (first consumer) |
+| [US-DEPLOY-002](stories/US-DEPLOY-002/STORY.md) | Preview environment per PR (Railway PR env + Neon branch) | L | 1.5 days | 🔲 | US-LAUNCH-010 (`APP_ENV`) |
+| [US-DEPLOY-006](stories/US-DEPLOY-006/STORY.md) | Approval governance — RACI, required checks, runbook (solo → team) | S | 0.5 day | 🔲 | US-DEPLOY-001/002/003 |
 | [US-DEPLOY-004](stories/US-DEPLOY-004/STORY.md) | Production migration workflow (`migrate deploy` + expand/contract) | M | 1 day | 🔲 | prod has real data |
-| [US-DEPLOY-005](stories/US-DEPLOY-005/STORY.md) | Progressive delivery + auto-rollback (canary, health-gated) | M | 1 day | 🔲 | EPIC-INFRA-01 Task 3 |
+| [US-DEPLOY-005](stories/US-DEPLOY-005/STORY.md) | Progressive delivery + auto-rollback (canary, health-gated) | M | 1 day | 🔲 | EPIC-INFRA-01 Task 3, US-DEPLOY-004 (safe rollout needs backward-compatible migrations first) |
 
-**Total engineering effort: ~4.5 focused days** (see timeline below for calendar).
+**Total engineering effort: ~5 focused days** (see timeline below for calendar).
 
 ---
 
@@ -75,13 +76,14 @@ it to a % of users → a bad release auto-rolls-back on health check.
 | Story | Code | Infra/CI iteration | Total | Blast radius if it slips |
 |---|---|---|---|---|
 | US-DEPLOY-001 | ~2 h | ~2 h (tune CI <10 min) | **0.5 day** | none — CI only |
-| US-DEPLOY-002 | ~3 h | ~6–8 h (PR envs + Neon branch automation + teardown) | **1.5 days** | none — ephemeral |
 | US-DEPLOY-003 | ~2 h | ~2 h (wire `BETA_MODE` through it) | **0.5 day** | none — additive |
+| US-DEPLOY-002 | ~3 h | ~6–8 h (PR envs + Neon branch automation + teardown) | **1.5 days** | none — ephemeral |
+| US-DEPLOY-006 | ~3 h (docs + branch protection config) | ~1 h | **0.5 day** | none — governance/docs only, no app code |
 | US-DEPLOY-004 | ~2 h | ~4 h (baseline migration + staging dry-run) | **1 day** | ⚠️ touches prod DB — do carefully, post-data |
 | US-DEPLOY-005 | ~3 h | ~4 h (canary + Sentry SLO wiring) | **1 day** | prod rollout — validate on staging first |
 
 - **Calendar:** ~1.5–2 weeks elapsed if done alongside beta/marketing work (not full-time).
-- **Recommended order:** 001 → 003 → 002 → 004 → 005. (Cheap wins first; 004/005 wait until prod has real data + traffic.)
+- **Recommended order:** 001 → 003 → 002 → 006 → 004 → 005. 006 slots in once preview + flags exist (its checklists reference both). 004 stays before 005 deliberately — progressive delivery runs old + new app versions concurrently against prod, which is only safe once migrations are backward-compatible (expand/contract); running canary before that would be riskier, not safer.
 - **Marketing runs unblocked the entire time** — beta is live from Phase 0 Task 3.
 
 ---
@@ -104,6 +106,7 @@ it to a % of users → a bad release auto-rolls-back on health check.
 - [ ] At least one feature shipped dark and released via a flag flip
 - [ ] `db:deploy` uses `prisma migrate deploy` with a committed baseline migration
 - [ ] A bad canary auto-rolled-back at least once in a drill
+- [ ] Approval governance documented (RACI, Definition of Merge vs. Release) and branch protection enforces the CI gate on GitHub itself, not just by convention
 - [ ] AGILE_INDEX.md epic row updated to ✅ Done
 
 ---

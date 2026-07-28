@@ -184,4 +184,31 @@ Already in the repo:
 
 ---
 
+## 11. Approval model & roles (solo → team)
+
+> Full story: [US-DEPLOY-006](agile/epics/phase-1-ai-core/EPIC-DEPLOY-01/stories/US-DEPLOY-006/STORY.md).
+
+Two different questions get asked about every change, and conflating them is what makes teams slow: **"is the code
+correct"** (an engineering question) vs. **"are users allowed to see it"** (a business question). Keeping them
+separate is what lets deploy ≠ release (§4) actually work.
+
+| Approval surface | Question it answers | Enforced by | Who, today (solo) | Who, later (team) |
+|---|---|---|---|---|
+| **Automated gate** | Is the code correct? | CI required status check (branch protection) | You | Engineering |
+| **Preview verification** | Does it behave correctly? | A checklist against the preview URL (§6) | You | QA / Design |
+| **Release control** | Are users allowed to see it? | A feature-flag flip (§4) | You | Product / Business |
+
+**Definition of Merge:** green CI + `smoke:boot` passed + any DB-migration approach or flag plan noted in the PR
+description (see the PR template's Merge checklist).
+
+**Definition of Release:** the relevant flag is flipped for the intended audience — separate from, and often much
+later than, merge.
+
+Business/release approval should never require reading code — it is a preview link plus a flag toggle, by
+construction. The checklists you complete solo today (PR-template Merge checklist, Preview-verified checklist,
+Release checklist) are the exact same artifacts a second reviewer or a Product owner steps into once the team
+grows — nothing gets redesigned when that happens, only re-assigned.
+
+---
+
 *Created: 2026-06-03 · Owner: Dinesh · Companion to `CLAUDE.md`, `docs/agile/GIT_STRATEGY.md`, `railway.json`.*

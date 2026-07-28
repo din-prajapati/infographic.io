@@ -31,10 +31,12 @@ app), and **Neon supports instant copy-on-write branches**. Combined: a fresh ap
 - [ ] **AC4:** The preview URL is **auto-posted as a PR comment** when ready.
 - [ ] **AC5:** No preview ever uses LIVE keys or the production Neon branch; teardown leaves no orphaned Neon branches (verified by a listing check).
 - [ ] **AC6:** `docs/DEPLOYMENT_STRATEGY.md` §6 updated with the concrete preview mechanics.
+- [ ] **AC7:** A short **Preview verification checklist** (core flows work · no obvious regressions · `/api/health` returns ok · new UI behavior looks correct) is completed against the preview URL before merging. (Governance follow-up: [US-DEPLOY-006](../US-DEPLOY-006/STORY.md) turns this into a PR-template item.)
 
 ## Out of Scope
 - Prod-data *anonymization* pipeline (use a scrubbed/seed branch initially; full anonymization is a follow-up).
 - Preview for forked-repo PRs (secret exposure) — internal branches only for now.
+- Enforcing AC7 as a required GitHub check — that's [US-DEPLOY-006](../US-DEPLOY-006/STORY.md).
 
 ## Primary files
 - `.github/workflows/*` (preview create/teardown jobs; Neon branch CLI)

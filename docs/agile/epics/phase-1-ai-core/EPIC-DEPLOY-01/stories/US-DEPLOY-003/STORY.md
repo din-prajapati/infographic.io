@@ -30,10 +30,12 @@ off) is the natural first consumer.
 - [ ] **AC3:** `BETA_MODE` (US-LAUNCH-004) is wired through the helper as the reference implementation — not a bespoke check.
 - [ ] **AC4:** Unit tests: flag on/off/absent → correct boolean; unknown flag defaults off.
 - [ ] **AC5:** `docs/DEPLOYMENT_STRATEGY.md` §4 updated with the naming convention + the `flags`-table graduation path.
+- [ ] **AC6:** A **Release checklist** (feature enabled only in the intended environment(s)? preview verification passed? rollback plan = disable the flag?) is completed before flipping a flag in production. (Governance follow-up: [US-DEPLOY-006](../US-DEPLOY-006/STORY.md).)
 
 ## Out of Scope
 - Per-user / percentage targeting, a `flags` DB table, or a hosted service (LaunchDarkly/Unleash) — documented as the next step, not built here.
 - Migrating existing `DEMO_MODE` to the helper (leave as-is unless trivial).
+- Formalizing "who" approves the release checklist beyond you — that's [US-DEPLOY-006](../US-DEPLOY-006/STORY.md).
 
 ## Primary files
 - `api/src/config/feature-flags.ts` (new) · `client/src/lib/featureFlags.ts` (new)
