@@ -1761,3 +1761,119 @@
 <!-- ai-sdlc:session-log -->
 **2026-07-27 19:52** · branch: `main`
   - Last commit: 5c52dc0 test(launch): close TC-05 gap — FREE-tier exclusion test for US-LAUNCH-013
+
+<!-- ai-sdlc:session-log -->
+**2026-07-27 20:08** · branch: `main`
+  - Last commit: 8e89038 chore(sentry): finalize temp test-page deletion; docs: record Razorpay hold
+
+<!-- ai-sdlc:session-log -->
+**2026-07-27 22:18** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-27 23:19** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-27 23:25** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-27 23:58** · branch: `main`
+  - Last commit: f387967 docs(ai): correct stale file paths for US-AI-010/011 ahead of Track B
+
+<!-- ai-sdlc:session-log -->
+**2026-07-28 00:14** · branch: `main`
+  - Last commit: f387967 docs(ai): correct stale file paths for US-AI-010/011 ahead of Track B
+
+<!-- ai-sdlc:session-log -->
+**2026-07-28 12:02** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-28 12:05** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-28 12:15** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-28 12:35** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-28 12:44** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-28 12:50** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-28 12:55** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-28 13:41** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-28 13:47** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-28 13:53** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-28 14:04** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-28 14:28** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-28 16:29** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-28 16:37** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-28 17:05** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-28 17:08** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-28 18:33** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-28 18:49** · branch: `main`
+  - Last commit: eb69927 feat(ops): surface deployed version + commit SHA on health check and site
+
+<!-- ai-sdlc:session-log -->
+**2026-07-28 19:00** · branch: `main`
+  - Last commit: eb69927 feat(ops): surface deployed version + commit SHA on health check and site
+
+<!-- ai-sdlc:session-log -->
+**2026-07-28 19:07** · branch: `main`
+  - Last commit: eb69927 feat(ops): surface deployed version + commit SHA on health check and site
+
+<!-- ai-sdlc:session-log -->
+**2026-07-28 20:01** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-28 20:38** · branch: `main`
+  - Last commit: 5cf25cc docs(deploy): add US-DEPLOY-006 approval governance story to EPIC-DEPLOY-01
+
+<!-- ai-sdlc:session-log -->
+**2026-07-28 20:42** · branch: `main`
+  - Last commit: 5cf25cc docs(deploy): add US-DEPLOY-006 approval governance story to EPIC-DEPLOY-01
