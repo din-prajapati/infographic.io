@@ -1,4 +1,3 @@
-import { Sparkles } from "lucide-react";
 import { useLocation, Link } from "wouter";
 import { UserProfileDropdown } from "../UserProfileDropdown";
 
@@ -23,14 +22,9 @@ export function AppHeader({ activeTab, onTabChange }: AppHeaderProps) {
     <div className="h-16 border-b border-border glass relative z-50">
       <div className="flex items-center justify-between h-full px-6">
         {/* Logo & Brand */}
-        <Link href="/templates" className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center">
-            <Sparkles className="w-4 h-4 text-primary" />
-          </div>
-          <div className="text-lg">
-            <span className="font-semibold text-foreground">Infograph</span>
-            <span className="text-muted-foreground">.ai</span>
-          </div>
+        <Link href="/templates" className="flex items-center gap-2">
+          <img src="/logo-icon-option6.png" alt="" className="h-8 w-8" />
+          <span className="text-lg font-semibold text-foreground">Buildographic</span>
         </Link>
 
         {/* Navigation Tabs + Profile: aligned to the right, nav immediately before profile */}

@@ -9,6 +9,8 @@ import { randomUUID } from 'crypto';
 import { PaymentProvider, SubscriptionStatus, PaymentStatus, PlanTier } from '@prisma/client';
 import { SubscriptionStorageService } from './subscription-storage.service';
 import { EmailService } from '../../email/email.service';
+import { paymentReceiptTemplate } from '../../email/templates/payment-receipt.template';
+import { paymentFailedTemplate } from '../../email/templates/payment-failed.template';
 import { prisma } from '../../../database/prisma.client';
 import { PLAN_CONFIG } from '@shared/schema';
 
@@ -875,21 +877,16 @@ export class PaymentsService {
         month: 'long',
         year: 'numeric',
       });
-      await this.emailService?.send({
-        to: subscription.user.email,
-        subject: `Payment receipt — ${subscription.planTier} plan`,
-        html: `<p>Dear ${subscription.user.name ?? subscription.user.email},</p>
-<p>Thank you for subscribing to Buildographic. Here are your payment details:</p>
-<ul>
-  <li><strong>Plan:</strong> ${subscription.planTier}</li>
-  <li><strong>Billing period:</strong> ${subscription.billingPeriod ?? 'MONTHLY'}</li>
-  <li><strong>Amount:</strong> &#x20B9;${amountInRupees.toLocaleString('en-IN')}</li>
-  <li><strong>Date:</strong> ${paymentDate}</li>
-  <li><strong>Payment ID:</strong> ${paymentData.id}</li>
-  <li><strong>Organisation:</strong> ${orgName}</li>
-</ul>
-<p>If you have any questions, please contact our support team.</p>`,
+      const { subject, html } = paymentReceiptTemplate({
+        userName: subscription.user.name ?? subscription.user.email,
+        planTier: subscription.planTier,
+        billingPeriod: subscription.billingPeriod ?? 'MONTHLY',
+        amountInRupees,
+        paymentDate,
+        paymentId: paymentData.id,
+        orgName,
       });
+      await this.emailService?.send({ to: subscription.user.email, subject, html });
     } catch (receiptErr: unknown) {
       this.logger.warn(
         `Failed to send receipt email for payment ${paymentData.id}: ` +
@@ -967,19 +964,13 @@ export class PaymentsService {
     // break webhook processing (AC3) — subscription remains PAST_DUE regardless.
     try {
       const amountInRupees = Math.round(paymentData.amount / 100);
-      await this.emailService?.send({
-        to: subscription.user.email,
-        subject: `Payment failed — ${subscription.planTier} plan renewal`,
-        html: `<p>Dear ${subscription.user.name ?? subscription.user.email},</p>
-<p>We were unable to process the renewal charge for your <strong>${subscription.planTier}</strong> plan subscription.</p>
-<ul>
-  <li><strong>Amount:</strong> &#x20B9;${amountInRupees.toLocaleString('en-IN')}</li>
-  <li><strong>Payment ID:</strong> ${paymentData.id}</li>
-</ul>
-<p>To keep your access, please update your payment method on your
-<a href="/account">account page</a>.</p>
-<p>If you need help, contact our support team.</p>`,
+      const { subject, html } = paymentFailedTemplate({
+        userName: subscription.user.name ?? subscription.user.email,
+        planTier: subscription.planTier,
+        amountInRupees,
+        paymentId: paymentData.id,
       });
+      await this.emailService?.send({ to: subscription.user.email, subject, html });
     } catch (failedEmailErr: unknown) {
       this.logger.warn(
         `Failed to send payment-failed email for payment ${paymentData.id}: ` +

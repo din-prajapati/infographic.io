@@ -6,6 +6,8 @@ import { prisma } from '../../../database/prisma.client';
 import { RegisterDto, LoginDto, ForgotPasswordDto, ResetPasswordDto } from '../dto/auth.dto';
 import { PLAN_USER_LIMITS } from '../../users/users.service';
 import { EmailService } from '../../email/email.service';
+import { googleSigninNoticeTemplate } from '../../email/templates/google-signin-notice.template';
+import { passwordResetTemplate } from '../../email/templates/password-reset.template';
 
 /** Identical response for every forgot-password request — prevents user enumeration (AC1). */
 const GENERIC_FORGOT_MESSAGE =
@@ -252,13 +254,8 @@ export class AuthService {
 
       if (isOAuthOnly) {
         // AC5 — no local password to reset
-        await this.emailService.send({
-          to: user.email,
-          subject: 'Signing in to Buildographic',
-          text:
-            `You requested a password reset, but this account signs in with Google — ` +
-            `there is no password to reset. Just use "Continue with Google" on the login page.`,
-        });
+        const { subject, text } = googleSigninNoticeTemplate();
+        await this.emailService.send({ to: user.email, subject, text });
       } else {
         // AC1 — throttle: drop any prior unused tokens for this user
         await prisma.passwordResetToken.deleteMany({
@@ -276,17 +273,8 @@ export class AuthService {
 
         // AC2 — the raw token travels only in the email link, never persisted
         const link = `${this.frontendUrl()}/auth/reset?token=${rawToken}`;
-        await this.emailService.send({
-          to: user.email,
-          subject: 'Reset your Buildographic password',
-          text:
-            `Reset your password using this link (valid for 1 hour):\n${link}\n\n` +
-            `If you didn't request this, you can safely ignore this email.`,
-          html:
-            `<p>Reset your password using the link below (valid for 1 hour):</p>` +
-            `<p><a href="${link}">Reset my password</a></p>` +
-            `<p>If you didn't request this, you can safely ignore this email.</p>`,
-        });
+        const { subject, text, html } = passwordResetTemplate({ link });
+        await this.emailService.send({ to: user.email, subject, text, html });
       }
     }
 

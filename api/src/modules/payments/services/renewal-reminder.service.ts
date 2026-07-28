@@ -3,6 +3,7 @@ import { Cron } from '@nestjs/schedule';
 import { SubscriptionStatus, PlanTier } from '@prisma/client';
 import { prisma } from '../../../database/prisma.client';
 import { EmailService } from '../../email/email.service';
+import { renewalReminderTemplate } from '../../email/templates/renewal-reminder.template';
 
 /**
  * Sends renewal reminder emails ~3 days before subscription auto-charges.
@@ -55,16 +56,13 @@ export class RenewalReminderService {
       // Send reminder email (AC2)
       let result: { sent: boolean; dev?: boolean } | undefined;
       try {
-        result = await this.emailService.send({
-          to: sub.user.email,
-          subject: `Renewal reminder — ${sub.planTier} plan`,
-          html: `<p>Dear ${sub.user.name ?? sub.user.email},</p>
-<p>Your <strong>${sub.planTier}</strong> plan subscription will renew automatically on
-<strong>${renewalDate}</strong>.</p>
-<p>The renewal amount will be <strong>&#x20B9;${amountInRupees.toLocaleString('en-IN')}</strong>.</p>
-<p>To cancel or update your payment method before the renewal date, visit your
-<a href="/account">account page</a>.</p>`,
+        const { subject, html } = renewalReminderTemplate({
+          userName: sub.user.name ?? sub.user.email,
+          planTier: sub.planTier,
+          renewalDate,
+          amountInRupees,
         });
+        result = await this.emailService.send({ to: sub.user.email, subject, html });
       } catch (emailErr: unknown) {
         // AC4: EmailService threw — log, skip renewalReminderSentAt update, continue
         this.logger.warn(
