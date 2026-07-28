@@ -24,6 +24,7 @@ import RefundPolicyPage from "./pages/legal/RefundPolicyPage";
 import CookiesPage from "./pages/legal/CookiesPage";
 import { ErrorBoundary } from "./components/ui/error-boundary";
 import { ThemeProvider } from "./lib/theme-provider";
+import { VersionBadge } from "./components/VersionBadge";
 
 function ProtectedRoute({ component: Component }: { component: () => JSX.Element }) {
   const { isAuthenticated, isLoading } = useAuth();
@@ -149,6 +150,7 @@ export default function App() {
               <div className="min-h-screen bg-background flex flex-col">
                 <Router />
               </div>
+              <VersionBadge />
               <Toaster />
             </TooltipProvider>
           </AuthProvider>
