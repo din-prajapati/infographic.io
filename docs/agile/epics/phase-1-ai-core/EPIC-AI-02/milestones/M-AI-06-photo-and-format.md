@@ -40,6 +40,7 @@ Agents can upload their own listing photos and choose the output format (Instagr
 - Photo upload requires a backend endpoint — check if multer is already configured in NestJS
 - Photos are stored temporarily (local disk or in-memory) in P1; R2 persistent storage is EPIC-AI-03
 - Format maps to aspect ratios internally: Instagram=1:1, Facebook=1.91:1, Story=9:16, Print=4:3
+- **Implementation order (2026-07-29):** US-AI-036 → US-AI-037 (can run parallel to 036, file-disjoint) → US-AI-038 (needs 037 merged first). US-AI-010 is independent, runs in the sibling "Track A" alongside US-AI-012 (M-AI-07) — see [EPIC.md § Implementation Sequencing](../EPIC.md#implementation-sequencing-2026-07-29) for the full two-track plan and a real file collision (`AIChatBox.tsx`) between US-AI-036 (this milestone) and US-AI-012 (M-AI-07).
 
 ---
 

@@ -36,6 +36,8 @@ Agents choose use case ("Social" or "Print Quality") without seeing model names.
 
 - Quality labels must be user-friendly: "Quick Generate" (Flash) / "Campaign Quality" (Pro) are internal — show "Social" / "Print Quality" to users
 - Property type → quality routing uses the `propertyTier` field (luxury → pro model, residential → flash model)
+- **Stale story, confirmed 2026-07-29:** US-AI-012's file list still references `image-generation.service.ts`, which no longer exists (real files: `ai-orchestrator.service.ts` / `ideogram.service.ts`), and its AC text assumes "Flash"/"Pro" model names that don't match the real catalog in `ai-models.config.ts`. Needs a `harden` pass before implementation.
+- **Implementation order (2026-07-29):** US-AI-012 is Track A alongside US-AI-010 (independent of each other, run serially). **Do not start US-AI-012 implementation until US-AI-036 (M-AI-06) has merged** — both touch `AIChatBox.tsx` for unrelated reasons; landing the smaller US-AI-036 first avoids a manual merge. See [EPIC.md § Implementation Sequencing](../EPIC.md#implementation-sequencing-2026-07-29).
 
 ---
 

@@ -59,6 +59,30 @@
 
 ---
 
+## Implementation Sequencing (2026-07-29)
+
+Two parallel tracks, split by file surface rather than by milestone, to let two sessions/agents work at once without stepping on each other.
+
+**Track A — Generation pipeline** (serial: `US-AI-010 → US-AI-012`)
+| Step | Story | Action | Note |
+|---|---|---|---|
+| A1 | US-AI-010 | `implement-story` (already hardened/locked 2026-07-27) | No dependency; revenue-critical per priority note above |
+| A2 | US-AI-012 | `harden` first — stale file reference (`image-generation.service.ts` no longer exists) and stale model names ("Flash"/"Pro" don't match `ai-models.config.ts`) confirmed 2026-07-29, never corrected | Must run before implementation |
+| A3 | US-AI-012 | `implement-story` — **wait until Track B's US-AI-036 merges** | See collision note below |
+
+**Track B — Canvas/template workflow** (`US-AI-036 ∥ US-AI-037 → US-AI-038`)
+| Step | Story | Action | Note |
+|---|---|---|---|
+| B1 | US-AI-036 | `harden` → `implement-story` → `test-story` | Size M (~5h) — smallest, file-disjoint from 037, do this **before** Track A starts A3 |
+| B2 | US-AI-037 | `harden` → `implement-story` → `test-story` | Size L (~12-14h, 3 sessions) — longest pole, start as early as possible so it doesn't gate US-AI-038 |
+| B3 | US-AI-038 | `harden` (safe anytime) → `implement-story` only after US-AI-037 merges | Hard dependency — Library step has nothing real to browse until 037 ships |
+
+**Cross-track collision:** `client/src/components/ai-chat/AIChatBox.tsx` is touched by both **US-AI-012** (adds quality selector) and **US-AI-036** (sets default orientation from active canvas) — different concerns, same file. Resolution: land B1 (US-AI-036) before A3 (US-AI-012 implementation); costs Track A almost no wait time since 036 is the smallest story in either track.
+
+**Effort:** Track A ≈ 8-10h · Track B ≈ 26-29.5h (037 is the long pole).
+
+---
+
 ## Out of Scope (Epic Level)
 
 - Campaign Mode backend / 4-piece generation (EPIC-AI-04 — CAP-09 backend)
