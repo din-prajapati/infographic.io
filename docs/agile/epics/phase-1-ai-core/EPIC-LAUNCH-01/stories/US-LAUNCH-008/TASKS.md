@@ -2,7 +2,7 @@
 
 > **Story:** [STORY.md](./STORY.md)
 > **Branch:** `test/launch-us-launch-008-metering-guard`
-> **PR:** #_____ (fill when opened)
+> **PR:** none — merged directly to `main` at `aaf3aef`
 > **Linear:** LIN-XXX
 > **Type:** test + docs
 
@@ -65,8 +65,8 @@ cd api && npx vitest run tests/ai/metering-policy.spec.ts --reporter=verbose
 - [x] T2 — docs
 - [x] `npm run check` passes ✅
 - [x] `npm run test:unit` passes ✅
-- [ ] PR opened with story card as description ✅
-- [ ] STORY.md ACs updated ✅
+- [x] ~~PR opened with story card as description~~ _(no PR — merged directly to `main` at `aaf3aef`)_
+- [x] STORY.md ACs updated ✅
 
 ---
 

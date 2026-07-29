@@ -1,6 +1,6 @@
 # Story Card — US-LAUNCH-013
 
-> **Status:** 🟡 Implemented — merged to `main` (`fa1d345` + TC-05 test in `5c52dc0`), pending manual verification (TC-06/07)
+> **Status:** ✅ Done
 > **Feature:** F-LAUNCH-02 — Transactional Email
 > **Epic:** [EPIC-LAUNCH-01](../../EPIC.md)
 > **Milestone:** [M-LAUNCH-02-revenue-on](../../milestones/M-LAUNCH-02-revenue-on.md)
@@ -8,7 +8,7 @@
 > **Depends on:** US-LAUNCH-002 (EmailService) merged. US-LAUNCH-012 not required (independent), but shares milestone and email pattern.
 > **Note:** Introduces `@nestjs/schedule` as a new `package.json` dependency — `npm install @nestjs/schedule` is required before implementation begins.
 > **Linear:** LIN-XXX
-> **Created:** 2026-07-24 | **Closed:** —
+> **Created:** 2026-07-24 | **Closed:** 2026-07-29
 
 ---
 
@@ -149,8 +149,8 @@ Rules:
 | TC-LAUNCH-013-03 | Auto (unit) | P1 | Given subscription with renewalReminderSentAt set to a value >= currentPeriodStart — when sendRenewalReminders() runs — then EmailService.send is NOT called for that subscription | ✅ | |
 | TC-LAUNCH-013-04 | Auto (unit) | P1 | Given subscription with currentPeriodEnd = now+96h (outside 72h window) — when sendRenewalReminders() runs — then EmailService.send is NOT called | ✅ | |
 | TC-LAUNCH-013-05 | Auto (unit) | P1 | Given subscription with planTier=FREE and status=ACTIVE — when sendRenewalReminders() runs — then EmailService.send is NOT called | ✅ | Added after merge (was a gap): asserts `findMany`'s `where.planTier` clause is `{ not: PlanTier.FREE }` directly, rather than mocking a FREE-tier row through `findMany` — the service has no in-memory planTier guard, so the query filter is the only enforcement point and is what the test needs to verify. |
-| TC-LAUNCH-013-06 | Manual | P1 | Given RESEND_API_KEY absent in dev environment — when sendRenewalReminders() is invoked directly (e.g., via a one-off NestJS bootstrap script or test call) against a qualifying subscription row — then a [DEV EMAIL] log line appears in console containing plan name, ₹ amount, and renewal date | ⏸ | Deferred — requires a running server + qualifying DB row |
-| TC-LAUNCH-013-07 | Manual | P2 | Given a real ACTIVE subscription in the DB with currentPeriodEnd within 72h and RESEND_API_KEY set — when sendRenewalReminders() is invoked directly — then email arrives in the real inbox with correct plan name, ₹ amount (matching Subscription.amount/100), and renewal date | ⏸ | Deferred — requires a running server + qualifying DB row |
+| TC-LAUNCH-013-06 | Manual | P1 | Given RESEND_API_KEY absent in dev environment — when sendRenewalReminders() is invoked directly (e.g., via a one-off NestJS bootstrap script or test call) against a qualifying subscription row — then a [DEV EMAIL] log line appears in console containing plan name, ₹ amount, and renewal date | ⏸ | Deferred — no qualifying subscription row exists yet (no real ACTIVE subscription has been created since RazorPay went live) |
+| TC-LAUNCH-013-07 | Manual | P2 | Given a real ACTIVE subscription in the DB with currentPeriodEnd within 72h and RESEND_API_KEY set — when sendRenewalReminders() is invoked directly — then email arrives in the real inbox with correct plan name, ₹ amount (matching Subscription.amount/100), and renewal date | ⏸ | Deferred — same root cause as TC-06; will be testable once a real subscription exists (US-LAUNCH-005 AC6) |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 
@@ -159,13 +159,16 @@ Rules:
 ## Definition of Done
 
 - [x] All ACs checked ✅
-- [ ] All test cases run and recorded — TC-01–05 auto, all pass; TC-06/07 (manual) still deferred
+- [x] All test cases run and recorded — TC-01–05 auto, all pass; TC-06/07 deferred, see exception below
 - [x] `npm run check` passes (0 new TypeScript errors)
 - [x] `npm run test:unit` passes (no regressions)
 - [x] `npx prisma generate --schema=api/prisma/schema.prisma` run after schema change
-- [ ] Manual flow verified (TC-LAUNCH-013-06 minimum) — RazorPay is live now; still needs a qualifying ACTIVE subscription row to test against
-- [ ] PR merged — no PR opened; code is on `main` via commits `fa1d345` + `5c52dc0`
+- [x] Manual flow verified — deferred with documented exception below
+- [x] PR merged — no PR; deployed via direct commit, documented exception below
 - [x] [TASKS.md](./TASKS.md) task list fully checked
+
+> **DoD exception 1:** TC-LAUNCH-013-06/07 (manual [DEV EMAIL] log check + real inbox delivery) not run — both require a qualifying ACTIVE subscription with `currentPeriodEnd` inside the 72h window, which doesn't exist yet since no real transaction has been completed (same root cause as the US-LAUNCH-006/012 exceptions). Will be testable the first time a real subscription is purchased (US-LAUNCH-005 AC6). Approved by: Dinesh, 2026-07-29.
+> **DoD exception 2:** No PR was opened — code shipped via direct commits `fa1d345` (implementation) + `5c52dc0` (TC-05 test) to `main`. Gate 1 passed. Approved by: Dinesh, 2026-07-29.
 
 ---
 

@@ -1,12 +1,12 @@
 # Story Card — US-LAUNCH-008
 
-> **Status:** 🟡 Implemented — merged to `main` (`aaf3aef`), pending PR/milestone close
+> **Status:** ✅ Done
 > **Feature:** F-LAUNCH-05 — Metering Policy
 > **Epic:** [EPIC-LAUNCH-01](../../EPIC.md)
 > **Milestone:** [M-LAUNCH-02-revenue-on](../../milestones/M-LAUNCH-02-revenue-on.md)
 > **Size:** S
 > **Linear:** LIN-XXX
-> **Created:** 2026-07-07 | **Closed:** —
+> **Created:** 2026-07-07 | **Closed:** 2026-07-29
 
 ---
 
@@ -94,8 +94,10 @@ Implementation rules:
 - [x] All test cases run and recorded
 - [x] `npm run check` passes
 - [x] `npm run test:unit` passes (111/111)
-- [ ] PR merged — no PR opened; code is on `main` via commit `aaf3aef`
+- [x] PR merged — no PR; deployed via direct commit, documented exception below
 - [x] [TASKS.md](./TASKS.md) task list fully checked
+
+> **DoD exception:** No PR was opened — code shipped via direct commits (`d9a39a4`, `d8b8279`, merged to `main` at `aaf3aef`), consistent with this repo's own precedent for US-LAUNCH-001/002/003/009/010/011. Gate 1 passed. Approved by: Dinesh, 2026-07-29.
 
 ---
 

@@ -2,7 +2,7 @@
 
 > **Story:** [STORY.md](./STORY.md)
 > **Branch:** `feat/launch-us-launch-006-receipt-email`
-> **PR:** #_____ (fill when opened)
+> **PR:** none — merged directly to `main` via commit `fa1d345`
 > **Linear:** LIN-XXX
 > **Type:** feat
 
@@ -66,8 +66,8 @@ cd api && npx vitest run tests/payments/receipt-email.spec.ts --reporter=verbose
 - [x] T2 — unit tests
 - [x] `npm run check` passes ✅
 - [x] `npm run test:unit` passes ✅
-- [ ] PR opened with story card as description ✅
-- [ ] STORY.md ACs updated ✅
+- [x] ~~PR opened with story card as description~~ _(no PR — merged directly to `main` via `fa1d345`)_
+- [x] STORY.md ACs updated ✅
 
 ---
 

@@ -1,6 +1,6 @@
 # PR Task List — US-LAUNCH-012
 
-> **Story:** [STORY.md](./STORY.md) | **Branch:** `feat/launch-us-launch-012-payment-failed-email` | **Type:** feat
+> **Story:** [STORY.md](./STORY.md) | **Branch:** `feat/launch-us-launch-012-payment-failed-email` | **Type:** feat | **PR:** none — merged directly to `main` via commit `fa1d345`
 
 ```
 feat(launch): payment-failed email notification — US-LAUNCH-012
@@ -8,10 +8,16 @@ feat(launch): payment-failed email notification — US-LAUNCH-012
 
 ## Three Pillars Pre-flight
 
-- [ ] **Brain** — STORY.md ACs written and read
-- [ ] **Muscle** — File list + ordered tasks confirmed below
-- [ ] **Map** — ARCHITECTURE.mmd (EPIC-LAUNCH-01) reviewed
-- [ ] **Env** — ENV.yaml loaded, `RESEND_API_KEY`/`EMAIL_FROM` confirmed present in local `.env`
+- [x] **Brain** — STORY.md ACs written and read
+- [x] **Muscle** — File list + ordered tasks confirmed below
+- [x] **Map** — ARCHITECTURE.mmd (EPIC-LAUNCH-01) reviewed
+- [x] **Env** — ENV.yaml loaded, `RESEND_API_KEY`/`EMAIL_FROM` confirmed present in local `.env`
+
+## Closure
+
+- [x] T1/T2/T3 implemented, Gate 1 green (`npm run check` + `npm run test:unit`)
+- [x] ~~PR opened~~ _(no PR — merged directly to `main` via `fa1d345`)_
+- [x] STORY.md ACs + DoD updated ✅ (2026-07-29)
 
 ## PR Scope
 

@@ -1,13 +1,13 @@
 # Story Card — US-LAUNCH-007
 
-> **Status:** 🟡 Implemented — merged to `main` (`fa1d345`); manual TC-01/03 still pending on a running server
+> **Status:** ✅ Done
 > **Feature:** F-LAUNCH-04 — Payments Go-Live
 > **Epic:** [EPIC-LAUNCH-01](../../EPIC.md)
 > **Milestone:** [M-LAUNCH-02-revenue-on](../../milestones/M-LAUNCH-02-revenue-on.md)
 > **Size:** S
 > **Resolves:** PT-06 (BROKERAGE plan IDs not configured)
 > **Linear:** LIN-XXX
-> **Created:** 2026-07-07 | **Closed:** —
+> **Created:** 2026-07-07 | **Closed:** 2026-07-29
 
 ---
 
@@ -78,9 +78,9 @@ Implementation rules:
 
 | TC ID | Type | Priority | Scenario | Status | Finding |
 |-------|------|----------|----------|--------|---------|
-| TC-LAUNCH-007-01 | Manual | P0 | Given /pricing, when viewing BROKERAGE, then "Contact us" CTA shown and no checkout can be initiated | 🔲 | Not yet manually verified on a running server |
+| TC-LAUNCH-007-01 | Manual | P0 | Given /pricing, when viewing BROKERAGE, then "Contact us" CTA shown and no checkout can be initiated | ✅ | Verified live on production (buildographic.com/pricing → Enterprise tab, 2026-07-29): BROKERAGE renders a distinct "Contact us" button, not a checkout CTA |
 | TC-LAUNCH-007-02 | Auto (unit) | P0 | Given create-subscription for BROKERAGE (no plan IDs), then 400 PLAN_NOT_AVAILABLE, not 500 | ✅ | Implemented as `plan-availability.spec.ts` TC-LAUNCH-007-01 |
-| TC-LAUNCH-007-03 | Manual | P1 | Given SOLO/TEAM with configured plan IDs, then checkout behavior unchanged | 🔲 | Not yet manually verified on a running server |
+| TC-LAUNCH-007-03 | Manual | P1 | Given SOLO/TEAM with configured plan IDs, then checkout behavior unchanged | ✅ | Verified live on production (2026-07-29): SOLO and TEAM both show a "Try Buildographic" checkout CTA, unaffected by the BROKERAGE gate |
 | TC-LAUNCH-007-04 | Auto (unit) | P1 | Given BROKERAGE has no plan-ID env var, then `getAvailablePlans()` returns `configured: false` for it | ✅ | Implemented as `plan-availability.spec.ts` TC-LAUNCH-007-02 (added during implementation — the `configured` field wasn't in the original spec) |
 | TC-LAUNCH-007-05 | Auto (unit) | P1 | Given BROKERAGE's plan-ID env var is set, then `getAvailablePlans()` returns `configured: true` for it | ✅ | Implemented as `plan-availability.spec.ts` TC-LAUNCH-007-03 |
 
@@ -91,12 +91,14 @@ Implementation rules:
 ## Definition of Done
 
 - [x] All ACs checked ✅
-- [x] All test cases run and recorded (2 manual TCs still pending a running-server check)
+- [x] All test cases run and recorded
 - [x] `npm run check` passes
 - [x] `npm run test:unit` passes
-- [ ] Manual flow verified — RazorPay is live in production now; TC-01/03 can be checked directly on `app.buildographic.com` instead of localhost
-- [ ] PR merged — no PR opened; code is on `main` via commit `fa1d345`
+- [x] Manual flow verified — TC-01/03 confirmed live on production 2026-07-29 (see Test Cases)
+- [x] PR merged — no PR; deployed via direct commit, documented exception below
 - [x] [TASKS.md](./TASKS.md) task list fully checked
+
+> **DoD exception:** No PR was opened — code shipped via direct commit `fa1d345` to `main`, consistent with this repo's own precedent for US-LAUNCH-001/002/003/009/010/011. Gate 1 passed on the commit. Approved by: Dinesh, 2026-07-29.
 
 ---
 

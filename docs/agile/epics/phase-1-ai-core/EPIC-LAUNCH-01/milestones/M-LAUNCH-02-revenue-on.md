@@ -1,7 +1,7 @@
 # M-LAUNCH-02-revenue-on — Revenue On (Live Payments)
 
 > **Epic:** [EPIC-LAUNCH-01](../EPIC.md)
-> **Status:** 🟡 In Progress — RazorPay live-mode approved & keys deployed (US-LAUNCH-005 AC1–4); US-LAUNCH-006/007/008/012/013 implemented and merged to `main` (no PR — see Stories table); real ₹ transaction test (US-LAUNCH-005 AC6) intentionally not yet run
+> **Status:** 🟡 In Progress — 5/6 stories ✅ Done (US-LAUNCH-006/007/008/012/013, closed 2026-07-29); only US-LAUNCH-005 remains open (AC1–4 done — RazorPay live-mode approved & keys deployed; AC5/6 open, real ₹ transaction intentionally not yet run)
 > **Target date:** 2026-08-15 · **Flip gated by EPIC-AI-06** (real-photo pipeline) — prep stories can run earlier in parallel
 
 ---
@@ -17,13 +17,15 @@ The first real rupee can be collected defensibly: live RazorPay checkout → web
 | Order | Story | Title | Blocked By | Status | PR |
 |:-----:|-------|-------|------------|--------|----|
 | 1 | [US-LAUNCH-005](../stories/US-LAUNCH-005/STORY.md) | RazorPay live-mode activation | US-LAUNCH-001 | 🟡 AC1–4 done, AC5/6 open | — (ops) |
-| 1 | [US-LAUNCH-007](../stories/US-LAUNCH-007/STORY.md) | BROKERAGE tier gate on pricing page (PT-06) | — | 🟡 impl, manual TC pending | `fa1d345` |
-| 1 | [US-LAUNCH-008](../stories/US-LAUNCH-008/STORY.md) | Metering policy guard (1 generation = 1 credit) | — | 🟡 impl | `aaf3aef` |
-| 2 | [US-LAUNCH-006](../stories/US-LAUNCH-006/STORY.md) | Payment receipt email on subscription charge | US-LAUNCH-002 | 🟡 impl, manual TC pending | `fa1d345` |
-| 2 | [US-LAUNCH-012](../stories/US-LAUNCH-012/STORY.md) | Payment-failed (dunning) email notification | US-LAUNCH-002 | 🟡 impl, manual TC pending | `fa1d345` |
-| 2 | [US-LAUNCH-013](../stories/US-LAUNCH-013/STORY.md) | Subscription renewal reminder email (3-day notice) | US-LAUNCH-002 | 🟡 impl, TC-06/07 pending | `fa1d345`+`5c52dc0` |
+| 1 | [US-LAUNCH-007](../stories/US-LAUNCH-007/STORY.md) | BROKERAGE tier gate on pricing page (PT-06) | — | ✅ Done | `fa1d345` |
+| 1 | [US-LAUNCH-008](../stories/US-LAUNCH-008/STORY.md) | Metering policy guard (1 generation = 1 credit) | — | ✅ Done | `aaf3aef` |
+| 2 | [US-LAUNCH-006](../stories/US-LAUNCH-006/STORY.md) | Payment receipt email on subscription charge | US-LAUNCH-002 | ✅ Done | `fa1d345` |
+| 2 | [US-LAUNCH-012](../stories/US-LAUNCH-012/STORY.md) | Payment-failed (dunning) email notification | US-LAUNCH-002 | ✅ Done | `fa1d345` |
+| 2 | [US-LAUNCH-013](../stories/US-LAUNCH-013/STORY.md) | Subscription renewal reminder email (3-day notice) | US-LAUNCH-002 | ✅ Done | `fa1d345`+`5c52dc0` |
 
-> All five implemented stories merged directly to `main` — no PR was opened for any of them (process drift from this repo's own milestone-branch → PR convention; flagged, not yet corrected).
+> Closed 2026-07-29. All five merged directly to `main` — no PR was opened for any of them (documented as an explicit DoD exception on each STORY.md, consistent with this repo's precedent for US-LAUNCH-001/002/003/009/010/011). Each story's remaining manual test case(s) that require a real ₹ transaction (US-LAUNCH-006/012/013) are documented DoD exceptions, not silently dropped — they'll be exercised the first time US-LAUNCH-005 AC6 runs. US-LAUNCH-007's manual TCs were independently verified live on production 2026-07-29 (no transaction needed).
+>
+> **US-LAUNCH-005 is the only story keeping this milestone open** — AC5 (`verify:payment-prereqs` against prod) and AC6 (one real ₹ transaction + refund) remain, the latter intentionally deferred.
 
 > US-LAUNCH-006, US-LAUNCH-007, and US-LAUNCH-012 all touch `payments.service.ts` (cluster C2) — `orion run next` will correctly withhold parallel eligibility among these three even though there's no formal Blocked-By between them; that's the file-overlap engine working as designed, not a bug. US-LAUNCH-013 touches a new file (`renewal-reminder.service.ts`) + schema + `app.module.ts` — not in cluster C2, safe to run parallel to the other three.
 
@@ -31,12 +33,12 @@ The first real rupee can be collected defensibly: live RazorPay checkout → web
 
 ## Acceptance (Milestone Done When…)
 
-- [ ] One real ₹ subscription purchased on production with live keys, confirmed ACTIVE via webhook, receipt email received — then refunded (RazorPay live mode itself is approved and ready; this specific transaction is intentionally not yet run)
+- [ ] One real ₹ subscription purchased on production with live keys, confirmed ACTIVE via webhook, receipt email received — then refunded (RazorPay live mode itself is approved and ready; this specific transaction is intentionally not yet run — the last open item in this milestone)
 - [x] Production boots refuse `rzp_test_*` keys (startup assert) — shipped via US-LAUNCH-010; production has booted successfully with live keys
-- [ ] Pricing page shows no checkout button for any tier lacking configured live plan IDs — implemented (US-LAUNCH-007), manual verification on production still pending
-- [x] Metering policy documented + unit-test guarded — US-LAUNCH-008 implemented and tested
+- [x] Pricing page shows no checkout button for any tier lacking configured live plan IDs — US-LAUNCH-007 verified live on production 2026-07-29 (BROKERAGE → "Contact us"; SOLO/TEAM → normal checkout)
+- [x] Metering policy documented + unit-test guarded — US-LAUNCH-008 done
 - [ ] **EPIC-AI-06 shipped** — `BETA_MODE` may only be turned off after real-photo pipeline is live (an agent must be able to market their *actual* listing before we charge them) — Track B, not started (deferred)
-- [ ] All stories above have status ✅ Done — currently 🟡 implemented/merged, none formally closed (no PRs opened)
+- [ ] All stories above have status ✅ Done — 5/6 done; US-LAUNCH-005 remains open pending AC5/AC6
 
 ---
 

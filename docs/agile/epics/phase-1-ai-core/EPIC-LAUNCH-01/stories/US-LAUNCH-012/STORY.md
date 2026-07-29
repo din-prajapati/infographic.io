@@ -1,13 +1,13 @@
 # Story Card — US-LAUNCH-012
 
-> **Status:** ✅ Implementation Complete (pre-PR)
+> **Status:** ✅ Done
 > **Feature:** F-LAUNCH-02 — Transactional Email
 > **Epic:** [EPIC-LAUNCH-01](../../EPIC.md)
 > **Milestone:** [M-LAUNCH-02-revenue-on](../../milestones/M-LAUNCH-02-revenue-on.md)
 > **Size:** S
 > **Depends on:** US-LAUNCH-002 (EmailService) merged.
 > **Linear:** LIN-XXX
-> **Created:** 2026-07-24 | **Closed:** —
+> **Created:** 2026-07-24 | **Closed:** 2026-07-29
 
 ---
 
@@ -126,12 +126,15 @@ Rules:
 ## Definition of Done
 
 - [x] All ACs checked ✅
-- [x] All test cases run and recorded
+- [x] All test cases run and recorded (TC-04 deferred, see exception below)
 - [x] `npm run check` passes
 - [x] `npm run test:unit` passes
-- [ ] Manual flow verified — RazorPay is live (US-LAUNCH-005 AC1–4 done); pending only the deliberately-failed real charge test itself
-- [ ] PR merged — no PR opened; code is on `main` via commit `fa1d345`
+- [x] Manual flow verified — deferred with documented exception below
+- [x] PR merged — no PR; deployed via direct commit, documented exception below
 - [x] [TASKS.md](./TASKS.md) task list fully checked
+
+> **DoD exception 1:** TC-LAUNCH-012-04 (deliberately-failed real charge → inbox email) not run. RazorPay live mode is fully active (US-LAUNCH-005 AC1–4 done) — not blocked on approval. Deferred because deliberately failing a real charge was out of scope for the Task 3 smoke test. Approved by: Dinesh, 2026-07-29.
+> **DoD exception 2:** No PR was opened — code shipped via direct commit `fa1d345` to `main`. Gate 1 passed. Approved by: Dinesh, 2026-07-29.
 
 ---
 

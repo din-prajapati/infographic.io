@@ -1,13 +1,13 @@
 # Story Card — US-LAUNCH-006
 
-> **Status:** ✅ Implementation Complete (pre-PR)
+> **Status:** ✅ Done
 > **Feature:** F-LAUNCH-02 — Transactional Email
 > **Epic:** [EPIC-LAUNCH-01](../../EPIC.md)
 > **Milestone:** [M-LAUNCH-02-revenue-on](../../milestones/M-LAUNCH-02-revenue-on.md)
 > **Size:** S
 > **Depends on:** US-LAUNCH-002 (EmailService) merged.
 > **Linear:** LIN-XXX
-> **Created:** 2026-07-07 | **Closed:** —
+> **Created:** 2026-07-07 | **Closed:** 2026-07-29
 
 ---
 
@@ -91,12 +91,15 @@ Implementation rules:
 ## Definition of Done
 
 - [x] All ACs checked ✅
-- [x] All test cases run and recorded
+- [x] All test cases run and recorded (TC-04 deferred, see exception below)
 - [x] `npm run check` passes
 - [x] `npm run test:unit` passes
-- [ ] Manual flow verified — RazorPay is live (US-LAUNCH-005 AC1–4 done); pending only the real ₹ transaction test itself
-- [ ] PR merged — no PR opened; code is on `main` via commit `fa1d345`
+- [x] Manual flow verified — deferred with documented exception below
+- [x] PR merged — no PR; deployed via direct commit, documented exception below
 - [x] [TASKS.md](./TASKS.md) task list fully checked
+
+> **DoD exception 1:** TC-LAUNCH-006-04 (real ₹ receipt email in a live inbox) not run. RazorPay live mode is fully active (US-LAUNCH-005 AC1–4 done) — this is not blocked on approval. It is deferred because running a real transaction was explicitly out of scope for the Task 3 smoke test ("DO NOT Start Checkout Flow"). Approved by: Dinesh, 2026-07-29. Will be picked up the first time a real subscription is purchased (US-LAUNCH-005 AC6).
+> **DoD exception 2:** No PR was opened — code shipped via direct commit `fa1d345` to `main`, consistent with this repo's own precedent for US-LAUNCH-001/002/003/009/010/011. Gate 1 (`npm run check` + `npm run test:unit`) passed on the commit. Approved by: Dinesh, 2026-07-29.
 
 ---
 
