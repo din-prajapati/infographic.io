@@ -54,7 +54,7 @@
 | F-AI-02-03 | Quality tier selector (model-transparent) | US-AI-012, US-AI-013 |
 | F-AI-02-04 | Campaign Mode UI framing | US-AI-014 |
 | F-AI-02-05 | Canvas-aware generation orientation | US-AI-036 |
-| F-AI-02-06 | Save as Template (personal library) | US-AI-037 |
+| F-AI-02-06 | Save as Template (personal library) + premium-template DB migration | US-AI-037 |
 | F-AI-02-07 | Format Picker (New Design / New Template) | US-AI-038 |
 
 ---
