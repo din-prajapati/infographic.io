@@ -25,6 +25,8 @@ Confirmed by reading the code directly (not assumed): **Quick Generate hardcodes
 
 This story makes generation orientation follow the *already-open* canvas, and makes "Use This Design" insert into that canvas instead of replacing it — without touching the Format Picker or template-saving work (separate stories, see Out of Scope).
 
+Full design context (current-vs-proposed flow diagrams, decisions log): [docs/research/2026-07-29-TEMPLATE-AND-DESIGN-WORKFLOW.md](../../../../../../research/2026-07-29-TEMPLATE-AND-DESIGN-WORKFLOW.md), §1 "Current flow."
+
 ---
 
 ## Acceptance Criteria

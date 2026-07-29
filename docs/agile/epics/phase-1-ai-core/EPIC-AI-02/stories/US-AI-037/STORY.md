@@ -25,6 +25,8 @@ Confirmed by reading the code: a `canvas-templates` API already exists (`api/src
 
 **Forward-looking, agreed with product:** templates will eventually support an admin-curated public gallery and a for-sale marketplace. Building those now is explicitly out of scope, but retrofitting a `visibility` concept onto a system that assumed "every template is private or seeded" is the expensive path later. This story adds the field now, with only `private` behavior implemented.
 
+Full design context (flow diagrams, marketplace rationale, decisions log): [docs/research/2026-07-29-TEMPLATE-AND-DESIGN-WORKFLOW.md](../../../../../../research/2026-07-29-TEMPLATE-AND-DESIGN-WORKFLOW.md), §5 "Why the data model should plan for the marketplace now."
+
 ---
 
 ## Acceptance Criteria

@@ -21,7 +21,7 @@
 
 ## Background
 
-Design workflow agreed via [this discussion — see attached diagram]. Key decisions locked in:
+Design workflow agreed via [docs/research/2026-07-29-TEMPLATE-AND-DESIGN-WORKFLOW.md](../../../../../../research/2026-07-29-TEMPLATE-AND-DESIGN-WORKFLOW.md) (current-vs-proposed flow diagrams, full taxonomy, decisions log). Key decisions locked in:
 - Both **"New Design"** and **"New Template"** buttons stay separate (discoverability), but both open the *same* picker/library implementation underneath — no duplicated logic.
 - The picker groups named formats by platform (finer-grained than a single "Instagram" bucket — see taxonomy table below).
 - Within a chosen format, the user sees their own saved templates in that shape (from US-AI-037), plus a "Start Blank" option always available.
