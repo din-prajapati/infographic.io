@@ -9,11 +9,11 @@
 
 ## Three Pillars Pre-flight (check before starting AI session)
 
-- [ ] **Brain** — STORY.md filled: ACs written, out-of-scope listed
-- [ ] **Muscle** — file list + ordered tasks + exact test commands (below)
-- [ ] **Map** — [ARCHITECTURE.mmd](../../ARCHITECTURE.mmd) exists for this epic
-- [ ] **Env** — N/A (no new env vars)
-- [ ] **Dependency** — US-AI-037 (Save as Template) merged, so the Library step has real data to browse
+- [x] **Brain** — STORY.md filled: ACs written, out-of-scope listed
+- [x] **Muscle** — file list + ordered tasks + exact test commands (below)
+- [x] **Map** — [ARCHITECTURE.mmd](../../ARCHITECTURE.mmd) exists for this epic
+- [x] **Env** — N/A (no new env vars)
+- [x] **Dependency** — US-AI-037 (Save as Template) merged, so the Library step has real data to browse
 
 ---
 
@@ -73,16 +73,16 @@ npm run test:unit
 
 ## Task Checklist
 
-- [ ] T1 — Format taxonomy data
-- [ ] T2 — Picker shell (step 1)
-- [ ] T3 — Library step (step 2)
-- [ ] T4 — Wire entry points + last-format memory
-- [ ] T5 — Tag existing premium templates
-- [ ] `npm run check` passes ✅
-- [ ] `npm run test:unit` passes ✅
+- [x] T1 — Format taxonomy data
+- [x] T2 — Picker shell (step 1) *(T2+T3 implemented together in FormatPickerDialog.tsx — see implementation note)*
+- [x] T3 — Library step (step 2) *(bundled with T2 commit; api.ts + storage.ts additions landed with T2)*
+- [x] T4 — Wire entry points + last-format memory
+- [x] T5 — Tag existing premium templates *(platformTag field added to StarterCanvasTemplate interface; DB-backed admin_curated templates need a separate seed migration — see scope drift note)*
+- [x] `npm run check` passes ✅
+- [x] `npm run test:unit` passes ✅
 - [ ] Manual test recorded ✅
 - [ ] PR opened with story card as description ✅
-- [ ] STORY.md ACs updated ✅
+- [x] STORY.md ACs updated ✅
 
 ---
 

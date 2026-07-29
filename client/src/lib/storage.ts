@@ -22,6 +22,8 @@ const STORAGE_PREFIX = import.meta.env.VITE_STORAGE_PREFIX ?? 'buildographic';
 const DESIGNS_KEY = `${STORAGE_PREFIX}_designs`;
 const TEMPLATES_KEY = `${STORAGE_PREFIX}_templates`;
 const AUTOSAVE_KEY = `${STORAGE_PREFIX}_autosave`;
+/** Stores the id of the last format the user picked in the Format Picker (AC6). */
+const LAST_FORMAT_KEY = `${STORAGE_PREFIX}_last_format`;
 
 /**
  * Check if user is authenticated
@@ -429,6 +431,29 @@ export function loadAutosaveDraft(): any | null {
   } catch (error) {
     console.error("Error loading autosave draft:", error);
     return null;
+  }
+}
+
+/**
+ * Get the id of the last format used in the Format Picker (AC6).
+ * Returns null if none has been recorded yet.
+ */
+export function getLastFormat(): string | null {
+  try {
+    return localStorage.getItem(LAST_FORMAT_KEY);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Persist the id of the last format used in the Format Picker (AC6).
+ */
+export function setLastFormat(formatId: string): void {
+  try {
+    localStorage.setItem(LAST_FORMAT_KEY, formatId);
+  } catch {
+    // Best-effort — ignore write failures (private/incognito mode, quota full)
   }
 }
 

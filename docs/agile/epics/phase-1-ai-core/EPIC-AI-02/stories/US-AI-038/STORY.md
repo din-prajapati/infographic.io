@@ -1,6 +1,6 @@
 # Story Card — US-AI-038
 
-> **Status:** 🔲 Not Started
+> **Status:** 🟡 Implementation Complete (pre-PR)
 > **Feature:** F-AI-02-07 — Format Picker (New Design / New Template entry flow)
 > **Epic:** [EPIC-AI-02](../../EPIC.md)
 > **Milestone:** [M-AI-06-photo-and-format](../../milestones/M-AI-06-photo-and-format.md)
@@ -32,16 +32,16 @@ Design workflow agreed via [docs/research/2026-07-29-TEMPLATE-AND-DESIGN-WORKFLO
 
 ## Acceptance Criteria
 
-- [ ] **AC1 [happy-path]:** Clicking "New Design" or "New Template" opens a Format Picker showing named format tiles grouped by platform section (Instagram / Facebook / Print / Email / Other), each with a small visual shape preview — no raw pixel dimensions or aspect-ratio numbers shown anywhere in the UI.
-- [ ] **AC2 [happy-path]:** Selecting a format tile shows: the user's own Library templates already in that format (if any exist), plus a "Start Blank" tile that is always present regardless of library contents.
-- [ ] **AC3 [happy-path]:** Choosing "Start Blank" opens the editor with an empty canvas sized to the selected format's dimensions.
-- [ ] **AC4 [happy-path]:** Choosing one of the user's own library templates opens the editor with that template's elements and dimensions loaded (same loading behavior as the existing "Use This Template" gallery flow).
-- [ ] **AC5 [happy-path]:** A "Custom size" option is always available in the picker (alongside the named format tiles), letting the user enter arbitrary width/height directly.
-- [ ] **AC6 [edge-case]:** The picker remembers the last format the user selected (persisted locally) and pre-highlights/surfaces it on the next visit, rather than presenting an identical unranked list every time.
-- [ ] **AC7 [edge-case]:** A user with zero saved templates in a chosen format sees only "Start Blank" (and Custom size) for that format — no empty-state error or awkward "no results" message.
-- [ ] **AC8 [compliance]:** No aspect ratio numbers, resolution values, or AI-model/technical details are shown anywhere in the picker or library-browsing step.
-- [ ] **AC9 [regression]:** `npm run check` and `npm run test:unit` pass. The existing "Use This Template" flow from directly browsing the main gallery (not via New Design/New Template) continues to work unchanged.
-- [ ] **AC10 [error-path]:** When the Library-step fetch of the user's own templates fails (network or auth error) in `FormatPickerDialog.tsx`, the picker shows a clear error state distinct from the "zero templates" empty state (AC7) — and the user can still proceed via "Start Blank" or "Custom size" rather than getting stuck with no way forward.
+- [x] **AC1 [happy-path]:** Clicking "New Design" or "New Template" opens a Format Picker showing named format tiles grouped by platform section (Instagram / Facebook / Print / Email / Other), each with a small visual shape preview — no raw pixel dimensions or aspect-ratio numbers shown anywhere in the UI.
+- [x] **AC2 [happy-path]:** Selecting a format tile shows: the user's own Library templates already in that format (if any exist), plus a "Start Blank" tile that is always present regardless of library contents.
+- [x] **AC3 [happy-path]:** Choosing "Start Blank" opens the editor with an empty canvas sized to the selected format's dimensions.
+- [ ] **AC4 [happy-path]:** Choosing one of the user's own library templates opens the editor with that template's elements and dimensions loaded (same loading behavior as the existing "Use This Template" gallery flow). *(requires manual E2E test with saved templates)*
+- [x] **AC5 [happy-path]:** A "Custom size" option is always available in the picker (alongside the named format tiles), letting the user enter arbitrary width/height directly.
+- [x] **AC6 [edge-case]:** The picker remembers the last format the user selected (persisted locally) and pre-highlights/surfaces it on the next visit, rather than presenting an identical unranked list every time.
+- [x] **AC7 [edge-case]:** A user with zero saved templates in a chosen format sees only "Start Blank" (and Custom size) for that format — no empty-state error or awkward "no results" message.
+- [x] **AC8 [compliance]:** No aspect ratio numbers, resolution values, or AI-model/technical details are shown anywhere in the picker or library-browsing step.
+- [x] **AC9 [regression]:** `npm run check` and `npm run test:unit` pass. The existing "Use This Template" flow from directly browsing the main gallery (not via New Design/New Template) continues to work unchanged.
+- [x] **AC10 [error-path]:** When the Library-step fetch of the user's own templates fails (network or auth error) in `FormatPickerDialog.tsx`, the picker shows a clear error state distinct from the "zero templates" empty state (AC7) — and the user can still proceed via "Start Blank" or "Custom size" rather than getting stuck with no way forward.
 
 ---
 

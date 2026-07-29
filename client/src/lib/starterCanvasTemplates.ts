@@ -26,6 +26,17 @@ export interface StarterCanvasTemplate {
   badge: string;
   /** Optional premium flag + native pixel dimensions for gallery aspect ratio. */
   premium?: boolean;
+  /**
+   * Format taxonomy id from `formatTaxonomy.ts` (e.g. 'instagram-story',
+   * 'email-header-banner'). Set this on any starter template so it surfaces
+   * in the Format Picker Library step for the matching format.
+   *
+   * Note: the 5 premium templates (Instagram Story, Instagram Square, Print
+   * Flyer, Email Header, MLS Sheet) migrated to the DB as admin_curated rows
+   * in US-AI-037 — their platform tags should be set via a DB seed/migration
+   * update rather than here. See scope-drift note in US-AI-038 implementation.
+   */
+  platformTag?: string;
   canvasData: {
     version: string;
     canvasWidth: number;

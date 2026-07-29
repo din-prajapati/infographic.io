@@ -573,6 +573,18 @@ export const canvasTemplatesApi = {
       throw error;
     }
   },
+
+  /**
+   * Get the current user's own templates that are tagged with a given format id.
+   * Filtering is done client-side: fetch all user templates then match `tags`.
+   * Used by the Format Picker Library step (US-AI-038).
+   */
+  getByFormatTag: async (formatTag: string): Promise<DesignMetadata[]> => {
+    const all = await apiRequest<DesignMetadata[]>(getApiUrl('/canvas-templates'));
+    return all.filter(
+      (t) => Array.isArray(t.tags) && t.tags.includes(formatTag),
+    );
+  },
 };
 
 // Users API - Organization management and user limits

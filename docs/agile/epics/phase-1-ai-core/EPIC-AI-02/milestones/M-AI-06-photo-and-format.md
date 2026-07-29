@@ -16,11 +16,11 @@ Agents can upload their own listing photos and choose the output format (Instagr
 
 | Story | Title | Status | PR |
 |-------|-------|--------|----|
-| [US-AI-010](../stories/US-AI-010/STORY.md) | Property photo upload + reference in generation | 🔲 | — |
+| [US-AI-010](../stories/US-AI-010/STORY.md) | Property photo upload + reference in generation | 🟡 Implementation Complete (pre-PR) | — |
 | [US-AI-011](../stories/US-AI-011/STORY.md) | ~~Output format selector~~ | ⏭️ Superseded | — |
-| [US-AI-036](../stories/US-AI-036/STORY.md) | Canvas-aware generation orientation | 🔲 | — |
-| [US-AI-037](../stories/US-AI-037/STORY.md) | Save as Template — personal library | 🔲 | — |
-| [US-AI-038](../stories/US-AI-038/STORY.md) | Format Picker — New Design / New Template | 🔲 | — |
+| [US-AI-036](../stories/US-AI-036/STORY.md) | Canvas-aware generation orientation | 🟡 Implementation Complete (pre-PR) | — |
+| [US-AI-037](../stories/US-AI-037/STORY.md) | Save as Template — personal library | 🟡 Implementation Complete (pre-PR) | — |
+| [US-AI-038](../stories/US-AI-038/STORY.md) | Format Picker — New Design / New Template | 🟡 Implementation Complete (pre-PR) | — |
 
 ---
 

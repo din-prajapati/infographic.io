@@ -1,6 +1,6 @@
 # Story Card — US-AI-010
 
-> **Status:** 🔲 Not Started
+> **Status:** 🟡 Implementation Complete (pre-PR)
 > **Feature:** F-AI-02-01 — Property photo upload and reference
 > **Epic:** [EPIC-AI-02](../../EPIC.md)
 > **Milestone:** [M-AI-06-photo-and-format](../../milestones/M-AI-06-photo-and-format.md)

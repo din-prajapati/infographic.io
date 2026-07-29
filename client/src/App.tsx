@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Switch, Route, Redirect, useLocation, useSearch } from "wouter";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient, REDIRECT_TO_AUTH_KEY } from "./lib/queryClient";
@@ -25,6 +25,8 @@ import CookiesPage from "./pages/legal/CookiesPage";
 import { ErrorBoundary } from "./components/ui/error-boundary";
 import { ThemeProvider } from "./lib/theme-provider";
 import { VersionBadge } from "./components/VersionBadge";
+import { FormatPickerDialog } from "./components/pages/FormatPickerDialog";
+import { useCanvasStore } from "./hooks/useCanvasStore";
 
 function ProtectedRoute({ component: Component }: { component: () => JSX.Element }) {
   const { isAuthenticated, isLoading } = useAuth();
@@ -69,22 +71,76 @@ function EditorRoute() {
 
 function TemplatesPageWrapper() {
   const [, navigate] = useLocation();
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const loadCanvas = useCanvasStore((state) => state.loadCanvas);
+
   const handleOpenTemplate = (templateId?: string) => {
-    const url = templateId
-      ? `/editor?templateId=${encodeURIComponent(templateId)}`
-      : "/editor";
-    navigate(url);
+    if (templateId) {
+      navigate(`/editor?templateId=${encodeURIComponent(templateId)}`);
+    } else {
+      // No template selected — open Format Picker so user picks a canvas size first (AC1).
+      setPickerOpen(true);
+    }
   };
-  return <TemplatesPage onOpenEditor={handleOpenTemplate} />;
+
+  const handleFormatSelect = (width: number, height: number, templateId?: string) => {
+    setPickerOpen(false);
+    if (templateId) {
+      navigate(`/editor?templateId=${encodeURIComponent(templateId)}`);
+    } else {
+      // Pre-size the canvas before navigating to blank editor (AC3).
+      loadCanvas({ elements: [], canvasWidth: width, canvasHeight: height, backgroundColor: '#FFFFFF', zoom: 1 });
+      navigate('/editor');
+    }
+  };
+
+  return (
+    <>
+      <TemplatesPage onOpenEditor={handleOpenTemplate} />
+      <FormatPickerDialog
+        open={pickerOpen}
+        onOpenChange={setPickerOpen}
+        onSelect={handleFormatSelect}
+      />
+    </>
+  );
 }
 
 function MyDesignsPageWrapper() {
   const [, navigate] = useLocation();
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const loadCanvas = useCanvasStore((state) => state.loadCanvas);
+
   const handleOpenDesign = (designId?: string) => {
-    const url = designId ? `/editor?designId=${designId}` : '/editor';
-    navigate(url);
+    if (designId) {
+      navigate(`/editor?designId=${designId}`);
+    } else {
+      // No design selected — open Format Picker so user picks canvas size first (AC1).
+      setPickerOpen(true);
+    }
   };
-  return <MyDesignsPage onOpenEditor={handleOpenDesign} />;
+
+  const handleFormatSelect = (width: number, height: number, templateId?: string) => {
+    setPickerOpen(false);
+    if (templateId) {
+      navigate(`/editor?templateId=${encodeURIComponent(templateId)}`);
+    } else {
+      // Pre-size the canvas before navigating to blank editor (AC3).
+      loadCanvas({ elements: [], canvasWidth: width, canvasHeight: height, backgroundColor: '#FFFFFF', zoom: 1 });
+      navigate('/editor');
+    }
+  };
+
+  return (
+    <>
+      <MyDesignsPage onOpenEditor={handleOpenDesign} />
+      <FormatPickerDialog
+        open={pickerOpen}
+        onOpenChange={setPickerOpen}
+        onSelect={handleFormatSelect}
+      />
+    </>
+  );
 }
 
 /** Layout with top nav for Templates, My Designs, Account so users can navigate between them. */

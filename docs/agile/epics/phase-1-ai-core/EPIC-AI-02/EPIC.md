@@ -33,11 +33,11 @@
 
 | Story ID | Title | Milestone | Status | PR |
 |----------|-------|-----------|--------|----|
-| [US-AI-010](stories/US-AI-010/STORY.md) | Property photo upload + reference in generation (CAP-06) | M-AI-06 | 🔲 | — |
+| [US-AI-010](stories/US-AI-010/STORY.md) | Property photo upload + reference in generation (CAP-06) | M-AI-06 | 🟡 Implementation Complete (pre-PR) | — |
 | [US-AI-011](stories/US-AI-011/STORY.md) | ~~Output format selector: Instagram/Facebook/Story/Print (CAP-07)~~ | M-AI-06 | ⏭️ Superseded | — |
-| [US-AI-036](stories/US-AI-036/STORY.md) | Canvas-aware generation orientation (replaces US-AI-011, part 1) | M-AI-06 | 🔲 | — |
-| [US-AI-037](stories/US-AI-037/STORY.md) | Save as Template — personal library (replaces US-AI-011, part 2) | M-AI-06 | 🔲 | — |
-| [US-AI-038](stories/US-AI-038/STORY.md) | Format Picker — New Design / New Template (replaces US-AI-011, part 3) | M-AI-06 | 🔲 | — |
+| [US-AI-036](stories/US-AI-036/STORY.md) | Canvas-aware generation orientation (replaces US-AI-011, part 1) | M-AI-06 | 🟡 Implementation Complete (pre-PR) | — |
+| [US-AI-037](stories/US-AI-037/STORY.md) | Save as Template — personal library (replaces US-AI-011, part 2) | M-AI-06 | 🟡 Implementation Complete (pre-PR) | — |
+| [US-AI-038](stories/US-AI-038/STORY.md) | Format Picker — New Design / New Template (replaces US-AI-011, part 3) | M-AI-06 | 🟡 Implementation Complete (pre-PR) | — |
 | [US-PANEL-01](stories/US-PANEL-01/STORY.md) | Right Panel: Brand Styles → Generation + Quick Styles as post-generation tool | M-AI-06 | 🔲 | — |
 | [US-AI-012](stories/US-AI-012/STORY.md) | Generation quality tiers: Social vs Print (CAP-08) | M-AI-07 | 🔲 | — |
 | [US-AI-013](stories/US-AI-013/STORY.md) | Property type → quality routing (CAP-09, hidden internal logic) | M-AI-07 | 🔲 | — |
@@ -143,6 +143,12 @@ Key files relevant to this epic:
 ---
 
 ## Implementation Update (log)
+
+### 2026-07-29 — US-AI-038 implementation complete (pre-PR)
+- **Files touched:** `client/src/lib/formatTaxonomy.ts` (new), `client/src/components/pages/FormatPickerDialog.tsx` (new), `client/src/lib/api.ts` (added `getByFormatTag`), `client/src/lib/storage.ts` (added `getLastFormat`/`setLastFormat`), `client/src/App.tsx` (wired both page wrappers to open picker), `client/src/lib/starterCanvasTemplates.ts` (added `platformTag` field to interface)
+- **ACs covered:** AC1, AC2, AC3, AC5, AC6, AC7, AC8, AC9, AC10 (AC4 deferred to /test-story — requires saved templates in a running session)
+- **Commits:** 4 on branch `feat/ai-us-ai-038-format-picker`
+- **Notes:** T2 and T3 were implemented together in a single FormatPickerDialog.tsx commit (both steps built in one pass). T5 scope drift: `premiumTemplates.ts` was deleted by US-AI-037; the 5 admin_curated premium templates now live in the DB and need a DB seed/migration update to receive platform tags — this requires a backend script change outside the frontend scope of this story. The `platformTag` field was added to the `StarterCanvasTemplate` TS interface so future static starters can declare their format. "New Template" entry: the TemplatesPage "Create Blank" callback is now intercepted in App.tsx to open the Format Picker; button label rename ("Create Blank" → "New Template") is a cosmetic follow-up requiring TemplatesPage.tsx (not in scope). Canvas dimensions for "Start Blank" are applied to the Zustand store before SPA navigation — no EditorLayout.tsx changes needed.
 
 ### 2026-07-29 — US-AI-037 implementation complete (pre-PR)
 - **Files touched:** `api/src/modules/designs/dto/create-design.dto.ts`, `api/src/modules/designs/services/designs.service.ts`, `api/src/modules/designs/controllers/canvas-templates.controller.ts`, `api/tests/designs/designs.service.spec.ts` (new), `client/src/lib/api.ts`, `client/src/components/editor/EditorToolbar.tsx`, `client/src/components/editor/EditorLayout.tsx`, `client/src/components/pages/TemplatesPage.tsx`, `api/scripts/seed-premium-templates.ts` (new), `client/src/lib/premiumTemplates.ts` (deleted), `client/src/lib/galleryTemplateCatalog.ts` (scope drift — required for deletion)
