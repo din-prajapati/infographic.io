@@ -1,0 +1,18 @@
+{
+  "window.autoDetectColorScheme": true,
+  "workbench.preferredDarkColorTheme": "Default Dark Modern",
+  "workbench.preferredLightColorTheme": "Default Light Modern",
+
+  "markdown.preview.useEditorStyle": true,
+  "markdown.preview.syntaxHighlighting": false,
+  "markdown.preview.darkTheme": "Default Dark Modern",
+  "markdown.preview.lightTheme": "Default Light Modern",
+  "markdown.mermaid.theme": "dark",
+  "markdown.styles": [
+    ".vscode/markdown-preview.css"
+  ],
+
+  "markdown-preview-github-styles.colorTheme": "system",
+  "markdown-preview-github-styles.darkTheme": "dark",
+  "markdown-preview-github-styles.lightTheme": "light"
+}

@@ -1,0 +1,189 @@
+/**
+ * Markdown preview — match Cursor/VS Code editor colors (neutral dark grey),
+ * not GitHub's blue-tinted palette (#0d1117). Maps GitHub extension variables
+ * to --vscode-* so tables, code blocks, and prose follow the active theme.
+ */
+
+/* ── Dark: wire GitHub variables → VS Code theme tokens ───────────── */
+body.vscode-dark .github-markdown-body,
+body.vscode-dark .markdown-body {
+  color-scheme: dark;
+
+  --fgColor-default: var(--vscode-editor-foreground, #cccccc);
+  --fgColor-muted: var(--vscode-descriptionForeground, #9d9d9d);
+  --fgColor-accent: var(--vscode-textLink-foreground, #4fc1ff);
+
+  --bgColor-default: var(--vscode-editor-background, #1e1e1e);
+  --bgColor-muted: var(--vscode-textCodeBlock-background, #2d2d2d);
+  --bgColor-neutral-muted: var(--vscode-sideBar-background, #252526);
+  --bgColor-inset: var(--vscode-textCodeBlock-background, #2d2d2d);
+
+  --borderColor-default: var(--vscode-panel-border, #3c3c3c);
+  --borderColor-muted: var(--vscode-widget-border, #3c3c3c);
+
+  background-color: var(--bgColor-default) !important;
+  color: var(--fgColor-default) !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  body:not(.vscode-light) .github-markdown-body,
+  body:not(.vscode-light) .markdown-body {
+    color-scheme: dark;
+
+    --fgColor-default: var(--vscode-editor-foreground, #cccccc);
+    --fgColor-muted: var(--vscode-descriptionForeground, #9d9d9d);
+    --fgColor-accent: var(--vscode-textLink-foreground, #4fc1ff);
+
+    --bgColor-default: var(--vscode-editor-background, #1e1e1e);
+    --bgColor-muted: var(--vscode-textCodeBlock-background, #2d2d2d);
+    --bgColor-neutral-muted: var(--vscode-sideBar-background, #252526);
+
+    --borderColor-default: var(--vscode-panel-border, #3c3c3c);
+
+    background-color: var(--bgColor-default) !important;
+    color: var(--fgColor-default) !important;
+  }
+}
+
+/* ── Light: VS Code light tokens ────────────────────────────────────── */
+body.vscode-light .github-markdown-body,
+body.vscode-light .markdown-body {
+  color-scheme: light;
+
+  --fgColor-default: var(--vscode-editor-foreground, #333333);
+  --fgColor-muted: var(--vscode-descriptionForeground, #717171);
+  --fgColor-accent: var(--vscode-textLink-foreground, #006ab1);
+
+  --bgColor-default: var(--vscode-editor-background, #ffffff);
+  --bgColor-muted: var(--vscode-textCodeBlock-background, #f3f3f3);
+  --bgColor-neutral-muted: var(--vscode-sideBar-background, #f3f3f3);
+
+  --borderColor-default: var(--vscode-panel-border, #e5e5e5);
+
+  background-color: var(--bgColor-default) !important;
+  color: var(--fgColor-default) !important;
+}
+
+/* ── Page shell (no GitHub navy) ────────────────────────────────────── */
+body.vscode-dark {
+  background-color: var(--vscode-editor-background, #1e1e1e) !important;
+  color: var(--vscode-editor-foreground, #cccccc) !important;
+}
+
+body.vscode-light {
+  background-color: var(--vscode-editor-background, #ffffff) !important;
+  color: var(--vscode-editor-foreground, #333333) !important;
+}
+
+/* ── Tables ───────────────────────────────────────────────────────── */
+body.vscode-dark .github-markdown-body table,
+body.vscode-dark .github-markdown-body thead,
+body.vscode-dark .github-markdown-body tbody,
+body.vscode-dark .github-markdown-body tr,
+body.vscode-dark .github-markdown-body th,
+body.vscode-dark .github-markdown-body td,
+body.vscode-dark .markdown-body table,
+body.vscode-dark .markdown-body th,
+body.vscode-dark .markdown-body td {
+  background-color: var(--vscode-editor-background, #1e1e1e) !important;
+  color: var(--vscode-editor-foreground, #cccccc) !important;
+  border-color: var(--vscode-panel-border, #3c3c3c) !important;
+}
+
+body.vscode-dark .github-markdown-body table tr:nth-child(2n),
+body.vscode-dark .markdown-body table tr:nth-child(2n) {
+  background-color: var(--vscode-sideBar-background, #252526) !important;
+}
+
+body.vscode-dark .github-markdown-body table th,
+body.vscode-dark .markdown-body table th {
+  background-color: var(--vscode-sideBar-background, #252526) !important;
+  font-weight: 600;
+}
+
+/* ── Fenced code blocks ───────────────────────────────────────────── */
+body.vscode-dark .github-markdown-body .highlight,
+body.vscode-dark .github-markdown-body div[class*="highlight"],
+body.vscode-dark .github-markdown-body pre,
+body.vscode-dark .markdown-body .highlight,
+body.vscode-dark .markdown-body pre {
+  background-color: var(--vscode-textCodeBlock-background, #2d2d2d) !important;
+  color: var(--vscode-textPreformat-foreground, var(--vscode-editor-foreground, #cccccc)) !important;
+  border: 1px solid var(--vscode-panel-border, #3c3c3c) !important;
+  border-radius: 6px;
+}
+
+body.vscode-dark .github-markdown-body .highlight pre,
+body.vscode-dark .github-markdown-body pre > code,
+body.vscode-dark .markdown-body pre > code {
+  background: transparent !important;
+  color: inherit !important;
+  border: none !important;
+}
+
+body.vscode-dark .github-markdown-body .highlight *,
+body.vscode-dark .github-markdown-body pre *,
+body.vscode-dark .markdown-body pre * {
+  background-color: transparent !important;
+  color: inherit !important;
+  text-shadow: none !important;
+  box-shadow: none !important;
+}
+
+/* ── Inline `code` ──────────────────────────────────────────────────── */
+body.vscode-dark .github-markdown-body :not(pre) > code,
+body.vscode-dark .github-markdown-body p code,
+body.vscode-dark .github-markdown-body li code,
+body.vscode-dark .github-markdown-body td code,
+body.vscode-dark .markdown-body p code,
+body.vscode-dark .markdown-body li code {
+  background-color: var(--vscode-textCodeBlock-background, #2d2d2d) !important;
+  color: var(--vscode-textPreformat-foreground, #cccccc) !important;
+  border-radius: 3px;
+  padding: 0.1em 0.35em;
+}
+
+/* ── Light element rules ────────────────────────────────────────────── */
+body.vscode-light .github-markdown-body table,
+body.vscode-light .github-markdown-body th,
+body.vscode-light .github-markdown-body td,
+body.vscode-light .github-markdown-body pre,
+body.vscode-light .github-markdown-body .highlight {
+  background-color: var(--vscode-editor-background, #ffffff) !important;
+  color: var(--vscode-editor-foreground, #333333) !important;
+  border-color: var(--vscode-panel-border, #e5e5e5) !important;
+}
+
+body.vscode-light .github-markdown-body pre,
+body.vscode-light .github-markdown-body .highlight {
+  background-color: var(--vscode-textCodeBlock-background, #f3f3f3) !important;
+}
+
+body.vscode-light .github-markdown-body p code,
+body.vscode-light .github-markdown-body li code {
+  background-color: var(--vscode-textCodeBlock-background, #f3f3f3) !important;
+}
+
+/* ── Misc ─────────────────────────────────────────────────────────── */
+body.vscode-dark .github-markdown-body a {
+  color: var(--vscode-textLink-foreground, #4fc1ff) !important;
+}
+
+body.vscode-dark .github-markdown-body a:hover {
+  color: var(--vscode-textLink-activeForeground, #4fc1ff) !important;
+}
+
+body.vscode-dark .github-markdown-body blockquote {
+  border-left-color: var(--vscode-textBlockQuote-border, #3c3c3c) !important;
+  background: var(--vscode-textBlockQuote-background, #252526) !important;
+  color: var(--vscode-descriptionForeground, #9d9d9d) !important;
+}
+
+body.vscode-dark .github-markdown-body hr {
+  border-color: var(--vscode-panel-border, #3c3c3c) !important;
+  background-color: var(--vscode-panel-border, #3c3c3c) !important;
+}
+
+body.vscode-dark .github-markdown-body .mermaid {
+  background: transparent !important;
+}
