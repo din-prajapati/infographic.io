@@ -24,13 +24,14 @@ export class AiOrchestrator {
   async generateInfographic(
     infographicId: string,
     propertyData: any,
-    options?: { variations?: number; style?: string; orientation?: string },
+    options?: { variations?: number; style?: string; orientation?: string; photoReference?: string },
     progressGateway?: any,
   ): Promise<void> {
     const t0 = Date.now();
     const variations = options?.variations || 1;
     const style = options?.style;
     const orientation = options?.orientation || propertyData.orientation || 'landscape';
+    const photoReference = options?.photoReference;
     const isDemoMode = process.env.DEMO_MODE === 'true';
     const imageModel = normalizeImageModel(propertyData.aiModel || 'ideogram-turbo');
 
@@ -174,7 +175,7 @@ export class AiOrchestrator {
           for (let i = 0; i < variations; i++) {
             if (v4JsonPrompt) {
               generationPromises.push(
-                this.ideogramService.generateImageV4(v4JsonPrompt, imageModel, orientation, infographicId),
+                this.ideogramService.generateImageV4(v4JsonPrompt, imageModel, orientation, infographicId, photoReference),
               );
             } else {
               // V2/V3 — or V4 whose magic-prompt conversion failed (falls back
@@ -184,7 +185,7 @@ export class AiOrchestrator {
                 ? `${imagePrompt}\n- Variation style: ${getVariationModifier(i)}`
                 : imagePrompt;
               generationPromises.push(
-                this.ideogramService.generateImage(variationPrompt, effectiveModel, orientation, infographicId),
+                this.ideogramService.generateImage(variationPrompt, effectiveModel, orientation, infographicId, photoReference),
               );
             }
           }

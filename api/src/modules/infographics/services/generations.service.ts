@@ -182,12 +182,13 @@ export class GenerationsService {
       Promise.resolve().then(async () => {
         try {
           await this.aiOrchestrator.generateInfographic(
-            infographic.id, 
-            propertyData, 
+            infographic.id,
+            propertyData,
             {
               variations: dto.variations || 3,
               style: dto.style,
               orientation: dto.orientation || 'landscape',
+              photoReference: dto.photoReference,
             },
             this.progressGateway, // Pass gateway for progress updates
           );

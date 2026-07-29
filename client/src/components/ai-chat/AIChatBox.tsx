@@ -42,6 +42,7 @@ import {
   extractionsApi,
   conversationsApi,
   paymentsApi,
+  getApiUrl,
   type ResultVariation as ApiResultVariation,
 } from "../../lib/api";
 import { toast } from "sonner";
@@ -87,6 +88,13 @@ export function AIChatBox({
   // Refs for icon buttons (for panel positioning)
   const lightbulbRef = useRef<HTMLButtonElement>(null);
   const paperclipRef = useRef<HTMLButtonElement>(null);
+
+  // Photo upload state (AC1-AC5)
+  const [photoId, setPhotoId] = useState<string | null>(null);
+  const [photoThumbnail, setPhotoThumbnail] = useState<string | null>(null);
+  const [photoError, setPhotoError] = useState<string | null>(null);
+  const [photoUploading, setPhotoUploading] = useState(false);
+  const photoInputRef = useRef<HTMLInputElement>(null);
 
   // History and favorites
   const [promptHistory, setPromptHistory] = useState<HistoryItem[]>([]);
@@ -754,6 +762,8 @@ export function AIChatBox({
         orientation: generationOrientation,
         // Pass user-written headline if filled in — backend skips LLM call when present
         headline: propertyHeadline.trim() || undefined,
+        // Pass uploaded property photo ID as style reference (AC3)
+        photoReference: photoId ?? undefined,
         agent: {
           name: agentInfo.name || undefined,
           brokerage: agentInfo.brokerage || undefined,
@@ -924,6 +934,7 @@ export function AIChatBox({
     setShowSuggestionsPanel(false);
     setShowImageUploadPanel(false);
     setShowCategoryBrowse(false);
+    clearPhoto();
     onClose();
   };
 
@@ -954,6 +965,80 @@ export function AIChatBox({
   const handleImageUpload = (imageUrl: string) => {
     console.log("Image uploaded:", imageUrl);
     // Add image to generation context
+  };
+
+  /** Revoke a blob URL and clear all photo state. */
+  const clearPhoto = () => {
+    if (photoThumbnail) URL.revokeObjectURL(photoThumbnail);
+    setPhotoId(null);
+    setPhotoThumbnail(null);
+    setPhotoError(null);
+    setPhotoUploading(false);
+  };
+
+  /**
+   * Handles file selection from the hidden photo input.
+   * AC5: validates MIME type (JPG/PNG) and size (≤10 MB) client-side before
+   * sending any request. On success, uploads to the backend and stores photoId.
+   */
+  const handlePhotoFileChange = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = e.target.files?.[0];
+    // Reset so the same file can be re-selected later (AC4)
+    e.target.value = "";
+    if (!file) return;
+
+    // Client-side validation (AC5)
+    if (!["image/jpeg", "image/png"].includes(file.type)) {
+      setPhotoError("Only JPG and PNG photos are supported.");
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setPhotoError("Photo must be 10 MB or smaller.");
+      return;
+    }
+
+    // Revoke any previous blob URL (AC4: one active photo at a time)
+    if (photoThumbnail) URL.revokeObjectURL(photoThumbnail);
+
+    setPhotoError(null);
+    setPhotoUploading(true);
+    // Show thumbnail immediately from the local file object (AC2)
+    const thumbnailUrl = URL.createObjectURL(file);
+    setPhotoThumbnail(thumbnailUrl);
+    setPhotoId(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("photo", file);
+      const token = localStorage.getItem("auth_token");
+      const res = await fetch(getApiUrl("/infographics/upload-photo"), {
+        method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({ message: "Upload failed" }));
+        setPhotoError(
+          (errBody as { message?: string }).message || "Upload failed. Please try again.",
+        );
+        URL.revokeObjectURL(thumbnailUrl);
+        setPhotoThumbnail(null);
+        setPhotoUploading(false);
+        return;
+      }
+
+      const body = (await res.json()) as { photoId: string; photoUrl: string };
+      setPhotoId(body.photoId);
+    } catch {
+      setPhotoError("Upload failed. Check your connection and try again.");
+      URL.revokeObjectURL(thumbnailUrl);
+      setPhotoThumbnail(null);
+    } finally {
+      setPhotoUploading(false);
+    }
   };
 
   const handleRegenerateAll = () => {
@@ -1086,6 +1171,7 @@ export function AIChatBox({
     }));
     setShowHistoryView(false);
     setShowCategoryBrowse(false);
+    clearPhoto();
   };
 
   const currentSuggestions = state.activeChipId
@@ -1202,6 +1288,36 @@ export function AIChatBox({
 
               {/* Input Field - Sticky at bottom */}
               <div className="shrink-0 border-t border-border bg-background">
+                {/* Photo reference preview + error (AC2, AC5) */}
+                {(photoThumbnail || photoError) && (
+                  <div className="flex items-center gap-2 px-4 pt-2">
+                    {photoThumbnail && (
+                      <div className="relative shrink-0">
+                        <img
+                          src={photoThumbnail}
+                          alt="Property photo reference"
+                          className="h-10 w-10 object-cover rounded border border-border"
+                        />
+                        <button
+                          type="button"
+                          onClick={clearPhoto}
+                          className="absolute -top-1 -right-1 h-4 w-4 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center text-[10px] leading-none"
+                          title="Remove photo"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    )}
+                    {photoThumbnail && (
+                      <span className="text-xs text-muted-foreground truncate">
+                        {photoUploading ? "Uploading photo…" : photoId ? "Property photo attached" : "Photo ready"}
+                      </span>
+                    )}
+                    {photoError && (
+                      <span className="text-xs text-destructive">{photoError}</span>
+                    )}
+                  </div>
+                )}
                 <AIChatInputField
                   value={state.inputValue}
                   onChange={handleInputChange}
@@ -1210,7 +1326,7 @@ export function AIChatBox({
                   onRemoveChip={handleRemoveChip}
                   isGenerating={state.isGenerating}
                   onSuggestionsClick={() => setShowSuggestionsPanel(true)}
-                  onUploadClick={() => setShowImageUploadPanel(true)}
+                  onUploadClick={() => photoInputRef.current?.click()}
                   lightbulbRef={lightbulbRef}
                   paperclipRef={paperclipRef}
                   {...inputFieldSettings}
@@ -1295,6 +1411,36 @@ export function AIChatBox({
               </div>
 
               <div className="shrink-0 border-t border-border bg-background">
+                {/* Photo reference preview + error (AC2, AC5) */}
+                {(photoThumbnail || photoError) && (
+                  <div className="flex items-center gap-2 px-4 pt-2">
+                    {photoThumbnail && (
+                      <div className="relative shrink-0">
+                        <img
+                          src={photoThumbnail}
+                          alt="Property photo reference"
+                          className="h-10 w-10 object-cover rounded border border-border"
+                        />
+                        <button
+                          type="button"
+                          onClick={clearPhoto}
+                          className="absolute -top-1 -right-1 h-4 w-4 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center text-[10px] leading-none"
+                          title="Remove photo"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    )}
+                    {photoThumbnail && (
+                      <span className="text-xs text-muted-foreground truncate">
+                        {photoUploading ? "Uploading photo…" : photoId ? "Property photo attached" : "Photo ready"}
+                      </span>
+                    )}
+                    {photoError && (
+                      <span className="text-xs text-destructive">{photoError}</span>
+                    )}
+                  </div>
+                )}
                 <AIChatInputField
                   value={state.inputValue}
                   onChange={handleInputChange}
@@ -1303,7 +1449,7 @@ export function AIChatBox({
                   onRemoveChip={handleRemoveChip}
                   isGenerating={state.isGenerating}
                   onSuggestionsClick={() => setShowSuggestionsPanel(true)}
-                  onUploadClick={() => setShowImageUploadPanel(true)}
+                  onUploadClick={() => photoInputRef.current?.click()}
                   lightbulbRef={lightbulbRef}
                   paperclipRef={paperclipRef}
                   {...inputFieldSettings}
@@ -1331,6 +1477,15 @@ export function AIChatBox({
             onSuggestionClick={handleEnhancedSuggestionClick}
             propertyType={propertyType}
             priceRange={priceRange}
+          />
+
+          {/* Hidden file input — triggered by the 📎 paperclip button (AC1, AC2) */}
+          <input
+            ref={photoInputRef}
+            type="file"
+            accept=".jpg,.jpeg,.png"
+            className="hidden"
+            onChange={handlePhotoFileChange}
           />
           </div>
         </motion.div>

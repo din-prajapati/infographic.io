@@ -1,15 +1,66 @@
-import { Controller, Post, Get, Body, Param, UseGuards, Req, Inject } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiSecurity } from '@nestjs/swagger';
+import {
+  Controller, Post, Get, Body, Param, UseGuards, Req, Inject,
+  UseInterceptors, UploadedFile, BadRequestException, ParseFilePipe,
+  MaxFileSizeValidator, FileTypeValidator, HttpStatus, Logger,
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiConsumes, ApiBody } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as os from 'os';
+import { randomUUID } from 'crypto';
 import { InfographicsService } from '../services/infographics.service';
 import { GenerateInfographicDto } from '../dto/generate-infographic.dto';
+
+const PHOTO_UPLOADS_DIR = path.join(os.tmpdir(), 'ai-infographic-uploads');
 
 @ApiTags('infographics')
 @Controller('infographics')
 export class InfographicsController {
+  private readonly logger = new Logger(InfographicsController.name);
+
   constructor(
     @Inject(InfographicsService) private readonly infographicsService: InfographicsService
   ) {}
+
+  @Post('upload-photo')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Upload a property photo for reference in generation (max 10 MB, JPG/PNG only)' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({ schema: { type: 'object', properties: { photo: { type: 'string', format: 'binary' } } } })
+  @UseInterceptors(FileInterceptor('photo'))
+  async uploadPhoto(
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 10 * 1024 * 1024 }),
+          new FileTypeValidator({ fileType: /image\/(jpeg|png)/ }),
+        ],
+        errorHttpStatusCode: HttpStatus.BAD_REQUEST,
+      }),
+    )
+    file: any,
+  ) {
+    if (!file) {
+      throw new BadRequestException('No photo file provided');
+    }
+
+    if (!fs.existsSync(PHOTO_UPLOADS_DIR)) {
+      fs.mkdirSync(PHOTO_UPLOADS_DIR, { recursive: true });
+    }
+
+    const ext = file.mimetype === 'image/png' ? '.png' : '.jpg';
+    const photoId = `${randomUUID()}${ext}`;
+    const filePath = path.join(PHOTO_UPLOADS_DIR, photoId);
+
+    fs.writeFileSync(filePath, file.buffer);
+
+    this.logger.log(`{ "event": "photo:uploaded", "photoId": "${photoId}", "sizeBytes": ${file.size} }`);
+
+    return { photoId, photoUrl: `/api/v1/infographics/photos/${photoId}` };
+  }
 
   @Post('generate')
   @UseGuards(AuthGuard('jwt'))

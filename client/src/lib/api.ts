@@ -101,6 +101,8 @@ export interface GenerateFromChatInput {
   agent?: AgentInput;
   /** User-written headline; if provided the backend skips the LLM headline call. */
   headline?: string;
+  /** Photo ID returned by POST /infographics/upload-photo; attaches property photo as generation style reference. */
+  photoReference?: string;
 }
 
 export interface GenerationStatus {

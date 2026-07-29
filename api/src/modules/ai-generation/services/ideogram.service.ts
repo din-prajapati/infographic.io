@@ -1,5 +1,8 @@
 import { Injectable, HttpException } from '@nestjs/common';
 import axios from 'axios';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as os from 'os';
 import { getModelCost } from '../../../config/ai-models.config';
 import {
   normalizeImageModel,
@@ -7,6 +10,8 @@ import {
   orientationToIdeogramAspectV3,
 } from '../../../config/image-generation.config';
 import { logGen, elapsed } from '../../../common/utils/ai-gen-logger';
+
+const PHOTO_UPLOADS_DIR = path.join(os.tmpdir(), 'ai-infographic-uploads');
 
 // ─── Ideogram endpoints ──────────────────────────────────────────────────────
 // V4 generate — multipart; json_prompt (magic prompt inherently OFF) XOR text_prompt (magic prompt forced ON)
@@ -72,6 +77,7 @@ export class IdeogramService {
     model: string = 'ideogram-4',
     orientation?: string,
     generationId?: string,
+    photoReferencePath?: string,
   ): Promise<string> {
     const t0 = Date.now();
     const resolvedModel = normalizeImageModel(model);
@@ -111,6 +117,21 @@ export class IdeogramService {
         form.append('aspect_ratio', aspectRatio);
         form.append('style_type', 'DESIGN');
         form.append('rendering_speed', renderingSpeed);
+
+        // Attach property photo as Ideogram style reference if provided
+        if (photoReferencePath) {
+          const fullPath = path.join(PHOTO_UPLOADS_DIR, photoReferencePath);
+          try {
+            const photoBuffer = fs.readFileSync(fullPath);
+            const mimeType = photoReferencePath.endsWith('.png') ? 'image/png' : 'image/jpeg';
+            const photoBlob = new Blob([photoBuffer], { type: mimeType });
+            form.append('style_reference_images', photoBlob, photoReferencePath);
+            logGen({ generationId: generationId ?? 'unknown', event: 'image:reference:attached', photoReferencePath });
+          } catch (refErr: any) {
+            // Non-fatal: file may have expired or path is wrong — proceed without reference
+            logGen({ generationId: generationId ?? 'unknown', event: 'image:reference:missing', photoReferencePath, error: refErr?.message }, 'warn');
+          }
+        }
 
         const response = await axios.post(IDEOGRAM_V3_URL, form, {
           // Do NOT set Content-Type here — axios must set the multipart boundary automatically
@@ -200,6 +221,7 @@ export class IdeogramService {
     model: string,
     orientation?: string,
     generationId?: string,
+    photoReferencePath?: string,
   ): Promise<string> {
     const t0 = Date.now();
     const resolution = V4_RESOLUTION[orientation || 'landscape'] || V4_RESOLUTION.landscape;
@@ -212,6 +234,20 @@ export class IdeogramService {
       form.append('json_prompt', JSON.stringify(jsonPrompt));
       form.append('rendering_speed', renderingSpeed);
       form.append('resolution', resolution);
+
+      // Attach property photo as style reference if provided (best-effort — V4 support TBD)
+      if (photoReferencePath) {
+        const fullPath = path.join(PHOTO_UPLOADS_DIR, photoReferencePath);
+        try {
+          const photoBuffer = fs.readFileSync(fullPath);
+          const mimeType = photoReferencePath.endsWith('.png') ? 'image/png' : 'image/jpeg';
+          const photoBlob = new Blob([photoBuffer], { type: mimeType });
+          form.append('style_reference_images', photoBlob, photoReferencePath);
+          logGen({ generationId: generationId ?? 'unknown', event: 'image:v4:reference:attached', photoReferencePath });
+        } catch (refErr: any) {
+          logGen({ generationId: generationId ?? 'unknown', event: 'image:v4:reference:missing', photoReferencePath, error: refErr?.message }, 'warn');
+        }
+      }
 
       const response = await axios.post(IDEOGRAM_V4_GENERATE_URL, form, {
         // Do NOT set Content-Type here — axios must set the multipart boundary automatically

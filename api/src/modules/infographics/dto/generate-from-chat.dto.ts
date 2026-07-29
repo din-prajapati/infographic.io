@@ -91,7 +91,7 @@ export class GenerateFromChatDto {
   @IsOptional()
   orientation?: 'landscape' | 'portrait' | 'square';
 
-  @ApiProperty({ 
+  @ApiProperty({
     example: 3,
     description: 'Number of variations to generate (1-5)',
     required: false,
@@ -102,6 +102,15 @@ export class GenerateFromChatDto {
   @Max(5)
   @IsOptional()
   variations?: number;
+
+  @ApiProperty({
+    example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890.jpg',
+    description: 'Photo ID from a prior /infographics/upload-photo call; the image is used as a style reference in generation',
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  photoReference?: string;
 
   @ValidateNested()
   @Type(() => AgentDto)

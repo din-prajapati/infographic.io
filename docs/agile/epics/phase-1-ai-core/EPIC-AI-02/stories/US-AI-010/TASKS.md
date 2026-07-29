@@ -52,11 +52,11 @@ npm run test:unit
 
 ## Task Checklist
 
-- [ ] T1 — Backend upload endpoint
-- [ ] T2 — Pass photo reference to generation
-- [ ] T3 — Frontend upload button + thumbnail
-- [ ] T4 — Pass photoId with generation request
-- [ ] `npm run check` passes ✅
+- [x] T1 — Backend upload endpoint
+- [x] T2 — Pass photo reference to generation
+- [x] T3 — Frontend upload button + thumbnail
+- [x] T4 — Pass photoId with generation request
+- [x] `npm run check` passes ✅
 - [ ] Manual: photo appears in generated infographic ✅
 
 ---

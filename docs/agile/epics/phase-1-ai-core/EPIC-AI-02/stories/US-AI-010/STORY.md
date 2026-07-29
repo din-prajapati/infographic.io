@@ -19,12 +19,12 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC1 [happy-path]:** A photo upload button (📎 or camera icon) appears in the chat input area
-- [ ] **AC2 [happy-path]:** Agent can upload JPG/PNG up to 10MB; a thumbnail preview appears in the chat
+- [x] **AC1 [happy-path]:** A photo upload button (📎 or camera icon) appears in the chat input area
+- [x] **AC2 [happy-path]:** Agent can upload JPG/PNG up to 10MB; a thumbnail preview appears in the chat
 - [ ] **AC3 [happy-path]:** The uploaded photo is sent to the backend and referenced in the image generation prompt — the generated infographic incorporates the property photo as a visual element
-- [ ] **AC4 [edge-case]:** Only one photo can be active per generation (uploading a new one replaces the previous)
-- [ ] **AC5 [error-path]:** When an agent selects a file exceeding 10MB or with a non-JPG/PNG MIME type, `AIChatBox.tsx` rejects it client-side with a visible error message and no request is sent to the upload endpoint; if a bad file reaches the backend anyway, the upload endpoint in `infographics.controller.ts` returns HTTP 400 rather than storing it.
-- [ ] **AC6 [regression]:** `npm run check` passes
+- [x] **AC4 [edge-case]:** Only one photo can be active per generation (uploading a new one replaces the previous)
+- [x] **AC5 [error-path]:** When an agent selects a file exceeding 10MB or with a non-JPG/PNG MIME type, `AIChatBox.tsx` rejects it client-side with a visible error message and no request is sent to the upload endpoint; if a bad file reaches the backend anyway, the upload endpoint in `infographics.controller.ts` returns HTTP 400 rather than storing it.
+- [x] **AC6 [regression]:** `npm run check` passes
 
 ---
 
