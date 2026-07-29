@@ -26,12 +26,12 @@ gap that let PT-12 (un-bootable `main`) through. Integration tests run only on p
 
 ## Acceptance Criteria
 
-- [ ] **AC1:** The typecheck step is **hard** — remove `continue-on-error` from `tsc`; a type error fails the PR.
-- [ ] **AC2:** The PR job runs `npm run check` + `npm run test:unit` + `npm run build` + `npm run smoke:boot` (Gate 4a) + a Playwright E2E subset, all required to pass.
-- [ ] **AC3:** Total PR CI wall-time is **< ~10 min** — achieved via `node_modules` + Playwright browser caching and job parallelization.
-- [ ] **AC4:** The gate maps to the `verification-gates` skill (Gate 1 mandatory + Gate 4a boot); skip decisions are explicit in the workflow, never silent.
-- [ ] **AC5:** README/`DEPLOYMENT_STRATEGY.md` §5 updated to state the enforced gate.
-- [ ] **AC6:** `.github/pull_request_template.md` gets a **Merge checklist** (CI green ✅ · smoke boot passed ✅ · DB migration approach noted if applicable ✅ · flag plan noted if risky ✅), and `DEPLOYMENT_STRATEGY.md` states an explicit **Definition of Merge** = green CI + smoke boot + required notes present in the PR description. (Governance follow-up: [US-DEPLOY-006](../US-DEPLOY-006/STORY.md).)
+- [ ] **AC1 [error-path]:** The typecheck step is **hard** — remove `continue-on-error` from `tsc`; a type error fails the PR.
+- [ ] **AC2 [happy-path]:** The PR job runs `npm run check` + `npm run test:unit` + `npm run build` + `npm run smoke:boot` (Gate 4a) + a Playwright E2E subset, all required to pass.
+- [ ] **AC3 [regression]:** Total PR CI wall-time is **< ~10 min** — achieved via `node_modules` + Playwright browser caching and job parallelization.
+- [ ] **AC4 [regression]:** The gate maps to the `verification-gates` skill (Gate 1 mandatory + Gate 4a boot); skip decisions are explicit in the workflow, never silent.
+- [ ] **AC5 [documentation]:** README/`DEPLOYMENT_STRATEGY.md` §5 updated to state the enforced gate.
+- [ ] **AC6 [documentation]:** `.github/pull_request_template.md` gets a **Merge checklist** (CI green ✅ · smoke boot passed ✅ · DB migration approach noted if applicable ✅ · flag plan noted if risky ✅), and `DEPLOYMENT_STRATEGY.md` states an explicit **Definition of Merge** = green CI + smoke boot + required notes present in the PR description. (Governance follow-up: [US-DEPLOY-006](../US-DEPLOY-006/STORY.md).)
 
 ## Out of Scope
 - Preview environments (US-DEPLOY-002) · flags (US-DEPLOY-003).
@@ -44,12 +44,14 @@ gap that let PT-12 (un-bootable `main`) through. Integration tests run only on p
 - `.github/pull_request_template.md` (AC6)
 
 ## Test Cases
-| TC | Scenario | Expect |
-|----|----------|--------|
-| TC-01 | PR with a type error | CI **fails** (not warns) |
-| TC-02 | PR with a boot-crash (DI/env) like PT-12 | `smoke:boot` fails the PR |
-| TC-03 | Clean PR | green in <10 min |
-| TC-04 (Manual) | PR with a schema/risky change, no migration or flag note | Merge checklist item unchecked — self-blocks merge until noted |
+| TC ID | Type | Priority | Scenario | Status | Finding |
+|-------|------|----------|----------|--------|---------|
+| TC-DEPLOY-001-01 | Manual | P0 | Given a PR with a type error, when CI runs, then the job fails (not warns) | 🔲 | |
+| TC-DEPLOY-001-02 | Manual | P0 | Given a PR causes a boot-crash (DI/env) like PT-12, when CI runs, then `smoke:boot` fails the PR | 🔲 | |
+| TC-DEPLOY-001-03 | Manual | P1 | Given a clean PR, when CI runs, then it goes green in under 10 minutes | 🔲 | |
+| TC-DEPLOY-001-04 | Manual | P1 | Given a PR with a schema/risky change and no migration or flag note, when the author reviews the Merge checklist, then the relevant item stays unchecked, self-blocking merge until noted | 🔲 | |
+
+**Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 
 ## Definition of Done
 - [ ] ACs ✅ · CI green on a sample PR in <10 min · docs updated · PR merged

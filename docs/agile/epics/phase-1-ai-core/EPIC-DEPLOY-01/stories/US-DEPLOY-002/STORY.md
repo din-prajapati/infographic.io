@@ -25,13 +25,14 @@ app), and **Neon supports instant copy-on-write branches**. Combined: a fresh ap
 
 ## Acceptance Criteria
 
-- [ ] **AC1:** Opening a PR creates an **ephemeral Railway app** for that PR (auto-destroyed on close/merge).
-- [ ] **AC2:** CI creates an **ephemeral Neon branch** off production per PR (Neon API/CLI), injects its direct `DATABASE_URL` into the preview app, and **deletes the branch** on PR close.
-- [ ] **AC3:** The preview app boots with `APP_ENV=preview` + **TEST** RazorPay keys; US-LAUNCH-010's guard passes (non-production ⇒ `rzp_test_*`).
-- [ ] **AC4:** The preview URL is **auto-posted as a PR comment** when ready.
-- [ ] **AC5:** No preview ever uses LIVE keys or the production Neon branch; teardown leaves no orphaned Neon branches (verified by a listing check).
-- [ ] **AC6:** `docs/DEPLOYMENT_STRATEGY.md` §6 updated with the concrete preview mechanics.
-- [ ] **AC7:** A short **Preview verification checklist** (core flows work · no obvious regressions · `/api/health` returns ok · new UI behavior looks correct) is completed against the preview URL before merging. (Governance follow-up: [US-DEPLOY-006](../US-DEPLOY-006/STORY.md) turns this into a PR-template item.)
+- [ ] **AC1 [happy-path]:** Opening a PR creates an **ephemeral Railway app** for that PR (auto-destroyed on close/merge).
+- [ ] **AC2 [happy-path]:** CI creates an **ephemeral Neon branch** off production per PR (Neon API/CLI), injects its direct `DATABASE_URL` into the preview app, and **deletes the branch** on PR close.
+- [ ] **AC3 [happy-path]:** The preview app boots with `APP_ENV=preview` + **TEST** RazorPay keys; US-LAUNCH-010's guard passes (non-production ⇒ `rzp_test_*`).
+- [ ] **AC4 [happy-path]:** The preview URL is **auto-posted as a PR comment** when ready.
+- [ ] **AC5 [security]:** No preview ever uses LIVE keys or the production Neon branch; teardown leaves no orphaned Neon branches (verified by a listing check).
+- [ ] **AC6 [documentation]:** `docs/DEPLOYMENT_STRATEGY.md` §6 updated with the concrete preview mechanics.
+- [ ] **AC7 [documentation]:** A short **Preview verification checklist** (core flows work · no obvious regressions · `/api/health` returns ok · new UI behavior looks correct) is completed against the preview URL before merging. (Governance follow-up: [US-DEPLOY-006](../US-DEPLOY-006/STORY.md) turns this into a PR-template item.)
+- [ ] **AC8 [error-path]:** Given the Neon branch-creation API call fails (rate limit, auth error, quota exceeded), when the preview-environment CI job (`.github/workflows/*`) runs, then the job fails with a clear error message and does not leave an orphaned Railway app running without a database attached.
 
 ## Out of Scope
 - Prod-data *anonymization* pipeline (use a scrubbed/seed branch initially; full anonymization is a follow-up).
@@ -44,11 +45,14 @@ app), and **Neon supports instant copy-on-write branches**. Combined: a fresh ap
 - `docs/DEPLOYMENT_STRATEGY.md` §6
 
 ## Test Cases
-| TC | Scenario | Expect |
-|----|----------|--------|
-| TC-01 | Open a PR | preview URL comment appears; app boots `APP_ENV=preview` |
-| TC-02 | Hit preview `/api/health` | `{"status":"ok","db":"connected"}` against the PR's Neon branch |
-| TC-03 | Close the PR | Railway app + Neon branch both destroyed (no orphans) |
+| TC ID | Type | Priority | Scenario | Status | Finding |
+|-------|------|----------|----------|--------|---------|
+| TC-DEPLOY-002-01 | Manual | P0 | Given a PR is opened, when the preview job runs, then a preview URL comment appears and the app boots with `APP_ENV=preview` | 🔲 | |
+| TC-DEPLOY-002-02 | Manual | P1 | Given the preview app is live, when `/api/health` is hit, then it returns `{"status":"ok","db":"connected"}` against the PR's own Neon branch | 🔲 | |
+| TC-DEPLOY-002-03 | Manual | P1 | Given a PR is closed, when teardown runs, then both the Railway app and Neon branch are destroyed with no orphans | 🔲 | |
+| TC-DEPLOY-002-04 | Manual | P0 | Given the Neon API call fails during branch creation, when the preview job runs, then CI fails clearly and no orphaned Railway app is left running | 🔲 | |
+
+**Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 
 ## Definition of Done
 - [ ] ACs ✅ · one real PR demonstrates create→verify→teardown · docs updated · PR merged

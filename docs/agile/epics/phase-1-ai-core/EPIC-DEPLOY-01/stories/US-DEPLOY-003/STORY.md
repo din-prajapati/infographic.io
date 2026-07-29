@@ -25,12 +25,12 @@ off) is the natural first consumer.
 
 ## Acceptance Criteria
 
-- [ ] **AC1:** A single helper `isFeatureEnabled(name)` reads env-var flags (`FEATURE_<NAME>_ENABLED=true`), defaulting to off, usable in both NestJS and the client (build-time `VITE_FEATURE_*` for the client).
-- [ ] **AC2:** Flags are per-environment (Railway var overrides): a feature can be on in staging/preview and off in production.
-- [ ] **AC3:** `BETA_MODE` (US-LAUNCH-004) is wired through the helper as the reference implementation — not a bespoke check.
-- [ ] **AC4:** Unit tests: flag on/off/absent → correct boolean; unknown flag defaults off.
-- [ ] **AC5:** `docs/DEPLOYMENT_STRATEGY.md` §4 updated with the naming convention + the `flags`-table graduation path.
-- [ ] **AC6:** A **Release checklist** (feature enabled only in the intended environment(s)? preview verification passed? rollback plan = disable the flag?) is completed before flipping a flag in production. (Governance follow-up: [US-DEPLOY-006](../US-DEPLOY-006/STORY.md).)
+- [ ] **AC1 [happy-path]:** A single helper `isFeatureEnabled(name)` reads env-var flags (`FEATURE_<NAME>_ENABLED=true`), defaulting to off, usable in both NestJS and the client (build-time `VITE_FEATURE_*` for the client).
+- [ ] **AC2 [happy-path]:** Flags are per-environment (Railway var overrides): a feature can be on in staging/preview and off in production.
+- [ ] **AC3 [happy-path]:** `BETA_MODE` (US-LAUNCH-004) is wired through the helper as the reference implementation — not a bespoke check.
+- [ ] **AC4 [error-path]:** Unit tests: flag on/off/absent → correct boolean; unknown flag defaults off (fail-safe).
+- [ ] **AC5 [documentation]:** `docs/DEPLOYMENT_STRATEGY.md` §4 updated with the naming convention + the `flags`-table graduation path.
+- [ ] **AC6 [documentation]:** A **Release checklist** (feature enabled only in the intended environment(s)? preview verification passed? rollback plan = disable the flag?) is completed before flipping a flag in production. (Governance follow-up: [US-DEPLOY-006](../US-DEPLOY-006/STORY.md).)
 
 ## Out of Scope
 - Per-user / percentage targeting, a `flags` DB table, or a hosted service (LaunchDarkly/Unleash) — documented as the next step, not built here.
@@ -42,11 +42,13 @@ off) is the natural first consumer.
 - `client/src/pages/PricingPage.tsx` (BETA_MODE consumer) · `.env.example`
 
 ## Test Cases
-| TC | Scenario | Expect |
-|----|----------|--------|
-| TC-01 | `FEATURE_X_ENABLED=true` | `isFeatureEnabled('X')` → true |
-| TC-02 | var absent | → false (fail-safe off) |
-| TC-03 | `BETA_MODE` on in staging, off in prod | checkout hidden in staging, live in prod |
+| TC ID | Type | Priority | Scenario | Status | Finding |
+|-------|------|----------|----------|--------|---------|
+| TC-DEPLOY-003-01 | Auto (unit) | P0 | Given `FEATURE_X_ENABLED=true`, when `isFeatureEnabled('X')` is called, then it returns `true` | 🔲 | |
+| TC-DEPLOY-003-02 | Auto (unit) | P0 | Given the env var is absent, when `isFeatureEnabled` is called, then it returns `false` (fail-safe off) | 🔲 | |
+| TC-DEPLOY-003-03 | Manual | P1 | Given `BETA_MODE` is on in staging and off in production, when checkout renders, then it is hidden in staging and live in production | 🔲 | |
+
+**Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 
 ## Definition of Done
 - [ ] ACs ✅ · unit tests pass · BETA_MODE uses the helper · docs updated · PR merged

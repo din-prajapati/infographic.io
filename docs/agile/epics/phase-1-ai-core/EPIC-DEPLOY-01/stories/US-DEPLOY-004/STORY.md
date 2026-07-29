@@ -25,11 +25,11 @@ data exists** (can drop columns without a migration trail). Strategy §6/§10 pr
 
 ## Acceptance Criteria
 
-- [ ] **AC1:** A **baseline migration** capturing the current schema is generated and committed (`prisma migrate diff`/`resolve`).
-- [ ] **AC2:** `db:deploy` switches from `prisma db push` → `prisma migrate deploy`, running **before** the app process starts (Railway start command / `railway.json`).
-- [ ] **AC3:** The **expand → backfill → contract** convention is documented as the required pattern for any schema change.
-- [ ] **AC4:** Verified on the Neon **staging** branch: `migrate deploy` applies cleanly on a fresh boot and is idempotent on re-deploy.
-- [ ] **AC5:** A rollback/hotfix note documents how to handle a failed migration (Neon branch restore + revert).
+- [ ] **AC1 [happy-path]:** A **baseline migration** capturing the current schema is generated and committed (`prisma migrate diff`/`resolve`).
+- [ ] **AC2 [happy-path]:** `db:deploy` switches from `prisma db push` → `prisma migrate deploy`, running **before** the app process starts (Railway start command / `railway.json`).
+- [ ] **AC3 [documentation]:** The **expand → backfill → contract** convention is documented as the required pattern for any schema change.
+- [ ] **AC4 [idempotency]:** Verified on the Neon **staging** branch: `migrate deploy` applies cleanly on a fresh boot and is idempotent on re-deploy.
+- [ ] **AC5 [error-path]:** A rollback/hotfix note documents how to handle a failed migration (Neon branch restore + revert).
 
 ## Out of Scope
 - Retroactively authoring migrations for past `db push` changes beyond the single baseline.
@@ -40,11 +40,14 @@ data exists** (can drop columns without a migration trail). Strategy §6/§10 pr
 - `docs/DEPLOYMENT_STRATEGY.md` §6
 
 ## Test Cases
-| TC | Scenario | Expect |
-|----|----------|--------|
-| TC-01 | Fresh Neon branch + `migrate deploy` | schema applied, `_prisma_migrations` populated |
-| TC-02 | Re-deploy same version | no-op, idempotent |
-| TC-03 | Expand→contract dry-run (add col, deploy, drop col, deploy) | old+new code both boot at each step |
+| TC ID | Type | Priority | Scenario | Status | Finding |
+|-------|------|----------|----------|--------|---------|
+| TC-DEPLOY-004-01 | Manual | P0 | Given a fresh Neon branch, when `migrate deploy` runs, then the schema is applied and `_prisma_migrations` is populated | 🔲 | |
+| TC-DEPLOY-004-02 | Manual | P1 | Given the same migration version, when `migrate deploy` re-runs, then it is a no-op (idempotent) | 🔲 | |
+| TC-DEPLOY-004-03 | Manual | P1 | Given an expand→contract dry-run (add col, deploy, drop col, deploy), when each step runs, then old and new code both boot successfully at each step | 🔲 | |
+| TC-DEPLOY-004-04 | Manual | P1 | Given a migration fails mid-deploy, when the operator consults the rollback note (AC5), then it gives clear, actionable steps to restore the previous good state | 🔲 | |
+
+**Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 
 ## Definition of Done
 - [ ] ACs ✅ · baseline migration committed · verified on staging Neon branch · docs updated · PR merged
