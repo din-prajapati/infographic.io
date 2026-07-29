@@ -43,7 +43,8 @@ feat(ai): format picker for New Design / New Template — US-AI-038
 **File:** same component, extended
 - Fetch user's own templates tagged with the chosen format via `canvasTemplatesApi`
 - "Start Blank" card always present first; existing templates shown alongside
-- Zero-templates case shows only Start Blank + Custom size, no error state
+- Zero-templates case (a *successful* fetch that returns nothing) shows only Start Blank + Custom size — no error styling, this is not a failure (AC7)
+- A *failed* fetch (network/auth error) is a distinct case: show a clear error state, and still let the user proceed via Start Blank or Custom size (AC10, added during harden 2026-07-29 — do not conflate this with the zero-templates case above)
 
 ### T4 — Wire entry points + last-format memory
 **Files:** `client/src/App.tsx`, `client/src/lib/storage.ts`

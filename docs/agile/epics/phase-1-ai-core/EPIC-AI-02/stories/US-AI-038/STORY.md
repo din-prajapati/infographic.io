@@ -41,6 +41,7 @@ Design workflow agreed via [docs/research/2026-07-29-TEMPLATE-AND-DESIGN-WORKFLO
 - [ ] **AC7 [edge-case]:** A user with zero saved templates in a chosen format sees only "Start Blank" (and Custom size) for that format — no empty-state error or awkward "no results" message.
 - [ ] **AC8 [compliance]:** No aspect ratio numbers, resolution values, or AI-model/technical details are shown anywhere in the picker or library-browsing step.
 - [ ] **AC9 [regression]:** `npm run check` and `npm run test:unit` pass. The existing "Use This Template" flow from directly browsing the main gallery (not via New Design/New Template) continues to work unchanged.
+- [ ] **AC10 [error-path]:** When the Library-step fetch of the user's own templates fails (network or auth error) in `FormatPickerDialog.tsx`, the picker shows a clear error state distinct from the "zero templates" empty state (AC7) — and the user can still proceed via "Start Blank" or "Custom size" rather than getting stuck with no way forward.
 
 ---
 
@@ -144,6 +145,7 @@ Implementation rules:
 | TC-AI-038-06 | Manual | P1 | Choose "Custom size", enter 900×1200 → editor opens at that exact size | 🔲 | |
 | TC-AI-038-07 | Manual | P2 | Pick Instagram Post once, reopen picker later → Instagram Post is pre-highlighted/surfaced | 🔲 | |
 | TC-AI-038-08 | Manual | P1 | Browse the main gallery directly (not via New Design/Template) → "Use This Template" still works unchanged | 🔲 | |
+| TC-AI-038-09 | Manual | P1 | Simulate the Library-templates fetch failing (network off) while the Format Picker is open → clear error state shown, distinct from the zero-templates empty state, Start Blank/Custom size still usable | 🔲 | |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 
