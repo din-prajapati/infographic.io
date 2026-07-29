@@ -1,11 +1,22 @@
 # Story Card — US-AI-011
 
-> **Status:** 🔲 Not Started
+> **Status:** ⏭️ Superseded by [US-AI-036](../US-AI-036/STORY.md), [US-AI-037](../US-AI-037/STORY.md), [US-AI-038](../US-AI-038/STORY.md) (2026-07-29)
 > **Feature:** F-AI-02-02 — Multi-platform output format selector
 > **Epic:** [EPIC-AI-02](../../EPIC.md)
 > **Milestone:** [M-AI-06-photo-and-format](../../milestones/M-AI-06-photo-and-format.md)
 > **Linear:** LIN-US-AI-011
 > **Created:** 2026-04-28 | **Closed:** —
+
+---
+
+> **⏭️ SUPERSEDED — no separate work needed.** A pre-implementation readiness check (2026-07-27) found this story's "Primary files touched" were stale (the backend module structure moved since 2026-04-28), and a deeper design discussion (2026-07-27/28) found this story's core premise didn't fit the real architecture: `AIChatBox.tsx` already has a fully-built, working orientation picker (landscape/portrait/square), and Ideogram doesn't natively support most of the named platform aspect ratios this story asked for (Facebook Cover 1.91:1, Print 4:3) as generation-time options anyway.
+>
+> Investigation also surfaced that the actual template system (`premiumTemplates.ts` + the unused `canvas-templates` API) already solves "generate in the right format" via **template selection**, Canva-style, not a generation-time dropdown — the real gaps were (1) generation not respecting an already-open canvas's shape, (2) no way for users to save their own templates, and (3) no picker to choose a format up front when starting new. Those three gaps became:
+> - **[US-AI-036](../US-AI-036/STORY.md)** — canvas-aware generation orientation + insert-as-layer (the actual bug fix)
+> - **[US-AI-037](../US-AI-037/STORY.md)** — Save as Template (personal library, `visibility` field for a future marketplace)
+> - **[US-AI-038](../US-AI-038/STORY.md)** — unified Format Picker for New Design / New Template, with finer-grained platform taxonomy than this story's original 4 options
+>
+> Keeping this card as a record of the original ask. Do not implement it separately.
 
 ---
 

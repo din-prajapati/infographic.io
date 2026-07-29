@@ -34,7 +34,10 @@
 | Story ID | Title | Milestone | Status | PR |
 |----------|-------|-----------|--------|----|
 | [US-AI-010](stories/US-AI-010/STORY.md) | Property photo upload + reference in generation (CAP-06) | M-AI-06 | 🔲 | — |
-| [US-AI-011](stories/US-AI-011/STORY.md) | Output format selector: Instagram/Facebook/Story/Print (CAP-07) | M-AI-06 | 🔲 | — |
+| [US-AI-011](stories/US-AI-011/STORY.md) | ~~Output format selector: Instagram/Facebook/Story/Print (CAP-07)~~ | M-AI-06 | ⏭️ Superseded | — |
+| [US-AI-036](stories/US-AI-036/STORY.md) | Canvas-aware generation orientation (replaces US-AI-011, part 1) | M-AI-06 | 🔲 | — |
+| [US-AI-037](stories/US-AI-037/STORY.md) | Save as Template — personal library (replaces US-AI-011, part 2) | M-AI-06 | 🔲 | — |
+| [US-AI-038](stories/US-AI-038/STORY.md) | Format Picker — New Design / New Template (replaces US-AI-011, part 3) | M-AI-06 | 🔲 | — |
 | [US-PANEL-01](stories/US-PANEL-01/STORY.md) | Right Panel: Brand Styles → Generation + Quick Styles as post-generation tool | M-AI-06 | 🔲 | — |
 | [US-AI-012](stories/US-AI-012/STORY.md) | Generation quality tiers: Social vs Print (CAP-08) | M-AI-07 | 🔲 | — |
 | [US-AI-013](stories/US-AI-013/STORY.md) | Property type → quality routing (CAP-09, hidden internal logic) | M-AI-07 | 🔲 | — |
@@ -47,9 +50,12 @@
 | Feature ID | Scope | Stories |
 |------------|-------|---------|
 | F-AI-02-01 | Property photo upload and reference | US-AI-010 |
-| F-AI-02-02 | Multi-platform output format selector | US-AI-011 |
+| F-AI-02-02 | ~~Multi-platform output format selector~~ (superseded) | US-AI-011 |
 | F-AI-02-03 | Quality tier selector (model-transparent) | US-AI-012, US-AI-013 |
 | F-AI-02-04 | Campaign Mode UI framing | US-AI-014 |
+| F-AI-02-05 | Canvas-aware generation orientation | US-AI-036 |
+| F-AI-02-06 | Save as Template (personal library) | US-AI-037 |
+| F-AI-02-07 | Format Picker (New Design / New Template) | US-AI-038 |
 
 ---
 
