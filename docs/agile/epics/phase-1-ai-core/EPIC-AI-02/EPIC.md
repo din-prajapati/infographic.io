@@ -140,4 +140,14 @@ Key files relevant to this epic:
 
 ---
 
-*Epic created: 2026-04-28 | Last updated: 2026-04-28*
+---
+
+## Implementation Update (log)
+
+### 2026-07-29 — US-AI-037 implementation complete (pre-PR)
+- **Files touched:** `api/src/modules/designs/dto/create-design.dto.ts`, `api/src/modules/designs/services/designs.service.ts`, `api/src/modules/designs/controllers/canvas-templates.controller.ts`, `api/tests/designs/designs.service.spec.ts` (new), `client/src/lib/api.ts`, `client/src/components/editor/EditorToolbar.tsx`, `client/src/components/editor/EditorLayout.tsx`, `client/src/components/pages/TemplatesPage.tsx`, `api/scripts/seed-premium-templates.ts` (new), `client/src/lib/premiumTemplates.ts` (deleted), `client/src/lib/galleryTemplateCatalog.ts` (scope drift — required for deletion)
+- **ACs covered:** AC1, AC2, AC3, AC6, AC7, AC9, AC11 (AC4, AC5, AC8, AC10 deferred to /test-story — require live runtime or live DB)
+- **Commits:** 8 on branch `feat/ai-us-ai-037-save-as-template`
+- **Notes:** `galleryTemplateCatalog.ts` was edited outside TASKS.md primary files (scope drift) because deleting `premiumTemplates.ts` would have left a broken import — mechanically necessary. Migration script (`seed-premium-templates.ts`) typechecks cleanly but requires a live DB to actually execute; AC8 is deferred until /test-story runs it against a real Neon connection. Admin_curated templates now have DB-generated IDs (not the static `premium_001` etc. IDs from the old static array) — `galleryTemplateCatalog.ts` no longer includes them in `GALLERY_BY_ID`, which is correct since those IDs are no longer the canonical identifiers.
+
+*Epic created: 2026-04-28 | Last updated: 2026-07-29*

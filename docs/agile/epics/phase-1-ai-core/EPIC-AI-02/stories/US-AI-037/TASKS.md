@@ -86,16 +86,16 @@ cd api && npx vitest run tests/designs/ --reporter=verbose
 
 ## Task Checklist
 
-- [ ] T1 — `visibility` field on DTO
-- [ ] T2 — Persist + filter by visibility/owner
-- [ ] T3 — Backend tests
-- [ ] T4 — "Save as Template" action
-- [ ] T5 — "My Templates" surface
-- [ ] T6 — Migration script: premium templates → DB
-- [ ] T7 — Premium gallery reads from the API
-- [ ] T8 — Delete `premiumTemplates.ts`
-- [ ] `npm run check` passes ✅
-- [ ] `npm run test:unit` passes ✅
+- [x] T1 — `visibility` field on DTO
+- [x] T2 — Persist + filter by visibility/owner
+- [x] T3 — Backend tests
+- [x] T4 — "Save as Template" action
+- [x] T5 — "My Templates" surface
+- [x] T6 — Migration script: premium templates → DB
+- [x] T7 — Premium gallery reads from the API
+- [x] T8 — Delete `premiumTemplates.ts`
+- [x] `npm run check` passes ✅
+- [x] `npm run test:unit` passes ✅
 - [ ] Manual test recorded ✅
 - [ ] PR opened with story card as description ✅
 - [ ] STORY.md ACs updated ✅

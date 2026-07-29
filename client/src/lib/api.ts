@@ -497,10 +497,17 @@ export const designsApi = {
   },
 };
 
+/** Extended metadata returned for admin-curated gallery entries. */
+export interface AdminCuratedTemplate extends DesignMetadata {
+  visibility: 'admin_curated';
+  description?: string;
+  badge?: string;
+}
+
 // Template API - for saving/loading canvas templates
 export const canvasTemplatesApi = {
   // Save a template (create or update)
-  save: async (template: DesignMetadata): Promise<DesignMetadata> => {
+  save: async (template: DesignMetadata & { visibility?: 'private' | 'admin_curated' | 'for_sale' }): Promise<DesignMetadata> => {
     const body = JSON.stringify({
       name: template.name,
       type: 'template',
@@ -508,6 +515,7 @@ export const canvasTemplatesApi = {
       thumbnail: template.thumbnail,
       canvasData: template.canvasData,
       tags: template.tags,
+      visibility: template.visibility ?? 'private',
     });
 
     // Check if ID is a DB-generated cuid
@@ -530,13 +538,20 @@ export const canvasTemplatesApi = {
     return template;
   },
 
-  // Get all templates
+  // Get all templates (current user's private templates)
   getAll: async (): Promise<DesignMetadata[]> => {
     try {
       return await apiRequest<DesignMetadata[]>(getApiUrl('/canvas-templates'));
     } catch (error) {
       throw error;
     }
+  },
+
+  // Get admin-curated (premium) templates from the database
+  getAdminCurated: async (): Promise<AdminCuratedTemplate[]> => {
+    return await apiRequest<AdminCuratedTemplate[]>(
+      getApiUrl('/canvas-templates?visibility=admin_curated'),
+    );
   },
 
   // Get a specific template by ID

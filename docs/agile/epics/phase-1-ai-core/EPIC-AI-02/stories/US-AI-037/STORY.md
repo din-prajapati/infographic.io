@@ -1,6 +1,6 @@
 # Story Card — US-AI-037
 
-> **Status:** 🔲 Not Started
+> **Status:** 🟡 Implementation Complete (pre-PR)
 > **Feature:** F-AI-02-06 — Save as Template (personal library)
 > **Epic:** [EPIC-AI-02](../../EPIC.md)
 > **Milestone:** [M-AI-06-photo-and-format](../../milestones/M-AI-06-photo-and-format.md)
@@ -35,17 +35,17 @@ Full design context (flow diagrams, marketplace rationale, decisions log): [docs
 
 ## Acceptance Criteria
 
-- [ ] **AC1 [happy-path]:** A "Save as Template" action is available in the editor (alongside the existing regular Save). Clicking it prompts for a template name.
-- [ ] **AC2 [happy-path]:** Confirming the save calls `POST /canvas-templates` with `type: 'template'`, the current `canvasData`, the entered name, and `visibility: 'private'`.
-- [ ] **AC3 [happy-path]:** Saved templates appear in a "My Templates" view, showing only templates owned by the current user — distinct from the admin-curated Premium gallery.
+- [x] **AC1 [happy-path]:** A "Save as Template" action is available in the editor (alongside the existing regular Save). Clicking it prompts for a template name.
+- [x] **AC2 [happy-path]:** Confirming the save calls `POST /canvas-templates` with `type: 'template'`, the current `canvasData`, the entered name, and `visibility: 'private'`.
+- [x] **AC3 [happy-path]:** Saved templates appear in a "My Templates" view, showing only templates owned by the current user — distinct from the admin-curated Premium gallery.
 - [ ] **AC4 [edge-case]:** Saving as a template does not alter or delete the design/session currently being edited — it is a copy operation. The user remains in their original design afterward.
 - [ ] **AC5 [error-path]:** If the save request fails (network error, auth expiry), the user sees a clear error toast naming what happened; the editor's local state is unaffected — no partial or corrupted save, no silent failure.
-- [ ] **AC6 [compliance]:** The `visibility` field accepts `'private' | 'admin_curated' | 'for_sale'` in the schema/DTO, but only `'private'` has any reachable UI path in this story — `admin_curated` and `for_sale` are reserved values, not features.
-- [ ] **AC7 [regression]:** `npm run check` and `npm run test:unit` pass. The existing regular "Save design" flow (My Designs) is completely unaffected by this change.
+- [x] **AC6 [compliance]:** The `visibility` field accepts `'private' | 'admin_curated' | 'for_sale'` in the schema/DTO, but only `'private'` has any reachable UI path in this story — `admin_curated` and `for_sale` are reserved values, not features.
+- [x] **AC7 [regression]:** `npm run check` and `npm run test:unit` pass. The existing regular "Save design" flow (My Designs) is completely unaffected by this change.
 - [ ] **AC8 [happy-path]:** A one-time migration script inserts the 5 existing `PREMIUM_CANVAS_TEMPLATES` entries into the database via the `canvas-templates` create path, each with `visibility: 'admin_curated'`, preserving name, dimensions, layout elements, and thumbnail exactly.
-- [ ] **AC9 [happy-path]:** `TemplatesPage.tsx`'s Premium gallery section fetches `admin_curated` templates from `GET /canvas-templates` instead of importing the static `premiumTemplates.ts` array — visual output and behavior for the end user are unchanged.
+- [x] **AC9 [happy-path]:** `TemplatesPage.tsx`'s Premium gallery section fetches `admin_curated` templates from `GET /canvas-templates` instead of importing the static `premiumTemplates.ts` array — visual output and behavior for the end user are unchanged.
 - [ ] **AC10 [edge-case]:** If the `admin_curated` fetch fails (network error, empty result), the Premium gallery section shows a clear empty/error state rather than a blank section or a crash — it does not silently fall back to stale bundled data.
-- [ ] **AC11 [regression]:** `client/src/lib/premiumTemplates.ts` is deleted once migration is verified (no remaining runtime imports) — confirmed via a repo-wide grep before removal.
+- [x] **AC11 [regression]:** `client/src/lib/premiumTemplates.ts` is deleted once migration is verified (no remaining runtime imports) — confirmed via a repo-wide grep before removal.
 
 ---
 

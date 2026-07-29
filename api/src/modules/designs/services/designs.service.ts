@@ -31,6 +31,7 @@ export class DesignsService {
         throw new NotFoundException(`Design ${designId} not found`);
       }
 
+      const existingCanvasDesign = (existing.propertyData as any)?.canvasDesign || {};
       const updated = await prisma.infographic.update({
         where: { id: designId },
         data: {
@@ -43,6 +44,8 @@ export class DesignsService {
               thumbnail: designDto.thumbnail,
               canvasData: designDto.canvasData,
               tags: designDto.tags,
+              // Preserve existing visibility if not explicitly provided in the update
+              visibility: designDto.visibility ?? existingCanvasDesign.visibility ?? 'private',
             },
           },
         },
@@ -57,6 +60,7 @@ export class DesignsService {
         thumbnail: canvasDesign.thumbnail,
         canvasData: canvasDesign.canvasData,
         tags: canvasDesign.tags,
+        visibility: canvasDesign.visibility || 'private',
         createdAt: updated.createdAt instanceof Date ? updated.createdAt.toISOString() : String(updated.createdAt),
         updatedAt: updated.updatedAt instanceof Date ? updated.updatedAt.toISOString() : String(updated.updatedAt),
       };
@@ -75,6 +79,7 @@ export class DesignsService {
               thumbnail: designDto.thumbnail,
               canvasData: designDto.canvasData,
               tags: designDto.tags,
+              visibility: designDto.visibility ?? 'private',
             },
           },
           imageUrl: designDto.thumbnail || '',
@@ -92,6 +97,7 @@ export class DesignsService {
         thumbnail: canvasDesign.thumbnail,
         canvasData: canvasDesign.canvasData,
         tags: canvasDesign.tags,
+        visibility: canvasDesign.visibility || 'private',
         createdAt: created.createdAt instanceof Date ? created.createdAt.toISOString() : String(created.createdAt),
         updatedAt: created.updatedAt instanceof Date ? created.updatedAt.toISOString() : String(created.updatedAt),
       };
@@ -99,7 +105,7 @@ export class DesignsService {
   }
 
   /**
-   * Get all designs for a user
+   * Get all designs/templates for a user (canvas-editor rows only — user-owned)
    */
   async findAll(userId: string) {
     const infographics = await prisma.infographic.findMany({
@@ -122,23 +128,62 @@ export class DesignsService {
         thumbnail: canvasDesign.thumbnail,
         canvasData: canvasDesign.canvasData,
         tags: canvasDesign.tags,
+        visibility: canvasDesign.visibility || 'private',
         createdAt: inf.createdAt instanceof Date ? inf.createdAt.toISOString() : String(inf.createdAt),
         updatedAt: inf.updatedAt instanceof Date ? inf.updatedAt.toISOString() : String(inf.updatedAt),
       };
     }).filter(Boolean);
-    
+
     return designs;
   }
 
   /**
-   * Get a design by ID
+   * Get all admin-curated templates (canvas-template rows — not user-owned).
+   * These are created exclusively by the seed-premium-templates migration script
+   * and are visible to all authenticated users.
+   */
+  async findAdminCuratedTemplates() {
+    const infographics = await prisma.infographic.findMany({
+      where: { aiModel: 'canvas-template' },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    return infographics.map(inf => {
+      const canvasDesign = (inf.propertyData as any)?.canvasDesign;
+      if (!canvasDesign) return null;
+
+      return {
+        id: inf.id,
+        name: canvasDesign.name,
+        type: (canvasDesign.type || 'template') as string,
+        category: canvasDesign.category as string | undefined,
+        thumbnail: canvasDesign.thumbnail as string | undefined,
+        canvasData: canvasDesign.canvasData,
+        tags: canvasDesign.tags as string[] | undefined,
+        visibility: 'admin_curated' as const,
+        description: canvasDesign.description as string | undefined,
+        badge: canvasDesign.badge as string | undefined,
+        createdAt: inf.createdAt instanceof Date ? inf.createdAt.toISOString() : String(inf.createdAt),
+        updatedAt: inf.updatedAt instanceof Date ? inf.updatedAt.toISOString() : String(inf.updatedAt),
+      };
+    }).filter(Boolean);
+  }
+
+  /**
+   * Get a design/template by ID.
+   * Checks the user's own canvas-editor records first; falls back to
+   * admin_curated canvas-template rows (visible to all authenticated users).
    */
   async findOne(id: string, userId: string) {
     const infographic = await prisma.infographic.findFirst({
       where: {
         id,
-        userId,
-        aiModel: 'canvas-editor',
+        OR: [
+          // User's own design or template
+          { userId, aiModel: 'canvas-editor' },
+          // Admin-curated template — visible to all authenticated users
+          { aiModel: 'canvas-template' },
+        ],
       },
     });
 
@@ -159,6 +204,9 @@ export class DesignsService {
       thumbnail: canvasDesign.thumbnail,
       canvasData: canvasDesign.canvasData,
       tags: canvasDesign.tags,
+      visibility: canvasDesign.visibility || 'private',
+      description: canvasDesign.description,
+      badge: canvasDesign.badge,
       createdAt: infographic.createdAt instanceof Date ? infographic.createdAt.toISOString() : String(infographic.createdAt),
       updatedAt: infographic.updatedAt instanceof Date ? infographic.updatedAt.toISOString() : String(infographic.updatedAt),
     };

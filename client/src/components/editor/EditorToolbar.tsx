@@ -4,7 +4,8 @@ import {
   ArrowLeft,
   Maximize2,
   Download,
-  Save
+  Save,
+  LayoutTemplate,
 } from "lucide-react";
 import { useEffect } from "react";
 import { EditableTitle } from "./EditableTitle";
@@ -15,16 +16,18 @@ interface EditorToolbarProps {
   designName?: string;
   onDesignNameChange?: (name: string) => void;
   onSaveClick?: () => void;
+  onSaveAsTemplateClick?: () => void;
   onExportClick?: () => void;
   onPreviewClick?: () => void;
   isAIGenerated?: boolean;
 }
 
-export function EditorToolbar({ 
+export function EditorToolbar({
   onBackClick,
   designName = "Untitled Design",
   onDesignNameChange,
   onSaveClick,
+  onSaveAsTemplateClick,
   onExportClick,
   onPreviewClick,
   isAIGenerated = false,
@@ -81,6 +84,17 @@ export function EditorToolbar({
         >
           <Save className="w-4 h-4" />
           Save
+        </Button>
+
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-9 gap-2 text-foreground hover:text-foreground hover:bg-muted border border-border"
+          onClick={onSaveAsTemplateClick}
+          title="Save as Template — creates a reusable copy, does not affect the current design"
+        >
+          <LayoutTemplate className="w-4 h-4" />
+          Save as Template
         </Button>
 
         <Button

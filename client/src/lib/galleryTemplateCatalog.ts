@@ -3,14 +3,14 @@ import {
   STARTER_CANVAS_TEMPLATES,
   type StarterCanvasTemplate,
 } from "./starterCanvasTemplates";
-import {
-  PREMIUM_CANVAS_TEMPLATES,
-  getPremiumCanvasTemplateById,
-} from "./premiumTemplates";
 
-/** All client-side gallery templates (starter + premium), keyed by id. */
+/**
+ * Client-side gallery catalog — starter templates only.
+ * Premium/admin_curated templates are now stored in the DB and served via
+ * GET /api/v1/canvas-templates?visibility=admin_curated (US-AI-037).
+ */
 const GALLERY_BY_ID: Record<string, string> = Object.fromEntries(
-  [...STARTER_CANVAS_TEMPLATES, ...PREMIUM_CANVAS_TEMPLATES].map((t) => [t.id, t.name]),
+  STARTER_CANVAS_TEMPLATES.map((t) => [t.id, t.name]),
 );
 
 export function getGalleryTemplateDisplayName(templateId: string): string | undefined {
@@ -23,13 +23,14 @@ export function isGalleryTemplateId(templateId: string): boolean {
 }
 
 /**
- * Resolve any client-side gallery template (starter or premium) by id.
- * Falls back to starter-only lookup for callers that imported the old symbol.
+ * Resolve a client-side starter gallery template by id.
+ * Admin_curated (premium) templates are DB-sourced as of US-AI-037 and are
+ * loaded via the canvas-templates API — they will not match here.
  */
 export function getGalleryCanvasTemplateById(
   templateId: string,
 ): StarterCanvasTemplate | undefined {
-  return getPremiumCanvasTemplateById(templateId) ?? getStarterCanvasTemplateById(templateId);
+  return getStarterCanvasTemplateById(templateId);
 }
 
 export { getStarterCanvasTemplateById };

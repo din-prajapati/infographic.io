@@ -1,4 +1,4 @@
-import { Controller, Post, Put, Get, Delete, Body, Param, UseGuards, Req, Inject } from '@nestjs/common';
+import { Controller, Post, Put, Get, Delete, Body, Param, Query, UseGuards, Req, Inject } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiSecurity } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { DesignsService } from '../services/designs.service';
@@ -38,11 +38,16 @@ export class CanvasTemplatesController {
   @Get()
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get all canvas templates for current user' })
-  async findAll(@Req() req: any) {
+  @ApiOperation({
+    summary: "Get canvas templates. Without ?visibility returns the current user's private templates; ?visibility=admin_curated returns the curated gallery.",
+  })
+  async findAll(@Req() req: any, @Query('visibility') visibility?: string) {
+    if (visibility === 'admin_curated') {
+      return this.designsService.findAdminCuratedTemplates();
+    }
     const userId = req.user.id;
     const allDesigns = await this.designsService.findAll(userId);
-    // Filter to only templates
+    // Return only templates owned by the requesting user (exclude admin_curated rows)
     return allDesigns.filter(d => d.type === 'template');
   }
 

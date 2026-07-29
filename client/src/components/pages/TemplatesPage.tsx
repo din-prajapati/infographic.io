@@ -1,5 +1,5 @@
-import { Search, Plus, ChevronDown } from "lucide-react";
-import { useState, useEffect, CSSProperties } from "react";
+import { Search, Plus } from "lucide-react";
+import { useState, CSSProperties } from "react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Badge } from "../ui/badge";
@@ -11,11 +11,9 @@ import {
   SelectValue,
 } from "../ui/select";
 import { ImageWithFallback } from "../figma/ImageWithFallback";
-import { loadTemplates, DesignMetadata } from "../../lib/storage";
-import { templatesApi } from "../../lib/api";
+import { templatesApi, canvasTemplatesApi } from "../../lib/api";
 import { useQuery } from "@tanstack/react-query";
 import { STARTER_CANVAS_TEMPLATES } from "../../lib/starterCanvasTemplates";
-import { PREMIUM_CANVAS_TEMPLATES } from "../../lib/premiumTemplates";
 
 interface TemplatesPageProps {
   onOpenEditor?: (templateId?: string) => void;
@@ -33,7 +31,7 @@ interface TemplateItem {
   isPremium?: boolean;
 }
 
-const templates: TemplateItem[] = STARTER_CANVAS_TEMPLATES.map((template) => ({
+const starterTemplates: TemplateItem[] = STARTER_CANVAS_TEMPLATES.map((template) => ({
   id: template.id,
   title: template.name,
   description: template.description,
@@ -43,23 +41,10 @@ const templates: TemplateItem[] = STARTER_CANVAS_TEMPLATES.map((template) => ({
   image: template.image,
 }));
 
-const premiumTemplates: TemplateItem[] = PREMIUM_CANVAS_TEMPLATES.map((template) => ({
-  id: template.id,
-  title: template.name,
-  description: template.description,
-  uses: "Premium",
-  badge: template.badge,
-  badgeStyle: { backgroundColor: "var(--badge-premium-bg, #0ca0eb)", color: "var(--badge-premium-text, #ffffff)" },
-  image: template.image,
-  isPremium: true,
-}));
-
 export function TemplatesPage({ onOpenEditor }: TemplatesPageProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all-categories");
   const [selectedStyle, setSelectedStyle] = useState("all-styles");
-  const [customTemplates, setCustomTemplates] = useState<DesignMetadata[]>([]);
-  const [showCustomOnly, setShowCustomOnly] = useState(false);
 
   // API templates (DB layout descriptors used internally for AI generation)
   // are intentionally excluded from the gallery — they have no canvasData or
@@ -70,38 +55,65 @@ export function TemplatesPage({ onOpenEditor }: TemplatesPageProps) {
     queryFn: () => templatesApi.getAll(),
   });
 
-  // Load custom templates on mount
-  useEffect(() => {
-    const loadCustomTemplates = async () => {
-      try {
-        const templates = await loadTemplates();
-        setCustomTemplates(templates);
-      } catch (error) {
-        console.error('Error loading custom templates:', error);
-      }
-    };
-    loadCustomTemplates();
-  }, []);
+  // My Templates — user's own saved private templates, fetched via API (AC3)
+  const {
+    data: myTemplatesRaw = [],
+    isLoading: myTemplatesLoading,
+  } = useQuery({
+    queryKey: ['/api/v1/canvas-templates', 'my'],
+    queryFn: () => canvasTemplatesApi.getAll(),
+    // Return empty array on error so the section simply hides rather than crashing
+    throwOnError: false,
+  });
 
-  // Gallery shows: saved custom designs, premium client-side templates, starter templates.
-  // DB API templates (layout descriptors for AI generation) are excluded — they
-  // have no canvasData or thumbnail and would open a blank editor if clicked.
+  const myTemplates: TemplateItem[] = myTemplatesRaw.map((t) => ({
+    id: t.id,
+    title: t.name,
+    description: t.category || 'My template',
+    uses: 'My Templates',
+    badge: t.category || 'Custom',
+    badgeStyle: { backgroundColor: 'var(--badge-custom-bg)', color: 'var(--badge-custom-text)' },
+    image: t.thumbnail || '',
+    isCustom: true,
+  }));
+
+  // Premium gallery — admin_curated templates from DB (AC9)
+  const {
+    data: adminCuratedRaw = [],
+    isLoading: premiumLoading,
+    isError: premiumError,
+  } = useQuery({
+    queryKey: ['/api/v1/canvas-templates', 'admin_curated'],
+    queryFn: () => canvasTemplatesApi.getAdminCurated(),
+    // Do NOT fall back to bundled data on error — show a clear error state (AC10)
+    throwOnError: false,
+    retry: 1,
+  });
+
+  const premiumTemplates: TemplateItem[] = adminCuratedRaw.map((t) => ({
+    id: t.id,
+    title: t.name,
+    description: t.description || t.category || '',
+    uses: 'Premium',
+    badge: t.badge || t.category || '',
+    badgeStyle: { backgroundColor: "var(--badge-premium-bg, #0ca0eb)", color: "var(--badge-premium-text, #ffffff)" },
+    image: t.thumbnail || '',
+    isPremium: true,
+  }));
+
+  // Gallery shows: premium (from DB) + starter templates
   const allTemplates: TemplateItem[] = [
-    ...customTemplates.map(t => ({
-      id: t.id,
-      title: t.name,
-      description: t.category || "Custom template",
-      uses: "Custom",
-      badge: t.category || "Custom",
-      badgeStyle: { backgroundColor: 'var(--badge-custom-bg)', color: 'var(--badge-custom-text)' },
-      image: t.thumbnail,
-      isCustom: true,
-    })),
-    ...(!showCustomOnly ? premiumTemplates : []),
-    ...(!showCustomOnly ? templates : []),
+    ...premiumTemplates,
+    ...starterTemplates,
   ];
 
-  // Filter templates based on search and filters
+  // Filter My Templates based on search
+  const filteredMyTemplates = myTemplates.filter((t) =>
+    t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    t.description.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
+
+  // Filter gallery templates based on search and category/style filters
   const filteredTemplates = allTemplates.filter((template) => {
     const matchesSearch =
       template.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -109,16 +121,14 @@ export function TemplatesPage({ onOpenEditor }: TemplatesPageProps) {
 
     const matchesCategory =
       selectedCategory === "all-categories" ||
-      (selectedCategory === "custom" && template.isCustom) ||
       (selectedCategory === "premium" && template.isPremium) ||
-      (selectedCategory === "real-estate" && !template.isCustom && !template.isPremium) ||
+      (selectedCategory === "real-estate" && !template.isPremium) ||
       (selectedCategory === "business" && template.badge?.toLowerCase() === "business") ||
       (selectedCategory === "marketing" && template.badge?.toLowerCase() === "marketing");
 
     const matchesStyle =
       selectedStyle === "all-styles" ||
-      template.badge.toLowerCase() === selectedStyle ||
-      (selectedStyle === "custom" && template.isCustom);
+      template.badge.toLowerCase() === selectedStyle;
 
     return matchesSearch && matchesCategory && matchesStyle;
   });
@@ -161,7 +171,6 @@ export function TemplatesPage({ onOpenEditor }: TemplatesPageProps) {
               <SelectContent>
                 <SelectItem value="all-categories">All Categories</SelectItem>
                 <SelectItem value="premium">Premium</SelectItem>
-                <SelectItem value="custom">My Templates</SelectItem>
                 <SelectItem value="real-estate">Real Estate</SelectItem>
                 <SelectItem value="business">Business</SelectItem>
                 <SelectItem value="marketing">Marketing</SelectItem>
@@ -173,25 +182,86 @@ export function TemplatesPage({ onOpenEditor }: TemplatesPageProps) {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all-styles">All Styles</SelectItem>
-                <SelectItem value="custom">Custom</SelectItem>
                 <SelectItem value="luxury">Luxury</SelectItem>
                 <SelectItem value="standard">Standard</SelectItem>
                 <SelectItem value="budget">Budget</SelectItem>
               </SelectContent>
             </Select>
-            {customTemplates.length > 0 && (
-              <Button
-                variant={showCustomOnly ? "default" : "outline"}
-                onClick={() => setShowCustomOnly(!showCustomOnly)}
-                className="h-11 border-border text-foreground"
-              >
-                My Templates ({customTemplates.length})
-              </Button>
-            )}
           </div>
         </div>
 
-        {/* Template Grid */}
+        {/* My Templates — user-saved private templates (AC3) */}
+        {(myTemplatesLoading || myTemplates.length > 0) && (
+          <div className="mb-10">
+            <h2 className="mb-4 text-foreground">My Templates</h2>
+            {myTemplatesLoading ? (
+              <p className="text-sm text-muted-foreground">Loading your templates…</p>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {filteredMyTemplates.length > 0 ? (
+                  filteredMyTemplates.map((template) => (
+                    <div
+                      key={template.id}
+                      className="glass rounded-2xl border border-border overflow-hidden hover:shadow-lg transition-shadow flex flex-col"
+                    >
+                      <div className="relative aspect-[4/3] overflow-hidden bg-muted flex items-center justify-center">
+                        <img
+                          src={template.image}
+                          alt={template.title}
+                          className="w-full h-full object-contain"
+                        />
+                        <div className="absolute top-3 left-3">
+                          <Badge style={{ backgroundColor: 'var(--badge-custom-bg)', color: 'var(--badge-custom-text)' }}>
+                            My Template
+                          </Badge>
+                        </div>
+                        <div className="absolute top-3 right-3">
+                          <Badge style={template.badgeStyle}>{template.badge}</Badge>
+                        </div>
+                      </div>
+                      <div className="p-4 flex-1 flex flex-col">
+                        <h3 className="mb-1 text-foreground">{template.title}</h3>
+                        <p className="text-xs text-muted-foreground mb-3">{template.description}</p>
+                        <div className="flex items-center justify-between mt-auto">
+                          <span className="text-xs text-muted-foreground">Saved</span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-primary hover:text-primary/80 h-8"
+                            onClick={() => onOpenEditor?.(String(template.id))}
+                          >
+                            Use Template
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <p className="col-span-full text-sm text-muted-foreground">
+                    No saved templates match your search.
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Premium gallery loading / error state (AC10) */}
+        {premiumLoading && (
+          <p className="text-sm text-muted-foreground mb-6">Loading premium templates…</p>
+        )}
+        {!premiumLoading && premiumError && (
+          <div className="mb-6 rounded-lg border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
+            Premium templates could not be loaded. Check your connection and refresh the page.
+          </div>
+        )}
+        {!premiumLoading && !premiumError && adminCuratedRaw.length === 0 && (
+          <div className="mb-6 rounded-lg border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
+            No premium templates available yet.
+          </div>
+        )}
+
+        {/* Gallery Grid — Premium (from DB) + Starter templates */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 items-stretch">
           {filteredTemplates.length > 0 ? (
             filteredTemplates.map((template) => (
@@ -203,19 +273,11 @@ export function TemplatesPage({ onOpenEditor }: TemplatesPageProps) {
                     fit entirely (object-contain) so premium format variety
                     (Story, Header, A4…) never crops and all cards share height. */}
                 <div className="relative aspect-[4/3] overflow-hidden bg-muted flex items-center justify-center">
-                  {template.isCustom ? (
-                    <img
-                      src={template.image}
-                      alt={template.title}
-                      className="w-full h-full object-contain"
-                    />
-                  ) : (
-                    <ImageWithFallback
-                      src={template.image}
-                      alt={template.title}
-                      className="w-full h-full object-contain"
-                    />
-                  )}
+                  <ImageWithFallback
+                    src={template.image}
+                    alt={template.title}
+                    className="w-full h-full object-contain"
+                  />
                   <div className="absolute top-3 right-3">
                     <Badge style={template.badgeStyle}>
                       {template.badge}
@@ -225,13 +287,6 @@ export function TemplatesPage({ onOpenEditor }: TemplatesPageProps) {
                     <div className="absolute top-3 left-3">
                       <Badge style={{ backgroundColor: "var(--badge-premium-bg, #0ca0eb)", color: "var(--badge-premium-text, #ffffff)" }}>
                         Premium
-                      </Badge>
-                    </div>
-                  )}
-                  {template.isCustom && (
-                    <div className="absolute top-3 left-3">
-                      <Badge style={{ backgroundColor: 'var(--badge-custom-bg)', color: 'var(--badge-custom-text)' }}>
-                        Custom
                       </Badge>
                     </div>
                   )}
@@ -245,7 +300,7 @@ export function TemplatesPage({ onOpenEditor }: TemplatesPageProps) {
                   </p>
                   <div className="flex items-center justify-between mt-auto">
                     <span className="text-xs text-muted-foreground">
-                      {template.uses} {template.isCustom ? '' : 'uses'}
+                      {template.uses} uses
                     </span>
                     <Button
                       variant="ghost"
@@ -262,24 +317,17 @@ export function TemplatesPage({ onOpenEditor }: TemplatesPageProps) {
           ) : (
             <div className="col-span-full flex flex-col items-center justify-center py-16">
               <p className="text-muted-foreground mb-4">
-                {showCustomOnly && customTemplates.length === 0
-                  ? "No custom templates yet. Save a design as template!"
-                  : "No templates found matching your criteria"}
+                No templates found matching your criteria
               </p>
               <Button
                 variant="outline"
                 onClick={() => {
-                  if (showCustomOnly && customTemplates.length === 0) {
-                    onOpenEditor?.();
-                  } else {
-                    setSearchQuery("");
-                    setSelectedCategory("all-categories");
-                    setSelectedStyle("all-styles");
-                    setShowCustomOnly(false);
-                  }
+                  setSearchQuery("");
+                  setSelectedCategory("all-categories");
+                  setSelectedStyle("all-styles");
                 }}
               >
-                {showCustomOnly && customTemplates.length === 0 ? "Create Design" : "Clear Filters"}
+                Clear Filters
               </Button>
             </div>
           )}

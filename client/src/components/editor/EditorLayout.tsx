@@ -16,6 +16,7 @@ import {
   generateId,
   type DesignMetadata,
 } from "../../lib/storage";
+import { canvasTemplatesApi } from "../../lib/api";
 import {
   getGalleryCanvasTemplateById,
   isGalleryTemplateId,
@@ -43,6 +44,7 @@ export function EditorLayout({ onBackClick, designId, templateId }: EditorLayout
   const [designName, setDesignName] = useState("Untitled Design");
   const [currentDesignId, setCurrentDesignId] = useState<string | null>(null);
   const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
+  const [isSaveAsTemplateOpen, setIsSaveAsTemplateOpen] = useState(false);
 
   // Canvas store actions
   const undo = useCanvasStore((state) => state.undo);
@@ -233,6 +235,55 @@ export function EditorLayout({ onBackClick, designId, templateId }: EditorLayout
     setIsSaveDialogOpen(false);
   };
 
+  const handleSaveAsTemplateClick = () => {
+    setIsSaveAsTemplateOpen(true);
+  };
+
+  const handleSaveAsTemplateClose = () => {
+    setIsSaveAsTemplateOpen(false);
+  };
+
+  /**
+   * Saves the current canvas as a new private template — a copy operation.
+   * Does NOT update currentDesignId or the URL; the user keeps editing their
+   * original design (AC4).
+   */
+  const handleSaveAsTemplate = async (data: SaveDialogData) => {
+    try {
+      const canvasData = captureCanvasData();
+      const thumbnail = generateThumbnailSync();
+
+      const templatePayload = {
+        id: generateId(),
+        name: data.name,
+        type: 'template' as const,
+        category: data.category,
+        thumbnail,
+        canvasData,
+        tags: data.tags,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        visibility: 'private' as const,
+      };
+
+      // Call the API directly — bypassing storage.ts so we never mutate
+      // currentDesignId or the LocalStorage designs cache (this is a template copy).
+      await canvasTemplatesApi.save(templatePayload);
+
+      toast.success('Template saved!', {
+        description: `"${data.name}" has been saved to My Templates.`,
+      });
+    } catch (error) {
+      console.error('Error saving as template:', error);
+      // AC5: clear error toast, editor state untouched
+      toast.error('Template save failed', {
+        description: 'Could not save your template. Check your connection and try again.',
+      });
+    }
+
+    setIsSaveAsTemplateOpen(false);
+  };
+
   const handleExport = async () => {
     const toastId = toast.loading('Exporting design...');
     try {
@@ -320,11 +371,12 @@ export function EditorLayout({ onBackClick, designId, templateId }: EditorLayout
       <div className="h-screen w-screen flex flex-col overflow-hidden bg-background">
         {/* Top Toolbar */}
         {!isPreviewMode && (
-          <EditorToolbar 
+          <EditorToolbar
             onBackClick={onBackClick}
             designName={designName}
             onDesignNameChange={handleDesignNameChange}
             onSaveClick={handleSaveClick}
+            onSaveAsTemplateClick={handleSaveAsTemplateClick}
             onExportClick={handleExport}
             onPreviewClick={handlePreview}
           />
@@ -357,12 +409,21 @@ export function EditorLayout({ onBackClick, designId, templateId }: EditorLayout
           )}
         </div>
 
-        {/* Save Dialog */}
+        {/* Save Dialog (regular save — design or template) */}
         <SaveDialog
           isOpen={isSaveDialogOpen}
           onClose={handleSaveDialogClose}
           onSave={handleSave}
           initialName={designName}
+        />
+
+        {/* Save as Template Dialog — copy operation, never mutates the current design */}
+        <SaveDialog
+          isOpen={isSaveAsTemplateOpen}
+          onClose={handleSaveAsTemplateClose}
+          onSave={handleSaveAsTemplate}
+          initialName={designName}
+          initialType="template"
         />
       </div>
     </PanelStateProvider>
