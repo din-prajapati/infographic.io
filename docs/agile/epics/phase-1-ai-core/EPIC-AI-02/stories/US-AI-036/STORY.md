@@ -1,6 +1,6 @@
 # Story Card — US-AI-036
 
-> **Status:** 🔲 Not Started
+> **Status:** 🟡 Implementation Complete (pre-PR)
 > **Feature:** F-AI-02-05 — Canvas-aware generation orientation
 > **Epic:** [EPIC-AI-02](../../EPIC.md)
 > **Milestone:** [M-AI-06-photo-and-format](../../milestones/M-AI-06-photo-and-format.md)
@@ -31,12 +31,12 @@ Full design context (current-vs-proposed flow diagrams, decisions log): [docs/re
 
 ## Acceptance Criteria
 
-- [ ] **AC1 [happy-path]:** When a canvas is active, Quick Generate (`RightSidebar.tsx`) derives orientation from the canvas's current `canvasWidth`/`canvasHeight` (nearest of `landscape`/`portrait`/`square`) instead of the hardcoded `"landscape"` value.
-- [ ] **AC2 [happy-path]:** AI Chat's orientation picker (`AIChatBox.tsx`) defaults to the active canvas's derived orientation when the panel opens; the user can still manually override it per generation, same as today.
-- [ ] **AC3 [happy-path]:** When "Use This Design" is clicked and the active canvas has a deliberate origin (`templateId` present, or `type === 'template'`), the generated image is inserted as a new image layer sized to fit within the *existing* canvas dimensions (`objectFit: 'contain'`) — the canvas itself is not resized or replaced.
-- [ ] **AC4 [edge-case]:** When there is no deliberate origin (a true blank/default canvas with no `templateId`), "Use This Design" keeps today's behavior unchanged — auto-sizing a new artboard via `resolveAiArtboard()`.
-- [ ] **AC5 [error-path]:** If the active canvas's `canvasWidth`/`canvasHeight` are missing, zero, or otherwise malformed, orientation derivation falls back to `DEFAULT_ORIENTATION` ('landscape') rather than throwing or producing a broken generation request.
-- [ ] **AC6 [regression]:** `npm run check` and `npm run test:unit` pass. Existing manual-override behavior in the AI Chat orientation picker continues to work exactly as before this change.
+- [x] **AC1 [happy-path]:** When a canvas is active, Quick Generate (`RightSidebar.tsx`) derives orientation from the canvas's current `canvasWidth`/`canvasHeight` (nearest of `landscape`/`portrait`/`square`) instead of the hardcoded `"landscape"` value.
+- [x] **AC2 [happy-path]:** AI Chat's orientation picker (`AIChatBox.tsx`) defaults to the active canvas's derived orientation when the panel opens; the user can still manually override it per generation, same as today.
+- [x] **AC3 [happy-path]:** When "Use This Design" is clicked and the active canvas has a deliberate origin (`templateId` present, or `type === 'template'`), the generated image is inserted as a new image layer sized to fit within the *existing* canvas dimensions (`objectFit: 'contain'`) — the canvas itself is not resized or replaced.
+- [x] **AC4 [edge-case]:** When there is no deliberate origin (a true blank/default canvas with no `templateId`), "Use This Design" keeps today's behavior unchanged — auto-sizing a new artboard via `resolveAiArtboard()`.
+- [x] **AC5 [error-path]:** If the active canvas's `canvasWidth`/`canvasHeight` are missing, zero, or otherwise malformed, orientation derivation falls back to `DEFAULT_ORIENTATION` ('landscape') rather than throwing or producing a broken generation request.
+- [x] **AC6 [regression]:** `npm run check` and `npm run test:unit` pass. Existing manual-override behavior in the AI Chat orientation picker continues to work exactly as before this change.
 
 ---
 
@@ -116,13 +116,13 @@ Implementation rules:
 
 ## Definition of Done
 
-- [ ] All ACs checked ✅
+- [x] All ACs checked ✅
 - [ ] All test cases run and recorded
-- [ ] `npm run check` passes
-- [ ] `npm run test:unit` passes
+- [x] `npm run check` passes
+- [x] `npm run test:unit` passes
 - [ ] Manual flow verified on `localhost:5000`
 - [ ] PR merged (PR #_____)
-- [ ] [TASKS.md](./TASKS.md) task list fully checked
+- [x] [TASKS.md](./TASKS.md) task list fully checked
 
 ---
 

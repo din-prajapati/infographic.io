@@ -68,16 +68,16 @@ npm run test:unit
 
 ## Task Checklist
 
-- [ ] T1 — Orientation-derivation helper + unit tests
-- [ ] T2 — Quick Generate reads active canvas
-- [ ] T3 — AI Chat picker default from active canvas
-- [ ] T4 — Insert-as-layer vs. auto-resize branch
-- [ ] T5 — Tests (unit + manual)
-- [ ] `npm run check` passes ✅
-- [ ] `npm run test:unit` passes ✅
+- [x] T1 — Orientation-derivation helper + unit tests
+- [x] T2 — Quick Generate reads active canvas
+- [x] T3 — AI Chat picker default from active canvas
+- [x] T4 — Insert-as-layer vs. auto-resize branch
+- [x] T5 — Tests (unit + manual)
+- [x] `npm run check` passes ✅
+- [x] `npm run test:unit` passes ✅
 - [ ] Manual test recorded ✅
 - [ ] PR opened with story card as description ✅
-- [ ] STORY.md ACs updated ✅
+- [x] STORY.md ACs updated ✅
 
 ---
 

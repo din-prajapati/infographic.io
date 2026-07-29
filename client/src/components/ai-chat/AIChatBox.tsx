@@ -54,6 +54,7 @@ import { useGenerationWebSocket } from "../../hooks/useGenerationWebSocket";
 import { useAgentStore } from "../../hooks/useAgentStore";
 import { usePropertyStore } from "../../hooks/usePropertyStore";
 import { useCanvasStore } from "../../hooks/useCanvasStore";
+import { deriveOrientationFromCanvas } from "../../lib/canvasState";
 
 interface AIChatBoxProps {
   isExpanded: boolean;
@@ -117,7 +118,10 @@ export function AIChatBox({
     null,
   );
   const [generationOrientation, setGenerationOrientation] =
-    useState<InfographicOrientation>("landscape");
+    useState<InfographicOrientation>(() => {
+      const { canvasWidth, canvasHeight } = useCanvasStore.getState();
+      return deriveOrientationFromCanvas(canvasWidth, canvasHeight);
+    });
   const [generationQualityModel, setGenerationQualityModel] =
     useState<ImageQualityModel>("ideogram-turbo");
 
@@ -213,6 +217,16 @@ export function AIChatBox({
   // Sync with parent isExpanded prop
   useEffect(() => {
     setState((prev) => ({ ...prev, isExpanded }));
+  }, [isExpanded]);
+
+  // When the panel opens, default orientation to the active canvas's format (AC2).
+  // Reads dimensions once on open so a manual user override made while the panel
+  // is already visible is not silently overwritten.
+  useEffect(() => {
+    if (isExpanded) {
+      const { canvasWidth, canvasHeight } = useCanvasStore.getState();
+      setGenerationOrientation(deriveOrientationFromCanvas(canvasWidth, canvasHeight));
+    }
   }, [isExpanded]);
 
   // WebSocket hook for real-time progress updates

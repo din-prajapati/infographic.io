@@ -199,6 +199,26 @@ export const AI_ARTBOARD = AI_ARTBOARDS.landscape;
 
 export type AiOrientation = keyof typeof AI_ARTBOARDS;
 
+/** Fallback orientation used when canvas dimensions are missing or zero (AC5). */
+export const DEFAULT_ORIENTATION: AiOrientation = 'landscape';
+
+/**
+ * Derive generation orientation from the active canvas's pixel dimensions.
+ * Uses the same landscape/portrait/square ratio bucketing as resolveAiArtboard
+ * (ratio < 0.95 → portrait, > 1.05 → landscape, otherwise square).
+ * Falls back to DEFAULT_ORIENTATION when width/height are missing or zero.
+ */
+export function deriveOrientationFromCanvas(
+  width: number | undefined,
+  height: number | undefined,
+): AiOrientation {
+  if (!width || !height) return DEFAULT_ORIENTATION;
+  const ratio = width / height;
+  if (ratio < 0.95) return 'portrait';
+  if (ratio > 1.05) return 'landscape';
+  return 'square';
+}
+
 /** Pick artboard from decoded image pixels so portrait/landscape/square all fit correctly. */
 export function resolveAiArtboard(
   naturalWidth: number,
@@ -236,8 +256,16 @@ function loadImageFromSrc(src: string): Promise<HTMLImageElement> {
 }
 
 /**
- * Replace the entire canvas with a single AI-generated image, fitted (contain)
- * and centered. Clears any template elements that were previously loaded.
+ * Load an AI-generated image onto the canvas.
+ *
+ * Branch logic (AC3 / AC4):
+ * - Deliberate origin (canvas has existing elements, or canvasOrigin is set):
+ *   insert the image as a new layer at the bottom of the stack, sized to fit
+ *   within the existing canvas dimensions (objectFit: 'contain'). The canvas
+ *   itself is not resized or replaced.
+ * - No deliberate origin (truly blank canvas, no elements):
+ *   auto-resize the canvas to the AI image's orientation via resolveAiArtboard
+ *   (today's behavior — unchanged).
  */
 export async function loadAiVariationToCanvas(
   imageUrl: string,
@@ -245,8 +273,6 @@ export async function loadAiVariationToCanvas(
   preferredOrientation?: AiOrientation,
 ): Promise<boolean> {
   try {
-    const { loadCanvas } = useCanvasStore.getState();
-
     let imageSrc = imageUrl;
     try {
       const proxyUrl = `/api/proxy-image?url=${encodeURIComponent(imageUrl)}`;
@@ -265,46 +291,98 @@ export async function loadAiVariationToCanvas(
 
     // Fully decode before placing — avoids intermittent 0-dimension / partial paint
     const img = await loadImageFromSrc(imageSrc);
-    const artboard = preferredOrientation
-      ? { ...AI_ARTBOARDS[preferredOrientation], orientation: preferredOrientation }
-      : resolveAiArtboard(img.naturalWidth, img.naturalHeight);
-    const { width: canvasWidth, height: canvasHeight, orientation } = artboard;
 
-    const imageElement: ImageElement = {
-      id: `ai-gen-${Date.now()}`,
-      type: 'image',
-      src: imageSrc,
-      x: 0,
-      y: 0,
-      width: canvasWidth,
-      height: canvasHeight,
-      rotation: 0,
-      opacity: 1,
-      locked: false,
-      visible: true,
-      zIndex: 0,
-      name,
-      isAiImport: true,
-      aiOrientation: orientation,
-      objectFit: 'contain',
-      cornerRadius: 0,
-      flipHorizontal: false,
-      flipVertical: false,
-      colorOverlay: null,
-      filters: { brightness: 100, contrast: 100, saturation: 100 },
-    };
+    // Snapshot current canvas state before any mutation
+    const snapshot = useCanvasStore.getState();
 
-    loadCanvas({
-      elements: [imageElement],
-      selectedElementIds: [],
-      backgroundColor: '#FFFFFF',
-      canvasWidth,
-      canvasHeight,
-      canvasPanX: 0,
-      canvasPanY: 0,
-      zoom: 1,
-      history: { past: [], future: [] },
-    });
+    // A canvas has "deliberate origin" when it has existing elements (template or
+    // user content) OR when canvasOrigin was explicitly set by a template loader.
+    const hasDeliberateOrigin =
+      snapshot.elements.length > 0 || snapshot.canvasOrigin != null;
+
+    if (hasDeliberateOrigin) {
+      // AC3 — insert as a new background layer; leave the canvas dimensions untouched.
+      const { canvasWidth: activeW, canvasHeight: activeH, elements: existingElements } = snapshot;
+      const imageOrientation = preferredOrientation
+        ?? resolveAiArtboard(img.naturalWidth, img.naturalHeight).orientation;
+
+      // Place the AI image below all existing layers so template overlays stay on top.
+      const minZIndex = existingElements.length > 0
+        ? Math.min(...existingElements.map((el) => el.zIndex))
+        : 0;
+
+      const imageElement: ImageElement = {
+        id: `ai-gen-${Date.now()}`,
+        type: 'image',
+        src: imageSrc,
+        x: 0,
+        y: 0,
+        width: activeW,
+        height: activeH,
+        rotation: 0,
+        opacity: 1,
+        locked: false,
+        visible: true,
+        zIndex: minZIndex - 1,
+        name,
+        isAiImport: true,
+        aiOrientation: imageOrientation,
+        objectFit: 'contain',
+        cornerRadius: 0,
+        flipHorizontal: false,
+        flipVertical: false,
+        colorOverlay: null,
+        filters: { brightness: 100, contrast: 100, saturation: 100 },
+      };
+
+      // Prepend to preserve existing elements; canvas dimensions / background unchanged.
+      snapshot.loadCanvas({
+        elements: [imageElement, ...existingElements],
+        selectedElementIds: [],
+      });
+    } else {
+      // AC4 — blank canvas: auto-resize to the AI image's native orientation (unchanged behavior).
+      const artboard = preferredOrientation
+        ? { ...AI_ARTBOARDS[preferredOrientation], orientation: preferredOrientation }
+        : resolveAiArtboard(img.naturalWidth, img.naturalHeight);
+      const { width: canvasWidth, height: canvasHeight, orientation } = artboard;
+
+      const imageElement: ImageElement = {
+        id: `ai-gen-${Date.now()}`,
+        type: 'image',
+        src: imageSrc,
+        x: 0,
+        y: 0,
+        width: canvasWidth,
+        height: canvasHeight,
+        rotation: 0,
+        opacity: 1,
+        locked: false,
+        visible: true,
+        zIndex: 0,
+        name,
+        isAiImport: true,
+        aiOrientation: orientation,
+        objectFit: 'contain',
+        cornerRadius: 0,
+        flipHorizontal: false,
+        flipVertical: false,
+        colorOverlay: null,
+        filters: { brightness: 100, contrast: 100, saturation: 100 },
+      };
+
+      snapshot.loadCanvas({
+        elements: [imageElement],
+        selectedElementIds: [],
+        backgroundColor: '#FFFFFF',
+        canvasWidth,
+        canvasHeight,
+        canvasPanX: 0,
+        canvasPanY: 0,
+        zoom: 1,
+        history: { past: [], future: [] },
+      });
+    }
 
     return true;
   } catch (error) {

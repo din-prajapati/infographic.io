@@ -44,7 +44,7 @@ import { usePropertyStore } from "../../hooks/usePropertyStore";
 import { useAgentStore } from "../../hooks/useAgentStore";
 import { generationsApi, ResultVariation } from "../../lib/api";
 import { useGenerationWebSocket, GenerationProgress } from "../../hooks/useGenerationWebSocket";
-import { loadAiVariationToCanvas } from "../../lib/canvasState";
+import { loadAiVariationToCanvas, deriveOrientationFromCanvas } from "../../lib/canvasState";
 
 type TabType = "design" | "property-details" | "agent-info";
 
@@ -382,7 +382,7 @@ export function RightSidebar() {
         prompt,
         variations: 3,
         model: "ideogram-turbo",
-        orientation: "landscape",
+        orientation: deriveOrientationFromCanvas(canvasWidth, canvasHeight),
         agent: {
           name: agent.name || undefined,
           brokerage: agent.brokerage || undefined,

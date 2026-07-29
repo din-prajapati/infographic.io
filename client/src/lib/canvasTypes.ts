@@ -108,6 +108,13 @@ export interface CanvasState {
     past: CanvasElement[][];
     future: CanvasElement[][];
   };
+  /**
+   * Tracks the deliberate origin of the current canvas (set when a template is
+   * explicitly loaded via setCanvasOrigin). null = blank/default canvas.
+   * Used by loadAiVariationToCanvas to decide whether to insert as a layer (AC3)
+   * or auto-resize (AC4). Callers such as EditorLayout can set this on template load.
+   */
+  canvasOrigin: { templateId: string } | null;
 }
 
 export interface CanvasActions {
@@ -152,6 +159,8 @@ export interface CanvasActions {
   clearCanvas: () => void;
   loadCanvas: (state: Partial<CanvasState>) => void;
   getSelectedElements: () => CanvasElement[];
+  /** Explicitly mark the canvas as having a template origin (call when loading a template). */
+  setCanvasOrigin: (origin: { templateId: string } | null) => void;
 }
 
 export type CanvasStore = CanvasState & CanvasActions;

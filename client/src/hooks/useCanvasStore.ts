@@ -21,6 +21,7 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
     past: [],
     future: [],
   },
+  canvasOrigin: null,
 
   // Element operations
   addElement: (element) => {
@@ -241,6 +242,10 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
       ...current,
       ...state,
     }));
+  },
+
+  setCanvasOrigin: (origin) => {
+    set({ canvasOrigin: origin });
   },
 
   getSelectedElements: () => {
