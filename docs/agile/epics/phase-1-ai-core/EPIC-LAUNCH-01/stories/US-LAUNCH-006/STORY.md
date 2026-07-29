@@ -82,7 +82,7 @@ Implementation rules:
 | TC-LAUNCH-006-01 | Auto (unit) | P0 | Given a subscription.charged webhook, when processed, then EmailService.send called with plan, ₹ amount, payment ID, org name | ✅ | |
 | TC-LAUNCH-006-02 | Auto (unit) | P0 | Given EmailService.send rejects/fails, when webhook processed, then subscription still ACTIVE and handler does not throw | ✅ | |
 | TC-LAUNCH-006-03 | Auto (unit) | P1 | Given a renewal charge on an ACTIVE subscription, then a receipt is also sent | ✅ | |
-| TC-LAUNCH-006-04 | Manual | P1 | Given the live-mode real ₹ test (US-LAUNCH-005 AC6), then the receipt arrives in a real inbox with correct amount | ⏸ | Blocked — US-LAUNCH-005 (RazorPay live-mode) is paused pending RazorPay approval |
+| TC-LAUNCH-006-04 | Manual | P1 | Given the live-mode real ₹ test (US-LAUNCH-005 AC6), then the receipt arrives in a real inbox with correct amount | ⏸ | Deferred — RazorPay live mode is approved and keys are live (US-LAUNCH-005 AC1–4 done); this TC only needs the real ₹ transaction itself (AC6), which is intentionally not yet run |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 
@@ -94,8 +94,8 @@ Implementation rules:
 - [x] All test cases run and recorded
 - [x] `npm run check` passes
 - [x] `npm run test:unit` passes
-- [ ] Manual flow verified — blocked on US-LAUNCH-005 (RazorPay live mode paused)
-- [ ] PR merged (PR #_____)
+- [ ] Manual flow verified — RazorPay is live (US-LAUNCH-005 AC1–4 done); pending only the real ₹ transaction test itself
+- [ ] PR merged — no PR opened; code is on `main` via commit `fa1d345`
 - [x] [TASKS.md](./TASKS.md) task list fully checked
 
 ---

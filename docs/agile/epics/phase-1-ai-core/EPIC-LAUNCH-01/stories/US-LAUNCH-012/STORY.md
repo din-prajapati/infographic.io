@@ -117,7 +117,7 @@ Rules:
 | TC-LAUNCH-012-01 | Auto (unit) | P0 | Given a first-time `subscription.payment.failed` webhook (idempotency check passes), when `handlePaymentFailed` runs, then `EmailService.send` is called with `to = subscription.user.email`, plan name, `paymentData.amount / 100` as ₹ amount, `paymentData.id`, and `/account` in the body | ✅ | |
 | TC-LAUNCH-012-02 | Auto (unit) | P0 | Given `EmailService.send` rejects with an Error, when `handlePaymentFailed` runs, then the method resolves without throwing and `updateSubscription` was still called with `{ status: PAST_DUE }` | ✅ | |
 | TC-LAUNCH-012-03 | Auto (unit) | P1 | Given `getPaymentByExternalId` returns an existing payment record (duplicate event), when `handlePaymentFailed` runs, then `EmailService.send` is never called | ✅ | |
-| TC-LAUNCH-012-04 | Manual | P1 | Given the live-mode real ₹ test environment (US-LAUNCH-005), when a charge is deliberately failed, then the payment-failed email arrives in the owner's inbox with the correct plan name, ₹ amount, and a working `/account` link | ⏸ | Blocked — US-LAUNCH-005 (RazorPay live-mode) is paused pending RazorPay approval |
+| TC-LAUNCH-012-04 | Manual | P1 | Given the live-mode real ₹ test environment (US-LAUNCH-005), when a charge is deliberately failed, then the payment-failed email arrives in the owner's inbox with the correct plan name, ₹ amount, and a working `/account` link | ⏸ | Deferred — RazorPay live mode is approved and keys are live (US-LAUNCH-005 AC1–4 done); this TC needs a deliberately-failed real charge, which is intentionally not yet run |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 
@@ -129,8 +129,8 @@ Rules:
 - [x] All test cases run and recorded
 - [x] `npm run check` passes
 - [x] `npm run test:unit` passes
-- [ ] Manual flow verified — blocked on US-LAUNCH-005 (RazorPay live mode paused)
-- [ ] PR merged (PR #_____)
+- [ ] Manual flow verified — RazorPay is live (US-LAUNCH-005 AC1–4 done); pending only the deliberately-failed real charge test itself
+- [ ] PR merged — no PR opened; code is on `main` via commit `fa1d345`
 - [x] [TASKS.md](./TASKS.md) task list fully checked
 
 ---

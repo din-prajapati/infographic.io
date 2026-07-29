@@ -1,6 +1,6 @@
 # Story Card — US-LAUNCH-013
 
-> **Status:** 🟡 Implementation Complete, pending manual verification (TC-06/07)
+> **Status:** 🟡 Implemented — merged to `main` (`fa1d345` + TC-05 test in `5c52dc0`), pending manual verification (TC-06/07)
 > **Feature:** F-LAUNCH-02 — Transactional Email
 > **Epic:** [EPIC-LAUNCH-01](../../EPIC.md)
 > **Milestone:** [M-LAUNCH-02-revenue-on](../../milestones/M-LAUNCH-02-revenue-on.md)
@@ -163,8 +163,8 @@ Rules:
 - [x] `npm run check` passes (0 new TypeScript errors)
 - [x] `npm run test:unit` passes (no regressions)
 - [x] `npx prisma generate --schema=api/prisma/schema.prisma` run after schema change
-- [ ] Manual flow verified (TC-LAUNCH-013-06 minimum)
-- [ ] PR merged (PR #_____)
+- [ ] Manual flow verified (TC-LAUNCH-013-06 minimum) — RazorPay is live now; still needs a qualifying ACTIVE subscription row to test against
+- [ ] PR merged — no PR opened; code is on `main` via commits `fa1d345` + `5c52dc0`
 - [x] [TASKS.md](./TASKS.md) task list fully checked
 
 ---

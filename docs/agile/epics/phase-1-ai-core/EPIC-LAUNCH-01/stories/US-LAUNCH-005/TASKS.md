@@ -71,14 +71,14 @@ npm run verify:payment-prereqs   # against prod config (AC5)
 
 ## Task Checklist
 
-- [ ] T1 — startup assert
-- [ ] T2 — unit tests
-- [ ] T3 — env docs
-- [ ] T4 — HUMAN ops checklist complete (incl. real ₹ transaction + refund)
-- [ ] `npm run check` passes ✅
-- [ ] `npm run test:unit` passes ✅
-- [ ] PR opened with story card as description ✅
-- [ ] STORY.md ACs updated ✅
+- [x] T1 — startup assert — shipped separately under US-LAUNCH-010's boot-validation guard (`api/src/config/env.validation.ts` / `app-env.ts`), not a standalone T1 PR here
+- [x] T2 — unit tests — covered by US-LAUNCH-010's test suite
+- [ ] T3 — env docs — `ENV.yaml` not yet updated with the actual live var names used
+- [ ] T4 — HUMAN ops checklist complete (incl. real ₹ transaction + refund) — KYC/plans/webhook/Railway vars done 2026-07-28; real ₹ transaction + refund intentionally not run
+- [x] `npm run check` passes ✅
+- [x] `npm run test:unit` passes ✅
+- [ ] PR opened with story card as description — no PR; this story's remaining scope is ops-only (T3/T4)
+- [x] STORY.md ACs updated ✅
 
 ---
 

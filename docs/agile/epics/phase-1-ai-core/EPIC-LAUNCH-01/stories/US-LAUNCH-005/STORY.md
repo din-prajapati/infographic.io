@@ -1,6 +1,6 @@
 # Story Card — US-LAUNCH-005
 
-> **Status:** 🔲 Not Started
+> **Status:** 🟡 In Progress — AC1–AC4 ✅ done (live-mode approved, plans created, Railway env vars set, boot assert already shipped via US-LAUNCH-010); AC5 unconfirmed (verify:payment-prereqs not yet run against prod); AC6 (one real ₹ subscription + refund) intentionally not run — explicit instruction was to smoke-test without starting checkout
 > **Feature:** F-LAUNCH-04 — Payments Go-Live
 > **Epic:** [EPIC-LAUNCH-01](../../EPIC.md)
 > **Milestone:** [M-LAUNCH-02-revenue-on](../../milestones/M-LAUNCH-02-revenue-on.md)
@@ -21,12 +21,12 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC1 [happy-path] (HUMAN):** RazorPay account activation (KYC + website review) approved for live mode — requires US-LAUNCH-001 legal pages live on the production domain
-- [ ] **AC2 [happy-path] (HUMAN):** Live plans re-created in the live-mode dashboard — SOLO monthly/annual, TEAM monthly/annual (test-mode plans do not carry over); TEAM re-verified at ₹6,999 / 699900 paise (PT-05 equivalent in live mode)
-- [ ] **AC3 [happy-path] (HUMAN):** Railway production env vars set: `RAZORPAY_KEY_ID`/`SECRET`/`VITE_RAZORPAY_KEY_ID` = `rzp_live_*`, all four `RAZORPAY_PLAN_*` = live plan IDs, `RAZORPAY_WEBHOOK_SECRET` = secret of a live webhook pointing at `https://{prod-domain}/api/v1/webhooks/razorpay`
-- [ ] **AC4 [error-path] (CODE):** Startup assert — when `NODE_ENV=production`, boot fails fast with a clear error if `RAZORPAY_KEY_ID` starts with `rzp_test_` or any configured `RAZORPAY_PLAN_*` var is empty; local dev with test keys is unaffected
-- [ ] **AC5 [regression]:** `npm run verify:payment-prereqs` passes against production config
-- [ ] **AC6 [happy-path] (HUMAN):** One real ₹ subscription completed on production (smallest plan): checkout → `subscription.charged` webhook received & signature-verified → Subscription `PENDING → ACTIVE` — then refunded/cancelled from the dashboard
+- [x] **AC1 [happy-path] (HUMAN):** RazorPay account activation (KYC + website review) approved for live mode — requires US-LAUNCH-001 legal pages live on the production domain. **Done 2026-07-28** — RazorPay account approved, live keys deployed.
+- [x] **AC2 [happy-path] (HUMAN):** Live plans re-created in the live-mode dashboard — SOLO monthly/annual, TEAM monthly/annual (test-mode plans do not carry over); TEAM re-verified at ₹6,999 / 699900 paise (PT-05 equivalent in live mode). **Done** — SOLO Monthly/Annual, TEAM Monthly/Annual live plans created (SOLO Annual ₹30,590, TEAM Annual ₹71,390); draft SOLO_PRO also created.
+- [x] **AC3 [happy-path] (HUMAN):** Railway production env vars set: `RAZORPAY_KEY_ID`/`SECRET`/`VITE_RAZORPAY_KEY_ID` = `rzp_live_*`, all four `RAZORPAY_PLAN_*` = live plan IDs, `RAZORPAY_WEBHOOK_SECRET` = secret of a live webhook pointing at `https://{prod-domain}/api/v1/webhooks/razorpay`. **Done** — verified via masked Railway CLI check; webhook secret confirmed in RazorPay's `rzp_live_hook_*` format (correct, not a leaked key).
+- [x] **AC4 [error-path] (CODE):** Startup assert — when `NODE_ENV=production`, boot fails fast with a clear error if `RAZORPAY_KEY_ID` starts with `rzp_test_` or any configured `RAZORPAY_PLAN_*` var is empty; local dev with test keys is unaffected. **Already shipped** via US-LAUNCH-010 (`api/src/config/env.validation.ts` / `app-env.ts`) — production has booted successfully with live keys, confirming the guard passes as expected.
+- [ ] **AC5 [regression]:** `npm run verify:payment-prereqs` passes against production config — **not yet run** against the live production config; still open.
+- [ ] **AC6 [happy-path] (HUMAN):** One real ₹ subscription completed on production (smallest plan): checkout → `subscription.charged` webhook received & signature-verified → Subscription `PENDING → ACTIVE` — then refunded/cancelled from the dashboard. **Intentionally not run yet** — explicit instruction during the Task 3 smoke test was "DO NOT Start Checkout Flow." Not blocked on RazorPay approval (that part is done); blocked only on a deliberate decision to run a real-money test.
 
 ---
 
@@ -76,12 +76,12 @@ Implementation rules:
 
 ## Human Ops Checklist (AC1–AC3, AC6)
 
-1. Complete RazorPay KYC + submit production URL for activation review (legal pages must be live)
-2. Dashboard → live mode → create 4 plans (SOLO/TEAM × monthly/annual); record IDs in Railway
-3. Dashboard → live mode → create webhook `https://{prod-domain}/api/v1/webhooks/razorpay`, events: subscription lifecycle + payments; record secret in Railway
-4. Set all live env vars in Railway; redeploy; confirm boot passes the AC4 assert
-5. Run `npm run verify:payment-prereqs` against prod config
-6. Buy smallest plan with a real card → verify webhook → ACTIVE in DB → refund from dashboard
+1. ✅ Complete RazorPay KYC + submit production URL for activation review (legal pages must be live) — **done, approved 2026-07-28**
+2. ✅ Dashboard → live mode → create 4 plans (SOLO/TEAM × monthly/annual); record IDs in Railway — **done**
+3. ✅ Dashboard → live mode → create webhook `https://{prod-domain}/api/v1/webhooks/razorpay`, events: subscription lifecycle + payments; record secret in Railway — **done**
+4. ✅ Set all live env vars in Railway; redeploy; confirm boot passes the AC4 assert — **done, production booted successfully with live keys**
+5. 🔲 Run `npm run verify:payment-prereqs` against prod config — **not yet run**
+6. 🔲 Buy smallest plan with a real card → verify webhook → ACTIVE in DB → refund from dashboard — **intentionally deferred, not run**
 
 ---
 
@@ -89,10 +89,10 @@ Implementation rules:
 
 | TC ID | Type | Priority | Scenario | Status | Finding |
 |-------|------|----------|----------|--------|---------|
-| TC-LAUNCH-005-01 | Auto (unit) | P0 | Given NODE_ENV=production and rzp_test_ key, when assert runs, then boot throws naming RAZORPAY_KEY_ID | 🔲 | |
-| TC-LAUNCH-005-02 | Auto (unit) | P0 | Given NODE_ENV=development and rzp_test_ key, when assert runs, then no throw | 🔲 | |
-| TC-LAUNCH-005-03 | Auto (unit) | P1 | Given production and a missing RAZORPAY_PLAN_TEAM_ANNUAL, then boot throws naming that var | 🔲 | |
-| TC-LAUNCH-005-04 | Manual | P0 | Real ₹ end-to-end: checkout → webhook signature verified → PENDING→ACTIVE → refund (AC6) | 🔲 | |
+| TC-LAUNCH-005-01 | Auto (unit) | P0 | Given NODE_ENV=production and rzp_test_ key, when assert runs, then boot throws naming RAZORPAY_KEY_ID | ✅ | Covered by US-LAUNCH-010's boot-guard tests; production has since booted successfully with live keys, confirming the inverse (live key passes) |
+| TC-LAUNCH-005-02 | Auto (unit) | P0 | Given NODE_ENV=development and rzp_test_ key, when assert runs, then no throw | ✅ | Covered by US-LAUNCH-010 |
+| TC-LAUNCH-005-03 | Auto (unit) | P1 | Given production and a missing RAZORPAY_PLAN_TEAM_ANNUAL, then boot throws naming that var | 🔲 | Not directly verified — all four plan IDs are populated in production, so this path hasn't been exercised live |
+| TC-LAUNCH-005-04 | Manual | P0 | Real ₹ end-to-end: checkout → webhook signature verified → PENDING→ACTIVE → refund (AC6) | ⏸ | Deferred — explicit instruction was not to start checkout during the Task 3 smoke test |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 
@@ -100,12 +100,12 @@ Implementation rules:
 
 ## Definition of Done
 
-- [ ] All ACs checked ✅ (including HUMAN ops checklist)
-- [ ] All test cases run and recorded
-- [ ] `npm run check` passes
-- [ ] `npm run test:unit` passes
-- [ ] PR merged (PR #_____)
-- [ ] [TASKS.md](./TASKS.md) task list fully checked
+- [ ] All ACs checked ✅ (including HUMAN ops checklist) — AC1–4 done, AC5/AC6 open
+- [ ] All test cases run and recorded — TC-01/02 covered, TC-03/04 open
+- [x] `npm run check` passes
+- [x] `npm run test:unit` passes
+- [ ] PR merged — no PR opened; live-key/plan/env work was ops (Railway + RazorPay dashboards), not a code change
+- [ ] [TASKS.md](./TASKS.md) task list fully checked — T4 (HUMAN ops) mostly done, T1–T3 not tracked as a separate PR since the boot assert shipped under US-LAUNCH-010
 
 ---
 

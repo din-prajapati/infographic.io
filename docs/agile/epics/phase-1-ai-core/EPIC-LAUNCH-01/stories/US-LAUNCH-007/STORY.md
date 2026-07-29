@@ -1,6 +1,6 @@
 # Story Card — US-LAUNCH-007
 
-> **Status:** ✅ Implementation Complete (pre-PR)
+> **Status:** 🟡 Implemented — merged to `main` (`fa1d345`); manual TC-01/03 still pending on a running server
 > **Feature:** F-LAUNCH-04 — Payments Go-Live
 > **Epic:** [EPIC-LAUNCH-01](../../EPIC.md)
 > **Milestone:** [M-LAUNCH-02-revenue-on](../../milestones/M-LAUNCH-02-revenue-on.md)
@@ -94,8 +94,8 @@ Implementation rules:
 - [x] All test cases run and recorded (2 manual TCs still pending a running-server check)
 - [x] `npm run check` passes
 - [x] `npm run test:unit` passes
-- [ ] Manual flow verified on `localhost:5000`
-- [ ] PR merged (PR #_____)
+- [ ] Manual flow verified — RazorPay is live in production now; TC-01/03 can be checked directly on `app.buildographic.com` instead of localhost
+- [ ] PR merged — no PR opened; code is on `main` via commit `fa1d345`
 - [x] [TASKS.md](./TASKS.md) task list fully checked
 
 ---

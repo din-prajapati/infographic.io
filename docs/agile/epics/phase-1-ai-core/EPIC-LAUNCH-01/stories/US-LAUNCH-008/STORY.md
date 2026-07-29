@@ -1,6 +1,6 @@
 # Story Card — US-LAUNCH-008
 
-> **Status:** 🟡 impl
+> **Status:** 🟡 Implemented — merged to `main` (`aaf3aef`), pending PR/milestone close
 > **Feature:** F-LAUNCH-05 — Metering Policy
 > **Epic:** [EPIC-LAUNCH-01](../../EPIC.md)
 > **Milestone:** [M-LAUNCH-02-revenue-on](../../milestones/M-LAUNCH-02-revenue-on.md)
@@ -94,7 +94,7 @@ Implementation rules:
 - [x] All test cases run and recorded
 - [x] `npm run check` passes
 - [x] `npm run test:unit` passes (111/111)
-- [ ] PR merged (PR #_____)
+- [ ] PR merged — no PR opened; code is on `main` via commit `aaf3aef`
 - [x] [TASKS.md](./TASKS.md) task list fully checked
 
 ---
