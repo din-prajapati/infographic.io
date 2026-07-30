@@ -128,6 +128,7 @@ diff /tmp/staging-before.txt /tmp/staging-after.txt && echo "staging identical"
 - [x] `git diff --name-only` shows no `.ts`/`.tsx` ✅
 - [ ] Staging variables identical before/after ✅ (manual verification — requires `railway` CLI)
 - [ ] PR opened with story card as description ✅
+- [x] STORY.md ACs updated ✅
 
 ---
 

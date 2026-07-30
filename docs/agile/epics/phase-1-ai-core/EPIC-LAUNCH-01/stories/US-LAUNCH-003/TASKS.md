@@ -81,9 +81,9 @@ cd api && npx vitest run tests/auth/password-reset.spec.ts --reporter=verbose
 - [x] T4 — unit tests
 - [x] `npm run check` passes ✅
 - [x] `npm run test:unit` passes ✅
-- [ ] Manual test recorded ✅
+- [x] Manual test recorded ✅ _(TC-LAUNCH-003-05, dev 2026-07-12 + production 2026-07-21)_
 - [ ] PR opened with story card as description ✅
-- [ ] STORY.md ACs updated ✅
+- [x] STORY.md ACs updated ✅
 
 ---
 

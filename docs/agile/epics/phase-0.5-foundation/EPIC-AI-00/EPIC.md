@@ -1,7 +1,7 @@
 # EPIC-AI-00 — Foundation Fixes: Wire, Model, Persist
 
 > **Phase:** Phase 0.5 — Foundation Repair (runs parallel to final 3 MVP human tasks)
-> **Status:** 🔲 Not Started
+> **Status:** 🟡 In Progress — 4/8 stories Done (US-AI-001, US-AI-002, US-AI-002a, US-QA-001); US-AI-003/004/005/006 (Nano Banana routing, durable persistence) Not Started
 > **Linear Project:** LIN-EPIC-AI-00
 > **Target date:** 2026-05-12
 > **Owner:** Dinesh

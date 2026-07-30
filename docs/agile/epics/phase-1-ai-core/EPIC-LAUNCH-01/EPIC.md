@@ -1,7 +1,7 @@
 # EPIC-LAUNCH-01 — Go-Live & Revenue Readiness
 
 > **Phase:** Phase 1 — Revenue Strategy (v1.1)
-> **Status:** 🔲 Not Started
+> **Status:** 🟡 In Progress — 8/14 stories Done, 4 Implemented (merged, awaiting M-LAUNCH-01 close), 1 In Progress (US-LAUNCH-005), 1 Not Started (US-LAUNCH-014)
 > **Depends on:** EPIC-INFRA-01 (Phase 0 production deploy) for all stories · EPIC-AI-06 gates the **revenue-on switch** (M-LAUNCH-02 DoD), not M-LAUNCH-02 prep work
 > **Linear Project:** LIN-EPIC-XXX
 > **Target date:** 2026-08-15

@@ -85,14 +85,14 @@ npm run test:unit
 
 ## Task Checklist
 
-- [ ] T1 — Find GenerationProgressGateway file path
-- [ ] T2 — Register gateway in InfographicsModule providers
-- [ ] T3 — Verify AppModule imports InfographicsModule
+- [x] T1 — Find GenerationProgressGateway file path
+- [x] T2 — Register gateway in InfographicsModule providers
+- [x] T3 — Verify AppModule imports InfographicsModule
 - [ ] `npm run check` passes ✅
 - [ ] `npm run test:unit` passes ✅
 - [ ] Manual test: Socket.io progress events visible in WS tab ✅
 - [ ] PR opened with story card as description ✅
-- [ ] STORY.md ACs updated ✅
+- [x] STORY.md ACs updated ✅
 
 ---
 

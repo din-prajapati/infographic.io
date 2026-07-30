@@ -14,7 +14,7 @@
 | —   | [Automation Already Done](#automation-already-done--skip-these)                                   | Playwright + unit tests — skip these                                 | ✅ All green (2026-06-19)                                                        |
 | 1   | [Task 1 — Local QA](#task-1--critical-path-manual-qa-local-before-staging-deploy)                 | Flows 1A–1G: auth, generation, canvas, payments, team, cross-browser | ✅ **SIGNED OFF — 2026-06-20 · PASS**                                            |
 | 2   | [Task 2 — Staging](#task-2--staging-smoke-test-railway--neon)                                     | Railway + Neon staging deploy + E2E + live Ideogram verify           | ✅ **SIGNED OFF — 2026-07-11 · PASS** |
-| 3   | [Task 3 — Production](#task-3--production-go-live--sentry-verify)                                 | Live keys, v1.0.0 tag, Sentry, Google OAuth prod                     | 🟡 **IN PROGRESS — ON HOLD (external, 2026-07-26)** — domain live + verified, Neon/Railway env vars reconciled 2026-07-25 (3A/3B ✅, found+fixed a real `BASE_URL`/`CLIENT_URL` bug on both envs); reset-link fix re-verified live against production 2026-07-21 (real email, real domain, full reset flow). 🔴 **Blocker found 2026-07-25:** US-LAUNCH-010's merged RazorPay guard will abort production boot on the next `v1.0.0` tag deploy (production's TEST keys vs. the guard's LIVE-key requirement) — resolve before P-10 (see 3C). ⏸ **On hold 2026-07-26:** Razorpay's Live-mode activation requires a "Submit website details for verification" step (test account credentials for their reviewer) — support ticket raised with Razorpay, **waiting on their response** before generating Live keys or deciding the guard workaround. No temporary Test-key-on-production workaround has been applied — production remains as-is (Group 4 unset, guard un-triggered since no tag has been pushed). Safe to work other epics/tracks meanwhile (see AGILE_INDEX.md priority order — Track B: EPIC-AI-02 deps, EPIC-AI-06). Remaining once unblocked: resolve the guard conflict, confirm Prod OAuth client (3F), tag `v1.0.0` (3C), full smoke test (3D — P-13/P-14 partially done; P-18/19 live-checkout rows are M-LAUNCH-02 scope, not needed here). Sentry (3E) — all 4 checks now ☑ as of 2026-07-26: P-21/22/23 confirmed live 2026-07-25; P-24 fixed and re-verified live 2026-07-26 (new `project:releases`-scoped token + release-name-matching code fix; `BUILDOGRAPHIC-8` resolved to real source). 3E is fully done |
+| 3   | [Task 3 — Production](#task-3--production-go-live--sentry-verify)                                 | Live keys, v1.0.0 tag, Sentry, Google OAuth prod                     | 🟡 **IN PROGRESS — Razorpay blocker RESOLVED 2026-07-28; OAuth prod verified 2026-07-30** — domain live + verified, Neon/Railway env vars reconciled 2026-07-25 (3A/3B ✅, found+fixed a real `BASE_URL`/`CLIENT_URL` bug on both envs); reset-link fix re-verified live against production 2026-07-21 (real email, real domain, full reset flow). ✅ **RazorPay Live-mode activated 2026-07-28** — account approved, live keys (`rzp_live_*`) deployed to Railway production (`RAZORPAY_KEY_ID`/`SECRET`/`VITE_RAZORPAY_KEY_ID`, webhook secret, all 4 SOLO/TEAM plan IDs — confirmed present via Railway CLI, values not printed), `APP_ENV=production` also confirmed set. Production has booted cleanly with live keys — the US-LAUNCH-010 boot guard passes, no crash-loop (health check green). See US-LAUNCH-005 STORY.md AC1–4. ✅ **Google OAuth verified live on production 2026-07-30** — signed in successfully via `meetfuturetech@gmail.com` against the prod OAuth client (see 3F). Remaining: US-LAUNCH-005 AC5 (`verify:payment-prereqs` against prod) + AC6 (one real ₹ transaction, deliberately deferred), tag `v1.0.0` (3C — never yet pushed, production is still running off a pre-tag deploy, currently several commits behind `main`), full smoke test (3D — P-15/16/17 still unrun; P-18/19 live-checkout rows are M-LAUNCH-02 scope). Sentry (3E) — all 4 checks ☑ as of 2026-07-26. |
 | 7   | [Flow 7 — Right Sidebar](#flow-7--right-sidebar-design--property--agent-panel)                    | RightSidebar.tsx 44-point checklist                                  | ⏸ **DEFERRED to Phase 1** — all stale bugs verified as implemented (2026-06-20) |
 | —   | [Deferred Feature Backlog](#deferred-feature-backlog--architectural-gaps-found-during-phase-0-qa) | GAP-01 (lightbox) · GAP-02 (editable canvas layers)                  | GAP-01 ✅ Implemented · GAP-02 🔲 Phase 1                                        |
 | —   | [Deployment Strategy](#deployment-strategy--work-sizing--timeline)                                | Work sizing and timeline for infra                                   | 📋 Reference                                                                    |
@@ -477,9 +477,9 @@ Fixed on both environments:
 
 > Per `docs/DEPLOYMENT_STRATEGY.md` §3: production deploys from a tag push, not a merge.
 
-> 🔴 **DO NOT TAG YET — confirmed boot-abort risk (found 2026-07-25).** [US-LAUNCH-010](../agile/epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-010/STORY.md) merged a hard boot-time guard (`api/src/config/env.validation.ts:110`) that `throw`s — aborting startup entirely, not just logging a warning — when `getAppEnv()` resolves to `'production'` and `RAZORPAY_KEY_ID`/`VITE_RAZORPAY_KEY_ID` aren't `rzp_live_*`. `getAppEnv()` (`api/src/config/app-env.ts`) resolves to `'production'` via `RAILWAY_ENVIRONMENT_NAME` even with `APP_ENV` unset, since the Railway environment is literally named `production`. Production is currently, deliberately, on `rzp_test_*` keys for the free beta (Group 4 below) — this guard code has never run in production because production only deploys on a tag push, and no tag has been pushed since US-LAUNCH-010 merged. **The first `v1.0.0` tag will ship this guard and the deploy will fail to boot as-is.** Resolve before P-10: either switch to live RazorPay keys (not appropriate pre-revenue) or explicitly set `APP_ENV=staging` on the production Railway environment as a deliberate, temporary override so the guard expects `rzp_test_*` — track this as its own decision, not a silent workaround.
+> ✅ **RESOLVED 2026-07-28 — boot-abort risk cleared.** [US-LAUNCH-010](../agile/epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-010/STORY.md)'s boot-time guard (`api/src/config/env.validation.ts:110`) requires `RAZORPAY_KEY_ID`/`VITE_RAZORPAY_KEY_ID` to be `rzp_live_*` when `getAppEnv()` resolves to `'production'`. Razorpay Live-mode was approved 2026-07-28 and all live keys/plan IDs/webhook secret were deployed to Railway production (see Group 4 below, and US-LAUNCH-005 AC1–3) — the guard now has the live-mode values it requires. Production has since booted cleanly on these vars (health check green, no crash-loop), confirming the guard passes. The original support-ticket blocker (Razorpay requiring a working live checkout for their reviewer before issuing keys) was resolved directly with Razorpay, no workaround needed.
 >
-> ⏸ **On hold 2026-07-26 — waiting on Razorpay support.** Attempting to generate Live keys surfaced a "Submit website details for verification" requirement (Razorpay wants a demo account on the live site for their reviewer). Traced the current checkout flow: with Group 4 unset, `create-subscription` fails at `razorpay.provider.ts:57-58` (`RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET are required`) before the Razorpay widget is ever reached — so a reviewer testing today would hit a dead stop. Considered setting Test-mode keys on production so the reviewer has something to click through, but confirmed that trips the exact boot guard above (`rzp_test_*` vs. required `rzp_live_*` on `production`) — **would take production down**, not just fail the review. **Decision: raised a support ticket with Razorpay instead of applying any workaround; holding Group 4 and the `v1.0.0` tag until they respond.** Production Group 4 remains fully unset in the meantime (no boot risk, since the guard only fires on a key that's present-but-wrong-mode, not an absent one). Not blocking other work — see AGILE_INDEX.md priority order for what to run in parallel (Track B: EPIC-AI-02 deps → EPIC-AI-06).
+> **Still not tagged.** Even with the guard risk cleared, no `v1.0.0` tag has been pushed (P-09–P-12 below are still open) — production is running off a pre-tag deploy and is several commits behind `main` (includes the new template-workflow stories US-AI-010/036/037/038, not yet live). Confirm staging is green (P-09), then proceed with the tag push.
 
 
 | #    | Step                                                                                   | Done? | Notes                             |
@@ -500,7 +500,7 @@ Fixed on both environments:
 | -------- | -------------- | -------------------------- | -- |
 | `DATABASE_URL` | Neon **production** branch **direct** URL, ends `?sslmode=require`, host has **no** `-pooler` | Neon dashboard → prod branch → Connection string (Direct) | ☑ |
 | `NODE_ENV` | `production` | literal | ☑ |
-| `APP_ENV`¹ | `production` | literal — distinguishes prod from staging (both use `NODE_ENV=production`) | ☐ |
+| `APP_ENV`¹ | `production` | literal — distinguishes prod from staging (both use `NODE_ENV=production`) | ☑ *(confirmed set via Railway CLI, 2026-07-30)* |
 | `PORT` / `API_PORT` | `5000` / `3001` | literal (match staging) | ☑ |
 | `JWT_SECRET` | **NEW** random 32-byte base64 — **different from staging** | `openssl rand -base64 32` | ☑ |
 | `SESSION_SECRET` | **NEW** random 32-byte base64 — **different from staging** | `openssl rand -base64 32` | ☑ |
@@ -525,25 +525,25 @@ Fixed on both environments:
 
 | Variable | Set to (shape) | ✅ |
 | -------- | -------------- | -- |
-| `RAZORPAY_KEY_ID` | **`rzp_live_*`** — NOT test | ☐ *(deliberately still `rzp_test_*` — free beta, no revenue yet; see 🔴 note above 3C)* |
-| `RAZORPAY_KEY_SECRET` | LIVE secret (paired with the live key) | ☐ *(deferred with the key above — M-LAUNCH-02)* |
-| `VITE_RAZORPAY_KEY_ID` | **`rzp_live_*`** (browser-exposed — same as above) | ☐ *(wired via Railway variable reference to the TEST key — correctly linked, just not LIVE yet)* |
-| `RAZORPAY_WEBHOOK_SECRET` | LIVE webhook secret — **must exactly match** the secret set on the prod webhook endpoint in the RazorPay **Live** Dashboard (webhook URL = `<PROD_URL>/api/webhooks/razorpay`)² | ☐ *(deferred — M-LAUNCH-02)* |
-| `RAZORPAY_PLAN_SOLO_MONTHLY` | **LIVE** plan ID | ☐ *(deferred — M-LAUNCH-02)* |
-| `RAZORPAY_PLAN_SOLO_ANNUAL` | **LIVE** plan ID | ☐ *(deferred — M-LAUNCH-02)* |
-| `RAZORPAY_PLAN_TEAM_MONTHLY` | **LIVE** plan ID | ☐ *(deferred — M-LAUNCH-02)* |
-| `RAZORPAY_PLAN_TEAM_ANNUAL` | **LIVE** plan ID | ☐ *(deferred — M-LAUNCH-02)* |
-| `RAZORPAY_PLAN_BROKERAGE*` | — leave unset (PT-06; tier gated by US-LAUNCH-007) | ☑ *(requirement is "leave unset" — met)* |
+| `RAZORPAY_KEY_ID` | **`rzp_live_*`** — NOT test | ☑ *(confirmed `rzp_live_*` prefix via Railway CLI, 2026-07-30 — value not printed)* |
+| `RAZORPAY_KEY_SECRET` | LIVE secret (paired with the live key) | ☑ *(confirmed set, 2026-07-30)* |
+| `VITE_RAZORPAY_KEY_ID` | **`rzp_live_*`** (browser-exposed — same as above) | ☑ *(confirmed `rzp_live_*` prefix, 2026-07-30)* |
+| `RAZORPAY_WEBHOOK_SECRET` | LIVE webhook secret — **must exactly match** the secret set on the prod webhook endpoint in the RazorPay **Live** Dashboard (webhook URL = `<PROD_URL>/api/webhooks/razorpay`)² | ☑ *(confirmed set, `rzp_live_hook_*` format per US-LAUNCH-005 AC3)* |
+| `RAZORPAY_PLAN_SOLO_MONTHLY` | **LIVE** plan ID | ☑ *(confirmed set, 2026-07-30)* |
+| `RAZORPAY_PLAN_SOLO_ANNUAL` | **LIVE** plan ID | ☑ *(confirmed set, 2026-07-30)* |
+| `RAZORPAY_PLAN_TEAM_MONTHLY` | **LIVE** plan ID | ☑ *(confirmed set, 2026-07-30)* |
+| `RAZORPAY_PLAN_TEAM_ANNUAL` | **LIVE** plan ID | ☑ *(confirmed set, 2026-07-30)* |
+| `RAZORPAY_PLAN_BROKERAGE*` | — leave unset (PT-06; tier gated by US-LAUNCH-007) | ☑ *(requirement is "leave unset" — confirmed still missing, met)* |
 | `STRIPE_ENABLED` | `false` (Stripe disabled) | ☑ |
 
-> **This whole group is intentionally not done** — live payment activation is M-LAUNCH-02 scope (RazorPay live-mode activation, US-LAUNCH-005), gated behind EPIC-AI-06 per the epic's own two-milestone split (beta live first, revenue on second). None of this is required for Task 3 / M-LAUNCH-01 to close.
+> **RazorPay Live-mode activated 2026-07-28** (US-LAUNCH-005 AC1–3) — Live account approved, live plans created, all live env vars deployed to Railway production. Production has booted cleanly with these keys (US-LAUNCH-010's boot guard passes). **Still open:** US-LAUNCH-005 AC5 (`verify:payment-prereqs` against prod) and AC6 (one real ₹ transaction + refund — intentionally deferred, M-LAUNCH-02 scope). EPIC-AI-06 (real-photo pipeline) still separately gates turning `BETA_MODE` off per M-LAUNCH-02's acceptance criteria, independent of this group.
 
 **Group 5 — Auth (Google OAuth — prod client)**
 
 | Variable | Set to (shape) | ✅ |
 | -------- | -------------- | -- |
-| `GOOGLE_CLIENT_ID` | your **"Prod"** Google OAuth client ID | 🟡 *(a value is set and OAuth works, but not yet confirmed as a genuinely distinct "Prod" client in Google Cloud Console rather than a reused local/staging one — see 3F, P-25/P-26)* |
-| `GOOGLE_CLIENT_SECRET` | your **"Prod"** Google OAuth client secret | 🟡 *(same caveat as above)* |
+| `GOOGLE_CLIENT_ID` | your **"Prod"** Google OAuth client ID | ☑ *(confirmed distinct from staging via hash comparison, and confirmed working via real sign-in 2026-07-30 — see 3F, P-25/P-26)* |
+| `GOOGLE_CLIENT_SECRET` | your **"Prod"** Google OAuth client secret | ☑ *(same confirmation as above)* |
 
 **Group 6 — Observability / Frontend**
 
@@ -597,8 +597,8 @@ Fixed on both environments:
 
 | #    | Check                                                                       | Pass? | Notes                                            |
 | ---- | --------------------------------------------------------------------------- | ----- | ------------------------------------------------ |
-| P-25 | Google Cloud Console (your **"Prod"** client): add **Authorized redirect URI** — must exactly equal `GOOGLE_CALLBACK_URL` | ☐     | `<PROD_URL>/api/v1/auth/google/callback` |
-| P-26 | Google sign-in works on production                                          | ☐     |                                                  |
+| P-25 | Google Cloud Console (your **"Prod"** client): add **Authorized redirect URI** — must exactly equal `GOOGLE_CALLBACK_URL` | ☑     | Confirmed working — see P-26 |
+| P-26 | Google sign-in works on production                                          | ☑     | **Verified 2026-07-30** — signed in successfully on `app.buildographic.com` using `meetfuturetech@gmail.com` against the production OAuth client |
 
 
 ---

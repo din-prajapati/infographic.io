@@ -1,8 +1,8 @@
 # Story Card — US-AI-014
 
-> **Status:** 🔲 Not Started
+> **Status:** 🔲 Not Started — Deferred to Phase 4 Backlog 2026-07-30 (revenue-gated, see [EPIC-AI-08](../../EPIC.md))
 > **Feature:** F-AI-02-04 — Campaign Mode UI framing
-> **Epic:** [EPIC-AI-02](../../EPIC.md)
+> **Epic:** [EPIC-AI-08](../../EPIC.md) (moved from EPIC-AI-02, 2026-07-30)
 > **Milestone:** [M-AI-07-quality-campaign](../../milestones/M-AI-07-quality-campaign.md)
 > **Linear:** LIN-US-AI-014
 > **Created:** 2026-04-28 | **Closed:** —

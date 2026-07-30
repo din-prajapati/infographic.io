@@ -94,12 +94,12 @@ npm run test:e2e -- --grep "design-consistency"
 
 ## Task Checklist
 
-- [ ] T1 — Theme toggle walk-through (AC1)
-- [ ] T2 — Light mode all pages visual check (AC2)
-- [ ] T3 — Dark mode all pages visual check (AC3)
-- [ ] TC-DS-001-08/09/10 results recorded in STORY.md
-- [ ] If bugs found: fix story opened OR fix PR merged
-- [ ] STORY.md ACs 1–3 checked ✅ or deferred with reason
+- [x] T1 — Theme toggle walk-through (AC1)
+- [x] T2 — Light mode all pages visual check (AC2)
+- [x] T3 — Dark mode all pages visual check (AC3)
+- [x] TC-DS-001-08/09/10 results recorded in STORY.md
+- [x] If bugs found: fix story opened OR fix PR merged _(F-001/002/003 fixed same session, see STORY.md Findings)_
+- [x] STORY.md ACs 1–3 checked ✅ or deferred with reason
 
 ---
 

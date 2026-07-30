@@ -1,8 +1,8 @@
 # M-AI-07-quality-campaign — Quality Tiers + Property Routing + Campaign Mode UI
 
-> **Epic:** [EPIC-AI-02](../EPIC.md)
-> **Status:** 🔲 Not Started
-> **Target date:** 2026-07-31
+> **Epic:** [EPIC-AI-08](../EPIC.md) (moved from EPIC-AI-02, 2026-07-30)
+> **Status:** 🔲 Not Started — Deferred to Phase 4 Backlog (revenue-gated)
+> **Target date:** Revenue-gated — see EPIC-AI-08 trigger condition
 
 ---
 
@@ -31,6 +31,10 @@ Agents choose use case ("Social" or "Print Quality") without seeing model names.
 - [ ] All stories above have status ✅ Done
 
 ---
+
+## Deferral Note (2026-07-30)
+
+Moved from EPIC-AI-02 (Phase 1 — AI Core) to this new Phase 4 Backlog epic, EPIC-AI-08. Decision: do not build quality tiers or Campaign Mode UI until the product has revenue — these are refinement/monetization-adjacent features, not launch blockers. See [EPIC-AI-08](../EPIC.md) for the trigger condition.
 
 ## Notes / Blockers
 

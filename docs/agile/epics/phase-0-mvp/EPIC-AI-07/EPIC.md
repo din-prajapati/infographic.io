@@ -1,7 +1,7 @@
 # EPIC-AI-07 — Generation Progress Delivery Fix
 
 > **Phase:** Phase 0 — MVP Launch (staging QA regression — blocks Task 2 sign-off → Task 3 production go-live)
-> **Status:** 🔲 Not Started
+> **Status:** ✅ Done — US-AI-034 closed 2026-07-09 (PR #14); US-AI-035 superseded by US-AI-034 (same fix covered its scope)
 > **Depends on:** None (fixes a regression in already-shipped EPIC-AI-00 US-AI-001 scope)
 > **Linear Project:** LIN-EPIC-XXX
 > **Target date:** 2026-07-11 (before Task 2 sign-off)

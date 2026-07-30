@@ -68,14 +68,14 @@ npm run test:unit
 
 ## Task Checklist
 
-- [ ] T1 — legal pages (files: `client/src/pages/legal/*`)
-- [ ] T2 — routes (file: `client/src/App.tsx`)
-- [ ] T3 — footer links
+- [x] T1 — legal pages (files: `client/src/pages/legal/*`)
+- [x] T2 — routes (file: `client/src/App.tsx`)
+- [x] T3 — footer links
 - [ ] `npm run check` passes ✅
 - [ ] `npm run test:unit` passes ✅
 - [ ] Manual test recorded ✅
 - [ ] PR opened with story card as description ✅
-- [ ] STORY.md ACs updated ✅
+- [x] STORY.md ACs updated ✅
 
 ---
 

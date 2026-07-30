@@ -1917,3 +1917,119 @@
 <!-- ai-sdlc:session-log -->
 **2026-07-29 14:42** · branch: `main`
   - Last commit: 8400229 chore(tooling): commit cross-tool agent config (Codex, generic AGENTS.md, VS Code)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-29 14:55** · branch: `main`
+  - Last commit: 12e9914 docs(launch): close US-LAUNCH-006/007/008/012/013 per ORION close-story protocol
+
+<!-- ai-sdlc:session-log -->
+**2026-07-29 15:39** · branch: `main`
+  - Last commit: 12e9914 docs(launch): close US-LAUNCH-006/007/008/012/013 per ORION close-story protocol
+
+<!-- ai-sdlc:session-log -->
+**2026-07-29 15:51** · branch: `main`
+  - Last commit: 12e9914 docs(launch): close US-LAUNCH-006/007/008/012/013 per ORION close-story protocol
+
+<!-- ai-sdlc:session-log -->
+**2026-07-29 16:09** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-29 16:16** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-29 16:21** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-29 16:30** · branch: `main`
+  - Last commit: 00ca2fd docs(ai): draft US-AI-036/037/038, superseding US-AI-011
+
+<!-- ai-sdlc:session-log -->
+**2026-07-29 16:44** · branch: `main`
+  - Last commit: 446879a docs(ai): persist template-workflow design doc, link from US-AI-036/037/038
+
+<!-- ai-sdlc:session-log -->
+**2026-07-29 16:52** · branch: `main`
+  - Last commit: 446879a docs(ai): persist template-workflow design doc, link from US-AI-036/037/038
+
+<!-- ai-sdlc:session-log -->
+**2026-07-29 16:57** · branch: `main`
+  - Last commit: 446879a docs(ai): persist template-workflow design doc, link from US-AI-036/037/038
+
+<!-- ai-sdlc:session-log -->
+**2026-07-29 17:01** · branch: `main`
+  - Last commit: 446879a docs(ai): persist template-workflow design doc, link from US-AI-036/037/038
+
+<!-- ai-sdlc:session-log -->
+**2026-07-29 17:32** · branch: `main`
+  - Last commit: 8b7df1b docs(ai): fold premium-template DB migration into US-AI-037
+
+<!-- ai-sdlc:session-log -->
+**2026-07-29 17:34** · branch: `main`
+  - Last commit: 8b7df1b docs(ai): fold premium-template DB migration into US-AI-037
+
+<!-- ai-sdlc:session-log -->
+**2026-07-29 17:50** · branch: `main`
+  - Last commit: 471d876 docs(ai): record two-track implementation sequencing for EPIC-AI-02
+
+<!-- ai-sdlc:session-log -->
+**2026-07-29 18:12** · branch: `main`
+  - Last commit: 471d876 docs(ai): record two-track implementation sequencing for EPIC-AI-02
+
+<!-- ai-sdlc:session-log -->
+**2026-07-29 18:13** · branch: `main`
+  - Last commit: 471d876 docs(ai): record two-track implementation sequencing for EPIC-AI-02
+
+<!-- ai-sdlc:session-log -->
+**2026-07-29 18:24** · branch: `main`
+  - Last commit: ae4b091 docs(ai): harden US-AI-038 — add missing error-path AC, lock story
+
+<!-- ai-sdlc:session-log -->
+**2026-07-29 19:09** · branch: `main`
+  - Last commit: 81cfbef test(deploy): harden AC-type coverage for M-DEPLOY-01 (US-DEPLOY-001..006)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-29 19:16** · branch: `main`
+  - Last commit: 81cfbef test(deploy): harden AC-type coverage for M-DEPLOY-01 (US-DEPLOY-001..006)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-29 19:26** · branch: `main`
+  - Last commit: 216c3ef feat(ai): US-AI-037 save as template + premium-template DB migration
+
+<!-- ai-sdlc:session-log -->
+**2026-07-29 19:49** · branch: `main`
+  - Last commit: 216c3ef feat(ai): US-AI-037 save as template + premium-template DB migration
+
+<!-- ai-sdlc:session-log -->
+**2026-07-29 19:55** · branch: `main`
+  - Last commit: 216c3ef feat(ai): US-AI-037 save as template + premium-template DB migration
+
+<!-- ai-sdlc:session-log -->
+**2026-07-29 20:03** · branch: `main`
+  - Last commit: 42c3c72 feat(ai): US-AI-038 format picker for New Design / New Template
+
+<!-- ai-sdlc:session-log -->
+**2026-07-30 15:28** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-30 15:48** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-30 16:51** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-30 17:09** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-30 17:35** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-30 17:50** · branch: `main`
+  - Last commit: (no commits this session)

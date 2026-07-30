@@ -75,7 +75,7 @@ cd api && npx vitest run tests/email/email.service.spec.ts --reporter=verbose
 - [x] `npm run test:unit` passes ✅
 - [ ] Manual test recorded ✅
 - [ ] PR opened with story card as description ✅
-- [ ] STORY.md ACs updated ✅
+- [x] STORY.md ACs updated ✅
 
 ---
 

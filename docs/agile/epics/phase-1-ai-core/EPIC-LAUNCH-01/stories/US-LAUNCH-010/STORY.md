@@ -1,6 +1,6 @@
 # Story Card — US-LAUNCH-010
 
-> ⚠️ **Blocked by:** [Pre-requisite-story.md](./Pre-requisite-story.md) — do NOT run `/implement-story` until its full remediation + sign-off checklist (§5–§6) are complete. A naive implementation risks crash-looping the **live production** deploy at the next release tag (not staging — see the doc's §0 for why). That doc is the Definition of Ready.
+> ✅ **Resolved:** [Pre-requisite-story.md](./Pre-requisite-story.md)'s remediation + sign-off checklist (§5–§6) was completed before implementation; AC3's RazorPay-block-optional decision (§5 P0.5) is the recorded outcome. No production crash-loop occurred.
 >
 > **Status:** ✅ Done
 > **Feature:** F-LAUNCH-06 — Environment & Secrets Management

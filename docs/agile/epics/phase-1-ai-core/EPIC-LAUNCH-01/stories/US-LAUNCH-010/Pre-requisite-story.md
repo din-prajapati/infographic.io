@@ -2,7 +2,7 @@
 
 > **Type:** Pre-implementation gate + remediation plan
 > **Story:** [STORY.md](./STORY.md) — Config hardening (APP_ENV + Zod boot validation + RazorPay guard)
-> **Status:** 🔲 Blocking — US-LAUNCH-010 must NOT be implemented until Section 5 is complete
+> **Status:** ✅ Resolved — Section 5 remediation complete; US-LAUNCH-010 implemented and closed 2026-07-25
 > **Created:** 2026-07-13
 > **Last re-audited:** 2026-07-25 — against **live Railway data**, not a snapshot (see Section 2)
 > **Author:** Pre-flight breaking-change analysis (see Section 2 for method)

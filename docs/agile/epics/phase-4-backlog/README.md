@@ -27,6 +27,7 @@
 | B-13 | [Advanced Analytics — Usage & AI](#b-13--advanced-analytics--usage--ai) | Analytics | 3–5 wks | Medium | POST_MVP_BACKLOG §4 |
 | B-14 | [Production Hardening & Security](#b-14--production-hardening--security) | Infra | 6–10 wks | Critical | PRODUCT_ROADMAP §2.2 |
 | B-15 | [Mobile App](#b-15--mobile-app) | Mobile | 10–14 wks | Medium | PRODUCT_ROADMAP §2.2 |
+| B-16 | [EPIC-AI-08 — Quality Tiers & Campaign Mode UI](#b-16--m-ai-07--quality-tiers--campaign-mode-ui) | AI | ~8-10h | Medium | EPIC-AI-08 (moved from EPIC-AI-02) |
 
 ---
 
@@ -50,6 +51,28 @@ Apply component-specific tokens from `design-tokens.css` to the three main UI su
 
 **Files:** `TemplatesPage.tsx` · `FloatingToolbar.tsx` · `LayersPanel.tsx` · `AIChatBox.tsx`  
 **Reference previews:** `design-preview-templates.html` · `design-preview-canvas.html`
+
+---
+
+## AI Generation
+
+### B-16 — M-AI-07 — Quality Tiers & Campaign Mode UI
+
+**Epic:** [EPIC-AI-08](EPIC-AI-08/EPIC.md)
+**Milestone:** [M-AI-07-quality-campaign](EPIC-AI-08/milestones/M-AI-07-quality-campaign.md)
+**Deferred from:** EPIC-AI-02 (decision: 2026-07-30)
+**Prereq:** None technical — deliberately revenue-gated, not sequenced behind other backlog work
+**Effort:** ~8-10h (3 stories)
+
+Agents choose use case ("Social" or "Print Quality") without seeing model names; luxury listings auto-route to the premium model; a Campaign Mode UI toggle exists (backend generation is separate, EPIC-AI-04). Deferred because it's refinement on the core generation flow, not something needed before the product can charge agents.
+
+| Story | Scope |
+|-------|-------|
+| [US-AI-012](EPIC-AI-08/stories/US-AI-012/STORY.md) | Generation quality tiers: Social vs Print |
+| [US-AI-013](EPIC-AI-08/stories/US-AI-013/STORY.md) | Property type → quality routing (hidden internal logic) |
+| [US-AI-014](EPIC-AI-08/stories/US-AI-014/STORY.md) | Campaign Mode UI toggle |
+
+**Note:** US-AI-012's file references are stale (points at a service file removed in a later refactor) — needs a `harden` pass before implementation whenever pulled off the backlog.
 
 ---
 
@@ -260,6 +283,7 @@ Apply component-specific tokens from `design-tokens.css` to the three main UI su
 | Trigger | Item(s) to pull |
 |---------|-----------------|
 | Phase 3 AI Advanced gate closes | B-01 (design polish), B-02 (PDF export) |
+| First real revenue (M-LAUNCH-02 flips) | B-16 (quality tiers + Campaign Mode UI) |
 | 50+ paying users | B-03, B-04 (team workspace + invites) |
 | First B2B customer inquiry | B-08, B-09 (API keys + webhooks) |
 | Admin visibility needed | B-11, B-13 (dashboards + analytics) |

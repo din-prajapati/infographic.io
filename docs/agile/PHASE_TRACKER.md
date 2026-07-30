@@ -122,7 +122,7 @@ Each phase requires a gate decision before the next phase starts:
 | # | Epic | Domain | Focus | Status |
 |---|------|--------|-------|--------|
 | 1 | [EPIC-LAUNCH-01](epics/phase-1-ai-core/EPIC-LAUNCH-01/EPIC.md) · M-LAUNCH-01 | LAUNCH | **Public beta blockers** — legal pages, transactional email + password reset, beta mode | 🟡 3/7 Done, 4 merged pending Task 3 sign-off |
-| 2 | [EPIC-AI-02](epics/phase-1-ai-core/EPIC-AI-02/EPIC.md) (deps only) | AI | US-AI-010 photo upload + US-AI-011 format selector | 🔲 |
+| 2 | [EPIC-AI-02](epics/phase-1-ai-core/EPIC-AI-02/EPIC.md) | AI | US-AI-010 photo upload + US-AI-036/037/038 canvas/template workflow (impl. complete, pre-PR); quality tiers/Campaign UI moved to EPIC-AI-08 backlog | 🟡 |
 | 3 | [EPIC-AI-06](epics/phase-1-ai-core/EPIC-AI-06/EPIC.md) | AI | Hybrid Real-Photo Pipeline — **the chargeability gate** (real photo background, editable overlay, synthetic guard) | 🔲 |
 | 4 | [EPIC-LAUNCH-01](epics/phase-1-ai-core/EPIC-LAUNCH-01/EPIC.md) · M-LAUNCH-02 | LAUNCH | **Revenue on** — RazorPay live activation, receipt email, BROKERAGE gate (PT-06), metering guard (prep runs parallel to AI-06; flip gated by AI-06) | 🟡 5/6 Done — only US-LAUNCH-005 (real ₹ txn) open |
 | 5 | [EPIC-KIT-01](epics/phase-1-ai-core/EPIC-KIT-01/EPIC.md) | KIT | Listing Marketing Kits — multi-format batch, lifecycle, recurring content, compliance | 🔲 |
@@ -144,7 +144,6 @@ Each phase requires a gate decision before the next phase starts:
 |------|--------|-------|--------|
 | [EPIC-AI-01](epics/phase-2-ai-refine/EPIC-AI-01/EPIC.md) | AI | Conversational AI Core (intent · pre-plan · chips) — moved from Phase 1 | 🔲 |
 | [EPIC-AI-03](epics/phase-2-ai-refine/EPIC-AI-03/EPIC.md) | AI | Refine loop, element edit, R2 storage | 🔲 |
-| EPIC-AI-02 remainder | AI | Quality tiers UI · Campaign Mode UI (US-AI-012/013/014) | 🔲 |
 | EPIC-USAGE-01 | Usage | Monthly chart, cost breakdown, usage alerts — moved from old Phase 1 | 🔲 Plan |
 | EPIC-PAY-02 | Payments | Payment method management UI — moved from old Phase 1 | 🔲 Plan |
 | EPIC-PAY-03 | Payments | Stripe activation + billing portal | 🔲 Plan |

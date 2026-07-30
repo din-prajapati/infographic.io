@@ -6,7 +6,7 @@
 > **Milestone:** [M-AI-19-generation-progress-delivery](../../milestones/M-AI-19-generation-progress-delivery.md)
 > **Size:** L (diagnosis is unpredictable — treat the fix itself as M once root cause is confirmed)
 > **Linear:** LIN-XXX
-> **Created:** 2026-07-09 | **Closed:** —
+> **Created:** 2026-07-09 | **Closed:** 2026-07-09
 
 ---
 

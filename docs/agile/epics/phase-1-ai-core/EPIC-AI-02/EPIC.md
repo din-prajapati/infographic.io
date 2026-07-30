@@ -1,8 +1,9 @@
 # EPIC-AI-02 — Generation Control
 
 > **Phase:** Phase 1 — Revenue Strategy
-> **Priority note (2026-07-03):** US-AI-010 (photo upload) and US-AI-011 (format selector) are hard dependencies of the promoted revenue epics — implement these two FIRST. Remaining stories (US-AI-012/013/014 quality tiers + Campaign UI, US-PANEL-01) are deprioritized behind EPIC-AI-06 and EPIC-KIT-01.
-> **Status:** 🔲 Not Started
+> **Priority note (2026-07-03):** US-AI-010 (photo upload) and US-AI-011 (format selector) are hard dependencies of the promoted revenue epics — implement these two FIRST. US-PANEL-01 is deprioritized behind EPIC-AI-06 and EPIC-KIT-01.
+> **Scope note (2026-07-30):** US-AI-012/013/014 (quality tiers + Campaign Mode UI) moved to [EPIC-AI-08](../../phase-4-backlog/EPIC-AI-08/EPIC.md) in Phase 4 Backlog — revenue-gated, not a launch blocker.
+> **Status:** 🟡 In Progress — US-AI-010/036/037/038 implementation complete (pre-PR, not yet closed); US-AI-011 superseded; US-PANEL-01 Not Started
 > **Depends on:** EPIC-AI-00 complete
 > **Linear Project:** LIN-EPIC-AI-02
 > **Target date:** 2026-07-31
@@ -25,7 +26,7 @@
 | Milestone | Scope | Target | Status |
 |-----------|-------|--------|--------|
 | [M-AI-06-photo-and-format](milestones/M-AI-06-photo-and-format.md) | Property photo upload + output format selector | 2026-06-30 | 🔲 |
-| [M-AI-07-quality-campaign](milestones/M-AI-07-quality-campaign.md) | Quality tiers + property routing + Campaign Mode UI | 2026-07-31 | 🔲 |
+| ~~M-AI-07-quality-campaign~~ | Moved to [EPIC-AI-08](../../phase-4-backlog/EPIC-AI-08/EPIC.md) (Phase 4 Backlog, revenue-gated) | — | ⏸ Moved |
 
 ---
 
@@ -39,9 +40,9 @@
 | [US-AI-037](stories/US-AI-037/STORY.md) | Save as Template — personal library (replaces US-AI-011, part 2) | M-AI-06 | 🟡 Implementation Complete (pre-PR) | — |
 | [US-AI-038](stories/US-AI-038/STORY.md) | Format Picker — New Design / New Template (replaces US-AI-011, part 3) | M-AI-06 | 🟡 Implementation Complete (pre-PR) | — |
 | [US-PANEL-01](stories/US-PANEL-01/STORY.md) | Right Panel: Brand Styles → Generation + Quick Styles as post-generation tool | M-AI-06 | 🔲 | — |
-| [US-AI-012](stories/US-AI-012/STORY.md) | Generation quality tiers: Social vs Print (CAP-08) | M-AI-07 | 🔲 | — |
-| [US-AI-013](stories/US-AI-013/STORY.md) | Property type → quality routing (CAP-09, hidden internal logic) | M-AI-07 | 🔲 | — |
-| [US-AI-014](stories/US-AI-014/STORY.md) | Campaign Mode UI toggle (CAP-10, backend deferred) | M-AI-07 | 🔲 | — |
+| [US-AI-012](../../phase-4-backlog/EPIC-AI-08/stories/US-AI-012/STORY.md) | Generation quality tiers: Social vs Print (CAP-08) — moved to EPIC-AI-08 | M-AI-07 | ⏸ Moved | — |
+| [US-AI-013](../../phase-4-backlog/EPIC-AI-08/stories/US-AI-013/STORY.md) | Property type → quality routing (CAP-09) — moved to EPIC-AI-08 | M-AI-07 | ⏸ Moved | — |
+| [US-AI-014](../../phase-4-backlog/EPIC-AI-08/stories/US-AI-014/STORY.md) | Campaign Mode UI toggle (CAP-10) — moved to EPIC-AI-08 | M-AI-07 | ⏸ Moved | — |
 
 ---
 
@@ -51,8 +52,8 @@
 |------------|-------|---------|
 | F-AI-02-01 | Property photo upload and reference | US-AI-010 |
 | F-AI-02-02 | ~~Multi-platform output format selector~~ (superseded) | US-AI-011 |
-| F-AI-02-03 | Quality tier selector (model-transparent) | US-AI-012, US-AI-013 |
-| F-AI-02-04 | Campaign Mode UI framing | US-AI-014 |
+| F-AI-02-03 | ~~Quality tier selector (model-transparent)~~ (moved to EPIC-AI-08) | US-AI-012, US-AI-013 |
+| F-AI-02-04 | ~~Campaign Mode UI framing~~ (moved to EPIC-AI-08) | US-AI-014 |
 | F-AI-02-05 | Canvas-aware generation orientation | US-AI-036 |
 | F-AI-02-06 | Save as Template (personal library) + premium-template DB migration | US-AI-037 |
 | F-AI-02-07 | Format Picker (New Design / New Template) | US-AI-038 |
@@ -61,30 +62,22 @@
 
 ## Implementation Sequencing (2026-07-29)
 
-Two parallel tracks, split by file surface rather than by milestone, to let two sessions/agents work at once without stepping on each other.
+Originally two parallel tracks; **Track A retired 2026-07-30** — its only story, US-AI-012, moved to [EPIC-AI-08](../../phase-4-backlog/EPIC-AI-08/EPIC.md) (Phase 4 Backlog, revenue-gated). The cross-track file collision on `AIChatBox.tsx` noted below no longer applies since Track A no longer runs here.
 
-**Track A — Generation pipeline** (serial: `US-AI-010 → US-AI-012`)
+**Track B — Canvas/template workflow** (`US-AI-036 ∥ US-AI-037 → US-AI-038`) — active
 | Step | Story | Action | Note |
 |---|---|---|---|
-| A1 | US-AI-010 | `implement-story` (already hardened/locked 2026-07-27) | No dependency; revenue-critical per priority note above |
-| A2 | US-AI-012 | `harden` first — stale file reference (`image-generation.service.ts` no longer exists) and stale model names ("Flash"/"Pro" don't match `ai-models.config.ts`) confirmed 2026-07-29, never corrected | Must run before implementation |
-| A3 | US-AI-012 | `implement-story` — **wait until Track B's US-AI-036 merges** | See collision note below |
-
-**Track B — Canvas/template workflow** (`US-AI-036 ∥ US-AI-037 → US-AI-038`)
-| Step | Story | Action | Note |
-|---|---|---|---|
-| B1 | US-AI-036 | `harden` → `implement-story` → `test-story` | Size M (~5h) — smallest, file-disjoint from 037, do this **before** Track A starts A3 |
+| B1 | US-AI-036 | `harden` → `implement-story` → `test-story` | Size M (~5h) — smallest, file-disjoint from 037 |
 | B2 | US-AI-037 | `harden` → `implement-story` → `test-story` | Size L (~12-14h, 3 sessions) — longest pole, start as early as possible so it doesn't gate US-AI-038 |
 | B3 | US-AI-038 | `harden` (safe anytime) → `implement-story` only after US-AI-037 merges | Hard dependency — Library step has nothing real to browse until 037 ships |
 
-**Cross-track collision:** `client/src/components/ai-chat/AIChatBox.tsx` is touched by both **US-AI-012** (adds quality selector) and **US-AI-036** (sets default orientation from active canvas) — different concerns, same file. Resolution: land B1 (US-AI-036) before A3 (US-AI-012 implementation); costs Track A almost no wait time since 036 is the smallest story in either track.
-
-**Effort:** Track A ≈ 8-10h · Track B ≈ 26-29.5h (037 is the long pole).
+**Effort:** Track B ≈ 26-29.5h (037 is the long pole). All three (036/037/038) are implementation-complete pre-PR as of 2026-07-29.
 
 ---
 
 ## Out of Scope (Epic Level)
 
+- Quality tier selector + Campaign Mode UI (moved to EPIC-AI-08, Phase 4 Backlog — revenue-gated, 2026-07-30)
 - Campaign Mode backend / 4-piece generation (EPIC-AI-04 — CAP-09 backend)
 - Background removal from photos (EPIC-AI-03 — CAP-16)
 - Upscaling to print quality (EPIC-AI-03 — CAP-17)
@@ -94,12 +87,10 @@ Two parallel tracks, split by file surface rather than by milestone, to let two 
 
 ## Definition of Done (Epic)
 
-- [ ] All milestones closed
+- [ ] All milestones closed (M-AI-07 excluded — moved to EPIC-AI-08)
 - [ ] All stories have PR merged and STORY.md status = ✅ Done
 - [ ] Property photo appears in generated infographic
 - [ ] Instagram Square and Print format produce correctly sized outputs
-- [ ] Quality selector shows "Social" and "Print" labels (no model names or resolution numbers)
-- [ ] Campaign Mode UI toggle exists but shows "Coming Soon" state for backend
 - [ ] `npm run check` + `npm run test:unit` passing
 - [ ] AGILE_INDEX.md epic row updated to ✅ Done
 
