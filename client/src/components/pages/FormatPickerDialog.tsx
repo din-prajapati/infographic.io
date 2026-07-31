@@ -1,16 +1,21 @@
 /**
- * FormatPickerDialog — two-step entry flow for "New Design" and "New Template".
+ * FormatPickerDialog — Canva-style single-modal format picker.
  *
- * Step 1 (format): Platform-grouped format tiles with shape previews (no
- *   pixel numbers shown — AC1, AC8). Includes a "Custom size" tile.
+ * Persistent two-pane layout: a left category rail (platform groups + Custom
+ * size) and a main content area that reacts live to rail and tile selection —
+ * no "Continue" button, no step transitions, no back-chevron.
  *
- * Step 2 (library): User's own templates tagged for the chosen format + a
- *   "Start Blank" card that is always present (AC2, AC7). Fetch errors show
- *   a distinct error state that still lets the user proceed (AC10).
- *
- * Step 3 (custom): Width/height inputs for an arbitrary canvas size (AC5).
- *
- * The last-used format is persisted locally and pre-highlighted on reopen (AC6).
+ * AC1:  single modal with persistent left rail (platform groups + Custom size)
+ * AC2:  format tiles appear inline when a category is selected
+ * AC3:  inline library (Start Blank + user templates) appears when a tile is
+ *       selected — same view, no navigation
+ * AC4:  Custom size rail item swaps content to the width/height form
+ * AC5:  both rail category AND tile pre-selected on reopen from last-used format
+ * AC6:  zero-templates state stays visually distinct from the error state
+ * AC7:  no pixel numbers, aspect ratios, or technical details shown
+ * AC10: keyboard focus order + aria-pressed preserved on rail items and tiles
+ * AC11: fetch error shows a distinct Alert; Start Blank and Custom size still
+ *       reachable so the user is never stuck
  */
 
 import { useState, useEffect } from "react";
@@ -24,7 +29,7 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Alert, AlertDescription } from "../ui/alert";
-import { ChevronLeft, AlertCircle, Plus } from "lucide-react";
+import { AlertCircle, Plus } from "lucide-react";
 import {
   FORMAT_TAXONOMY,
   CUSTOM_FORMAT_ID,
@@ -55,12 +60,24 @@ export interface FormatPickerDialogProps {
 // Internal helpers
 // ---------------------------------------------------------------------------
 
-type Step = "format" | "library" | "custom";
 type LibraryStatus = "idle" | "loading" | "success" | "error";
 
 /**
+ * Walk FORMAT_TAXONOMY to find the platform group that owns a given format id.
+ * Returns undefined for unknown ids (including CUSTOM_FORMAT_ID).
+ */
+function getPlatformForFormat(formatId: string): string | undefined {
+  for (const group of FORMAT_TAXONOMY) {
+    if (group.formats.some((f) => f.id === formatId)) {
+      return group.platform;
+    }
+  }
+  return undefined;
+}
+
+/**
  * Renders a dimensionally-correct shape preview inside a fixed container.
- * No numbers or text — purely visual (AC1, AC8).
+ * No numbers or text — purely visual (AC7).
  */
 function ShapePreview({
   width,
@@ -109,7 +126,7 @@ function ShapePreview({
   );
 }
 
-/** Single format tile in step 1. */
+/** Single format tile — shape preview + label, no pixel numbers (AC7). */
 function FormatTile({
   format,
   active,
@@ -155,7 +172,10 @@ export function FormatPickerDialog({
   onOpenChange,
   onSelect,
 }: FormatPickerDialogProps) {
-  const [step, setStep] = useState<Step>("format");
+  // activeCategory holds the selected rail item: a platform name or CUSTOM_FORMAT_ID.
+  const [activeCategory, setActiveCategory] = useState<string>(
+    FORMAT_TAXONOMY[0].platform,
+  );
   const [selectedFormatId, setSelectedFormatId] = useState<string | null>(null);
   const [libraryTemplates, setLibraryTemplates] = useState<DesignMetadata[]>([]);
   const [libraryStatus, setLibraryStatus] = useState<LibraryStatus>("idle");
@@ -163,24 +183,40 @@ export function FormatPickerDialog({
   const [customHeight, setCustomHeight] = useState("");
   const [customError, setCustomError] = useState("");
 
-  // Pre-highlight last-used format when dialog opens (AC6).
+  // On dialog open, pre-select BOTH the rail category AND the specific tile
+  // from the last-used format (AC5). Resets form state regardless.
   useEffect(() => {
     if (!open) return;
-    const last = getLastFormat();
-    if (last) setSelectedFormatId(last);
-    // Always start from the format step on open
-    setStep("format");
-    setLibraryStatus("idle");
+
     setLibraryTemplates([]);
+    setLibraryStatus("idle");
     setCustomWidth("");
     setCustomHeight("");
     setCustomError("");
+
+    const lastFormatId = getLastFormat();
+    if (lastFormatId && getFormatById(lastFormatId)) {
+      const platform = getPlatformForFormat(lastFormatId);
+      if (platform) {
+        setActiveCategory(platform);
+        setSelectedFormatId(lastFormatId);
+        // Library fetch fires via the selectedFormatId effect below.
+        return;
+      }
+    }
+    // No last format or unrecognised id — default to first platform, no tile.
+    setActiveCategory(FORMAT_TAXONOMY[0].platform);
+    setSelectedFormatId(null);
   }, [open]);
 
-  // Fetch user's own templates tagged with the selected format (AC2, AC7, AC10).
+  // Fetch user's own templates tagged with the selected format (AC3, AC11).
+  // Runs whenever selectedFormatId or activeCategory changes.
   useEffect(() => {
-    if (step !== "library" || !selectedFormatId) return;
-
+    if (!selectedFormatId || activeCategory === CUSTOM_FORMAT_ID) {
+      setLibraryStatus("idle");
+      setLibraryTemplates([]);
+      return;
+    }
     setLibraryStatus("loading");
     canvasTemplatesApi
       .getByFormatTag(selectedFormatId)
@@ -191,52 +227,32 @@ export function FormatPickerDialog({
       .catch(() => {
         setLibraryStatus("error");
       });
-  }, [step, selectedFormatId]);
+  }, [selectedFormatId, activeCategory]);
 
   // -------------------------------------------------------------------------
   // Handlers
   // -------------------------------------------------------------------------
 
+  function handleCategoryClick(category: string) {
+    setActiveCategory(category);
+    setSelectedFormatId(null);
+  }
+
   function handleFormatTileClick(formatId: string) {
     setSelectedFormatId(formatId);
-  }
-
-  function handleFormatNext() {
-    if (!selectedFormatId) return;
-    if (selectedFormatId === CUSTOM_FORMAT_ID) {
-      setStep("custom");
-    } else {
-      setLastFormat(selectedFormatId);
-      setStep("library");
-    }
-  }
-
-  function handleCustomTileClick() {
-    setSelectedFormatId(CUSTOM_FORMAT_ID);
-  }
-
-  function handleBack() {
-    setStep("format");
-    setLibraryStatus("idle");
-    setLibraryTemplates([]);
+    setLastFormat(formatId);
   }
 
   function handleStartBlank() {
-    if (step === "library" && selectedFormatId) {
-      const fmt = getFormatById(selectedFormatId);
-      if (fmt) {
-        onSelect(fmt.width, fmt.height);
-      }
-    }
+    if (!selectedFormatId) return;
+    const fmt = getFormatById(selectedFormatId);
+    if (fmt) onSelect(fmt.width, fmt.height);
   }
 
   function handleTemplateSelect(templateId: string) {
-    if (selectedFormatId) {
-      const fmt = getFormatById(selectedFormatId);
-      if (fmt) {
-        onSelect(fmt.width, fmt.height, templateId);
-      }
-    }
+    if (!selectedFormatId) return;
+    const fmt = getFormatById(selectedFormatId);
+    if (fmt) onSelect(fmt.width, fmt.height, templateId);
   }
 
   function handleCustomSubmit() {
@@ -250,247 +266,223 @@ export function FormatPickerDialog({
     onSelect(w, h);
   }
 
-  // Derived state
-  const selectedFormat = selectedFormatId ? getFormatById(selectedFormatId) : null;
+  // Derived: the FORMAT_TAXONOMY group for the active platform category.
+  const activeCategoryGroup =
+    activeCategory !== CUSTOM_FORMAT_ID
+      ? FORMAT_TAXONOMY.find((g) => g.platform === activeCategory)
+      : null;
 
   // -------------------------------------------------------------------------
-  // Render
+  // Render — persistent two-pane layout (AC1)
   // -------------------------------------------------------------------------
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
-        {/* ---- Step 1: Format picker ---- */}
-        {step === "format" && (
-          <>
-            <DialogHeader>
-              <DialogTitle>Choose a format</DialogTitle>
-            </DialogHeader>
-            <div className="overflow-y-auto pr-1 flex-1 space-y-6 py-2">
-              {FORMAT_TAXONOMY.map((group) => (
-                <div key={group.platform}>
-                  <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-                    {group.platform}
-                  </h3>
-                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                    {group.formats.map((fmt) => (
-                      <FormatTile
-                        key={fmt.id}
-                        format={fmt}
-                        active={selectedFormatId === fmt.id}
-                        onClick={() => handleFormatTileClick(fmt.id)}
-                      />
-                    ))}
-                  </div>
-                </div>
-              ))}
+      {/*
+       * p-0 overrides the shadcn DialogContent default padding so we can
+       * manage the layout fully (header border + side-by-side panes).
+       */}
+      <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col overflow-hidden p-0">
+        <DialogHeader className="px-6 pt-5 pb-4 border-b border-border flex-shrink-0">
+          <DialogTitle>Choose a format</DialogTitle>
+        </DialogHeader>
 
-              {/* Custom size tile */}
-              <div>
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-                  Custom
-                </h3>
-                <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                  <button
-                    type="button"
-                    onClick={handleCustomTileClick}
-                    className={[
-                      "flex flex-col items-center gap-1.5 rounded-xl border p-3 transition-all hover:border-primary/50 hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                      selectedFormatId === CUSTOM_FORMAT_ID
-                        ? "border-primary bg-primary/5 ring-2 ring-primary"
-                        : "border-border bg-card",
-                    ].join(" ")}
-                    aria-pressed={selectedFormatId === CUSTOM_FORMAT_ID}
-                  >
-                    <div className="flex items-center justify-center w-[52px] h-[52px]">
-                      <Plus
-                        className={
-                          selectedFormatId === CUSTOM_FORMAT_ID
-                            ? "text-primary"
-                            : "text-muted-foreground"
-                        }
-                        size={24}
-                        aria-hidden="true"
-                      />
-                    </div>
-                    <span className="text-xs font-medium text-foreground leading-tight text-center">
-                      Custom size…
-                    </span>
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div className="pt-4 border-t border-border flex justify-end">
-              <Button
-                disabled={!selectedFormatId}
-                onClick={handleFormatNext}
-                className="bg-primary text-primary-foreground hover:bg-primary/90"
+        <div className="flex flex-1 overflow-hidden min-h-0">
+          {/* ---- Left category rail (AC1, AC10) ---- */}
+          <nav
+            className="w-44 flex-shrink-0 border-r border-border overflow-y-auto py-2 px-2"
+            aria-label="Format categories"
+          >
+            {FORMAT_TAXONOMY.map((group) => (
+              <button
+                key={group.platform}
+                type="button"
+                onClick={() => handleCategoryClick(group.platform)}
+                className={[
+                  "w-full text-left px-3 py-2.5 text-sm font-medium rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                  activeCategory === group.platform
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:text-foreground hover:bg-accent",
+                ].join(" ")}
+                aria-pressed={activeCategory === group.platform}
               >
-                Continue
-              </Button>
-            </div>
-          </>
-        )}
+                {group.platform}
+              </button>
+            ))}
 
-        {/* ---- Step 2: Library (Start Blank + user templates) ---- */}
-        {step === "library" && selectedFormat && (
-          <>
-            <DialogHeader>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={handleBack}
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                  aria-label="Back to format selection"
-                >
-                  <ChevronLeft size={18} />
-                </button>
-                <DialogTitle>{selectedFormat.name} — choose a starting point</DialogTitle>
-              </div>
-            </DialogHeader>
+            {/* Custom size as its own rail destination — no tile step (AC4) */}
+            <button
+              type="button"
+              onClick={() => handleCategoryClick(CUSTOM_FORMAT_ID)}
+              className={[
+                "w-full text-left px-3 py-2.5 text-sm font-medium rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                activeCategory === CUSTOM_FORMAT_ID
+                  ? "bg-primary/10 text-primary"
+                  : "text-muted-foreground hover:text-foreground hover:bg-accent",
+              ].join(" ")}
+              aria-pressed={activeCategory === CUSTOM_FORMAT_ID}
+            >
+              Custom size
+            </button>
+          </nav>
 
-            {/* Fetch error — distinct from zero-templates (AC10) */}
-            {libraryStatus === "error" && (
-              <Alert variant="destructive" className="flex-shrink-0">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
-                  Could not load your saved templates. Check your connection — you can still start blank below.
-                </AlertDescription>
-              </Alert>
+          {/* ---- Main content area ---- */}
+          <div className="flex-1 overflow-y-auto px-6 py-4">
+            {/* -- Platform group: format tiles + inline library (AC2, AC3) -- */}
+            {activeCategory !== CUSTOM_FORMAT_ID && activeCategoryGroup && (
+              <>
+                {/* Format tiles — shape preview only, no pixel numbers (AC2, AC7) */}
+                <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                  {activeCategoryGroup.formats.map((fmt) => (
+                    <FormatTile
+                      key={fmt.id}
+                      format={fmt}
+                      active={selectedFormatId === fmt.id}
+                      onClick={() => handleFormatTileClick(fmt.id)}
+                    />
+                  ))}
+                </div>
+
+                {/* Inline library — appears the moment a tile is selected (AC3) */}
+                {selectedFormatId && (
+                  <div className="mt-6 pt-4 border-t border-border">
+                    {/*
+                     * Fetch error — distinct from the zero-templates empty state
+                     * below so the two cases are visually unambiguous (AC11, AC6).
+                     */}
+                    {libraryStatus === "error" && (
+                      <Alert variant="destructive" className="mb-4">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertDescription>
+                          Could not load your saved templates. Check your connection — you can still start blank below.
+                        </AlertDescription>
+                      </Alert>
+                    )}
+
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                      {/* Start Blank — always first (AC3, AC6, AC11) */}
+                      <button
+                        type="button"
+                        onClick={handleStartBlank}
+                        className="group rounded-xl border-2 border-dashed border-border hover:border-primary hover:bg-accent transition-all flex flex-col items-center justify-center gap-2 p-6 min-h-[7rem]"
+                      >
+                        <Plus
+                          size={28}
+                          className="text-muted-foreground group-hover:text-primary transition-colors"
+                          aria-hidden="true"
+                        />
+                        <span className="text-sm font-medium text-foreground">
+                          Start Blank
+                        </span>
+                      </button>
+
+                      {/* Loading skeletons */}
+                      {libraryStatus === "loading" && (
+                        <>
+                          <SkeletonCard />
+                          <SkeletonCard />
+                        </>
+                      )}
+
+                      {/* User's own templates for this format */}
+                      {libraryStatus === "success" &&
+                        libraryTemplates.map((tpl) => (
+                          <button
+                            key={tpl.id}
+                            type="button"
+                            onClick={() => handleTemplateSelect(tpl.id)}
+                            className="group rounded-xl border border-border hover:border-primary hover:shadow-md transition-all flex flex-col overflow-hidden text-left min-h-[7rem]"
+                          >
+                            {tpl.thumbnail ? (
+                              <div className="flex-1 bg-muted overflow-hidden">
+                                <img
+                                  src={tpl.thumbnail}
+                                  alt={tpl.name}
+                                  className="w-full h-full object-contain"
+                                />
+                              </div>
+                            ) : (
+                              <div className="flex-1 bg-muted flex items-center justify-center">
+                                <span className="text-muted-foreground text-xs">
+                                  No preview
+                                </span>
+                              </div>
+                            )}
+                            <div className="px-3 py-2 bg-card">
+                              <p className="text-xs font-medium text-foreground truncate">
+                                {tpl.name}
+                              </p>
+                            </div>
+                          </button>
+                        ))}
+
+                      {/*
+                       * Zero-templates empty state — successful fetch with no
+                       * results. Visually plain (no Alert styling) to stay distinct
+                       * from the error state above (AC6).
+                       */}
+                      {libraryStatus === "success" &&
+                        libraryTemplates.length === 0 && (
+                          <div className="col-span-full text-sm text-muted-foreground pt-2">
+                            No saved templates for this format yet — use "Start Blank" to create your first one.
+                          </div>
+                        )}
+                    </div>
+                  </div>
+                )}
+              </>
             )}
 
-            <div className="overflow-y-auto pr-1 flex-1 py-2">
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                {/* Start Blank — always first, always present (AC2, AC7, AC10) */}
-                <button
-                  type="button"
-                  onClick={handleStartBlank}
-                  className="group rounded-xl border-2 border-dashed border-border hover:border-primary hover:bg-accent transition-all flex flex-col items-center justify-center gap-2 p-6 min-h-[7rem]"
-                >
-                  <Plus
-                    size={28}
-                    className="text-muted-foreground group-hover:text-primary transition-colors"
-                    aria-hidden="true"
-                  />
-                  <span className="text-sm font-medium text-foreground">
-                    Start Blank
-                  </span>
-                </button>
-
-                {/* Loading skeletons */}
-                {libraryStatus === "loading" && (
-                  <>
-                    <SkeletonCard />
-                    <SkeletonCard />
-                  </>
+            {/* -- Custom size form (AC4) -- */}
+            {activeCategory === CUSTOM_FORMAT_ID && (
+              <div className="space-y-4 py-2">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="custom-width">Width (px)</Label>
+                    <Input
+                      id="custom-width"
+                      type="number"
+                      min={100}
+                      max={10000}
+                      placeholder="e.g. 1200"
+                      value={customWidth}
+                      onChange={(e) => {
+                        setCustomWidth(e.target.value);
+                        setCustomError("");
+                      }}
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="custom-height">Height (px)</Label>
+                    <Input
+                      id="custom-height"
+                      type="number"
+                      min={100}
+                      max={10000}
+                      placeholder="e.g. 800"
+                      value={customHeight}
+                      onChange={(e) => {
+                        setCustomHeight(e.target.value);
+                        setCustomError("");
+                      }}
+                    />
+                  </div>
+                </div>
+                {customError && (
+                  <p className="text-sm text-destructive">{customError}</p>
                 )}
-
-                {/* User's own templates for this format */}
-                {libraryStatus === "success" &&
-                  libraryTemplates.map((tpl) => (
-                    <button
-                      key={tpl.id}
-                      type="button"
-                      onClick={() => handleTemplateSelect(tpl.id)}
-                      className="group rounded-xl border border-border hover:border-primary hover:shadow-md transition-all flex flex-col overflow-hidden text-left min-h-[7rem]"
-                    >
-                      {tpl.thumbnail ? (
-                        <div className="flex-1 bg-muted overflow-hidden">
-                          <img
-                            src={tpl.thumbnail}
-                            alt={tpl.name}
-                            className="w-full h-full object-contain"
-                          />
-                        </div>
-                      ) : (
-                        <div className="flex-1 bg-muted flex items-center justify-center">
-                          <span className="text-muted-foreground text-xs">No preview</span>
-                        </div>
-                      )}
-                      <div className="px-3 py-2 bg-card">
-                        <p className="text-xs font-medium text-foreground truncate">
-                          {tpl.name}
-                        </p>
-                      </div>
-                    </button>
-                  ))}
-
-                {/* Zero-templates empty state — success fetch with no results (AC7) */}
-                {libraryStatus === "success" &&
-                  libraryTemplates.length === 0 && (
-                    <div className="col-span-full text-sm text-muted-foreground pt-2">
-                      No saved templates for this format yet — use "Start Blank" to create your first one.
-                    </div>
-                  )}
-              </div>
-            </div>
-          </>
-        )}
-
-        {/* ---- Step 3: Custom size ---- */}
-        {step === "custom" && (
-          <>
-            <DialogHeader>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={handleBack}
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                  aria-label="Back to format selection"
-                >
-                  <ChevronLeft size={18} />
-                </button>
-                <DialogTitle>Custom size</DialogTitle>
-              </div>
-            </DialogHeader>
-            <div className="py-4 space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label htmlFor="custom-width">Width (px)</Label>
-                  <Input
-                    id="custom-width"
-                    type="number"
-                    min={100}
-                    max={10000}
-                    placeholder="e.g. 1200"
-                    value={customWidth}
-                    onChange={(e) => {
-                      setCustomWidth(e.target.value);
-                      setCustomError("");
-                    }}
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="custom-height">Height (px)</Label>
-                  <Input
-                    id="custom-height"
-                    type="number"
-                    min={100}
-                    max={10000}
-                    placeholder="e.g. 800"
-                    value={customHeight}
-                    onChange={(e) => {
-                      setCustomHeight(e.target.value);
-                      setCustomError("");
-                    }}
-                  />
+                <div className="pt-2 flex justify-end">
+                  <Button
+                    onClick={handleCustomSubmit}
+                    className="bg-primary text-primary-foreground hover:bg-primary/90"
+                  >
+                    Start with this size
+                  </Button>
                 </div>
               </div>
-              {customError && (
-                <p className="text-sm text-destructive">{customError}</p>
-              )}
-            </div>
-            <div className="pt-4 border-t border-border flex justify-end">
-              <Button
-                onClick={handleCustomSubmit}
-                className="bg-primary text-primary-foreground hover:bg-primary/90"
-              >
-                Start with this size
-              </Button>
-            </div>
-          </>
-        )}
+            )}
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   );
