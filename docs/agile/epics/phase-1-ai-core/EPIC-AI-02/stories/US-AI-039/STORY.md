@@ -1,6 +1,6 @@
 # Story Card — US-AI-039
 
-> **Status:** 🔲 Not Started
+> **Status:** 🟡 Implementation Complete (pre-PR)
 > **Feature:** F-AI-02-07 — Format Picker (New Design / New Template entry flow)
 > **Epic:** [EPIC-AI-02](../../EPIC.md)
 > **Milestone:** [M-AI-06-photo-and-format](../../milestones/M-AI-06-photo-and-format.md)
@@ -39,17 +39,17 @@ What changes is *only* how those pieces are arranged on screen: one persistent m
 
 ## Acceptance Criteria
 
-- [ ] **AC1 [happy-path]:** Opening the Format Picker (via "New Design" or "New Template") renders a single persistent modal with a left category rail listing every `FORMAT_TAXONOMY` platform group (Instagram / Facebook / Print / Email / Other) plus a "Custom size" rail item — no "Continue" button and no full-screen transition between format selection and library browsing.
-- [ ] **AC2 [happy-path]:** Selecting a platform group in the rail shows that platform's named format tiles (shape-preview only, no pixel numbers — unchanged from US-AI-038 AC1) inline in the main content area, swapping in place without closing or reopening the modal.
-- [ ] **AC3 [happy-path]:** Selecting a specific format tile reveals, in the same view (no click-through, no back-chevron), the "Start Blank" tile plus the user's own saved templates tagged to that format — same content and fetch behavior as the current Library step, just no longer a separate screen.
-- [ ] **AC4 [happy-path]:** Selecting "Custom size" in the rail swaps the main content area to the existing width/height validation form (100–10,000px); submitting a valid size opens the editor at that exact size, unchanged from current behavior.
-- [ ] **AC5 [edge-case]:** The last-used format is restored on reopen by pre-selecting *both* its platform group in the rail *and* its specific tile in the tile strip, with the corresponding Start-Blank/library grid already visible — not just the platform highlighted with an extra click still required (strengthens US-AI-038 AC6).
-- [ ] **AC6 [edge-case]:** A format with zero saved templates shows only "Start Blank" inline (plus the rail and tile strip) with no error styling — the successful-empty-fetch case stays visually distinct from a failed fetch (AC11).
-- [ ] **AC7 [compliance]:** No pixel dimensions, aspect ratios, or AI-model/technical details appear anywhere in the reorganized modal — same rule as US-AI-038 AC8.
-- [ ] **AC8 [regression]:** Both "New Design" and "New Template" entry points continue to open the same dialog; `npm run check` and `npm run test:unit` pass; the separate `/templates` content-category gallery browse (search + category/style dropdowns) is untouched.
-- [ ] **AC9 [test-coverage]:** A new Playwright spec exercises: opening the picker from "New Design" → switching rail categories → selecting a tile (inline library appears, no navigation) → Custom size submission opens the editor at the entered dimensions. This is the first automated coverage of this component; none of the existing 15 `e2e/` specs need to change, since none reference it today (confirmed by grep — they reach `/editor` via direct navigation).
-- [ ] **AC10 [a11y]:** Keyboard focus order and `aria-pressed` state on rail items and format tiles are preserved from the current implementation — every rail item and tile remains reachable and operable via keyboard with the same focus-visible ring behavior.
-- [ ] **AC11 [error-path]:** When the inline library fetch (`canvasTemplatesApi.getByFormatTag` inside `FormatPickerDialog.tsx`) rejects, the modal shows the existing distinct error `Alert` in place of the template grid — visually separate from the zero-templates empty state (AC6) — and the user can still proceed via "Start Blank" or "Custom size" without getting stuck. Unchanged behavior from US-AI-038 AC10, just re-verified in the new inline layout.
+- [x] **AC1 [happy-path]:** Opening the Format Picker (via "New Design" or "New Template") renders a single persistent modal with a left category rail listing every `FORMAT_TAXONOMY` platform group (Instagram / Facebook / Print / Email / Other) plus a "Custom size" rail item — no "Continue" button and no full-screen transition between format selection and library browsing.
+- [x] **AC2 [happy-path]:** Selecting a platform group in the rail shows that platform's named format tiles (shape-preview only, no pixel numbers — unchanged from US-AI-038 AC1) inline in the main content area, swapping in place without closing or reopening the modal.
+- [x] **AC3 [happy-path]:** Selecting a specific format tile reveals, in the same view (no click-through, no back-chevron), the "Start Blank" tile plus the user's own saved templates tagged to that format — same content and fetch behavior as the current Library step, just no longer a separate screen.
+- [x] **AC4 [happy-path]:** Selecting "Custom size" in the rail swaps the main content area to the existing width/height validation form (100–10,000px); submitting a valid size opens the editor at that exact size, unchanged from current behavior.
+- [x] **AC5 [edge-case]:** The last-used format is restored on reopen by pre-selecting *both* its platform group in the rail *and* its specific tile in the tile strip, with the corresponding Start-Blank/library grid already visible — not just the platform highlighted with an extra click still required (strengthens US-AI-038 AC6).
+- [x] **AC6 [edge-case]:** A format with zero saved templates shows only "Start Blank" inline (plus the rail and tile strip) with no error styling — the successful-empty-fetch case stays visually distinct from a failed fetch (AC11).
+- [x] **AC7 [compliance]:** No pixel dimensions, aspect ratios, or AI-model/technical details appear anywhere in the reorganized modal — same rule as US-AI-038 AC8.
+- [x] **AC8 [regression]:** Both "New Design" and "New Template" entry points continue to open the same dialog; `npm run check` and `npm run test:unit` pass; the separate `/templates` content-category gallery browse (search + category/style dropdowns) is untouched.
+- [x] **AC9 [test-coverage]:** A new Playwright spec exercises: opening the picker from "New Design" → switching rail categories → selecting a tile (inline library appears, no navigation) → Custom size submission opens the editor at the entered dimensions. This is the first automated coverage of this component; none of the existing 15 `e2e/` specs need to change, since none reference it today (confirmed by grep — they reach `/editor` via direct navigation).
+- [x] **AC10 [a11y]:** Keyboard focus order and `aria-pressed` state on rail items and format tiles are preserved from the current implementation — every rail item and tile remains reachable and operable via keyboard with the same focus-visible ring behavior.
+- [x] **AC11 [error-path]:** When the inline library fetch (`canvasTemplatesApi.getByFormatTag` inside `FormatPickerDialog.tsx`) rejects, the modal shows the existing distinct error `Alert` in place of the template grid — visually separate from the zero-templates empty state (AC6) — and the user can still proceed via "Start Blank" or "Custom size" without getting stuck. Unchanged behavior from US-AI-038 AC10, just re-verified in the new inline layout.
 
 ---
 

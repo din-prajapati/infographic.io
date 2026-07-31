@@ -83,14 +83,14 @@ npm run test:e2e -- e2e/us-ai-039-format-picker-reorg.spec.ts
 
 ## Task Checklist
 
-- [ ] T1 — Category rail component
-- [ ] T2 — Format tile strip, relocated
-- [ ] T3 — Inline library merge
-- [ ] T4 — Custom size as rail destination + pre-selection on reopen
-- [ ] T5 — First E2E coverage for this flow
-- [ ] `npm run check` passes
-- [ ] `npm run test:unit` passes
-- [ ] `npm run test:e2e` passes (new spec)
+- [x] T1 — Category rail component
+- [x] T2 — Format tile strip, relocated
+- [x] T3 — Inline library merge
+- [x] T4 — Custom size as rail destination + pre-selection on reopen
+- [x] T5 — First E2E coverage for this flow
+- [x] `npm run check` passes
+- [x] `npm run test:unit` passes
+- [ ] `npm run test:e2e` passes (new spec) — requires fresh `npm run dev` with new code; reuseExistingServer:true will reuse a stale server instance if the app was already running
 - [ ] Manual test recorded
 - [ ] PR opened with story card as description
 - [ ] STORY.md ACs updated

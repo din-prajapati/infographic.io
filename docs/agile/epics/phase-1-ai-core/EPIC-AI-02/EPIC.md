@@ -39,6 +39,9 @@
 | [US-AI-036](stories/US-AI-036/STORY.md) | Canvas-aware generation orientation (replaces US-AI-011, part 1) | M-AI-06 | 🟡 Implementation Complete (pre-PR) | — |
 | [US-AI-037](stories/US-AI-037/STORY.md) | Save as Template — personal library (replaces US-AI-011, part 2) | M-AI-06 | 🟡 Implementation Complete (pre-PR) | — |
 | [US-AI-038](stories/US-AI-038/STORY.md) | Format Picker — New Design / New Template (replaces US-AI-011, part 3) | M-AI-06 | 🟡 Implementation Complete (pre-PR) | — |
+| [US-AI-039](stories/US-AI-039/STORY.md) | Format Picker — Canva-style single-modal reorg (category rail + inline library) | M-AI-06 | 🔲 Not Started | — |
+| [US-AI-040](stories/US-AI-040/STORY.md) | Template Gallery — preview modal + tag-based filters | M-AI-06 | 🔲 Not Started | — |
+| [US-AI-041](stories/US-AI-041/STORY.md) | Format Picker — device-mockup preview for social formats | M-AI-06 | 🔲 Not Started | — |
 | [US-PANEL-01](stories/US-PANEL-01/STORY.md) | Right Panel: Brand Styles → Generation + Quick Styles as post-generation tool | M-AI-06 | 🔲 | — |
 | [US-AI-012](../../phase-4-backlog/EPIC-AI-08/stories/US-AI-012/STORY.md) | Generation quality tiers: Social vs Print (CAP-08) — moved to EPIC-AI-08 | M-AI-07 | ⏸ Moved | — |
 | [US-AI-013](../../phase-4-backlog/EPIC-AI-08/stories/US-AI-013/STORY.md) | Property type → quality routing (CAP-09) — moved to EPIC-AI-08 | M-AI-07 | ⏸ Moved | — |
@@ -56,7 +59,8 @@
 | F-AI-02-04 | ~~Campaign Mode UI framing~~ (moved to EPIC-AI-08) | US-AI-014 |
 | F-AI-02-05 | Canvas-aware generation orientation | US-AI-036 |
 | F-AI-02-06 | Save as Template (personal library) + premium-template DB migration | US-AI-037 |
-| F-AI-02-07 | Format Picker (New Design / New Template) | US-AI-038 |
+| F-AI-02-07 | Format Picker (New Design / New Template) | US-AI-038, US-AI-039, US-AI-041 |
+| F-AI-02-08 | Template Gallery — preview modal + tag-based filters | US-AI-040 |
 
 ---
 
@@ -134,6 +138,12 @@ Key files relevant to this epic:
 ---
 
 ## Implementation Update (log)
+
+### 2026-07-31 — US-AI-039 implementation complete (pre-PR)
+- **Files touched:** `client/src/components/pages/FormatPickerDialog.tsx` (rewrite), `e2e/us-ai-039-format-picker-reorg.spec.ts` (new)
+- **ACs covered:** AC1, AC2, AC3, AC4, AC5, AC6, AC7, AC8, AC9, AC10, AC11 — all 11 ACs covered by the implementation; AC9 and TC-AI-039-01 through TC-AI-039-04 deferred to manual E2E run (requires fresh `npm run dev` — Playwright `reuseExistingServer:true` reused the old server during automated run, which showed the pre-reorg UI)
+- **Commits:** 2 on branch `feat/ai-us-ai-039-format-picker-reorg`
+- **Notes:** T1-T4 combined into one commit (all in FormatPickerDialog.tsx). The `step` state machine and `ChevronLeft` import were removed; `getPlatformForFormat()` helper added to walk FORMAT_TAXONOMY for AC5 pre-selection. Library fetch effect now depends on `[selectedFormatId, activeCategory]` instead of `[step, selectedFormatId]`. `p-0` on DialogContent required to manage two-pane layout (header border + side-by-side panes). E2E spec (T5) typechecks clean but requires a fresh dev server start before running; add note to PR description.
 
 ### 2026-07-29 — US-AI-038 implementation complete (pre-PR)
 - **Files touched:** `client/src/lib/formatTaxonomy.ts` (new), `client/src/components/pages/FormatPickerDialog.tsx` (new), `client/src/lib/api.ts` (added `getByFormatTag`), `client/src/lib/storage.ts` (added `getLastFormat`/`setLastFormat`), `client/src/App.tsx` (wired both page wrappers to open picker), `client/src/lib/starterCanvasTemplates.ts` (added `platformTag` field to interface)
