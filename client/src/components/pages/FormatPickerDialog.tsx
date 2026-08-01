@@ -397,21 +397,26 @@ export function FormatPickerDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       {/*
-       * Modal shell tokens (Canva spec → ours):
-       *   max-w-[1040px]   ← 1038px spec
-       *   max-h-[580px]    ← 568px spec (slightly taller for library section)
+       * Modal shell — Canva spec mapped to our tokens:
+       *   max-w-[1040px] sm:max-w-[1040px]  ← 1038px spec
+       *     The base DialogContent has sm:max-w-lg (512px) which wins at desktop
+       *     via media-query specificity. We must add sm:max-w-[1040px] so
+       *     tailwind-merge deduplicates the sm:max-w- group and keeps ours.
+       *   gap-0   ← base has gap-4 from the grid layout; we use flex so we
+       *             control spacing ourselves
        *   rounded-[2rem]   ← 32px spec
-       *   shadow           ← spec: no own shadow, scrim behind; we use subtle shadow
+       *   The base DialogContent inline style sets boxShadow (glassmorphism)
+       *   which overrides Tailwind shadow classes. We accept the glass shadow
+       *   here — it reads fine against the blurred scrim overlay.
        */}
       <DialogContent
         className="
-          w-[92vw] max-w-[1040px]
+          w-[92vw] max-w-[1040px] sm:max-w-[1040px]
           h-[82vh] max-h-[580px]
-          flex flex-col
+          flex flex-col gap-0
           overflow-hidden
           p-0
           rounded-[2rem]
-          shadow-[0_20px_60px_rgba(0,0,0,0.16),0_4px_16px_rgba(0,0,0,0.06)]
         "
       >
         {/* ── Header — 32px/600 modal title ── */}
