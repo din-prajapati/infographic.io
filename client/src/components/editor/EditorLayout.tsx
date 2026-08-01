@@ -4,6 +4,7 @@ import { CenterCanvas } from "./CenterCanvas";
 import { RightSidebar } from "./RightSidebar";
 import { FloatingToolbar } from "./FloatingToolbar";
 import { LayersPanel } from "./LayersPanel";
+import { TemplatesPanel } from "./TemplatesPanel";
 import { AdjustmentsPanel } from "./AdjustmentsPanel";
 import { SaveDialog, SaveDialogData } from "./SaveDialog";
 import { toast } from "sonner";
@@ -402,6 +403,9 @@ export function EditorLayout({ onBackClick, designId, templateId }: EditorLayout
 
           {/* Layers Panel */}
           {!isPreviewMode && <LayersPanel />}
+
+          {/* Templates Panel — apply or swap a template mid-edit */}
+          {!isPreviewMode && <TemplatesPanel />}
 
           {/* Adjustments Panel - only show when image is selected */}
           {!isPreviewMode && selectedElement && selectedElement.type === 'image' && (
