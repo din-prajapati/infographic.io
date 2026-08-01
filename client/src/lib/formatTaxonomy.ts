@@ -34,6 +34,25 @@ export const CUSTOM_FORMAT_ID = 'custom';
 
 export const FORMAT_TAXONOMY: PlatformGroup[] = [
   {
+    /*
+     * "For you" is curated by JOB, not by canvas size — these are the six
+     * things a listing agent actually produces week to week, each mapped to
+     * the shape that job is normally published at. Several share dimensions
+     * with entries further down the list (Just Listed and Open House are both
+     * square); that duplication is deliberate — an agent looks for "Just
+     * Sold", not for "1080×1080".
+     */
+    platform: 'For you',
+    formats: [
+      { id: 'curated-just-listed',    name: 'Just Listed',    width: 1080, height: 1350, orientation: 'portrait' },
+      { id: 'curated-open-house',     name: 'Open House',     width: 1080, height: 1080, orientation: 'square'   },
+      { id: 'curated-just-sold',      name: 'Just Sold',      width: 1080, height: 1080, orientation: 'square'   },
+      { id: 'curated-listing-story',  name: 'Listing Story',  width: 1080, height: 1920, orientation: 'portrait' },
+      { id: 'curated-property-flyer', name: 'Property Flyer', width: 1240, height: 1754, orientation: 'portrait' },
+      { id: 'curated-market-report',  name: 'Market Report',  width: 1080, height: 1350, orientation: 'portrait' },
+    ],
+  },
+  {
     platform: 'Instagram',
     formats: [
       { id: 'instagram-post',        name: 'Post',        width: 1080, height: 1080, orientation: 'square'    },
@@ -50,11 +69,27 @@ export const FORMAT_TAXONOMY: PlatformGroup[] = [
     ],
   },
   {
-    platform: 'Print',
+    /*
+     * India is the primary market and WhatsApp is where listings are actually
+     * forwarded agent-to-buyer, so it gets first-class placement rather than
+     * being folded into "Other".
+     */
+    platform: 'WhatsApp',
+    formats: [
+      { id: 'whatsapp-status', name: 'Status',        width: 1080, height: 1920, orientation: 'portrait' },
+      { id: 'whatsapp-post',   name: 'Business Post', width: 1080, height: 1080, orientation: 'square'   },
+    ],
+  },
+  {
+    platform: 'Printables',
     formats: [
       { id: 'print-flyer',           name: 'Flyer',           width: 1600, height: 1200, orientation: 'landscape' },
+      { id: 'print-feature-sheet',   name: 'Feature Sheet',   width: 1240, height: 1754, orientation: 'portrait'  },
       { id: 'print-postcard',        name: 'Postcard',        width: 1800, height: 1200, orientation: 'landscape' },
       { id: 'print-open-house-sign', name: 'Open House Sign', width: 1200, height: 1800, orientation: 'portrait'  },
+      { id: 'print-yard-sign',       name: 'Yard Sign',       width: 1800, height: 1350, orientation: 'landscape' },
+      { id: 'print-door-hanger',     name: 'Door Hanger',     width: 1275, height: 3300, orientation: 'portrait'  },
+      { id: 'print-business-card',   name: 'Business Card',   width: 1050, height:  600, orientation: 'landscape' },
     ],
   },
   {
