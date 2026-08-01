@@ -145,9 +145,15 @@ export function TemplatesPage({ onOpenEditor }: TemplatesPageProps) {
                 Choose from our curated collection of professional infographic templates
               </p>
             </div>
+            {/*
+              "New Template" mirrors "New Design" on My Designs — both open the
+              same Format Picker (see US-AI-038 §4.5 / the template-and-design
+              workflow doc). The two entry points stay separate for
+              discoverability and diverge only at save time.
+            */}
             <Button className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => onOpenEditor?.()}>
               <Plus className="w-4 h-4" />
-              Create Blank
+              New Template
             </Button>
           </div>
 
