@@ -1,4 +1,26 @@
 /*! tailwindcss v4.1.3 | MIT License | https://tailwindcss.com */
+
+/*
+ * ⚠️  This file is compiled Tailwind v4.1.3 output that also carries v3
+ *     directives (`@tailwind base` / `@tailwind utilities`). The project
+ *     actually builds with Tailwind v3.4.19 (see postcss.config.js), so v3
+ *     expands those directives and emits its OWN copy of every utility here.
+ *
+ *     v3 applies translate utilities via  `transform: translate(...)`
+ *     v4 applies them via the standalone  `translate:` property
+ *
+ *     Both properties compose, so any element carrying a translate utility
+ *     was being offset TWICE (e.g. centred dialogs moved -100% instead of
+ *     -50%, landing their bottom-right corner on the viewport centre).
+ *
+ *     Fix: the v4 `translate: var(--tw-translate-x) var(--tw-translate-y);`
+ *     declarations were removed so v3's `transform` is the single source of
+ *     truth. Do not re-add them while the project is on Tailwind v3.
+ *
+ *     Proper long-term fix: restore this file to real source form
+ *     (`@tailwind base/components/utilities` + custom layers) instead of
+ *     checked-in compiled output, or migrate the project to Tailwind v4.
+ */
 @tailwind base;
 @layer properties {
   @supports (((-webkit-hyphens: none)) and (not (margin-trim: inline))) or ((-moz-orient: inline) and (not (color: rgb(from red r g b)))) {
@@ -1233,22 +1255,18 @@
 
   .-translate-x-1\/2 {
     --tw-translate-x: calc(calc(1 / 2 * 100%) * -1);
-    translate: var(--tw-translate-x) var(--tw-translate-y);
   }
 
   .translate-x-\[-50\%\] {
     --tw-translate-x: -50%;
-    translate: var(--tw-translate-x) var(--tw-translate-y);
   }
 
   .-translate-y-1\/2 {
     --tw-translate-y: calc(calc(1 / 2 * 100%) * -1);
-    translate: var(--tw-translate-x) var(--tw-translate-y);
   }
 
   .translate-y-\[-50\%\] {
     --tw-translate-y: -50%;
-    translate: var(--tw-translate-x) var(--tw-translate-y);
   }
 
   .transform {
@@ -3307,7 +3325,6 @@
 
   .data-\[side\=bottom\]\:translate-y-1[data-side="bottom"] {
     --tw-translate-y: calc(var(--spacing) * 1);
-    translate: var(--tw-translate-x) var(--tw-translate-y);
   }
 
   .data-\[side\=bottom\]\:slide-in-from-top-2[data-side="bottom"] {
@@ -3316,7 +3333,6 @@
 
   .data-\[side\=left\]\:-translate-x-1[data-side="left"] {
     --tw-translate-x: calc(var(--spacing) * -1);
-    translate: var(--tw-translate-x) var(--tw-translate-y);
   }
 
   .data-\[side\=left\]\:slide-in-from-right-2[data-side="left"] {
@@ -3325,7 +3341,6 @@
 
   .data-\[side\=right\]\:translate-x-1[data-side="right"] {
     --tw-translate-x: calc(var(--spacing) * 1);
-    translate: var(--tw-translate-x) var(--tw-translate-y);
   }
 
   .data-\[side\=right\]\:slide-in-from-left-2[data-side="right"] {
@@ -3334,7 +3349,6 @@
 
   .data-\[side\=top\]\:-translate-y-1[data-side="top"] {
     --tw-translate-y: calc(var(--spacing) * -1);
-    translate: var(--tw-translate-x) var(--tw-translate-y);
   }
 
   .data-\[side\=top\]\:slide-in-from-bottom-2[data-side="top"] {
@@ -3370,7 +3384,6 @@
 
   .data-\[state\=checked\]\:translate-x-\[calc\(100\%-2px\)\][data-state="checked"] {
     --tw-translate-x: calc(100% - 2px);
-    translate: var(--tw-translate-x) var(--tw-translate-y);
   }
 
   .data-\[state\=checked\]\:bg-primary[data-state="checked"] {
@@ -3415,7 +3428,6 @@
 
   .data-\[state\=unchecked\]\:translate-x-0[data-state="unchecked"] {
     --tw-translate-x: calc(var(--spacing) * 0);
-    translate: var(--tw-translate-x) var(--tw-translate-y);
   }
 
   .data-\[state\=unchecked\]\:bg-switch-background[data-state="unchecked"] {
