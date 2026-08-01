@@ -190,25 +190,6 @@ export function FloatingToolbar({
           </TooltipContent>
         </Tooltip>
 
-        {/* Layers Button */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              onClick={() => togglePanel('layers')}
-              className={`w-10 h-10 flex items-center justify-center rounded-xl shadow-lg transition-all duration-150 ${
-                isLayersActive
-                  ? 'bg-accent text-foreground'
-                  : 'bg-background text-muted-foreground hover:bg-muted border border-border'
-              }`}
-              aria-pressed={isLayersActive}
-            >
-              <Layers className="w-5 h-5" strokeWidth={1.8} />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent side="right" sideOffset={12}>
-            Layers
-          </TooltipContent>
-        </Tooltip>
 
         {/* Main Toolbar */}
         <div className="bg-background rounded-2xl shadow-lg border border-border p-1.5 flex flex-col items-center">
@@ -338,8 +319,32 @@ export function FloatingToolbar({
             </>
           )}
         </div>
+
+        {/*
+          Layers sits below the tool group, separated from Templates at the
+          top: Templates brings content in, the middle group acts on the
+          canvas, Layers inspects what is already on it.
+        */}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              onClick={() => togglePanel('layers')}
+              className={`w-10 h-10 flex items-center justify-center rounded-xl shadow-lg transition-all duration-150 ${
+                isLayersActive
+                  ? 'bg-accent text-foreground'
+                  : 'bg-background text-muted-foreground hover:bg-muted border border-border'
+              }`}
+              aria-pressed={isLayersActive}
+            >
+              <Layers className="w-5 h-5" strokeWidth={1.8} />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="right" sideOffset={12}>
+            Layers
+          </TooltipContent>
+        </Tooltip>
       </div>
-      
+
       {/* Hidden File Input */}
       <input
         ref={fileInputRef}
