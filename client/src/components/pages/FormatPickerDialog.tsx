@@ -36,6 +36,8 @@ import {
   LayoutGrid,
   Maximize2,
   Linkedin,
+  Sparkles,
+  MessageCircle,
 } from "lucide-react";
 import {
   FORMAT_TAXONOMY,
@@ -76,11 +78,19 @@ function getPlatformForFormat(formatId: string): string | undefined {
 
 /** Lucide icon per rail category. */
 const RAIL_ICONS: Record<string, React.ReactNode> = {
+  "For you": <Sparkles size={16} />,
   Instagram: <Instagram size={16} />,
   Facebook: <Facebook size={16} />,
-  Print: <Printer size={16} />,
+  WhatsApp: <MessageCircle size={16} />,
+  Printables: <Printer size={16} />,
   Email: <Mail size={16} />,
   Other: <Linkedin size={16} />,
+};
+
+/** Sub-heading shown under each category title in the content pane. */
+const RAIL_BLURBS: Record<string, string> = {
+  "For you": "The pieces most listings need, ready to fill in",
+  Printables: "Print-ready sizes with bleed-safe margins",
 };
 
 // ---------------------------------------------------------------------------
@@ -271,7 +281,8 @@ export function FormatPickerDialog({
                   {activeCategoryGroup.platform}
                 </h3>
                 <p className="text-[13px] text-muted-foreground mt-0.5 mb-5">
-                  Select a format to start designing
+                  {RAIL_BLURBS[activeCategoryGroup.platform] ??
+                    "Select a format to start designing"}
                 </p>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
