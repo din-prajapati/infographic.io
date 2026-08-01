@@ -4,13 +4,16 @@
 
 import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 
-export type LeftPanelType = 'layers' | 'adjustments' | 'crop' | null;
+export type LeftPanelType = 'layers' | 'adjustments' | 'crop' | 'templates' | null;
+
+/** Panels the rail can open. Excludes `null`, which only `closePanel` produces. */
+export type OpenablePanel = Exclude<LeftPanelType, null>;
 
 interface PanelStateContextType {
   activePanel: LeftPanelType;
-  openPanel: (panel: 'layers' | 'adjustments' | 'crop') => void;
+  openPanel: (panel: OpenablePanel) => void;
   closePanel: () => void;
-  togglePanel: (panel: 'layers' | 'adjustments' | 'crop') => void;
+  togglePanel: (panel: OpenablePanel) => void;
 }
 
 const PanelStateContext = createContext<PanelStateContextType | null>(null);
@@ -22,7 +25,7 @@ interface PanelStateProviderProps {
 export function PanelStateProvider({ children }: PanelStateProviderProps) {
   const [activePanel, setActivePanel] = useState<LeftPanelType>(null);
 
-  const openPanel = useCallback((panel: 'layers' | 'adjustments' | 'crop') => {
+  const openPanel = useCallback((panel: OpenablePanel) => {
     setActivePanel(panel);
   }, []);
 
@@ -30,7 +33,7 @@ export function PanelStateProvider({ children }: PanelStateProviderProps) {
     setActivePanel(null);
   }, []);
 
-  const togglePanel = useCallback((panel: 'layers' | 'adjustments' | 'crop') => {
+  const togglePanel = useCallback((panel: OpenablePanel) => {
     setActivePanel((current) => (current === panel ? null : panel));
   }, []);
 

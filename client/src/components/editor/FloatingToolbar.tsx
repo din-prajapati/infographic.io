@@ -15,6 +15,7 @@ import {
   Plus,
   Pencil,
   Layers,
+  LayoutTemplate,
   Triangle,
   Star,
 } from "lucide-react";
@@ -150,7 +151,8 @@ export function FloatingToolbar({
   const showContextualToolbar = selectedElementIds.length > 0;
   const isLayersActive = activePanel === 'layers';
   const isAdjustmentsActive = activePanel === 'adjustments';
-  const isPanelOpen = isLayersActive || isAdjustmentsActive;
+  const isTemplatesActive = activePanel === 'templates';
+  const isPanelOpen = isLayersActive || isAdjustmentsActive || isTemplatesActive;
 
   // Panel width is w-80 = 320px, toolbar slides to panel width + spacing (16px)
   const toolbarOffset = isPanelOpen ? 336 : 0; // 320px panel + 16px spacing
@@ -168,6 +170,26 @@ export function FloatingToolbar({
             : 'ease-in',
         }}
       >
+        {/* Templates Button — opens the left-rail template flyout */}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              onClick={() => togglePanel('templates')}
+              className={`w-10 h-10 flex items-center justify-center rounded-xl shadow-lg transition-all duration-150 ${
+                isTemplatesActive
+                  ? 'bg-accent text-foreground'
+                  : 'bg-background text-muted-foreground hover:bg-muted border border-border'
+              }`}
+              aria-pressed={isTemplatesActive}
+            >
+              <LayoutTemplate className="w-5 h-5" strokeWidth={1.8} />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="right" sideOffset={12}>
+            Templates
+          </TooltipContent>
+        </Tooltip>
+
         {/* Layers Button */}
         <Tooltip>
           <TooltipTrigger asChild>
@@ -178,6 +200,7 @@ export function FloatingToolbar({
                   ? 'bg-accent text-foreground'
                   : 'bg-background text-muted-foreground hover:bg-muted border border-border'
               }`}
+              aria-pressed={isLayersActive}
             >
               <Layers className="w-5 h-5" strokeWidth={1.8} />
             </button>
