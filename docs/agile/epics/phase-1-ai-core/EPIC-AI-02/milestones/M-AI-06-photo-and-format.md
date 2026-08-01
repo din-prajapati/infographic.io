@@ -21,6 +21,9 @@ Agents can upload their own listing photos and choose the output format (Instagr
 | [US-AI-036](../stories/US-AI-036/STORY.md) | Canvas-aware generation orientation | 🟡 Implementation Complete (pre-PR) | — |
 | [US-AI-037](../stories/US-AI-037/STORY.md) | Save as Template — personal library | 🟡 Implementation Complete (pre-PR) | — |
 | [US-AI-038](../stories/US-AI-038/STORY.md) | Format Picker — New Design / New Template | 🟡 Implementation Complete (pre-PR) | — |
+| [US-AI-039](../stories/US-AI-039/STORY.md) | Format Picker — Canva-style single-modal reorg | 🔲 Not Started | — |
+| [US-AI-040](../stories/US-AI-040/STORY.md) | Template Gallery — preview modal + tag-based filters | 🔲 Not Started | — |
+| [US-AI-041](../stories/US-AI-041/STORY.md) | ~~Format Picker — device-mockup preview for social formats~~ | ⏭️ Superseded | — |
 
 ---
 
