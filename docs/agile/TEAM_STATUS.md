@@ -2033,3 +2033,179 @@
 <!-- ai-sdlc:session-log -->
 **2026-07-30 17:50** · branch: `main`
   - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-30 18:08** · branch: `main`
+  - Last commit: 79b08ea docs(agile): sync agile docs to verified reality, defer US-AI-012/013/014 to backlog
+
+<!-- ai-sdlc:session-log -->
+**2026-07-30 19:15** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-30 21:14** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-31 19:10** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-31 19:16** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-31 19:18** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-31 19:22** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-31 19:24** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-31 19:24** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-31 19:29** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-31 19:35** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-31 19:35** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-31 19:37** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-31 19:43** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-31 19:44** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-31 19:44** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-31 19:53** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-31 19:58** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-31 20:03** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-31 20:07** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-31 20:11** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-07-31 20:17** · branch: `feat/ai-us-ai-039-format-picker-reorg`
+  - Last commit: 03fd20f feat(ai): T1-T4 Canva-style two-pane format picker reorg — US-AI-039
+
+<!-- ai-sdlc:session-log -->
+**2026-07-31 20:26** · branch: `main`
+  - Last commit: 6bc0d71 docs(ai): close US-AI-039 — tick ACs, update TASKS, append EPIC log
+
+<!-- ai-sdlc:session-log -->
+**2026-07-31 20:39** · branch: `main`
+  - Last commit: 04b56ef feat(ai): richer format-picker UI — thumbnail cards, rail icons, dialog centering
+
+<!-- ai-sdlc:session-log -->
+**2026-07-31 20:45** · branch: `main`
+  - Last commit: 04b56ef feat(ai): richer format-picker UI — thumbnail cards, rail icons, dialog centering
+
+<!-- ai-sdlc:session-log -->
+**2026-07-31 20:47** · branch: `main`
+  - Last commit: 04b56ef feat(ai): richer format-picker UI — thumbnail cards, rail icons, dialog centering
+
+<!-- ai-sdlc:session-log -->
+**2026-07-31 20:47** · branch: `main`
+  - Last commit: 04b56ef feat(ai): richer format-picker UI — thumbnail cards, rail icons, dialog centering
+
+<!-- ai-sdlc:session-log -->
+**2026-07-31 20:50** · branch: `main`
+  - Last commit: 04b56ef feat(ai): richer format-picker UI — thumbnail cards, rail icons, dialog centering
+
+<!-- ai-sdlc:session-log -->
+**2026-08-01 19:30** · branch: `main`
+  - Last commit: 0ec64e5 feat(ai): US-AI-039 format picker — Canva-faithful tokens, gradient thumbnails, tint rail
+
+<!-- ai-sdlc:session-log -->
+**2026-08-01 19:42** · branch: `main`
+  - Last commit: e1dcfad fix(ai): US-AI-039 format picker centering — override sm:max-w-lg from base dialog, remove gap-4
+
+<!-- ai-sdlc:session-log -->
+**2026-08-01 19:55** · branch: `main`
+  - Last commit: e1dcfad fix(ai): US-AI-039 format picker centering — override sm:max-w-lg from base dialog, remove gap-4
+
+<!-- ai-sdlc:session-log -->
+**2026-08-01 19:59** · branch: `main`
+  - Last commit: e1dcfad fix(ai): US-AI-039 format picker centering — override sm:max-w-lg from base dialog, remove gap-4
+
+<!-- ai-sdlc:session-log -->
+**2026-08-01 20:07** · branch: `main`
+  - Last commit: e1dcfad fix(ai): US-AI-039 format picker centering — override sm:max-w-lg from base dialog, remove gap-4
+
+<!-- ai-sdlc:session-log -->
+**2026-08-01 20:14** · branch: `main`
+  - Last commit: e1dcfad fix(ai): US-AI-039 format picker centering — override sm:max-w-lg from base dialog, remove gap-4
+
+<!-- ai-sdlc:session-log -->
+**2026-08-01 20:25** · branch: `fix/ui/dialog-centering-and-template-entry`
+  - Last commit: b880073 feat(ui): rename Create Blank to New Template on the gallery — US-AI-038
+
+<!-- ai-sdlc:session-log -->
+**2026-08-01 23:36** · branch: `fix/ui/dialog-centering-and-template-entry`
+  - Last commit: 6ce6466 feat(editor): template selection in the left rail
+
+<!-- ai-sdlc:session-log -->
+**2026-08-01 23:50** · branch: `fix/ui/dialog-centering-and-template-entry`
+  - Last commit: bd7d170 feat(ui): real-estate format taxonomy — For you, WhatsApp, Printables
+
+<!-- ai-sdlc:session-log -->
+**2026-08-01 23:57** · branch: `fix/ui/dialog-centering-and-template-entry`
+  - Last commit: 8ee01bd refactor(editor): move Layers to the bottom of the rail
+
+<!-- ai-sdlc:session-log -->
+**2026-08-01 23:59** · branch: `fix/ui/dialog-centering-and-template-entry`
+  - Last commit: 8ee01bd refactor(editor): move Layers to the bottom of the rail
+
+<!-- ai-sdlc:session-log -->
+**2026-08-02 00:05** · branch: `fix/ui/dialog-centering-and-template-entry`
+  - Last commit: 7dc955a docs(ai): close US-AI-041 — superseded by layout-wireframe previews
+
+<!-- ai-sdlc:session-log -->
+**2026-08-02 00:30** · branch: `feat/ai-us-ai-040-template-preview-tags`
+  - Last commit: 7dc955a docs(ai): close US-AI-041 — superseded by layout-wireframe previews
+
+<!-- ai-sdlc:session-log -->
+**2026-08-02 12:03** · branch: `feat/ai-us-ai-040-template-preview-tags`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-08-02 12:25** · branch: `feat/ai-us-ai-040-template-preview-tags`
+  - Last commit: 368a625 feat(ui): template preview modal + tag-based filters — US-AI-040
+
+<!-- ai-sdlc:session-log -->
+**2026-08-02 12:48** · branch: `feat/ai-us-ai-040-template-preview-tags`
+  - Last commit: 90723fc docs(ai): close out US-AI-040 — correct AC4, record results
