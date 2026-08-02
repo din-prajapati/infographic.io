@@ -4,6 +4,7 @@
  */
 
 import html2canvas from 'html2canvas';
+import { exportCanvasToImage } from './canvasExport';
 import { useCanvasStore } from '../hooks/useCanvasStore';
 import type { ImageElement } from './canvasTypes';
 
@@ -25,7 +26,11 @@ export function captureCanvasData(): any {
 }
 
 /**
- * Generate thumbnail from canvas element using html2canvas
+ * Generate a thumbnail that is a real render of the current canvas.
+ *
+ * @param canvasElement Retained for API compatibility and for the
+ *   "is there a canvas at all?" guard. Rendering itself no longer reads the
+ *   DOM — see the note inside about oklch and html2canvas.
  */
 export async function generateThumbnail(canvasElement?: HTMLElement): Promise<string> {
   try {
@@ -38,41 +43,54 @@ export async function generateThumbnail(canvasElement?: HTMLElement): Promise<st
       return generatePlaceholderThumbnail();
     }
 
-    // Use html2canvas to capture the canvas at the artboard's native pixel
-    // dimensions (read from the store) so format-correct templates — e.g.
-    // the A4 flyer at 2480×3508 — export at true print-ready resolution.
     const { canvasWidth, canvasHeight } = useCanvasStore.getState();
-    const exportW = canvasWidth || 1200;
-    const exportH = canvasHeight || 800;
+    const artboardW = canvasWidth || 1200;
+    const artboardH = canvasHeight || 800;
 
-    const canvas = await html2canvas(canvasElement, {
-      backgroundColor: null,
-      scale: 0.5, // half-resolution capture is plenty for a thumbnail
-      logging: false,
-      width: exportW,
-      height: exportH,
-    });
+    // Render via exportCanvasToImage rather than html2canvas.
+    //
+    // html2canvas cannot be used here: this theme is oklch-based and
+    // html2canvas parses the live DOM, so it throws
+    //   "Attempting to parse an unsupported color function \"oklch\""
+    // and silently drops to the placeholder. It appears to work when the
+    // artboard happens to contain only hex-coloured template elements, which
+    // made the bug intermittent and easy to mistake for success.
+    //
+    // exportCanvasToImage draws each element onto a native canvas straight
+    // from the store, never touching computed CSS — which is exactly why
+    // canvasExport.ts exists ("Bypasses html2canvas to avoid oklch color
+    // parsing issues") and why the Export button already works. It also sets
+    // img.crossOrigin = 'anonymous', so provider-hosted AI imagery does not
+    // taint the canvas and toDataURL() will not throw SecurityError.
+    //
+    // scale 1: the output is downscaled to a 320px long edge regardless, so
+    // retina capture would only cost memory on large print artboards.
+    const fullDataUrl = await exportCanvasToImage('png', 1.0, 1);
+    if (!fullDataUrl) return generatePlaceholderThumbnail();
 
-    // Create thumbnail canvas preserving the artboard aspect ratio.
+    const source = new Image();
+    source.src = fullDataUrl;
+    await source.decode();
+
+    // Downscale, preserving the ARTBOARD's aspect ratio so a Story stays 9:16
+    // and an email header stays 3:1.
     const thumbnailCanvas = document.createElement('canvas');
     const ctx = thumbnailCanvas.getContext('2d');
 
     if (!ctx) return generatePlaceholderThumbnail();
 
-    const thumbMaxW = 320;
-    const thumbMaxH = 320;
-    const ratio = exportW / exportH;
-    let thumbW = thumbMaxW;
-    let thumbH = Math.round(thumbMaxW / ratio);
-    if (thumbH > thumbMaxH) {
-      thumbH = thumbMaxH;
-      thumbW = Math.round(thumbMaxH * ratio);
+    const THUMB_MAX = 320;
+    const ratio = artboardW / artboardH;
+    let thumbW = THUMB_MAX;
+    let thumbH = Math.round(THUMB_MAX / ratio);
+    if (thumbH > THUMB_MAX) {
+      thumbH = THUMB_MAX;
+      thumbW = Math.round(THUMB_MAX * ratio);
     }
     thumbnailCanvas.width = thumbW;
     thumbnailCanvas.height = thumbH;
 
-    // Draw captured canvas scaled down
-    ctx.drawImage(canvas, 0, 0, thumbW, thumbH);
+    ctx.drawImage(source, 0, 0, thumbW, thumbH);
 
     return thumbnailCanvas.toDataURL('image/png');
   } catch (error) {
@@ -82,7 +100,15 @@ export async function generateThumbnail(canvasElement?: HTMLElement): Promise<st
 }
 
 /**
- * Synchronous thumbnail generation (for compatibility)
+ * Synchronous thumbnail generation.
+ *
+ * Returns the placeholder — it cannot do otherwise, since capturing the canvas
+ * is inherently async. Kept only for callers that genuinely cannot await.
+ *
+ * @deprecated Do not use on a save path. Both editor save handlers used to call
+ * this, which is why every saved design and template stored an identical grey
+ * "New Design" card instead of the user's artwork (US-AI-042). Use
+ * `generateThumbnail()` and await it.
  */
 export function generateThumbnailSync(): string {
   return generatePlaceholderThumbnail();

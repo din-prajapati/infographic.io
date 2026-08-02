@@ -36,7 +36,46 @@ feat(editor): capture real canvas thumbnails on save — US-AI-042
 - `canvasExport.ts:3` claims html2canvas cannot parse this theme's oklch colours; `SaveDialog.tsx:69` already calls the real capture, so its in-dialog preview is the fastest place to observe the truth
 - **Outcome decides T2:** html2canvas works → use `generateThumbnail()`. It fails → use `exportCanvasToImage()` from `canvasExport.ts` and downscale to a 320px long edge
 
-**Finding:** _(fill during implementation — this is AC8's evidence)_
+**Finding (2026-08-02): html2canvas is NOT usable — switched to `exportCanvasToImage()`.**
+
+Observed directly in the browser console:
+
+```
+Error generating thumbnail: Error: Attempting to parse an unsupported color
+function "oklch"
+    at Object.parse (html2canvas.js:1673)
+    at new CSSParsedDeclaration2 (html2canvas.js:3558)
+    at parseNodeTree (html2canvas.js:4593)
+```
+
+The failure is intermittent in a way that makes it easy to misread as success:
+html2canvas parses the *live DOM*, so it works when the artboard happens to
+contain only hex-coloured template elements, and throws the moment any
+theme-styled (oklch) node is in the tree — e.g. the empty-canvas "Sample
+Preview" placeholder. A first pass at this story looked like it worked for
+exactly that reason.
+
+A second, separate defect was found in the same function: it passed the
+artboard's native size (1080×1920) as html2canvas's `width`/`height`, believing
+that produced a print-resolution capture. Those options are the capture
+*viewport*, not a scale factor — so for an element rendered at 281×499 on
+screen the design was painted into the top-left corner of a 1080×1920 frame
+with ~93% left transparent (measured: 6.8% opaque). The thumbnail had the right
+aspect ratio and real pixels, which is why it passed a naive "is it real?"
+check while looking blank to a user.
+
+Resolution: `generateThumbnail()` now renders through `exportCanvasToImage()`
+from `canvasExport.ts`, which draws elements onto a native canvas straight from
+the store and never touches computed CSS — the reason that module exists
+("Bypasses html2canvas to avoid oklch color parsing issues") and why the Export
+button already worked. It also already sets `img.crossOrigin = 'anonymous'`,
+which covers AC3's tainted-canvas risk for free.
+
+Verified after the change, in the editor with the Premium Listing — Story
+template loaded (1080×1920, 13 elements):
+`isPlaceholder: false`, `thumbSize: 180×320` (true 9:16), `opaquePct: 100`,
+`136 distinct colours`, 43.4 KB — a full render showing the headline, the
+₹1.18 Cr price chip, amenity lines and the CTA bar.
 
 ### T2 — Make the save path use the real capture
 **Files:** `client/src/lib/canvasState.ts`, `client/src/components/editor/EditorLayout.tsx`
@@ -94,14 +133,14 @@ PLAYWRIGHT_BASE_URL=http://localhost:5000 npx playwright test e2e/us-ai-042-real
 
 ## Task Checklist
 
-- [ ] T1 — Resolve the oklch question (finding recorded above)
-- [ ] T2 — Save path uses the real capture
-- [ ] T3 — Cross-origin handling
-- [ ] T4 — Failure path
-- [ ] T5 — E2E coverage
-- [ ] `npm run check` passes
-- [ ] `npm run test:unit` passes
-- [ ] `npm run test:e2e` passes (new spec)
+- [x] T1 — Resolve the oklch question (finding recorded above)
+- [x] T2 — Save path uses the real capture
+- [x] T3 — Cross-origin handling
+- [x] T4 — Failure path
+- [x] T5 — E2E coverage
+- [x] `npm run check` passes
+- [x] `npm run test:unit` passes
+- [x] `npm run test:e2e` passes (new spec)
 - [ ] Manual test recorded
 - [ ] PR opened with story card as description
 - [ ] STORY.md ACs updated
