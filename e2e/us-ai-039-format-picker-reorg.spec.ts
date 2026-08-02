@@ -8,7 +8,7 @@
  * Covers:
  *   TC-AI-039-01  Rail shows all platform groups + Custom size, no Continue button
  *   TC-AI-039-02  Click "Facebook" in rail → Facebook tiles appear inline
- *   TC-AI-039-03  Click a tile → "Start Blank" + library grid inline, no navigation
+ *   TC-AI-039-03  Click a tile → canvas created immediately, no library step
  *   TC-AI-039-04  Click "Custom size" in rail → form appears; submit 900×1200 → editor
  *
  * Run:
@@ -62,6 +62,16 @@ async function openFormatPicker(page: import("@playwright/test").Page) {
 test.describe("US-AI-039: Format Picker — Canva-style single-modal reorg", () => {
   test.beforeEach(async ({ page }) => {
     await ensureLoggedIn(page);
+    // The picker persists the last-used format and pre-selects its category on
+    // reopen (AC5). Left alone, a tile clicked in one test changes which
+    // category the NEXT test opens on — TC-01 passed in isolation but failed
+    // when run after TC-03 for exactly this reason. Clear it so each test
+    // starts from the taxonomy's first group.
+    await page.evaluate(() => {
+      Object.keys(localStorage)
+        .filter((k) => k.toLowerCase().includes("format"))
+        .forEach((k) => localStorage.removeItem(k));
+    });
   });
 
   // ---- TC-AI-039-01 --------------------------------------------------------
@@ -72,10 +82,16 @@ test.describe("US-AI-039: Format Picker — Canva-style single-modal reorg", () 
       const dialog = page.getByRole("dialog");
 
       // Rail must contain every FORMAT_TAXONOMY platform group.
+      // Matches FORMAT_TAXONOMY as it stands today. "Print" was renamed to
+      // "Printables", and "For you" (curated by job) plus "WhatsApp" (India is
+      // the primary market) were added when the taxonomy was reworked around
+      // what a listing agent actually produces.
       const expectedCategories = [
+        "For you",
         "Instagram",
         "Facebook",
-        "Print",
+        "WhatsApp",
+        "Printables",
         "Email",
         "Other",
         "Custom size",
@@ -120,36 +136,33 @@ test.describe("US-AI-039: Format Picker — Canva-style single-modal reorg", () 
   );
 
   // ---- TC-AI-039-03 --------------------------------------------------------
+  //
+  // REWRITTEN 2026-08-02. This previously asserted that clicking a format tile
+  // revealed an inline "Start Blank" + library grid without navigating. That
+  // behaviour was deliberately REMOVED after US-AI-039 shipped: the library
+  // queried getByFormatTag() for every format, every seeded template carried
+  // tags: [], so the panel flashed a loading skeleton and then hid itself on
+  // every single tile click. The picker is now format-only and template
+  // selection moved to the editor's left rail (TemplatesPanel).
+  //
+  // The old assertion is not "fixed" here — it described a requirement that no
+  // longer exists. The replacement asserts the behaviour that actually shipped.
   test(
-    "TC-AI-039-03: selecting a format tile reveals inline library without navigation",
+    "TC-AI-039-03: selecting a format tile creates the canvas immediately (no library step)",
     async ({ page }) => {
       await openFormatPicker(page);
       const dialog = page.getByRole("dialog");
 
-      // Navigate to Facebook to get a tile with a distinctive name.
       await dialog.getByRole("button", { name: "Facebook" }).click();
 
-      // Record current URL before selecting a tile.
-      const urlBefore = page.url();
-
-      // Click the "Cover" tile.
+      // Choosing a format is now the whole interaction — it opens the editor.
       await dialog.getByRole("button", { name: "Cover" }).click();
+      await expect(page).toHaveURL(/\/editor/, { timeout: 15_000 });
 
-      // "Start Blank" must appear inline in the same dialog (AC3).
+      // And the removed intermediate step must not come back.
       await expect(
-        dialog.getByRole("button", { name: "Start Blank" }),
-      ).toBeVisible({ timeout: 5_000 });
-
-      // URL must not have changed — no page navigation happened (AC3).
-      expect(page.url()).toBe(urlBefore);
-
-      // Dialog still open.
-      await expect(dialog).toBeVisible();
-
-      // No "Continue" button (AC1 — regression check).
-      await expect(
-        dialog.getByRole("button", { name: "Continue" }),
-      ).not.toBeVisible();
+        page.getByRole("button", { name: "Start Blank" }),
+      ).toHaveCount(0);
     },
   );
 
@@ -179,9 +192,9 @@ test.describe("US-AI-039: Format Picker — Canva-style single-modal reorg", () 
       await dialog.locator("#custom-height").fill("1200");
 
       // Submit — should close dialog and navigate to the editor.
-      await dialog
-        .getByRole("button", { name: "Start with this size" })
-        .click();
+      // Button label changed from "Start with this size" to "Create design"
+      // when the custom-size pane was reworked to the Canva-style centred form.
+      await dialog.getByRole("button", { name: "Create design" }).click();
 
       await expect(page).toHaveURL(/\/editor/, { timeout: 15_000 });
     },
