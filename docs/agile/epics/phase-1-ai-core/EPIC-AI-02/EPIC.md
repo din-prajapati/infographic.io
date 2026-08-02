@@ -42,7 +42,7 @@
 | [US-AI-039](stories/US-AI-039/STORY.md) | Format Picker — Canva-style single-modal reorg (category rail + inline library) | M-AI-06 | 🟡 Implementation Complete (pre-PR) | — |
 | [US-AI-040](stories/US-AI-040/STORY.md) | Template Gallery — preview modal + tag-based filters | M-AI-06 | 🟡 Implementation Complete (pre-PR) | — |
 | [US-AI-041](stories/US-AI-041/STORY.md) | ~~Format Picker — device-mockup preview for social formats~~ | M-AI-06 | ⏭️ Superseded | — |
-| [US-AI-042](stories/US-AI-042/STORY.md) | Real canvas thumbnails on save | M-AI-06 | 🔲 Not Started | — |
+| [US-AI-042](stories/US-AI-042/STORY.md) | Real canvas thumbnails on save | M-AI-06 | 🟡 Implementation Complete (pre-PR) | — |
 | [US-PANEL-01](stories/US-PANEL-01/STORY.md) | Right Panel: Brand Styles → Generation + Quick Styles as post-generation tool | M-AI-06 | 🔲 | — |
 | [US-AI-012](../../phase-4-backlog/EPIC-AI-08/stories/US-AI-012/STORY.md) | Generation quality tiers: Social vs Print (CAP-08) — moved to EPIC-AI-08 | M-AI-07 | ⏸ Moved | — |
 | [US-AI-013](../../phase-4-backlog/EPIC-AI-08/stories/US-AI-013/STORY.md) | Property type → quality routing (CAP-09) — moved to EPIC-AI-08 | M-AI-07 | ⏸ Moved | — |

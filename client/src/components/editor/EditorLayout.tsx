@@ -25,7 +25,7 @@ import {
 } from "../../lib/galleryTemplateCatalog";
 import {
   captureCanvasData,
-  generateThumbnailSync,
+  generateThumbnail,
   restoreCanvasData,
   scheduleFitCanvasZoomToViewport,
 } from "../../lib/canvasState";
@@ -252,7 +252,10 @@ export function EditorLayout({ onBackClick, designId, templateId }: EditorLayout
   const handleSaveAsTemplate = async (data: SaveDialogData) => {
     try {
       const canvasData = captureCanvasData();
-      const thumbnail = generateThumbnailSync();
+      // Real render of the user's canvas. generateThumbnail() falls back to the
+      // placeholder internally if capture fails, so a thumbnail problem can
+      // never block a save (US-AI-042 AC5).
+      const thumbnail = await generateThumbnail();
 
       const templatePayload = {
         id: generateId(),
@@ -313,7 +316,10 @@ export function EditorLayout({ onBackClick, designId, templateId }: EditorLayout
   const handleSave = async (data: SaveDialogData) => {
     try {
       const canvasData = captureCanvasData();
-      const thumbnail = generateThumbnailSync();
+      // Real render of the user's canvas. generateThumbnail() falls back to the
+      // placeholder internally if capture fails, so a thumbnail problem can
+      // never block a save (US-AI-042 AC5).
+      const thumbnail = await generateThumbnail();
       
       const designData = {
         id: currentDesignId || generateId(),
