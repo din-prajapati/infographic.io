@@ -52,12 +52,6 @@ if (fs.existsSync(rootEnv)) {
 import { PrismaClient } from '@prisma/client';
 
 // ---------------------------------------------------------------------------
-// Import the 5 premium templates from the frontend source
-// The file uses only standard JS/TS constructs (SVG data-URLs), no browser APIs.
-// ---------------------------------------------------------------------------
-import { PREMIUM_CANVAS_TEMPLATES } from '../../client/src/lib/premiumTemplates.js';
-
-// ---------------------------------------------------------------------------
 // System account constants (owning account for admin_curated rows)
 // ---------------------------------------------------------------------------
 const SYSTEM_ORG_NAME = 'Buildographic Curated Templates (System)';
@@ -65,6 +59,50 @@ const SYSTEM_USER_EMAIL = 'templates-system@buildographic.internal';
 const SYSTEM_USER_NAME = 'Buildographic System (Curated Templates)';
 
 const prisma = new PrismaClient();
+
+/** Build ≥2 tags from badge (style) + category (content) — US-AI-040 AC4. */
+/**
+ * Map a template's `badge` to a format-taxonomy id.
+ *
+ * The badge field holds presentation shorthand — "9:16", "1:1", "A4 · 300dpi",
+ * "3:1", "MLS". Those must never become tags: tags surface directly as
+ * user-facing filter chips, and shipping a chip labelled "A4 · 300dpi" or
+ * "9:16" would break the standing no-technical-specs rule (CLAUDE.md critical
+ * rule 5, US-AI-038 AC8, US-AI-039 AC7).
+ *
+ * Mapping the badge to the format id it actually denotes gives a tag that is
+ * both user-meaningful ("Instagram Story") and useful to
+ * canvasTemplatesApi.getByFormatTag, which the Format Picker already queries
+ * and which has been returning nothing because every row shipped with tags: [].
+ */
+const BADGE_TO_FORMAT_TAG: Record<string, string> = {
+  '9:16': 'instagram-story',
+  '1:1': 'instagram-post',
+  '3:1': 'email-header-banner',
+  'a4 · 300dpi': 'print-flyer',
+  'a4 300dpi': 'print-flyer',
+  mls: 'print-feature-sheet',
+};
+
+function formatTagFromBadge(badge?: string | null): string | undefined {
+  if (!badge) return undefined;
+  return BADGE_TO_FORMAT_TAG[String(badge).trim().toLowerCase()];
+}
+
+/**
+ * Build the tag list for a template — US-AI-040 AC4.
+ *
+ * Deliberately does NOT include the raw badge. Produces a content-category tag
+ * plus a format tag, both of which read as plain language when rendered as a
+ * filter chip.
+ */
+function buildTags(badge?: string | null, category?: string | null): string[] {
+  const tags: string[] = [];
+  if (category) tags.push(String(category));
+  const formatTag = formatTagFromBadge(badge);
+  if (formatTag) tags.push(formatTag);
+  return tags;
+}
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -158,12 +196,34 @@ async function main() {
     existing.map((e) => (e.propertyData as any)?.canvasDesign?.name as string | undefined),
   );
 
-  // 4. Migrate each premium template
-  console.log(`\n📝 Migrating ${PREMIUM_CANVAS_TEMPLATES.length} premium templates...\n`);
+  // 4. Migrate each premium template (source file deleted in US-AI-037 — optional create)
+  //    premiumTemplates.ts was removed after the initial migration; create is a no-op
+  //    when the module is absent. Tag backfill (step 5) covers already-migrated rows.
+  type PremiumTpl = {
+    name: string;
+    category: string;
+    badge: string;
+    description: string;
+    image: string;
+    canvasData: Record<string, unknown>;
+  };
+  let premiumTemplates: PremiumTpl[] = [];
+  try {
+    // Dynamic path so TypeScript does not require the deleted US-AI-037 module.
+    const premiumPath = '../../client/src/lib/premiumTemplates.js';
+    const mod = await import(/* @vite-ignore */ premiumPath);
+    premiumTemplates = (mod as { PREMIUM_CANVAS_TEMPLATES?: PremiumTpl[] }).PREMIUM_CANVAS_TEMPLATES ?? [];
+  } catch {
+    console.log(
+      '\n⏭  client/src/lib/premiumTemplates.ts not found (deleted US-AI-037) — skip create, run tag backfill.',
+    );
+  }
+
+  console.log(`\n📝 Migrating ${premiumTemplates.length} premium templates...\n`);
   let created = 0;
   let skipped = 0;
 
-  for (const tpl of PREMIUM_CANVAS_TEMPLATES) {
+  for (const tpl of premiumTemplates) {
     if (existingNames.has(tpl.name)) {
       console.log(`  ⏭  Already migrated: "${tpl.name}"`);
       skipped++;
@@ -185,7 +245,8 @@ async function main() {
             category: tpl.category,
             thumbnail: tpl.image,
             canvasData: tpl.canvasData,
-            tags: [],
+            // US-AI-040 AC4: real tags from badge (style) + category (content)
+            tags: buildTags(tpl.badge, tpl.category),
             visibility: 'admin_curated',
             description: tpl.description,
             badge: tpl.badge,
@@ -198,9 +259,46 @@ async function main() {
     created++;
   }
 
+  // 5. Backfill tags on existing admin_curated rows that still have tags: [] (US-AI-040 AC4)
+  console.log('\n🏷  Backfilling tags on existing canvas-template rows...\n');
+  let tagged = 0;
+  const allCurated = await prisma.infographic.findMany({
+    where: { aiModel: 'canvas-template' },
+  });
+  for (const row of allCurated) {
+    const propertyData = (row.propertyData ?? {}) as Record<string, unknown>;
+    const canvasDesign = (propertyData.canvasDesign ?? {}) as Record<string, unknown>;
+    const existingTags = Array.isArray(canvasDesign.tags) ? (canvasDesign.tags as string[]) : [];
+    if (existingTags.length >= 2) continue;
+
+    const tags = buildTags(
+      canvasDesign.badge as string | undefined,
+      canvasDesign.category as string | undefined,
+    );
+    if (tags.length < 2) {
+      console.log(
+        `  ⚠  Skipping "${canvasDesign.name}": need a category and a badge that maps to a known format (got badge="${canvasDesign.badge}", category="${canvasDesign.category}")`,
+      );
+      continue;
+    }
+
+    await prisma.infographic.update({
+      where: { id: row.id },
+      data: {
+        propertyData: {
+          ...propertyData,
+          canvasDesign: { ...canvasDesign, tags },
+        },
+      },
+    });
+    console.log(`  ✅ Tagged: "${canvasDesign.name}" → [${tags.join(', ')}]`);
+    tagged++;
+  }
+
   console.log(`\n📊 Summary:`);
   console.log(`   Created: ${created}`);
   console.log(`   Skipped: ${skipped}`);
+  console.log(`   Tags backfilled: ${tagged}`);
   console.log(`\n✅ Done. Verify via:\n   GET /api/v1/canvas-templates?visibility=admin_curated\n`);
 }
 
