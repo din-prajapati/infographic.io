@@ -1,8 +1,9 @@
 # M-AI-06-photo-and-format — Property Photo Upload + Output Format Selector
 
 > **Epic:** [EPIC-AI-02](../EPIC.md)
-> **Status:** 🔲 Not Started
-> **Target date:** 2026-06-30
+> **Status:** 🟢 Substantially Complete — 7 of 8 stories Done (US-AI-010/036/037/038/039/040/042), 2 superseded (US-AI-011/041); only US-PANEL-01 remains
+> **Target date:** 2026-06-30 (missed; work completed 2026-08-03)
+> **Landed via:** direct commits (010/036/037/038), PR #19 (039/040/042), PR #20 open (test-case closure + browse-layer geometry removal)
 
 ---
 

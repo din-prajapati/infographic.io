@@ -141,6 +141,17 @@ Key files relevant to this epic:
 
 ## Implementation Update (log)
 
+### 2026-08-03 — M-AI-06 substantially complete; template & design workflow shipped
+
+- **Merged:** PR #19 (rebase, 15 commits) — US-AI-039 format-only picker + editor Templates rail, US-AI-040 preview modal + tag filters, US-AI-042 real canvas thumbnails, plus two bug fixes: `@nestjs/schedule` missing from the api workspace (API was crash-looping on boot, every `/api/v1` call 502'd, signup impossible) and duplicated Tailwind v4 `translate` declarations (every centred Radix overlay offset −100%, so the Format Picker rendered two-thirds off-screen).
+- **Open:** PR #20 — closes the remaining test cases, removes geometry from the browse layer, retires stale tier-badge tests.
+- **Stories closed:** US-AI-010/036/037/038 marked Done against their direct-to-main commits (`cce587e`, `ea12368`, `216c3ef`, `42c3c72`) — no PRs were opened and none will be, so the commit is the record. US-AI-039/040/042 closed against PR #19. US-AI-041 superseded.
+- **Recovered work:** `e2e/us-ai-037-save-as-template.spec.ts` (514 lines, 6 tests) had been written 2026-07-30, never committed, and deleted from the working tree. Recovered from an agent worktree, verified 6/6 green against current code, and committed — it closed US-AI-037's AC4/AC5/AC10, which had no coverage at all.
+- **Rule amended:** dimensions are now permitted in the template preview modal (US-AI-040 AC13) after a product decision. US-AI-038 AC8 / US-AI-039 AC7 still hold everywhere else — the Format Picker shows names and shapes only.
+- **Data:** the 5 seeded premium templates were retagged and their badges/descriptions rewritten to carry format names rather than aspect ratios. `9:16` is shared by five formats in `FORMAT_TAXONOMY` and `1:1` by six, so a ratio badge could not identify a template.
+- **Known gap carried forward:** `.orion/hooks/cascade-close-story.sh:79` applies a blanket `Status: ✅ Done` with no superseded-status guard, and the merge workflow scrapes story IDs from the PR body. US-AI-041 would have been silently flipped to Done on the PR #19 merge; it was kept out of the scrape by writing its ID without the `US-AI-` prefix. That workaround has to be repeated on every future PR until the hook is fixed.
+
+
 ### 2026-07-31 — US-AI-039 implementation complete (pre-PR)
 - **Files touched:** `client/src/components/pages/FormatPickerDialog.tsx` (rewrite), `e2e/us-ai-039-format-picker-reorg.spec.ts` (new)
 - **ACs covered:** AC1, AC2, AC3, AC4, AC5, AC6, AC7, AC8, AC9, AC10, AC11 — all 11 ACs covered by the implementation; AC9 and TC-AI-039-01 through TC-AI-039-04 deferred to manual E2E run (requires fresh `npm run dev` — Playwright `reuseExistingServer:true` reused the old server during automated run, which showed the pre-reorg UI)

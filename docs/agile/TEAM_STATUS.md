@@ -2212,3 +2212,31 @@
 
 <!-- ai-sdlc:session-log -->
 **2026-08-03 12:33** · PR #19 merged · closed: US-AI-037 US-AI-038 US-AI-039 US-AI-040 US-AI-042 
+
+<!-- ai-sdlc:session-log -->
+**2026-08-03 18:07** · branch: `main`
+  - Last commit: 8307000 docs(ai): close US-AI-039/040/042 after PR #19 merge
+
+<!-- ai-sdlc:session-log -->
+**2026-08-03 18:10** · branch: `main`
+  - Last commit: 8307000 docs(ai): close US-AI-039/040/042 after PR #19 merge
+
+<!-- ai-sdlc:session-log -->
+**2026-08-03 19:36** · branch: `test/ai-close-open-test-cases`
+  - Last commit: 1148b1e test(ai): close US-AI-042 TC-05 and TC-08 — item #6 complete
+
+<!-- ai-sdlc:session-log -->
+**2026-08-03 19:43** · branch: `test/ai-close-open-test-cases`
+  - Last commit: 1148b1e test(ai): close US-AI-042 TC-05 and TC-08 — item #6 complete
+
+<!-- ai-sdlc:session-log -->
+**2026-08-03 19:52** · branch: `test/ai-close-open-test-cases`
+  - Last commit: 3de517f fix(ai): badge carries the format name, not the aspect ratio — US-AI-040
+
+<!-- ai-sdlc:session-log -->
+**2026-08-03 20:12** · branch: `test/ai-close-open-test-cases`
+  - Last commit: 4ab0c31 feat(ai): show size in the preview modal; retire stale tier-badge tests
+
+<!-- ai-sdlc:session-log -->
+**2026-08-03 23:30** · branch: `test/ai-close-open-test-cases`
+  - Last commit: (no commits this session)
