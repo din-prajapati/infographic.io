@@ -14,7 +14,7 @@
 > No PR will be opened retroactively; the commit is the record. Marked Done because the code is
 > demonstrably merged (verified `git merge-base --is-ancestor 216c3ef main`), not because the
 > Definition of Done's "PR merged" line was satisfied — it was not.
-> **Carried-forward gaps:** AC4, AC5 and AC10 remain unticked. An E2E spec covering exactly these (TC-037-03 → AC4, TC-037-05 → AC5, TC-037-09 → AC10) was written on 2026-07-30 but was never committed and has since been deleted from the working tree; a copy survives at `.claude/worktrees/agent-a35da18a1f27884fa/e2e/us-ai-037-save-as-template.spec.ts`. Restoring and running it would close all three.
+> **Gaps closed 2026-08-03.** AC4, AC5 and AC10 were unticked because the E2E spec covering them had been deleted from the working tree before it was ever committed. It was recovered from an agent worktree, restored to `e2e/us-ai-037-save-as-template.spec.ts`, and run against current code: **6/6 green**, including TC-037-03 (AC4), TC-037-05 (AC5) and TC-037-09 (AC10). All acceptance criteria for this story are now verified, and the spec is committed so it cannot be lost again.
 
 ---
 
@@ -45,13 +45,13 @@ Full design context (flow diagrams, marketplace rationale, decisions log): [docs
 - [x] **AC1 [happy-path]:** A "Save as Template" action is available in the editor (alongside the existing regular Save). Clicking it prompts for a template name.
 - [x] **AC2 [happy-path]:** Confirming the save calls `POST /canvas-templates` with `type: 'template'`, the current `canvasData`, the entered name, and `visibility: 'private'`.
 - [x] **AC3 [happy-path]:** Saved templates appear in a "My Templates" view, showing only templates owned by the current user — distinct from the admin-curated Premium gallery.
-- [ ] **AC4 [edge-case]:** Saving as a template does not alter or delete the design/session currently being edited — it is a copy operation. The user remains in their original design afterward.
-- [ ] **AC5 [error-path]:** If the save request fails (network error, auth expiry), the user sees a clear error toast naming what happened; the editor's local state is unaffected — no partial or corrupted save, no silent failure.
+- [x] **AC4 [edge-case]:** *(verified 2026-08-03 by TC-037-03, AC4 — spec restored and run green.)* Saving as a template does not alter or delete the design/session currently being edited — it is a copy operation. The user remains in their original design afterward.
+- [x] **AC5 [error-path]:** *(verified 2026-08-03 by TC-037-05, AC5 — spec restored and run green.)* If the save request fails (network error, auth expiry), the user sees a clear error toast naming what happened; the editor's local state is unaffected — no partial or corrupted save, no silent failure.
 - [x] **AC6 [compliance]:** The `visibility` field accepts `'private' | 'admin_curated' | 'for_sale'` in the schema/DTO, but only `'private'` has any reachable UI path in this story — `admin_curated` and `for_sale` are reserved values, not features.
 - [x] **AC7 [regression]:** `npm run check` and `npm run test:unit` pass. The existing regular "Save design" flow (My Designs) is completely unaffected by this change.
 - [x] **AC8 [happy-path]:** *(verified 2026-08-03: DB queried directly — exactly 5 `admin_curated` rows with real names; migration re-run successfully.)* A one-time migration script inserts the 5 existing `PREMIUM_CANVAS_TEMPLATES` entries into the database via the `canvas-templates` create path, each with `visibility: 'admin_curated'`, preserving name, dimensions, layout elements, and thumbnail exactly.
 - [x] **AC9 [happy-path]:** `TemplatesPage.tsx`'s Premium gallery section fetches `admin_curated` templates from `GET /canvas-templates` instead of importing the static `premiumTemplates.ts` array — visual output and behavior for the end user are unchanged.
-- [ ] **AC10 [edge-case]:** If the `admin_curated` fetch fails (network error, empty result), the Premium gallery section shows a clear empty/error state rather than a blank section or a crash — it does not silently fall back to stale bundled data.
+- [x] **AC10 [edge-case]:** *(verified 2026-08-03 by TC-037-09, AC10 — spec restored and run green.)* If the `admin_curated` fetch fails (network error, empty result), the Premium gallery section shows a clear empty/error state rather than a blank section or a crash — it does not silently fall back to stale bundled data.
 - [x] **AC11 [regression]:** `client/src/lib/premiumTemplates.ts` is deleted once migration is verified (no remaining runtime imports) — confirmed via a repo-wide grep before removal.
 
 ---
