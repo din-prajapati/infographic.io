@@ -2,7 +2,7 @@
 
 > **Story:** [STORY.md](./STORY.md)
 > **Branch:** `feat/ai-us-ai-040-template-preview-tags`
-> **PR:** #_____ (fill when opened)
+> **PR:** #19 (merged 2026-08-03)
 > **Type:** feat
 
 ---
@@ -108,7 +108,7 @@ npm run test:e2e -- e2e/m-design-04-domain-colors.spec.ts
 - [x] `npm run test:unit` passes
 - [x] `npm run test:e2e` passes (new spec + the two badge-assertion specs unmodified)
 - [x] Manual test recorded
-- [ ] PR opened with story card as description
+- [x] PR opened with story card as description
 - [x] STORY.md ACs updated
 
 ---

@@ -1,13 +1,13 @@
 # Story Card — US-AI-040
 
-> **Status:** 🟡 Implementation Complete (pre-PR) — all 11 ACs met, Gate 1 + Gate 3 green; PR not yet opened
+> **Status:** ✅ Done
 > **Feature:** F-AI-02-08 — Template Gallery — preview modal + tag-based filters
 > **Epic:** [EPIC-AI-02](../../EPIC.md)
 > **Milestone:** [M-AI-06-photo-and-format](../../milestones/M-AI-06-photo-and-format.md)
 > **Size:** L (~5.5-6h)
 > **Depends on:** None (different file from US-AI-039/US-AI-041 — `TemplatesPage.tsx`, not `FormatPickerDialog.tsx`; no sequencing constraint)
 > **Linear:** LIN-US-AI-040
-> **Created:** 2026-07-31 | **Closed:** — (DoD requires a merged PR; branch `feat/ai-us-ai-040-template-preview-tags`, commit `368a625`)
+> **Created:** 2026-07-31 | **Closed:** 2026-08-03 (PR #19, rebase-merged)
 
 ---
 
@@ -161,7 +161,7 @@ Implementation rules:
 - [x] `npm run test:unit` passes (146/146)
 - [x] `npm run test:e2e` passes — `e2e/us-ai-040-template-preview-tags.spec.ts` 3/3 green; `m-design-04-tc-targeted.spec.ts` shows 7 failed / 3 passed **identically with and without this story's changes** (baseline diff run 2026-08-02), so the cited specs are unmodified and no worse
 - [x] Manual flow verified on `localhost:5000`
-- [ ] PR merged (PR #_____) — **outstanding**, this is why the story is not ✅ Done
+- [x] PR merged — **#19** (rebase-and-merge, 2026-08-03)
 - [x] [TASKS.md](./TASKS.md) task list fully checked
 
 ---

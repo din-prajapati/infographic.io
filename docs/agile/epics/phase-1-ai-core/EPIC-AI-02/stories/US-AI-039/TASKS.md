@@ -2,7 +2,7 @@
 
 > **Story:** [STORY.md](./STORY.md)
 > **Branch:** `feat/ai-us-ai-039-format-picker-reorg`
-> **PR:** #_____ (fill when opened)
+> **PR:** #19 (merged 2026-08-03)
 > **Type:** feat
 
 ---
@@ -92,8 +92,8 @@ npm run test:e2e -- e2e/us-ai-039-format-picker-reorg.spec.ts
 - [x] `npm run test:unit` passes
 - [ ] `npm run test:e2e` passes (new spec) — requires fresh `npm run dev` with new code; reuseExistingServer:true will reuse a stale server instance if the app was already running
 - [ ] Manual test recorded
-- [ ] PR opened with story card as description
-- [ ] STORY.md ACs updated
+- [x] PR opened with story card as description
+- [x] STORY.md ACs updated
 
 ---
 

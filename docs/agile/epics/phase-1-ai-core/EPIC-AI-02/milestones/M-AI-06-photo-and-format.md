@@ -21,10 +21,10 @@ Agents can upload their own listing photos and choose the output format (Instagr
 | [US-AI-036](../stories/US-AI-036/STORY.md) | Canvas-aware generation orientation | ✅ Done | direct `ea12368` |
 | [US-AI-037](../stories/US-AI-037/STORY.md) | Save as Template — personal library | ✅ Done | direct `216c3ef` |
 | [US-AI-038](../stories/US-AI-038/STORY.md) | Format Picker — New Design / New Template | ✅ Done | direct `42c3c72` |
-| [US-AI-039](../stories/US-AI-039/STORY.md) | Format Picker — Canva-style single-modal reorg | 🟡 Implementation Complete (pre-PR) | — |
-| [US-AI-040](../stories/US-AI-040/STORY.md) | Template Gallery — preview modal + tag-based filters | 🟡 Implementation Complete (pre-PR) | — |
+| [US-AI-039](../stories/US-AI-039/STORY.md) | Format Picker — Canva-style single-modal reorg | ✅ Done | #19 |
+| [US-AI-040](../stories/US-AI-040/STORY.md) | Template Gallery — preview modal + tag-based filters | ✅ Done | #19 |
 | [US-AI-041](../stories/US-AI-041/STORY.md) | ~~Format Picker — device-mockup preview for social formats~~ | ⏭️ Superseded | — |
-| [US-AI-042](../stories/US-AI-042/STORY.md) | Real canvas thumbnails on save | 🟡 Implementation Complete (pre-PR) | — |
+| [US-AI-042](../stories/US-AI-042/STORY.md) | Real canvas thumbnails on save | ✅ Done | #19 |
 
 ---
 

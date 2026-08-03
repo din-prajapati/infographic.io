@@ -1,13 +1,13 @@
 # Story Card — US-AI-039
 
-> **Status:** 🟡 Implementation Complete (pre-PR)
+> **Status:** ✅ Done
 > **Feature:** F-AI-02-07 — Format Picker (New Design / New Template entry flow)
 > **Epic:** [EPIC-AI-02](../../EPIC.md)
 > **Milestone:** [M-AI-06-photo-and-format](../../milestones/M-AI-06-photo-and-format.md)
 > **Size:** M (~3.5h)
 > **Depends on:** [US-AI-038](../US-AI-038/STORY.md) must be merged first — this story rewrites the component US-AI-038 created. Does not touch or re-open any US-AI-038 decision; purely reorganizes the presentation layer.
 > **Linear:** LIN-US-AI-039
-> **Created:** 2026-07-31 | **Closed:** —
+> **Created:** 2026-07-31 | **Closed:** 2026-08-03 (PR #19, rebase-merged)
 
 ---
 
@@ -155,7 +155,7 @@ Implementation rules:
 - [ ] `npm run test:unit` passes
 - [ ] `npm run test:e2e` passes (new spec included)
 - [ ] Manual flow verified on `localhost:5000`
-- [ ] PR merged (PR #_____)
+- [x] PR merged — **#19** (rebase-and-merge, 2026-08-03)
 - [ ] [TASKS.md](./TASKS.md) task list fully checked
 
 ---

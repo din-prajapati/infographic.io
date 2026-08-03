@@ -2,7 +2,7 @@
 
 > **Story:** [STORY.md](./STORY.md)
 > **Branch:** `feat/ai-us-ai-042-real-canvas-thumbnails`
-> **PR:** #_____ (fill when opened)
+> **PR:** #19 (merged 2026-08-03)
 > **Type:** feat
 
 ---
@@ -142,8 +142,8 @@ PLAYWRIGHT_BASE_URL=http://localhost:5000 npx playwright test e2e/us-ai-042-real
 - [x] `npm run test:unit` passes
 - [x] `npm run test:e2e` passes (new spec)
 - [ ] Manual test recorded
-- [ ] PR opened with story card as description
-- [ ] STORY.md ACs updated
+- [x] PR opened with story card as description
+- [x] STORY.md ACs updated
 
 ---
 

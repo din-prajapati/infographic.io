@@ -1,13 +1,13 @@
 # Story Card — US-AI-042
 
-> **Status:** 🟡 Implementation Complete (pre-PR) — all 8 ACs met; PR not yet opened
+> **Status:** ✅ Done
 > **Feature:** F-AI-02-09 — Real canvas thumbnails on save
 > **Epic:** [EPIC-AI-02](../../EPIC.md)
 > **Milestone:** [M-AI-06-photo-and-format](../../milestones/M-AI-06-photo-and-format.md)
 > **Size:** M (~3-4h)
 > **Depends on:** None. Touches the save path in `EditorLayout.tsx` + `canvasState.ts`; file-disjoint from US-AI-040 (`TemplatesPage.tsx`) and US-AI-039 (`FormatPickerDialog.tsx`).
 > **Linear:** LIN-US-AI-042
-> **Created:** 2026-08-02 | **Closed:** —
+> **Created:** 2026-08-02 | **Closed:** 2026-08-03 (PR #19, rebase-merged)
 
 ---
 
@@ -164,7 +164,7 @@ Implementation rules:
 - [x] `npm run test:unit` passes (146/146)
 - [x] `npm run test:e2e` passes — `e2e/us-ai-042-real-canvas-thumbnails.spec.ts` 2/2
 - [x] Manual flow verified on `localhost:5000` — real render confirmed in the editor with and without a photo
-- [ ] PR merged (PR #_____) — **outstanding**, this is why the story is not ✅ Done
+- [x] PR merged — **#19** (rebase-and-merge, 2026-08-03)
 - [x] [TASKS.md](./TASKS.md) task list fully checked
 
 ---
