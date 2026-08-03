@@ -47,6 +47,14 @@ A live UX audit compared Canva's "Create a design" → template browsing pattern
 - [x] **AC9 [edge-case]:** Selecting a chip combination that matches zero templates shows the existing "No templates found matching your criteria" empty state (`TemplatesPage.tsx:317-333`) with its "Clear Filters" button, which deselects all active chips (equivalent to the current `setSelectedCategory("all-categories"); setSelectedStyle("all-styles")` reset).
 - [x] **AC10 [error-path]:** If the preview modal's template image fails to load (broken `image`/`thumbnail` URL), the modal shows the existing `ImageWithFallback` fallback behavior already used on cards (`client/src/components/figma/ImageWithFallback.tsx`) instead of a broken-image icon or a blank panel, and the primary CTA and "More like this" rail remain usable.
 - [x] **AC11 [regression]:** `npm run check` and `npm run test:unit` pass. None of the ~10 E2E specs cited in AC2/AC7 require any modification to keep passing.
+- [x] **AC12 [compliance]:** *(added 2026-08-03, post-close amendment — see note below)* Gallery cards and the preview modal show no aspect ratios, pixel dimensions or DPI values. The `badge` field carries the **format name** derived from the template's format tag (`instagram-story` → "Instagram Story"), and seeded descriptions are rewritten to describe layout rather than measurements. Verified: 0 of 5 seeded rows contain geometry in `badge` or `description`.
+      > **Why this was amended into US-AI-040 rather than opened as a new story:** it is the same feature (F-AI-02-08), the same two files (`TemplatesPage.tsx`, `seed-premium-templates.ts`), and a direct continuation of AC4's tag work — the badge is now *derived from* the tags AC4 introduced.
+      >
+      > **Why a ratio badge was wrong, not just untidy:** a ratio cannot identify a template. In `FORMAT_TAXONOMY`, `9:16` is shared by five formats (Instagram Story, Reel Cover, Facebook Story, WhatsApp Status, Listing Story) and `1:1` by six (Open House, Just Sold, IG Post, FB Post, WhatsApp Post, LinkedIn Post). "9:16" told an agent nothing about where the design was meant to go.
+      >
+      > **Evidence from Canva:** across 50 of its real-estate template cards there are zero ratios, zero pixel dimensions and zero DPI values; all 50 carry the format name in the title instead ("…Real Estate **Instagram Post**", "Real Estate (**Instagram Story**)"). The only number shown is a page count ("10 slides"). Canva discloses geometry progressively — cards show the name, the preview modal shows `Instagram Post (4:5) • 1080 × 1350 px`, the format picker shows a name and a shape. Geometry appears where a size is being chosen, not while browsing.
+      >
+      > **Deliberately not adopted:** Canva's preview modal *does* show pixel dimensions. This project's standing rule forbids them everywhere, so the modal stays clean. Flagged as a reasonable place to relax the rule later, since it is the "decide" layer.
 
 ---
 

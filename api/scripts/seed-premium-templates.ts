@@ -90,6 +90,56 @@ function formatTagFromBadge(badge?: string | null): string | undefined {
 }
 
 /**
+ * Human-readable label for a format tag — what the gallery card's badge shows.
+ *
+ * Keep in sync with FORMAT_TAXONOMY (`client/src/lib/formatTaxonomy.ts`). It is
+ * duplicated rather than imported because that module is frontend TS and the
+ * one previous cross-boundary import here (premiumTemplates.js) broke when the
+ * file was deleted.
+ */
+const FORMAT_TAG_LABEL: Record<string, string> = {
+  'instagram-story': 'Instagram Story',
+  'instagram-post': 'Instagram Post',
+  'instagram-reel-cover': 'Reel Cover',
+  'facebook-post': 'Facebook Post',
+  'facebook-cover': 'Facebook Cover',
+  'facebook-story': 'Facebook Story',
+  'whatsapp-status': 'WhatsApp Status',
+  'whatsapp-post': 'WhatsApp Post',
+  'print-flyer': 'Print Flyer',
+  'print-feature-sheet': 'Feature Sheet',
+  'print-postcard': 'Postcard',
+  'print-open-house-sign': 'Open House Sign',
+  'email-header-banner': 'Email Header',
+  'linkedin-post': 'LinkedIn Post',
+};
+
+/**
+ * Descriptions rewritten to carry no geometry — US-AI-040.
+ *
+ * The seeded copy described templates by their measurements ("Vertical 9:16
+ * social story", "A4 portrait at 300 DPI"). Those are the browse surface, where
+ * Canva shows none: across 50 of its real-estate template cards there are zero
+ * ratios, zero pixel dimensions and zero DPI values — the format NAME carries
+ * the meaning instead. Geometry is disclosed later, at the point of choosing a
+ * size, not while scanning a gallery.
+ *
+ * Keyed by template name, which is stable and already the migration's identity.
+ */
+const DESCRIPTION_REWRITES: Record<string, string> = {
+  'Premium Listing — Story':
+    'Full-bleed story with a hero image, price chip, key facts and a call to action',
+  'Luxury Home Showcase':
+    'Square social post — hero image on the left, brand, price and features on the right',
+  'Open House Flyer — Print Ready':
+    'Print-ready open-house handout with a bleed-safe margin',
+  'Market Report — Email Header':
+    'Wide email and LinkedIn header with a KPI row and a call to action',
+  'MLS Listing Sheet':
+    'MLS-ready sheet with two images, a specs table and an agent footer',
+};
+
+/**
  * Build the tag list for a template — US-AI-040 AC4.
  *
  * Deliberately does NOT include the raw badge. Produces a content-category tag
@@ -268,30 +318,49 @@ async function main() {
   for (const row of allCurated) {
     const propertyData = (row.propertyData ?? {}) as Record<string, unknown>;
     const canvasDesign = (propertyData.canvasDesign ?? {}) as Record<string, unknown>;
-    const existingTags = Array.isArray(canvasDesign.tags) ? (canvasDesign.tags as string[]) : [];
-    if (existingTags.length >= 2) continue;
+    const name = String(canvasDesign.name ?? '');
+    const rawBadge = canvasDesign.badge as string | undefined;
 
-    const tags = buildTags(
-      canvasDesign.badge as string | undefined,
-      canvasDesign.category as string | undefined,
-    );
+    const existingTags = Array.isArray(canvasDesign.tags) ? (canvasDesign.tags as string[]) : [];
+    const tags =
+      existingTags.length >= 2
+        ? existingTags
+        : buildTags(rawBadge, canvasDesign.category as string | undefined);
+
     if (tags.length < 2) {
       console.log(
-        `  ⚠  Skipping "${canvasDesign.name}": need a category and a badge that maps to a known format (got badge="${canvasDesign.badge}", category="${canvasDesign.category}")`,
+        `  ⚠  Skipping "${name}": need a category and a badge that maps to a known format (got badge="${rawBadge}", category="${canvasDesign.category}")`,
       );
       continue;
     }
+
+    // Badge carries the FORMAT NAME, never the geometry.
+    //
+    // The seeded badges were "9:16", "1:1", "A4 · 300dpi", "3:1", "MLS" — but a
+    // ratio cannot identify a template: 9:16 is shared by five formats in
+    // FORMAT_TAXONOMY (Instagram Story, Reel Cover, Facebook Story, WhatsApp
+    // Status, Listing Story) and 1:1 by six. The format tag is the
+    // disambiguator, so the badge is derived from it.
+    const formatTag = tags.find((t) => t in FORMAT_TAG_LABEL);
+    const badge = formatTag ? FORMAT_TAG_LABEL[formatTag] : rawBadge;
+    const description = DESCRIPTION_REWRITES[name] ?? canvasDesign.description;
+
+    const unchanged =
+      existingTags.length >= 2 &&
+      badge === rawBadge &&
+      description === canvasDesign.description;
+    if (unchanged) continue;
 
     await prisma.infographic.update({
       where: { id: row.id },
       data: {
         propertyData: {
           ...propertyData,
-          canvasDesign: { ...canvasDesign, tags },
+          canvasDesign: { ...canvasDesign, tags, badge, description },
         },
       },
     });
-    console.log(`  ✅ Tagged: "${canvasDesign.name}" → [${tags.join(', ')}]`);
+    console.log(`  ✅ "${name}" → badge "${badge}", tags [${tags.join(', ')}]`);
     tagged++;
   }
 
