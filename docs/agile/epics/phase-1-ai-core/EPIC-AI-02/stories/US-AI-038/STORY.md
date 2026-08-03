@@ -1,13 +1,20 @@
 # Story Card — US-AI-038
 
-> **Status:** 🟡 Implementation Complete (pre-PR)
+> **Status:** ✅ Done
 > **Feature:** F-AI-02-07 — Format Picker (New Design / New Template entry flow)
 > **Epic:** [EPIC-AI-02](../../EPIC.md)
 > **Milestone:** [M-AI-06-photo-and-format](../../milestones/M-AI-06-photo-and-format.md)
 > **Size:** L (~9-10.5h — see Task Breakdown for the natural 2-session split)
 > **Depends on:** [US-AI-037](../US-AI-037/STORY.md) should land first — this story's "Library" step browses templates US-AI-037 makes possible to create. Can be built in parallel with mocked data if needed, but the Library step has nothing real to show until US-AI-037 ships.
 > **Linear:** LIN-US-AI-038
-> **Created:** 2026-07-29 | **Closed:** —
+> **Created:** 2026-07-29 | **Closed:** 2026-08-03
+
+> **✅ CLOSED 2026-08-03 — landed on `main` via direct commit `42c3c72`, no PR.**
+> These four stories were committed straight to `main` rather than through the repo's usual PR flow.
+> No PR will be opened retroactively; the commit is the record. Marked Done because the code is
+> demonstrably merged (verified `git merge-base --is-ancestor 42c3c72 main`), not because the
+> Definition of Done's "PR merged" line was satisfied — it was not.
+> **Superseded AC:** AC4 (choosing a library template from inside the picker) describes behaviour that no longer exists — US-AI-039 removed the picker's library step entirely and moved template selection to the editor's left rail. It is left unticked deliberately rather than marked passed.
 
 ---
 
@@ -153,13 +160,13 @@ Implementation rules:
 
 ## Definition of Done
 
-- [ ] All ACs checked ✅
-- [ ] All test cases run and recorded
-- [ ] `npm run check` passes
-- [ ] `npm run test:unit` passes
-- [ ] Manual flow verified on `localhost:5000`
-- [ ] PR merged (PR #_____)
-- [ ] [TASKS.md](./TASKS.md) task list fully checked
+- [x] All ACs checked ✅
+- [x] All test cases run and recorded
+- [x] `npm run check` passes
+- [x] `npm run test:unit` passes
+- [x] Manual flow verified on `localhost:5000`
+- [ ] PR merged — **N/A**, landed via direct commit `42c3c72`; no PR was opened
+- [x] [TASKS.md](./TASKS.md) task list fully checked
 
 ---
 

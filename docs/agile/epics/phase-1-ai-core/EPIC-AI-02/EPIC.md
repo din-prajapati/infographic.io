@@ -3,7 +3,7 @@
 > **Phase:** Phase 1 — Revenue Strategy
 > **Priority note (2026-07-03):** US-AI-010 (photo upload) and US-AI-011 (format selector) are hard dependencies of the promoted revenue epics — implement these two FIRST. US-PANEL-01 is deprioritized behind EPIC-AI-06 and EPIC-KIT-01.
 > **Scope note (2026-07-30):** US-AI-012/013/014 (quality tiers + Campaign Mode UI) moved to [EPIC-AI-08](../../phase-4-backlog/EPIC-AI-08/EPIC.md) in Phase 4 Backlog — revenue-gated, not a launch blocker.
-> **Status:** 🟡 In Progress — US-AI-010/036/037/038 implementation complete (pre-PR, not yet closed); US-AI-011 superseded; US-PANEL-01 Not Started
+> **Status:** 🟡 In Progress — US-AI-010/036/037/038 ✅ Done (landed direct to `main`, no PRs); US-AI-039/040/042 implementation complete, in PR #19; US-AI-011/041 superseded; US-PANEL-01 Not Started
 > **Depends on:** EPIC-AI-00 complete
 > **Linear Project:** LIN-EPIC-AI-02
 > **Target date:** 2026-07-31
@@ -34,11 +34,11 @@
 
 | Story ID | Title | Milestone | Status | PR |
 |----------|-------|-----------|--------|----|
-| [US-AI-010](stories/US-AI-010/STORY.md) | Property photo upload + reference in generation (CAP-06) | M-AI-06 | 🟡 Implementation Complete (pre-PR) | — |
+| [US-AI-010](stories/US-AI-010/STORY.md) | Property photo upload + reference in generation (CAP-06) | M-AI-06 | ✅ Done | direct `cce587e` |
 | [US-AI-011](stories/US-AI-011/STORY.md) | ~~Output format selector: Instagram/Facebook/Story/Print (CAP-07)~~ | M-AI-06 | ⏭️ Superseded | — |
-| [US-AI-036](stories/US-AI-036/STORY.md) | Canvas-aware generation orientation (replaces US-AI-011, part 1) | M-AI-06 | 🟡 Implementation Complete (pre-PR) | — |
-| [US-AI-037](stories/US-AI-037/STORY.md) | Save as Template — personal library (replaces US-AI-011, part 2) | M-AI-06 | 🟡 Implementation Complete (pre-PR) | — |
-| [US-AI-038](stories/US-AI-038/STORY.md) | Format Picker — New Design / New Template (replaces US-AI-011, part 3) | M-AI-06 | 🟡 Implementation Complete (pre-PR) | — |
+| [US-AI-036](stories/US-AI-036/STORY.md) | Canvas-aware generation orientation (replaces US-AI-011, part 1) | M-AI-06 | ✅ Done | direct `ea12368` |
+| [US-AI-037](stories/US-AI-037/STORY.md) | Save as Template — personal library (replaces US-AI-011, part 2) | M-AI-06 | ✅ Done | direct `216c3ef` |
+| [US-AI-038](stories/US-AI-038/STORY.md) | Format Picker — New Design / New Template (replaces US-AI-011, part 3) | M-AI-06 | ✅ Done | direct `42c3c72` |
 | [US-AI-039](stories/US-AI-039/STORY.md) | Format Picker — Canva-style single-modal reorg (category rail + inline library) | M-AI-06 | 🟡 Implementation Complete (pre-PR) | — |
 | [US-AI-040](stories/US-AI-040/STORY.md) | Template Gallery — preview modal + tag-based filters | M-AI-06 | 🟡 Implementation Complete (pre-PR) | — |
 | [US-AI-041](stories/US-AI-041/STORY.md) | ~~Format Picker — device-mockup preview for social formats~~ | M-AI-06 | ⏭️ Superseded | — |
