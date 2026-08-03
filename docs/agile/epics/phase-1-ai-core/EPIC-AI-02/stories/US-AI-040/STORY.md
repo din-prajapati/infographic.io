@@ -145,8 +145,8 @@ Implementation rules:
 | TC-AI-040-04 | Manual | P1 | Run `npx tsx api/scripts/seed-premium-templates.ts` against a scratch DB → every premium template row has ≥2 real tags | ✅ | Migration run 2026-08-02; all 5 rows backfilled with 2 tags each. |
 | TC-AI-040-05 | Manual | P0 | Select a category chip and a style chip → gallery filters to templates matching both, using real tags not badge string-matching | ✅ | Chips render from real tags; AND semantics exercised by TC-06. |
 | TC-AI-040-06 | Automated (Playwright) | P1 | Select a chip combination matching zero templates → "No templates found" + Clear Filters resets chips | ✅ | Automated, passed. |
-| TC-AI-040-07 | Manual | P2 | A "My Template" saved with zero tags renders normally in the grid, excluded from chip filters and "More like this" | 🔲 | Not run — needs a zero-tag My Template fixture. |
-| TC-AI-040-08 | Manual | P1 | Broken/missing template image inside the preview modal → `ImageWithFallback` fallback shown, CTA and rail still usable | 🔲 | Not run — needs a broken-image fixture. |
+| TC-AI-040-07 | Manual | P2 | A "My Template" saved with zero tags renders normally in the grid, excluded from chip filters and "More like this" | ✅ | Automated 2026-08-03. Renders fine and never enters chip-filtered gallery results; fixture deleted in a finally block. |
+| TC-AI-040-08 | Manual | P1 | Broken/missing template image inside the preview modal → `ImageWithFallback` fallback shown, CTA and rail still usable | ✅ | Automated 2026-08-03. All image requests aborted; modal keeps title + CTA, and the CTA is hit-tested as topmost. |
 | TC-AI-040-09 | Manual | P0 | On-card "Luxury"/"Standard"/"Budget" badge text and color unchanged — re-run `e2e/m-design-04-tc-targeted.spec.ts` and `e2e/m-design-04-domain-colors.spec.ts` unmodified | ✅ | Verified by baseline diff: 7 failed / 3 passed identically with and without these changes. Failures pre-date this story (US-AI-037 badge migration). |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked

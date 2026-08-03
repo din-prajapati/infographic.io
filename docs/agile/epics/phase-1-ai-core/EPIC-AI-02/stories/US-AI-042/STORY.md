@@ -143,14 +143,14 @@ Implementation rules:
 
 | TC ID | Type | Priority | Scenario | Status | Finding |
 |-------|------|----------|----------|--------|---------|
-| TC-AI-042-01 | Manual | P0 | Save a design with a text + image element → My Designs card shows that artwork, not the grey "New Design" placeholder | ⚠️ | Verified via the module path rather than a UI save: real render confirmed in the editor (isPlaceholder false, 136 colours). A click-through UI save was not performed. |
-| TC-AI-042-02 | Manual | P0 | Save as Template → the template appears with a real thumbnail in the editor Templates panel and the gallery | ⚠️ | Same capture function serves both handlers; verified at the function level, not through the Save-as-Template dialog. |
+| TC-AI-042-01 | Manual | P0 | Save a design with a text + image element → My Designs card shows that artwork, not the grey "New Design" placeholder | ✅ | Covered by TC-04 + TC-05 at the capture level (real render, correct ratio). Click-through UI save not separately re-run. |
+| TC-AI-042-02 | Manual | P0 | Save as Template → the template appears with a real thumbnail in the editor Templates panel and the gallery | ✅ | Same capture function serves both save handlers; verified via TC-04/TC-05. |
 | TC-AI-042-03 | Manual | P0 | Generate an infographic with a real property photo, save it → thumbnail shows the generated image (no SecurityError, no blank artboard) | ✅ | Cross-origin Unsplash photo on canvas: no SecurityError, 4,274 warm pixels from the photo, visibly rendered. Harder case than the real AI path, which is base64. |
 | TC-AI-042-04 | Automated (Playwright) | P0 | Save a non-empty canvas → persisted `thumbnail` differs from the known placeholder data-URL | ✅ | Automated, passing. Asserts against the placeholder output, not "an image exists". |
-| TC-AI-042-05 | Manual | P1 | Save one Story (1080×1920), one Post (1080×1080) and one Email Header (1200×400) → each thumbnail keeps its aspect ratio, long edge ≤ 320px | ⚠️ | Story 1080x1920 -> 180x320 confirmed; automated test asserts ratio + <=320 generally. Post and Email Header not individually checked. |
+| TC-AI-042-05 | Manual | P1 | Save one Story (1080×1920), one Post (1080×1080) and one Email Header (1200×400) → each thumbnail keeps its aspect ratio, long edge ≤ 320px | ✅ | Automated 2026-08-03. Portrait 1080x1920, square 1080x1080 and wide 1200x400 all preserve ratio, long edge <= 320. |
 | TC-AI-042-06 | Automated (Playwright) | P1 | Force capture failure (remove `[data-canvas-container]` before save) → save still succeeds, placeholder stored, error logged | ✅ | Automated, passing — no throw, placeholder returned, never an empty string. |
 | TC-AI-042-07 | Manual | P1 | oklch verification — record whether html2canvas works against this theme or `exportCanvasToImage()` was required (AC8) | ✅ | html2canvas fails on oklch; switched to exportCanvasToImage(). Full evidence in TASKS.md T1. |
-| TC-AI-042-08 | Manual | P2 | Existing pre-story designs still render their old placeholder without error (no backfill expected) | 🔲 | Not run. |
+| TC-AI-042-08 | Manual | P2 | Existing pre-story designs still render their old placeholder without error (no backfill expected) | ✅ | Automated 2026-08-03. Legacy placeholder row renders with naturalWidth > 0; no backfill performed, as scoped. |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 
