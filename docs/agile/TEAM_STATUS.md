@@ -2209,3 +2209,6 @@
 <!-- ai-sdlc:session-log -->
 **2026-08-02 12:48** · branch: `feat/ai-us-ai-040-template-preview-tags`
   - Last commit: 90723fc docs(ai): close out US-AI-040 — correct AC4, record results
+
+<!-- ai-sdlc:session-log -->
+**2026-08-03 12:33** · PR #19 merged · closed: US-AI-037 US-AI-038 US-AI-039 US-AI-040 US-AI-042 
