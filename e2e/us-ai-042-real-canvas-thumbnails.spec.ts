@@ -52,6 +52,14 @@ async function ensureLoggedIn(page: import("@playwright/test").Page) {
     await page.getByTestId("input-password").fill(password!);
     await page.getByRole("button", { name: /^login$/i }).click();
     await expect(page).not.toHaveURL(/\/auth/, { timeout: 30_000 });
+
+    // A 401 before login sets `redirect_to_auth=1` (queryClient.ts:17), which
+    // useRedirectToAuthOnLoad consumes on the next full page load — so a
+    // successful login can still bounce back to /auth with the flag cleared.
+    if (page.url().includes("/auth")) {
+      await page.evaluate(() => localStorage.removeItem("redirect_to_auth"));
+      await page.goto("/templates", { waitUntil: "load" });
+    }
   }
 }
 
@@ -172,5 +180,95 @@ test.describe("US-AI-042 — Real canvas thumbnails on save", () => {
     expect(result.threw, "generateThumbnail() must not throw on failure").toBe(false);
     expect(result.isEmpty, "must never return an empty string").toBe(false);
     expect(result.isPlaceholder, "should fall back to the placeholder").toBe(true);
+  });
+  // ---- TC-AI-042-05 --------------------------------------------------------
+  test("TC-AI-042-05: aspect ratio is preserved across portrait, square and wide artboards", async ({
+    page,
+  }) => {
+    await openEditorWithTemplate(page);
+
+    // Drive the artboard directly rather than hunting for a template of each
+    // shape — the point is the capture maths, not template plumbing.
+    const cases = [
+      { label: "Story (portrait)", w: 1080, h: 1920 },
+      { label: "Post (square)", w: 1080, h: 1080 },
+      { label: "Email Header (wide)", w: 1200, h: 400 },
+    ];
+
+    for (const c of cases) {
+      const r = await page.evaluate(async ({ w, h }) => {
+        const statePath = "/src/lib/canvasState.ts";
+        const storePath = "/src/hooks/useCanvasStore.ts";
+        const cs = await import(/* @vite-ignore */ statePath);
+        const store = (await import(/* @vite-ignore */ storePath)).useCanvasStore;
+        const s0 = store.getState();
+        store.setState({ ...s0, canvasWidth: w, canvasHeight: h });
+
+        const thumb = await cs.generateThumbnail();
+        const img = new Image();
+        img.src = thumb;
+        await img.decode();
+        return { tw: img.naturalWidth, th: img.naturalHeight, isPlaceholder: thumb === cs.generateThumbnailSync() };
+      }, { w: c.w, h: c.h });
+
+      expect(r.isPlaceholder, `${c.label}: fell back to the placeholder`).toBe(false);
+      expect(Math.max(r.tw, r.th), `${c.label}: long edge must cap at 320`).toBeLessThanOrEqual(320);
+      // Rounding to whole pixels costs a little precision on extreme ratios.
+      expect(r.tw / r.th, `${c.label}: aspect ratio not preserved`).toBeCloseTo(c.w / c.h, 1);
+    }
+  });
+
+  // ---- TC-AI-042-08 --------------------------------------------------------
+  test("TC-AI-042-08: a pre-existing placeholder thumbnail still renders (no backfill expected)", async ({
+    page,
+  }) => {
+    // Designs saved before this story keep their grey placeholder — a backfill
+    // was explicitly out of scope. This guards against the opposite failure:
+    // an old row rendering as a broken image or crashing the grid.
+    const name = `legacy-${Date.now()}`;
+    const id = await page.evaluate(async (n) => {
+      const statePath = "/src/lib/canvasState.ts";
+      const cs = await import(/* @vite-ignore */ statePath);
+      const placeholder = cs.generateThumbnailSync();
+      const res = await fetch("/api/v1/canvas-templates", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("auth_token") ?? ""}`,
+        },
+        body: JSON.stringify({
+          name: n,
+          type: "template",
+          category: "real-estate",
+          thumbnail: placeholder,
+          canvasData: { version: "1.0", elements: [], canvasWidth: 1200, canvasHeight: 800, backgroundColor: "#FFFFFF", zoom: 1 },
+          tags: [],
+          visibility: "private",
+        }),
+      });
+      if (!res.ok) return null;
+      return (await res.json())?.id ?? null;
+    }, name);
+    test.skip(!id, "Could not create the legacy-thumbnail fixture");
+
+    try {
+      await page.goto("/templates", { waitUntil: "load" });
+      const card = page.locator(".glass.rounded-2xl").filter({ hasText: name });
+      await expect(card).toHaveCount(1, { timeout: 20_000 });
+
+      // The image element exists and decoded — a broken src would leave
+      // naturalWidth at 0.
+      const ok = await card.locator("img").first().evaluate(
+        (el: HTMLImageElement) => el.complete && el.naturalWidth > 0,
+      );
+      expect(ok, "legacy placeholder thumbnail failed to render").toBe(true);
+    } finally {
+      await page.evaluate(async (tid) => {
+        await fetch(`/api/v1/canvas-templates/${tid}`, {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${localStorage.getItem("auth_token") ?? ""}` },
+        }).catch(() => {});
+      }, id);
+    }
   });
 });
