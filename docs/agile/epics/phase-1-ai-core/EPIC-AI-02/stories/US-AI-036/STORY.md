@@ -1,13 +1,19 @@
 # Story Card — US-AI-036
 
-> **Status:** 🟡 Implementation Complete (pre-PR)
+> **Status:** ✅ Done
 > **Feature:** F-AI-02-05 — Canvas-aware generation orientation
 > **Epic:** [EPIC-AI-02](../../EPIC.md)
 > **Milestone:** [M-AI-06-photo-and-format](../../milestones/M-AI-06-photo-and-format.md)
 > **Size:** M (~5h)
 > **Replaces:** [US-AI-011](../US-AI-011/STORY.md) (superseded — see its STORY.md)
 > **Linear:** LIN-US-AI-036
-> **Created:** 2026-07-29 | **Closed:** —
+> **Created:** 2026-07-29 | **Closed:** 2026-08-03
+
+> **✅ CLOSED 2026-08-03 — landed on `main` via direct commit `ea12368`, no PR.**
+> These four stories were committed straight to `main` rather than through the repo's usual PR flow.
+> No PR will be opened retroactively; the commit is the record. Marked Done because the code is
+> demonstrably merged (verified `git merge-base --is-ancestor ea12368 main`), not because the
+> Definition of Done's "PR merged" line was satisfied — it was not.
 
 ---
 
@@ -117,11 +123,11 @@ Implementation rules:
 ## Definition of Done
 
 - [x] All ACs checked ✅
-- [ ] All test cases run and recorded
+- [x] All test cases run and recorded
 - [x] `npm run check` passes
 - [x] `npm run test:unit` passes
-- [ ] Manual flow verified on `localhost:5000`
-- [ ] PR merged (PR #_____)
+- [x] Manual flow verified on `localhost:5000`
+- [ ] PR merged — **N/A**, landed via direct commit `ea12368`; no PR was opened
 - [x] [TASKS.md](./TASKS.md) task list fully checked
 
 ---
