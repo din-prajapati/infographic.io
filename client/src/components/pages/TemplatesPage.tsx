@@ -32,6 +32,13 @@ interface TemplateItem {
   isPremium?: boolean;
   /** Real tags from DesignMetadata / seed data (US-AI-040). */
   tags?: string[];
+  /**
+   * Native artboard size, shown only inside the preview modal (US-AI-040 AC13).
+   * Never rendered on a card — see the AC for why the browse layer stays free
+   * of geometry while the decide layer does not.
+   */
+  canvasWidth?: number;
+  canvasHeight?: number;
 }
 
 function formatTagLabel(tag: string): string {
@@ -97,6 +104,8 @@ export function TemplatesPage({ onOpenEditor }: TemplatesPageProps) {
     image: t.thumbnail || '',
     isCustom: true,
     tags: Array.isArray(t.tags) ? t.tags : [],
+    canvasWidth: t.canvasData?.canvasWidth,
+    canvasHeight: t.canvasData?.canvasHeight,
   }));
 
   // Premium gallery — admin_curated templates from DB (AC9)
@@ -122,6 +131,8 @@ export function TemplatesPage({ onOpenEditor }: TemplatesPageProps) {
     image: t.thumbnail || '',
     isPremium: true,
     tags: Array.isArray(t.tags) ? t.tags : [],
+    canvasWidth: t.canvasData?.canvasWidth,
+    canvasHeight: t.canvasData?.canvasHeight,
   }));
 
   // Gallery shows: premium (from DB) + starter templates
@@ -472,6 +483,26 @@ export function TemplatesPage({ onOpenEditor }: TemplatesPageProps) {
                         "Preview this template before opening it in the editor."}
                     </DialogDescription>
                   </DialogHeader>
+
+                  {/*
+                    Format name + native size, Canva-style. This is the one
+                    place geometry is shown: the user is deciding whether this
+                    template fits their output, and "will it print at A4?" is a
+                    real question here in a way it never is while scanning the
+                    gallery. Cards stay free of it (US-AI-040 AC12/AC13).
+                  */}
+                  {(previewTemplate.badge || previewTemplate.canvasWidth) && (
+                    <p
+                      className="text-sm text-muted-foreground mt-2"
+                      data-testid="preview-dimensions"
+                    >
+                      {previewTemplate.badge}
+                      {previewTemplate.badge && previewTemplate.canvasWidth ? " • " : ""}
+                      {previewTemplate.canvasWidth && previewTemplate.canvasHeight
+                        ? `${previewTemplate.canvasWidth} × ${previewTemplate.canvasHeight} px`
+                        : ""}
+                    </p>
+                  )}
 
                   <div className="flex flex-wrap gap-2 mt-4">
                     {previewTemplate.isPremium && (

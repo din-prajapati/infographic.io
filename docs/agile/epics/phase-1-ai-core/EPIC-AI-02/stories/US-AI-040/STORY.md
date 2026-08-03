@@ -55,6 +55,14 @@ A live UX audit compared Canva's "Create a design" → template browsing pattern
       > **Evidence from Canva:** across 50 of its real-estate template cards there are zero ratios, zero pixel dimensions and zero DPI values; all 50 carry the format name in the title instead ("…Real Estate **Instagram Post**", "Real Estate (**Instagram Story**)"). The only number shown is a page count ("10 slides"). Canva discloses geometry progressively — cards show the name, the preview modal shows `Instagram Post (4:5) • 1080 × 1350 px`, the format picker shows a name and a shape. Geometry appears where a size is being chosen, not while browsing.
       >
       > **Deliberately not adopted:** Canva's preview modal *does* show pixel dimensions. This project's standing rule forbids them everywhere, so the modal stays clean. Flagged as a reasonable place to relax the rule later, since it is the "decide" layer.
+- [x] **AC13 [compliance]:** *(added 2026-08-03 — amends a standing project rule, see below)* The **preview modal** shows the format name and the template's native size, e.g. `Instagram Story • 1080 × 1920 px`. Gallery cards continue to show neither (AC12). Verified: card text matches no ratio/px/DPI pattern, while `[data-testid="preview-dimensions"]` renders both.
+      > **This deliberately relaxes a rule, and the rule is amended rather than contradicted.** US-AI-038 AC8 and US-AI-039 AC7 state that no pixel dimensions or aspect-ratio numbers appear *anywhere*. That was written about the Format Picker, and it stays true there — the picker still shows names and shapes only.
+      >
+      > The preview modal is a different layer. It is where a user decides whether a template fits their output, and "will this print at A4?" is a real question there in a way it never is while scanning a gallery. Canva draws the same line: zero geometry across 50 template cards, but `Instagram Post (4:5) • 1080 × 1350 px` in its preview modal.
+      >
+      > **Scope of the amendment:** dimensions are permitted in the preview modal only. Cards, the Format Picker and the editor Templates panel remain free of geometry. The model-opacity rule (CLAUDE.md critical rule 5) is untouched — that concerns AI model names, which are never shown regardless.
+      >
+      > Product decision taken by the product owner on 2026-08-03.
 
 ---
 

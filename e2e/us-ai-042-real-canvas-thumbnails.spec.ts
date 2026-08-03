@@ -92,6 +92,40 @@ async function openEditorWithTemplate(page: import("@playwright/test").Page) {
   await page.waitForTimeout(1500);
 }
 
+/**
+ * Remove a fixture created during a test.
+ *
+ * Tries both endpoints on purpose. A POST to /canvas-templates is persisted as
+ * an `aiModel: 'canvas-editor'` row (designs.service.ts:86), while
+ * /canvas-templates only lists it because that query is a union of the user's
+ * designs and canvas-template rows (designs.service.ts:183-185). So the
+ * matching DELETE is not always the one the create went through — an earlier
+ * version of this cleanup swallowed the 404 and leaked three fixtures into the
+ * dev database before it was noticed.
+ */
+async function deleteFixture(page: import("@playwright/test").Page, id: string) {
+  const gone = await page.evaluate(async (fixtureId) => {
+    const token = localStorage.getItem("auth_token") ?? "";
+    for (const path of [`/api/v1/canvas-templates/${fixtureId}`, `/api/v1/designs/${fixtureId}`]) {
+      try {
+        const res = await fetch(path, {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.ok) return true;
+      } catch {
+        /* try the next path */
+      }
+    }
+    return false;
+  }, id);
+  if (!gone) {
+    // Loud, not silent — a leaked fixture shifts card ordering for whatever
+    // runs next and is easy to mistake for a product bug.
+    console.warn(`[cleanup] fixture ${id} was NOT deleted — remove it manually`);
+  }
+}
+
 test.describe("US-AI-042 — Real canvas thumbnails on save", () => {
   test.beforeEach(async ({ page }) => {
     await ensureLoggedIn(page);
@@ -263,12 +297,7 @@ test.describe("US-AI-042 — Real canvas thumbnails on save", () => {
       );
       expect(ok, "legacy placeholder thumbnail failed to render").toBe(true);
     } finally {
-      await page.evaluate(async (tid) => {
-        await fetch(`/api/v1/canvas-templates/${tid}`, {
-          method: "DELETE",
-          headers: { Authorization: `Bearer ${localStorage.getItem("auth_token") ?? ""}` },
-        }).catch(() => {});
-      }, id);
+      await deleteFixture(page, id as string);
     }
   });
 });
