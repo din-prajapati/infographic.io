@@ -76,6 +76,25 @@ Agents choose use case ("Social" or "Print Quality") without seeing model names;
 
 ---
 
+### B-17 — M-AI-02 — Ideogram → Nano Banana image-model swap
+
+**Epic:** [EPIC-AI-08](EPIC-AI-08/EPIC.md)
+**Milestone:** [M-AI-02-model-swap](EPIC-AI-08/milestones/M-AI-02-model-swap.md)
+**Deferred from:** EPIC-AI-00 (decision: 2026-08-04)
+**Prereq:** None technical — deferred purely on priority; other phases are ahead of it
+**Effort:** ~6–8h remaining (2 stories, and roughly half of each is already built)
+
+Swap image generation from Ideogram to Nano Banana Flash (FREE/SOLO) and Pro (TEAM/BROKERAGE). The original business case was a **70–92% cut in image-generation cost** plus a quality gain — worth re-checking against current provider pricing before this is promoted, since it was written in April 2026.
+
+| Story | Scope |
+|-------|-------|
+| [US-AI-003](EPIC-AI-08/stories/US-AI-003/STORY.md) | Nano Banana Flash for FREE/SOLO |
+| [US-AI-004](EPIC-AI-08/stories/US-AI-004/STORY.md) | Nano Banana Pro for TEAM/BROKERAGE (depends on 003) |
+
+**⚠️ Half of this already shipped — do not restart from zero.** PRs #9/#10 (2026-07-03) delivered the **LLM/text** routing to Gemini 2.5 Flash, and it is live. What remains is only the **image** path. Today `nano-banana-pro` is an *alias that resolves to `ideogram-4`* (`api/src/config/image-generation.config.ts:34`) and `AiOrchestrator` still injects `IdeogramService`, so the name is in the codebase but the migration is not. Each story card records which half landed.
+
+---
+
 ## Editor / Export
 
 ### B-02 — PDF & Print Export
