@@ -1,0 +1,713 @@
+/**
+ * US-AI-038 — Format Picker (New Design / New Template entry flow)
+ * E2E black-box tests: TC-038-01 through TC-038-09
+ *
+ * Tests run against the staging server (PLAYWRIGHT_BASE_URL) or local dev.
+ * No AI generation or Ideogram endpoints are called.
+ *
+ * Run:
+ *   npx playwright test e2e/us-ai-038-format-picker.spec.ts --reporter=list
+ *
+ * Auth:
+ *   Requires TEST_USER_EMAIL and TEST_USER_PASSWORD in .env (loaded by playwright.config)
+ *   or the shell. Points at PLAYWRIGHT_BASE_URL (staging) by default.
+ *
+ * TC-038-03 and TC-038-08 setup note:
+ *   Both tests create a private canvas template via API and delete it in try/finally.
+ *   No persistent side-effects.
+ *
+ * Tile click strategy:
+ *   Format tiles inside the dialog live in an overflow-y-auto container.
+ *   Playwright's coordinate-based click (even with force:true) computes wrong page
+ *   coordinates for elements scrolled inside the container, so the React onClick
+ *   never fires. Using locator.evaluate(el => el.click()) calls the native DOM
+ *   click() which bubbles correctly through React's synthetic event system regardless
+ *   of scroll position or viewport clipping.
+ */
+import { test, expect, type Page, type Locator } from "@playwright/test";
+import process from "node:process";
+
+const email = process.env.TEST_USER_EMAIL;
+const password = process.env.TEST_USER_PASSWORD;
+
+// Key must match `LAST_FORMAT_KEY` in client/src/lib/storage.ts
+// (VITE_STORAGE_PREFIX defaults to 'buildographic' → 'buildographic_last_format')
+const LAST_FORMAT_KEY = "buildographic_last_format";
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Shared helpers
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Shared login helper — mirrors the pattern used by us-design-003-generation-ux.spec.ts.
+ * Skips the test if credentials are missing rather than failing with a cryptic error.
+ */
+async function ensureLoggedIn(page: Page): Promise<void> {
+  if (!email || !password) {
+    test.skip(
+      true,
+      "Set TEST_USER_EMAIL and TEST_USER_PASSWORD in .env (loaded by playwright.config) or the shell.",
+    );
+  }
+
+  const authHeading = page.getByRole("heading", { name: /welcome back/i });
+  const galleryHeading = page.getByRole("heading", { name: /template gallery/i });
+
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const res = await page.goto("/templates", { waitUntil: "domcontentloaded" });
+    if (!res || !res.ok()) {
+      throw new Error(
+        `Cannot reach /templates (HTTP ${res?.status() ?? "no response"}). ` +
+          `Is the server running at ${process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:5000"}?`,
+      );
+    }
+
+    await expect(authHeading.or(galleryHeading)).toBeVisible({ timeout: 30_000 });
+
+    if (await authHeading.isVisible()) {
+      await page.getByTestId("input-email").fill(email!);
+      await page.getByTestId("input-password").fill(password!);
+      await page.getByRole("button", { name: /^login$/i }).click();
+      try {
+        await expect(page).not.toHaveURL(/\/auth/, { timeout: 30_000 });
+      } catch {
+        if (attempt === 1) {
+          test.skip(true, "Login failed — check TEST_USER_EMAIL / TEST_USER_PASSWORD.");
+        }
+        continue;
+      }
+    }
+
+    if (await authHeading.isVisible()) {
+      if (attempt === 1) test.skip(true, "Still on auth page after login.");
+      continue;
+    }
+
+    await expect(galleryHeading).toBeVisible({ timeout: 15_000 });
+    return;
+  }
+}
+
+/**
+ * Navigate to /my-designs and open the Format Picker via the "New Design" button.
+ * Waits until the dialog and "Choose a format" heading are both visible.
+ */
+async function openPickerViaNewDesign(page: Page): Promise<void> {
+  await page.goto("/my-designs", { waitUntil: "domcontentloaded" });
+  await expect(
+    page.getByRole("heading", { name: /my designs/i }),
+  ).toBeVisible({ timeout: 15_000 });
+  await page.getByRole("button", { name: /new design/i }).click();
+  await expect(page.getByRole("dialog")).toBeVisible({ timeout: 10_000 });
+  await expect(
+    page.getByRole("heading", { name: /choose a format/i }),
+  ).toBeVisible();
+}
+
+/**
+ * Click a format tile inside the dialog using a native DOM click.
+ *
+ * Rationale: format tiles live in an overflow-y-auto container. Playwright's
+ * coordinate-based click (even force:true) computes wrong page coordinates for
+ * elements clipped by the container's scroll position, so React's onClick never
+ * fires. el.click() in the DOM always fires on the target element and bubbles
+ * correctly through React's synthetic event system.
+ */
+async function clickTile(tile: Locator): Promise<void> {
+  await expect(tile).toBeAttached();
+  await tile.evaluate((el) => (el as HTMLButtonElement).click());
+}
+
+/**
+ * Assert the canvas container's inline width/height settle at the expected
+ * pixel values. The container has `style="width: Xpx; height: Ypx;"` for the
+ * logical canvas dimensions — zoom only affects `transform: scale()`, not these.
+ *
+ * The editor mounts with whatever canvas size is already in Zustand state
+ * (which can briefly still hold the previous test's dimensions) and only
+ * overwrites it once the new templateId's canvasData finishes loading async.
+ * A single evaluate()+equality-check can read the stale value in that window
+ * (TC-038-03 flake: read 1200px from the prior Facebook Cover test instead of
+ * this test's 1080px). toHaveAttribute's regex match auto-retries against the
+ * live DOM until the async update lands or the timeout expires, so it can't
+ * observe a value that hasn't settled yet.
+ */
+async function expectCanvasContainerSize(
+  page: Page,
+  width: string,
+  height: string,
+): Promise<void> {
+  const container = page.locator("[data-canvas-container]");
+  await expect(container).toBeVisible({ timeout: 15_000 });
+  await expect(container, `Canvas width should be ${width}`).toHaveAttribute(
+    "style",
+    new RegExp(`width:\\s*${width}`),
+    { timeout: 15_000 },
+  );
+  await expect(container, `Canvas height should be ${height}`).toHaveAttribute(
+    "style",
+    new RegExp(`height:\\s*${height}`),
+    { timeout: 15_000 },
+  );
+}
+
+/**
+ * Create a private canvas template via API. Returns the created template's id.
+ * Callers MUST delete the template in a finally block.
+ */
+async function createTestTemplate(
+  page: Page,
+  {
+    name,
+    tag,
+    canvasWidth,
+    canvasHeight,
+  }: { name: string; tag: string; canvasWidth: number; canvasHeight: number },
+): Promise<string> {
+  const baseUrl = (
+    process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:5000"
+  ).replace(/\/$/, "");
+
+  const token = await page.evaluate(() => localStorage.getItem("auth_token"));
+  if (!token) {
+    test.skip(true, "No auth_token in localStorage — ensureLoggedIn must run first.");
+  }
+
+  const res = await page.request.post(`${baseUrl}/api/v1/canvas-templates`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    data: {
+      name,
+      type: "template",
+      category: "real-estate",
+      thumbnail: "",
+      canvasData: {
+        elements: [],
+        canvasWidth,
+        canvasHeight,
+        backgroundColor: "#FFFFFF",
+        zoom: 1,
+      },
+      tags: [tag],
+      visibility: "private",
+    },
+  });
+
+  expect(
+    res.ok(),
+    `Template creation failed: HTTP ${res.status()} — ${await res.text()}`,
+  ).toBe(true);
+
+  const body = await res.json();
+  const id = body.id as string;
+  expect(id, "API must return an id for the created template").toBeTruthy();
+  return id;
+}
+
+/**
+ * Delete a canvas template created in test setup. Non-fatal on failure (logs a warning).
+ */
+async function deleteTestTemplate(page: Page, templateId: string): Promise<void> {
+  const baseUrl = (
+    process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:5000"
+  ).replace(/\/$/, "");
+
+  const token = await page.evaluate(() => localStorage.getItem("auth_token"));
+  if (!token) return;
+
+  const res = await page.request.delete(
+    `${baseUrl}/api/v1/canvas-templates/${templateId}`,
+    { headers: { Authorization: `Bearer ${token}` } },
+  );
+  if (!res.ok()) {
+    console.warn(
+      `E2E teardown: failed to delete template ${templateId} (HTTP ${res.status()})`,
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Test suite
+// ─────────────────────────────────────────────────────────────────────────────
+
+test.describe("US-AI-038 — Format Picker (New Design / New Template entry flow)", () => {
+  test.beforeEach(async ({ page }) => {
+    await ensureLoggedIn(page);
+    // Clear the last-format key so each test starts from a clean state.
+    // (beforeEach page is already on /templates after ensureLoggedIn.)
+    await page.evaluate((key) => localStorage.removeItem(key), LAST_FORMAT_KEY);
+  });
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // TC-038-01: New Design → picker opens, platform sections, shape previews, no numbers
+  // User journey: /my-designs → click "New Design" → dialog visible
+  //               → assert structure and compliance
+  // ──────────────────────────────────────────────────────────────────────────
+  test(
+    "TC-038-01: New Design opens picker with platform sections, shape previews, and no pixel/ratio numbers",
+    async ({ page }) => {
+      // Contract:
+      //   Expected: dialog visible with all platform sections, SVG shape previews,
+      //             zero raw dimension/aspect-ratio numbers anywhere in picker text.
+      //   Location: /my-designs → "New Design" button → FormatPickerDialog
+
+      await openPickerViaNewDesign(page);
+      const dialog = page.getByRole("dialog");
+
+      // All platform sections rendered as section headings (h3 inside the dialog)
+      for (const platform of ["Instagram", "Facebook", "Print", "Email", "Other"]) {
+        await expect(dialog.getByText(platform, { exact: true })).toBeVisible();
+      }
+
+      // Every named format tile has a shape-preview SVG (aria-hidden, no text)
+      const tileSvgs = dialog.locator("button[aria-pressed] svg");
+      await expect(tileSvgs.first()).toBeVisible();
+      // At minimum: 3 Instagram + 3 Facebook + 3 Print + 1 Email + 1 Other = 11 tiles
+      expect(await tileSvgs.count()).toBeGreaterThan(5);
+
+      // "Custom size" tile is always present (AC5)
+      await expect(
+        dialog.getByRole("button", { name: /custom size/i }),
+      ).toBeVisible();
+
+      // "Continue" is disabled until the user selects a format
+      await expect(
+        dialog.getByRole("button", { name: "Continue" }),
+      ).toBeDisabled();
+
+      // Selecting a tile enables Continue — verify the interaction works.
+      // Use Instagram Post (first tile, no ambiguity).
+      // DOM click bypasses overflow-container viewport issues (see clickTile docstring).
+      const instagramPost = dialog
+        .locator("button[aria-pressed]")
+        .filter({ hasText: /^Post$/ })
+        .first();
+      await clickTile(instagramPost);
+      await expect(
+        dialog.getByRole("button", { name: "Continue" }),
+      ).toBeEnabled();
+
+      // AC8 compliance: no raw pixel dimensions or aspect-ratio numbers in picker text.
+      // The picker shows only named labels and shape previews — never resolutions.
+      const dialogText = await dialog.innerText();
+      // No resolution numbers that appear in the taxonomy
+      expect(dialogText, "Picker must not show raw pixel numbers").not.toMatch(
+        /\b(1080|1920|1200|1600|1800|628|400)\b/,
+      );
+      // No "1234×5678" or "1234x5678" dimension patterns
+      expect(dialogText, "Picker must not show dimension pairs").not.toMatch(
+        /\d{3,4}[×x]\d{3,4}/,
+      );
+      // No "4:3" or "16:9" aspect-ratio patterns
+      expect(dialogText, "Picker must not show aspect ratios").not.toMatch(
+        /\b\d{1,2}:\d{1,2}\b/,
+      );
+    },
+  );
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // TC-038-02: "New Template" path (Create Blank on /templates) → same picker
+  // User journey: /templates → click "Create Blank" → same FormatPickerDialog
+  // ──────────────────────────────────────────────────────────────────────────
+  test(
+    "TC-038-02: Create Blank on /templates opens the same Format Picker component",
+    async ({ page }) => {
+      // Contract:
+      //   Expected: dialog opens with identical structure to TC-038-01,
+      //             confirming that both entry points share one component.
+      //   Location: /templates → "Create Blank" button → FormatPickerDialog
+
+      await page.goto("/templates", { waitUntil: "domcontentloaded" });
+      await expect(
+        page.getByRole("heading", { name: /template gallery/i }),
+      ).toBeVisible({ timeout: 15_000 });
+
+      await page.getByRole("button", { name: /create blank/i }).click();
+
+      const dialog = page.getByRole("dialog");
+      await expect(dialog).toBeVisible({ timeout: 10_000 });
+
+      // Same dialog title as TC-038-01
+      await expect(
+        page.getByRole("heading", { name: /choose a format/i }),
+      ).toBeVisible();
+
+      // Same platform sections — same underlying component
+      for (const platform of ["Instagram", "Facebook", "Print"]) {
+        await expect(dialog.getByText(platform, { exact: true })).toBeVisible();
+      }
+
+      // Same Custom size tile
+      await expect(
+        dialog.getByRole("button", { name: /custom size/i }),
+      ).toBeVisible();
+
+      // Same format tiles with aria-pressed attribute
+      await expect(
+        dialog.locator("button[aria-pressed]").first(),
+      ).toBeVisible();
+
+      // Continue still disabled until a format is chosen
+      await expect(
+        dialog.getByRole("button", { name: "Continue" }),
+      ).toBeDisabled();
+    },
+  );
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // TC-038-04: Zero saved templates → Start Blank visible, no error state (AC7)
+  // User journey: pick a format → Continue → library step shows zero-templates message
+  // ──────────────────────────────────────────────────────────────────────────
+  test(
+    "TC-038-04: Format with zero saved templates shows Start Blank and zero-state message, not an error",
+    async ({ page }) => {
+      // Contract:
+      //   Expected: "Start Blank" visible, AC7 zero-templates message shown,
+      //             NO [role="alert"] error present.
+      //   Condition: canvas-templates API returns [] (empty list)
+
+      // Intercept before navigating — mock is active for the library-step fetch
+      await page.route("**/api/v1/canvas-templates*", (route) =>
+        route.fulfill({ json: [] }),
+      );
+
+      await openPickerViaNewDesign(page);
+      const dialog = page.getByRole("dialog");
+
+      // LinkedIn Post has a unique label — no ambiguity across sections
+      await clickTile(
+        dialog.locator("button[aria-pressed]").filter({ hasText: "LinkedIn Post" }),
+      );
+      await dialog.getByRole("button", { name: "Continue" }).click();
+
+      // Library step: Start Blank is always present regardless of library contents (AC7)
+      await expect(
+        dialog.getByRole("button", { name: "Start Blank" }),
+      ).toBeVisible({ timeout: 10_000 });
+
+      // Zero-templates informational message (AC7) — this is NOT an error state
+      await expect(
+        dialog.getByText(/no saved templates for this format yet/i),
+      ).toBeVisible();
+
+      // Crucially: no error Alert — AC7 is a success state with no results
+      // (AC10 covers the actual failure path in TC-038-09)
+      await expect(dialog.locator("[role='alert']")).not.toBeVisible();
+    },
+  );
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // TC-038-05: Start Blank → editor opens at the format's exact dimensions (AC3)
+  // User journey: pick Facebook Cover → Continue → Start Blank → editor at 1200×628
+  // ──────────────────────────────────────────────────────────────────────────
+  test(
+    "TC-038-05: Start Blank for Facebook Cover opens editor with canvas at 1200×628",
+    async ({ page }) => {
+      // Contract:
+      //   Expected: [data-canvas-container] style has width:1200px, height:628px.
+      //   Format: facebook-cover (1200×628 landscape)
+      //   Condition: real canvas-templates fetch (may return any list); user clicks Start Blank
+
+      await openPickerViaNewDesign(page);
+      const dialog = page.getByRole("dialog");
+
+      // Facebook Cover is the only tile whose exact visible label is "Cover".
+      // "Reel Cover" (Instagram) does not match /^Cover$/.
+      await clickTile(
+        dialog.locator("button[aria-pressed]").filter({ hasText: /^Cover$/ }),
+      );
+      await dialog.getByRole("button", { name: "Continue" }).click();
+
+      // Library step — wait for it to settle
+      const startBlankBtn = dialog.getByRole("button", { name: "Start Blank" });
+      await expect(startBlankBtn).toBeVisible({ timeout: 15_000 });
+      await startBlankBtn.click();
+
+      // Editor opens without a templateId or designId query param
+      await expect(page).toHaveURL(/\/editor$/, { timeout: 20_000 });
+      await expect(
+        page.locator('[data-testid="design-canvas"]'),
+      ).toBeVisible({ timeout: 15_000 });
+
+      // Canvas container carries raw pixel dimensions in inline style (AC3)
+      await expectCanvasContainerSize(page, "1200px", "628px");
+    },
+  );
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // TC-038-06: Custom size → editor opens at the user-entered dimensions (AC5)
+  // User journey: Custom size… → Continue → enter 900×1200 → Start → editor
+  // ──────────────────────────────────────────────────────────────────────────
+  test(
+    "TC-038-06: Custom size 900×1200 opens editor at those exact dimensions",
+    async ({ page }) => {
+      // Contract:
+      //   Expected: [data-canvas-container] style has width:900px, height:1200px.
+      //   Condition: user enters 900 in Width field, 1200 in Height field
+
+      await openPickerViaNewDesign(page);
+      const dialog = page.getByRole("dialog");
+
+      // Select the "Custom size…" tile — this tile uses a "+" icon rather than
+      // the SVG shape preview, so it renders correctly outside the overflow area.
+      await dialog
+        .getByRole("button", { name: /custom size/i })
+        .click();
+      await dialog.getByRole("button", { name: "Continue" }).click();
+
+      // Step 3: custom size inputs
+      await expect(
+        page.getByRole("heading", { name: /custom size/i }),
+      ).toBeVisible({ timeout: 5_000 });
+
+      await dialog.getByLabel("Width (px)").fill("900");
+      await dialog.getByLabel("Height (px)").fill("1200");
+      await dialog
+        .getByRole("button", { name: /start with this size/i })
+        .click();
+
+      // Editor opens without a templateId or designId query param
+      await expect(page).toHaveURL(/\/editor$/, { timeout: 20_000 });
+      await expect(
+        page.locator('[data-testid="design-canvas"]'),
+      ).toBeVisible({ timeout: 15_000 });
+
+      // Canvas container carries the user-entered dimensions (AC5)
+      await expectCanvasContainerSize(page, "900px", "1200px");
+    },
+  );
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // TC-038-07: Reopening the picker pre-highlights the last-used format (AC6)
+  // User journey: pick Instagram Post → Continue → close dialog → reopen → tile highlighted
+  // ──────────────────────────────────────────────────────────────────────────
+  test(
+    "TC-038-07: Reopening the picker pre-highlights the previously selected format",
+    async ({ page }) => {
+      // Contract:
+      //   Expected: Instagram Post tile has aria-pressed="true" on the second open.
+      //   Condition: Instagram Post was the last confirmed format (Continue clicked).
+
+      await openPickerViaNewDesign(page);
+      const dialog = page.getByRole("dialog");
+
+      // Locate Instagram Post: Instagram is the first platform group in the taxonomy,
+      // so the first button whose exact label is "Post" is Instagram Post.
+      // "LinkedIn Post" does not match /^Post$/ so it is excluded.
+      const instagramPostBtn = dialog
+        .locator("button[aria-pressed]")
+        .filter({ hasText: /^Post$/ })
+        .first();
+      await expect(instagramPostBtn).toBeAttached();
+
+      // DOM click bypasses the overflow-container viewport issue (see clickTile docstring).
+      await clickTile(instagramPostBtn);
+
+      // Clicking Continue persists 'instagram-post' to localStorage (AC6)
+      await dialog.getByRole("button", { name: "Continue" }).click();
+      await expect(
+        dialog.getByRole("button", { name: "Start Blank" }),
+      ).toBeVisible({ timeout: 10_000 });
+
+      // Close the dialog via Escape (Radix Dialog calls onOpenChange(false))
+      await page.keyboard.press("Escape");
+      await expect(dialog).not.toBeVisible({ timeout: 5_000 });
+
+      // Reopen the picker
+      await page.getByRole("button", { name: /new design/i }).click();
+      await expect(dialog).toBeVisible({ timeout: 10_000 });
+      await expect(
+        page.getByRole("heading", { name: /choose a format/i }),
+      ).toBeVisible();
+
+      // Instagram Post tile should now be pre-selected (AC6)
+      // The dialog's useEffect reads LAST_FORMAT_KEY from localStorage and calls
+      // setSelectedFormatId('instagram-post'), which sets aria-pressed="true".
+      await expect(instagramPostBtn).toHaveAttribute("aria-pressed", "true");
+    },
+  );
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // TC-038-08: "Use Template" from the main gallery is unaffected (AC9 regression)
+  // User journey: create a canvas template → /templates → Use Template → editor
+  // ──────────────────────────────────────────────────────────────────────────
+  test(
+    "TC-038-08: Existing Use Template flow from the gallery remains unchanged (regression)",
+    async ({ page }) => {
+      // Contract:
+      //   Expected: clicking "Use Template" on any gallery card navigates to
+      //             /editor?templateId=... and renders the design canvas.
+      //   Condition: the Format Picker feature did not break the prior gallery flow.
+      //
+      // Setup: creates a private canvas template via API to guarantee at least one
+      //   "Use Template" button exists in the "My Templates" section.
+      //   Teardown: deletes the template in a finally block.
+
+      const templateName = `E2E-AI-038-TC08-${Date.now()}`;
+      const templateId = await createTestTemplate(page, {
+        name: templateName,
+        tag: "facebook-post",
+        canvasWidth: 1200,
+        canvasHeight: 1200,
+      });
+
+      try {
+        await page.goto("/templates", { waitUntil: "domcontentloaded" });
+        await expect(
+          page.getByRole("heading", { name: /template gallery/i }),
+        ).toBeVisible({ timeout: 20_000 });
+
+        // Wait for "My Templates" section to finish loading (the async fetch may take a moment)
+        await expect(
+          page.getByText(/loading your templates/i),
+        ).not.toBeVisible({ timeout: 20_000 });
+
+        // The created template must appear in "My Templates"
+        const templateCard = page.locator("p, span, div").filter({ hasText: templateName }).first();
+        await expect(
+          templateCard,
+          "Created template must appear in the My Templates section",
+        ).toBeVisible({ timeout: 15_000 });
+
+        // "Use Template" button on the gallery card must navigate directly to the editor
+        // WITHOUT opening the FormatPickerDialog (AC9 regression guard)
+        const useTemplateBtn = page
+          .getByRole("button", { name: "Use Template" })
+          .first();
+        await expect(useTemplateBtn).toBeVisible({ timeout: 10_000 });
+        await useTemplateBtn.click();
+
+        // Editor opens with a templateId — the Format Picker was NOT involved (AC9)
+        await expect(page).toHaveURL(/\/editor\?.*templateId=/, { timeout: 20_000 });
+        await expect(
+          page.locator('[data-testid="design-canvas"]'),
+        ).toBeVisible({ timeout: 20_000 });
+      } finally {
+        // Re-read token since the page may have navigated since setup
+        await deleteTestTemplate(page, templateId);
+      }
+    },
+  );
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // TC-038-09: Library fetch failure → distinct error state, Start Blank still usable (AC10)
+  // User journey: pick format → Continue → server 500 → error alert → Start Blank visible
+  // ──────────────────────────────────────────────────────────────────────────
+  test(
+    "TC-038-09: Library fetch failure shows a distinct error state and keeps Start Blank usable",
+    async ({ page }) => {
+      // Contract:
+      //   Expected: Alert with "could not load" copy (AC10 error state, distinct from AC7
+      //             zero-templates message). Start Blank button still visible.
+      //   Condition: canvas-templates API returns HTTP 500 during library step fetch.
+
+      await openPickerViaNewDesign(page);
+      const dialog = page.getByRole("dialog");
+
+      // Select any unambiguous format — Instagram Story (first "Story" in the DOM)
+      await clickTile(
+        dialog.locator("button[aria-pressed]").filter({ hasText: /^Story$/ }).first(),
+      );
+
+      // Set up the failure mock BEFORE clicking Continue so it is active
+      // when the library step triggers the canvas-templates fetch.
+      await page.route("**/api/v1/canvas-templates*", (route) =>
+        route.fulfill({
+          status: 500,
+          contentType: "application/json",
+          body: JSON.stringify({ message: "Internal Server Error" }),
+        }),
+      );
+
+      await dialog.getByRole("button", { name: "Continue" }).click();
+
+      // AC10: error message is shown — distinct wording from AC7 zero-templates copy
+      await expect(
+        dialog.getByText(/could not load your saved templates/i),
+      ).toBeVisible({ timeout: 10_000 });
+
+      // The AC7 "no saved templates" message must NOT appear — the two states are distinct
+      await expect(
+        dialog.getByText(/no saved templates for this format yet/i),
+      ).not.toBeVisible();
+
+      // Start Blank is still present — user is never stuck (AC10)
+      await expect(
+        dialog.getByRole("button", { name: "Start Blank" }),
+      ).toBeVisible();
+    },
+  );
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // TC-038-03 (AC4): Saved library template appears in picker and loads in editor
+  // User journey: create template via API → pick its format → see card + Start Blank
+  //               → click template → editor at template's dimensions
+  // ──────────────────────────────────────────────────────────────────────────
+  test(
+    "TC-038-03 (AC4): Saved template for a format appears in the library step and loads correctly in the editor",
+    async ({ page }) => {
+      // Contract:
+      //   Expected: both "Start Blank" AND the template card are visible in the library
+      //             step; clicking the template navigates to /editor?templateId=<id>
+      //             and the canvas renders at the template's dimensions (1080×1080).
+      //   Setup: creates a private canvas template tagged 'instagram-post' via REST API.
+      //   Teardown: deletes the template in a try/finally block (no persistent state).
+
+      const templateName = `E2E-AI-038-${Date.now()}`;
+      const templateId = await createTestTemplate(page, {
+        name: templateName,
+        tag: "instagram-post",
+        canvasWidth: 1080,
+        canvasHeight: 1080,
+      });
+
+      try {
+        // --- Open the picker ---
+        await openPickerViaNewDesign(page);
+        const dialog = page.getByRole("dialog");
+
+        // Select Instagram Post — first button with exact label "Post" in the dialog.
+        // Instagram is the first taxonomy group, so .first() resolves to Instagram Post.
+        const instagramPostBtn = dialog
+          .locator("button[aria-pressed]")
+          .filter({ hasText: /^Post$/ })
+          .first();
+        await expect(instagramPostBtn).toBeAttached();
+        await clickTile(instagramPostBtn);
+        await dialog.getByRole("button", { name: "Continue" }).click();
+
+        // Library step — both Start Blank and the template card must appear (AC2 + AC4)
+        const startBlank = dialog.getByRole("button", { name: "Start Blank" });
+        await expect(startBlank).toBeVisible({ timeout: 15_000 });
+
+        // Template card identified by its unique name
+        const templateCard = dialog
+          .locator("button")
+          .filter({ hasText: templateName });
+        await expect(
+          templateCard,
+          "Saved template card must appear alongside Start Blank",
+        ).toBeVisible({ timeout: 10_000 });
+
+        // Click the template card
+        await templateCard.click();
+
+        // Editor opens with this template's ID in the URL (AC4)
+        await expect(page).toHaveURL(
+          new RegExp(`templateId=${templateId}`),
+          { timeout: 20_000 },
+        );
+        await expect(
+          page.locator('[data-testid="design-canvas"]'),
+        ).toBeVisible({ timeout: 20_000 });
+
+        // Canvas is sized to the template's canvasData dimensions (1080×1080 for Instagram Post)
+        await expectCanvasContainerSize(page, "1080px", "1080px");
+      } finally {
+        await deleteTestTemplate(page, templateId);
+      }
+    },
+  );
+});
