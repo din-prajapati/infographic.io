@@ -42,6 +42,19 @@ async function ensureLoggedIn(page: import("@playwright/test").Page) {
     await page.getByTestId("input-password").fill(password!);
     await page.getByRole("button", { name: /^login$/i }).click();
     await expect(page).not.toHaveURL(/\/auth/, { timeout: 30_000 });
+    await page.goto("/my-designs", { waitUntil: "load" });
+
+    // A 401 before login sets `redirect_to_auth=1` (queryClient.ts:17), which
+    // useRedirectToAuthOnLoad consumes on the NEXT full page load — the goto
+    // above. So a successful login can still land back on /auth with the flag
+    // already cleared, leaving no "New Design" button to click. Same trap fixed
+    // in the 040 and 042 specs.
+    if (page.url().includes("/auth")) {
+      await page.evaluate(() => localStorage.removeItem("redirect_to_auth"));
+      await page.goto("/my-designs", { waitUntil: "load" });
+    }
+    await expect(page, "still on /auth after login — session did not stick")
+      .not.toHaveURL(/\/auth/, { timeout: 15_000 });
   }
 }
 
@@ -51,9 +64,12 @@ async function openFormatPicker(page: import("@playwright/test").Page) {
   if (!page.url().includes("/my-designs")) {
     await page.goto("/my-designs", { waitUntil: "load" });
   }
-  await page.getByRole("button", { name: "New Design" }).click();
-  // Wait for the dialog to be present.
-  await expect(page.getByRole("dialog")).toBeVisible({ timeout: 8_000 });
+  const newDesign = page.getByRole("button", { name: "New Design" });
+  await expect(newDesign, "New Design button not found on /my-designs").toBeVisible({
+    timeout: 20_000,
+  });
+  await newDesign.click();
+  await expect(page.getByRole("dialog")).toBeVisible({ timeout: 10_000 });
 }
 
 // ---------------------------------------------------------------------------
@@ -199,4 +215,70 @@ test.describe("US-AI-039: Format Picker — Canva-style single-modal reorg", () 
       await expect(page).toHaveURL(/\/editor/, { timeout: 15_000 });
     },
   );
+  // ---- TC-AI-039-05 --------------------------------------------------------
+  //
+  // The next three were ported from e2e/us-ai-038-format-picker.spec.ts, which
+  // lived only on an unpushed branch and was written against the pre-reorg
+  // 3-step wizard. Most of it described removed behaviour (the library step,
+  // the "Continue" button), but these three cover current ACs that had no
+  // automated coverage at all — so the coverage was rescued rather than the
+  // file.
+  test("TC-AI-039-05: both New Design and New Template open the same picker (AC8)", async ({
+    page,
+  }) => {
+    // Entry point 1 — My Designs.
+    await openFormatPicker(page);
+    await expect(page.getByRole("dialog").getByRole("heading", { name: /choose a format/i }))
+      .toBeVisible({ timeout: 8_000 });
+    await page.keyboard.press("Escape");
+
+    // Entry point 2 — the gallery. Renamed from "Create Blank" to
+    // "New Template" so the two entries read as a pair.
+    await page.goto("/templates", { waitUntil: "load" });
+    await page.getByRole("button", { name: "New Template" }).click();
+    await expect(page.getByRole("dialog").getByRole("heading", { name: /choose a format/i }))
+      .toBeVisible({ timeout: 8_000 });
+  });
+
+  // ---- TC-AI-039-06 --------------------------------------------------------
+  test("TC-AI-039-06: reopening the picker pre-selects the last-used format (AC5)", async ({
+    page,
+  }) => {
+    await openFormatPicker(page);
+    const dialog = page.getByRole("dialog");
+
+    // Pick something outside the taxonomy's first group so a default cannot
+    // masquerade as a restored selection.
+    await dialog.getByRole("button", { name: "Facebook" }).click();
+    await dialog.getByRole("button", { name: "Cover" }).click();
+    await expect(page).toHaveURL(/\/editor/, { timeout: 15_000 });
+
+    // Reopen: the rail should land on Facebook, not the first group.
+    await page.goto("/my-designs", { waitUntil: "load" });
+    await page.getByRole("button", { name: "New Design" }).click();
+    const reopened = page.getByRole("dialog");
+    await expect(reopened).toBeVisible({ timeout: 8_000 });
+    await expect(
+      reopened.getByRole("button", { name: "Facebook" }),
+      "Facebook rail item should be the active one after reopen",
+    ).toHaveAttribute("aria-pressed", "true");
+  });
+
+  // ---- TC-AI-039-07 --------------------------------------------------------
+  test("TC-AI-039-07: the picker shows no pixel dimensions or aspect ratios (AC7)", async ({
+    page,
+  }) => {
+    await openFormatPicker(page);
+    const dialog = page.getByRole("dialog");
+
+    // Walk every rail category, not just the default one — a leak in a single
+    // group would otherwise go unnoticed.
+    for (const cat of ["For you", "Instagram", "Facebook", "WhatsApp", "Printables", "Email", "Other"]) {
+      await dialog.getByRole("button", { name: cat }).click();
+      const text = (await dialog.textContent()) ?? "";
+      expect(text, `"${cat}" pane must not show a ratio`).not.toMatch(/\d+\s*:\s*\d+/);
+      expect(text, `"${cat}" pane must not show pixel dimensions`).not.toMatch(/\d{3,}\s*[x×]\s*\d{3,}/);
+      expect(text, `"${cat}" pane must not show DPI`).not.toMatch(/DPI/i);
+    }
+  });
 });
