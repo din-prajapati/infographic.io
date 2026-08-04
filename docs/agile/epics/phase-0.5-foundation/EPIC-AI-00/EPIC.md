@@ -1,7 +1,7 @@
 # EPIC-AI-00 — Foundation Fixes: Wire, Model, Persist
 
 > **Phase:** Phase 0.5 — Foundation Repair (runs parallel to final 3 MVP human tasks)
-> **Status:** 🟡 In Progress — 4/8 stories Done (US-AI-001, US-AI-002, US-AI-002a, US-QA-001); US-AI-003/004/005/006 (Nano Banana routing, durable persistence) Not Started
+> **Status:** 🟡 In Progress — 6/8 stories Done (US-AI-001, US-AI-002, US-AI-002a, US-QA-001, US-AI-005, US-AI-006). US-AI-003/004 are 🟡 **partially delivered**: PRs #9/#10 shipped Gemini **LLM** routing, but the **image**-model swap those cards specify never shipped — `nano-banana-pro` is an alias for `ideogram-4` (`api/src/config/image-generation.config.ts:34`). Corrected 2026-08-04 after an audit initially mis-read them as complete.
 > **Linear Project:** LIN-EPIC-AI-00
 > **Target date:** 2026-05-12
 > **Owner:** Dinesh
@@ -35,10 +35,10 @@
 | [US-AI-001](stories/US-AI-001/STORY.md) | Wire Socket.io Gateway to AppModule | M-AI-01 | 🔲 | — |
 | [US-AI-002](stories/US-AI-002/STORY.md) | Fix GPT model ID: gpt-5 → gpt-4o | M-AI-01 | 🔲 | — |
 | [US-AI-002a](stories/US-AI-002a/STORY.md) | Brand color hex codes → descriptive names in image prompt | M-AI-01 | 🔲 | — |
-| [US-AI-003](stories/US-AI-003/STORY.md) | Replace Ideogram Turbo with Nano Banana Flash (FREE/SOLO) | M-AI-02 | 🔲 | — |
-| [US-AI-004](stories/US-AI-004/STORY.md) | Replace Ideogram V2 with Nano Banana Pro (TEAM/BROKERAGE) | M-AI-02 | 🔲 | — |
-| [US-AI-005](stories/US-AI-005/STORY.md) | Persist Extraction data to database | M-AI-03 | 🔲 | — |
-| [US-AI-006](stories/US-AI-006/STORY.md) | Connect conversations to backend API (remove localStorage) | M-AI-03 | 🔲 | — |
+| [US-AI-003](stories/US-AI-003/STORY.md) | Replace Ideogram Turbo with Nano Banana Flash (FREE/SOLO) | M-AI-02 | 🟡 partial | [#9](https://github.com/din-prajapati/infographic.io/pull/9) — LLM routing only; image swap NOT shipped |
+| [US-AI-004](stories/US-AI-004/STORY.md) | Replace Ideogram V2 with Nano Banana Pro (TEAM/BROKERAGE) | M-AI-02 | 🟡 partial | [#10](https://github.com/din-prajapati/infographic.io/pull/10) — LLM routing only; image swap NOT shipped |
+| [US-AI-005](stories/US-AI-005/STORY.md) | Persist Extraction data to database | M-AI-03 | ✅ | [#7](https://github.com/din-prajapati/infographic.io/pull/7) |
+| [US-AI-006](stories/US-AI-006/STORY.md) | Connect conversations to backend API (remove localStorage) | M-AI-03 | ✅ | [#8](https://github.com/din-prajapati/infographic.io/pull/8) |
 
 ---
 

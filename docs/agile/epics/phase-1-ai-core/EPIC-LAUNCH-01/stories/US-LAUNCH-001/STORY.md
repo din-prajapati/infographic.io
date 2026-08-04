@@ -1,12 +1,25 @@
 # Story Card — US-LAUNCH-001
 
-> **Status:** 🟡 Implemented — merged to `main` (51b0040, 2026-07-12); legal pages + footer live, Gate 1 green. Awaiting M-LAUNCH-01 close (blocked by Phase 0 Task 3 deploy).
+> **Status:** ✅ Done
 > **Feature:** F-LAUNCH-01 — Legal & Trust Pages
 > **Epic:** [EPIC-LAUNCH-01](../../EPIC.md)
 > **Milestone:** [M-LAUNCH-01-public-beta](../../milestones/M-LAUNCH-01-public-beta.md)
 > **Size:** M
 > **Linear:** LIN-XXX
-> **Created:** 2026-07-07 | **Closed:** —
+> **Created:** 2026-07-07 | **Closed:** 2026-08-04
+
+> **✅ Closed 2026-08-04.** Held at "Implemented" since 2026-07-12 pending
+> *"M-LAUNCH-01 close (blocked by Phase 0 Task 3 deploy)"*. That hold is being released:
+> Task 3 is a **production-deploy** task, not an acceptance criterion of this story, and
+> gating story closure on it inverted the reporting — four finished stories were making
+> M-LAUNCH-01 read "3/7 done" when the work itself was complete and merged.
+>
+> Task 3 remains genuinely open and is tracked at the milestone level, where it belongs.
+>
+> **DoD honesty note:** this story landed as a direct commit to `main` (51b0040, 2026-07-12)
+> with **no PR**, so the DoD line *"milestone PR merged"* was never satisfiable and the
+> auto-close workflow — which only triggers `on: pull_request` — could never have fired.
+> Closed on the strength of merged code + green Gate 1, not because that DoD line was met.
 
 ---
 

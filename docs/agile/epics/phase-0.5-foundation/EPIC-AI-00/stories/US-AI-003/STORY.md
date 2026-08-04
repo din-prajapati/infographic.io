@@ -1,11 +1,28 @@
 # Story Card — US-AI-003
 
-> **Status:** 🔲 Not Started
+> **Status:** 🟡 Partially delivered — LLM routing shipped (PR #9, 2026-07-03); the **image**-model swap this story specifies did **not** ship. NOT Done.
 > **Feature:** F-AI-00-02 — Correct LLM model routing (Nano Banana)
 > **Epic:** [EPIC-AI-00](../../EPIC.md)
 > **Milestone:** [M-AI-02-model-swap](../../milestones/M-AI-02-model-swap.md)
 > **Linear:** LIN-US-AI-003
 > **Created:** 2026-04-28 | **Closed:** —
+
+> ### ⚠️ Scope mismatch — read before closing this story
+> A 2026-08-04 audit flagged this story as "shipped but never closed", because PR #9
+> (*"route FREE/SOLO LLM calls to Gemini 2.5 Flash — US-AI-003"*) merged on 2026-07-03
+> and names this ID. **That conclusion was wrong.** What shipped is narrower than what
+> this card asks for:
+>
+> | | |
+> |---|---|
+> | **Shipped** | Gemini 2.5 Flash for FREE/SOLO **LLM / text** calls |
+> | **This story's AC1** | FREE/SOLO generations *"no longer call the Ideogram API"* — i.e. an **image**-model swap |
+> | **Reality** | Image generation still goes through `IdeogramService`. `api/src/config/image-generation.config.ts:34` reads `if (model === 'nano-banana-pro') return 'ideogram-4';` — "Nano Banana" is an **alias for Ideogram v4**, not a Gemini image model. |
+>
+> So AC1 is **false today**, and the ACs below stay unticked deliberately. Closing this
+> on the strength of the PR title would have recorded an image-model migration that
+> never happened. The remaining work is the actual image-path swap, or a rewrite of
+> this card to match the LLM-only scope that was really intended.
 
 ---
 

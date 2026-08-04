@@ -1,11 +1,25 @@
 # Story Card — US-AI-004
 
-> **Status:** 🔲 Not Started
+> **Status:** 🟡 Partially delivered — LLM tier routing shipped (PR #10, 2026-07-03); the **image**-model swap this story specifies did **not** ship. NOT Done.
 > **Feature:** F-AI-00-02 — Correct LLM model routing (Nano Banana)
 > **Epic:** [EPIC-AI-00](../../EPIC.md)
 > **Milestone:** [M-AI-02-model-swap](../../milestones/M-AI-02-model-swap.md)
 > **Linear:** LIN-US-AI-004
 > **Created:** 2026-04-28 | **Closed:** —
+
+> ### ⚠️ Scope mismatch — read before closing this story
+> Same situation as [US-AI-003](../US-AI-003/STORY.md). PR #10
+> (*"extend Gemini routing to TEAM tier + thread planTier through orchestrator"*) merged
+> 2026-07-03 and names this ID, which made a 2026-08-04 audit read the story as shipped.
+> It is not.
+>
+> AC1 asks that TEAM/BROKERAGE generations *"use Nano Banana Pro (Gemini 3 Pro Image)"*.
+> In the code, `nano-banana-pro` is an **alias that resolves to `ideogram-4`**
+> (`api/src/config/image-generation.config.ts:34`), and `AiOrchestrator` still injects
+> and calls `IdeogramService` for every image. The tier-aware routing that shipped is
+> for **LLM/text** calls only.
+>
+> ACs stay unticked. See US-AI-003 for the full evidence table.
 
 ---
 

@@ -1,7 +1,7 @@
 # M-AI-03-data-persistence — Persist Extraction + Connect Conversations to Backend
 
 > **Epic:** [EPIC-AI-00](../EPIC.md)
-> **Status:** 🔲 Not Started
+> **Status:** ✅ Done — both stories shipped 2026-07-03 (PRs #7, #8); closed retroactively 2026-08-04 once the month-long status drift was found. See EPIC-AI-00 for why the cascade never fired.
 > **Target date:** 2026-05-12
 
 ---
@@ -16,8 +16,8 @@ Extraction results are written to the `Extraction` table after every generation 
 
 | Story | Title | Status | PR |
 |-------|-------|--------|----|
-| [US-AI-005](../stories/US-AI-005/STORY.md) | Persist Extraction data to database | 🔲 | — |
-| [US-AI-006](../stories/US-AI-006/STORY.md) | Connect conversations to backend API (remove localStorage) | 🔲 | — |
+| [US-AI-005](../stories/US-AI-005/STORY.md) | Persist Extraction data to database | ✅ | [#7](https://github.com/din-prajapati/infographic.io/pull/7) |
+| [US-AI-006](../stories/US-AI-006/STORY.md) | Connect conversations to backend API (remove localStorage) | ✅ | [#8](https://github.com/din-prajapati/infographic.io/pull/8) |
 
 ---
 

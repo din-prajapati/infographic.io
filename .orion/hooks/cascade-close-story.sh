@@ -74,25 +74,81 @@ for ID in $IDS; do
   STORY_DIR=$(dirname "$STORY_FILE")
   TASKS_FILE="$STORY_DIR/TASKS.md"
 
-  # Flip STORY.md status + closed date + PR number (only on lines starting with "> **")
+  # ── Guard: never re-open or overwrite a terminal non-Done status ────────────
+  # A PR body that *mentions* a story is not the same as a PR that *closes* it.
+  # Superseded / Moved / Deferred / Cancelled are deliberate end states someone
+  # wrote by hand, with a rationale attached. Blindly stamping "✅ Done" over one
+  # destroys that rationale and silently resurrects abandoned work as shipped.
+  # Real cases this has caught: US-AI-041 (superseded by the layout-wireframe
+  # preview system) was named in PR #19 and PR #21 purely as context.
+  # NOTE the unescaped ">". In ERE (grep -E / sed -E) "\>" is GNU's end-of-word
+  # anchor, NOT a literal ">", so '^\> ' matches nothing at all. See the block
+  # below for why that mattered.
+  CURRENT_STATUS=$(grep -m1 -E '^> \*\*Status:\*\*' "$STORY_FILE" || true)
+  case "$CURRENT_STATUS" in
+    *Superseded*|*superseded*|*Moved*|*moved*|*Deferred*|*deferred*|*Cancelled*|*cancelled*|*Canceled*)
+      echo "⏭ $ID: status is terminal-but-not-Done — referenced, not closed; leaving untouched" >&2
+      echo "     ($(echo "$CURRENT_STATUS" | cut -c1-100))" >&2
+      continue
+      ;;
+  esac
+
+  # Flip STORY.md status + closed date + PR number (only on lines starting with "> **").
+  #
+  # The ">" is deliberately NOT backslash-escaped. Under `sed -E` (ERE), "\>" is
+  # GNU's end-of-word anchor rather than a literal ">", so the original
+  # '^(\> \*\*Status:\*\*).*$' matched no line in any file, ever. This cascade
+  # therefore never once flipped a story status in its entire history — every
+  # "✅ Done" in a STORY.md was typed by a human, and every story that landed
+  # without someone remembering to do that stayed open forever. That is the
+  # actual reason US-AI-003/004/005/006 sat at "Not Started" for a month with
+  # four merged PRs behind them.
   sed -i.bak -E \
-    -e 's|^(\> \*\*Status:\*\*).*$|\1 ✅ Done|' \
-    -e "s|^(\> \*\*Closed:\*\*).*$|\1 $TODAY|" \
-    -e "s|^(\> \*\*PR:\*\*).*$|\1 #$PR_NUM|" \
+    -e 's|^(> \*\*Status:\*\*).*$|\1 ✅ Done|' \
+    -e "s|^(> \*\*Closed:\*\*).*$|\1 $TODAY|" \
+    -e "s|^(> \*\*PR:\*\*).*$|\1 #$PR_NUM|" \
     "$STORY_FILE"
   rm -f "${STORY_FILE}.bak"
 
   # Flip TASKS.md PR field if present
   if [ -f "$TASKS_FILE" ]; then
-    sed -i.bak -E -e "s|^(\> \*\*PR:\*\*).*$|\1 #$PR_NUM|" "$TASKS_FILE"
+    sed -i.bak -E -e "s|^(> \*\*PR:\*\*).*$|\1 #$PR_NUM|" "$TASKS_FILE"
     rm -f "${TASKS_FILE}.bak"
   fi
 
   # Mark the story row ✅ in any parent tracker that references it.
-  # Look for table rows containing the ID; replace 🔲 or 🟡 with ✅ on the same row.
-  PARENT_EPIC=$(echo "$STORY_DIR" | sed -E 's|.*/epics/[^/]+/([^/]+).*|\1|')
+  #
+  # Restricted to markdown TABLE ROWS (lines beginning with "|"). The previous
+  # version rewrote any line containing the ID, which meant ordinary prose that
+  # merely named a story got its status glyphs swapped too. That actually
+  # happened: a "Known tooling defects" row in TEAM_STATUS.md describing this
+  # very bug mentioned US-AI-041 and carried "🔲 Open", and a cascade run turned
+  # it into "✅ Open" — the tool corrupted the note documenting the tool.
+  # A tracker row is a table row; nothing else should be touched.
+  # Locate the epic DIRECTORY by walking up from the story, rather than
+  # rebuilding a path from the epic's name. The old code did
+  # "$EPICS_DIR/$PARENT_EPIC/EPIC.md", which assumes epics sit directly under
+  # docs/agile/epics/. They do not — this repo nests them one level deeper under
+  # a phase folder (docs/agile/epics/phase-1-ai-core/EPIC-AI-02/), so the
+  # reconstructed path pointed at a file that has never existed and the EPIC.md
+  # and milestone updates silently no-opped. Walking up works for both layouts.
+  EPIC_DIR="$STORY_DIR"
+  while [ "$EPIC_DIR" != "/" ] && [ "$EPIC_DIR" != "." ] && [ -n "$EPIC_DIR" ]; do
+    case "$(basename "$EPIC_DIR")" in
+      EPIC-*) break ;;
+    esac
+    _PARENT=$(dirname "$EPIC_DIR")
+    [ "$_PARENT" = "$EPIC_DIR" ] && { EPIC_DIR=""; break; }
+    EPIC_DIR="$_PARENT"
+  done
+  case "$(basename "${EPIC_DIR:-none}")" in
+    EPIC-*) ;;
+    *) echo "⚠ $ID: no EPIC-* ancestor found; skipping epic/milestone rollup" >&2
+       EPIC_DIR="" ;;
+  esac
+
   for TRACKER in \
-      "$EPICS_DIR/$PARENT_EPIC/EPIC.md" \
+      "${EPIC_DIR:+$EPIC_DIR/EPIC.md}" \
       "$PROJECT_DIR/docs/agile/PHASE_TRACKER.md" \
       "$PROJECT_DIR/docs/agile/AGILE_INDEX.md" \
       "$PROJECT_DIR/docs/agile/TEAM_STATUS.md"; do
@@ -100,7 +156,8 @@ for ID in $IDS; do
     awk -v id="$ID" '
       BEGIN { changed=0 }
       {
-        if (index($0, id) > 0) {
+        # Table rows only: must start with "|" (allowing leading whitespace).
+        if ($0 ~ /^[[:space:]]*\|/ && index($0, id) > 0) {
           n=gsub(/🔲|🟡/, "✅", $0); if (n>0) changed=1
         }
         print
@@ -112,8 +169,9 @@ for ID in $IDS; do
   # Also touch the milestone doc if it sits beside the story folder.
   # Actual filenames are "M-{DOMAIN}-{NN}-{slug}.md" (e.g. M-LAUNCH-01-public-beta.md),
   # not a literal "MILESTONE.md" — match the real convention.
-  for MS in $(find "$EPICS_DIR/$PARENT_EPIC/milestones" -maxdepth 1 -name "M-*.md" 2>/dev/null); do
-    awk -v id="$ID" '{ if (index($0, id) > 0) gsub(/🔲|🟡/, "✅"); print }' \
+  for MS in $(find "${EPIC_DIR:-/nonexistent}/milestones" -maxdepth 1 -name "M-*.md" 2>/dev/null); do
+    # Table rows only — same reasoning as the tracker loop above.
+    awk -v id="$ID" '{ if ($0 ~ /^[[:space:]]*\|/ && index($0, id) > 0) gsub(/🔲|🟡/, "✅"); print }' \
       "$MS" > "${MS}.tmp" && mv "${MS}.tmp" "$MS"
   done
 

@@ -15,9 +15,9 @@
 | [Design (DESIGN)](#-design--frontend-design) | EPIC-DESIGN-01 + EPIC-DESIGN-02 | 🟡 US-003/004 staging | Live Ideogram API | Staging deploy unblocks both |
 | [Auth (AUTH)](#-auth-auth) | EPIC-AUTH-01 | ✅ Done | — | Full invite flow post-MVP |
 | [Canvas Editor (EDIT)](#-canvas-editor-edit) | EPIC-EDIT-01 | ✅ Done | — | Batch upload Phase 3 |
-| [AI Generation (AI)](#-ai-generation-ai) | EPIC-AI-00 | ✅ Done (closed 2026-07-03) | — | EPIC-AI-02 deps (US-AI-010/011) → EPIC-AI-06 |
+| [AI Generation (AI)](#-ai-generation-ai) | EPIC-AI-00 | 🟡 6/8 Done — US-AI-003/004 partial (LLM routing shipped, image swap did not) | Image-model swap unbuilt | EPIC-AI-02 deps (US-AI-010/011) → EPIC-AI-06 |
 | [Infrastructure (INFRA)](#-infrastructure-infra) | EPIC-INFRA-01 | 🟡 Task 1 ✅ · Task 2 ✅ (2026-07-11) · Task 3 (prod) next | Human task | Admin dashboard Phase 5 |
-| [Launch Readiness (LAUNCH)](#-launch-readiness-launch) | EPIC-LAUNCH-01 | 🟡 3/14 stories ✅ Done (004, 010, 011) | Phase 0 HUMAN Task 3 | M-LAUNCH-01 → beta (now incl. US-LAUNCH-009/010 env & secrets) · M-LAUNCH-02 → revenue |
+| [Launch Readiness (LAUNCH)](#-launch-readiness-launch) | EPIC-LAUNCH-01 | 🟡 12/14 stories ✅ Done (001–004, 006–013); US-LAUNCH-005 open, 014 not started | Phase 0 HUMAN Task 3 | M-LAUNCH-01 → beta (now incl. US-LAUNCH-009/010 env & secrets) · M-LAUNCH-02 → revenue |
 | [Organization (ORG)](#-organization--team-org) | — | Post-MVP | No email provider (US-LAUNCH-002 will fix) | EPIC-ORG-01 post-launch |
 
 ---
@@ -2261,9 +2261,40 @@
 
 ## Known tooling defects
 
+> The row below previously read `🔲 Open`. A cascade run on PR #21 rewrote it to
+> `✅ Open` — the tool corrupted the note describing the tool, because it swapped status
+> glyphs on **any** line mentioning a story id, prose included. Repaired by hand and fixed
+> at the source on 2026-08-04.
+
 | Defect | Where | Impact | Status |
 |---|---|---|---|
-| `cascade-close-story.sh` scrapes **all** `US-*` ids from the PR body and reports them as "closed", with no check for whether the story was merely *referenced* — and its story-file writer does a blanket `Status: ✅ Done` with no Superseded/Moved guard | `.claude/hooks/cascade-close-story.sh:73-79` | Falsely closed US-DESIGN-012 in the log (PR #20); would have flipped superseded US-AI-041 to Done (PR #19), avoided only by omitting the `US-AI-` prefix from that PR body | ✅ Open — needs a status guard + "referenced vs closed" distinction | 
+| **ERE escaping bug — the cascade never worked at all.** `sed -E`/`grep -E` treat `\>` as GNU's *end-of-word anchor*, not a literal `>`, so `'^(\> \*\*Status:\*\*).*$'` matched **no line in any file, ever** | `.orion/hooks/cascade-close-story.sh` | Every `✅ Done` in every STORY.md was typed by a human. Any story whose closer forgot stayed open forever — the true cause of US-AI-005/006 sitting at "Not Started" for a month behind merged PRs | ✅ **Fixed** 2026-08-04 — unescaped `>`; verified flipping a real status for the first time |
+| **Epic path rebuilt instead of derived.** Used `$EPICS_DIR/$PARENT_EPIC/EPIC.md`, which assumes epics sit directly under `docs/agile/epics/`. This repo nests them under a phase folder | same | EPIC.md and milestone rollups silently no-opped for the entire history of the repo | ✅ **Fixed** — now walks up from the story to the nearest `EPIC-*` ancestor; works for both layouts |
+| **Referenced ≠ closed.** The workflow scraped every `US-*` id out of the whole PR body and treated each as closed | `.github/workflows/close-story-on-merge.yml` | Reported US-DESIGN-012 as closed by PR #20 (it only retired stale tests); named superseded US-AI-041 on PRs #19 and #21 | ✅ **Fixed** — only the PR **title** or an explicit `Closes:`/`Fixes:`/`Resolves:` line closes a story |
+| **No terminal-status guard.** Story writer stamped `✅ Done` over any status | `.orion/hooks/cascade-close-story.sh` | Would have resurrected superseded US-AI-041 as shipped once the ERE bug above was fixed | ✅ **Fixed** — Superseded/Moved/Deferred/Cancelled are skipped with a log line |
+| **Prose rewritten as if it were a table row.** `gsub(/🔲|🟡/,"✅")` ran on any line containing the id | same | Corrupted this very table (`🔲 Open` → `✅ Open`) | ✅ **Fixed** — restricted to markdown table rows (`^\s*\|`) |
+
+All five verified with an integration fixture covering the phase-nested layout, a
+superseded story, a genuinely-closable story, a prose mention, and a defect-table row.
+
+---
+
+## Session log
 
 <!-- ai-sdlc:session-log -->
-**2026-08-04 11:44** · PR #21 merged · closed: US-AI-041 US-DESIGN-012 
+**2026-08-04 11:44** · PR #21 merged · closed: US-AI-041 US-DESIGN-012
+  - ⚠️ False on both counts — neither story was closed by that PR. See the defect table above.
+
+**2026-08-04** · Backlog reconciliation after a `/standup` audit
+  - **Closed:** US-AI-005, US-AI-006 (shipped 2026-07-03 via PRs #7/#8, five days *before*
+    the auto-close workflow existed); US-LAUNCH-001, 002, 003, 009 (direct commits
+    2026-07-12, no PR, so `on: pull_request` could never fire). M-AI-03 → ✅ Done.
+    M-LAUNCH-01 now reads 7/7 stories done; the milestone stays open on Phase 0 Task 3.
+  - **Deliberately NOT closed**, against the initial audit's own recommendation:
+    - `US-AI-003` / `US-AI-004` — PR titles name them, but the delivered scope is **narrower
+      than the cards**. They specify an *image*-model swap to Nano Banana; what shipped is
+      Gemini for *LLM/text* calls. `nano-banana-pro` is an alias for `ideogram-4`, and image
+      generation still runs through `IdeogramService`. Marked 🟡 partial with evidence.
+    - `US-DESIGN-003` / `US-DESIGN-004` — every AC checkbox is ticked, but both status lines
+      record open **HUMAN** verification (live-Ideogram fidelity + real usage increment; a
+      staging visual spot-check). Checkbox counts alone would have closed them wrongly. 

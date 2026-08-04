@@ -1,11 +1,28 @@
 # Story Card — US-AI-005
 
-> **Status:** 🔲 Not Started
+> **Status:** ✅ Done
 > **Feature:** F-AI-00-03 — Durable data persistence (extraction + conversations)
 > **Epic:** [EPIC-AI-00](../../EPIC.md)
 > **Milestone:** [M-AI-03-data-persistence](../../milestones/M-AI-03-data-persistence.md)
 > **Linear:** LIN-US-AI-005
-> **Created:** 2026-04-28 | **Closed:** —
+> **PR:** [#7](https://github.com/din-prajapati/infographic.io/pull/7)
+> **Created:** 2026-04-28 | **Closed:** 2026-08-04
+
+> **✅ Closed 2026-08-04, backdated — shipped via PR #7 on 2026-07-03.**
+> This sat at "Not Started" for a month with a merged PR behind it. The cause was
+> mechanical, not human: the auto-close workflow (`.github/workflows/close-story-on-merge.yml`)
+> was not added to this repo until **2026-07-08** — five days *after* PR #7 merged — so
+> nothing ever fired for it. The same gap explains US-AI-006. Fixed in the same change
+> that closes this story.
+>
+> **Verified against the code before closing** (not taken on the PR title's word, which is
+> exactly how US-AI-003/004 were nearly mis-closed):
+> `prisma.extraction.create(...)` at `api/src/modules/infographics/services/prompt-extractor.service.ts:152`
+> and `:259`, `prisma.extraction.findUnique(...)` at `:324`, and
+> `prisma.extraction.update(...)` at `generations.service.ts:67` — AC1 (a row exists after a
+> generation run) and AC2 (regeneration reads the saved extraction back) both hold.
+> Individual P1/P2 ACs below were not each re-run a month later; closure rests on the
+> merged PR plus this code-level verification of the story's core contract.
 
 ---
 

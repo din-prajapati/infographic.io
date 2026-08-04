@@ -1,7 +1,7 @@
 # M-LAUNCH-01-public-beta — Public Free Beta Live
 
 > **Epic:** [EPIC-LAUNCH-01](../EPIC.md)
-> **Status:** 🟡 In Progress — 3/7 stories ✅ Done (US-LAUNCH-004, 010, 011); 4 more implemented + merged but not yet formally closed (US-LAUNCH-001, 002, 003, 009); Phase 0 Task 3 (production go-live) underway
+> **Status:** 🟡 In Progress — **7/7 stories ✅ Done** (US-LAUNCH-001, 002, 003, 004, 009, 010, 011, closed 2026-08-04). The milestone itself stays open on **Phase 0 Task 3 (production go-live)**, a HUMAN deploy task tracked at milestone level — it is not an acceptance criterion of any remaining story.
 > **Target date:** 2026-07-21 (slipping — Task 3 still open; see [PHASE_0_HUMAN_QA_CHECKLIST.md](../../../../testing/PHASE_0_HUMAN_QA_CHECKLIST.md) for live Task 3 status)
 
 ---
@@ -16,11 +16,11 @@ A real estate agent who is a total stranger can sign up on production, generate 
 
 | Order | Story | Title | Blocked By | Status | PR |
 |:-----:|-------|-------|------------|--------|----|
-| 1 | [US-LAUNCH-001](../stories/US-LAUNCH-001/STORY.md) | Legal & policy pages (Terms · Privacy · Refund) | — | 🟡 impl (merged) | 51b0040 |
-| 1 | [US-LAUNCH-002](../stories/US-LAUNCH-002/STORY.md) | Transactional email foundation | — | 🟡 impl (merged) | ec166fb |
+| 1 | [US-LAUNCH-001](../stories/US-LAUNCH-001/STORY.md) | Legal & policy pages (Terms · Privacy · Refund) | — | ✅ Done | 51b0040 (direct, no PR) |
+| 1 | [US-LAUNCH-002](../stories/US-LAUNCH-002/STORY.md) | Transactional email foundation | — | ✅ Done | ec166fb (direct, no PR) |
 | 1 | [US-LAUNCH-004](../stories/US-LAUNCH-004/STORY.md) | Beta launch mode | — | ✅ Done | [#18](https://github.com/din-prajapati/infographic.io/pull/18) |
-| 2 | [US-LAUNCH-003](../stories/US-LAUNCH-003/STORY.md) | Forgot / reset password flow | US-LAUNCH-002 | 🟡 impl (merged) | 1bc7346 |
-| 1 | [US-LAUNCH-009](../stories/US-LAUNCH-009/STORY.md) | Environment & secrets management convention (docs/config) | — | 🟡 impl (merged) | ec166fb |
+| 2 | [US-LAUNCH-003](../stories/US-LAUNCH-003/STORY.md) | Forgot / reset password flow | US-LAUNCH-002 | ✅ Done | 1bc7346 (direct, no PR) |
+| 1 | [US-LAUNCH-009](../stories/US-LAUNCH-009/STORY.md) | Environment & secrets management convention (docs/config) | — | ✅ Done | ec166fb (direct, no PR) |
 | 2 | [US-LAUNCH-010](../stories/US-LAUNCH-010/STORY.md) | Config hardening — APP_ENV + boot validation + RazorPay guard | US-LAUNCH-009 | ✅ Done | [#17](https://github.com/din-prajapati/infographic.io/pull/17) |
 | 3 | [US-LAUNCH-011](../stories/US-LAUNCH-011/STORY.md) | Rebrand user-facing surfaces to Buildographic | — | ✅ Done | [#16](https://github.com/din-prajapati/infographic.io/pull/16) |
 | Backlog | [US-LAUNCH-014](../stories/US-LAUNCH-014/STORY.md) | Email verification for new local accounts | — | 🔲 | — |
