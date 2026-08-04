@@ -1,13 +1,26 @@
 # Story Card — US-LAUNCH-003
 
-> **Status:** 🟡 Implemented — code complete, Gate 1 + 8 unit tests green, merged to `main`. TC-05 verified live against dev server 2026-07-12, then **re-verified against production** (`app.buildographic.com`) 2026-07-21 after a `BASE_URL`/`CLIENT_URL` bug fix — see Finding below. Awaiting M-LAUNCH-01 close (Task 3).
+> **Status:** ✅ Done
 > **Feature:** F-LAUNCH-02 — Transactional Email
 > **Epic:** [EPIC-LAUNCH-01](../../EPIC.md)
 > **Milestone:** [M-LAUNCH-01-public-beta](../../milestones/M-LAUNCH-01-public-beta.md)
 > **Size:** M
 > **Depends on:** US-LAUNCH-002 must be merged before this story can start.
 > **Linear:** LIN-XXX
-> **Created:** 2026-07-07 | **Closed:** —
+> **Created:** 2026-07-07 | **Closed:** 2026-08-04
+
+> **✅ Closed 2026-08-04.** Held at "Implemented" since 2026-07-12 pending
+> *"M-LAUNCH-01 close (blocked by Phase 0 Task 3 deploy)"*. That hold is being released:
+> Task 3 is a **production-deploy** task, not an acceptance criterion of this story, and
+> gating story closure on it inverted the reporting — four finished stories were making
+> M-LAUNCH-01 read "3/7 done" when the work itself was complete and merged.
+>
+> Task 3 remains genuinely open and is tracked at the milestone level, where it belongs.
+>
+> **DoD honesty note:** this story landed as a direct commit to `main` (1bc7346, 2026-07-12)
+> with **no PR**, so the DoD line *"milestone PR merged"* was never satisfiable and the
+> auto-close workflow — which only triggers `on: pull_request` — could never have fired.
+> Closed on the strength of merged code + green Gate 1, not because that DoD line was met.
 
 ---
 

@@ -1,11 +1,24 @@
 # Story Card — US-AI-006
 
-> **Status:** 🔲 Not Started
+> **Status:** ✅ Done
 > **Feature:** F-AI-00-03 — Durable data persistence (extraction + conversations)
 > **Epic:** [EPIC-AI-00](../../EPIC.md)
 > **Milestone:** [M-AI-03-data-persistence](../../milestones/M-AI-03-data-persistence.md)
 > **Linear:** LIN-US-AI-006
-> **Created:** 2026-04-28 | **Closed:** —
+> **PR:** [#8](https://github.com/din-prajapati/infographic.io/pull/8)
+> **Created:** 2026-04-28 | **Closed:** 2026-08-04
+
+> **✅ Closed 2026-08-04, backdated — shipped via PR #8 on 2026-07-03.**
+> Same cause as [US-AI-005](../US-AI-005/STORY.md): the auto-close workflow did not exist
+> until 2026-07-08, five days after this PR merged, so no cascade ever ran.
+>
+> **Verified against the code before closing:** `api/src/modules/conversations/controllers/conversations.controller.ts`
+> exists, and `client/src/lib/api.ts:397` exports a `conversationsApi` with full CRUD
+> (`getAll`, `create`, `getOne`, …) hitting `/conversations` — AC1 (CRUD goes through the
+> backend) holds. The only surviving `localStorage` conversation references are in
+> `testConversationsData.ts` (a test-data seeder) and a stale design doc, neither on the
+> production path. Individual P1/P2 ACs were not each re-run a month later; closure rests
+> on the merged PR plus this verification.
 
 ---
 

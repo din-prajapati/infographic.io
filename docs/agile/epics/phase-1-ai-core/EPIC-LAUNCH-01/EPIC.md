@@ -34,15 +34,15 @@
 
 | Story ID | Title | Milestone | Size | Status | PR |
 |----------|-------|-----------|------|--------|----|
-| [US-LAUNCH-001](stories/US-LAUNCH-001/STORY.md) | Legal & policy pages (Terms · Privacy · Refund) | M-LAUNCH-01 | M | 🟡 impl | 51b0040 |
-| [US-LAUNCH-002](stories/US-LAUNCH-002/STORY.md) | Transactional email foundation (provider-agnostic EmailService) | M-LAUNCH-01 | M | 🟡 impl | ec166fb |
-| [US-LAUNCH-003](stories/US-LAUNCH-003/STORY.md) | Forgot / reset password flow | M-LAUNCH-01 | M | 🟡 impl | 1bc7346 |
+| [US-LAUNCH-001](stories/US-LAUNCH-001/STORY.md) | Legal & policy pages (Terms · Privacy · Refund) | M-LAUNCH-01 | M | ✅ Done | 51b0040 |
+| [US-LAUNCH-002](stories/US-LAUNCH-002/STORY.md) | Transactional email foundation (provider-agnostic EmailService) | M-LAUNCH-01 | M | ✅ Done | ec166fb |
+| [US-LAUNCH-003](stories/US-LAUNCH-003/STORY.md) | Forgot / reset password flow | M-LAUNCH-01 | M | ✅ Done | 1bc7346 |
 | [US-LAUNCH-004](stories/US-LAUNCH-004/STORY.md) | Beta launch mode (checkout off · AI-content disclaimer) | M-LAUNCH-01 | S | ✅ Done | [#18](https://github.com/din-prajapati/infographic.io/pull/18) |
 | [US-LAUNCH-005](stories/US-LAUNCH-005/STORY.md) | RazorPay live-mode activation | M-LAUNCH-02 | M | 🟡 AC1–4 done — approved, live keys deployed 2026-07-28; AC5/6 (prereqs check, real ₹ txn) open | — (ops) |
 | [US-LAUNCH-006](stories/US-LAUNCH-006/STORY.md) | Payment receipt email on subscription charge | M-LAUNCH-02 | S | ✅ Done | `fa1d345` |
 | [US-LAUNCH-007](stories/US-LAUNCH-007/STORY.md) | BROKERAGE tier gate on pricing page (resolves PT-06) | M-LAUNCH-02 | S | ✅ Done | `fa1d345` |
 | [US-LAUNCH-008](stories/US-LAUNCH-008/STORY.md) | Metering policy guard (1 generation = 1 credit) | M-LAUNCH-02 | S | ✅ Done | `aaf3aef` |
-| [US-LAUNCH-009](stories/US-LAUNCH-009/STORY.md) | Environment & secrets management convention (docs/config) | M-LAUNCH-01 | M | 🟡 impl | ec166fb |
+| [US-LAUNCH-009](stories/US-LAUNCH-009/STORY.md) | Environment & secrets management convention (docs/config) | M-LAUNCH-01 | M | ✅ Done | ec166fb |
 | [US-LAUNCH-010](stories/US-LAUNCH-010/STORY.md) | Config hardening — APP_ENV + boot validation + RazorPay guard | M-LAUNCH-01 | M | ✅ Done | [#17](https://github.com/din-prajapati/infographic.io/pull/17) |
 | [US-LAUNCH-011](stories/US-LAUNCH-011/STORY.md) | Rebrand user-facing surfaces to Buildographic | M-LAUNCH-01 | S | ✅ Done | [#16](https://github.com/din-prajapati/infographic.io/pull/16) |
 | [US-LAUNCH-012](stories/US-LAUNCH-012/STORY.md) | Payment-failed (dunning) email notification | M-LAUNCH-02 | S | ✅ Done | `fa1d345` |

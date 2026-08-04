@@ -1,7 +1,7 @@
 # M-AI-02-model-swap — Replace Ideogram with Nano Banana Flash + Pro
 
 > **Epic:** [EPIC-AI-00](../EPIC.md)
-> **Status:** 🔲 Not Started
+> **Status:** 🟡 In Progress — PRs #9/#10 (2026-07-03) shipped the **LLM/text** side of the routing. The **image**-model swap this milestone is named for has NOT shipped: `nano-banana-pro` resolves to `ideogram-4` (`api/src/config/image-generation.config.ts:34`) and `AiOrchestrator` still calls `IdeogramService`. Corrected 2026-08-04.
 > **Target date:** 2026-05-08
 
 ---
@@ -16,8 +16,8 @@ Ideogram is completely replaced: FREE/SOLO tier uses Nano Banana Flash ($0.002�
 
 | Story | Title | Status | PR |
 |-------|-------|--------|----|
-| [US-AI-003](../stories/US-AI-003/STORY.md) | Replace Ideogram Turbo with Nano Banana Flash (FREE/SOLO) | 🔲 | — |
-| [US-AI-004](../stories/US-AI-004/STORY.md) | Replace Ideogram V2 with Nano Banana Pro (TEAM/BROKERAGE) | 🔲 | — |
+| [US-AI-003](../stories/US-AI-003/STORY.md) | Replace Ideogram Turbo with Nano Banana Flash (FREE/SOLO) | 🟡 partial | [#9](https://github.com/din-prajapati/infographic.io/pull/9) |
+| [US-AI-004](../stories/US-AI-004/STORY.md) | Replace Ideogram V2 with Nano Banana Pro (TEAM/BROKERAGE) | 🟡 partial | [#10](https://github.com/din-prajapati/infographic.io/pull/10) |
 
 ---
 
