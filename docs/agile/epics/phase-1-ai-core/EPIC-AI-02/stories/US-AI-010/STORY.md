@@ -12,6 +12,7 @@
 > No PR will be opened retroactively; the commit is the record. Marked Done because the code is
 > demonstrably merged (verified `git merge-base --is-ancestor cce587e main`), not because the
 > Definition of Done's "PR merged" line was satisfied — it was not.
+> **Test evidence recovered 2026-08-04.** The results below were produced on 2026-07-30 but were left uncommitted in an agent worktree (`agent-a8acfbc03fbd40324`) and would have been lost when that worktree was pruned. They are merged in verbatim. TC-AI-010-02 is a **recorded failure with a root-cause hypothesis**, which is precisely why AC3 is unticked — the story being Done with an unexplained gap was an artefact of this evidence never reaching git.
 > **Carried-forward gap:** AC3 (uploaded photo actually referenced in the generation prompt) is still unverified — it needs a live AI generation to prove. Closing the story does not close that gap.
 
 ---
@@ -93,10 +94,10 @@ Temporary storage only — no R2 or S3 yet (that's EPIC-AI-03).
 
 | TC ID | Type | Priority | Scenario | Status | Finding |
 |-------|------|----------|----------|--------|---------|
-| TC-AI-010-01 | Manual | P0 | Upload a property photo → thumbnail appears in chat input | 🔲 | |
-| TC-AI-010-02 | Manual | P0 | Generate with photo uploaded → property image visible in the result | 🔲 | |
-| TC-AI-010-03 | Manual | P1 | Upload second photo → replaces first (one active at a time) | 🔲 | |
-| TC-AI-010-04 | Manual | P1 | Attempt to upload an 11MB file or a `.pdf` → rejected with visible error, no upload request sent | 🔲 | |
+| TC-AI-010-01 | Manual | P0 | Upload a property photo → thumbnail appears in chat input | ✅ | E2E pass (3/3 runs). Upload mocked; thumbnail + "Property photo attached" label both verified. |
+| TC-AI-010-02 | Manual | P0 | Generate with photo uploaded → property image visible in the result | ❌ | Real pipeline fails on staging: generation starts ("Generating your infographic..." visible) then backend returns error that triggers the `isValidationError` path, showing "Missing Information" hint instead of variations. Root cause: tiny 1×1 px PNG reference image is likely rejected by Ideogram; error message contains "missing required fields" / "please provide" which the frontend routes as a validation hint (see `handleGenerationFailed` in AIChatBox.tsx). Server-side logs needed to confirm. AC3 NOT verified. |
+| TC-AI-010-03 | Manual | P1 | Upload second photo → replaces first (one active at a time) | ✅ | E2E pass (3/3 runs). Exactly 1 thumbnail after second upload confirmed. |
+| TC-AI-010-04 | Manual | P1 | Attempt to upload an 11MB file or a `.pdf` → rejected with visible error, no upload request sent | ✅ | E2E pass (3/3 runs). Both sub-cases (wrong MIME, oversized) show correct error text; zero upload POSTs fired. |
 
 ---
 
