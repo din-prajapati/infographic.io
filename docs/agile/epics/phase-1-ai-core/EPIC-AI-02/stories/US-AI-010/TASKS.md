@@ -57,7 +57,7 @@ npm run test:unit
 - [x] T3 — Frontend upload button + thumbnail
 - [x] T4 — Pass photoId with generation request
 - [x] `npm run check` passes ✅
-- [ ] Manual: photo appears in generated infographic ✅
+- [ ] Manual: photo appears in generated infographic — **BLOCKED**: TC-AI-010-02 E2E FAIL (see STORY.md test-case table for the root-cause hypothesis)
 
 ---
 
