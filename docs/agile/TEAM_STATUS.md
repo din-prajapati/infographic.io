@@ -2263,4 +2263,7 @@
 
 | Defect | Where | Impact | Status |
 |---|---|---|---|
-| `cascade-close-story.sh` scrapes **all** `US-*` ids from the PR body and reports them as "closed", with no check for whether the story was merely *referenced* — and its story-file writer does a blanket `Status: ✅ Done` with no Superseded/Moved guard | `.claude/hooks/cascade-close-story.sh:73-79` | Falsely closed US-DESIGN-012 in the log (PR #20); would have flipped superseded US-AI-041 to Done (PR #19), avoided only by omitting the `US-AI-` prefix from that PR body | 🔲 Open — needs a status guard + "referenced vs closed" distinction | 
+| `cascade-close-story.sh` scrapes **all** `US-*` ids from the PR body and reports them as "closed", with no check for whether the story was merely *referenced* — and its story-file writer does a blanket `Status: ✅ Done` with no Superseded/Moved guard | `.claude/hooks/cascade-close-story.sh:73-79` | Falsely closed US-DESIGN-012 in the log (PR #20); would have flipped superseded US-AI-041 to Done (PR #19), avoided only by omitting the `US-AI-` prefix from that PR body | ✅ Open — needs a status guard + "referenced vs closed" distinction | 
+
+<!-- ai-sdlc:session-log -->
+**2026-08-04 11:44** · PR #21 merged · closed: US-AI-041 US-DESIGN-012 
