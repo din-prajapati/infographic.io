@@ -57,7 +57,10 @@ npm run test:unit
 - [x] T3 — Frontend upload button + thumbnail
 - [x] T4 — Pass photoId with generation request
 - [x] `npm run check` passes ✅
-- [ ] Manual: photo appears in generated infographic — **BLOCKED**: TC-AI-010-02 E2E FAIL (see STORY.md test-case table for the root-cause hypothesis)
+- [ ] Manual: photo appears in generated infographic — **🔓 OPEN / BLOCKED**: TC-AI-010-02 must be
+      re-run once Ideogram credits are topped up. Retest with a **real photo from `public/assets/`**,
+      not the 1×1 px fixture that produced the recorded failure. See the "Open verification" block in
+      [STORY.md](./STORY.md) for the command, cost, and the two competing hypotheses.
 
 ---
 

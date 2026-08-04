@@ -62,3 +62,15 @@ __generated__
 .claude/settings.local.json
 .orion/state/
 .orion-migration-backup/
+
+# Agent session scratch — throwaway debugging artefacts, not project work.
+# Skills, agents, hooks and commands under .claude/ stay tracked; only the
+# one-off scripts and screenshots an agent leaves behind are ignored.
+.claude/worktrees/
+.claude/screenshots/
+.claude/*.ts
+.claude/*.png
+archive/Images/
+# Pasted chat/LLM exports dropped at the root of .claude/. Named explicitly rather
+# than globbed, so tracked docs like .claude/skills/README.md are never caught.
+/.claude/Summarize the chat in markdown document along with.md

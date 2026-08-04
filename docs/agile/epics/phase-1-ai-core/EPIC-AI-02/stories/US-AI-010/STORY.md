@@ -15,6 +15,25 @@
 > **Test evidence recovered 2026-08-04.** The results below were produced on 2026-07-30 but were left uncommitted in an agent worktree (`agent-a8acfbc03fbd40324`) and would have been lost when that worktree was pruned. They are merged in verbatim. TC-AI-010-02 is a **recorded failure with a root-cause hypothesis**, which is precisely why AC3 is unticked — the story being Done with an unexplained gap was an artefact of this evidence never reaching git.
 > **Carried-forward gap:** AC3 (uploaded photo actually referenced in the generation prompt) is still unverified — it needs a live AI generation to prove. Closing the story does not close that gap.
 
+> ### 🔓 OPEN VERIFICATION — TC-AI-010-02 (do not close)
+> **Held open by decision on 2026-08-04.** TC-AI-010-02 is *not* being written off as a
+> failed-and-accepted result. It is parked because re-running it needs a live Ideogram
+> generation, and the provider account is out of credit.
+>
+> | Field | Value |
+> |---|---|
+> | **Blocked on** | Ideogram API credit top-up |
+> | **Unblock trigger** | Credits available on the account used by `IDEOGRAM_API_KEY` |
+> | **Retest command** | `PLAYWRIGHT_BASE_URL=http://localhost:5000 npx playwright test e2e/us-ai-010-photo-upload.spec.ts -g "TC-AI-010-02"` |
+> | **Cost of retest** | ~1 live generation (`ideogram-turbo` ≈ $0.025) |
+> | **Verifies** | AC3 — the uploaded photo is genuinely referenced by the generation |
+> | **Hypothesis to test first** | The recorded failure used a **1×1 px** PNG fixture, which Ideogram likely rejects. Retest with a **real listing photo** from `public/assets/` before concluding the feature is broken. |
+>
+> If the retest passes with a real photo, the defect is in the *fixture*, and the fix is to
+> swap the fixture — not to change product code. If it still fails, the error is being
+> mis-routed through `isValidationError` in `AIChatBox.tsx` (showing "Missing Information"
+> instead of a generation error), and that routing is the bug to fix.
+
 ---
 
 ## Story
@@ -95,7 +114,7 @@ Temporary storage only — no R2 or S3 yet (that's EPIC-AI-03).
 | TC ID | Type | Priority | Scenario | Status | Finding |
 |-------|------|----------|----------|--------|---------|
 | TC-AI-010-01 | Manual | P0 | Upload a property photo → thumbnail appears in chat input | ✅ | E2E pass (3/3 runs). Upload mocked; thumbnail + "Property photo attached" label both verified. |
-| TC-AI-010-02 | Manual | P0 | Generate with photo uploaded → property image visible in the result | ❌ | Real pipeline fails on staging: generation starts ("Generating your infographic..." visible) then backend returns error that triggers the `isValidationError` path, showing "Missing Information" hint instead of variations. Root cause: tiny 1×1 px PNG reference image is likely rejected by Ideogram; error message contains "missing required fields" / "please provide" which the frontend routes as a validation hint (see `handleGenerationFailed` in AIChatBox.tsx). Server-side logs needed to confirm. AC3 NOT verified. |
+| TC-AI-010-02 | Manual | P0 | Generate with photo uploaded → property image visible in the result | 🔓 **OPEN** | **Retest required — blocked on Ideogram credit top-up (see "Open verification" above). Not accepted as a final result.** Last run failed: generation starts ("Generating your infographic..." visible) then backend returns error that triggers the `isValidationError` path, showing "Missing Information" hint instead of variations. Root cause: tiny 1×1 px PNG reference image is likely rejected by Ideogram; error message contains "missing required fields" / "please provide" which the frontend routes as a validation hint (see `handleGenerationFailed` in AIChatBox.tsx). Server-side logs needed to confirm. AC3 NOT verified. |
 | TC-AI-010-03 | Manual | P1 | Upload second photo → replaces first (one active at a time) | ✅ | E2E pass (3/3 runs). Exactly 1 thumbnail after second upload confirmed. |
 | TC-AI-010-04 | Manual | P1 | Attempt to upload an 11MB file or a `.pdf` → rejected with visible error, no upload request sent | ✅ | E2E pass (3/3 runs). Both sub-cases (wrong MIME, oversized) show correct error text; zero upload POSTs fired. |
 

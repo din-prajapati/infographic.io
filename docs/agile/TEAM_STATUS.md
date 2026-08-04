@@ -2242,4 +2242,25 @@
   - Last commit: (no commits this session)
 
 <!-- ai-sdlc:session-log -->
-**2026-08-04 11:00** · PR #20 merged · closed: US-DESIGN-012 
+**2026-08-04 11:00** · PR #20 merged · closed: US-DESIGN-012
+  - ⚠️ **Corrected by hand.** The line above is auto-written by `cascade-close-story.sh`, which
+    scrapes every `US-*` id out of the PR body. PR #20 did **not** close US-DESIGN-012 — it
+    *retired three stale tier-badge test cases belonging to* that story, which was already
+    ✅ Done. No story status was changed by the bot (it only appends here), so nothing needed
+    reverting, but the claim is false as written. Same defect flagged during PR #19.
+    Fix is tracked below under "Known tooling defects".
+
+**2026-08-04** · PR #20 merged (rebase, 10 commits) · repo cleanup pass
+  - Closed for real: M-AI-06 test-coverage backfill (US-AI-039/040/042 TCs), stale
+    `m-design-04` specs retired with rationale, 4 worktree-orphaned E2E specs rescued.
+  - **Held open on purpose:** `TC-AI-010-02` (US-AI-010, AC3) — blocked on an Ideogram
+    credit top-up, retest with a real photo from `public/assets/`. See the story's
+    "Open verification" block. Do not let a cascade run mark this ✅.
+
+---
+
+## Known tooling defects
+
+| Defect | Where | Impact | Status |
+|---|---|---|---|
+| `cascade-close-story.sh` scrapes **all** `US-*` ids from the PR body and reports them as "closed", with no check for whether the story was merely *referenced* — and its story-file writer does a blanket `Status: ✅ Done` with no Superseded/Moved guard | `.claude/hooks/cascade-close-story.sh:73-79` | Falsely closed US-DESIGN-012 in the log (PR #20); would have flipped superseded US-AI-041 to Done (PR #19), avoided only by omitting the `US-AI-` prefix from that PR body | 🔲 Open — needs a status guard + "referenced vs closed" distinction | 
