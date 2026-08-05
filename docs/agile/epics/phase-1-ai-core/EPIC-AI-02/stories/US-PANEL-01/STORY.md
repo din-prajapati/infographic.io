@@ -2,11 +2,11 @@
 
 > **Epic:** [EPIC-AI-02](../../EPIC.md)
 > **Milestone:** M-AI-06-photo-and-format
-> **Status:** 🟢 Implemented — Gate 1 green, awaiting PR
+> **Status:** ✅ Done
 > **Priority:** P1
 > **Persona:** Real estate agent (daily user, SOLO/BROKERAGE plan)
 > **Branch:** `feat/ai/us-panel-01-brand-generation`
-> **PR:** [#26](https://github.com/din-prajapati/infographic.io/pull/26)
+> **PR:** #26
 > **Hardened:** 2026-08-05 — reality re-verified against `main` @ 45120fd; ACs re-typed and renumbered
 
 ---
