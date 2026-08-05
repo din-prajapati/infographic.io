@@ -2,7 +2,7 @@
 
 > **Story:** [STORY.md](./STORY.md)
 > **Branch:** `feat/ai/us-panel-01-brand-generation`
-> **PR:** TBD
+> **PR:** [#26](https://github.com/din-prajapati/infographic.io/pull/26)
 > **Type:** feat
 
 ---
