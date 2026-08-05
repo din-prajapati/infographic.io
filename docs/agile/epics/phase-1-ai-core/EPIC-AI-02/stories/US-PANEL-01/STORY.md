@@ -79,6 +79,15 @@ behaviour both exist and are unit-tested. This story does not re-implement them.
   transition and restored on clear. Element colours keep the D5 treatment (left alone), because
   those genuinely can be hand-edited after a palette is applied and blanket-reverting them
   would lose work.
+- **D7 — D1 intentionally reaches the AI-chat generation path too (confirmed by the story owner,
+  2026-08-05).** `AIChatBox.tsx:762-769` builds its `brandColors` from the same
+  `selectedThemeColors` store value the right panel writes, with the identical
+  palette → `agentInfo.brandColors` → `undefined` precedence. Removing the mount auto-select
+  therefore means chat-driven generations also carry no brand colours until the agent picks a
+  palette. This is the intended behaviour, not an unnoticed side effect: the rule is "never send
+  a brand the agent did not choose", and it should not depend on which surface they generate
+  from. Note this is the chat **generation** path — the chat *load-to-canvas* path
+  (`CenterCanvas.handleTemplateLoad`) remains out of scope per D2.
 
 ---
 
@@ -166,7 +175,8 @@ and `edge-case` (AC7). Required set for domain `PANEL` = `[happy-path, error-pat
   it is not required by any AC here
 - Saving the chosen palette per-user to the database (localStorage is acceptable for Phase 1)
 - Brand colour picker inside `AgentInfoForm` (deferred to agent profile, Phase 2)
-- The AI-chat "Use This Design" path — `CenterCanvas.handleTemplateLoad` (D2)
+- The AI-chat "Use This Design" **load-to-canvas** path — `CenterCanvas.handleTemplateLoad` (D2).
+  The AI-chat **generation** path is deliberately in scope for D1's effect — see D7.
 - Quick Styles generating AI text — Phase 2
 - Canvas template data substitution using Quick Styles (GAP-02, Phase 2)
 - Integrating Quick Styles output as reference input for image generation — Phase 3
