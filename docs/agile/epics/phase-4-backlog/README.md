@@ -28,6 +28,7 @@
 | B-14 | [Production Hardening & Security](#b-14--production-hardening--security) | Infra | 6–10 wks | Critical | PRODUCT_ROADMAP §2.2 |
 | B-15 | [Mobile App](#b-15--mobile-app) | Mobile | 10–14 wks | Medium | PRODUCT_ROADMAP §2.2 |
 | B-16 | [EPIC-AI-08 — Quality Tiers & Campaign Mode UI](#b-16--m-ai-07--quality-tiers--campaign-mode-ui) | AI | ~8-10h | Medium | EPIC-AI-08 (moved from EPIC-AI-02) |
+| B-17 | [EPIC-AI-08 — M-AI-02 Ideogram → Nano Banana image-model swap](#b-17--m-ai-02--ideogram--nano-banana-image-model-swap) | AI | ~6-8h | Medium | EPIC-AI-08 (moved from EPIC-AI-00, 2026-08-04) |
 
 ---
 
