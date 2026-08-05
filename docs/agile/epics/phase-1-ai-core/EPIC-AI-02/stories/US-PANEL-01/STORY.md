@@ -6,7 +6,7 @@
 > **Priority:** P1
 > **Persona:** Real estate agent (daily user, SOLO/BROKERAGE plan)
 > **Branch:** `feat/ai/us-panel-01-brand-generation`
-> **PR:** [#26](https://github.com/din-prajapati/infographic.io/pull/26) (squash-merged 2026-08-05)
+> **PR:** #27
 > **Closed:** 2026-08-05
 > **Hardened:** 2026-08-05 — reality re-verified against `main` @ 45120fd; ACs re-typed and renumbered
 

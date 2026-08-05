@@ -2,7 +2,7 @@
 
 > **Story:** [STORY.md](./STORY.md)
 > **Branch:** `feat/ai/us-panel-01-brand-generation`
-> **PR:** #26
+> **PR:** #27
 > **Type:** feat
 
 ---

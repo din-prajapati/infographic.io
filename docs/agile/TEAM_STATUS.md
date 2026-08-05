@@ -2362,3 +2362,6 @@ options" wording (the Format Picker shipped with a different taxonomy via US-AI-
 per-conversation format persistence (US-AI-039 persists last-used format per browser; the
 picker now precedes canvas creation, making the original criterion obsolete). Left unticked with
 the reason recorded rather than counted as done.
+
+<!-- ai-sdlc:session-log -->
+**2026-08-05 13:34** · PR #27 merged · closed: US-PANEL-01
