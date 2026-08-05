@@ -2298,3 +2298,7 @@ superseded story, a genuinely-closable story, a prose mention, and a defect-tabl
     - `US-DESIGN-003` / `US-DESIGN-004` — every AC checkbox is ticked, but both status lines
       record open **HUMAN** verification (live-Ideogram fidelity + real usage increment; a
       staging visual spot-check). Checkbox counts alone would have closed them wrongly. 
+
+<!-- ai-sdlc:session-log -->
+**2026-08-05 15:07** · branch: `feat/ai/us-panel-01-brand-generation`
+  - Last commit: a9a048f test(panel): T5-T6 pin the no-brand contract end to end — US-PANEL-01

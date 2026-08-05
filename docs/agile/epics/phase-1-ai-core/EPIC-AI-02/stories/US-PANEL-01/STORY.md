@@ -65,6 +65,11 @@ behaviour both exist and are unit-tested. This story does not re-implement them.
 - **D2 — Nudge scope is the right panel only.** Only `RightSidebar.handleUseDesign` gets the
   AC6 nudge. `CenterCanvas.handleTemplateLoad` (the AI-chat variation path) is untouched — it
   is a different surface and a file US-AI-036 owns.
+- **D5 — Add an explicit "None Selected" tile (added 2026-08-05, post-implementation).**
+  Raised by the story owner reviewing the first pass. D1 made "no brand" the *opening* state but
+  left the grid a one-way door: once any palette was clicked there was no way back, so an agent
+  who wanted the model to pick its own colours was stuck with whatever they last touched. The
+  indicator could report the empty state but nothing could restore it. Covered by AC8.
 
 ---
 
@@ -119,6 +124,13 @@ Pre-harden → post-harden mapping:
 - [x] **AC7 [edge-case]:** No UI string, comment, or `data-testid` added by this story mentions
       Ideogram, Gemini, Nano Banana, GPT-4o, OpenAI, or any other underlying model or provider.
       Model opacity rule applies.
+
+- [x] **AC8 [happy-path]:** The Brand Styles grid in `RightSidebar.tsx` shows a "None Selected"
+      card as its **first** tile, before "Luxury Gold". Clicking it clears `selectedTheme` and
+      `selectedThemeColors`, so the indicator returns to the AC2 empty state and the next
+      generation carries no brand colours. The card renders as selected whenever no palette is
+      active — including on first load. Clearing does **not** repaint the canvas background or
+      existing element colours applied by a previously-selected palette.
 
 **Coverage:** `happy-path` ✅ (AC1, AC5, AC6) · `error-path` ✅ (AC4) · plus `null-input` (AC2, AC3)
 and `edge-case` (AC7). Required set for domain `PANEL` = `[happy-path, error-path]` — complete.
@@ -186,6 +198,7 @@ The indicator is hidden while `generating` is true, so it never competes with th
 | TC-PANEL-01-09 | E2E | P1 | happy-path (AC5): Quick Styles description reads "after loading a generated design" | ✅ | |
 | TC-PANEL-01-10 | Manual | P1 | happy-path (AC6): "Use This Design" → toast mentions Quick Styles in the Design tab | ⚠️ | See F2 — verified by inspection, not exercised at runtime |
 | TC-PANEL-01-11 | Manual | P1 | edge-case (AC7): grep the diff for model/provider names → zero hits in user-visible strings | ✅ | |
+| TC-PANEL-01-12 | E2E | P0 | happy-path (AC8): "None Selected" is first, starts selected, and clicking it after applying Modern Blue returns the indicator to the empty state | ✅ | |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 
@@ -215,7 +228,7 @@ cd api && npx vitest run --config vitest.config.ts
                                                  → 16 files, 158 tests passed
 PLAYWRIGHT_BASE_URL=http://localhost:5100 \
   npx playwright test e2e/us-panel-01-brand-indicator.spec.ts --project=chrome-headed
-                                                 → 6 passed (33.3s)
+                                                 → 7 passed (24.6s)  [incl. AC8]
 ```
 
 > **Runtime-verification note.** The first E2E run failed all 6 tests against a dev server that

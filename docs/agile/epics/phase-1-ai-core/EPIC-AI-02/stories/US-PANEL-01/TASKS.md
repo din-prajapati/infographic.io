@@ -107,6 +107,15 @@ feat(editor): brand indicator + honest no-brand default — US-PANEL-01
   (including the `redirect_to_auth` trap workaround)
 - **Effort:** 1.25h
 
+### T8 — "None Selected" tile (AC8 — TC-12) · added post-review
+**Files:** `client/src/components/editor/RightSidebar.tsx`, `e2e/us-panel-01-brand-indicator.spec.ts`
+- `clearBrandPalette()` resets `selectedTheme` + `selectedThemeColors`; deliberately does **not**
+  repaint the canvas background or element colours a previous palette applied
+- First tile in the Brand Styles grid, selected whenever no palette is active
+- White chip + `#1F1F1F` "Aa" — an honest preview of the neutral Quick Styles default, using the
+  same forced-light-chip trick as the Quick Styles swatches
+- **Effort:** 0.5h
+
 ### T7 — Gate 1 + manual QA (TC-10, TC-11)
 - `npm run check` · `cd api && npx vitest run --config vitest.config.ts`
 - Manual: "Use This Design" toast copy; grep the diff for model/provider names

@@ -504,6 +504,21 @@ export function RightSidebar() {
     return raw;
   };
 
+  // Clear the brand selection — the explicit "no brand colours" choice.
+  //
+  // Deliberately does NOT undo what the previously-applied palette did to the canvas
+  // (background colour, element colours). Those are edits the agent can see and undo
+  // themselves; silently repainting their canvas because they changed their mind about
+  // the *generation* brand would destroy work. This only clears what feeds Generate
+  // and the Quick Styles colour mapping.
+  const clearBrandPalette = () => {
+    setSelectedTheme(null);
+    setSelectedThemeColors(null);
+    toast.success("Brand cleared", {
+      description: "Generations will not be given brand colors.",
+    });
+  };
+
   // Apply brand palette to canvas
   const applyBrandPalette = (palette: BrandPalette) => {
     try {
@@ -985,6 +1000,37 @@ export function RightSidebar() {
                 
                 {/* Theme Cards Grid */}
                 <div className="grid grid-cols-2 gap-2">
+                  {/* Explicit no-brand option. Without it the panel is a one-way door:
+                      once any palette is picked there is no way back to "no brand", so an
+                      agent who wants the model to choose its own colours is stuck. Shown
+                      first because it is the state the editor now opens in. */}
+                  <div className="group relative">
+                    <button
+                      data-testid="brand-palette-none"
+                      onClick={clearBrandPalette}
+                      className={`w-full p-3 rounded-lg border-2 transition-all flex flex-col items-center gap-2 ${
+                        !activePalette
+                          ? "border-foreground bg-muted"
+                          : "border-border hover:border-ai-accent/40 hover:bg-ai-accent/10" /* AI brand — intentional */
+                      }`}
+                    >
+                      {/* Light chip + default ink — an honest preview of what Quick Styles
+                          actually use with no palette selected. Same trick as the Quick
+                          Styles swatches below, which force a white chip so dark ink stays
+                          legible against the sidebar. */}
+                      <div className="w-full h-20 rounded-lg flex items-center justify-center bg-white border border-dashed border-border">
+                        <span className="text-2xl font-semibold" style={{ color: "#1F1F1F" }}>
+                          Aa
+                        </span>
+                      </div>
+                      <div className="w-full text-center">
+                        <div className="text-sm font-medium text-foreground">
+                          None Selected
+                        </div>
+                      </div>
+                    </button>
+                  </div>
+
                   {allPalettes.map((palette) => {
                     const isCustom = isCustomPalette(palette);
                     const isSelected = activePalette?.id === palette.id;

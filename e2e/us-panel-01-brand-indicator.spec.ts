@@ -138,6 +138,29 @@ test.describe("US-PANEL-01: right-panel brand indicator", () => {
     },
   );
 
+  // ---- TC-PANEL-01-12 ------------------------------------------------------
+  test(
+    "TC-PANEL-01-12: 'None Selected' clears an applied brand (AC8)",
+    async ({ page }) => {
+      await openEditor(page);
+
+      const none = page.getByTestId("brand-palette-none");
+
+      // Opens on the no-brand state, so the None card starts selected.
+      await expect(none).toHaveAttribute("class", /border-foreground/);
+
+      await page.getByRole("button", { name: /Modern Blue/ }).click();
+      await expect(indicatorName(page)).toHaveText("Modern Blue");
+      await expect(none).not.toHaveAttribute("class", /border-foreground/);
+
+      // The round trip the grid could not do before: back to no brand.
+      await none.click();
+      await expect(indicatorName(page)).toHaveText("None — select in Design tab");
+      await expect(indicatorDots(page)).toHaveCount(0);
+      await expect(none).toHaveAttribute("class", /border-foreground/);
+    },
+  );
+
   // ---- TC-PANEL-01-08 ------------------------------------------------------
   test(
     "TC-PANEL-01-08: a malformed stored palette degrades to the None state (AC4)",
