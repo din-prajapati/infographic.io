@@ -116,6 +116,17 @@ feat(editor): brand indicator + honest no-brand default — US-PANEL-01
   same forced-light-chip trick as the Quick Styles swatches
 - **Effort:** 0.5h
 
+### T9 — Fix background derivation + restore-on-clear (AC9 — TC-13) · defect from owner review
+**Files:** `client/src/lib/brandPalette.ts`, `client/src/components/editor/RightSidebar.tsx`,
+`api/tests/canvas/panel-brand-indicator.spec.ts`, `e2e/us-panel-01-brand-indicator.spec.ts`
+- `pickCanvasBackground()` derives the background from the lightest swatch by luminance; the old
+  `colors[colors.length - 1]` rule painted Luxury Gold's canvas warm brown
+- `preBrandBackgroundRef` captures the background on the no-brand → brand transition only, so
+  switching between palettes does not overwrite the original; `clearBrandPalette()` restores it
+- Luminance helpers moved into `brandPalette.ts` so they are unit-testable; `RightSidebar.tsx`
+  imports them rather than keeping a second copy
+- **Effort:** 1h
+
 ### T7 — Gate 1 + manual QA (TC-10, TC-11)
 - `npm run check` · `cd api && npx vitest run --config vitest.config.ts`
 - Manual: "Use This Design" toast copy; grep the diff for model/provider names

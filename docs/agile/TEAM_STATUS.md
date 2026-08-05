@@ -2302,3 +2302,7 @@ superseded story, a genuinely-closable story, a prose mention, and a defect-tabl
 <!-- ai-sdlc:session-log -->
 **2026-08-05 15:07** · branch: `feat/ai/us-panel-01-brand-generation`
   - Last commit: a9a048f test(panel): T5-T6 pin the no-brand contract end to end — US-PANEL-01
+
+<!-- ai-sdlc:session-log -->
+**2026-08-05 15:45** · branch: `feat/ai/us-panel-01-brand-generation`
+  - Last commit: 85688ad feat(editor): T8 add an explicit "None Selected" brand tile — US-PANEL-01

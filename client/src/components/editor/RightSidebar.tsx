@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { ScrollArea } from "../ui/scroll-area";
 import {
@@ -33,7 +33,12 @@ import { useCanvasStore } from "../../hooks/useCanvasStore";
 import { createTextElement } from "../../lib/canvasUtils";
 import { TextElement } from "../../lib/canvasTypes";
 import { BrandPaletteDialog, BrandPalette } from "./BrandPaletteDialog";
-import { resolveActivePalette } from "../../lib/brandPalette";
+import {
+  resolveActivePalette,
+  pickLightestSwatch,
+  pickCanvasBackground,
+  DEFAULT_CANVAS_BACKGROUND,
+} from "../../lib/brandPalette";
 import { toast } from "sonner";
 import {
   DropdownMenu,
@@ -113,18 +118,8 @@ function pickDarkestReadableSwatch(palette: string[]): string | null {
 }
 
 function pickLightestReadableSwatch(palette: string[]): string | null {
-  let best: string | null = null;
-  let bestLum = -1;
-  for (const c of palette) {
-    const rgb = parseHexColor(c);
-    if (!rgb) continue;
-    const lum = relativeLuminance(rgb);
-    if (lum > bestLum) {
-      bestLum = lum;
-      best = c;
-    }
-  }
-  return best !== null && bestLum >= 0.65 ? best : null;
+  const lightest = pickLightestSwatch(palette);
+  return lightest !== null && lightest.luminance >= 0.65 ? lightest.color : null;
 }
 
 // Built-in brand color palettes
@@ -312,6 +307,10 @@ export function RightSidebar() {
   // Single source of truth for "is a brand actually in play" — drives the indicator,
   // the Quick Styles colour mapping, and what Generate sends.
   const activePalette = resolveActivePalette(selectedTheme);
+
+  // The canvas background from before any palette was applied, so "None Selected"
+  // can put it back rather than leaving the last brand's colour stranded on canvas.
+  const preBrandBackgroundRef = useRef<string | null>(null);
 
   // Load custom palettes on mount. No palette is auto-selected: a generation must
   // never carry a brand the agent did not pick (US-PANEL-01 D1). Until they choose
@@ -506,14 +505,15 @@ export function RightSidebar() {
 
   // Clear the brand selection — the explicit "no brand colours" choice.
   //
-  // Deliberately does NOT undo what the previously-applied palette did to the canvas
-  // (background colour, element colours). Those are edits the agent can see and undo
-  // themselves; silently repainting their canvas because they changed their mind about
-  // the *generation* brand would destroy work. This only clears what feeds Generate
-  // and the Quick Styles colour mapping.
+  // Restores the canvas background the palette overwrote. Element colours are left
+  // as they are: applying a palette rewrites each element's own `color`/`fill`, and
+  // those may have been edited by hand since, so blanket-reverting them would destroy
+  // work. The background has no such ambiguity — the palette is its only author here.
   const clearBrandPalette = () => {
     setSelectedTheme(null);
     setSelectedThemeColors(null);
+    setBackgroundColor(preBrandBackgroundRef.current ?? DEFAULT_CANVAS_BACKGROUND);
+    preBrandBackgroundRef.current = null;
     toast.success("Brand cleared", {
       description: "Generations will not be given brand colors.",
     });
@@ -535,9 +535,14 @@ export function RightSidebar() {
       // Store theme colors for placeholder
       setSelectedThemeColors(palette.colors);
 
-      // Set canvas background to the lightest color (usually last in palette)
-      const backgroundColor = palette.colors[palette.colors.length - 1] || '#FFFFFF';
-      setBackgroundColor(backgroundColor);
+      // Remember what the canvas looked like before any brand touched it, so
+      // "None Selected" can restore it. Only captured on the no-brand → brand
+      // transition; switching between palettes must not overwrite the original.
+      if (!activePalette) {
+        preBrandBackgroundRef.current = backgroundColor;
+      }
+
+      setBackgroundColor(pickCanvasBackground(palette.colors));
 
       // Apply colors to existing elements
       if (elements.length > 0) {

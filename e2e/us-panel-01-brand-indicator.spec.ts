@@ -161,6 +161,43 @@ test.describe("US-PANEL-01: right-panel brand indicator", () => {
     },
   );
 
+  // ---- TC-PANEL-01-13 ------------------------------------------------------
+  test(
+    "TC-PANEL-01-13: Luxury Gold gives a white canvas, and clearing restores it (AC9)",
+    async ({ page }) => {
+      await openEditor(page);
+
+      // The artboard itself carries the canvas background (CenterCanvas.tsx);
+      // its `application`-role ancestor is transparent.
+      const artboard = page.locator("[data-canvas-container]");
+      const bg = async () => {
+        // background-color transitions over 0.3s — settle before sampling.
+        await page.waitForTimeout(500);
+        return artboard.evaluate((el) => getComputedStyle(el).backgroundColor);
+      };
+
+      const before = await bg();
+
+      // Luxury Gold is the palette whose array ends in warm brown (#8B7355 →
+      // rgb(139, 115, 85)). The background must come from its lightest swatch.
+      await page.getByRole("button", { name: /Luxury Gold/ }).click();
+      await expect(indicatorName(page)).toHaveText("Luxury Gold");
+
+      const applied = await bg();
+      expect(applied, "Luxury Gold must not paint the canvas warm brown").not.toContain(
+        "139, 115, 85",
+      );
+      expect(applied).toContain("255, 255, 255");
+
+      // Clearing must not strand the brand's background on the canvas.
+      await page.getByTestId("brand-palette-none").click();
+      await expect(indicatorName(page)).toHaveText("None — select in Design tab");
+      expect(await bg(), "clearing the brand must restore the canvas background").toBe(
+        before,
+      );
+    },
+  );
+
   // ---- TC-PANEL-01-08 ------------------------------------------------------
   test(
     "TC-PANEL-01-08: a malformed stored palette degrades to the None state (AC4)",

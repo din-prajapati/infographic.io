@@ -25,3 +25,55 @@ export function resolveActivePalette<T extends PaletteLike>(
   if (!palette || !Array.isArray(palette.colors) || palette.colors.length === 0) return null;
   return palette;
 }
+
+/** Matches the canvas store's initial `backgroundColor` (useCanvasStore.ts). */
+export const DEFAULT_CANVAS_BACKGROUND = "#FFFFFF";
+
+function parseHex(input: string): { r: number; g: number; b: number } | null {
+  const m = input.trim().match(/^#([0-9a-f]{6}|[0-9a-f]{3})$/i);
+  if (!m) return null;
+  let h = m[1];
+  if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2];
+  const n = parseInt(h, 16);
+  return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
+}
+
+/** WCAG relative luminance. */
+export function relativeLuminance(rgb: { r: number; g: number; b: number }): number {
+  const lin = (v: number) => {
+    v /= 255;
+    return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+  };
+  return 0.2126 * lin(rgb.r) + 0.7152 * lin(rgb.g) + 0.0722 * lin(rgb.b);
+}
+
+/** The lightest parseable swatch in a palette, whatever its luminance. */
+export function pickLightestSwatch(
+  palette: string[],
+): { color: string; luminance: number } | null {
+  let best: string | null = null;
+  let bestLum = -1;
+  for (const c of palette) {
+    const rgb = parseHex(c);
+    if (!rgb) continue;
+    const lum = relativeLuminance(rgb);
+    if (lum > bestLum) {
+      bestLum = lum;
+      best = c;
+    }
+  }
+  return best === null ? null : { color: best, luminance: bestLum };
+}
+
+/**
+ * Canvas background for a palette — the lightest swatch, not the last one.
+ *
+ * The previous rule was `colors[colors.length - 1]`, on the assumption that palettes
+ * are ordered dark→light. Five of the six built-ins do end in #FFFFFF, but Luxury Gold
+ * ends in #8B7355 (warm brown), so selecting it painted the canvas mud while every
+ * sibling palette produced white. Custom palettes carry no ordering contract at all,
+ * so the background is derived rather than assumed.
+ */
+export function pickCanvasBackground(palette: string[]): string {
+  return pickLightestSwatch(palette)?.color ?? DEFAULT_CANVAS_BACKGROUND;
+}

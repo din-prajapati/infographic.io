@@ -70,6 +70,15 @@ behaviour both exist and are unit-tested. This story does not re-implement them.
   left the grid a one-way door: once any palette was clicked there was no way back, so an agent
   who wanted the model to pick its own colours was stuck with whatever they last touched. The
   indicator could report the empty state but nothing could restore it. Covered by AC8.
+- **D6 — Clearing a brand restores the canvas background (added 2026-08-05, reverses the earlier
+  D5 position).** The first pass deliberately left the canvas alone on clear, reasoning that
+  repainting it would destroy work. Testing on a real canvas showed that reasoning was wrong for
+  the background specifically: applying a palette is the *only* thing that writes it, so leaving
+  it behind strands the cleared brand's colour on screen — the panel says "no brand" while the
+  canvas is still visibly branded. The background is now captured on the no-brand → brand
+  transition and restored on clear. Element colours keep the D5 treatment (left alone), because
+  those genuinely can be hand-edited after a palette is applied and blanket-reverting them
+  would lose work.
 
 ---
 
@@ -129,8 +138,15 @@ Pre-harden → post-harden mapping:
       card as its **first** tile, before "Luxury Gold". Clicking it clears `selectedTheme` and
       `selectedThemeColors`, so the indicator returns to the AC2 empty state and the next
       generation carries no brand colours. The card renders as selected whenever no palette is
-      active — including on first load. Clearing does **not** repaint the canvas background or
-      existing element colours applied by a previously-selected palette.
+      active — including on first load. Clearing also restores the canvas background captured
+      before the first palette was applied (see D6); element colours are left alone.
+
+- [x] **AC9 [error-path]:** `pickCanvasBackground()` in `client/src/lib/brandPalette.ts` derives
+      the canvas background from the palette's **lightest** swatch by WCAG relative luminance,
+      not from `colors[colors.length - 1]`. All six built-in palettes yield `#FFFFFF` — including
+      Luxury Gold, whose array ends in `#8B7355`. An all-dark custom palette keeps its own
+      lightest colour rather than being forced to white; a palette with no parseable colour falls
+      back to `DEFAULT_CANVAS_BACKGROUND`.
 
 **Coverage:** `happy-path` ✅ (AC1, AC5, AC6) · `error-path` ✅ (AC4) · plus `null-input` (AC2, AC3)
 and `edge-case` (AC7). Required set for domain `PANEL` = `[happy-path, error-path]` — complete.
@@ -199,6 +215,7 @@ The indicator is hidden while `generating` is true, so it never competes with th
 | TC-PANEL-01-10 | Manual | P1 | happy-path (AC6): "Use This Design" → toast mentions Quick Styles in the Design tab | ⚠️ | See F2 — verified by inspection, not exercised at runtime |
 | TC-PANEL-01-11 | Manual | P1 | edge-case (AC7): grep the diff for model/provider names → zero hits in user-visible strings | ✅ | |
 | TC-PANEL-01-12 | E2E | P0 | happy-path (AC8): "None Selected" is first, starts selected, and clicking it after applying Modern Blue returns the indicator to the empty state | ✅ | |
+| TC-PANEL-01-13 | E2E + Unit | P0 | error-path (AC9): Luxury Gold paints the canvas white (not `#8B7355`), and clearing the brand restores the pre-brand background | ✅ | See F3 |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 
@@ -213,6 +230,23 @@ at the localStorage boundary, so they never reach state at all; the selection gu
 defence in depth. The test now asserts corrupt palettes are not offered as cards, which is also
 better than rendering a card that errors when clicked.
 
+**F3 (TC-PANEL-01-13) — two defects found by the story owner on a real canvas, both pre-existing
+in spirit but surfaced by this story.** Reported with a screenshot showing a brown canvas after
+selecting Luxury Gold, still brown after clicking "None Selected".
+
+1. *Background derivation.* `applyBrandPalette` used `colors[colors.length - 1]` with the comment
+   "usually the lightest color". Five of six built-ins do end in `#FFFFFF`; Luxury Gold ends in
+   `#8B7355` (warm brown). So one palette painted the canvas mud and the other five looked fine —
+   the classic shape of a bug that survives review. Ordering is not a contract that can be
+   enforced on user-created custom palettes at all, so the background is now derived by
+   luminance. This predates US-PANEL-01; the story simply made it visible.
+2. *Clearing stranded the background.* The D5 decision not to touch the canvas on clear was
+   wrong for the background — see D6.
+
+Both are now pinned: 6 unit tests over the real built-in palette arrays (so a future palette
+edit that reintroduces a dark trailing swatch fails immediately) plus an E2E asserting the
+computed `background-color` of `[data-canvas-container]` round-trips.
+
 **F2 (TC-PANEL-01-10) — not exercised at runtime.** `handleUseDesign` is only reachable after a
 real generation, which spends a metered credit against the account. The change is a one-line
 toast `description`; it was verified by inspection at `RightSidebar.tsx` `handleUseDesign()` and
@@ -225,17 +259,27 @@ burning a credit for a string.
 ```
 npm run check                                    → clean (tsc, no errors)
 cd api && npx vitest run --config vitest.config.ts
-                                                 → 16 files, 158 tests passed
-PLAYWRIGHT_BASE_URL=http://localhost:5100 \
+                                                 → 16 files, 164 tests passed
+BROWSER=none npx vite --port 5200 --strictPort   # frontend only; /api proxies to :3001
+PLAYWRIGHT_BASE_URL=http://localhost:5200 \
   npx playwright test e2e/us-panel-01-brand-indicator.spec.ts --project=chrome-headed
-                                                 → 7 passed (24.6s)  [incl. AC8]
+                                                 → 8 passed (50.8s)  [incl. AC8, AC9]
 ```
 
-> **Runtime-verification note.** The first E2E run failed all 6 tests against a dev server that
-> had been up ~44 hours serving a stale July build — the screenshot showed Luxury Gold still
-> auto-selected and no indicator, i.e. exactly the pre-change behaviour. The suite was re-run
-> against a fresh instance on port 5100. Worth remembering: `playwright.config.ts` sets
-> `reuseExistingServer: true`, so a long-lived stale server silently invalidates every E2E result.
+> **Runtime-verification notes — two ways the E2E environment lied.**
+>
+> 1. The first run failed all 6 tests against a dev server that had been up ~44 hours serving a
+>    stale July build. The screenshot showed Luxury Gold still auto-selected and no indicator —
+>    indistinguishable from a genuinely broken feature. `playwright.config.ts` sets
+>    `reuseExistingServer: true`, so a long-lived stale server silently invalidates every result.
+> 2. Running a second full stack on `PORT=5100 API_PORT=3101` does **not** isolate it:
+>    `server/index.ts:79` hardcodes `API_PORT: '3001'` when spawning the Nest child, so the child
+>    crash-loops on `EADDRINUSE` every 3s against the already-running stack. The resulting CPU
+>    churn pushed page loads past the 20s timeout and produced two *intermittent* failures in
+>    otherwise-passing tests — the most misleading failure mode of the three.
+>
+> The reliable local recipe for a frontend-only story is standalone Vite (above): it serves fresh
+> client code and proxies `/api` to whatever NestJS is already running, spawning nothing.
 
 ---
 
