@@ -1,9 +1,9 @@
 # EPIC-AI-02 — Generation Control
 
 > **Phase:** Phase 1 — Revenue Strategy
-> **Priority note (2026-07-03):** US-AI-010 (photo upload) and US-AI-011 (format selector) are hard dependencies of the promoted revenue epics — implement these two FIRST. US-PANEL-01 is deprioritized behind EPIC-AI-06 and EPIC-KIT-01.
+> **Priority note (2026-07-03, ~~superseded 2026-08-05~~):** ~~US-AI-010 (photo upload) and US-AI-011 (format selector) are hard dependencies of the promoted revenue epics — implement these two FIRST. US-PANEL-01 is deprioritized behind EPIC-AI-06 and EPIC-KIT-01.~~ All of the above shipped; US-PANEL-01 was pulled forward and closed 2026-08-05 rather than waiting behind EPIC-AI-06/KIT-01.
 > **Scope note (2026-07-30):** US-AI-012/013/014 (quality tiers + Campaign Mode UI) moved to [EPIC-AI-08](../../phase-4-backlog/EPIC-AI-08/EPIC.md) in Phase 4 Backlog — revenue-gated, not a launch blocker.
-> **Status:** 🟡 In Progress — US-AI-010/036/037/038 ✅ Done (landed direct to `main`, no PRs); US-AI-039/040/042 implementation complete, in PR #19; US-AI-011/041 superseded; US-PANEL-01 Not Started
+> **Status:** ✅ Done — closed 2026-08-05. US-AI-010/036/037/038 (direct to `main`), US-AI-039/040/042 (PR #19), US-PANEL-01 (PR #26) all ✅ Done; US-AI-011/041 superseded; US-AI-012/013/014 moved to EPIC-AI-08. **M-AI-06 is the epic's only milestone and is now closed.**
 > **Depends on:** EPIC-AI-00 complete
 > **Linear Project:** LIN-EPIC-AI-02
 > **Target date:** 2026-07-31
@@ -25,7 +25,7 @@
 
 | Milestone | Scope | Target | Status |
 |-----------|-------|--------|--------|
-| [M-AI-06-photo-and-format](milestones/M-AI-06-photo-and-format.md) | Property photo upload + output format selector | 2026-06-30 | 🔲 |
+| [M-AI-06-photo-and-format](milestones/M-AI-06-photo-and-format.md) | Property photo upload + output format selector | 2026-06-30 | ✅ Done (2026-08-05) |
 | ~~M-AI-07-quality-campaign~~ | Moved to [EPIC-AI-08](../../phase-4-backlog/EPIC-AI-08/EPIC.md) (Phase 4 Backlog, revenue-gated) | — | ⏸ Moved |
 
 ---
@@ -43,7 +43,7 @@
 | [US-AI-040](stories/US-AI-040/STORY.md) | Template Gallery — preview modal + tag-based filters | M-AI-06 | ✅ Done | #19 |
 | [US-AI-041](stories/US-AI-041/STORY.md) | ~~Format Picker — device-mockup preview for social formats~~ | M-AI-06 | ⏭️ Superseded | — |
 | [US-AI-042](stories/US-AI-042/STORY.md) | Real canvas thumbnails on save | M-AI-06 | ✅ Done | #19 |
-| [US-PANEL-01](stories/US-PANEL-01/STORY.md) | Right Panel: Brand Styles → Generation + Quick Styles as post-generation tool | M-AI-06 | ✅ | — |
+| [US-PANEL-01](stories/US-PANEL-01/STORY.md) | Right Panel: Brand Styles → Generation + Quick Styles as post-generation tool | M-AI-06 | ✅ Done | #26 |
 | [US-AI-012](../../phase-4-backlog/EPIC-AI-08/stories/US-AI-012/STORY.md) | Generation quality tiers: Social vs Print (CAP-08) — moved to EPIC-AI-08 | M-AI-07 | ⏸ Moved | — |
 | [US-AI-013](../../phase-4-backlog/EPIC-AI-08/stories/US-AI-013/STORY.md) | Property type → quality routing (CAP-09) — moved to EPIC-AI-08 | M-AI-07 | ⏸ Moved | — |
 | [US-AI-014](../../phase-4-backlog/EPIC-AI-08/stories/US-AI-014/STORY.md) | Campaign Mode UI toggle (CAP-10) — moved to EPIC-AI-08 | M-AI-07 | ⏸ Moved | — |
