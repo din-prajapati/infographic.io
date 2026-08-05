@@ -222,7 +222,7 @@ The indicator is hidden while `generating` is true, so it never competes with th
 | TC-PANEL-01-07 | Unit | P0 | error-path (AC4): `resolveActivePalette` returns null for `{colors: null}`, `{colors: []}`, and a missing `colors` key | ✅ | |
 | TC-PANEL-01-08 | E2E | P1 | error-path (AC4): seed malformed localStorage palette → panel renders, indicator shows "None", no console error | ⚠️ | See F1 — the guard had to move to the load boundary |
 | TC-PANEL-01-09 | E2E | P1 | happy-path (AC5): Quick Styles description reads "after loading a generated design" | ✅ | |
-| TC-PANEL-01-10 | Manual | P1 | happy-path (AC6): "Use This Design" → toast mentions Quick Styles in the Design tab | ⚠️ | See F2 — verified by inspection, not exercised at runtime |
+| TC-PANEL-01-10 | Manual | P1 | happy-path (AC6): "Use This Design" → toast mentions Quick Styles in the Design tab | ⚠️ | See F2 — inspection only. Deferred to **Phase 0 HUMAN Task 3, row P-27** |
 | TC-PANEL-01-11 | Manual | P1 | edge-case (AC7): grep the diff for model/provider names → zero hits in user-visible strings | ✅ | |
 | TC-PANEL-01-12 | E2E | P0 | happy-path (AC8): "None Selected" is first, starts selected, and clicking it after applying Modern Blue returns the indicator to the empty state | ✅ | |
 | TC-PANEL-01-13 | E2E + Unit | P0 | error-path (AC9): Luxury Gold paints the canvas white (not `#8B7355`), and clearing the brand restores the pre-brand background | ✅ | See F3 |
@@ -256,6 +256,19 @@ selecting Luxury Gold, still brown after clicking "None Selected".
 Both are now pinned: 6 unit tests over the real built-in palette arrays (so a future palette
 edit that reintroduces a dark trailing swatch fails immediately) plus an E2E asserting the
 computed `background-color` of `[data-canvas-container]` round-trips.
+
+### Deferred verification — Phase 0 HUMAN Task 3
+
+Two checks cannot be honestly closed from a local session. Both are parked as rows in
+[PHASE_0_HUMAN_QA_CHECKLIST.md § 3D](../../../../../testing/PHASE_0_HUMAN_QA_CHECKLIST.md#3d-production-smoke-test)
+so they are tracked against go-live rather than lost at story close:
+
+| Row | Check | Why deferred |
+|-----|-------|--------------|
+| P-25 | Editor opens with no brand selected; "None Selected" is the first tile | Cheap prod confirmation that D1 shipped |
+| P-26 | Luxury Gold → white canvas (not `#8B7355`); clearing restores the background | Cheap prod confirmation of the AC9 fix |
+| P-27 | TC-PANEL-01-10 — "Use This Design" toast copy | Needs a real generation to reach `handleUseDesign`; rides on P-16 at zero extra cost |
+| P-28 | Full local E2E suite green before the go-live deploy | Regression sweep for D1's reach (see D7) — not re-run in this session |
 
 **F2 (TC-PANEL-01-10) — not exercised at runtime.** `handleUseDesign` is only reachable after a
 real generation, which spends a metered credit against the account. The change is a one-line
