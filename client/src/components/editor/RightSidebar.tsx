@@ -33,6 +33,7 @@ import { useCanvasStore } from "../../hooks/useCanvasStore";
 import { createTextElement } from "../../lib/canvasUtils";
 import { TextElement } from "../../lib/canvasTypes";
 import { BrandPaletteDialog, BrandPalette } from "./BrandPaletteDialog";
+import { resolveActivePalette } from "../../lib/brandPalette";
 import { toast } from "sonner";
 import {
   DropdownMenu,
@@ -228,11 +229,19 @@ const textStyles = [
 
 const STORAGE_KEY = "custom-brand-palettes";
 
-// Load custom palettes from localStorage
+// Load custom palettes from localStorage.
+//
+// The stored JSON is user-writable and survives across app versions, so entries
+// can arrive with `colors` missing, null, or empty. Those are dropped here rather
+// than guarded at every read: the palette cards index `colors[0]` directly, so a
+// malformed entry reaching the grid would throw during render and take the whole
+// right panel down with it (US-PANEL-01 AC4).
 function loadCustomPalettes(): BrandPalette[] {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
-    return stored ? JSON.parse(stored) : [];
+    const parsed = stored ? JSON.parse(stored) : [];
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((p): p is BrandPalette => resolveActivePalette(p) !== null);
   } catch {
     return [];
   }
@@ -296,21 +305,19 @@ export function RightSidebar() {
   );
   const setBackgroundColor = useCanvasStore((state) => state.setBackgroundColor);
   const setSelectedThemeColors = useCanvasStore((state) => state.setSelectedThemeColors);
-  const selectedThemeColors = useCanvasStore((state) => state.selectedThemeColors);
   const backgroundColor = useCanvasStore((state) => state.backgroundColor);
   const canvasWidth = useCanvasStore((state) => state.canvasWidth);
   const canvasHeight = useCanvasStore((state) => state.canvasHeight);
 
-  // Load custom palettes on mount and set default theme
+  // Single source of truth for "is a brand actually in play" — drives the indicator,
+  // the Quick Styles colour mapping, and what Generate sends.
+  const activePalette = resolveActivePalette(selectedTheme);
+
+  // Load custom palettes on mount. No palette is auto-selected: a generation must
+  // never carry a brand the agent did not pick (US-PANEL-01 D1). Until they choose
+  // one, the indicator reads "None" and the prompt omits colour hints entirely.
   useEffect(() => {
-    const loaded = loadCustomPalettes();
-    setCustomPalettes(loaded);
-    // Set first default theme as selected by default
-    if (defaultBrandPalettes.length > 0) {
-      const defaultTheme = defaultBrandPalettes[0];
-      setSelectedTheme(defaultTheme);
-      setSelectedThemeColors(defaultTheme.colors);
-    }
+    setCustomPalettes(loadCustomPalettes());
   }, []);
 
   // WebSocket progress updates for panel-triggered generation
@@ -362,7 +369,7 @@ export function RightSidebar() {
     }
 
     const prompt = buildPropertyPrompt(property, agent);
-    const themeColors = selectedThemeColors ?? [];
+    const themeColors = activePalette?.colors ?? [];
     const brandColors: string[] | undefined =
       themeColors.length > 0
         ? themeColors
@@ -413,7 +420,9 @@ export function RightSidebar() {
     try {
       await loadAiVariationToCanvas(variation.imageUrl, variation.title ?? "AI Design");
       setSelectedVariationId(variation.id);
-      toast.success("Design loaded", { description: "The canvas has been updated." });
+      toast.success("Design loaded", {
+        description: "Add text overlays with Quick Styles in the Design tab.",
+      });
     } catch {
       toast.error("Failed to load design");
     } finally {
@@ -661,6 +670,45 @@ export function RightSidebar() {
           <p className="text-[10px] text-muted-foreground text-center mt-1.5">
             From your Property &amp; Agent details
           </p>
+        )}
+        {/* Active brand indicator — answers "what colors will this generation use?"
+            before the credit is spent. Hidden mid-generation so it never competes
+            with the progress bar. */}
+        {!generating && (
+          activePalette ? (
+            <div
+              data-testid="brand-indicator"
+              className="mt-2 flex items-center justify-center gap-1.5 text-[10px] text-muted-foreground"
+            >
+              <span>
+                Brand:{" "}
+                <span data-testid="brand-indicator-name" className="font-medium text-foreground">
+                  {activePalette.name}
+                </span>
+              </span>
+              <span className="flex items-center gap-0.5">
+                {activePalette.colors.slice(0, 5).map((color, i) => (
+                  <span
+                    key={`${color}-${i}`}
+                    data-testid="brand-indicator-dot"
+                    className="w-2 h-2 rounded-full border border-border"
+                    style={{ backgroundColor: color }}
+                  />
+                ))}
+              </span>
+            </div>
+          ) : (
+            <button
+              data-testid="brand-indicator"
+              onClick={() => setActiveTab("design")}
+              className="mt-2 w-full text-[10px] text-muted-foreground hover:text-foreground transition-colors text-center"
+            >
+              Brand:{" "}
+              <span data-testid="brand-indicator-name" className="underline underline-offset-2">
+                None — select in Design tab
+              </span>
+            </button>
+          )
         )}
         {generating && generationProgress > 0 && (
           <div className="mt-2 h-1 rounded-full bg-muted overflow-hidden">
@@ -939,7 +987,7 @@ export function RightSidebar() {
                 <div className="grid grid-cols-2 gap-2">
                   {allPalettes.map((palette) => {
                     const isCustom = isCustomPalette(palette);
-                    const isSelected = selectedTheme?.id === palette.id;
+                    const isSelected = activePalette?.id === palette.id;
                     const primaryColor = palette.colors[0] || '#FFFFFF';
                     const textColor = palette.colors[1] || palette.colors[palette.colors.length - 1] || '#000000';
                     
@@ -1034,12 +1082,12 @@ export function RightSidebar() {
                   <h3 className="font-medium">Quick Styles</h3>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Quickly add pre-styled text elements to your canvas. Colors are automatically applied from the selected theme above.
+                  Add styled text to your canvas after loading a generated design.
                 </p>
                 
                 <div className="grid grid-cols-2 gap-2">
                   {textStyles.map((style, index) => {
-                    const styleColor = getColorForStyle(selectedTheme, style.name, backgroundColor);
+                    const styleColor = getColorForStyle(activePalette, style.name, backgroundColor);
                     return (
                       <button
                         key={index}
