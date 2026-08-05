@@ -574,6 +574,10 @@ Fixed on both environments:
 | P-18 | **LIVE Razorpay:** Complete a SOLO monthly checkout with a real card           | ☐     | Costs ₹999 — use your own card for final smoke. **Out of scope for M-LAUNCH-01**: live checkout is M-LAUNCH-02 (revenue-on) territory, and US-LAUNCH-004's `BETA_MODE` flag disables checkout entirely for now — revisit when flipping revenue on |
 | P-19 | Plan shows as SOLO after webhook fires                                         | ☐     | Check Account page. Same M-LAUNCH-02 scope note as P-18                                             |
 | P-20 | Generate more infographics; counter updates (e.g. `2/50`, `3/50`)              | ☐     |                                                |
+| P-25 | **US-PANEL-01** — editor opens with the brand indicator reading "Brand: None — select in Design tab", and "None Selected" is the first tile in Brand Styles | ☐ | Zero cost. Confirms D1 shipped: no palette is auto-applied, so a generation cannot carry a brand the agent never chose |
+| P-26 | **US-PANEL-01** — select "Luxury Gold" → canvas goes **white**, not warm brown (`#8B7355`); indicator shows "Luxury Gold" + 5 swatches. Click "None Selected" → canvas background returns to what it was | ☐ | Zero cost. AC9 regression check for the two defects found 2026-08-05 |
+| P-27 | **US-PANEL-01 TC-10** — during P-16's generation, click "Use This Design" → toast reads "Add text overlays with Quick Styles in the Design tab." | ☐ | **Zero extra cost — piggybacks on P-16's generation.** The only US-PANEL-01 test case never exercised at runtime; it needs a real generation to reach `handleUseDesign` |
+| P-28 | **US-PANEL-01** — full local E2E suite green before the go-live deploy (`npx playwright test`) | ☐ | Regression sweep. US-PANEL-01 removed the mount palette auto-select, which also changes the empty-canvas "Sample Preview" placeholder to neutral grey and stops AI-chat generations carrying an unchosen brand (D7). Static analysis found no other spec asserting on those, but the suite was not re-run |
 
 
 ---

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { ScrollArea } from "../ui/scroll-area";
 import {
@@ -33,6 +33,12 @@ import { useCanvasStore } from "../../hooks/useCanvasStore";
 import { createTextElement } from "../../lib/canvasUtils";
 import { TextElement } from "../../lib/canvasTypes";
 import { BrandPaletteDialog, BrandPalette } from "./BrandPaletteDialog";
+import {
+  resolveActivePalette,
+  pickLightestSwatch,
+  pickCanvasBackground,
+  DEFAULT_CANVAS_BACKGROUND,
+} from "../../lib/brandPalette";
 import { toast } from "sonner";
 import {
   DropdownMenu,
@@ -112,18 +118,8 @@ function pickDarkestReadableSwatch(palette: string[]): string | null {
 }
 
 function pickLightestReadableSwatch(palette: string[]): string | null {
-  let best: string | null = null;
-  let bestLum = -1;
-  for (const c of palette) {
-    const rgb = parseHexColor(c);
-    if (!rgb) continue;
-    const lum = relativeLuminance(rgb);
-    if (lum > bestLum) {
-      bestLum = lum;
-      best = c;
-    }
-  }
-  return best !== null && bestLum >= 0.65 ? best : null;
+  const lightest = pickLightestSwatch(palette);
+  return lightest !== null && lightest.luminance >= 0.65 ? lightest.color : null;
 }
 
 // Built-in brand color palettes
@@ -228,11 +224,19 @@ const textStyles = [
 
 const STORAGE_KEY = "custom-brand-palettes";
 
-// Load custom palettes from localStorage
+// Load custom palettes from localStorage.
+//
+// The stored JSON is user-writable and survives across app versions, so entries
+// can arrive with `colors` missing, null, or empty. Those are dropped here rather
+// than guarded at every read: the palette cards index `colors[0]` directly, so a
+// malformed entry reaching the grid would throw during render and take the whole
+// right panel down with it (US-PANEL-01 AC4).
 function loadCustomPalettes(): BrandPalette[] {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
-    return stored ? JSON.parse(stored) : [];
+    const parsed = stored ? JSON.parse(stored) : [];
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((p): p is BrandPalette => resolveActivePalette(p) !== null);
   } catch {
     return [];
   }
@@ -296,21 +300,23 @@ export function RightSidebar() {
   );
   const setBackgroundColor = useCanvasStore((state) => state.setBackgroundColor);
   const setSelectedThemeColors = useCanvasStore((state) => state.setSelectedThemeColors);
-  const selectedThemeColors = useCanvasStore((state) => state.selectedThemeColors);
   const backgroundColor = useCanvasStore((state) => state.backgroundColor);
   const canvasWidth = useCanvasStore((state) => state.canvasWidth);
   const canvasHeight = useCanvasStore((state) => state.canvasHeight);
 
-  // Load custom palettes on mount and set default theme
+  // Single source of truth for "is a brand actually in play" — drives the indicator,
+  // the Quick Styles colour mapping, and what Generate sends.
+  const activePalette = resolveActivePalette(selectedTheme);
+
+  // The canvas background from before any palette was applied, so "None Selected"
+  // can put it back rather than leaving the last brand's colour stranded on canvas.
+  const preBrandBackgroundRef = useRef<string | null>(null);
+
+  // Load custom palettes on mount. No palette is auto-selected: a generation must
+  // never carry a brand the agent did not pick (US-PANEL-01 D1). Until they choose
+  // one, the indicator reads "None" and the prompt omits colour hints entirely.
   useEffect(() => {
-    const loaded = loadCustomPalettes();
-    setCustomPalettes(loaded);
-    // Set first default theme as selected by default
-    if (defaultBrandPalettes.length > 0) {
-      const defaultTheme = defaultBrandPalettes[0];
-      setSelectedTheme(defaultTheme);
-      setSelectedThemeColors(defaultTheme.colors);
-    }
+    setCustomPalettes(loadCustomPalettes());
   }, []);
 
   // WebSocket progress updates for panel-triggered generation
@@ -362,7 +368,7 @@ export function RightSidebar() {
     }
 
     const prompt = buildPropertyPrompt(property, agent);
-    const themeColors = selectedThemeColors ?? [];
+    const themeColors = activePalette?.colors ?? [];
     const brandColors: string[] | undefined =
       themeColors.length > 0
         ? themeColors
@@ -413,7 +419,9 @@ export function RightSidebar() {
     try {
       await loadAiVariationToCanvas(variation.imageUrl, variation.title ?? "AI Design");
       setSelectedVariationId(variation.id);
-      toast.success("Design loaded", { description: "The canvas has been updated." });
+      toast.success("Design loaded", {
+        description: "Add text overlays with Quick Styles in the Design tab.",
+      });
     } catch {
       toast.error("Failed to load design");
     } finally {
@@ -495,6 +503,22 @@ export function RightSidebar() {
     return raw;
   };
 
+  // Clear the brand selection — the explicit "no brand colours" choice.
+  //
+  // Restores the canvas background the palette overwrote. Element colours are left
+  // as they are: applying a palette rewrites each element's own `color`/`fill`, and
+  // those may have been edited by hand since, so blanket-reverting them would destroy
+  // work. The background has no such ambiguity — the palette is its only author here.
+  const clearBrandPalette = () => {
+    setSelectedTheme(null);
+    setSelectedThemeColors(null);
+    setBackgroundColor(preBrandBackgroundRef.current ?? DEFAULT_CANVAS_BACKGROUND);
+    preBrandBackgroundRef.current = null;
+    toast.success("Brand cleared", {
+      description: "Generations will not be given brand colors.",
+    });
+  };
+
   // Apply brand palette to canvas
   const applyBrandPalette = (palette: BrandPalette) => {
     try {
@@ -511,9 +535,14 @@ export function RightSidebar() {
       // Store theme colors for placeholder
       setSelectedThemeColors(palette.colors);
 
-      // Set canvas background to the lightest color (usually last in palette)
-      const backgroundColor = palette.colors[palette.colors.length - 1] || '#FFFFFF';
-      setBackgroundColor(backgroundColor);
+      // Remember what the canvas looked like before any brand touched it, so
+      // "None Selected" can restore it. Only captured on the no-brand → brand
+      // transition; switching between palettes must not overwrite the original.
+      if (!activePalette) {
+        preBrandBackgroundRef.current = backgroundColor;
+      }
+
+      setBackgroundColor(pickCanvasBackground(palette.colors));
 
       // Apply colors to existing elements
       if (elements.length > 0) {
@@ -661,6 +690,45 @@ export function RightSidebar() {
           <p className="text-[10px] text-muted-foreground text-center mt-1.5">
             From your Property &amp; Agent details
           </p>
+        )}
+        {/* Active brand indicator — answers "what colors will this generation use?"
+            before the credit is spent. Hidden mid-generation so it never competes
+            with the progress bar. */}
+        {!generating && (
+          activePalette ? (
+            <div
+              data-testid="brand-indicator"
+              className="mt-2 flex items-center justify-center gap-1.5 text-[10px] text-muted-foreground"
+            >
+              <span>
+                Brand:{" "}
+                <span data-testid="brand-indicator-name" className="font-medium text-foreground">
+                  {activePalette.name}
+                </span>
+              </span>
+              <span className="flex items-center gap-0.5">
+                {activePalette.colors.slice(0, 5).map((color, i) => (
+                  <span
+                    key={`${color}-${i}`}
+                    data-testid="brand-indicator-dot"
+                    className="w-2 h-2 rounded-full border border-border"
+                    style={{ backgroundColor: color }}
+                  />
+                ))}
+              </span>
+            </div>
+          ) : (
+            <button
+              data-testid="brand-indicator"
+              onClick={() => setActiveTab("design")}
+              className="mt-2 w-full text-[10px] text-muted-foreground hover:text-foreground transition-colors text-center"
+            >
+              Brand:{" "}
+              <span data-testid="brand-indicator-name" className="underline underline-offset-2">
+                None — select in Design tab
+              </span>
+            </button>
+          )
         )}
         {generating && generationProgress > 0 && (
           <div className="mt-2 h-1 rounded-full bg-muted overflow-hidden">
@@ -937,9 +1005,40 @@ export function RightSidebar() {
                 
                 {/* Theme Cards Grid */}
                 <div className="grid grid-cols-2 gap-2">
+                  {/* Explicit no-brand option. Without it the panel is a one-way door:
+                      once any palette is picked there is no way back to "no brand", so an
+                      agent who wants the model to choose its own colours is stuck. Shown
+                      first because it is the state the editor now opens in. */}
+                  <div className="group relative">
+                    <button
+                      data-testid="brand-palette-none"
+                      onClick={clearBrandPalette}
+                      className={`w-full p-3 rounded-lg border-2 transition-all flex flex-col items-center gap-2 ${
+                        !activePalette
+                          ? "border-foreground bg-muted"
+                          : "border-border hover:border-ai-accent/40 hover:bg-ai-accent/10" /* AI brand — intentional */
+                      }`}
+                    >
+                      {/* Light chip + default ink — an honest preview of what Quick Styles
+                          actually use with no palette selected. Same trick as the Quick
+                          Styles swatches below, which force a white chip so dark ink stays
+                          legible against the sidebar. */}
+                      <div className="w-full h-20 rounded-lg flex items-center justify-center bg-white border border-dashed border-border">
+                        <span className="text-2xl font-semibold" style={{ color: "#1F1F1F" }}>
+                          Aa
+                        </span>
+                      </div>
+                      <div className="w-full text-center">
+                        <div className="text-sm font-medium text-foreground">
+                          None Selected
+                        </div>
+                      </div>
+                    </button>
+                  </div>
+
                   {allPalettes.map((palette) => {
                     const isCustom = isCustomPalette(palette);
-                    const isSelected = selectedTheme?.id === palette.id;
+                    const isSelected = activePalette?.id === palette.id;
                     const primaryColor = palette.colors[0] || '#FFFFFF';
                     const textColor = palette.colors[1] || palette.colors[palette.colors.length - 1] || '#000000';
                     
@@ -1034,12 +1133,12 @@ export function RightSidebar() {
                   <h3 className="font-medium">Quick Styles</h3>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Quickly add pre-styled text elements to your canvas. Colors are automatically applied from the selected theme above.
+                  Add styled text to your canvas after loading a generated design.
                 </p>
                 
                 <div className="grid grid-cols-2 gap-2">
                   {textStyles.map((style, index) => {
-                    const styleColor = getColorForStyle(selectedTheme, style.name, backgroundColor);
+                    const styleColor = getColorForStyle(activePalette, style.name, backgroundColor);
                     return (
                       <button
                         key={index}
