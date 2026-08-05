@@ -15,7 +15,7 @@
 | [Design (DESIGN)](#-design--frontend-design) | EPIC-DESIGN-01 + EPIC-DESIGN-02 | 🟡 US-003/004 staging | Live Ideogram API | Staging deploy unblocks both |
 | [Auth (AUTH)](#-auth-auth) | EPIC-AUTH-01 | ✅ Done | — | Full invite flow post-MVP |
 | [Canvas Editor (EDIT)](#-canvas-editor-edit) | EPIC-EDIT-01 | ✅ Done | — | Batch upload Phase 3 |
-| [AI Generation (AI)](#-ai-generation-ai) | EPIC-AI-00 | 🟡 6/8 Done — US-AI-003/004 partial (LLM routing shipped, image swap did not) | Image-model swap unbuilt | EPIC-AI-02 deps (US-AI-010/011) → EPIC-AI-06 |
+| [AI Generation (AI)](#-ai-generation-ai) | EPIC-AI-00 | ✅ Done — 6/6; US-AI-003/004 + M-AI-02 moved to Phase 4 Backlog 2026-08-04 | — | EPIC-AI-02 deps (US-AI-010/011) → EPIC-AI-06 |
 | [Infrastructure (INFRA)](#-infrastructure-infra) | EPIC-INFRA-01 | 🟡 Task 1 ✅ · Task 2 ✅ (2026-07-11) · Task 3 (prod) next | Human task | Admin dashboard Phase 5 |
 | [Launch Readiness (LAUNCH)](#-launch-readiness-launch) | EPIC-LAUNCH-01 | 🟡 12/14 stories ✅ Done (001–004, 006–013); US-LAUNCH-005 open, 014 not started | Phase 0 HUMAN Task 3 | M-LAUNCH-01 → beta (now incl. US-LAUNCH-009/010 env & secrets) · M-LAUNCH-02 → revenue |
 | [Organization (ORG)](#-organization--team-org) | — | Post-MVP | No email provider (US-LAUNCH-002 will fix) | EPIC-ORG-01 post-launch |
@@ -182,7 +182,7 @@
 |------|--------|
 | Socket.io gateway wired into AppModule (US-AI-001) | ✅ |
 | GPT model ID fixed: gpt-5 → gpt-4o (US-AI-002/002a) | ✅ |
-| FREE/SOLO/TEAM LLM text calls routed to Gemini 2.5 Flash, BROKERAGE stays GPT-4o (US-AI-003/004 — scope pivoted from a planned Nano Banana *image* swap; Ideogram remains the image engine, see [M-AI-02-model-swap](epics/phase-0.5-foundation/EPIC-AI-00/milestones/M-AI-02-model-swap.md)) | ✅ |
+| FREE/SOLO/TEAM LLM text calls routed to Gemini 2.5 Flash, BROKERAGE stays GPT-4o (US-AI-003/004 — scope pivoted from a planned Nano Banana *image* swap; Ideogram remains the image engine, see [M-AI-02-model-swap](epics/phase-4-backlog/EPIC-AI-08/milestones/M-AI-02-model-swap.md)) | ✅ |
 | Extraction persisted to DB (US-AI-005) | ✅ |
 | Conversations wired to backend API, localStorage removed (US-AI-006) | ✅ |
 
@@ -2298,6 +2298,19 @@ superseded story, a genuinely-closable story, a prose mention, and a defect-tabl
     - `US-DESIGN-003` / `US-DESIGN-004` — every AC checkbox is ticked, but both status lines
       record open **HUMAN** verification (live-Ideogram fidelity + real usage increment; a
       staging visual spot-check). Checkbox counts alone would have closed them wrongly. 
+
+**2026-08-04** · Priority decision — image-model swap deferred
+  - `US-AI-003` / `US-AI-004` and their milestone `M-AI-02-model-swap` moved from
+    **EPIC-AI-00 (Phase 0.5)** to **EPIC-AI-08 (Phase 4 Backlog)**, registered as **B-17**.
+    Deferred on priority, not blocked — other phases are ahead of it.
+  - Consequence: **EPIC-AI-00 is now ✅ Done** (6/6). Phase 0.5 has no open stories.
+  - Half of this work already shipped and must not be restarted: PRs #9/#10 delivered the
+    **LLM/text** routing to Gemini 2.5 Flash. Only the **image** path remains. `nano-banana-pro`
+    is currently an alias for `ideogram-4`, so the name exists in the codebase but the
+    migration does not. Recorded on both story cards and in the B-17 backlog entry.
+  - Also corrected while here: EPIC-AI-00's own tables still showed US-AI-001/002/002a and
+    milestones M-AI-01/M-AI-03 as 🔲 despite all being complete — more fallout from the
+    cascade hook that never worked (see Known tooling defects).
 
 <!-- ai-sdlc:session-log -->
 **2026-08-05 15:07** · branch: `feat/ai/us-panel-01-brand-generation`

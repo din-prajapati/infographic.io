@@ -1,8 +1,8 @@
 # M-AI-02-model-swap — Replace Ideogram with Nano Banana Flash + Pro
 
-> **Epic:** [EPIC-AI-00](../EPIC.md)
-> **Status:** 🟡 In Progress — PRs #9/#10 (2026-07-03) shipped the **LLM/text** side of the routing. The **image**-model swap this milestone is named for has NOT shipped: `nano-banana-pro` resolves to `ideogram-4` (`api/src/config/image-generation.config.ts:34`) and `AiOrchestrator` still calls `IdeogramService`. Corrected 2026-08-04.
-> **Target date:** 2026-05-08
+> **Epic:** [EPIC-AI-08](../EPIC.md) (moved from EPIC-AI-00, 2026-08-04)
+> **Status:** 🔲 Not Started — **Deferred to Phase 4 Backlog 2026-08-04.** The **LLM/text** half of the routing shipped via PRs #9/#10 (2026-07-03) and is live. The **image**-model swap this milestone is named for was never built: `nano-banana-pro` resolves to `ideogram-4` (`api/src/config/image-generation.config.ts:34`) and `AiOrchestrator` still calls `IdeogramService`. Deferred by priority, not blocked.
+> **Target date:** — (was 2026-05-08; deferred to Phase 4 Backlog 2026-08-04)
 
 ---
 

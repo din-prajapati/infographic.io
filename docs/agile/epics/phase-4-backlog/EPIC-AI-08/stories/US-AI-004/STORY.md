@@ -1,13 +1,19 @@
 # Story Card — US-AI-004
 
-> **Status:** 🟡 Partially delivered — LLM tier routing shipped (PR #10, 2026-07-03); the **image**-model swap this story specifies did **not** ship. NOT Done.
+> **Status:** 🔲 Not Started — **Deferred to Phase 4 Backlog 2026-08-04** (other phases take priority; see [EPIC-AI-08](../../EPIC.md))
 > **Feature:** F-AI-00-02 — Correct LLM model routing (Nano Banana)
-> **Epic:** [EPIC-AI-00](../../EPIC.md)
-> **Milestone:** [M-AI-02-model-swap](../../milestones/M-AI-02-model-swap.md)
+> **Epic:** [EPIC-AI-08](../../EPIC.md) (moved from EPIC-AI-00, 2026-08-04)
+> **Milestone:** [M-AI-02-model-swap](../../milestones/M-AI-02-model-swap.md) (moved with this story)
 > **Linear:** LIN-US-AI-004
 > **Created:** 2026-04-28 | **Closed:** —
 
-> ### ⚠️ Scope mismatch — read before closing this story
+> ### 📦 Deferred 2026-08-04 — what is actually left to build
+> Moved to the Phase 4 backlog by priority decision, not because it is blocked. Depends on
+> [US-AI-003](../US-AI-003/STORY.md) landing first (shared abstraction layer).
+>
+> **Remaining scope is the image-model swap only** — the LLM tier routing already shipped.
+
+> ### ⚠️ Scope mismatch — why this story is not Done despite a merged PR
 > Same situation as [US-AI-003](../US-AI-003/STORY.md). PR #10
 > (*"extend Gemini routing to TEAM tier + thread planTier through orchestrator"*) merged
 > 2026-07-03 and names this ID, which made a 2026-08-04 audit read the story as shipped.

@@ -1,7 +1,10 @@
-# EPIC-AI-08 — Quality Tiers & Campaign Mode UI (Phase 4 Backlog)
+# EPIC-AI-08 — Deferred AI Generation Work (Phase 4 Backlog)
+
+> Quality tiers, Campaign Mode UI, and the Ideogram→Nano Banana image-model swap.
+> All revenue-gated or priority-deferred; none technically blocked.
 
 > **Phase:** Phase 4 Backlog — promote once the product has real revenue
-> **Status:** 🔲 Not Started (Deferred from EPIC-AI-02 M-AI-07, decision 2026-07-30)
+> **Status:** 🔲 Not Started — M-AI-07 deferred from EPIC-AI-02 (2026-07-30); M-AI-02 deferred from EPIC-AI-00 (2026-08-04)
 > **Depends on:** M-LAUNCH-02 closed (revenue-on flip) — not a hard technical dependency, a deliberate business-priority gate
 > **Owner:** Dinesh
 > **Backlog ref:** [Phase 4 Backlog B-16](../../phase-4-backlog/README.md#b-16--m-ai-07--quality-tiers--campaign-mode-ui)
@@ -21,6 +24,7 @@
 | Milestone | Scope | Status |
 |-----------|-------|--------|
 | [M-AI-07-quality-campaign](milestones/M-AI-07-quality-campaign.md) | Quality tiers + property routing + Campaign Mode UI | 🔲 Not Started |
+| [M-AI-02-model-swap](milestones/M-AI-02-model-swap.md) | Ideogram → Nano Banana image-model swap (moved from EPIC-AI-00, 2026-08-04) | 🔲 Not Started |
 
 ---
 
@@ -31,6 +35,8 @@
 | [US-AI-012](stories/US-AI-012/STORY.md) | Generation quality tiers: Social vs Print (CAP-08) | M-AI-07 | 🔲 |
 | [US-AI-013](stories/US-AI-013/STORY.md) | Property type → quality routing (CAP-09, hidden internal logic) | M-AI-07 | 🔲 |
 | [US-AI-014](stories/US-AI-014/STORY.md) | Campaign Mode UI toggle (CAP-10, backend deferred) | M-AI-07 | 🔲 |
+| [US-AI-003](stories/US-AI-003/STORY.md) | Replace Ideogram Turbo with Nano Banana Flash (FREE/SOLO) — **image half only; LLM half shipped** | M-AI-02 | 🔲 |
+| [US-AI-004](stories/US-AI-004/STORY.md) | Replace Ideogram V2 with Nano Banana Pro (TEAM/BROKERAGE) — **image half only** | M-AI-02 | 🔲 |
 
 ---
 

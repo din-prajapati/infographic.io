@@ -1,7 +1,7 @@
 # EPIC-AI-00 — Foundation Fixes: Wire, Model, Persist
 
 > **Phase:** Phase 0.5 — Foundation Repair (runs parallel to final 3 MVP human tasks)
-> **Status:** 🟡 In Progress — 6/8 stories Done (US-AI-001, US-AI-002, US-AI-002a, US-QA-001, US-AI-005, US-AI-006). US-AI-003/004 are 🟡 **partially delivered**: PRs #9/#10 shipped Gemini **LLM** routing, but the **image**-model swap those cards specify never shipped — `nano-banana-pro` is an alias for `ideogram-4` (`api/src/config/image-generation.config.ts:34`). Corrected 2026-08-04 after an audit initially mis-read them as complete.
+> **Status:** ✅ Done — 6/6 remaining stories complete (US-AI-001, US-AI-002, US-AI-002a, US-QA-001, US-AI-005, US-AI-006). US-AI-003/004 and their milestone **M-AI-02-model-swap** were moved to [EPIC-AI-08 (Phase 4 Backlog)](../../phase-4-backlog/EPIC-AI-08/EPIC.md) on 2026-08-04 — the image-model swap is deferred by priority, and the LLM-routing half already shipped.
 > **Linear Project:** LIN-EPIC-AI-00
 > **Target date:** 2026-05-12
 > **Owner:** Dinesh
@@ -22,9 +22,9 @@
 
 | Milestone | Scope | Target | Status |
 |-----------|-------|--------|--------|
-| [M-AI-01-critical-fixes](milestones/M-AI-01-critical-fixes.md) | Wire Socket.io gateway + fix GPT model ID | 2026-05-05 | 🔲 |
-| [M-AI-02-model-swap](milestones/M-AI-02-model-swap.md) | Replace Ideogram with Nano Banana Flash + Pro | 2026-05-08 | 🔲 |
-| [M-AI-03-data-persistence](milestones/M-AI-03-data-persistence.md) | Persist extraction to DB + connect conversations to backend | 2026-05-12 | 🔲 |
+| [M-AI-01-critical-fixes](milestones/M-AI-01-critical-fixes.md) | Wire Socket.io gateway + fix GPT model ID | 2026-05-05 | ✅ |
+| ~~M-AI-02-model-swap~~ | Replace Ideogram with Nano Banana Flash + Pro | — | 📦 **Moved to [EPIC-AI-08](../../phase-4-backlog/EPIC-AI-08/milestones/M-AI-02-model-swap.md)** 2026-08-04 |
+| [M-AI-03-data-persistence](milestones/M-AI-03-data-persistence.md) | Persist extraction to DB + connect conversations to backend | 2026-05-12 | ✅ |
 
 ---
 
@@ -32,11 +32,11 @@
 
 | Story ID | Title | Milestone | Status | PR |
 |----------|-------|-----------|--------|----|
-| [US-AI-001](stories/US-AI-001/STORY.md) | Wire Socket.io Gateway to AppModule | M-AI-01 | 🔲 | — |
-| [US-AI-002](stories/US-AI-002/STORY.md) | Fix GPT model ID: gpt-5 → gpt-4o | M-AI-01 | 🔲 | — |
-| [US-AI-002a](stories/US-AI-002a/STORY.md) | Brand color hex codes → descriptive names in image prompt | M-AI-01 | 🔲 | — |
-| [US-AI-003](stories/US-AI-003/STORY.md) | Replace Ideogram Turbo with Nano Banana Flash (FREE/SOLO) | M-AI-02 | 🟡 partial | [#9](https://github.com/din-prajapati/infographic.io/pull/9) — LLM routing only; image swap NOT shipped |
-| [US-AI-004](stories/US-AI-004/STORY.md) | Replace Ideogram V2 with Nano Banana Pro (TEAM/BROKERAGE) | M-AI-02 | 🟡 partial | [#10](https://github.com/din-prajapati/infographic.io/pull/10) — LLM routing only; image swap NOT shipped |
+| [US-AI-001](stories/US-AI-001/STORY.md) | Wire Socket.io Gateway to AppModule | M-AI-01 | ✅ | — |
+| [US-AI-002](stories/US-AI-002/STORY.md) | Fix GPT model ID: gpt-5 → gpt-4o | M-AI-01 | ✅ | — |
+| [US-AI-002a](stories/US-AI-002a/STORY.md) | Brand color hex codes → descriptive names in image prompt | M-AI-01 | ✅ | — |
+| ~~US-AI-003~~ | Replace Ideogram Turbo with Nano Banana Flash (FREE/SOLO) | ~~M-AI-02~~ | 📦 Moved to [EPIC-AI-08](../../phase-4-backlog/EPIC-AI-08/stories/US-AI-003/STORY.md) | [#9](https://github.com/din-prajapati/infographic.io/pull/9) (LLM half only) |
+| ~~US-AI-004~~ | Replace Ideogram V2 with Nano Banana Pro (TEAM/BROKERAGE) | ~~M-AI-02~~ | 📦 Moved to [EPIC-AI-08](../../phase-4-backlog/EPIC-AI-08/stories/US-AI-004/STORY.md) | [#10](https://github.com/din-prajapati/infographic.io/pull/10) (LLM half only) |
 | [US-AI-005](stories/US-AI-005/STORY.md) | Persist Extraction data to database | M-AI-03 | ✅ | [#7](https://github.com/din-prajapati/infographic.io/pull/7) |
 | [US-AI-006](stories/US-AI-006/STORY.md) | Connect conversations to backend API (remove localStorage) | M-AI-03 | ✅ | [#8](https://github.com/din-prajapati/infographic.io/pull/8) |
 
@@ -47,7 +47,7 @@
 | Feature ID | Scope | Stories |
 |------------|-------|---------|
 | F-AI-00-01 | Real-time generation progress via Socket.io | US-AI-001 |
-| F-AI-00-02 | Correct LLM model routing (GPT-4o, Nano Banana) | US-AI-002, US-AI-003, US-AI-004 |
+| F-AI-00-02 | Correct LLM model routing (GPT-4o) | US-AI-002 · *(US-AI-003/004 moved to [EPIC-AI-08](../../phase-4-backlog/EPIC-AI-08/EPIC.md) 2026-08-04)* |
 | F-AI-00-03 | Durable data persistence (extraction + conversations) | US-AI-005, US-AI-006 |
 
 ---

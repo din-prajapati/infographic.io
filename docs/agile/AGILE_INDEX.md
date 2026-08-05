@@ -50,7 +50,7 @@ Every PR is traceable from `git log` → Story → Milestone → Epic.
 
 | Epic ID | Title | Phase Folder | Status | Effort | Stories |
 |---------|-------|-------------|--------|--------|---------|
-| [EPIC-AI-00](epics/phase-0.5-foundation/EPIC-AI-00/EPIC.md) | Foundation Fixes (Socket.io · GPT model · Gemini LLM routing · Persistence) | [phase-0.5-foundation](epics/phase-0.5-foundation/) | ✅ Done (closed 2026-07-03, PRs #7–#10) | 22h | US-AI-001 to US-AI-006 |
+| [EPIC-AI-00](epics/phase-0.5-foundation/EPIC-AI-00/EPIC.md) | Foundation Fixes (Socket.io · GPT model · Gemini LLM routing · Persistence) | [phase-0.5-foundation](epics/phase-0.5-foundation/) | ✅ Done (closed 2026-07-03, PRs #7–#10) | 22h | US-AI-001/002/002a/005/006 + US-QA-001 — US-AI-003/004 moved to EPIC-AI-08 as B-17 (2026-08-04) |
 | [EPIC-AI-01](epics/phase-2-ai-refine/EPIC-AI-01/EPIC.md) | Conversational AI Core (intent · pre-plan · chips) — demoted to Phase 2 (2026-07-03) | [phase-2-ai-refine](epics/phase-2-ai-refine/) | 🔲 Not Started | ~27h | US-AI-007 to US-AI-009 |
 | [EPIC-AI-02](epics/phase-1-ai-core/EPIC-AI-02/EPIC.md) | Generation Control — US-AI-010/036/037/038/039/040/042 ✅ Done (2026-08-03); US-PANEL-01 ✅ Done (2026-08-05, PR #26); US-AI-011/041 superseded; US-AI-012/013/014 moved to EPIC-AI-08 (Phase 4 Backlog, revenue-gated, 2026-07-30) | [phase-1-ai-core](epics/phase-1-ai-core/) | ✅ Done | — (M-AI-06 closed 2026-08-05) | US-AI-010, US-AI-036 to US-AI-042, US-PANEL-01 |
 | [EPIC-AI-03](epics/phase-2-ai-refine/EPIC-AI-03/EPIC.md) | Refine Loop (quick refine · element edit · R2 storage · media tools) | [phase-2-ai-refine](epics/phase-2-ai-refine/) | 🔲 Not Started | ~97h | US-AI-015 to US-AI-022 |
@@ -89,6 +89,7 @@ Every PR is traceable from `git log` → Story → Milestone → Epic.
 | B-14 | Production Hardening & Security Audit | Infra | 6–10 wks | Enterprise deal |
 | B-15 | Mobile App (React Native or PWA) | Mobile | 10–14 wks | Mobile usage > 30% |
 | B-16 | [EPIC-AI-08](epics/phase-4-backlog/EPIC-AI-08/EPIC.md) — M-AI-07 Quality Tiers & Campaign Mode UI (moved from EPIC-AI-02, 2026-07-30) | AI | ~8-10h | First real revenue (M-LAUNCH-02 flips) |
+| B-17 | [EPIC-AI-08](epics/phase-4-backlog/EPIC-AI-08/EPIC.md) — M-AI-02 Ideogram → Nano Banana **image**-model swap (moved from EPIC-AI-00, 2026-08-04; the LLM/text half already shipped via PRs #9/#10) | AI | ~6-8h | Image cost/quality pressure |
 
 ---
 

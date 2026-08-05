@@ -1,13 +1,21 @@
 # Story Card — US-AI-003
 
-> **Status:** 🟡 Partially delivered — LLM routing shipped (PR #9, 2026-07-03); the **image**-model swap this story specifies did **not** ship. NOT Done.
+> **Status:** 🔲 Not Started — **Deferred to Phase 4 Backlog 2026-08-04** (other phases take priority; see [EPIC-AI-08](../../EPIC.md))
 > **Feature:** F-AI-00-02 — Correct LLM model routing (Nano Banana)
-> **Epic:** [EPIC-AI-00](../../EPIC.md)
-> **Milestone:** [M-AI-02-model-swap](../../milestones/M-AI-02-model-swap.md)
+> **Epic:** [EPIC-AI-08](../../EPIC.md) (moved from EPIC-AI-00, 2026-08-04)
+> **Milestone:** [M-AI-02-model-swap](../../milestones/M-AI-02-model-swap.md) (moved with this story)
 > **Linear:** LIN-US-AI-003
 > **Created:** 2026-04-28 | **Closed:** —
 
-> ### ⚠️ Scope mismatch — read before closing this story
+> ### 📦 Deferred 2026-08-04 — what is actually left to build
+> Moved to the Phase 4 backlog by priority decision, not because it is blocked. Nothing
+> technical gates it; other phases are ahead of it in the queue.
+>
+> **Remaining scope is the image-model swap only** — the LLM/text half already shipped and
+> is live in production. Do not re-do that part. The section below records exactly which
+> half landed and which did not, so whoever picks this up starts from the right line.
+
+> ### ⚠️ Scope mismatch — why this story is not Done despite a merged PR
 > A 2026-08-04 audit flagged this story as "shipped but never closed", because PR #9
 > (*"route FREE/SOLO LLM calls to Gemini 2.5 Flash — US-AI-003"*) merged on 2026-07-03
 > and names this ID. **That conclusion was wrong.** What shipped is narrower than what
