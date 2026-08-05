@@ -82,6 +82,60 @@ describe('buildImagePrompt', () => {
     const prompt = buildImagePrompt({ agent: { name: 'agent ' } }, 'Just Listed');
     expect(prompt).not.toContain('- Agent:');
   });
+
+  // -------------------------------------------------------------------------
+  // US-PANEL-01 AC3 — the "no brand chosen" contract.
+  //
+  // The right panel now sends `brandColors: undefined` until the agent picks a
+  // palette (US-PANEL-01 D1 removed the silent Luxury Gold auto-select). These
+  // tests pin the server half of that promise so a future refactor cannot
+  // reintroduce a hardcoded fallback and start colouring images the agent
+  // never asked for.
+  // -------------------------------------------------------------------------
+  describe('brand colour hints — US-PANEL-01 AC3', () => {
+    it('omits the colour scheme line when brandColors is an empty array (TC-PANEL-01-05)', () => {
+      const prompt = buildImagePrompt(
+        { ...e3PropertyData, agent: { ...e3PropertyData.agent, brandColors: [] } },
+        e3Headline,
+      );
+      expect(prompt).not.toContain('- Color scheme:');
+    });
+
+    it('omits the colour scheme line when brandColors is absent (TC-PANEL-01-05)', () => {
+      const prompt = buildImagePrompt(
+        { ...e3PropertyData, agent: { name: 'John Smith', brokerage: 'RE/MAX Gold' } },
+        e3Headline,
+      );
+      expect(prompt).not.toContain('- Color scheme:');
+    });
+
+    it('never substitutes a hardcoded fallback palette when no colours are given', () => {
+      const prompt = buildImagePrompt({ agent: { brandColors: [] } }, 'Just Listed');
+      // The pre-US-AI-002a fallback was '#1F448B, #FFFFFF' — it must stay gone.
+      expect(prompt).not.toContain('#1F448B');
+      expect(prompt).not.toContain('#FFFFFF');
+      expect(prompt).not.toContain('deep navy blue');
+    });
+
+    it('emits colour names rather than raw hex when a palette is selected (TC-PANEL-01-06)', () => {
+      const prompt = buildImagePrompt(
+        {
+          ...e3PropertyData,
+          agent: { ...e3PropertyData.agent, brandColors: ['#0F172A', '#3B82F6', '#FFFFFF'] },
+        },
+        e3Headline,
+      );
+      expect(prompt).toContain('- Color scheme: use midnight navy, bright blue, white');
+      // No hex may survive into the prompt — image models read names, not codes.
+      expect(prompt).not.toMatch(/#[0-9A-Fa-f]{6}/);
+    });
+
+    it('falls back to a descriptive name for a palette colour outside the lookup map', () => {
+      const prompt = buildImagePrompt({ agent: { brandColors: ['#C21807'] } }, 'Just Listed');
+      expect(prompt).toContain('- Color scheme: use warm red');
+      expect(prompt).not.toContain('#C21807');
+    });
+  });
 });
 
 // ---------------------------------------------------------------------------
