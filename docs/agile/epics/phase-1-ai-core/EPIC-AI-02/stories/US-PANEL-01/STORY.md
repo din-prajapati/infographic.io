@@ -2,67 +2,144 @@
 
 > **Epic:** [EPIC-AI-02](../../EPIC.md)
 > **Milestone:** M-AI-06-photo-and-format
-> **Status:** 🔲 Not Started
+> **Status:** 🟢 Implemented — Gate 1 green, awaiting PR
 > **Priority:** P1
 > **Persona:** Real estate agent (daily user, SOLO/BROKERAGE plan)
-> **Branch:** `feat/ai-us-panel-01-brand-generation`
+> **Branch:** `feat/ai/us-panel-01-brand-generation`
+> **Hardened:** 2026-08-05 — reality re-verified against `main` @ 45120fd; ACs re-typed and renumbered
 
 ---
 
 ## User Story
 
-*As a* real estate agent using the right panel to generate infographics,  
-*I want* to know which brand palette is active before I click Generate, and have that palette meaningfully affect the generated image,  
+*As a* real estate agent using the right panel to generate infographics,
+*I want* to know which brand palette is active before I click Generate, and have that palette meaningfully affect the generated image,
 *So that* I don't waste a generation credit on an image that ignores my brand colors.
 
 ---
 
-## Current Reality (as of Phase 0.5)
+## Current Reality (re-verified 2026-08-05)
+
+> The original 2026-06-16 "Current Reality" section described a Phase 0.5 codebase and was
+> materially stale. It is replaced below with line-referenced findings from `main` @ 45120fd.
 
 ### What IS wired and working today
 
 | Flow | Status | Evidence |
 |------|--------|---------|
-| Design tab palette → `selectedThemeColors` (canvas store) | ✅ | `RightSidebar.tsx` useCanvasStore |
-| `selectedThemeColors` → `agent.brandColors` in `generationsApi.generate()` | ✅ | `RightSidebar.tsx` handleGenerate() |
-| `dtoAgent.brandColors` → `propertyData.agent.brandColors` | ✅ | `generations.service.ts:131–136` |
-| `brandColors` → Ideogram prompt text: "Brand colors: #1F448B, #FFFFFF" | ✅ | `openai.service.ts:51,61` |
+| Design tab palette → `selectedTheme` + `selectedThemeColors` (canvas store) | ✅ | `RightSidebar.tsx:499-516` `applyBrandPalette()` |
+| `selectedThemeColors` → `agent.brandColors` in `generationsApi.generate()` | ✅ | `RightSidebar.tsx:365-392` `handleGenerate()` |
+| Falls back to `agent.brandColors`, then `undefined` — no hardcoded hex fallback | ✅ | `RightSidebar.tsx:366-371` |
+| Hex → natural-language colour names in the image prompt | ✅ | `infographic-prompt.builder.ts:18-83` `hexToColorName()` |
+| Empty `brandColors` → the `- Color scheme:` line is omitted entirely | ✅ | `infographic-prompt.builder.ts:126,147`; pinned by `api/tests/ai-generation/infographic-prompt.builder.spec.ts:66` |
+
+**US-AI-002a is fully delivered server-side.** The colour-name map and the no-fallback
+behaviour both exist and are unit-tested. This story does not re-implement them.
 
 ### What is NOT working or misleading today
 
-| Problem | Impact | Root cause |
-|---------|--------|-----------|
-| No indicator near Generate button showing which palette is active | Agent may generate without knowing their brand is/isn't applied | UX gap — no visual connection between Design tab selection and Generate button |
-| Hex codes in image prompt ("Brand colors: #1F448B") poorly interpreted by image models | Brand colors inconsistently reflected in output | Image models understand descriptive color names better than hex |
-| Agent brand colors from AgentInfoForm (`agent.brandColors`) are currently empty array by default | Brand defaults to hardcoded `#1F448B, #FFFFFF` if no palette selected | `useAgentStore` default has empty `brandColors: []` |
-| Quick Styles (Design tab) have NO connection to AI generation | Agents may expect Quick Styles to affect generation — they don't | Quick Styles add canvas `TextElement` nodes; generation takes a text prompt only |
+| # | Problem | Impact | Root cause |
+|---|---------|--------|-----------|
+| R1 | No indicator near the Generate button showing which palette is active | Agent generates without knowing whether their brand is applied | UX gap — no visual link between the Design tab selection and the Generate button |
+| R2 | **A palette is *always* selected.** `useEffect` on mount force-selects `defaultBrandPalettes[0]` ("Luxury Gold") | Every generation silently carries Luxury Gold — charcoal black, gold, white — even for an agent who never opened the Design tab. The "no brand" state is unreachable, so the correct server-side omission behaviour never fires from the UI | `RightSidebar.tsx:305-314` |
+| R3 | Quick Styles description implies a canvas-only feature is connected to generation | Agents may expect Quick Styles to affect generation — they don't | `RightSidebar.tsx:1036-1038`: "Quickly add pre-styled text elements… Colors are automatically applied from the selected theme above" |
+| R4 | After "Use This Design" the toast says only "The canvas has been updated" | Dead end — no next action offered at the moment the agent has a design and nothing on it | `RightSidebar.tsx:416` |
+| R5 | `client/src/lib/colorNames.ts` exists but has **zero importers** | Dead code shipped in the client bundle | Written for US-AI-002a, then the mapping landed server-side in `infographic-prompt.builder.ts` instead |
+
+### Drift corrected during harden
+
+| Original story said | Actual state |
+|---|---|
+| Generate button reads "Generate Template" | Reads **"Quick Generate"** with sub-label "From your Property & Agent details" (`RightSidebar.tsx:643-664`) |
+| Brand defaults to hardcoded `#1F448B, #FFFFFF` when no palette selected | No hex fallback exists anywhere; the real default is the silent Luxury Gold auto-select (R2) |
+| `agent.brandColors` empty array is the problem | It is still `[]` by default (`useAgentStore.ts:27`), but that is now correct behaviour, not a defect |
+| Old AC3 — "hex→colour-name mapping" | Retired. Delivered by US-AI-002a in `infographic-prompt.builder.ts` |
+| "Color Name Lookup Table (AC2)" design section | Removed — the table shipped server-side and is not this story's concern |
+
+### Decisions taken at harden (2026-08-05)
+
+- **D1 — Remove the mount auto-select (R2).** No palette is selected on load. This is what makes
+  AC2 and AC3 reachable and stops billing a generation against a brand the agent never chose.
+  Quick Styles degrade to neutral defaults via the existing `getColorForStyle(null, …)` branch
+  (`RightSidebar.tsx:444-446`), so nothing crashes and nothing goes unstyled.
+- **D2 — Nudge scope is the right panel only.** Only `RightSidebar.handleUseDesign` gets the
+  AC6 nudge. `CenterCanvas.handleTemplateLoad` (the AI-chat variation path) is untouched — it
+  is a different surface and a file US-AI-036 owns.
+
+---
+
+## AC numbering note
+
+ACs were renumbered during harden to close a gap and add required type coverage.
+Pre-harden → post-harden mapping:
+
+| Pre-harden | Post-harden | Change |
+|---|---|---|
+| AC1 | AC1 + AC2 | Split: populated state vs. empty state (empty state was untestable before D1) |
+| AC2 | AC3 | Now reachable end-to-end thanks to D1 |
+| AC3 | — | Retired at authoring time; delivered by US-AI-002a |
+| — | AC4 | **New** — required `error-path` coverage |
+| AC4 | AC5 | Unchanged in substance |
+| AC5 | AC6 | Unchanged in substance |
+| AC6 | AC7 | Unchanged in substance |
 
 ---
 
 ## Acceptance Criteria
 
-- [ ] **AC1 — Active brand indicator:** A pill/badge near the Generate button shows the active palette name (e.g. "Modern Blue") when a palette is selected. Shows "No brand selected" when none is selected. Updates immediately when the agent switches palettes in the Design tab.
+- [x] **AC1 [happy-path]:** When a brand palette is selected in the Design tab, a brand indicator
+      rendered directly beneath the Generate button in `client/src/components/editor/RightSidebar.tsx`
+      shows the palette name and up to 5 colour dot swatches (e.g. "Brand: Modern Blue ●●●●●").
+      Switching palettes updates the indicator in the same render — no reload, no tab change.
 
-- [ ] **AC2 — AgentInfoForm brand color fallback:** When no Design tab palette is selected AND `agent.brandColors` is empty, the generation omits brand color hints entirely (no hardcoded fallback colors). Implemented in Phase 0.5 US-AI-002a; this AC verifies the behaviour holds end-to-end from the UI.
+- [x] **AC2 [null-input]:** When no palette is selected (the state on first load after D1),
+      the indicator in `RightSidebar.tsx` reads "Brand: None — select in Design tab" in muted
+      text with no swatches, and clicking it calls `setActiveTab("design")`.
 
-- [ ] **AC4 — Quick Styles help text:** The Quick Styles section in the Design tab shows a contextual note: "Add styled text to your canvas after loading a generated design." This replaces the current generic "Quickly add pre-styled text elements" description.
+- [x] **AC3 [null-input]:** When `selectedThemeColors` is null/empty AND `agent.brandColors` is
+      empty, `handleGenerate()` in `RightSidebar.tsx` sends `agent.brandColors: undefined`, and
+      the prompt produced by `buildImagePrompt()` in
+      `api/src/modules/ai-generation/services/infographic-prompt.builder.ts` contains no
+      `- Color scheme:` line. No hardcoded hex fallback is introduced at any layer.
 
-- [ ] **AC5 — Post-generation Design tab prompt:** After clicking "Use This Design" and loading a variation to canvas, a subtle toast or inline nudge suggests: "Add text overlays with Quick Styles in the Design tab."
+- [x] **AC4 [error-path]:** When a custom palette loaded from the `custom-brand-palettes`
+      localStorage key is malformed — `colors` absent, `null`, or `[]` — the brand indicator
+      renders the "None" state rather than throwing, and `handleGenerate()` still sends
+      `brandColors: undefined`. The right panel does not unmount or white-screen.
 
-- [ ] **AC6 — No model names exposed:** Color name mapping and any new UI text must not mention Ideogram, Gemini, Nano Banana, GPT-4o, or any underlying model. Model opacity rule applies.
+- [x] **AC5 [happy-path]:** The Quick Styles section description in `RightSidebar.tsx` reads
+      "Add styled text to your canvas after loading a generated design." — replacing the current
+      "Quickly add pre-styled text elements to your canvas. Colors are automatically applied from
+      the selected theme above."
+
+- [x] **AC6 [happy-path]:** After `handleUseDesign()` in `RightSidebar.tsx` successfully loads a
+      variation to canvas, the success toast's description directs the agent to the next step:
+      "Add text overlays with Quick Styles in the Design tab."
+
+- [x] **AC7 [edge-case]:** No UI string, comment, or `data-testid` added by this story mentions
+      Ideogram, Gemini, Nano Banana, GPT-4o, OpenAI, or any other underlying model or provider.
+      Model opacity rule applies.
+
+**Coverage:** `happy-path` ✅ (AC1, AC5, AC6) · `error-path` ✅ (AC4) · plus `null-input` (AC2, AC3)
+and `edge-case` (AC7). Required set for domain `PANEL` = `[happy-path, error-path]` — complete.
 
 ---
 
 ## Depends On
 
-- **US-AI-002a** (Phase 0.5) — hex→color-name mapping in `generateImagePrompt()`. Must be complete before this story, since AC2 in this story verifies the end-to-end behaviour of that fix.
+- **US-AI-002a** (Phase 0.5) — ✅ Done. Hex→colour-name mapping and the no-fallback rule are
+  live in `infographic-prompt.builder.ts` and unit-tested. AC3 verifies the end-to-end behaviour
+  from the UI; it does not re-implement the mapping.
 
 ## Out of Scope
 
-- Color name mapping logic itself (done in Phase 0.5 — US-AI-002a)
-- Saving chosen palette per-user to database (localStorage is acceptable for Phase 1)
-- Brand color picker inside AgentInfoForm (deferred to agent profile feature, Phase 2)
-- Quick Styles generating AI text (e.g. "generate a price label for me") — Phase 2
+- Colour-name mapping logic itself (done in Phase 0.5 — US-AI-002a)
+- Deleting the dead `client/src/lib/colorNames.ts` (R5) — flagged for a separate cleanup; removing
+  it is not required by any AC here
+- Saving the chosen palette per-user to the database (localStorage is acceptable for Phase 1)
+- Brand colour picker inside `AgentInfoForm` (deferred to agent profile, Phase 2)
+- The AI-chat "Use This Design" path — `CenterCanvas.handleTemplateLoad` (D2)
+- Quick Styles generating AI text — Phase 2
 - Canvas template data substitution using Quick Styles (GAP-02, Phase 2)
 - Integrating Quick Styles output as reference input for image generation — Phase 3
 
@@ -70,39 +147,27 @@
 
 ## Design Behavior
 
-### Active Brand Indicator (AC1)
+### Active Brand Indicator (AC1 / AC2)
 
-Placed between the Generate button and the tab switcher, replacing the current empty space:
+Rendered inside the sticky top block, directly under the Generate button and its sub-label,
+above the results-ready pill and the tab switcher:
 
 ```
 ┌─────────────────────────────────────┐
-│  [✦ Generate Template]              │  ← button (existing)
-│  Brand: Modern Blue ●●●●●           │  ← NEW: 5 color dot swatches + name
-│  [Design] [Property] [Agent]        │  ← tab switcher
+│  [✦ Quick Generate]                 │  ← existing button
+│  From your Property & Agent details │  ← existing sub-label
+│  Brand: Modern Blue ●●●●●           │  ← NEW (AC1)
+├─────────────────────────────────────┤
+│  [Design] [Property] [Agent]        │  ← existing tab switcher
 └─────────────────────────────────────┘
 ```
 
-When no palette is selected:
+Empty state (AC2) — muted, clickable, switches to the Design tab:
 ```
-│  Brand: None — select in Design tab │  ← muted text, clickable → switches to Design tab
+│  Brand: None — select in Design tab │
 ```
 
-### Color Name Lookup Table (AC2)
-
-Pre-built static map (not LLM). Key entries:
-
-| Hex range | Name |
-|-----------|------|
-| Dark navy (hue 220–240°, L<25%) | "deep navy blue" |
-| Gold / amber (#D4AF37, #F59E0B range) | "gold" |
-| Pure white (#FFFFFF, L>95%) | "white" |
-| Pure black (#000000, L<5%) | "black" |
-| Forest green (hue 120–150°, L 25–45%) | "forest green" |
-| Warm red (hue 0–15°, S>60%) | "deep red" |
-| Light cream / off-white (L 88–95%) | "warm cream" |
-| Medium grey | "charcoal grey" |
-
-If no match → use hex as-is (current behavior).
+The indicator is hidden while `generating` is true, so it never competes with the progress bar.
 
 ---
 
@@ -110,50 +175,93 @@ If no match → use hex as-is (current behavior).
 
 | TC ID | Type | Priority | Scenario | Status | Finding |
 |-------|------|----------|----------|--------|---------|
-| TC-PANEL-01-01 | Manual | P0 | Select "Modern Blue" palette → brand indicator shows "Modern Blue" with color dots | 🔲 | |
-| TC-PANEL-01-02 | Manual | P0 | No palette selected → indicator shows "None — select in Design tab" | 🔲 | |
-| TC-PANEL-01-03 | Manual | P1 | Click "None" indicator → Design tab activates automatically | 🔲 | |
-| TC-PANEL-01-04 | Manual | P0 | Generate with Modern Blue selected → server log shows "deep navy blue and blue" in image prompt (not hex) | 🔲 | |
-| TC-PANEL-01-05 | Manual | P1 | Generate with no palette + empty agent.brandColors → server log shows neutral default colors | 🔲 | |
-| TC-PANEL-01-06 | Manual | P1 | Quick Styles section shows "after loading a generated design" note | 🔲 | |
-| TC-PANEL-01-07 | Manual | P1 | Use This Design → toast or inline nudge mentions Quick Styles | 🔲 | |
-| TC-PANEL-01-08 | Automated | P1 | Brand indicator updates when palette changes (Playwright: select palette → assert indicator text) | 🔲 | |
+| TC-PANEL-01-01 | E2E | P0 | happy-path (AC1): select "Modern Blue" → indicator reads "Modern Blue" with 5 dots | ✅ | |
+| TC-PANEL-01-02 | E2E | P0 | null-input (AC2): fresh editor, no palette → indicator reads "None — select in Design tab" | ✅ | |
+| TC-PANEL-01-03 | E2E | P1 | null-input (AC2): click the "None" indicator → Design tab becomes active | ✅ | |
+| TC-PANEL-01-04 | E2E | P1 | happy-path (AC1): switch Modern Blue → Natural Green → indicator text updates without reload | ✅ | |
+| TC-PANEL-01-05 | Unit | P0 | null-input (AC3): `buildImagePrompt` with `brandColors: []` emits no `- Color scheme:` line | ✅ | |
+| TC-PANEL-01-06 | Unit | P0 | happy-path (AC3): `buildImagePrompt` with a real palette emits colour *names*, never raw hex | ✅ | |
+| TC-PANEL-01-07 | Unit | P0 | error-path (AC4): `resolveActivePalette` returns null for `{colors: null}`, `{colors: []}`, and a missing `colors` key | ✅ | |
+| TC-PANEL-01-08 | E2E | P1 | error-path (AC4): seed malformed localStorage palette → panel renders, indicator shows "None", no console error | ⚠️ | See F1 — the guard had to move to the load boundary |
+| TC-PANEL-01-09 | E2E | P1 | happy-path (AC5): Quick Styles description reads "after loading a generated design" | ✅ | |
+| TC-PANEL-01-10 | Manual | P1 | happy-path (AC6): "Use This Design" → toast mentions Quick Styles in the Design tab | ⚠️ | See F2 — verified by inspection, not exercised at runtime |
+| TC-PANEL-01-11 | Manual | P1 | edge-case (AC7): grep the diff for model/provider names → zero hits in user-visible strings | ✅ | |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
+
+### Findings
+
+**F1 (TC-PANEL-01-08) — the AC4 guard was in the wrong place.** The plan guarded only the
+*selected* palette. Writing this test exposed that the palette **grid** indexes
+`palette.colors[0]` / `[1]` / `[length - 1]` directly when rendering theme cards, so a stored
+entry with `colors: null` throws during render and takes the entire right panel down — before
+any selection guard executes. Fixed by filtering unusable entries inside `loadCustomPalettes()`,
+at the localStorage boundary, so they never reach state at all; the selection guard remains as
+defence in depth. The test now asserts corrupt palettes are not offered as cards, which is also
+better than rendering a card that errors when clicked.
+
+**F2 (TC-PANEL-01-10) — not exercised at runtime.** `handleUseDesign` is only reachable after a
+real generation, which spends a metered credit against the account. The change is a one-line
+toast `description`; it was verified by inspection at `RightSidebar.tsx` `handleUseDesign()` and
+by the fact that the surrounding `toast.success("Design loaded", …)` call is unchanged and
+already proven in production. Worth confirming during the next organic generation rather than
+burning a credit for a string.
+
+### Verification evidence
+
+```
+npm run check                                    → clean (tsc, no errors)
+cd api && npx vitest run --config vitest.config.ts
+                                                 → 16 files, 158 tests passed
+PLAYWRIGHT_BASE_URL=http://localhost:5100 \
+  npx playwright test e2e/us-panel-01-brand-indicator.spec.ts --project=chrome-headed
+                                                 → 6 passed (33.3s)
+```
+
+> **Runtime-verification note.** The first E2E run failed all 6 tests against a dev server that
+> had been up ~44 hours serving a stale July build — the screenshot showed Luxury Gold still
+> auto-selected and no indicator, i.e. exactly the pre-change behaviour. The suite was re-run
+> against a fresh instance on port 5100. Worth remembering: `playwright.config.ts` sets
+> `reuseExistingServer: true`, so a long-lived stale server silently invalidates every E2E result.
 
 ---
 
 ## Technical Notes
 
-### Color name mapping (AC2)
+### Palette resolution helper (AC1 / AC2 / AC4)
 
-Add utility `client/src/lib/colorNames.ts`:
+The "is a palette actually usable" check is needed in three places (indicator render,
+`handleGenerate`, and the Quick Styles colour mapping), so it is extracted rather than inlined:
+
 ```typescript
-export function hexToColorName(hex: string): string { ... }
-export function brandColorsToDescription(colors: string[]): string {
-  // returns "deep navy blue, gold, and white"
+// RightSidebar.tsx — module scope, pure, unit-testable
+export function resolveActivePalette(p: BrandPalette | null): BrandPalette | null {
+  if (!p || !Array.isArray(p.colors) || p.colors.length === 0) return null;
+  return p;
 }
 ```
 
-Update `openai.service.ts` `generateImagePrompt()`:
-```typescript
-// Before:
-const colors = propertyData.agent?.brandColors?.join(', ') || '#1F448B, #FFFFFF';
-// "Brand colors: #1F448B, #FFFFFF"
+This single guard satisfies AC4 for every consumer: a malformed palette is indistinguishable
+from "no palette", which is exactly the desired degradation.
 
-// After:
-const colors = brandColorsToDescription(propertyData.agent?.brandColors || []);
-// "Brand colors: deep navy blue and white"
+### Removing the mount auto-select (D1)
+
+`RightSidebar.tsx:305-314` — the `useEffect` keeps loading custom palettes but stops calling
+`setSelectedTheme` / `setSelectedThemeColors`:
+
+```typescript
+// Before: force-selects defaultBrandPalettes[0] on every mount
+// After:  loads custom palettes only; selectedTheme stays null until the agent picks one
 ```
 
-**Note:** `colorNames.ts` is a shared utility. The mapping itself is a server-side concern (goes into the image prompt). The client only reads it for the brand indicator dots.
+`getColorForStyle(null, …)` already handles the null theme (`RightSidebar.tsx:444-446`), so
+Quick Styles keep sensible neutral colours with no palette selected.
 
-### Brand indicator placement (AC1)
+### Server-side verification (AC3)
 
-New component `BrandIndicator` (inline in RightSidebar or separate file):
-- Reads `selectedTheme` (existing state in RightSidebar)
-- Renders palette name + 3–5 color dot swatches
-- `onClick` → `setActiveTab('design')`
+No server change required — `derivePromptParts` already emits `colors: ''` for an empty
+`brandColors` array and `buildImagePrompt` already gates the line on `if (p.colors)`. AC3 adds
+tests that pin this contract so a future refactor cannot silently reintroduce a fallback.
 
 ---
 
@@ -161,15 +269,15 @@ New component `BrandIndicator` (inline in RightSidebar or separate file):
 
 | Task | Hours |
 |------|-------|
-| `colorNames.ts` utility + update `generateImagePrompt` in openai.service.ts | 1.5h |
-| Brand indicator component in RightSidebar | 1h |
-| Click-to-Design-tab link when no brand selected | 0.5h |
-| Quick Styles help text update | 0.25h |
-| Post-generation "add text overlays" nudge in handleUseDesign | 0.5h |
-| Manual QA (8 test cases) | 1h |
-| Playwright stub (TC-PANEL-01-08) | 0.5h |
-| **Total** | **~5.25h** |
+| T1 — `resolveActivePalette` helper + remove mount auto-select | 0.75h |
+| T2 — `BrandIndicator` render block (populated + empty + click-to-Design-tab) | 1.25h |
+| T3 — Quick Styles help text | 0.25h |
+| T4 — Post-generation nudge in `handleUseDesign` | 0.25h |
+| T5 — Unit tests (TC-05/06/07) | 0.75h |
+| T6 — Playwright spec (TC-01/02/03/04/08/09) | 1.25h |
+| T7 — Manual QA (TC-10/11) + Gate 1 | 0.5h |
+| **Total** | **~5h** |
 
 ---
 
-*Story created: 2026-06-16*
+*Story created: 2026-06-16 · Hardened: 2026-08-05*
