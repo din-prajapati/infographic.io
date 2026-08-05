@@ -2321,3 +2321,44 @@ superseded story, a genuinely-closable story, a prose mention, and a defect-tabl
 
 <!-- ai-sdlc:session-log -->
 **2026-08-05 13:26** · PR #26 merged · closed: US-PANEL-01
+
+### 2026-08-05 — US-PANEL-01 closed · 🎉 M-AI-06 and EPIC-AI-02 complete
+
+**[US-PANEL-01](epics/phase-1-ai-core/EPIC-AI-02/stories/US-PANEL-01/STORY.md) ✅ Done** — PR #26
+squash-merged. This was M-AI-06's last open story, so the milestone **and** EPIC-AI-02 (its only
+milestone) both close with it.
+
+**What the story actually turned out to be.** Written 2026-06-16 against a Phase 0.5 codebase, it
+had drifted badly. Hardening found its premise broken: `RightSidebar.tsx` force-selected "Luxury
+Gold" on mount, so a palette was *always* active. Every generation silently carried charcoal
+black / gold / white for agents who never opened the Design tab, and the server-side omission
+logic shipped in US-AI-002a could never fire from the UI. The story's own AC1 empty-state branch
+and AC2 were therefore **unreachable** — it could have been implemented, reviewed and merged
+while proving nothing. Three further claims in the story were simply false (the button reads
+"Quick Generate", not "Generate Template"; the hardcoded `#1F448B` fallback does not exist).
+
+**Two defects found by owner review, both pre-existing:**
+- `applyBrandPalette` took `colors[colors.length - 1]` as the canvas background, commented
+  "usually the lightest color". Five of six built-ins end in `#FFFFFF`; Luxury Gold ends in
+  `#8B7355`, so exactly one palette painted the canvas brown while the rest looked right — the
+  shape of bug that survives review indefinitely. Background is now derived by WCAG luminance.
+- Clearing a brand left that background stranded on the canvas. Reversed the initial decision;
+  the pre-brand background is now captured and restored.
+
+**Verification:** `tsc` clean · 164 unit tests · 8 E2E. 11 of 13 TCs exercised at runtime.
+TC-10 (needs a real generation) and the broader E2E regression sweep are deferred to **Phase 0
+HUMAN Task 3, rows P-25–P-28** — tracked, not dropped.
+
+**Known tooling defect — the close-cascade hook is still not milestone-aware.** `orion-bot`'s
+auto-close commit `f870714` wrote `✅ In Progress` into AGILE_INDEX (naive emoji substitution),
+left the US-PANEL-01 PR column blank in EPIC.md, left PHASE_TRACKER prose saying "only
+US-PANEL-01 open" under a ✅, and **did not touch M-AI-06 at all** — the milestone file did not
+even list the story. All corrected by hand here. CLAUDE.md's warning still stands: run the
+closeout manually and treat the hook's output as a draft.
+
+**Milestone honesty note.** M-AI-06's acceptance list was written around the never-built
+US-AI-011 design. Two criteria were closed as *superseded* rather than ticked: the "4 format
+options" wording (the Format Picker shipped with a different taxonomy via US-AI-038/039), and
+per-conversation format persistence (US-AI-039 persists last-used format per browser; the
+picker now precedes canvas creation, making the original criterion obsolete). Left unticked with
+the reason recorded rather than counted as done.

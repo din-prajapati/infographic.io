@@ -122,7 +122,7 @@ Each phase requires a gate decision before the next phase starts:
 | # | Epic | Domain | Focus | Status |
 |---|------|--------|-------|--------|
 | 1 | [EPIC-LAUNCH-01](epics/phase-1-ai-core/EPIC-LAUNCH-01/EPIC.md) · M-LAUNCH-01 | LAUNCH | **Public beta blockers** — legal pages, transactional email + password reset, beta mode | 🟡 3/7 Done, 4 merged pending Task 3 sign-off |
-| 2 | [EPIC-AI-02](epics/phase-1-ai-core/EPIC-AI-02/EPIC.md) | AI | M-AI-06 substantially complete 2026-08-03 — US-AI-010/036/037/038/039/040/042 Done, US-AI-011/041 superseded; only US-PANEL-01 open. Quality tiers/Campaign UI moved to EPIC-AI-08 backlog | ✅ |
+| 2 | [EPIC-AI-02](epics/phase-1-ai-core/EPIC-AI-02/EPIC.md) | AI | **M-AI-06 complete 2026-08-05** — US-AI-010/036/037/038/039/040/042 Done (2026-08-03), US-PANEL-01 Done (PR #26); US-AI-011/041 superseded. Quality tiers/Campaign UI moved to EPIC-AI-08 backlog | ✅ |
 | 3 | [EPIC-AI-06](epics/phase-1-ai-core/EPIC-AI-06/EPIC.md) | AI | Hybrid Real-Photo Pipeline — **the chargeability gate** (real photo background, editable overlay, synthetic guard) | 🔲 |
 | 4 | [EPIC-LAUNCH-01](epics/phase-1-ai-core/EPIC-LAUNCH-01/EPIC.md) · M-LAUNCH-02 | LAUNCH | **Revenue on** — RazorPay live activation, receipt email, BROKERAGE gate (PT-06), metering guard (prep runs parallel to AI-06; flip gated by AI-06) | 🟡 5/6 Done — only US-LAUNCH-005 (real ₹ txn) open |
 | 5 | [EPIC-KIT-01](epics/phase-1-ai-core/EPIC-KIT-01/EPIC.md) | KIT | Listing Marketing Kits — multi-format batch, lifecycle, recurring content, compliance | 🔲 |

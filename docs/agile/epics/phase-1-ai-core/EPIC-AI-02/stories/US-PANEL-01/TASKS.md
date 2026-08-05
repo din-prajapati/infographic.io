@@ -156,11 +156,18 @@ git diff main --unified=0 | grep -iE '\+.*(ideogram|gemini|nano.?banana|gpt-4o|o
 
 ## Definition of Done
 
-- [ ] AC1–AC7 all ✅
-- [ ] TC-PANEL-01-01 … -11 all ✅ (or ⚠️ with a recorded finding)
-- [ ] Gate 1 green on the final commit
-- [ ] PR opened and merged
-- [ ] Closeout cascade: STORY → M-AI-06 → EPIC-AI-02 → PHASE_TRACKER → AGILE_INDEX → TEAM_STATUS
+- [x] AC1–AC9 all ✅ (grew from 7 to 9: AC8 from owner review, AC9 from the defect report)
+- [x] TC-PANEL-01-01 … -13 all ✅ or ⚠️ with a recorded finding (F1, F2, F3)
+- [x] Gate 1 green on the final commit — `tsc` clean, 164 unit tests, 8 E2E
+- [x] PR opened and merged — [#26](https://github.com/din-prajapati/infographic.io/pull/26), squash-merged 2026-08-05
+- [x] Closeout cascade: STORY → M-AI-06 → EPIC-AI-02 → PHASE_TRACKER → AGILE_INDEX → TEAM_STATUS
+
+> **DoD exception — TC-PANEL-01-10 not exercised at runtime.** Reaching `handleUseDesign`
+> requires a real generation, which spends a metered credit. Verified by inspection and deferred
+> to Phase 0 HUMAN **Task 3, row P-27**, where it rides on P-16's generation at zero extra cost.
+> The broader local E2E regression sweep is likewise deferred to **row P-28**. Both are tracked
+> in [PHASE_0_HUMAN_QA_CHECKLIST.md](../../../../../testing/PHASE_0_HUMAN_QA_CHECKLIST.md),
+> not dropped. Approved by: Dinesh, 2026-08-05.
 
 ---
 
