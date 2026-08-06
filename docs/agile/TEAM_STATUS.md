@@ -2426,3 +2426,7 @@ the reason recorded rather than counted as done.
 <!-- ai-sdlc:session-log -->
 **2026-08-06 18:53** · branch: `feat/gen/us-gen-003-locale-aware-output`
   - Last commit: 815702f docs(agile): add M-GEN-02 milestone; park the org-default question as BL-05
+
+<!-- ai-sdlc:session-log -->
+**2026-08-06 19:33** · branch: `feat/gen/us-gen-003-locale-aware-output`
+  - Last commit: 0a3c7ef docs(agile): record the currency-input design question and two unverified gaps
