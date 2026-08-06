@@ -2418,3 +2418,11 @@ the reason recorded rather than counted as done.
 <!-- ai-sdlc:session-log -->
 **2026-08-06 18:38** · branch: `feat/gen/us-gen-003-locale-aware-output`
   - Last commit: baa96e9 feat(gen): locale-aware output formatting — US-GEN-003
+
+<!-- ai-sdlc:session-log -->
+**2026-08-06 18:47** · branch: `feat/gen/us-gen-003-locale-aware-output`
+  - Last commit: 815702f docs(agile): add M-GEN-02 milestone; park the org-default question as BL-05
+
+<!-- ai-sdlc:session-log -->
+**2026-08-06 18:53** · branch: `feat/gen/us-gen-003-locale-aware-output`
+  - Last commit: 815702f docs(agile): add M-GEN-02 milestone; park the org-default question as BL-05
