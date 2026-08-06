@@ -1,7 +1,7 @@
 # US-GEN-003 — Locale-Aware Output: Currency, Numbering, Area Unit, Room Vocabulary
 
 > **Epic:** [EPIC-GEN-01](../../EPIC.md)
-> **Milestone:** M-GEN-02-output-localisation *(proposed — milestone file not yet created)*
+> **Milestone:** [M-GEN-02-output-localisation](../../milestones/M-GEN-02-output-localisation.md)
 > **Size:** M · **Status:** 🟢 Implemented — Gate 1 green, awaiting PR
 > **Priority:** P0 — live defect in the primary market
 > **Persona:** Listing agent or private seller marketing a property in any country
