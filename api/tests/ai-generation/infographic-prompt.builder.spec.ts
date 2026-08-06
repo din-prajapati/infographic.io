@@ -31,6 +31,10 @@ function loadE3TextPrompt(): string {
 }
 
 const e3PropertyData = {
+  // US-GEN-003: the E3 experiment was a US listing (123 Main St, RE/MAX, $520K), so it
+  // carries en-US explicitly now that the "$" is no longer implicit. This keeps the
+  // contract test byte-exact against the recorded artifact rather than relaxing it.
+  locale: 'en-US',
   address: '123 Main St',
   price: 520000,
   beds: 3,
@@ -276,24 +280,37 @@ describe('formatPriceShort', () => {
     expect(formatPriceShort('not a price')).toBe('');
   });
 
+  // US-GEN-003 changed this contract deliberately: the "$" is no longer implicit.
+  // These assertions now pass the locale explicitly, which is what the client sends.
   it('abbreviates thousands to K', () => {
-    expect(formatPriceShort(520000)).toBe('$520K');
-    expect(formatPriceShort(1000)).toBe('$1K');
+    expect(formatPriceShort(520000, 'en-US')).toBe('$520K');
+    expect(formatPriceShort(1000, 'en-US')).toBe('$1K');
   });
 
   it('abbreviates millions to M, dropping the decimal when whole', () => {
-    expect(formatPriceShort(1_000_000)).toBe('$1M');
-    expect(formatPriceShort(2_000_000)).toBe('$2M');
-    expect(formatPriceShort(1_500_000)).toBe('$1.5M');
+    expect(formatPriceShort(1_000_000, 'en-US')).toBe('$1M');
+    expect(formatPriceShort(2_000_000, 'en-US')).toBe('$2M');
+    expect(formatPriceShort(1_500_000, 'en-US')).toBe('$1.5M');
   });
 
   it('renders sub-thousand prices as plain dollars', () => {
-    expect(formatPriceShort(500)).toBe('$500');
+    expect(formatPriceShort(500, 'en-US')).toBe('$500');
   });
 
   it('parses string input, stripping currency symbols and commas', () => {
-    expect(formatPriceShort('520,000')).toBe('$520K');
-    expect(formatPriceShort('$1,500,000')).toBe('$1.5M');
+    expect(formatPriceShort('520,000', 'en-US')).toBe('$520K');
+    expect(formatPriceShort('$1,500,000', 'en-US')).toBe('$1.5M');
+  });
+
+  // US-GEN-003 AC4 — the defect this story exists to fix.
+  it('never invents "$" when no locale is resolved (TC-GEN-003-05)', () => {
+    expect(formatPriceShort(520000)).toBe('520K');
+    expect(formatPriceShort(8_500_000)).toBe('8.5M');
+  });
+
+  it('echoes the currency the user typed when no locale is resolved (TC-GEN-003-04)', () => {
+    expect(formatPriceShort(1_200_000, null, 'AED')).toBe('AED 1.2M');
+    expect(formatPriceShort(320_000, null, '£')).toBe('£320K');
   });
 });
 

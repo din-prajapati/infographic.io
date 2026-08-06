@@ -151,6 +151,10 @@ export class GenerationsService {
       orientation: dto.orientation || 'landscape',
       // undefined = no user headline → orchestrator will call LLM to generate one
       headline: dto.headline?.trim() || undefined,
+      // US-GEN-003: output formatting only — resolved client-side, never derived from
+      // billing. Both undefined = passthrough (echo what the user typed, invent nothing).
+      locale: dto.locale,
+      currencyToken: dto.currencyToken,
     };
 
     // Generate infographic using existing service

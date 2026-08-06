@@ -2378,3 +2378,55 @@ the reason recorded rather than counted as done.
 
 <!-- ai-sdlc:session-log -->
 **2026-08-05 13:34** · PR #27 merged · closed: US-PANEL-01
+
+<!-- ai-sdlc:session-log -->
+**2026-08-05 19:28** · branch: `main`
+  - Last commit: eee26c5 [docs] Defer the Nano Banana image-model swap to the Phase 4 backlog (B-17) (#25)
+
+<!-- ai-sdlc:session-log -->
+**2026-08-06 11:13** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-08-06 16:46** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-08-06 16:52** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-08-06 17:07** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-08-06 17:14** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-08-06 17:32** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-08-06 18:26** · branch: `feat/gen/us-gen-003-locale-aware-output`
+  - Last commit: baa96e9 feat(gen): locale-aware output formatting — US-GEN-003
+
+<!-- ai-sdlc:session-log -->
+**2026-08-06 18:35** · branch: `feat/gen/us-gen-003-locale-aware-output`
+  - Last commit: baa96e9 feat(gen): locale-aware output formatting — US-GEN-003
+
+<!-- ai-sdlc:session-log -->
+**2026-08-06 18:38** · branch: `feat/gen/us-gen-003-locale-aware-output`
+  - Last commit: baa96e9 feat(gen): locale-aware output formatting — US-GEN-003
+
+<!-- ai-sdlc:session-log -->
+**2026-08-06 18:47** · branch: `feat/gen/us-gen-003-locale-aware-output`
+  - Last commit: 815702f docs(agile): add M-GEN-02 milestone; park the org-default question as BL-05
+
+<!-- ai-sdlc:session-log -->
+**2026-08-06 18:53** · branch: `feat/gen/us-gen-003-locale-aware-output`
+  - Last commit: 815702f docs(agile): add M-GEN-02 milestone; park the org-default question as BL-05
+
+<!-- ai-sdlc:session-log -->
+**2026-08-06 19:33** · branch: `feat/gen/us-gen-003-locale-aware-output`
+  - Last commit: 0a3c7ef docs(agile): record the currency-input design question and two unverified gaps

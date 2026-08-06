@@ -112,6 +112,30 @@ export class GenerateFromChatDto {
   @IsOptional()
   photoReference?: string;
 
+  @ApiProperty({
+    example: 'en-IN',
+    description:
+      'Output locale for on-image formatting (currency, numbering, area unit, room vocabulary). ' +
+      'Resolved client-side because the currency symbol the user typed does not survive extraction. ' +
+      'Omit for passthrough. Unrelated to billing currency.',
+    required: false,
+    enum: ['en-US', 'en-IN'],
+  })
+  @IsEnum(['en-US', 'en-IN'])
+  @IsOptional()
+  locale?: 'en-US' | 'en-IN';
+
+  @ApiProperty({
+    example: 'AED',
+    description:
+      'The currency token the user actually typed. Echoed verbatim when `locale` is absent or ' +
+      'unrecognised, so an unsupported market still renders its own currency instead of "$".',
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  currencyToken?: string;
+
   @ValidateNested()
   @Type(() => AgentDto)
   @IsOptional()
