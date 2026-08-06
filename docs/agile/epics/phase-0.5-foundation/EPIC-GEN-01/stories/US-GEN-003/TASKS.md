@@ -2,7 +2,7 @@
 
 > **Story:** [STORY.md](./STORY.md)
 > **Branch:** `feat/gen/us-gen-003-locale-aware-output`
-> **PR:** TBD
+> **PR:** #28
 > **Type:** feat
 
 ---
