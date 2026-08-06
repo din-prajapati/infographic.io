@@ -55,6 +55,7 @@ import { useAgentStore } from "../../hooks/useAgentStore";
 import { usePropertyStore } from "../../hooks/usePropertyStore";
 import { useCanvasStore } from "../../hooks/useCanvasStore";
 import { deriveOrientationFromCanvas } from "../../lib/canvasState";
+import { resolveLocale } from "@shared/locale";
 
 interface AIChatBoxProps {
   isExpanded: boolean;
@@ -768,12 +769,21 @@ export function AIChatBox({
             ? agentInfo.brandColors
             : undefined;
 
+      // US-GEN-003: chat has no structured price field, so the message text itself is
+      // the raw string carrying the currency the agent typed.
+      const resolvedLocale = resolveLocale({
+        rawPriceText: promptText,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      });
+
       const generationResult = await generationsApi.generate({
         prompt: promptText,
         conversationId: conversationId,
         variations: 3,
         model: generationQualityModel,
         orientation: generationOrientation,
+        locale: resolvedLocale.id ?? undefined,
+        currencyToken: resolvedLocale.currencyToken ?? undefined,
         // Pass user-written headline if filled in — backend skips LLM call when present
         headline: propertyHeadline.trim() || undefined,
         // Pass uploaded property photo ID as style reference (AC3)

@@ -14,6 +14,13 @@ export interface PropertyInfo {
   address: string;
   description: string;
   features: string[];
+  /**
+   * Explicit output-locale override for this property (US-GEN-003 AC6).
+   * Empty = fall through to the resolution chain (typed symbol → org default →
+   * timezone → passthrough). The property owns locale because a listing's market is
+   * a fact about the listing, not about the agent.
+   */
+  locale: '' | 'en-US' | 'en-IN';
 }
 
 interface PropertyStore {
@@ -32,6 +39,7 @@ const DEFAULT_PROPERTY: PropertyInfo = {
   address: '',
   description: '',
   features: [],
+  locale: '',
 };
 
 export const usePropertyStore = create<PropertyStore>((set) => ({

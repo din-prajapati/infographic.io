@@ -15,6 +15,14 @@
  * flawless output. Hence: we author text prompts, Ideogram authors JSON.
  */
 
+import {
+  LOCALES,
+  type LocaleId,
+  formatPriceForLocale,
+  formatAreaForLocale,
+  formatRoomsForLocale,
+} from '@shared/locale';
+
 const COLOR_NAMES: Record<string, string> = {
   '#1F1F1F': 'charcoal black', '#D4AF37': 'gold', '#FFFFFF': 'white', '#ffffff': 'white',
   '#F5F5F5': 'off-white', '#8B7355': 'warm brown', '#0F172A': 'midnight navy',
@@ -27,22 +35,38 @@ const COLOR_NAMES: Record<string, string> = {
   '#EDE9FE': 'pale lavender', '#1F448B': 'deep navy blue', '#000000': 'black',
 };
 
-/** Abbreviated price — "$500K" renders more reliably than "$500,000" in image models. */
-export function formatPriceShort(price?: number | string): string {
-  if (!price) return '';
-  const num = typeof price === 'string' ? parseFloat(price.replace(/[^0-9.]/g, '')) : price;
-  if (!num || isNaN(num)) return '';
-  if (num >= 1_000_000) return `$${(num % 1_000_000 === 0 ? num / 1_000_000 : (num / 1_000_000).toFixed(1))}M`;
-  if (num >= 1_000) return `$${Math.round(num / 1_000)}K`;
-  return `$${num.toLocaleString()}`;
+function toNumber(value?: number | string, integer = false): number | null {
+  if (value === undefined || value === null || value === '') return null;
+  const num =
+    typeof value === 'string'
+      ? (integer ? parseInt(value.replace(/[^0-9]/g, ''), 10) : parseFloat(value.replace(/[^0-9.]/g, '')))
+      : value;
+  return !num || isNaN(num) ? null : num;
 }
 
-/** Formatted sqft with comma separator. */
-export function formatSqft(sqft?: number | string): string {
-  if (!sqft) return '';
-  const num = typeof sqft === 'string' ? parseInt(sqft.replace(/[^0-9]/g, '')) : sqft;
-  if (!num || isNaN(num)) return '';
-  return `${num.toLocaleString()} SQ FT`;
+/**
+ * Abbreviated price — "$500K" renders more reliably than "$500,000" in image models.
+ *
+ * `locale` and `currencyToken` come from the client (US-GEN-003): the extraction
+ * contract types `price` as a bare number, so by the time this runs the symbol the
+ * user typed is long gone. Omitting both yields passthrough — digits with no invented
+ * currency — rather than the old hardcoded "$".
+ */
+export function formatPriceShort(
+  price?: number | string,
+  locale: LocaleId | null = null,
+  currencyToken: string | null = null,
+): string {
+  const num = toNumber(price);
+  if (num === null) return '';
+  return formatPriceForLocale(num, locale, currencyToken);
+}
+
+/** Formatted area with the locale's unit (SQ FT when unresolved). */
+export function formatSqft(sqft?: number | string, locale: LocaleId | null = null): string {
+  const num = toNumber(sqft, true);
+  if (num === null) return '';
+  return formatAreaForLocale(num, locale);
 }
 
 /** Map a hex color to a natural-language name image models understand. */
@@ -111,15 +135,21 @@ interface PromptParts {
 
 function derivePromptParts(propertyData: any, headline: string): PromptParts {
   const rawColors: string[] = propertyData.agent?.brandColors || [];
+
+  // Resolved client-side and carried on the DTO — see formatPriceShort's note.
+  const locale: LocaleId | null =
+    propertyData.locale && propertyData.locale in LOCALES ? propertyData.locale : null;
+  const currencyToken: string | null = propertyData.currencyToken ?? null;
+
+  const rooms = formatRoomsForLocale(propertyData.beds, propertyData.baths, locale);
   const statParts: string[] = [];
-  if (propertyData.beds) statParts.push(`${propertyData.beds} BED`);
-  if (propertyData.baths) statParts.push(`${propertyData.baths} BATH`);
-  if (propertyData.sqft) statParts.push(formatSqft(propertyData.sqft));
+  if (rooms) statParts.push(rooms);
+  if (propertyData.sqft) statParts.push(formatSqft(propertyData.sqft, locale));
   return {
     // Truncate — short headlines render more reliably in image models
     headline: headline.length > 32 ? headline.slice(0, 32).trimEnd() + '…' : headline,
     address: propertyData.address || '',
-    price: formatPriceShort(propertyData.price),
+    price: formatPriceShort(propertyData.price, locale, currencyToken),
     stats: statParts.join(' | '),
     agentName: realAgentName(propertyData.agent?.name),
     brokerage: (propertyData.agent?.brokerage || '').trim(),

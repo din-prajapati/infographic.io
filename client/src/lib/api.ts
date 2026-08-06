@@ -103,6 +103,14 @@ export interface GenerateFromChatInput {
   headline?: string;
   /** Photo ID returned by POST /infographics/upload-photo; attaches property photo as generation style reference. */
   photoReference?: string;
+  /**
+   * Output locale for on-image formatting (US-GEN-003). Resolved here rather than
+   * server-side because the currency symbol the user typed is destroyed by extraction.
+   * Omit for passthrough. Nothing to do with billing currency.
+   */
+  locale?: 'en-US' | 'en-IN';
+  /** The currency token the user typed, echoed verbatim when `locale` is unresolved. */
+  currencyToken?: string;
 }
 
 export interface GenerationStatus {

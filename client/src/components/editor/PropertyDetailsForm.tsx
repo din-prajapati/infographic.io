@@ -11,11 +11,44 @@ import {
 import { Separator } from "../ui/separator";
 import { NumberStepper } from "../ui/number-stepper";
 import { usePropertyStore } from "../../hooks/usePropertyStore";
+import { resolveLocale, LOCALES } from "@shared/locale";
 
 const FEATURES = ["Pool", "Garage", "Garden", "Fireplace", "AC", "Heating"];
 
+/** Placeholder per locale — the old fixed "$450,000" actively taught the wrong currency
+ *  into the very field the locale resolver reads (US-GEN-003 AC7). */
+const PRICE_PLACEHOLDER: Record<string, string> = {
+  'en-US': '$450,000',
+  'en-IN': '₹85,00,000',
+};
+
+/** Override cycle: auto → India → US → auto. */
+const LOCALE_CYCLE: Array<'' | 'en-US' | 'en-IN'> = ['', 'en-IN', 'en-US'];
+
 export function PropertyDetailsForm() {
   const { property, setProperty } = usePropertyStore();
+
+  const resolved = resolveLocale({
+    override: property.locale || null,
+    rawPriceText: property.price,
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+  });
+
+  const pricePlaceholder =
+    PRICE_PLACEHOLDER[resolved.id ?? ''] ?? PRICE_PLACEHOLDER['en-US'];
+
+  const conventions = resolved.id ? LOCALES[resolved.id] : null;
+  const localeLabel = conventions
+    ? `${conventions.currencySymbol} ${resolved.id} · ${conventions.areaUnit.toLowerCase()}` +
+      (property.locale ? '' : ' (auto)')
+    : resolved.currencyToken
+      ? `${resolved.currencyToken} · as typed`
+      : 'Format: auto — click to set';
+
+  const cycleLocale = () => {
+    const next = LOCALE_CYCLE[(LOCALE_CYCLE.indexOf(property.locale) + 1) % LOCALE_CYCLE.length];
+    setProperty({ locale: next });
+  };
 
   const toggleFeature = (feature: string) => {
     const next = property.features.includes(feature)
@@ -84,11 +117,23 @@ export function PropertyDetailsForm() {
           <Input
             id="price"
             type="text"
-            placeholder="$450,000"
+            placeholder={pricePlaceholder}
             value={property.price}
             onChange={(e) => setProperty({ price: e.target.value })}
             className="h-9"
           />
+          {/* Locale indicator — the agent can see what will be printed on the image
+              before spending a credit, and change it. Same affordance as the brand
+              indicator (US-PANEL-01); deliberately not a required field. */}
+          <button
+            type="button"
+            data-testid="locale-indicator"
+            onClick={cycleLocale}
+            className="text-[10px] text-muted-foreground hover:text-foreground transition-colors underline underline-offset-2"
+            title="Output formatting for this listing — click to change"
+          >
+            <span data-testid="locale-indicator-label">{localeLabel}</span>
+          </button>
         </div>
 
         {/* Beds & Baths */}

@@ -47,6 +47,7 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { usePropertyStore } from "../../hooks/usePropertyStore";
+import { resolveLocale } from "@shared/locale";
 import { useAgentStore } from "../../hooks/useAgentStore";
 import { generationsApi, ResultVariation } from "../../lib/api";
 import { useGenerationWebSocket, GenerationProgress } from "../../hooks/useGenerationWebSocket";
@@ -368,6 +369,14 @@ export function RightSidebar() {
     }
 
     const prompt = buildPropertyPrompt(property, agent);
+
+    // US-GEN-003: resolve here, not server-side — the currency symbol lives only in the
+    // raw string the agent typed, and extraction reduces price to a bare number.
+    const resolved = resolveLocale({
+      override: property.locale || null,
+      rawPriceText: property.price,
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    });
     const themeColors = activePalette?.colors ?? [];
     const brandColors: string[] | undefined =
       themeColors.length > 0
@@ -389,6 +398,8 @@ export function RightSidebar() {
         variations: 3,
         model: "ideogram-turbo",
         orientation: deriveOrientationFromCanvas(canvasWidth, canvasHeight),
+        locale: resolved.id ?? undefined,
+        currencyToken: resolved.currencyToken ?? undefined,
         agent: {
           name: agent.name || undefined,
           brokerage: agent.brokerage || undefined,
