@@ -2433,3 +2433,60 @@ the reason recorded rather than counted as done.
 
 <!-- ai-sdlc:session-log -->
 **2026-08-06 14:39** · PR #28 merged · closed: US-GEN-003
+
+<!-- ai-sdlc:session-log -->
+**2026-08-06 20:12** · branch: `main`
+  - Last commit: 6745804 chore(orion): close US-GEN-003 after PR #28 merge
+
+### 2026-08-07 — US-GEN-003 closed · M-GEN-02 complete · Phase 0.5 down to one checkbox
+
+**[US-GEN-003](epics/phase-0.5-foundation/EPIC-GEN-01/stories/US-GEN-003/STORY.md) ✅ Done** —
+PR #28 squash-merged. **M-GEN-02-output-localisation ✅ closed.**
+
+**What shipped.** Every infographic printed a `$`. An agent entering ₹85,00,000 advertised their
+85-lakh flat as **"$8.5M"** — wrong symbol and, to a dollar reader, an ~85× overstatement
+rasterised into the image. The exact-text verify layer then confirmed "$8.5M" rendered faithfully,
+so our correctness machinery was certifying the error. Price, area and room vocabulary now follow
+the listing's market (`en-IN` → ₹85 Lakh / 3 BHK; `en-US` byte-identical to before).
+
+**The design rule is passthrough, not a better default.** When no locale resolves we echo the
+currency the agent typed; when they typed none we print no symbol at all. That makes the locale
+table an *enhancement rather than a gate* — `AED 1,200,000` renders correctly with zero table
+entries, so a global user is never blocked. Locale also never reads billing: a Dubai agent pays
+₹2,999 through the single INR gateway, so billing currency reports the wrong market, and will keep
+doing so after Stripe. A guard test pins the separation.
+
+**Harden earned its keep again.** The story as drafted put currency parsing in the prompt builder.
+Tracing the real path showed the extraction contract types `price` as a bare `number`
+(`prompt-extractor.service.ts:10,64,76`), so the symbol is destroyed two layers earlier — the story
+would have compiled, passed, and changed nothing for any non-USD user. Same failure shape as
+US-PANEL-01. Resolution moved client-side, where the raw string still exists.
+
+**EPIC-GEN-01 deliberately NOT closed.** Both its milestones are now ✅, but the epic DoD item
+*"Verified on staging environment"* remains unchecked. It pre-dates M-GEN-02 and is not that
+milestone's to satisfy. **That one box is now the entire remainder of Phase 0.5** — EPIC-AI-00 and
+EPIC-DESIGN-04 are both done. Ticking it without evidence would have been exactly the trap
+TEAM_STATUS already warns about, so it stays open.
+
+**Three findings carried out of the story rather than buried:**
+- **[BL-05](BACKLOG.md)** — the locale org-default rung is plumbed and unit-tested but nothing
+  persists it. Three options costed in
+  [docs/research/2026-08-06-LOCALE-ORG-DEFAULT-OPTIONS.md](../research/2026-08-06-LOCALE-ORG-DEFAULT-OPTIONS.md),
+  deliberately undecided — a Prisma migration is poorly timed while production is still undeployed.
+- **[BL-06](BACKLOG.md) (P1)** — `prompt-extractor.service.ts:104` hardcodes `gpt-4o` while only the
+  *headline* call routes to Gemini for free/solo/team. Extraction runs on every generation, so an
+  empty OpenAI balance fails generation for **all** tiers, including those PRs #9/#10 were believed
+  to have migrated off OpenAI. Found when the local key returned `429 no credits` and extraction
+  died with no fallback. Now a Task 3 pre-deploy row (**P-29**).
+- **`₹85 lakh` (word magnitudes) is UNVERIFIED** — depends on the LLM extractor returning 8500000
+  rather than 85. Attempted verification was blocked by the same 429. Recipe left in the research doc.
+
+**Repo hygiene:** branches 8 → 3. Four verified-landed branches deleted (each confirmed on `main` by
+commit subject first), four more auto-pruned at merge. `origin/feat/epic-design-02-ui-redesign` and
+`origin/railway/fix-deploy-93f113` were **kept** — each holds one genuinely unmerged commit. The
+railway one is a two-line `railway.json` fix (devDependencies + builder) that never landed, which is
+worth a look before Task 3 given Task 3 *is* the production deploy.
+
+**Hook note:** the close-cascade hook behaved this time (`6745804` touched only TEAM_STATUS and the
+TASKS PR field, no corrupted cells as on #26) — but it still did not cascade. Milestone, epic and
+tracker updates were all done by hand. The defect logged on 2026-08-05 stands.

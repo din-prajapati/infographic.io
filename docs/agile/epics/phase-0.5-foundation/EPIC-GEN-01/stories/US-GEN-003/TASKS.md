@@ -111,11 +111,18 @@ PLAYWRIGHT_BASE_URL=http://localhost:5200 npx playwright test e2e/us-gen-003-loc
 
 ## Definition of Done
 
-- [ ] AC1–AC8 ✅
-- [ ] TC-GEN-003-01 … -12 ✅ (or ⚠️ with a recorded finding)
-- [ ] Gate 1 green on the final commit
-- [ ] PR opened and merged
-- [ ] Closeout cascade
+- [x] AC1–AC8 ✅ — AC1 ⚠️ partial, step 3 deferred as [BL-05](../../../../../BACKLOG.md) (F1)
+- [x] TC-GEN-003-01 … -12 ✅ — 12/12, with findings F1–F3 recorded
+- [x] Gate 1 green on the final commit — `tsc` clean, 193 unit tests, 3 E2E
+- [x] PR opened and merged — [#28](https://github.com/din-prajapati/infographic.io/pull/28), squash-merged 2026-08-07
+- [x] Closeout cascade — STORY → M-GEN-02 → EPIC-GEN-01 → PHASE_TRACKER → AGILE_INDEX → TEAM_STATUS
+
+> **DoD exception — AC1 step 3 (`organization.defaultLocale`).** The resolver rung exists and its
+> precedence is unit-tested, but nothing persists it: no column, no migration, no settings UI. The
+> live chain is override → typed symbol → timezone → passthrough, which is fully functional. Left
+> unbuilt rather than half-built; options costed in
+> [docs/research/2026-08-06-LOCALE-ORG-DEFAULT-OPTIONS.md](../../../../../../research/2026-08-06-LOCALE-ORG-DEFAULT-OPTIONS.md).
+> Approved by: Dinesh, 2026-08-06.
 
 ---
 

@@ -1,7 +1,7 @@
 # EPIC-GEN-01 — Generation Quality: V4 Magic-Prompt Pipeline
 
 > **Phase:** Phase 0.5 — Foundation Repair
-> **Status:** 🟡 M-GEN-01 ✅ complete (stories 2/2, cost verified $0) — staging verification is the only open DoD item
+> **Status:** 🟡 **Both milestones ✅ complete** — M-GEN-01 (2/2 stories, cost verified $0, 2026-07-07) and M-GEN-02 (US-GEN-003, PR #28, 2026-08-07). **Staging verification remains the only open DoD item**, and it predates both milestones — it does not belong to M-GEN-02. The epic cannot close until it is done, which also means Phase 0.5 cannot close.
 > **Linear Project:** LIN-EPIC-GEN-01
 > **Target date:** 2026-07-05
 > **Owner:** Dinesh
@@ -23,7 +23,7 @@
 | Milestone | Scope | Target | Status |
 |-----------|-------|--------|--------|
 | [M-GEN-01-v4-magic-prompt-pipeline](milestones/M-GEN-01-v4-magic-prompt-pipeline.md) | Pipeline restructure + verify/repair layer + E2E verification + tests + PR | 2026-07-05 | ✅ Done 2026-07-07 |
-| [M-GEN-02-output-localisation](milestones/M-GEN-02-output-localisation.md) | Locale-aware on-image strings — currency, numbering, area unit, room vocabulary; passthrough for unsupported markets | 2026-08-08 | 🟡 In Progress |
+| [M-GEN-02-output-localisation](milestones/M-GEN-02-output-localisation.md) | Locale-aware on-image strings — currency, numbering, area unit, room vocabulary; passthrough for unsupported markets | 2026-08-08 | ✅ Done 2026-08-07 |
 
 ---
 
@@ -33,7 +33,7 @@
 |----------|-------|-----------|------|--------|----|
 | [US-GEN-001](stories/US-GEN-001/STORY.md) | V4 magic-prompt pipeline — modular restructure with verified exact text | M-GEN-01 | L | ✅ Done | [#12](https://github.com/din-prajapati/infographic.io/pull/12) |
 | [US-GEN-002](stories/US-GEN-002/STORY.md) | Unit tests for prompt builder + verify/repair | M-GEN-01 | S | ✅ Done | [#13](https://github.com/din-prajapati/infographic.io/pull/13) |
-| [US-GEN-003](stories/US-GEN-003/STORY.md) | Locale-aware output: currency, numbering, area unit, room vocabulary | M-GEN-02 | M | 🟢 Implemented | PR open |
+| [US-GEN-003](stories/US-GEN-003/STORY.md) | Locale-aware output: currency, numbering, area unit, room vocabulary | M-GEN-02 | M | ✅ Done | [#28](https://github.com/din-prajapati/infographic.io/pull/28) |
 
 ---
 
