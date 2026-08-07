@@ -34,7 +34,7 @@
 |----------|-------|-----------|------|--------|----|
 | [US-AI-031](stories/US-AI-031/STORY.md) | Real listing photo as generation background | M-AI-17 | L | 🔲 | — |
 | [US-AI-032](stories/US-AI-032/STORY.md) | Hybrid render — text-free background + editable canvas text overlay | M-AI-18 | L | 🔲 | — |
-| [US-AI-033](stories/US-AI-033/STORY.md) | Synthetic-content guard — no fake faces/buildings on real listings | M-AI-17 | M | 🔲 | — |
+| [US-AI-033](stories/US-AI-033/STORY.md) | Synthetic-content guard — no fake faces/buildings on real listings | M-AI-17 | M → **S?** | 🔲 ⚠️ **scope under review** | — |
 
 ---
 

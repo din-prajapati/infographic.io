@@ -9,7 +9,7 @@ Uploaded listing photos (from US-AI-010) become the actual background of generat
 | Story | Title | Status |
 |-------|-------|--------|
 | US-AI-031 | Real listing photo as generation background | 🔲 |
-| US-AI-033 | Synthetic-content guard — no fake faces/buildings on real listings | 🔲 |
+| US-AI-033 | Synthetic-content guard — no fake faces/buildings on real listings | 🔲 ⚠️ scope under review 2026-08-07 — do not implement as written; see [Scope review](../stories/US-AI-033/STORY.md#scope-review--2026-08-07-not-decided) |
 
 ## Definition of Done
 - [ ] Generation with an uploaded photo produces output whose background is recognizably that photo
