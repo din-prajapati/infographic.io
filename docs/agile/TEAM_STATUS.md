@@ -2490,3 +2490,6 @@ worth a look before Task 3 given Task 3 *is* the production deploy.
 **Hook note:** the close-cascade hook behaved this time (`6745804` touched only TEAM_STATUS and the
 TASKS PR field, no corrupted cells as on #26) — but it still did not cascade. Milestone, epic and
 tracker updates were all done by hand. The defect logged on 2026-08-05 stands.
+
+<!-- ai-sdlc:session-log -->
+**2026-08-07 10:07** · PR #29 merged · closed: US-GEN-003
