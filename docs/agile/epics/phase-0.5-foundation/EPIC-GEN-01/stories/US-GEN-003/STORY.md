@@ -2,7 +2,7 @@
 
 > **Epic:** [EPIC-GEN-01](../../EPIC.md)
 > **Milestone:** [M-GEN-02-output-localisation](../../milestones/M-GEN-02-output-localisation.md)
-> **Size:** M · **Status:** 🟢 Implemented — Gate 1 green, awaiting PR
+> **Size:** M · **Status:** ✅ Done · **Closed:** 2026-08-07 · **PR:** [#28](https://github.com/din-prajapati/infographic.io/pull/28)
 > **Priority:** P0 — live defect in the primary market
 > **Persona:** Listing agent or private seller marketing a property in any country
 > **Branch:** `feat/gen/us-gen-003-locale-aware-output`

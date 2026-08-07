@@ -109,7 +109,7 @@ Each phase requires a gate decision before the next phase starts:
 
 ### Gate Criteria (Phase 0 → Phase 1)
 - [ ] Phase 0 production deployed
-- [ ] Phase 0.5 closed (incl. EPIC-GEN-01 V4 pipeline merged)
+- [ ] Phase 0.5 closed (incl. EPIC-GEN-01 V4 pipeline merged) — **all code merged; blocked only on staging verification.** EPIC-AI-00 ✅ (2026-08-05) · EPIC-DESIGN-04 ✅ · EPIC-GEN-01 has both milestones ✅ (M-GEN-01 2026-07-07, M-GEN-02 2026-08-07) but one open DoD item: *"Verified on staging environment"*. That single unchecked box is the whole of what keeps Phase 0.5 open.
 
 ### Phase 1 internal gates (two launch moments)
 | Gate | Criteria | Unlocks |

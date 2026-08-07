@@ -1,6 +1,6 @@
 # M-GEN-02 — Output Localisation
 
-> **Epic:** [EPIC-GEN-01](../EPIC.md) · **Status:** 🟡 In Progress · **Target:** 2026-08-08
+> **Epic:** [EPIC-GEN-01](../EPIC.md) · **Status:** ✅ Done · **Closed:** 2026-08-07 · **Target:** 2026-08-08 (met)
 
 ## Scope
 Make the strings printed on a generated infographic follow the listing's market rather than a
@@ -17,7 +17,7 @@ exact-text verify layer then certified the wrong number as faithfully rendered.
 ## Stories
 | Story | Title | Status |
 |-------|-------|--------|
-| [US-GEN-003](../stories/US-GEN-003/STORY.md) | Locale-aware output: currency, numbering, area unit, room vocabulary | 🟢 Implemented — Gate 1 green, PR open |
+| [US-GEN-003](../stories/US-GEN-003/STORY.md) | Locale-aware output: currency, numbering, area unit, room vocabulary | ✅ Done — [#28](https://github.com/din-prajapati/infographic.io/pull/28) |
 
 ## Definition of Done
 - [x] Locale table lives in `shared/` so client and server read one copy, no drift
@@ -26,8 +26,8 @@ exact-text verify layer then certified the wrong number as faithfully rendered.
 - [x] Passthrough proven: an unsupported market echoes the typed currency and is never blocked
 - [x] Locale is visible and overridable before a credit is spent (US-PANEL-01 D4 rule)
 - [x] Billing never informs output formatting — guard test on the formatting path
-- [ ] PR merged; STORY.md status ✅
-- [ ] Closeout cascade
+- [x] PR merged; STORY.md status ✅ — [#28](https://github.com/din-prajapati/infographic.io/pull/28), 2026-08-07
+- [x] Closeout cascade
 
 ## Deferred out of this milestone
 - **Org-wide default locale** — [BL-05](../../../../BACKLOG.md), analysis in
