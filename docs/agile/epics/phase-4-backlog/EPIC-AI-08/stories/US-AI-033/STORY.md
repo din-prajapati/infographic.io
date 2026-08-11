@@ -1,8 +1,11 @@
 # US-AI-033 — Synthetic-Content Guard
 
-> **Epic:** [EPIC-AI-06](../../EPIC.md) · **Milestone:** [M-AI-17](../../milestones/M-AI-17-real-photo-background.md)
+> **Epic:** [EPIC-AI-08](../../EPIC.md) · **Milestone:** — (undecided; assign when the scope review resolves)
 > **Size:** M · **Status:** 🔲 Not Started — ⚠️ **scope under review, do not implement as written** (see [Scope review](#scope-review--2026-08-07-not-decided))
 > **Decision trigger:** revisit when real user demand appears; see the review below for what is and is not worth building
+> **Backlog ref:** B-18
+
+> **Moved to the Phase 4 backlog 2026-08-11.** Previously sat in EPIC-AI-06 / M-AI-17. It was holding that milestone open: M-AI-17's Definition of Done carried a synthetic-content line that only this story could satisfy, so the milestone could never close on the strength of US-AI-031 and US-AI-031b alone — even though this story has no agreed scope to build. A milestone blocked by an undecided story tracks nothing useful. The scope review below is unchanged and still governs; nothing here is decided by the move.
 
 ---
 

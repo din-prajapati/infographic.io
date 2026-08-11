@@ -90,6 +90,7 @@ Every PR is traceable from `git log` → Story → Milestone → Epic.
 | B-15 | Mobile App (React Native or PWA) | Mobile | 10–14 wks | Mobile usage > 30% |
 | B-16 | [EPIC-AI-08](epics/phase-4-backlog/EPIC-AI-08/EPIC.md) — M-AI-07 Quality Tiers & Campaign Mode UI (moved from EPIC-AI-02, 2026-07-30) | AI | ~8-10h | First real revenue (M-LAUNCH-02 flips) |
 | B-17 | [EPIC-AI-08](epics/phase-4-backlog/EPIC-AI-08/EPIC.md) — M-AI-02 Ideogram → Nano Banana **image**-model swap (moved from EPIC-AI-00, 2026-08-04; the LLM/text half already shipped via PRs #9/#10) | AI | ~6-8h | Image cost/quality pressure |
+| B-18 | [US-AI-033](epics/phase-4-backlog/EPIC-AI-08/stories/US-AI-033/STORY.md) — Synthetic-content guard (moved from EPIC-AI-06 / M-AI-17, 2026-08-11). **Scope under review since 2026-08-07 — no agreed scope to build.** Was holding M-AI-17 open via a DoD line only this story could satisfy | AI | TBD — resize after the scope review resolves | Real user demand for synthetic-content controls |
 
 ---
 

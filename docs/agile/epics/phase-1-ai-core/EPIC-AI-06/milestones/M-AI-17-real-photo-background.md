@@ -12,11 +12,9 @@ The agent's uploaded listing photo becomes the **source image** for the composit
 |-------|-------|--------|
 | US-AI-031 | Real property photo as composition source | 🟡 AC2–AC7 verified; AC1 gated on Ideogram credit |
 | US-AI-031b | Layer extraction and canonical text rendering | 🟡 AC2–AC9 verified; AC1 gated on Ideogram credit |
-| US-AI-033 | Synthetic-content guard — no fake faces/buildings on real listings | 🔲 ⚠️ scope under review 2026-08-07 — do not implement as written; see [Scope review](../stories/US-AI-033/STORY.md#scope-review--2026-08-07-not-decided) |
 
 ## Definition of Done
 - [ ] Generation with an uploaded photo produces output whose background is recognizably that photo
-- [ ] No synthetic agent faces or property imagery when real assets exist
 - [ ] **Every canonical listing value renders exactly** — headline, address, price, stats, agent, brokerage. Note this is now a *deterministic rendering* property, not a verification of model output: the application typesets the text, so correctness no longer depends on the image model. The previous wording ("exact-text verification still passes on photo-backed generations") described `verifyAndRepairV4JsonPrompt`, which cannot run on this path at all.
 - [ ] Degradation paths hold: extraction failure still yields a usable flat design; undetected fields still render via fallback geometry
 - [ ] Gate 1 (check + unit tests) green
