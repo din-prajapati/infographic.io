@@ -78,6 +78,26 @@ export const OPENAI_COSTS = {
  */
 export const V4_MAGIC_PROMPT_COST = 0;
 
+/**
+ * Ideogram V4 Remix — source-image composition for photo-backed listing designs.
+ * Source: https://ideogram.ai/api-pricing/ — "Remix is priced per output image,
+ * same rates as Generate."
+ *
+ * Key finding from SPIKE-031 §5: the recommended Remix path is COST-NEUTRAL —
+ * switching a photo-backed generation from V4 generate to V4 Remix moves
+ * provider spend by $0.00. Photo-backed generation does not raise our COGS.
+ *
+ * Rejected alternative — Instructional Edit (POST /v1/edit, $0.20 flat):
+ * At the default 3 variations/generation that is $0.60/generation, which
+ * reaches 150% of TEAM plan monthly revenue for a single seat at cap.
+ * Gross-margin negative on SOLO, TEAM and BROKERAGE at any variation count.
+ * Source: SPIKE-031 §5, https://ideogram.ai/api-pricing/.
+ *
+ * Per CLAUDE.md metering policy: creditsUsed stays 1 per generation regardless
+ * of path; costUsd records true provider spend and must never be zeroed.
+ */
+export const REMIX_COST_PER_IMAGE = AI_MODELS['ideogram-4'].costPerImage; // $0.06 at default tier — same as generate
+
 export function getModelCost(modelName: string): number {
   const normalized =
     modelName === 'ideogram-v2' ? 'ideogram-2' : modelName;
