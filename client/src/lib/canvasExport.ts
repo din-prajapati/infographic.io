@@ -23,6 +23,10 @@ export async function exportCanvasToImage(
   scale: number = 0
 ): Promise<string | null> {
   try {
+    // Wait for web fonts so ctx.font picks up loaded typefaces before text
+    // rendering. Without this, text may fall back to the browser default.
+    await document.fonts.ready;
+
     const state = useCanvasStore.getState();
     // Auto scale: print-DPI artboards (>=2000px) already have print-density
     // pixels, so scale 1 keeps memory bounded and avoids multi-hundred-MB
@@ -163,20 +167,25 @@ function wrapTextToWidth(
 }
 
 /**
- * Render text element to canvas
+ * Render text element to canvas.
+ *
+ * Padding convention (must stay in sync with TextElement.tsx:185):
+ *   - horizontal: 8px left + 8px right  (Tailwind px-2)
+ *   - vertical:   4px top               (Tailwind py-1; bottom is visual margin only)
+ *   - list indent: paddingLeft jumps to 24px (Tailwind pl-6 / 1.5rem), overriding the base 8px
  */
 function renderTextElement(ctx: CanvasRenderingContext2D, element: TextElement): void {
   ctx.save();
-  
+
   // Set text properties
   const fontWeight = element.bold ? 'bold' : element.fontWeight;
   const fontStyle = element.italic ? 'italic' : 'normal';
-  
+
   ctx.font = `${fontStyle} ${fontWeight} ${element.fontSize}px ${element.fontFamily}`;
   ctx.fillStyle = element.color;
   ctx.textAlign = element.align;
   ctx.textBaseline = 'top';
-  
+
   // Apply text transform
   let content = element.content;
   switch (element.textTransform) {
@@ -190,7 +199,7 @@ function renderTextElement(ctx: CanvasRenderingContext2D, element: TextElement):
       content = content.charAt(0).toUpperCase() + content.slice(1).toLowerCase();
       break;
   }
-  
+
   // Apply list formatting
   if (element.listStyle === 'bullet') {
     content = `• ${content}`;
@@ -198,14 +207,20 @@ function renderTextElement(ctx: CanvasRenderingContext2D, element: TextElement):
     content = `1. ${content}`;
   }
 
-  // Build the final line list: honor explicit newlines AND word-wrap each
-  // paragraph to the element width so long single-line content (e.g. a
-  // listing description) doesn't overflow the artboard and get clipped on
-  // export. Matches the editor's `whitespace-pre-wrap break-words` behavior.
+  // Padding values mirroring the TextElement.tsx preview (px-2 py-1).
+  const padH = 8; // px-2 = 0.5rem = 8px
+  const padTop = 4; // py-1 = 0.25rem = 4px
+
+  // Word-wrap within the inset width (full width minus left + right padding)
+  // so long lines don't overflow the element box, matching the CSS
+  // `whitespace-pre-wrap break-words` behaviour of the preview.
+  const insetWidth = element.width - padH * 2;
+
+  // Build the final line list: honour explicit newlines AND word-wrap.
   const paragraphs = content.split('\n');
   const lines: string[] = [];
   for (const paragraph of paragraphs) {
-    const wrapped = wrapTextToWidth(ctx, paragraph, element.width);
+    const wrapped = wrapTextToWidth(ctx, paragraph, insetWidth);
     if (wrapped.length === 0) {
       lines.push(''); // preserve blank lines
     } else {
@@ -215,22 +230,23 @@ function renderTextElement(ctx: CanvasRenderingContext2D, element: TextElement):
 
   const lineHeight = element.fontSize * element.lineHeight;
 
-  // Calculate text position based on alignment
-  let textX = element.x;
+  // Calculate text X position, applying horizontal padding.
+  // List items override paddingLeft to 1.5rem = 24px (matching TextElement.tsx:196).
+  let textX: number;
   if (element.align === 'center') {
+    // Equal left+right padding — centre of the padded box is the same as the
+    // centre of the full element box.
     textX = element.x + element.width / 2;
   } else if (element.align === 'right') {
-    textX = element.x + element.width;
-  }
-
-  // Add padding for lists
-  if (element.listStyle !== 'none') {
-    textX += element.align === 'left' ? 24 : 0;
+    textX = element.x + element.width - padH;
+  } else {
+    // left (default)
+    textX = element.x + (element.listStyle !== 'none' ? 24 : padH);
   }
 
   // Draw each line
   lines.forEach((line, index) => {
-    const textY = element.y + index * lineHeight;
+    const textY = element.y + padTop + index * lineHeight;
     ctx.fillText(line, textX, textY);
     
     // Draw underline if needed
@@ -409,16 +425,79 @@ function renderShapeElement(ctx: CanvasRenderingContext2D, element: ShapeElement
 }
 
 /**
- * Render image element to canvas
+ * Compute source/destination rectangles for a 9-argument drawImage call that
+ * honours CSS object-fit semantics.
+ *
+ * Returns { sx, sy, sw, sh } (source crop) and { dx, dy, dw, dh } (dest rect).
+ * For 'fill' the source is the full image and the dest is the element box,
+ * matching the old stretching behaviour.
+ */
+function computeObjectFitDraw(
+  naturalW: number,
+  naturalH: number,
+  destX: number,
+  destY: number,
+  destW: number,
+  destH: number,
+  objectFit: 'contain' | 'cover' | 'fill',
+): { sx: number; sy: number; sw: number; sh: number; dx: number; dy: number; dw: number; dh: number } {
+  if (objectFit === 'fill' || naturalW === 0 || naturalH === 0) {
+    return { sx: 0, sy: 0, sw: naturalW, sh: naturalH, dx: destX, dy: destY, dw: destW, dh: destH };
+  }
+
+  const imgAR = naturalW / naturalH;
+  const destAR = destW / destH;
+
+  if (objectFit === 'contain') {
+    let dw: number;
+    let dh: number;
+    if (imgAR > destAR) {
+      dw = destW;
+      dh = destW / imgAR;
+    } else {
+      dh = destH;
+      dw = destH * imgAR;
+    }
+    const dx = destX + (destW - dw) / 2;
+    const dy = destY + (destH - dh) / 2;
+    return { sx: 0, sy: 0, sw: naturalW, sh: naturalH, dx, dy, dw, dh };
+  }
+
+  // cover — crop source to fill dest, centred
+  let sw: number;
+  let sh: number;
+  let sx: number;
+  let sy: number;
+  if (imgAR > destAR) {
+    sh = naturalH;
+    sw = naturalH * destAR;
+    sx = (naturalW - sw) / 2;
+    sy = 0;
+  } else {
+    sw = naturalW;
+    sh = naturalW / destAR;
+    sx = 0;
+    sy = (naturalH - sh) / 2;
+  }
+  return { sx, sy, sw, sh, dx: destX, dy: destY, dw: destW, dh: destH };
+}
+
+/**
+ * Render image element to canvas.
+ *
+ * Three divergences from the original (T6 of US-AI-032):
+ *  - objectFit: honours 'contain' / 'cover' (previously always stretched)
+ *  - crop:      applies element.crop when present (previously ignored)
+ *  - isAiImport: treated as objectFit:'contain' (matches preview background-size:contain)
  */
 async function renderImageElement(ctx: CanvasRenderingContext2D, element: ImageElement): Promise<void> {
   return new Promise((resolve) => {
     const img = new Image();
     img.crossOrigin = 'anonymous';
-    
+
     img.onload = () => {
       ctx.save();
-      
+
       // Apply corner radius clipping
       if (element.cornerRadius > 0) {
         const x = element.x;
@@ -426,7 +505,7 @@ async function renderImageElement(ctx: CanvasRenderingContext2D, element: ImageE
         const w = element.width;
         const h = element.height;
         const r = Math.min(element.cornerRadius, w / 2, h / 2);
-        
+
         ctx.beginPath();
         ctx.moveTo(x + r, y);
         ctx.lineTo(x + w - r, y);
@@ -439,9 +518,9 @@ async function renderImageElement(ctx: CanvasRenderingContext2D, element: ImageE
         ctx.quadraticCurveTo(x, y, x + r, y);
         ctx.clip();
       }
-      
+
       // Apply filters (without blur)
-      const filters = [];
+      const filters: string[] = [];
       if (element.filters.brightness !== 100) {
         filters.push(`brightness(${element.filters.brightness}%)`);
       }
@@ -451,20 +530,35 @@ async function renderImageElement(ctx: CanvasRenderingContext2D, element: ImageE
       if (element.filters.saturation !== 100) {
         filters.push(`saturate(${element.filters.saturation}%)`);
       }
-      
       if (filters.length > 0) {
         ctx.filter = filters.join(' ');
       }
-      
-      // Calculate draw position and size
+
       const drawX = element.x;
       const drawY = element.y;
       const drawWidth = element.width;
       const drawHeight = element.height;
-      
-      // Draw image
-      ctx.drawImage(img, drawX, drawY, drawWidth, drawHeight);
-      
+
+      if (element.crop) {
+        // Honour element.crop: source rect is the crop region in natural-image
+        // coordinates; dest rect is the full element box. Matches preview's
+        // getCroppedImageStyle() in ImageElement.tsx.
+        const { x: sx, y: sy, width: sw, height: sh } = element.crop;
+        ctx.drawImage(img, sx, sy, sw, sh, drawX, drawY, drawWidth, drawHeight);
+      } else {
+        // isAiImport uses background-size:contain in the preview; treat as
+        // objectFit:'contain'. Explicit objectFit defaults to 'contain' (same
+        // as the CSS fallback in ImageElement.tsx:199).
+        const fit: 'contain' | 'cover' | 'fill' =
+          element.isAiImport ? 'contain' : (element.objectFit ?? 'contain');
+        const d = computeObjectFitDraw(
+          img.naturalWidth, img.naturalHeight,
+          drawX, drawY, drawWidth, drawHeight,
+          fit,
+        );
+        ctx.drawImage(img, d.sx, d.sy, d.sw, d.sh, d.dx, d.dy, d.dw, d.dh);
+      }
+
       // Apply color overlay if present
       if (element.colorOverlay) {
         ctx.save();
@@ -474,7 +568,7 @@ async function renderImageElement(ctx: CanvasRenderingContext2D, element: ImageE
         ctx.fillRect(drawX, drawY, drawWidth, drawHeight);
         ctx.restore();
       }
-      
+
       ctx.restore();
       resolve();
     };
