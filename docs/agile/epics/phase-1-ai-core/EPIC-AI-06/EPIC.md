@@ -69,6 +69,12 @@
 
 ## Implementation Update (log)
 
+### 2026-08-11 — US-AI-031b implementation complete (pre-PR)
+- **Files touched:** `api/src/modules/ai-generation/types/composed-design.types.ts` (new), `api/src/modules/ai-generation/services/layer-extraction.service.ts` (new), `api/src/modules/ai-generation/services/text-block.mapper.ts` (new), `api/src/modules/ai-generation/ai-generation.module.ts`, `api/src/modules/ai-generation/services/ai-orchestrator.service.ts`, `api/src/modules/infographics/services/generations.service.ts`, `api/src/config/ai-models.config.ts`, `api/tests/ai-generation/text-block.mapper.spec.ts` (new), `api/tests/ai-generation/layer-extraction.service.spec.ts` (new)
+- **ACs covered:** AC2, AC3, AC4, AC5, AC6, AC7, AC8, AC9 (AC1 deferred — gated on Ideogram credit top-up for live test; same standard as US-AI-031 AC1)
+- **Commits:** 7 on branch `feat/ai/m-17-real-photo-background`
+- **Notes:** (1) Fuzzy matching is bidirectional (takes max of forward/reverse word-overlap ratio) — this correctly handles the real-world case where Ideogram renders "123 Main Street" for canonical "123 Main St, Anytown". (2) Contact-shaped blocks (phone/email/URL) are dropped per the Identity policy; this is the one place AC4 and EPIC's purpose conflict — the comment in text-block.mapper.ts points to STORY.md. (3) `ai-generation.module.ts` was touched (scope drift: not listed in TASKS.md primary files, but required to register LayerExtractionService in the NestJS DI graph). (4) `LAYERIZE_COST_PER_IMAGE = 0.09` added to ai-models.config.ts with the lazy-billing explanation. (5) `GenerationsService.getComposedDesign()` is the edit-path entry point US-AI-032 will call. (6) All 241 unit tests pass; 28 new tests added (18 mapper + 10 extraction/orchestrator).
+
 ### 2026-08-11 — US-AI-031 implementation complete (pre-PR)
 - **Files touched:** `api/src/modules/ai-generation/services/ideogram.service.ts`, `api/src/modules/ai-generation/services/ai-orchestrator.service.ts`, `api/src/modules/infographics/dto/generate-from-chat.dto.ts`, `api/src/modules/infographics/services/generations.service.ts`, `api/src/config/ai-models.config.ts`, `api/src/config/image-generation.config.ts`, `api/tests/ai-generation/ideogram.service.spec.ts` (new), `api/tests/ai-generation/infographic-prompt.builder.spec.ts`
 - **ACs covered:** AC2, AC3, AC4, AC5, AC6, AC7 (AC1 deferred — gated on Ideogram credit top-up for live test)

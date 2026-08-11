@@ -1,6 +1,6 @@
 # Story Card — US-AI-031b
 
-> **Status:** 🔲 Not Started
+> **Status:** 🔄 In Progress (implementation complete, awaiting PR)
 > **Feature:** F-AI-06-02 — Layer extraction and canonical text rendering
 > **Epic:** [EPIC-AI-06](../../EPIC.md)
 > **Milestone:** [M-AI-17](../../milestones/M-AI-17-real-photo-background.md)
@@ -78,14 +78,14 @@ export interface ComposedDesign {
 ## Acceptance Criteria
 
 - [ ] **AC1 [happy-path]:** Given a composition produced by US-AI-031, the extraction step returns a text-erased background plus measured geometry, and the result renders every canonical listing value at its recovered position.
-- [ ] **AC2 [happy-path]:** Extraction is **lazy** — it runs on the *edit* action, never on *generate*. See Cost; this is architectural, not an optimisation.
-- [ ] **AC3 [happy-path]:** Block-to-field binding uses fuzzy match against canonical values as the **primary** signal, with `role` and font-size ranking as tiebreaks only. Implemented as a **pure, provider-free function** and unit-tested against fixture geometry.
-- [ ] **AC4 [edge-case]:** Blocks that match no canonical field **re-render their own detected text** rather than vanishing. Extraction erases every detected block from the background; dropping unmatched ones would leave blank plates where decorative text was.
-- [ ] **AC5 [edge-case]:** Canonical fields that no block matched are still rendered, placed by **fallback geometry** inferred from the design intent prose, and marked `placement: 'fallback'`. A value is never silently dropped.
-- [ ] **AC6 [error-path]:** When the extraction provider fails, times out, or returns zero blocks, the user still receives a **usable flat design** — today's behaviour. Never a broken editor, never a blank canvas.
-- [ ] **AC7 [regression]:** The no-photo path is untouched. `verifyAndRepairV4JsonPrompt` continues to run there, and its 23 tests stay green.
-- [ ] **AC8 [security]:** Canonical values are **never** sourced from model output. `detectedText` is used solely to decide *which* field a block is; the rendered string always comes from the application's own listing record.
-- [ ] **AC9 [documentation]:** Extraction cost is recorded in `api/src/config/ai-models.config.ts` with its source URL, plus a note on how a lazy call adds `costUsd` to an already-persisted generation record (see Metering wrinkle).
+- [x] **AC2 [happy-path]:** Extraction is **lazy** — it runs on the *edit* action, never on *generate*. See Cost; this is architectural, not an optimisation.
+- [x] **AC3 [happy-path]:** Block-to-field binding uses fuzzy match against canonical values as the **primary** signal, with `role` and font-size ranking as tiebreaks only. Implemented as a **pure, provider-free function** and unit-tested against fixture geometry.
+- [x] **AC4 [edge-case]:** Blocks that match no canonical field **re-render their own detected text** rather than vanishing. Extraction erases every detected block from the background; dropping unmatched ones would leave blank plates where decorative text was.
+- [x] **AC5 [edge-case]:** Canonical fields that no block matched are still rendered, placed by **fallback geometry** inferred from the design intent prose, and marked `placement: 'fallback'`. A value is never silently dropped.
+- [x] **AC6 [error-path]:** When the extraction provider fails, times out, or returns zero blocks, the user still receives a **usable flat design** — today's behaviour. Never a broken editor, never a blank canvas.
+- [x] **AC7 [regression]:** The no-photo path is untouched. `verifyAndRepairV4JsonPrompt` continues to run there, and its 23 tests stay green.
+- [x] **AC8 [security]:** Canonical values are **never** sourced from model output. `detectedText` is used solely to decide *which* field a block is; the rendered string always comes from the application's own listing record.
+- [x] **AC9 [documentation]:** Extraction cost is recorded in `api/src/config/ai-models.config.ts` with its source URL, plus a note on how a lazy call adds `costUsd` to an already-persisted generation record (see Metering wrinkle).
 
 ---
 

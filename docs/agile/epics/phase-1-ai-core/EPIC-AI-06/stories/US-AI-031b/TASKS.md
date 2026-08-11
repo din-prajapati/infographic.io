@@ -11,10 +11,10 @@
 
 ## Four Pillars Pre-flight
 
-- [ ] **Brain** — [STORY.md](./STORY.md) read, including the **Shared contract** block (US-AI-032 depends on it)
-- [ ] **Muscle** — file list + ordered tasks + test commands below
-- [ ] **Map** — [ARCHITECTURE.mmd](../../ARCHITECTURE.mmd) reviewed — this story is the *recovery* and *re-binding* planes
-- [ ] **Env** — [ENV.yaml](../../ENV.yaml) loaded; `IDEOGRAM_API_KEY` present in local `.env`
+- [x] **Brain** — [STORY.md](./STORY.md) read, including the **Shared contract** block (US-AI-032 depends on it)
+- [x] **Muscle** — file list + ordered tasks + test commands below
+- [x] **Map** — [ARCHITECTURE.mmd](../../ARCHITECTURE.mmd) reviewed — this story is the *recovery* and *re-binding* planes
+- [x] **Env** — [ENV.yaml](../../ENV.yaml) loaded; `IDEOGRAM_API_KEY` present in local `.env`
 
 > ⚠️ **US-AI-031 must be merged first.** This story consumes the composition it produces.
 > ⛽ **Credit status:** account is out of credit. TC-AI-031b-10 is gated — ship unticked rather than faking a pass.
