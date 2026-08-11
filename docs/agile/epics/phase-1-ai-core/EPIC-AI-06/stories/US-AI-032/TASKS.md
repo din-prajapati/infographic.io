@@ -24,10 +24,10 @@ Recommendation: **(a)**. Export parity is a pre-existing defect wearing this sto
 
 ## Four Pillars Pre-flight
 
-- [ ] **Brain** — [STORY.md](./STORY.md) read, including "Known structural facts"
-- [ ] **Muscle** — file list + ordered tasks + test commands below
-- [ ] **Map** — [ARCHITECTURE.mmd](../../ARCHITECTURE.mmd) reviewed
-- [ ] **Env** — [ENV.yaml](../../ENV.yaml) loaded
+- [x] **Brain** — [STORY.md](./STORY.md) read, including "Known structural facts"
+- [x] **Muscle** — file list + ordered tasks + test commands below
+- [x] **Map** — [ARCHITECTURE.mmd](../../ARCHITECTURE.mmd) reviewed
+- [x] **Env** — [ENV.yaml](../../ENV.yaml) loaded
 
 > ⚠️ **US-AI-031b must be merged first** — T2 imports its `ComposedDesign` contract.
 

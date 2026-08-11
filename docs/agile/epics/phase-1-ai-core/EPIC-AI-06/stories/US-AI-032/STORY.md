@@ -1,6 +1,6 @@
 # Story Card — US-AI-032
 
-> **Status:** 🔲 Not Started
+> **Status:** 🔶 In Progress (T3–T5,T7 done 2026-08-11; T6 done; awaiting /test-story)
 > **Feature:** F-AI-06-03 — Editable listing canvas
 > **Epic:** [EPIC-AI-06](../../EPIC.md)
 > **Milestone:** [M-AI-18](../../milestones/M-AI-18-editable-text-overlay.md)
@@ -43,13 +43,13 @@ Consume a `ComposedDesign` from US-AI-031b and turn it into a real, editable, pe
 
 ## Acceptance Criteria
 
-- [ ] **AC1 [happy-path]:** An edited generation opens in the editor as a background layer plus independently selectable text elements at their supplied positions.
-- [ ] **AC2 [happy-path]:** Each element carries its `slot` tag, so the existing sidebar Customize sections edit the values live (`RightSidebar.tsx:297-300` already derives active slots reactively from elements).
-- [ ] **AC3 [happy-path]:** The design persists and reloads with all elements intact.
-- [ ] **AC4 [regression]:** Flat mode remains available and unchanged; the user chooses per generation.
+- [x] **AC1 [happy-path]:** An edited generation opens in the editor as a background layer plus independently selectable text elements at their supplied positions.
+- [x] **AC2 [happy-path]:** Each element carries its `slot` tag, so the existing sidebar Customize sections edit the values live (`RightSidebar.tsx:297-300` already derives active slots reactively from elements).
+- [x] **AC3 [happy-path]:** The design persists and reloads with all elements intact.
+- [x] **AC4 [regression]:** Flat mode remains available and unchanged; the user chooses per generation.
 - [ ] **AC5 [regression]:** **Export matches the composed preview at full resolution.** This is *not* true today — see Export parity below. Real work, not a checkbox.
-- [ ] **AC6 [error-path]:** An element with missing or malformed geometry renders with a safe default placement and style. Never crashes the editor, never silently drops the value.
-- [ ] **AC7 [edge-case]:** A `slot` id absent from the sidebar catalogs **fails loudly at dev time** rather than vanishing. Today `TemplateSection` returns `null` when nothing matches (`TemplateSlotSection.tsx:210-211`), so a typo'd slot silently deletes a value from the UI — exactly the failure AC6 forbids.
+- [x] **AC6 [error-path]:** An element with missing or malformed geometry renders with a safe default placement and style. Never crashes the editor, never silently drops the value.
+- [x] **AC7 [edge-case]:** A `slot` id absent from the sidebar catalogs **fails loudly at dev time** rather than vanishing. Today `TemplateSection` returns `null` when nothing matches (`TemplateSlotSection.tsx:210-211`), so a typo'd slot silently deletes a value from the UI — exactly the failure AC6 forbids.
 
 ---
 
