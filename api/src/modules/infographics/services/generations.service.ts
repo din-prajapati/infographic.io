@@ -1,4 +1,4 @@
-import { Injectable, Inject, NotFoundException, BadRequestException, forwardRef } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException, BadRequestException, HttpException, forwardRef } from '@nestjs/common';
 import { PrismaService } from '../../../common/services/prisma.service';
 import { PromptExtractorService } from './prompt-extractor.service';
 import { InfographicsService } from './infographics.service';
@@ -210,9 +210,14 @@ export class GenerationsService {
         } catch (error: any) {
           console.error(`❌ [GenerationsService] Background generation failed:`, error);
           let errorMessage = error?.message || 'Generation failed';
-          
+
           // Handle specific API errors
-          if (error?.status === 429 || error?.code === 'insufficient_quota') {
+          if (error instanceof HttpException) {
+            // Photo-unreadable and other HttpExceptions carry user-actionable messages
+            // from the orchestrator (AC4 — surfaces the photo error distinctly).
+            const response = error.getResponse();
+            errorMessage = typeof response === 'string' ? response : error.message;
+          } else if (error?.status === 429 || error?.code === 'insufficient_quota') {
             errorMessage = 'AI service quota exceeded. Please try again later or contact support.';
           } else if (error?.code === 'invalid_api_key') {
             errorMessage = 'AI service configuration error. Please contact support.';
