@@ -67,6 +67,16 @@
 
 ---
 
+## Implementation Update (log)
+
+### 2026-08-11 — US-AI-031 implementation complete (pre-PR)
+- **Files touched:** `api/src/modules/ai-generation/services/ideogram.service.ts`, `api/src/modules/ai-generation/services/ai-orchestrator.service.ts`, `api/src/modules/infographics/dto/generate-from-chat.dto.ts`, `api/src/modules/infographics/services/generations.service.ts`, `api/src/config/ai-models.config.ts`, `api/src/config/image-generation.config.ts`, `api/tests/ai-generation/ideogram.service.spec.ts` (new), `api/tests/ai-generation/infographic-prompt.builder.spec.ts`
+- **ACs covered:** AC2, AC3, AC4, AC5, AC6, AC7 (AC1 deferred — gated on Ideogram credit top-up for live test)
+- **Commits:** 7 on branch `feat/ai/m-17-real-photo-background`
+- **Notes:** (1) Live-path behaviour change: photo-unreadable now throws HttpException(422) instead of warn-and-continue. Users who previously got a fabricated house silently will now see an error. This is correct. (2) Architecture owner chose V4 Remix over V3 Remix (TASKS.md T3 decision trail). (3) `style_reference_images` removed from V4 generate — may fix TC-AI-010-02 open failure; requires one live call to verify. (4) `REMIX_IMAGE_WEIGHT=75` is unverified pending OQ-2 calibration ($0.24 live test). (5) All 213 unit tests pass; 20 new tests added.
+
+---
+
 ## Architecture Notes
 
 See [ARCHITECTURE.mmd](./ARCHITECTURE.mmd).
