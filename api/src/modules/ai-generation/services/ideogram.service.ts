@@ -217,7 +217,6 @@ export class IdeogramService {
     model: string,
     orientation?: string,
     generationId?: string,
-    photoReferencePath?: string,
   ): Promise<string> {
     const t0 = Date.now();
     const resolution = V4_RESOLUTION[orientation || 'landscape'] || V4_RESOLUTION.landscape;
@@ -231,15 +230,13 @@ export class IdeogramService {
       form.append('rendering_speed', renderingSpeed);
       form.append('resolution', resolution);
 
-      // Attach property photo as style reference if provided (best-effort — V4 support TBD).
-      // readSourcePhoto throws HttpException(422) if the file is unreadable (AC4).
-      if (photoReferencePath) {
-        const photoBuffer = this.readSourcePhoto(photoReferencePath, generationId);
-        const mimeType = photoReferencePath.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg';
-        const photoBlob = new Blob([photoBuffer], { type: mimeType });
-        form.append('style_reference_images', photoBlob, photoReferencePath);
-        logGen({ generationId: generationId ?? 'unknown', event: 'image:v4:reference:attached', photoReferencePath });
-      }
+      // `style_reference_images` was previously appended here but is NOT a documented
+      // parameter of POST /v1/ideogram-v4/generate. Documented params are:
+      // text_prompt, json_prompt, resolution, rendering_speed, enable_copyright_detection.
+      // An unexpected multipart field may 400 the whole request — identified in SPIKE-031 §3b
+      // as a likely root cause of the open TC-AI-010-02 failure (alternative to the 1×1 px
+      // fixture theory). Removed in US-AI-031 T2 to close that risk.
+      // Photo-backed generations now use composeWithSourceImage() on the V4 Remix endpoint.
 
       const response = await axios.post(IDEOGRAM_V4_GENERATE_URL, form, {
         // Do NOT set Content-Type here — axios must set the multipart boundary automatically

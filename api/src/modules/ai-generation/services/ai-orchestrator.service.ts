@@ -175,7 +175,7 @@ export class AiOrchestrator {
           for (let i = 0; i < variations; i++) {
             if (v4JsonPrompt) {
               generationPromises.push(
-                this.ideogramService.generateImageV4(v4JsonPrompt, imageModel, orientation, infographicId, photoReference),
+                this.ideogramService.generateImageV4(v4JsonPrompt, imageModel, orientation, infographicId),
               );
             } else {
               // V2/V3 — or V4 whose magic-prompt conversion failed (falls back
