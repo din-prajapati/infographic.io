@@ -6,7 +6,8 @@
 import html2canvas from 'html2canvas';
 import { exportCanvasToImage } from './canvasExport';
 import { useCanvasStore } from '../hooks/useCanvasStore';
-import type { ImageElement } from './canvasTypes';
+import type { ImageElement, TextElement, TextAlign } from './canvasTypes';
+import type { ComposedDesign } from './api';
 
 /**
  * Capture current canvas state as JSON
