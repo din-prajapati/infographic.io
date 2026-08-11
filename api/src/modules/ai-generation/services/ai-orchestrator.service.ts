@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, HttpException } from '@nestjs/common';
 import { PrismaService } from '../../../common/services/prisma.service';
 import { OpenAiService } from './openai.service';
 import { IdeogramService } from './ideogram.service';
@@ -128,70 +128,107 @@ export class AiOrchestrator {
           const imagePrompt = applyStylePreset(buildImagePrompt(propertyData, headline), style);
           logGen({ generationId: infographicId, event: 'gen:prompt:ok', durationMs: elapsed(t2) });
 
-          // ────────────────────────────────────────────────────────────────
-          // STEP 3 (V4 only) — Convert text prompt → art-directed json_prompt
-          //   3a. 💰 AI CALL: Ideogram magic-prompt-v4 (1 call, shared by all
-          //       variations). Returns layout scaffolding + typography + exact
-          //       colors — the structure V4 was trained on. Hand-built JSON
-          //       causes garbled filler panels (see experiment 2026-07-03).
-          //   3b. Verify/repair (FREE): confirm our exact strings survived
-          //       conversion; conservatively fix only what drifted.
-          //   Fallback: conversion failure → V3 text path (proven quality)
-          //   instead of failing the generation.
-          // ────────────────────────────────────────────────────────────────
-          let v4JsonPrompt: Record<string, any> | null = null;
-          if (isV4) {
-            try {
-              const converted = await this.ideogramService.convertTextPromptToV4Json(imagePrompt, orientation, infographicId);
-              const { jsonPrompt, repairs } = verifyAndRepairV4JsonPrompt(converted, buildExpectedTexts(propertyData, headline));
-              if (repairs.length > 0) {
-                logGen({ generationId: infographicId, event: 'v4:jsonprompt:repaired', repairs }, 'warn');
+          if (photoReference) {
+            // ────────────────────────────────────────────────────────────────
+            // PHOTO PATH — V4 Remix with source image (US-AI-031)
+            //
+            // STEP 3 (magic-prompt) is skipped entirely: no Ideogram endpoint
+            // accepts both json_prompt and an input image (SPIKE-031 §4).
+            // Text correctness is NOT required here — US-AI-031b extracts
+            // geometry via layerize-text and re-renders canonical values as
+            // canvas slots we control. The model only has to produce good
+            // composition and layout.
+            //
+            // AC2 — clean-typography instruction: gives the downstream
+            // layerize-text call the best detection surface. Curved or
+            // decorative type degrades layer extraction.
+            //
+            // Cost: remix is priced at generate tier (see ai-models.config.ts
+            // REMIX_COST comment) — this branch is cost-neutral vs. today.
+            // ────────────────────────────────────────────────────────────────
+            const cleanTypographyInstruction =
+              '\n\nTypography: use clean, straight, standard sans-serif type at high contrast. ' +
+              'Avoid curved, decorative or graphic-embedded text — downstream text-detection ' +
+              'degrades on those styles.';
+            const remixPrompt = imagePrompt + cleanTypographyInstruction;
+
+            const t3 = Date.now();
+            logGen({ generationId: infographicId, event: 'gen:image:start', imageModel, variations, orientation, mode: 'photo-remix' });
+
+            const remixPromises = Array.from({ length: variations }, () =>
+              this.ideogramService.composeWithSourceImage(
+                remixPrompt, photoReference, imageModel, orientation, infographicId,
+              ),
+            );
+            imageUrls = await Promise.all(remixPromises);
+            logGen({ generationId: infographicId, event: 'gen:image:ok', imageModel, variations: imageUrls.length, orientation, durationMs: elapsed(t3) });
+          } else {
+            // ────────────────────────────────────────────────────────────────
+            // NO-PHOTO PATH — existing V4 json_prompt pipeline (AC3: byte-identical)
+            // Do NOT refactor this branch while in the file.
+            // ────────────────────────────────────────────────────────────────
+
+            // STEP 3 (V4 only) — Convert text prompt → art-directed json_prompt
+            //   3a. 💰 AI CALL: Ideogram magic-prompt-v4 (1 call, shared by all
+            //       variations). Returns layout scaffolding + typography + exact
+            //       colors — the structure V4 was trained on. Hand-built JSON
+            //       causes garbled filler panels (see experiment 2026-07-03).
+            //   3b. Verify/repair (FREE): confirm our exact strings survived
+            //       conversion; conservatively fix only what drifted.
+            //   Fallback: conversion failure → V3 text path (proven quality)
+            //   instead of failing the generation.
+            let v4JsonPrompt: Record<string, any> | null = null;
+            if (isV4) {
+              try {
+                const converted = await this.ideogramService.convertTextPromptToV4Json(imagePrompt, orientation, infographicId);
+                const { jsonPrompt, repairs } = verifyAndRepairV4JsonPrompt(converted, buildExpectedTexts(propertyData, headline));
+                if (repairs.length > 0) {
+                  logGen({ generationId: infographicId, event: 'v4:jsonprompt:repaired', repairs }, 'warn');
+                }
+                v4JsonPrompt = jsonPrompt;
+              } catch (convErr: any) {
+                logGen({ generationId: infographicId, event: 'v4:magicprompt:fallback-v3', error: convErr?.message }, 'warn');
+                // v4JsonPrompt stays null → V3 text path below
               }
-              v4JsonPrompt = jsonPrompt;
-            } catch (convErr: any) {
-              logGen({ generationId: infographicId, event: 'v4:magicprompt:fallback-v3', error: convErr?.message }, 'warn');
-              // v4JsonPrompt stays null → V3 text path below
             }
-          }
 
-          progressGateway?.emitProgress(infographicId, {
-            status: 'processing',
-            step: 3,
-            stepLabel: `Generating ${variations} image${variations > 1 ? 's' : ''}...`,
-          });
+            progressGateway?.emitProgress(infographicId, {
+              status: 'processing',
+              step: 3,
+              stepLabel: `Generating ${variations} image${variations > 1 ? 's' : ''}...`,
+            });
 
-          // ────────────────────────────────────────────────────────────────
-          // STEP 4 — 💰 AI CALL(s): generate images (per-image cost × variations)
-          //   V4:    same json_prompt for every variation — diffusion seeds
-          //          differ per call, so photo/background vary while the
-          //          verified layout and exact text stay intact.
-          //   V2/V3: text prompt + per-variation style modifier, magic
-          //          prompt OFF (prompt rendered verbatim).
-          // ────────────────────────────────────────────────────────────────
-          const t3 = Date.now();
-          logGen({ generationId: infographicId, event: 'gen:image:start', imageModel, variations, orientation });
+            // STEP 4 — 💰 AI CALL(s): generate images (per-image cost × variations)
+            //   V4:    same json_prompt for every variation — diffusion seeds
+            //          differ per call, so photo/background vary while the
+            //          verified layout and exact text stay intact.
+            //   V2/V3: text prompt + per-variation style modifier, magic
+            //          prompt OFF (prompt rendered verbatim).
+            const t3 = Date.now();
+            logGen({ generationId: infographicId, event: 'gen:image:start', imageModel, variations, orientation });
 
-          const generationPromises = [];
-          for (let i = 0; i < variations; i++) {
-            if (v4JsonPrompt) {
-              generationPromises.push(
-                this.ideogramService.generateImageV4(v4JsonPrompt, imageModel, orientation, infographicId),
-              );
-            } else {
-              // V2/V3 — or V4 whose magic-prompt conversion failed (falls back
-              // to the proven V3 endpoint via generateImage's model routing)
-              const effectiveModel = isV4 ? 'ideogram-3' : imageModel;
-              const variationPrompt = variations > 1
-                ? `${imagePrompt}\n- Variation style: ${getVariationModifier(i)}`
-                : imagePrompt;
-              generationPromises.push(
-                this.ideogramService.generateImage(variationPrompt, effectiveModel, orientation, infographicId, photoReference),
-              );
+            const generationPromises = [];
+            for (let i = 0; i < variations; i++) {
+              if (v4JsonPrompt) {
+                generationPromises.push(
+                  this.ideogramService.generateImageV4(v4JsonPrompt, imageModel, orientation, infographicId),
+                );
+              } else {
+                // V2/V3 — or V4 whose magic-prompt conversion failed (falls back
+                // to the proven V3 endpoint via generateImage's model routing)
+                const effectiveModel = isV4 ? 'ideogram-3' : imageModel;
+                const variationPrompt = variations > 1
+                  ? `${imagePrompt}\n- Variation style: ${getVariationModifier(i)}`
+                  : imagePrompt;
+                generationPromises.push(
+                  this.ideogramService.generateImage(variationPrompt, effectiveModel, orientation, infographicId, photoReference),
+                );
+              }
             }
-          }
 
-          imageUrls = await Promise.all(generationPromises);
-          logGen({ generationId: infographicId, event: 'gen:image:ok', imageModel, variations: imageUrls.length, orientation, durationMs: elapsed(t3) });
+            imageUrls = await Promise.all(generationPromises);
+            logGen({ generationId: infographicId, event: 'gen:image:ok', imageModel, variations: imageUrls.length, orientation, durationMs: elapsed(t3) });
+          }
 
           progressGateway?.emitProgress(infographicId, {
             status: 'processing',
@@ -200,12 +237,24 @@ export class AiOrchestrator {
           });
         } catch (err: any) {
           logGen({ generationId: infographicId, event: 'gen:image:error', imageModel, durationMs: elapsed(t2), error: err?.message }, 'error');
+          // Photo-unreadable HttpException carries a user-visible actionable message — preserve it (AC4).
+          // All other errors get the generic user-facing text.
+          if (err instanceof HttpException) {
+            const response = err.getResponse();
+            const userMessage = typeof response === 'string' ? response : err.message;
+            progressGateway?.emitProgress(infographicId, { status: 'failed', errorMessage: userMessage });
+            throw err;
+          }
           progressGateway?.emitProgress(infographicId, { status: 'failed', errorMessage: 'Image generation failed — please try again.' });
           throw new Error(`Image generation failed: ${err?.message || 'Unknown error'}`);
         }
       }
 
       const imageUrl = imageUrls[0] || '';
+      // costUsd applies to both photo-remix and no-photo paths: remix is priced at
+      // generate tier (SPIKE-031 §5, https://ideogram.ai/api-pricing/), so the same
+      // getTotalCost() formula applies. CLAUDE.md metering: creditsUsed=1 regardless
+      // of path; costUsd is true provider spend, never zeroed.
       const costUsd = isDemoMode ? 0 : getTotalCost(imageModel, variations);
 
       // Step 3 — Persist to DB
