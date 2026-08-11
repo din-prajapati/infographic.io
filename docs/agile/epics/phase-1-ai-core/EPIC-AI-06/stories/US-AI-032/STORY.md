@@ -183,12 +183,12 @@ Implementation rules:
 |-------|------|----------|----------|--------|---------|
 | TC-AI-032-01 | Manual | P0 | Edit a generation → background plus individually selectable text elements at supplied positions | 🔲 | |
 | TC-AI-032-02 | Manual | P0 | Change a slot value in the sidebar (e.g. price) → canvas updates live | 🔲 | |
-| TC-AI-032-03 | Auto | P0 | Save and reload → all elements and slot tags intact | 🔲 | |
-| TC-AI-032-04 | Auto | P0 | Export an editable design → pixel output matches composed preview at full resolution | 🔲 | |
-| TC-AI-032-05 | Auto | P0 | Flat mode → unchanged existing behaviour, no slots created | 🔲 | |
-| TC-AI-032-06 | Auto | P1 | Element with malformed geometry → safe default placement, no crash, value still present | 🔲 | |
-| TC-AI-032-07 | Auto | P1 | Unknown slot id → loud dev-time failure, not a silent disappearance | 🔲 | |
-| TC-AI-032-08 | Auto | P1 | `verifyAndRepairV4JsonPrompt` is not invoked on the editable path | 🔲 | |
+| TC-AI-032-03 | Manual | P0 | Save and reload → all elements and slot tags intact | ⏸ | Blocked — no client test infra (US-DEPLOY-007) |
+| TC-AI-032-04 | Manual | P0 | Export an editable design → pixel output matches composed preview at full resolution | ⏸ | Blocked — no client test infra (US-DEPLOY-007) |
+| TC-AI-032-05 | Manual | P0 | Flat mode → unchanged existing behaviour, no slots created | ⏸ | Blocked — flat path untouched in diff, but runtime unverified |
+| TC-AI-032-06 | Manual | P1 | Element with malformed geometry → safe default placement, no crash, value still present | ⏸ | Blocked — no client test infra (US-DEPLOY-007) |
+| TC-AI-032-07 | Auto | P1 | Unknown slot id → loud dev-time failure, not a silent disappearance | ⚠ | Compile-time half only — `SlotId` union via `npm run check`; dev-throw unverified |
+| TC-AI-032-08 | Auto | P1 | `verifyAndRepairV4JsonPrompt` is not invoked on the editable path | ⚠ | Source-scan tripwire only — defeated by rename/alias/indirect call |
 | TC-AI-032-09 | Manual | P2 | Replace the background image with a different photo → composition holds, text elements unaffected | 🔲 | |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked

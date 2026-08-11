@@ -197,15 +197,15 @@ Implementation rules:
 
 | TC ID | Type | Priority | Scenario | Status | Finding |
 |-------|------|----------|----------|--------|---------|
-| TC-AI-031b-01 | Auto | P0 | Fixture blocks + canonical data → every canonical value appears exactly once at its measured geometry | 🔲 | |
-| TC-AI-031b-02 | Auto | P0 | Detected text drifts from canonical (`"$520K"` vs `"$2,450,000"`) → canonical value is rendered, not the detected one | 🔲 | |
-| TC-AI-031b-03 | Auto | P0 | Extraction returns zero blocks → all canonical fields render via fallback geometry, `placement: 'fallback'` | 🔲 | |
-| TC-AI-031b-04 | Auto | P0 | Provider throws / times out → usable flat design returned, no exception surfaces to the editor | 🔲 | |
-| TC-AI-031b-05 | Auto | P1 | Unmatched decorative block → preserved with its own text | 🔲 | |
-| TC-AI-031b-06 | Auto | P1 | Unmatched block matching a phone/email pattern → dropped, drop recorded in metrics | 🔲 | |
-| TC-AI-031b-07 | Auto | P1 | Extraction is not called during generate; is called on edit | 🔲 | |
-| TC-AI-031b-08 | Auto | P1 | Lazy extraction increments `costUsd` on the existing generation record; `creditsUsed` unchanged | 🔲 | |
-| TC-AI-031b-09 | Auto | P1 | No-photo path untouched — 23 `infographic-prompt.builder` tests green | 🔲 | |
+| TC-AI-031b-01 | Auto | P0 | Fixture blocks + canonical data → every canonical value appears exactly once at its measured geometry | ✅ | `text-block.mapper.spec.ts` (pure) |
+| TC-AI-031b-02 | Auto | P0 | Detected text drifts from canonical (`"$520K"` vs `"$2,450,000"`) → canonical value is rendered, not the detected one | ✅ | `text-block.mapper.spec.ts` (pure) |
+| TC-AI-031b-03 | Auto | P0 | Extraction returns zero blocks → all canonical fields render via fallback geometry, `placement: 'fallback'` | ✅ | `text-block.mapper.spec.ts` (pure) |
+| TC-AI-031b-04 | Auto | P0 | Provider throws / times out → usable flat design returned, no exception surfaces to the editor | ✅ | `layer-extraction.service.spec.ts` |
+| TC-AI-031b-05 | Auto | P1 | Unmatched decorative block → preserved with its own text | ✅ | `text-block.mapper.spec.ts` (pure) |
+| TC-AI-031b-06 | Auto | P1 | Unmatched block matching a phone/email pattern → dropped, drop recorded in metrics | ✅ | `text-block.mapper.spec.ts` (pure) |
+| TC-AI-031b-07 | Auto | P1 | Extraction is not called during generate; is called on edit | ✅ | `layer-extraction.service.spec.ts` |
+| TC-AI-031b-08 | Auto | P1 | Lazy extraction increments `costUsd` on the existing generation record; `creditsUsed` unchanged | ✅ | `layer-extraction.service.spec.ts` |
+| TC-AI-031b-09 | Auto | P1 | No-photo path untouched — 23 `infographic-prompt.builder` tests green | ✅ | `infographic-prompt.builder.spec.ts` — no-photo path unchanged |
 | TC-AI-031b-10 | Manual ⛽ | P0 | Real stylised luxury headline → measure actual detection rate against the beta provider | 🔲 | Gated on credit top-up |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked

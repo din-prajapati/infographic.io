@@ -163,11 +163,11 @@ Implementation rules:
 | TC ID | Type | Priority | Scenario | Status | Finding |
 |-------|------|----------|----------|--------|---------|
 | TC-AI-031-01 | Manual ⛽ | P0 | Generate with a real listing photo → composition contains the recognizable actual property | 🔲 | Gated on credit top-up |
-| TC-AI-031-02 | Auto | P0 | Photo reference present but file absent → generation throws a clear error; no image call is made | 🔲 | |
-| TC-AI-031-03 | Auto | P0 | No photo reference → request path and payload identical to today; all 23 builder tests green | 🔲 | |
-| TC-AI-031-04 | Auto | P0 | `photoReference` = `"../../etc/passwd"` → rejected by DTO validation before any filesystem call | 🔲 | |
-| TC-AI-031-05 | Auto | P1 | V4 generate payload no longer contains a `style_reference_images` field | 🔲 | |
-| TC-AI-031-06 | Auto | P1 | Composition prompt contains the clean-typography instruction | 🔲 | |
+| TC-AI-031-02 | Auto | P0 | Photo reference present but file absent → generation throws a clear error; no image call is made | ✅ | `ideogram.service.spec.ts` |
+| TC-AI-031-03 | Auto | P0 | No photo reference → request path and payload identical to today; all 23 builder tests green | ✅ | `infographic-prompt.builder.spec.ts` — 23 pre-existing + 3 AC3 guards green |
+| TC-AI-031-04 | Auto | P0 | `photoReference` = `"../../etc/passwd"` → rejected by DTO validation before any filesystem call | ✅ | `ideogram.service.spec.ts` |
+| TC-AI-031-05 | Auto | P1 | V4 generate payload no longer contains a `style_reference_images` field | ✅ | `ideogram.service.spec.ts` |
+| TC-AI-031-06 | Auto | P1 | Composition prompt contains the clean-typography instruction | ✅ | `ideogram.service.spec.ts` |
 | TC-AI-031-07 | Manual ⛽ | P1 | Re-run `TC-AI-010-02` with the unchanged fixture → settles fixture theory vs undocumented-parameter theory | 🔲 | Gated on credit top-up |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
