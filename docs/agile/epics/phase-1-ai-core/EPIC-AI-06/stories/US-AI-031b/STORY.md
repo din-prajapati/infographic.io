@@ -1,6 +1,6 @@
 # Story Card — US-AI-031b
 
-> **Status:** 🔄 In Progress (implementation complete, awaiting PR)
+> **Status:** 🟡 In Progress — AC2–AC9 verified; AC1 gated on Ideogram credit (TC-AI-031b-10)
 > **Feature:** F-AI-06-02 — Layer extraction and canonical text rendering
 > **Epic:** [EPIC-AI-06](../../EPIC.md)
 > **Milestone:** [M-AI-17](../../milestones/M-AI-17-real-photo-background.md)
