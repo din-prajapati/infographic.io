@@ -133,25 +133,51 @@ function blockGeometry(b: ExtractedTextBlock): Geometry {
 /**
  * Canvas dimensions used when the design orientation is unknown.
  * Portrait 1440×2560 matches the V4 default resolution for portrait designs.
+ * Landscape 2560×1440 is the other V4 documented resolution.
  * Extracted from ideogram.service.ts V4_RESOLUTION.
  */
 const DEFAULT_CANVAS = { width: 1440, height: 2560 };
 
+/** Return true when width > height (landscape orientation). */
+function isLandscape(canvas: { width: number; height: number }): boolean {
+  return canvas.width > canvas.height;
+}
+
+/**
+ * Extract placement signals from design-intent prose.
+ * Vocabulary sourced from buildImagePrompt() and the ARCHITECTURE.mmd fallback region labels.
+ */
+function parseProse(prose: string) {
+  const p = prose.toLowerCase();
+  return {
+    hintsUpper:      /upper portion|top third|headline at top|upper third/.test(p),
+    hintsLower:      /lower portion|bottom third|footer|lower third/.test(p),
+    hintsLowerRight: /lower[\s-]right corner|bottom[\s-]right/.test(p),
+    hintsCenter:     /centered|centred|centre|centered text/.test(p),
+    hintsLarge:      /large headline|big headline|bold headline/.test(p),
+    hintsSmall:      /small text|caption|fine print/.test(p),
+  };
+}
+
 /**
  * Infer coarse placement for a canonical field that no block matched.
  *
- * Uses field identity to produce a region that roughly matches typical real estate
- * infographic layouts (headline at top, price prominent, contact at bottom).
- * Deliberately approximate — the user can drag elements in US-AI-032. The guarantee
- * is that the VALUE is present and correct (AC5), not that it is pixel-perfect.
+ * Uses field identity plus optional design-intent prose keywords to produce a region
+ * that roughly matches typical real estate infographic layouts: headline at top, price
+ * prominent, address below, stats in the middle, agent contact at the bottom.
  *
- * No LLM call — deterministic, unit-testable.
+ * Deliberately approximate — the user can drag elements in the canvas editor (US-AI-032).
+ * The guarantee is that the VALUE is present and correct (AC5), not that it is pixel-perfect.
+ *
+ * Deterministic and unit-testable — no LLM call. Adding an inference call here would
+ * introduce a new cost line and a new failure mode; explicitly rejected.
  *
  * @param field       The canonical field to place
- * @param intentProse Optional design-intent prose (e.g. from buildImagePrompt) — may be
- *                    empty when called from the edit path. Currently used as tiebreak
- *                    for keyword-based region detection; defaults apply when empty.
+ * @param intentProse Optional design-intent prose (e.g. from buildImagePrompt). Inspected
+ *                    for keywords: "upper portion", "lower-right corner", "centered",
+ *                    "large headline". Empty string → all defaults apply.
  * @param canvasSize  Target canvas dimensions (px). Defaults to 1440×2560 (portrait).
+ *                    Supply { width: 2560, height: 1440 } for landscape.
  */
 export function inferFallbackGeometry(
   field: ListingField,
@@ -160,90 +186,100 @@ export function inferFallbackGeometry(
 ): Geometry {
   const { width: W, height: H } = canvasSize;
   const pad = Math.round(W * 0.05); // 5% side padding
+  const landscape = isLandscape(canvasSize);
+  const prose = parseProse(intentProse);
 
-  // Detect gross orientation hints in the prose for optional override.
-  // The prose vocabulary comes from buildImagePrompt() in infographic-prompt.builder.ts.
-  const prose = intentProse.toLowerCase();
-  const proseHintsUpper = /upper portion|top third|headline at top/.test(prose);
-  const proseHintsLower = /lower portion|bottom third|footer/.test(prose);
-  const proseCentered   = /centered|centred|centre/.test(prose);
+  // Headline: top of the canvas for portrait; left-centre for landscape.
+  // "large headline" → font size bumped; "lower portion" → move to mid-canvas.
+  const headlineY = prose.hintsLower
+    ? Math.round(H * (landscape ? 0.50 : 0.60))
+    : Math.round(H * (landscape ? 0.20 : 0.08));
+  const headlineFontSize = prose.hintsLarge
+    ? Math.round(W * (landscape ? 0.04 : 0.06))
+    : Math.round(W * (landscape ? 0.03 : 0.05));
 
-  // Field-specific defaults: positions expressed as fractions of canvas height.
-  // Values chosen to roughly match a photo-overlay listing infographic layout where
-  // the headline sits in the upper third, price below, address below that, stats/
-  // details in the middle, and agent/brokerage at the bottom.
+  // Agent/brokerage: bottom by default; "lower-right corner" shifts them right.
+  const agentX = prose.hintsLowerRight ? Math.round(W * 0.55) : pad;
+  const agentAlign: 'left' | 'center' | 'right' = prose.hintsLowerRight ? 'right' : 'left';
+  const agentY = prose.hintsUpper
+    ? Math.round(H * (landscape ? 0.35 : 0.40))
+    : Math.round(H * (landscape ? 0.78 : 0.82));
+  const brokerageY = prose.hintsUpper
+    ? Math.round(H * (landscape ? 0.42 : 0.44))
+    : Math.round(H * (landscape ? 0.84 : 0.86));
+
   const DEFAULTS: Record<ListingField, Geometry> = {
     headline: {
       x: pad,
-      y: proseHintsLower ? Math.round(H * 0.60) : Math.round(H * 0.08),
+      y: headlineY,
       width: W - 2 * pad,
-      height: Math.round(H * 0.12),
+      height: Math.round(H * (landscape ? 0.18 : 0.12)),
       angle: 0,
       fontFamily: null,
-      fontSize: Math.round(W * 0.05),
+      fontSize: headlineFontSize,
       lineHeight: null,
       color: '#FFFFFF',
-      alignment: proseCentered ? 'center' : 'center',
+      alignment: prose.hintsCenter ? 'center' : 'center',
     },
     price: {
       x: pad,
-      y: Math.round(H * 0.24),
+      y: Math.round(H * (landscape ? 0.42 : 0.24)),
       width: W - 2 * pad,
-      height: Math.round(H * 0.06),
+      height: Math.round(H * (landscape ? 0.10 : 0.06)),
       angle: 0,
       fontFamily: null,
-      fontSize: Math.round(W * 0.040),
+      fontSize: Math.round(W * (landscape ? 0.030 : 0.040)),
       lineHeight: null,
       color: '#FFFFFF',
       alignment: 'center',
     },
     address: {
       x: pad,
-      y: Math.round(H * 0.32),
+      y: Math.round(H * (landscape ? 0.55 : 0.32)),
       width: W - 2 * pad,
-      height: Math.round(H * 0.04),
+      height: Math.round(H * (landscape ? 0.07 : 0.04)),
       angle: 0,
       fontFamily: null,
-      fontSize: Math.round(W * 0.025),
+      fontSize: Math.round(W * (landscape ? 0.020 : 0.025)),
       lineHeight: null,
       color: '#FFFFFF',
       alignment: 'center',
     },
     stats: {
       x: pad,
-      y: Math.round(H * 0.38),
+      y: Math.round(H * (landscape ? 0.64 : 0.38)),
       width: W - 2 * pad,
-      height: Math.round(H * 0.04),
+      height: Math.round(H * (landscape ? 0.07 : 0.04)),
       angle: 0,
       fontFamily: null,
-      fontSize: Math.round(W * 0.022),
+      fontSize: Math.round(W * (landscape ? 0.018 : 0.022)),
       lineHeight: null,
       color: '#FFFFFF',
       alignment: 'center',
     },
     agentName: {
-      x: pad,
-      y: proseHintsUpper ? Math.round(H * 0.40) : Math.round(H * 0.82),
+      x: agentX,
+      y: agentY,
       width: Math.round(W * 0.55),
-      height: Math.round(H * 0.03),
+      height: Math.round(H * (landscape ? 0.06 : 0.03)),
       angle: 0,
       fontFamily: null,
-      fontSize: Math.round(W * 0.022),
+      fontSize: Math.round(W * (landscape ? 0.018 : 0.022)),
       lineHeight: null,
       color: '#FFFFFF',
-      alignment: 'left',
+      alignment: agentAlign,
     },
     brokerage: {
-      x: pad,
-      y: proseHintsUpper ? Math.round(H * 0.44) : Math.round(H * 0.86),
+      x: agentX,
+      y: brokerageY,
       width: Math.round(W * 0.65),
-      height: Math.round(H * 0.025),
+      height: Math.round(H * (landscape ? 0.05 : 0.025)),
       angle: 0,
       fontFamily: null,
-      fontSize: Math.round(W * 0.019),
+      fontSize: Math.round(W * (landscape ? 0.015 : 0.019)),
       lineHeight: null,
       color: '#FFFFFF',
-      alignment: 'left',
+      alignment: agentAlign,
     },
   };
 
