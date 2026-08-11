@@ -20,13 +20,14 @@ import {
   updateImageSlot,
   updateTextSlot,
 } from "../../lib/templateSlots";
+import { type SlotId } from "../../lib/slotIds";
 
 /* ------------------------------------------------------------------ */
 /* Types                                                                */
 /* ------------------------------------------------------------------ */
 
 export interface SlotFieldDef {
-  slot: string;
+  slot: SlotId;
   label: string;
   control: "text" | "color" | "image";
   placeholder?: string;
