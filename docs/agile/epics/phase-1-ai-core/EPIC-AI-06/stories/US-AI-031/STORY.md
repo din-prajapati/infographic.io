@@ -1,6 +1,6 @@
 # Story Card — US-AI-031
 
-> **Status:** 🔲 In Progress
+> **Status:** 🟡 In Progress — AC2–AC7 verified; AC1 gated on Ideogram credit (TC-AI-031-01)
 > **Feature:** F-AI-06-01 — Real property photo as composition source
 > **Epic:** [EPIC-AI-06](../../EPIC.md)
 > **Milestone:** [M-AI-17](../../milestones/M-AI-17-real-photo-background.md)
@@ -125,16 +125,49 @@ Per the spike, a photo-mode default of 1 moves TEAM-at-cap provider spend from *
 
 ---
 
+## AI Implementation Prompt
+
+```
+Context: InfographicAI SaaS — NestJS API (port 3001) + React frontend (port 5000 via Express proxy).
+See CLAUDE.md for architecture.
+
+Story: US-AI-031 — Real property photo as composition source
+
+Read first, in order:
+  1. docs/agile/epics/phase-1-ai-core/EPIC-AI-06/SPIKE-031-ideogram-photo-background.md
+     (authoritative on API capability and cost — section 7 has the file-level change list)
+  2. docs/agile/epics/phase-1-ai-core/EPIC-AI-06/ARCHITECTURE.mmd
+  3. This STORY.md, then TASKS.md
+
+Deliver: a real uploaded photo becomes the SOURCE IMAGE for a remix call, producing a flat
+composition containing the actual house. Text correctness is NOT this story's problem — a
+sibling story re-renders canonical text from extracted geometry.
+
+Implementation rules:
+- Touch ONLY the files in "Primary files touched"
+- Do NOT implement anything in "Out of Scope" — especially durable photo storage
+- The no-photo path must be byte-identical: all 23 existing infographic-prompt.builder tests
+  pass unchanged
+- Photo present but unreadable => THROW. Never warn-and-continue. This inverts current
+  behaviour on purpose.
+- New names describe the capability, not the vendor. Do not rename existing symbols.
+- The Ideogram account is OUT OF CREDIT — do not write code that assumes a live generation can
+  be run to verify. Mark such checks as gated.
+- When done: list files changed, ACs checked, and the exact test command to run
+```
+
+---
+
 ## Test Cases
 
 | TC ID | Type | Priority | Scenario | Status | Finding |
 |-------|------|----------|----------|--------|---------|
 | TC-AI-031-01 | Manual ⛽ | P0 | Generate with a real listing photo → composition contains the recognizable actual property | 🔲 | Gated on credit top-up |
-| TC-AI-031-02 | Auto | P0 | Photo reference present but file absent → generation throws a clear error; no image call is made | ✅ | |
-| TC-AI-031-03 | Auto | P0 | No photo reference → request path and payload identical to today; all 23 builder tests green | ✅ | |
-| TC-AI-031-04 | Auto | P0 | `photoReference` = `"../../etc/passwd"` → rejected by DTO validation before any filesystem call | ✅ | |
-| TC-AI-031-05 | Auto | P1 | V4 generate payload no longer contains a `style_reference_images` field | ✅ | |
-| TC-AI-031-06 | Auto | P1 | Composition prompt contains the clean-typography instruction | ✅ | |
+| TC-AI-031-02 | Auto | P0 | Photo reference present but file absent → generation throws a clear error; no image call is made | 🔲 | |
+| TC-AI-031-03 | Auto | P0 | No photo reference → request path and payload identical to today; all 23 builder tests green | 🔲 | |
+| TC-AI-031-04 | Auto | P0 | `photoReference` = `"../../etc/passwd"` → rejected by DTO validation before any filesystem call | 🔲 | |
+| TC-AI-031-05 | Auto | P1 | V4 generate payload no longer contains a `style_reference_images` field | 🔲 | |
+| TC-AI-031-06 | Auto | P1 | Composition prompt contains the clean-typography instruction | 🔲 | |
 | TC-AI-031-07 | Manual ⛽ | P1 | Re-run `TC-AI-010-02` with the unchanged fixture → settles fixture theory vs undocumented-parameter theory | 🔲 | Gated on credit top-up |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked

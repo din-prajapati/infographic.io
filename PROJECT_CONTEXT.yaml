@@ -204,7 +204,15 @@ ac_coverage:
   default: [happy-path, error-path]
 
   # Per-domain additions — uncomment and extend for your project:
-  per_domain: {}
+  per_domain:
+    # AI stories consistently carry two risks the defaults miss:
+    #  - regression: every AI story touches a shared generation pipeline whose
+    #    existing guarantees (e.g. verifyAndRepairV4JsonPrompt, 23 tests) must survive
+    #  - edge-case: model output is non-deterministic, so partial/degenerate responses
+    #    are the normal case rather than an exception
+    # Set 2026-08-11 during the EPIC-AI-06 harden pass — per_domain was {} until then,
+    # meaning AI stories were certified against only [happy-path, error-path].
+    AI: [regression, edge-case]
   # per_domain:
   #   DESIGN: []    # add: security, session-expiry, idempotency, currency-edge, rate-limit, null-input, concurrent, rollback, offline, edge-case
   #   PAY: []    # add: security, session-expiry, idempotency, currency-edge, rate-limit, null-input, concurrent, rollback, offline, edge-case

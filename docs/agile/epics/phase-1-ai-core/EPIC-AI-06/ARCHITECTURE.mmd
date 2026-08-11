@@ -1,20 +1,62 @@
-flowchart LR
-  subgraph Inputs["User / External"]
-    A["Uploaded listing photo (US-AI-010)"]
-    B["Property data + brand profile"]
+%% EPIC-AI-06 — Hybrid Real-Photo Pipeline
+%% Architecture locked 2026-08-11 after SPIKE-031-ideogram-photo-background.md.
+%% Supersedes the 2026-07-07 stub, which assumed json_prompt could carry an input
+%% photo. It cannot: no Ideogram endpoint accepts both json_prompt and an image.
+%%
+%% Principle: the application owns truth, Ideogram owns aesthetics.
+%% Ideogram is the visual composition engine, NOT the typography engine.
+
+flowchart TB
+  subgraph Truth["Canonical Data — our system owns this"]
+    P["Uploaded listing photo<br/>(US-AI-010 plumbing, durable storage TBD)"]
+    D["Property data + brand profile<br/>headline · price · address · stats · agent"]:::truth
   end
-  subgraph Pipeline["AI: Hybrid Real-Photo Pipeline"]
-    C["infographic-prompt.builder.ts<br/>text-free layout prompt variant"]:::new
-    D["ideogram.service.ts<br/>image-reference / edit call"]:::new
-    E["Synthetic-content guard<br/>(US-AI-033)"]:::new
+
+  subgraph Compose["Composition — Ideogram owns this"]
+    G["GPT-4o layout planner<br/>emits design intent as TEXT prompt"]:::new
+    R["Ideogram V4 Remix<br/>POST /v1/ideogram-v4/remix<br/>image + text_prompt<br/>$0.06 x N variations"]:::new
   end
-  subgraph Editor["Editor: Hybrid Output"]
-    F["Canvas: AI background layer"]:::good
-    G["templateSlots.ts<br/>exact text as editable slots"]:::good
+
+  F["Flat composition<br/>real house, Ideogram's own text baked in<br/>(text correctness NOT required here)"]:::flat
+
+  E{{"User picks a variation<br/>and clicks Edit"}}:::gate
+
+  subgraph Extract["Geometry Extraction — best-effort, never a hard dependency"]
+    L["Ideogram Layerize Text<br/>POST /v1/ideogram-v3/layerize-text<br/>$0.09 x 1 — LAZY, on edit only"]:::new
+    B["base_image_url<br/>composition with all text erased"]:::new
+    T["text_blocks[]<br/>x · y · width · height · angle<br/>font_name · font_size · color · alignment · role"]:::new
+    FB["Fallback: prose-inferred layout<br/>'upper portion' · 'large headline' · 'centered'<br/>used when detection is poor"]:::fallback
   end
-  A --> D
-  B --> C --> D --> E --> F
-  B --> G
-  F --> G
-  classDef good fill:#0b3b2e,stroke:#14532d,color:#ecfdf5;
-  classDef new  fill:#1e3a5f,stroke:#2563eb,color:#eff6ff;
+
+  M["Block to field mapper<br/>1. fuzzy match vs canonical text (primary)<br/>2. role field (tiebreak)<br/>3. font_size ranking (tiebreak)<br/>unmatched blocks re-render their OWN detected text"]:::new
+
+  subgraph Render["Typography — our system owns this"]
+    C["Canvas renderer<br/>background layer + slot-tagged text elements"]:::good
+    S["templateSlots.ts<br/>property.price · property.headline · agent.name ..."]:::good
+    V["Final verification<br/>canonical strings present and exact — deterministic,<br/>no longer an AI reliability problem"]:::good
+  end
+
+  OUT["Editable listing design<br/>real house + exact text + live editing"]:::out
+
+  P --> R
+  D --> G --> R
+  R --> F
+  F --> E
+  E -->|lazy boundary| L
+  L --> B
+  L --> T
+  T -->|good detection| M
+  T -.->|poor / no detection| FB
+  FB --> M
+  D ==>|canonical text wins| M
+  B --> C
+  M --> C
+  C --> S --> V --> OUT
+
+  classDef truth    fill:#0b3b2e,stroke:#14532d,color:#ecfdf5;
+  classDef good     fill:#0b3b2e,stroke:#14532d,color:#ecfdf5;
+  classDef new      fill:#1e3a5f,stroke:#2563eb,color:#eff6ff;
+  classDef flat     fill:#3f3f46,stroke:#71717a,color:#fafafa;
+  classDef fallback fill:#4a3410,stroke:#b45309,color:#fffbeb;
+  classDef gate     fill:#4c1d3d,stroke:#a21caf,color:#fdf4ff;
+  classDef out      fill:#134e4a,stroke:#0d9488,color:#f0fdfa;
