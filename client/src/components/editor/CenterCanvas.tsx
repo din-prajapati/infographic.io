@@ -14,7 +14,7 @@ import { ContextualToolbar } from "./ContextualToolbar";
 import { usePanelState } from "../../lib/panelState";
 import { loadTemplateById } from "../../lib/storage";
 import { ImageElement as ImageElementType } from "../../lib/canvasTypes";
-import { restoreCanvasData, loadAiVariationToCanvas, scheduleFitCanvasZoomToViewport, fitCanvasZoomToViewport } from "../../lib/canvasState";
+import { restoreCanvasData, loadAiVariationToCanvas, loadComposedDesignToCanvas, scheduleFitCanvasZoomToViewport, fitCanvasZoomToViewport } from "../../lib/canvasState";
 import { toast } from "sonner";
 
 interface CenterCanvasProps {
@@ -83,7 +83,29 @@ export function CenterCanvas({ isPreviewMode = false }: CenterCanvasProps) {
 
   const handleTemplateLoad = async (template: Template) => {
     try {
-      // AI-generated variation — replace entire canvas (clears template underneath)
+      // Editable AI variation — ComposedDesign carries background + slot-tagged text elements.
+      // renderMode='editable' path (US-AI-032 T4). The artboard-sync useEffect (lines 55-73)
+      // still fires because the background element has isAiImport:true, but since
+      // loadComposedDesignToCanvas already sets canvasWidth/canvasHeight to match the
+      // background dimensions, the condition (canvasWidth !== aiElement.width) is false
+      // and the effect is a no-op — no fighting between the loader and the effect.
+      if (template.isAiVariation && template.composedDesign) {
+        const success = await loadComposedDesignToCanvas(template.composedDesign);
+        if (success) {
+          setIsAIChatExpanded(false);
+          scheduleFitCanvasZoomToViewport();
+          toast.success("Editable design loaded", {
+            description: `"${template.name}" — text elements are ready to edit in the sidebar`,
+          });
+        } else {
+          toast.error("Failed to load editable design", {
+            description: "The composed design could not be placed on the canvas",
+          });
+        }
+        return;
+      }
+
+      // Flat AI variation — replace entire canvas with a raster layer (AC4: unchanged path).
       if (template.isAiVariation && template.previewImage) {
         const success = await loadAiVariationToCanvas(
           template.previewImage,

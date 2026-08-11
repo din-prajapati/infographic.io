@@ -1080,9 +1080,66 @@ export function AIChatBox({
     handleGenerate();
   };
 
-  const handleEditVariation = (id: string) => {
+  /**
+   * US-AI-032 T4 — route Edit action to the right canvas loader.
+   *
+   * renderMode='flat'     → flat raster (existing path, unchanged).
+   * renderMode='editable' → call POST /compose (lazy Layerize extraction),
+   *                         carry ComposedDesign through onTemplateLoad so
+   *                         CenterCanvas can call loadComposedDesignToCanvas.
+   *
+   * 'Use' variation (handleUseVariation) always stays on the flat path —
+   * it is a quick insertion without extraction cost.
+   */
+  const handleEditVariation = async (id: string) => {
     const variation = resultVariations.find((v) => v.id === id);
-    if (variation) {
+    if (!variation) {
+      onClose();
+      return;
+    }
+
+    if (renderMode === 'editable' && currentGenerationId) {
+      // Editable path: fetch ComposedDesign (lazy extraction) then hand off.
+      try {
+        toast.info("Preparing editable design…", {
+          description: "Extracting text layers — this takes a few seconds.",
+        });
+        const composed = await generationsApi.getComposedDesign(
+          currentGenerationId,
+          variation.previewUrl,
+        );
+        const template: Template = {
+          id: variation.id,
+          name: variation.title || "AI Generated Design",
+          category: "listing-announcements",
+          description: variation.description || "AI-generated infographic design",
+          previewImage: variation.previewUrl,
+          isAiVariation: true,
+          aiOrientation: generationOrientation,
+          emoji: "🎨",
+          composedDesign: composed,
+        };
+        onTemplateLoad(template);
+      } catch (err: any) {
+        console.error("[AIChatBox] Compose failed — falling back to flat", err);
+        toast.error("Layer extraction failed", {
+          description: "Loading as flat design instead.",
+        });
+        // Degrade gracefully: fall through to flat path below.
+        const template: Template = {
+          id: variation.id,
+          name: variation.title || "AI Generated Design",
+          category: "listing-announcements",
+          description: variation.description || "AI-generated infographic design",
+          previewImage: variation.previewUrl,
+          isAiVariation: true,
+          aiOrientation: generationOrientation,
+          emoji: "🎨",
+        };
+        onTemplateLoad(template);
+      }
+    } else {
+      // Flat path (default / AC4).
       const template: Template = {
         id: variation.id,
         name: variation.title || "AI Generated Design",
@@ -1095,6 +1152,7 @@ export function AIChatBox({
       };
       onTemplateLoad(template);
     }
+
     // Close the panel but keep resultVariations in state so the user can
     // reopen the chat and pick a different variation without re-generating.
     onClose();

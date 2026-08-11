@@ -35,6 +35,8 @@ export interface PromptSuggestion {
   previewImage: string;
 }
 
+import type { ComposedDesign } from '../../lib/api';
+
 export interface Template {
   id: string;
   name: string;
@@ -47,6 +49,12 @@ export interface Template {
   aiOrientation?: 'landscape' | 'portrait' | 'square';
   isPopular?: boolean;
   emoji: string;
+  /**
+   * Present when renderMode='editable' — the structured payload from US-AI-031b.
+   * When set, CenterCanvas routes to loadComposedDesignToCanvas instead of loadAiVariationToCanvas.
+   * Absent on flat-mode templates (all existing code paths unaffected).
+   */
+  composedDesign?: ComposedDesign;
 }
 
 export interface TemplateData {
