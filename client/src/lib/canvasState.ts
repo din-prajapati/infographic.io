@@ -418,6 +418,177 @@ export async function loadAiVariationToCanvas(
   }
 }
 
+// ── Listing-field → slot-id mapping (US-AI-032 T3) ───────────────────────────
+//
+// ListingField values come from the ComposedDesign contract (US-AI-031b).
+// SlotId values come from slotIds.ts (T1 of this story).
+// Keep this map in sync with both: if a new ListingField is added in
+// composed-design.types.ts, add its SlotId counterpart here.
+const LISTING_FIELD_TO_SLOT: Record<string, string> = {
+  headline:  'property.headline',
+  address:   'property.location',
+  price:     'property.price',
+  stats:     'property.specs',
+  agentName: 'agent.name',
+  brokerage: 'brand.name',
+};
+
+// Safe geometry defaults — applied per-field when extraction values are
+// missing, zero, or non-finite.  The value is always rendered; only the
+// visual position degrades (AC6).
+const GEO_DEFAULTS = {
+  x:          0,
+  y:          0,
+  width:      400,
+  height:     60,
+  fontFamily: 'Inter',
+  fontSize:   24,
+  color:      '#FFFFFF',
+  alignment:  'left' as TextAlign,
+  lineHeight: 1.4,
+};
+
+/**
+ * Load a ComposedDesign (from US-AI-031b) into the canvas as:
+ *  - one background image element (isAiImport: true — artboard-sync behaviour preserved)
+ *  - one text element per ComposedTextElement, carrying its slot tag and measured geometry
+ *
+ * Sibling of loadAiVariationToCanvas.  That function is UNCHANGED (AC4, flat mode).
+ * This function replaces the element array with background + text elements;
+ * any existing canvas state is discarded (same as the blank-canvas branch of the flat loader).
+ *
+ * AC6: missing/malformed geometry → safe default placement; value always rendered; never throws.
+ * AC1: slot tags are set, so RightSidebar.tsx:297-300 reactive slot discovery lights up.
+ */
+export async function loadComposedDesignToCanvas(design: ComposedDesign): Promise<boolean> {
+  try {
+    // ── 1. Fetch the text-erased background via the proxy ──────────────────
+    let bgSrc = design.backgroundUrl;
+    try {
+      const proxyUrl = `/api/proxy-image?url=${encodeURIComponent(design.backgroundUrl)}`;
+      const res = await fetch(proxyUrl);
+      if (res.ok) {
+        const blob = await res.blob();
+        bgSrc = await new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.readAsDataURL(blob);
+        });
+      }
+    } catch {
+      // Proxy failed — fall back to the original URL (CORS-safe for same-origin designs).
+    }
+
+    // ── 2. Decode image to get natural dimensions for coordinate scaling ───
+    const img = await loadImageFromSrc(bgSrc);
+
+    // ── 3. Resolve artboard (same logic as the flat loader) ───────────────
+    const artboard = resolveAiArtboard(img.naturalWidth, img.naturalHeight);
+    const { width: canvasW, height: canvasH, orientation } = artboard;
+
+    // ── 4. Compute contain-scale + letterbox offsets ───────────────────────
+    // The background renders as background-size:contain (see ImageElement.tsx:isAiImport).
+    // Text geometry is in source-image pixel space; scale it to match the rendered image.
+    const scaleX = canvasW / (img.naturalWidth || canvasW);
+    const scaleY = canvasH / (img.naturalHeight || canvasH);
+    const scale  = Math.min(scaleX, scaleY);
+    const renderedW = (img.naturalWidth || canvasW)  * scale;
+    const renderedH = (img.naturalHeight || canvasH) * scale;
+    const offsetX = (canvasW - renderedW) / 2;
+    const offsetY = (canvasH - renderedH) / 2;
+
+    // ── 5. Background element ─────────────────────────────────────────────
+    const bgElement: ImageElement = {
+      id: `composed-bg-${Date.now()}`,
+      type: 'image',
+      src: bgSrc,
+      x: 0,
+      y: 0,
+      width: canvasW,
+      height: canvasH,
+      rotation: 0,
+      opacity: 1,
+      locked: true,   // prevent accidental moves
+      visible: true,
+      zIndex: 0,
+      name: 'Background',
+      isAiImport: true,
+      aiOrientation: orientation,
+      objectFit: 'contain',
+      cornerRadius: 0,
+      flipHorizontal: false,
+      flipVertical: false,
+      colorOverlay: null,
+      filters: { brightness: 100, contrast: 100, saturation: 100 },
+    };
+
+    // ── 6. Text elements — one per ComposedTextElement ────────────────────
+    const textElements: TextElement[] = design.elements.map((el, index): TextElement => {
+      const geo = el.geometry;
+
+      // Safe geometry — AC6: if a value is missing, zero or non-finite, fall back.
+      // The text content is always rendered; only the position / size may degrade.
+      const safeX  = (geo && isFinite(geo.x))                          ? geo.x * scale + offsetX : GEO_DEFAULTS.x;
+      const safeY  = (geo && isFinite(geo.y))                          ? geo.y * scale + offsetY : GEO_DEFAULTS.y;
+      const safeW  = (geo && isFinite(geo.width) && geo.width > 0)     ? geo.width * scale       : GEO_DEFAULTS.width;
+      const safeH  = (geo && isFinite(geo.height) && geo.height > 0)   ? geo.height * scale      : GEO_DEFAULTS.height;
+      const safeFs = (geo?.fontSize && isFinite(geo.fontSize) && geo.fontSize > 0)
+        ? geo.fontSize * scale
+        : GEO_DEFAULTS.fontSize;
+      const safeAngle = (geo && isFinite(geo.angle)) ? geo.angle : 0;
+
+      const slotId = el.slot ? LISTING_FIELD_TO_SLOT[el.slot] : undefined;
+
+      return {
+        id: `composed-text-${Date.now()}-${index}`,
+        type: 'text',
+        content:        el.text,
+        x:              safeX,
+        y:              safeY,
+        width:          safeW,
+        height:         safeH,
+        rotation:       safeAngle,
+        opacity:        1,
+        locked:         false,
+        visible:        true,
+        zIndex:         index + 1,
+        name:           slotId ?? `Text ${index + 1}`,
+        slot:           slotId,
+        fontFamily:     geo?.fontFamily  ?? GEO_DEFAULTS.fontFamily,
+        fontSize:       safeFs,
+        fontWeight:     400,
+        bold:           false,
+        italic:         false,
+        underline:      false,
+        strikethrough:  false,
+        color:          geo?.color       ?? GEO_DEFAULTS.color,
+        align:          ((geo?.alignment ?? GEO_DEFAULTS.alignment) as TextAlign),
+        lineHeight:     geo?.lineHeight  ?? GEO_DEFAULTS.lineHeight,
+        textTransform:  'none',
+        listStyle:      'none',
+      };
+    });
+
+    // ── 7. Load into the store ─────────────────────────────────────────────
+    useCanvasStore.getState().loadCanvas({
+      elements:          [bgElement, ...textElements],
+      selectedElementIds: [],
+      backgroundColor:   '#000000',
+      canvasWidth:       canvasW,
+      canvasHeight:      canvasH,
+      canvasPanX:        0,
+      canvasPanY:        0,
+      zoom:              1,
+      history:           { past: [], future: [] },
+    });
+
+    return true;
+  } catch (error) {
+    console.error('Error loading composed design to canvas:', error);
+    return false;
+  }
+}
+
 /**
  * Export canvas as image using html2canvas
  */
