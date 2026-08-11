@@ -11,6 +11,8 @@ import {
 } from '../../../config/image-generation.config';
 import { logGen, elapsed } from '../../../common/utils/ai-gen-logger';
 
+// PHOTO_UPLOADS_DIR is also declared in infographics.controller.ts — update
+// both if the upload path ever changes (US-AI-031 AC4 cross-reference).
 const PHOTO_UPLOADS_DIR = path.join(os.tmpdir(), 'ai-infographic-uploads');
 
 // ─── Ideogram endpoints ──────────────────────────────────────────────────────
@@ -118,19 +120,13 @@ export class IdeogramService {
         form.append('style_type', 'DESIGN');
         form.append('rendering_speed', renderingSpeed);
 
-        // Attach property photo as Ideogram style reference if provided
+        // Attach property photo as Ideogram style reference if provided.
+        // readSourcePhoto throws HttpException(422) if the file is unreadable (AC4).
         if (photoReferencePath) {
-          const fullPath = path.join(PHOTO_UPLOADS_DIR, photoReferencePath);
-          try {
-            const photoBuffer = fs.readFileSync(fullPath);
-            const mimeType = photoReferencePath.endsWith('.png') ? 'image/png' : 'image/jpeg';
-            const photoBlob = new Blob([photoBuffer], { type: mimeType });
-            form.append('style_reference_images', photoBlob, photoReferencePath);
-            logGen({ generationId: generationId ?? 'unknown', event: 'image:reference:attached', photoReferencePath });
-          } catch (refErr: any) {
-            // Non-fatal: file may have expired or path is wrong — proceed without reference
-            logGen({ generationId: generationId ?? 'unknown', event: 'image:reference:missing', photoReferencePath, error: refErr?.message }, 'warn');
-          }
+          const photoBuffer = this.readSourcePhoto(photoReferencePath, generationId);
+          const mimeType = photoReferencePath.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg';
+          const photoBlob = new Blob([photoBuffer], { type: mimeType });
+          form.append('style_reference_images', photoBlob, photoReferencePath);
         }
 
         const response = await axios.post(IDEOGRAM_V3_URL, form, {
@@ -235,18 +231,14 @@ export class IdeogramService {
       form.append('rendering_speed', renderingSpeed);
       form.append('resolution', resolution);
 
-      // Attach property photo as style reference if provided (best-effort — V4 support TBD)
+      // Attach property photo as style reference if provided (best-effort — V4 support TBD).
+      // readSourcePhoto throws HttpException(422) if the file is unreadable (AC4).
       if (photoReferencePath) {
-        const fullPath = path.join(PHOTO_UPLOADS_DIR, photoReferencePath);
-        try {
-          const photoBuffer = fs.readFileSync(fullPath);
-          const mimeType = photoReferencePath.endsWith('.png') ? 'image/png' : 'image/jpeg';
-          const photoBlob = new Blob([photoBuffer], { type: mimeType });
-          form.append('style_reference_images', photoBlob, photoReferencePath);
-          logGen({ generationId: generationId ?? 'unknown', event: 'image:v4:reference:attached', photoReferencePath });
-        } catch (refErr: any) {
-          logGen({ generationId: generationId ?? 'unknown', event: 'image:v4:reference:missing', photoReferencePath, error: refErr?.message }, 'warn');
-        }
+        const photoBuffer = this.readSourcePhoto(photoReferencePath, generationId);
+        const mimeType = photoReferencePath.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg';
+        const photoBlob = new Blob([photoBuffer], { type: mimeType });
+        form.append('style_reference_images', photoBlob, photoReferencePath);
+        logGen({ generationId: generationId ?? 'unknown', event: 'image:v4:reference:attached', photoReferencePath });
       }
 
       const response = await axios.post(IDEOGRAM_V4_GENERATE_URL, form, {
@@ -279,5 +271,38 @@ export class IdeogramService {
 
   getCostPerImage(model: string): number {
     return getModelCost(normalizeImageModel(model));
+  }
+
+  /**
+   * Read the agent's uploaded property photo from the upload directory.
+   *
+   * Throws HttpException(422) when the file is unreadable — this is the
+   * deliberate hard-fail introduced by US-AI-031 AC4.
+   *
+   * Both previous callers caught this error, logged a warning, and continued,
+   * producing a fabricated house that reported success. That is a trust and
+   * liability defect for a product premised on depicting the real listing.
+   *
+   * Log event names kept compatible with existing dashboards:
+   *   image:reference:attached  — file read successfully
+   *   image:reference:unreadable — new error event replacing the old 'missing' warn
+   */
+  private readSourcePhoto(photoPath: string, generationId?: string): Buffer {
+    const fullPath = path.join(PHOTO_UPLOADS_DIR, photoPath);
+    try {
+      const buffer = fs.readFileSync(fullPath);
+      logGen({ generationId: generationId ?? 'unknown', event: 'image:reference:attached', photoPath });
+      return buffer;
+    } catch (err: any) {
+      logGen(
+        { generationId: generationId ?? 'unknown', event: 'image:reference:unreadable', photoPath, error: err?.message },
+        'error',
+      );
+      throw new HttpException(
+        `Property photo could not be read (${photoPath}). ` +
+          'The file may have expired — please re-upload and try again.',
+        422,
+      );
+    }
   }
 }
