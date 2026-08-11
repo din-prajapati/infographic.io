@@ -10,11 +10,20 @@ import type { ImageElement, TextElement, TextAlign } from './canvasTypes';
 import type { ComposedDesign } from './api';
 
 /**
- * Capture current canvas state as JSON
+ * Capture current canvas state as JSON.
+ *
+ * Slot tags (BaseElement.slot) survive this serialisation because `state.elements`
+ * is serialised verbatim — the slot field is a plain optional string on each element
+ * and JSON.stringify preserves it. restoreCanvasData() below re-hydrates from the
+ * same array, so AC3 of US-AI-032 (save/reload keeps all elements + slot tags intact)
+ * is satisfied by the existing round-trip without any custom logic.
+ *
+ * If you add a non-serialisable field to CanvasElement in the future, capture it
+ * explicitly here rather than inside the element type.
  */
 export function captureCanvasData(): any {
   const state = useCanvasStore.getState();
-  
+
   return {
     version: "1.0",
     elements: state.elements,
@@ -146,7 +155,15 @@ function generatePlaceholderThumbnail(): string {
 }
 
 /**
- * Restore canvas state from JSON data
+ * Restore canvas state from JSON data.
+ *
+ * `canvasData.elements` is the verbatim array from captureCanvasData().
+ * All element fields — including the optional `slot` tags authored by
+ * loadComposedDesignToCanvas — are restored without any transform.
+ * This is the persistence guarantee for AC3 of US-AI-032.
+ *
+ * The data flows via client → POST /designs → propertyData.canvasDesign.canvasData
+ * (designs.service.ts:69-89, browser-side only — no server-side canvas writer).
  */
 export function restoreCanvasData(canvasData: any): boolean {
   try {
