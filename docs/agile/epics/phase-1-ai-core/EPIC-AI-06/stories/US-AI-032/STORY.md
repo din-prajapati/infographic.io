@@ -43,13 +43,31 @@ Consume a `ComposedDesign` from US-AI-031b and turn it into a real, editable, pe
 
 ## Acceptance Criteria
 
-- [x] **AC1 [happy-path]:** An edited generation opens in the editor as a background layer plus independently selectable text elements at their supplied positions.
-- [x] **AC2 [happy-path]:** Each element carries its `slot` tag, so the existing sidebar Customize sections edit the values live (`RightSidebar.tsx:297-300` already derives active slots reactively from elements).
-- [x] **AC3 [happy-path]:** The design persists and reloads with all elements intact.
+- [ ] **AC1 [happy-path]:** An edited generation opens in the editor as a background layer plus independently selectable text elements at their supplied positions.
+- [ ] **AC2 [happy-path]:** Each element carries its `slot` tag, so the existing sidebar Customize sections edit the values live (`RightSidebar.tsx:297-300` already derives active slots reactively from elements).
+- [ ] **AC3 [happy-path]:** The design persists and reloads with all elements intact.
 - [x] **AC4 [regression]:** Flat mode remains available and unchanged; the user chooses per generation.
 - [ ] **AC5 [regression]:** **Export matches the composed preview at full resolution.** This is *not* true today — see Export parity below. Real work, not a checkbox.
-- [x] **AC6 [error-path]:** An element with missing or malformed geometry renders with a safe default placement and style. Never crashes the editor, never silently drops the value.
+- [ ] **AC6 [error-path]:** An element with missing or malformed geometry renders with a safe default placement and style. Never crashes the editor, never silently drops the value.
 - [x] **AC7 [edge-case]:** A `slot` id absent from the sidebar catalogs **fails loudly at dev time** rather than vanishing. Today `TemplateSection` returns `null` when nothing matches (`TemplateSlotSection.tsx:210-211`), so a typo'd slot silently deletes a value from the UI — exactly the failure AC6 forbids.
+
+---
+
+## ⚠️ Verification status — read before ticking anything else
+
+**Implementation for AC1, AC2, AC3 and AC6 is complete and on the branch. Those ACs are unticked because nothing verifies them.**
+
+`api/tests/canvas/canvasState.helpers.spec.ts` adds 13 passing tests, but none execute the code this story wrote. Its own header says so: *"Client tests (AC3 round-trip, AC1 element array) cannot run here — there is no client test infrastructure in this repo (US-DEPLOY-007)."*
+
+| Test | What it actually asserts | Verifies the story? |
+|---|---|---|
+| Safe-geometry (AC6) | A `safeGeo()` **copy** declared inside the spec, with a "keep in sync with canvasState.ts" comment | ❌ Passes even if `loadComposedDesignToCanvas` is deleted |
+| Slot round-trip (AC3) | `JSON.stringify`/`JSON.parse` preserves a field on an object literal | ❌ Passes on any repo; never calls `captureCanvasData` |
+| AC8 guard | Reads `ai-orchestrator.service.ts` as **text** and asserts a substring is absent from a slice | ⚠️ Crude tripwire only — defeated by a rename, a reformat, an alias, or an indirect call |
+
+The two ACs that remain ticked have real evidence: **AC4** because `loadAiVariationToCanvas` and both its call sites are provably untouched in the diff, and **AC7** because the `SlotId` union is enforced by `npm run check`, which passes (the dev-time throw itself is still unverified).
+
+**These ACs become verifiable when [US-DEPLOY-007](../../../EPIC-DEPLOY-01/stories/US-DEPLOY-007/STORY.md) lands.** Do not tick them on the strength of the current suite — and treat "254 tests passing" as evidence about the backend, not about this story.
 
 ---
 
