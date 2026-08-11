@@ -126,6 +126,14 @@ export function AIChatBox({
   const [generationQualityModel, setGenerationQualityModel] =
     useState<ImageQualityModel>("ideogram-turbo");
 
+  /**
+   * Render mode: 'flat' loads AI generations as a single raster layer (existing behaviour).
+   * 'editable' triggers lazy layer extraction on the Edit action and loads canonical text
+   * as slot-tagged, individually selectable canvas elements (US-AI-032 T2).
+   * Provider-agnostic — describes the output shape, never the vendor.
+   */
+  const [renderMode, setRenderMode] = useState<'flat' | 'editable'>('flat');
+
   // Conversation history with previews
   const [conversationHistory, setConversationHistory] = useState<
     Array<{
@@ -788,6 +796,9 @@ export function AIChatBox({
         headline: propertyHeadline.trim() || undefined,
         // Pass uploaded property photo ID as style reference (AC3)
         photoReference: photoId ?? undefined,
+        // US-AI-032 T2: signal intended render mode. 'editable' is only meaningful when
+        // a photoReference is present (the Layerize step requires a composition).
+        renderMode,
         agent: {
           name: agentInfo.name || undefined,
           brokerage: agentInfo.brokerage || undefined,
@@ -1409,6 +1420,35 @@ export function AIChatBox({
                       onSuggestionClick={handleSuggestionClick}
                     />
                   )}
+
+                {/* Render-mode toggle — shown when results are present (US-AI-032 T2).
+                    'flat' = raster layer (existing behavior, default).
+                    'editable' = lazy layer extraction → slot-tagged text elements.
+                    Only meaningful when a property photo was uploaded (photoReference). */}
+                {!state.isGenerating && resultVariations.length > 0 && (
+                  <div className="px-4 pb-2 flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground shrink-0">Edit as:</span>
+                    <div className="flex rounded-md border border-border overflow-hidden text-xs">
+                      <button
+                        className={`px-2.5 py-1 transition-colors ${renderMode === 'flat' ? 'bg-primary text-primary-foreground' : 'bg-background text-muted-foreground hover:text-foreground'}`}
+                        onClick={() => setRenderMode('flat')}
+                        title="Load as a single raster layer"
+                      >
+                        Flat
+                      </button>
+                      <button
+                        className={`px-2.5 py-1 transition-colors ${renderMode === 'editable' ? 'bg-primary text-primary-foreground' : 'bg-background text-muted-foreground hover:text-foreground'}`}
+                        onClick={() => setRenderMode('editable')}
+                        title="Extract text layers — editable slots in the sidebar"
+                      >
+                        Editable
+                      </button>
+                    </div>
+                    {renderMode === 'editable' && !photoId && (
+                      <span className="text-[10px] text-amber-500">Upload a photo for best results</span>
+                    )}
+                  </div>
+                )}
 
                 {/* Result Variations */}
                 {!state.isGenerating && resultVariations.length > 0 && (

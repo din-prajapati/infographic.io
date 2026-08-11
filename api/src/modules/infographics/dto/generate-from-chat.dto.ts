@@ -147,6 +147,20 @@ export class GenerateFromChatDto {
   @Type(() => AgentDto)
   @IsOptional()
   agent?: AgentDto;
+
+  @ApiProperty({
+    example: 'flat',
+    description:
+      'How the client intends to render the result. ' +
+      '"flat" (default) loads as a raster layer. ' +
+      '"editable" triggers lazy layer extraction on Edit and loads slot-tagged text elements.',
+    required: false,
+    enum: ['flat', 'editable'],
+    default: 'flat',
+  })
+  @IsEnum(['flat', 'editable'])
+  @IsOptional()
+  renderMode?: 'flat' | 'editable';
 }
 
 export class RegenerateDto {
