@@ -72,7 +72,12 @@ function isContactShaped(text: string): boolean {
  *
  * The composition prompt contained the canonical values, so Ideogram's rendering should
  * resemble them closely. Exact match is common; substring and word-overlap handle minor
- * drift (e.g. "$520K" rendered as "$520k" or "$520,000").
+ * drift (e.g. "$520K" rendered as "$520k", "Main Street" for canonical "Main St, Anytown").
+ *
+ * Bidirectional overlap: we check whether the detected words cover the canonical AND
+ * whether the canonical words cover the detected. Taking the max handles the real-world
+ * case where Ideogram renders an abbreviated address — the abbreviation has fewer words
+ * but a high reverse-overlap ratio (e.g. "123 Main Street" → 2/3 words match canonical).
  */
 function fuzzyScore(detected: string, canonical: string): number {
   if (!canonical.trim() || !detected.trim()) return 0;
@@ -80,13 +85,23 @@ function fuzzyScore(detected: string, canonical: string): number {
   const nc = normalize(canonical);
   if (nd === nc) return 100;
   if (nd.includes(nc) || nc.includes(nd)) return 80;
-  // Word-overlap: useful for addresses and stats fields with separators
-  const words1 = new Set(nd.split(' ').filter(w => w.length > 2));
-  const words2 = nc.split(' ').filter(w => w.length > 2);
-  if (words2.length === 0) return 0;
-  const overlap = words2.filter(w => words1.has(w)).length;
-  const ratio = overlap / words2.length;
-  return ratio >= 0.6 ? ratio * 70 : 0;
+
+  // Bidirectional word-overlap — threshold 0.6 applied to the better direction.
+  const dWords = new Set(nd.split(' ').filter(w => w.length > 2));
+  const cWords = nc.split(' ').filter(w => w.length > 2);
+  if (cWords.length === 0) return 0;
+
+  const cWordsSet = new Set(cWords);
+  // Forward: what fraction of canonical words appear in detected?
+  const forwardOverlap = cWords.filter(w => dWords.has(w)).length;
+  const forwardRatio = forwardOverlap / cWords.length;
+  // Reverse: what fraction of detected words appear in canonical?
+  const dWordsArr = [...dWords];
+  const reverseOverlap = dWordsArr.filter(w => cWordsSet.has(w)).length;
+  const reverseRatio = dWordsArr.length > 0 ? reverseOverlap / dWordsArr.length : 0;
+
+  const bestRatio = Math.max(forwardRatio, reverseRatio);
+  return bestRatio >= 0.6 ? bestRatio * 70 : 0;
 }
 
 // ─── Role tiebreak ───────────────────────────────────────────────────────────
