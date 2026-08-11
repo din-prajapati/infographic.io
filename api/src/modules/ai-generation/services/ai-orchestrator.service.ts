@@ -2,7 +2,8 @@ import { Injectable, Inject, HttpException } from '@nestjs/common';
 import { PrismaService } from '../../../common/services/prisma.service';
 import { OpenAiService } from './openai.service';
 import { IdeogramService } from './ideogram.service';
-import { getTotalCost } from '../../../config/ai-models.config';
+import { LayerExtractionService } from './layer-extraction.service';
+import { getTotalCost, LAYERIZE_COST_PER_IMAGE } from '../../../config/ai-models.config';
 import { normalizeImageModel } from '../../../config/image-generation.config';
 import { logGen, elapsed } from '../../../common/utils/ai-gen-logger';
 import {
@@ -12,6 +13,8 @@ import {
   applyStylePreset,
   getVariationModifier,
 } from './infographic-prompt.builder';
+import { ComposedDesign, ListingField } from '../types/composed-design.types';
+import { mapBlocksToFields } from './text-block.mapper';
 
 @Injectable()
 export class AiOrchestrator {
@@ -19,6 +22,7 @@ export class AiOrchestrator {
     @Inject(OpenAiService) private openAiService: OpenAiService,
     @Inject(IdeogramService) private ideogramService: IdeogramService,
     @Inject(PrismaService) private prisma: PrismaService,
+    @Inject(LayerExtractionService) private layerExtractionService: LayerExtractionService,
   ) {}
 
   async generateInfographic(
@@ -339,6 +343,99 @@ export class AiOrchestrator {
       logGen({ generationId: infographicId, event: 'gen:failed', error: error?.message, totalDurationMs: elapsed(t0) }, 'error');
       throw error;
     }
+  }
+
+  /**
+   * Compose a `ComposedDesign` for the edit path — LAZY, never called during generate (AC2).
+   *
+   * Flow:
+   *   1. Call LayerExtractionService to get text-erased background + detected geometry.
+   *   2. If provider fails (returns null) → return the original flat image as a usable
+   *      flat design with no overlay elements (AC6). creditsUsed stays at 1.
+   *   3. Otherwise → bind detected blocks to canonical listing fields via mapBlocksToFields()
+   *      and emit a ComposedDesign with measured/fallback elements (AC3, AC4, AC5, AC8).
+   *   4. Increment costUsd on the existing UsageRecord (metering wrinkle — STORY.md §Metering).
+   *      creditsUsed is NOT changed: it was set at generate time and counts generations, not
+   *      edit actions. Per CLAUDE.md, costUsd is true provider spend and must never be zeroed.
+   *
+   * The no-photo path (generateInfographic without photoReference) is untouched — this method
+   * is only invoked from GenerationsService.getComposedDesign() on user click (AC7 preserved).
+   */
+  async composeDesignForEdit(
+    imageUrl: string,
+    propertyData: any,
+    infographicId: string,
+  ): Promise<ComposedDesign> {
+    const t0 = Date.now();
+    logGen({ generationId: infographicId, event: 'edit:extract:start', imageUrl });
+
+    // Build canonical values from the application's own listing record (AC8).
+    // headline may be absent if the user did not supply one and the LLM value was
+    // not persisted — in that case the headline block will fall through to role/fallback.
+    const headline = (propertyData.headline as string | undefined) ?? '';
+    const expectedTexts = buildExpectedTexts(propertyData, headline);
+    const canonical: Record<ListingField, string> = {
+      headline: '', address: '', price: '', stats: '', agentName: '', brokerage: '',
+    };
+    for (const { key, value } of expectedTexts) {
+      canonical[key as ListingField] = value;
+    }
+
+    // ── Extraction (lazy, on edit only — AC2) ───────────────────────────────
+    const extractionResult = await this.layerExtractionService.extractTextGeometry(
+      imageUrl,
+      infographicId,
+    );
+
+    if (!extractionResult) {
+      // Provider failed — degrade to usable flat design (AC6).
+      // Background retains baked-in text; no overlay elements are emitted.
+      logGen({ generationId: infographicId, event: 'edit:extract:degraded', durationMs: elapsed(t0) }, 'warn');
+      return {
+        backgroundUrl: imageUrl,
+        elements: [],
+        extraction: { attempted: true, blocksDetected: 0, matched: 0 },
+      };
+    }
+
+    const { backgroundUrl, blocks } = extractionResult;
+
+    // ── Bind blocks to canonical fields (pure mapper — AC3, AC4, AC5, AC8) ──
+    const elements = mapBlocksToFields(blocks, canonical);
+    const matched = elements.filter(e => e.slot !== null && e.placement === 'measured').length;
+
+    logGen({
+      generationId: infographicId,
+      event: 'edit:extract:mapped',
+      blocksDetected: blocks.length,
+      matched,
+      fallback: elements.filter(e => e.placement === 'fallback').length,
+      durationMs: elapsed(t0),
+    });
+
+    // ── Metering wrinkle (STORY.md §Metering, CLAUDE.md) ────────────────────
+    // A lazy extraction call adds real provider spend ($0.09) to a generation record
+    // that was already written and billed at generate time. Increment costUsd on the
+    // existing UsageRecord; never touch creditsUsed (remains 1 from generate time).
+    // Non-fatal if the update fails — the design is still usable.
+    try {
+      await this.prisma.usageRecord.update({
+        where: { infographicId },
+        data: { costUsd: { increment: LAYERIZE_COST_PER_IMAGE } },
+      });
+      logGen({ generationId: infographicId, event: 'edit:metering:ok', costIncrement: LAYERIZE_COST_PER_IMAGE });
+    } catch (meteringErr: any) {
+      logGen(
+        { generationId: infographicId, event: 'edit:metering:error', error: meteringErr?.message },
+        'warn',
+      );
+    }
+
+    return {
+      backgroundUrl,
+      elements,
+      extraction: { attempted: true, blocksDetected: blocks.length, matched },
+    };
   }
 
   private getVariationDescription(index: number, style?: string): string {

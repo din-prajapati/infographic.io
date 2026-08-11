@@ -8,6 +8,7 @@ import { UsageAlertService } from './usage-alert.service';
 import { UsageLimitService } from './usage-limit.service';
 import { GenerationProgressGateway } from '../gateways/generation-progress.gateway';
 import { GenerateFromChatDto } from '../dto/generate-from-chat.dto';
+import { ComposedDesign } from '../../ai-generation/types/composed-design.types';
 
 export interface GenerationStatus {
   id: string;
@@ -309,6 +310,38 @@ export class GenerationsService {
         description: 'AI-generated property infographic',
       },
     ];
+  }
+
+  /**
+   * Return a ComposedDesign for a specific variation when the user clicks "Edit" (AC2).
+   *
+   * Lazy extraction: this is the ONLY path that calls LayerExtractionService. The generate
+   * path (generateFromChat) is untouched — extraction runs exclusively here (AC2, AC7).
+   *
+   * Metering is handled inside AiOrchestrator.composeDesignForEdit(), which increments
+   * costUsd on the existing UsageRecord without touching creditsUsed (STORY.md §Metering).
+   *
+   * @param infographicId   The generation whose variation the user is editing
+   * @param variationImageUrl  The flat composition URL chosen by the user
+   */
+  async getComposedDesign(
+    infographicId: string,
+    variationImageUrl: string,
+  ): Promise<ComposedDesign> {
+    const infographic = await this.prisma.infographic.findUnique({
+      where: { id: infographicId },
+      select: { id: true, propertyData: true, status: true },
+    });
+
+    if (!infographic) {
+      throw new NotFoundException(`Generation ${infographicId} not found`);
+    }
+
+    return this.aiOrchestrator.composeDesignForEdit(
+      variationImageUrl,
+      infographic.propertyData as any,
+      infographicId,
+    );
   }
 
   async regenerate(
