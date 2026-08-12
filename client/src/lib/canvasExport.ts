@@ -117,8 +117,10 @@ export async function exportCanvasToImage(
  * Word-wrap a single line of text to a max pixel width using the current
  * ctx font. Long unbreakable words are broken only if they exceed the full
  * width (mirrors CSS `break-words`). Returns the wrapped sub-lines.
+ *
+ * Exported for unit testing — no behaviour change.
  */
-function wrapTextToWidth(
+export function wrapTextToWidth(
   ctx: CanvasRenderingContext2D,
   text: string,
   maxWidth: number,
@@ -167,6 +169,20 @@ function wrapTextToWidth(
 }
 
 /**
+ * Horizontal padding (px-2 = 0.5rem = 8px) mirroring TextElement.tsx's `px-2`.
+ * Applied as left and right inset; inset width = element.width - 2 * TEXT_PAD_H.
+ * Exported for unit testing — must stay in sync with TextElement.tsx:185.
+ */
+export const TEXT_PAD_H = 8;
+
+/**
+ * Vertical top padding (py-1 = 0.25rem = 4px) mirroring TextElement.tsx's `py-1`.
+ * First line Y = element.y + TEXT_PAD_TOP.
+ * Exported for unit testing — must stay in sync with TextElement.tsx:185.
+ */
+export const TEXT_PAD_TOP = 4;
+
+/**
  * Render text element to canvas.
  *
  * Padding convention (must stay in sync with TextElement.tsx:185):
@@ -208,8 +224,8 @@ function renderTextElement(ctx: CanvasRenderingContext2D, element: TextElement):
   }
 
   // Padding values mirroring the TextElement.tsx preview (px-2 py-1).
-  const padH = 8; // px-2 = 0.5rem = 8px
-  const padTop = 4; // py-1 = 0.25rem = 4px
+  const padH = TEXT_PAD_H;
+  const padTop = TEXT_PAD_TOP;
 
   // Word-wrap within the inset width (full width minus left + right padding)
   // so long lines don't overflow the element box, matching the CSS
@@ -431,8 +447,10 @@ function renderShapeElement(ctx: CanvasRenderingContext2D, element: ShapeElement
  * Returns { sx, sy, sw, sh } (source crop) and { dx, dy, dw, dh } (dest rect).
  * For 'fill' the source is the full image and the dest is the element box,
  * matching the old stretching behaviour.
+ *
+ * Exported for unit testing — pure geometry, no canvas context needed.
  */
-function computeObjectFitDraw(
+export function computeObjectFitDraw(
   naturalW: number,
   naturalH: number,
   destX: number,
@@ -480,6 +498,25 @@ function computeObjectFitDraw(
     sy = (naturalH - sh) / 2;
   }
   return { sx, sy, sw, sh, dx: destX, dy: destY, dw: destW, dh: destH };
+}
+
+/**
+ * Return the 9-argument drawImage source rect for a cropped element.
+ *
+ * When element.crop is set the canvas export uses crop.{x,y,width,height} as
+ * the source rect in natural-image coordinates — the same region that
+ * getCroppedImageStyle() in ImageElement.tsx uses to position the preview img.
+ * This function makes that contract explicit and testable without a canvas context.
+ *
+ * Exported for unit testing — pure arithmetic, no side effects.
+ */
+export function computeCropSourceRect(crop: {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}): { sx: number; sy: number; sw: number; sh: number } {
+  return { sx: crop.x, sy: crop.y, sw: crop.width, sh: crop.height };
 }
 
 /**
@@ -543,7 +580,7 @@ async function renderImageElement(ctx: CanvasRenderingContext2D, element: ImageE
         // Honour element.crop: source rect is the crop region in natural-image
         // coordinates; dest rect is the full element box. Matches preview's
         // getCroppedImageStyle() in ImageElement.tsx.
-        const { x: sx, y: sy, width: sw, height: sh } = element.crop;
+        const { sx, sy, sw, sh } = computeCropSourceRect(element.crop);
         ctx.drawImage(img, sx, sy, sw, sh, drawX, drawY, drawWidth, drawHeight);
       } else {
         // isAiImport uses background-size:contain in the preview; treat as
