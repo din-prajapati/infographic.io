@@ -1,0 +1,111 @@
+{
+  "reasoning": "The right side of the image is visually quiet with a plain wall, making it suitable for the scrim.",
+  "scrim": {
+    "side": "right",
+    "widthPct": 35,
+    "color": "#333333",
+    "opacity": 0.9
+  },
+  "palette": {
+    "accent": "#FFD700",
+    "text": "#FFFFFF",
+    "muted": "#CCCCCC"
+  },
+  "elements": [
+    {
+      "slot": "headline",
+      "x": 1620,
+      "y": 400,
+      "maxWidth": 800,
+      "fontSize": 110,
+      "weight": 800,
+      "color": "#FFFFFF",
+      "align": "left",
+      "onScrim": true
+    },
+    {
+      "slot": "price",
+      "x": 1620,
+      "y": 550,
+      "maxWidth": 800,
+      "fontSize": 85,
+      "weight": 700,
+      "color": "#FFFFFF",
+      "align": "left",
+      "onScrim": true
+    },
+    {
+      "slot": "address",
+      "x": 1620,
+      "y": 670,
+      "maxWidth": 800,
+      "fontSize": 42,
+      "weight": 400,
+      "color": "#FFFFFF",
+      "align": "left",
+      "onScrim": true
+    },
+    {
+      "slot": "agentName",
+      "x": 1620,
+      "y": 1000,
+      "maxWidth": 800,
+      "fontSize": 48,
+      "weight": 700,
+      "color": "#FFFFFF",
+      "align": "left",
+      "onScrim": true
+    },
+    {
+      "slot": "brokerage",
+      "x": 1620,
+      "y": 1070,
+      "maxWidth": 800,
+      "fontSize": 32,
+      "weight": 400,
+      "color": "#FFFFFF",
+      "align": "left",
+      "onScrim": true
+    },
+    {
+      "slot": "badge",
+      "x": 2200,
+      "y": 100,
+      "maxWidth": 240,
+      "fontSize": 32,
+      "weight": 600,
+      "color": "#FFFFFF",
+      "align": "right",
+      "onScrim": true
+    },
+    {
+      "slot": "stats",
+      "x": 120,
+      "y": 1340,
+      "maxWidth": 2320,
+      "fontSize": 40,
+      "weight": 400,
+      "color": "#FFFFFF",
+      "align": "center",
+      "onScrim": false
+    }
+  ],
+  "decor": [
+    {
+      "type": "rule",
+      "x": 1620,
+      "y": 640,
+      "w": 200,
+      "h": 6,
+      "color": "#FFD700"
+    },
+    {
+      "type": "bar",
+      "x": 0,
+      "y": 1320,
+      "w": 2560,
+      "h": 120,
+      "color": "#333333"
+    }
+  ]
+}

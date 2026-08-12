@@ -86,13 +86,54 @@ Provider spend on the critical path effectively disappears. The remaining cost i
 
 ---
 
+---
+
+## Test 3 — LLM layout planner ⚠️ Works mechanically, fails at pixel placement
+
+Two GPT-4o vision runs against the same photo and listing data, ~$0.01 each. Full specs and renders committed alongside.
+
+### What the LLM does well
+
+It genuinely reasons about the image. Unprompted, v1 returned:
+
+> *"The photo's visual subject is the seating area and stairs, so the scrim is placed on the left."*
+
+That is correct, and it is the part that seemed hardest. Both runs produced valid, renderable specs with all 7 slots present exactly once, correct listing data, and 10–11 editable layers.
+
+### What it cannot do
+
+| Run | Type scale | Outcome | Evidence |
+|---|---|---|---|
+| **v1** — free composition | Far too small | Everything stacked in the top-left ~400px; huge dead zone across the scrim; text hugging the canvas edge | [`03-planner-v1-free.png`](./03-planner-v1-free.png) |
+| **v2** — hard constraints on margins, type scale, vertical rhythm | Correct | **Headline and price render on top of each other — illegible** | [`04-planner-v2-constrained.png`](./04-planner-v2-constrained.png) |
+
+**Root cause: the LLM cannot measure text.** v2 assigned the price an absolute `y` without knowing that a 120px headline at `maxWidth:800` wraps to two lines and occupies ~260px. It has no font metrics, so absolute-coordinate layout is guesswork that sometimes lands.
+
+Adding constraints did not help because the deficiency is not judgment, it is **measurement**. No prompt fixes that — the information simply is not available to the model.
+
+### Consequence for the design
+
+**The planner must not emit coordinates.** It should emit *intent*:
+
+```json
+{ "template": "left-scrim-hero", "scrimSide": "left",
+  "palette": { ... }, "emphasis": "price" }
+```
+
+…and the **renderer** measures and flows the text, exactly as any layout engine does. Choosing and parameterising a template is a task LLMs are reliably good at; placing pixels is not.
+
+This also answers open question 4 empirically rather than by preference: **curated templates, parameterised by the LLM — not free composition.** It makes the planner cheaper, more predictable, and removes the entire class of overlap/overflow bugs.
+
+---
+
 ## Open questions for the next spike
 
-1. **Can an LLM reliably author the layout spec?** This composite was hand-authored to prove the rendering path. The unproven half is GPT-4o emitting good `{panels, type scale, palette}` — including picking a scrim side that suits the photo's composition.
-2. **What is the spec schema?** `ComposedTextElement` from US-AI-031b already models slot + geometry + style; it may be most of the answer.
-3. **Contrast safety** — computing text contrast against underlying photo pixels, per the badge flaw above.
-4. **How many templates?** Does the LLM compose freely, or select and parameterise from a curated set? The latter is more predictable and likely better-looking.
-5. **Does the image model retain any role** — decorative textures, background extension for awkward aspect ratios (reframe is cheap and does not fabricate)?
+1. **~~Can an LLM author the layout spec?~~** ✅ Answered — yes for *intent*, no for *coordinates*. See Test 3.
+2. **How many templates, and what parameterises them?** Needs a small curated set (3–5) with named regions and a flow renderer.
+3. **What is the spec schema?** `ComposedTextElement` from US-AI-031b models slot + geometry + style — but geometry should now be renderer *output*, not planner input.
+4. **Contrast safety** — computing text contrast against underlying photo pixels, per the badge flaw above. Both planner runs also placed text over busy photo regions with weak contrast, so this must be enforced by the renderer, not requested in a prompt.
+5. **Does the image model retain any role** — decorative textures, or background extension for awkward aspect ratios (reframe is cheap and does not fabricate)?
+6. **No-photo mode** — when no real photograph is supplied, the background layer is AI-generated imagery *with no text baked in*, and the same planner and renderer run unchanged. The user can later swap that background for a real photo. Both modes therefore emit `background + design + text` and differ only in the background's origin.
 
 ---
 
