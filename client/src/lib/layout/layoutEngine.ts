@@ -91,9 +91,12 @@ function wrapSlot(
  * Append the ellipsis character to `text`, trimming from the right until the
  * whole string fits within maxWidth. Returns at minimum just '…'.
  *
- * Used in the T4 truncation path.
+ * Exported so TC-04 in layoutEngine.spec.ts can verify the exact ellipsis
+ * contract without going through the full layoutDesign() round-trip.
+ *
+ * AC5 truncation path — added T4.
  */
-function appendEllipsis(
+export function appendEllipsis(
   text: string,
   maxWidth: number,
   measureFn: (t: string) => number,

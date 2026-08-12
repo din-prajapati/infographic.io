@@ -15,7 +15,7 @@
  *   cursor advancement). Exact pixel accuracy is not required here.
  */
 import { describe, it, expect } from 'vitest';
-import { layoutDesign } from '@/lib/layout/layoutEngine';
+import { layoutDesign, appendEllipsis } from '@/lib/layout/layoutEngine';
 import type { LayoutElement, LayoutInput } from '@/lib/layout/types';
 import { templateRegistry, LISTING_SLOTS } from '@/lib/layout/templates';
 
@@ -225,6 +225,158 @@ describe('TC-05 — missing agent values collapse their block', () => {
       // Remaining elements still don't overlap.
       assertNoOverlap(result, `${templateId}-no-agent`);
     }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// TC-04 — Overflow degradation: shrink then truncate; never overflow region
+// ---------------------------------------------------------------------------
+describe('TC-04 — overflow degradation: bounds respected, truncated text ends with …', () => {
+  /**
+   * We force overflow by using a canvas where the relevant region is very
+   * short. corner-card's headlineBlock is { y:0.38, h:0.28 }.
+   * With a 200×100 canvas: headlineBlock height = 0.28×100 = 28px.
+   * minSize for headline = 28 * (100/1440) ≈ 1.94px (very small).
+   *
+   * We use a much longer text + a canvas that makes the region tiny enough
+   * to trigger both the shrink and truncation paths.
+   *
+   * Simpler approach: use a tiny 100×100 canvas with a very long string.
+   */
+  const tinyCanvas = { width: 400, height: 100 };
+
+  // On a 100px-height canvas, scale = 100/1440 ≈ 0.0694.
+  // headlineBlock h = 0.28 × 100 = 28px.
+  // Ideal headline size = 48 × 0.0694 ≈ 3.33px. lineH ≈ 4px.
+  // With measureStub: charWidth = 3.33 × 0.55 ≈ 1.83px.
+  // rw = 0.42 × 400 = 168px. So ~91 chars per line at ideal size.
+  // A 300-char string → ~4 lines. totalH ≈ 4×4 = 16px. Region = 28px.
+  //
+  // At that scale, typical text probably fits. Let's use corner-card's
+  // headlineBlock which is only h=0.28 of 100 = 28px, and use a very
+  // wide canvas so region width is narrow:
+  const narrowCanvas = { width: 40, height: 1440 }; // rw = 0.42×40 = 16.8px
+
+  // scale=1 (height=1440). headlineBlock: rh=0.28×1440=403.2px, rw=16.8px.
+  // idealSize=48, lineH=57.6. charWidth=48×0.55=26.4px per char.
+  // Single word "Luxury" (6 chars) = 6×26.4=158.4px > 16.8px!
+  // wrapTextToWidth hard-breaks long words char by char.
+  // charsPerLine = floor(16.8/26.4)=0 → each character gets its own line.
+  // A 60-char headline → 60 lines × 57.6 = 3456px >> 403.2px → triggers shrink.
+  // minSize=28, lineH_min=33.6. Each char still one line. 60×33.6=2016 >> 403.2.
+  // maxLines = floor(403.2/33.6) = 12. Truncate to 12 lines.
+
+  const veryLongHeadline =
+    'This is an extremely long headline that will definitely overflow any narrow region and require truncation';
+
+  it('element from overflowing slot has degraded flag', () => {
+    const result = layoutDesign({
+      templateId: 'corner-card',
+      values: {
+        'property.headline': veryLongHeadline,
+        'property.price':    '₹99 Cr',
+        'property.location': 'City',
+        'property.facts':    '5 Bed',
+        'agent.name':        'Alice',
+        'brand.name':        'Corp',
+        'agent.phone':       '1234',
+      },
+      canvas: narrowCanvas,
+      palette,
+      measureText: measureStub,
+    });
+
+    const headline = result.find((el) => el.slot === 'headline');
+    expect(headline, 'headline element must be present').toBeDefined();
+    expect(
+      headline!.degraded,
+      'headline must be degraded when it overflows',
+    ).toMatch(/^(shrunk|truncated)$/);
+  });
+
+  it('truncated element text ends with "…"', () => {
+    const result = layoutDesign({
+      templateId: 'corner-card',
+      values: { 'property.headline': veryLongHeadline },
+      canvas: narrowCanvas,
+      palette,
+      measureText: measureStub,
+    });
+
+    const headline = result.find((el) => el.slot === 'headline');
+    expect(headline, 'headline must be present').toBeDefined();
+    if (headline?.degraded === 'truncated') {
+      expect(headline.text.endsWith('…'), 'truncated text must end with "…"').toBe(true);
+    }
+  });
+
+  it('degraded element bottom edge stays within its region', () => {
+    const tpl = templateRegistry['corner-card'];
+    const regionFrac = tpl.regions['headlineBlock'];
+    const regionBottom = (regionFrac.y + regionFrac.h) * narrowCanvas.height;
+
+    const result = layoutDesign({
+      templateId: 'corner-card',
+      values: { 'property.headline': veryLongHeadline },
+      canvas: narrowCanvas,
+      palette,
+      measureText: measureStub,
+    });
+
+    const headline = result.find((el) => el.slot === 'headline');
+    expect(headline, 'headline must be present').toBeDefined();
+
+    const bottom = headline!.geometry.y + headline!.geometry.height;
+    expect(
+      bottom,
+      `element bottom (${bottom}) must not exceed region bottom (${regionBottom})`,
+    ).toBeLessThanOrEqual(regionBottom + 1e-6);
+  });
+
+  it('no overlap even when an element is degraded', () => {
+    const result = layoutDesign({
+      templateId: 'corner-card',
+      values: {
+        'property.headline': veryLongHeadline,
+        'property.price':    '₹99 Cr',
+        'property.location': 'City',
+        'property.facts':    '5 Bed',
+        'agent.name':        'Alice',
+        'brand.name':        'Corp',
+        'agent.phone':       '1234',
+      },
+      canvas: narrowCanvas,
+      palette,
+      measureText: measureStub,
+    });
+
+    assertNoOverlap(result, 'degradation-no-overlap');
+  });
+
+  // ── appendEllipsis unit tests (exported helper) ──────────────────────────
+  describe('appendEllipsis helper', () => {
+    const measure = (t: string) => t.length * 10; // 10px per character
+
+    it('adds … when text fits with ellipsis', () => {
+      // "Hello" = 50px; "Hello…" = 60px; maxWidth=60 → fits
+      expect(appendEllipsis('Hello', 60, measure)).toBe('Hello…');
+    });
+
+    it('trims and adds … when text does not fit with ellipsis', () => {
+      // "Hello" + "…" = 60px > 55px → trim
+      // "Hell" + "…" = 50px ≤ 55px → return "Hell…"
+      expect(appendEllipsis('Hello', 55, measure)).toBe('Hell…');
+    });
+
+    it('returns just … when even a single character does not fit', () => {
+      // maxWidth = 5, "…" = 10px → still only "…" is returned
+      expect(appendEllipsis('Hello', 5, measure)).toBe('…');
+    });
+
+    it('returns text + … unchanged when text already fits within maxWidth', () => {
+      // "Hi" = 20px; "Hi…" = 30px ≤ 100px
+      expect(appendEllipsis('Hi', 100, measure)).toBe('Hi…');
+    });
   });
 });
 
