@@ -401,3 +401,179 @@ describe('TC-06 — determinism: same input produces identical output', () => {
     });
   });
 });
+
+// ---------------------------------------------------------------------------
+// TC-03 / TC-07 — Full 27-case fixture matrix — AC7 regression sweep
+//   every template × {long, typical, empty} × {landscape, portrait, square}
+//
+// describe.each drives the 27 combinations without hand-written repetition.
+// Assertions per case: no overlap, every supplied value present, in-bounds.
+// ---------------------------------------------------------------------------
+describe('TC-03/TC-07 — fixture matrix (3 templates × 3 value-sets × 3 aspects)', () => {
+  const templateIds = Object.keys(templateRegistry);
+
+  // Long values: realistic long listing copy that forces line-wrapping on
+  // landscape and portrait canvases but fits within every template's regions
+  // so the "every supplied value present" assertion can hold for all 27 cases.
+  // Deliberately NOT extreme/absurd — long enough to trigger wrapping, short
+  // enough to not exhaust small regions (corner-card portrait, 0.28h region).
+  const longValues: LayoutInput['values'] = {
+    'property.headline': '4 Bedroom Luxury Penthouse with Modern Finishes',
+    'property.price':    '8,50,00,000 Negotiable',
+    'property.location': '102 Skyline Towers, Jubilee Hills, Hyderabad 500033',
+    'property.facts':    '4 Bed 5 Bath 5200 sqft 2 Covered Parking Spots',
+    'agent.name':        'Priya Raghunathan Krishnamurthy',
+    'brand.name':        'Krishnamurthy Associates Realty',
+    'agent.phone':       '+91 98765 43210 WhatsApp',
+  };
+
+  const emptyValues: LayoutInput['values'] = {};
+
+  // Matrix rows: [templateId, valueLabel, aspectLabel, values, canvas]
+  // Labels come first so the describe.each %s substitution gives a readable title.
+  type MatrixRow = [
+    string,                            // templateId
+    string,                            // valueLabel
+    string,                            // aspectLabel
+    LayoutInput['values'],             // values
+    { width: number; height: number }, // canvas
+  ];
+
+  const canvases: { label: string; canvas: { width: number; height: number } }[] = [
+    { label: 'landscape-2560x1440', canvas: { width: 2560, height: 1440 } },
+    { label: 'portrait-1440x2560',  canvas: { width: 1440, height: 2560 } },
+    { label: 'square-2048x2048',    canvas: { width: 2048, height: 2048 } },
+  ];
+
+  const valueSets: { label: string; values: LayoutInput['values'] }[] = [
+    { label: 'long',    values: longValues    },
+    { label: 'typical', values: typicalValues },
+    { label: 'empty',   values: emptyValues   },
+  ];
+
+  const matrix: MatrixRow[] = [];
+  for (const templateId of templateIds) {
+    for (const { label: vl, values } of valueSets) {
+      for (const { label: al, canvas } of canvases) {
+        matrix.push([templateId, vl, al, values, canvas]);
+      }
+    }
+  }
+
+  // Verify the matrix is 27 entries (3 templates × 3 value-sets × 3 canvases).
+  it('matrix has exactly 27 cases', () => {
+    expect(matrix).toHaveLength(27);
+  });
+
+  describe.each(matrix)(
+    'template=%s values=%s aspect=%s',
+    (templateId, vl, al, values, canvas) => {
+      it('no two elements overlap', () => {
+        const result = layoutDesign({ templateId, values, canvas, palette, measureText: measureStub });
+        assertNoOverlap(result, `${templateId}/${vl}/${al}`);
+      });
+
+      it('every supplied value is represented in output', () => {
+        const result = layoutDesign({ templateId, values, canvas, palette, measureText: measureStub });
+        const suppliedTexts = Object.values(values).filter((v) => v && v.trim() !== '');
+        for (const text of suppliedTexts) {
+          // Non-degraded (including 'shrunk'): el.text === canonical → exact match.
+          // Degraded='truncated': el.text is a truncated prefix + '…'.
+          const found = result.some((el) => {
+            if (el.text === text) return true;
+            if (el.degraded === 'truncated') {
+              const prefix = el.text.replace(/…$/, '');
+              return prefix.length > 0 && text.startsWith(prefix);
+            }
+            return false;
+          });
+          expect(
+            found,
+            `"${text.substring(0, 40)}" must appear in output (exact or truncated prefix)`,
+          ).toBe(true);
+        }
+      });
+
+      it('all elements within canvas bounds', () => {
+        const result = layoutDesign({ templateId, values, canvas, palette, measureText: measureStub });
+        assertWithinBounds(result, canvas, `${templateId}/${vl}/${al}`);
+      });
+    },
+  );
+});
+
+// ---------------------------------------------------------------------------
+// TC-08 — Output shape is compatible with ComposedTextElement
+// ---------------------------------------------------------------------------
+describe('TC-08 — output shape is compatible with ComposedTextElement (loadComposedDesignToCanvas)', () => {
+  /**
+   * ComposedTextElement (api/src/modules/ai-generation/types/composed-design.types.ts):
+   *   slot: ListingField | null
+   *   text: string
+   *   geometry: { x, y, width, height, angle, fontFamily, fontSize, lineHeight, color, alignment }
+   *   placement: 'measured' | 'fallback'
+   *
+   * LayoutElement mirrors this shape exactly. This test verifies that every
+   * field loadComposedDesignToCanvas expects is present with the correct type
+   * on every element the layout engine emits. — AC2
+   */
+  it('every element carries slot, text, geometry, placement with correct types', () => {
+    const result = layoutDesign(makeInput('left-scrim-hero', typicalValues));
+    expect(result.length).toBeGreaterThan(0);
+
+    for (const el of result) {
+      // slot: ListingSlot | null
+      expect(
+        el.slot === null || typeof el.slot === 'string',
+        'slot must be string or null',
+      ).toBe(true);
+
+      // text: non-empty string
+      expect(typeof el.text).toBe('string');
+      expect(el.text.length).toBeGreaterThan(0);
+
+      // geometry: all required fields
+      const g = el.geometry;
+      expect(g).toBeDefined();
+      expect(typeof g.x).toBe('number');
+      expect(typeof g.y).toBe('number');
+      expect(typeof g.width).toBe('number');
+      expect(typeof g.height).toBe('number');
+      expect(g.angle).toBe(0);
+      expect(g.fontFamily === null || typeof g.fontFamily === 'string').toBe(true);
+      expect(g.fontSize === null || typeof g.fontSize === 'number').toBe(true);
+      expect(g.lineHeight === null || typeof g.lineHeight === 'number').toBe(true);
+      expect(g.color === null || typeof g.color === 'string').toBe(true);
+      expect(
+        g.alignment === null || ['left', 'center', 'right'].includes(g.alignment as string),
+      ).toBe(true);
+
+      // placement
+      expect(['measured', 'fallback']).toContain(el.placement);
+    }
+  });
+
+  it('slot values are in the ListingSlot union or null', () => {
+    const validSlots = new Set([
+      'headline', 'address', 'price', 'stats', 'agentName', 'brokerage', null,
+    ]);
+    for (const templateId of Object.keys(templateRegistry)) {
+      const result = layoutDesign(makeInput(templateId, typicalValues));
+      for (const el of result) {
+        expect(
+          validSlots.has(el.slot),
+          `template "${templateId}": slot "${el.slot}" not in ListingSlot union`,
+        ).toBe(true);
+      }
+    }
+  });
+
+  it('placement is always "measured" for layout-engine elements', () => {
+    for (const templateId of Object.keys(templateRegistry)) {
+      const result = layoutDesign(makeInput(templateId, typicalValues));
+      for (const el of result) {
+        expect(el.placement, `template "${templateId}"`).toBe('measured');
+      }
+    }
+  });
+});

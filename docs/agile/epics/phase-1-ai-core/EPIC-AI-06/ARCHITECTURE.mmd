@@ -1,10 +1,23 @@
 %% EPIC-AI-06 — Hybrid Real-Photo Pipeline
-%% Architecture locked 2026-08-11 after SPIKE-031-ideogram-photo-background.md.
-%% Supersedes the 2026-07-07 stub, which assumed json_prompt could carry an input
-%% photo. It cannot: no Ideogram endpoint accepts both json_prompt and an image.
+%% Architecture updated 2026-08-12 — US-AI-043 replaces the Remix→Layerize flow.
 %%
-%% Principle: the application owns truth, Ideogram owns aesthetics.
-%% Ideogram is the visual composition engine, NOT the typography engine.
+%% OQ-2 (2026-08-12) disproved Ideogram V4 Remix for composition:
+%%   at image_weight=75 → real photo but no design.
+%%   at image_weight=30 → fabricated building, wrong agent, wrong price.
+%%   at image_weight=65 → illegible text, wrong price. No usable middle point.
+%%
+%% The pure-canvas spike (2026-08-12) proved the alternative:
+%%   real photo as untouched canvas layer + native text elements overlaid.
+%%   Zero fabrication, pixel-exact fidelity, $0 image-model cost, editable.
+%%
+%% The spike also proved the LLM CANNOT place pixels:
+%%   GPT-4o correctly identified scrim side ("subject is on the right → scrim left")
+%%   but produced absolute coordinates that collided (headline and price overlapping).
+%%   See spike output 04-planner-v2-constrained.png.
+%%
+%% Therefore: planner emits INTENT (template id, scrim side, palette).
+%%            flow renderer computes GEOMETRY (US-AI-043).
+%%            Collisions are structurally impossible — not detected-and-fixed.
 
 flowchart TB
   subgraph Truth["Canonical Data — our system owns this"]
@@ -12,45 +25,31 @@ flowchart TB
     D["Property data + brand profile<br/>headline · price · address · stats · agent"]:::truth
   end
 
-  subgraph Compose["Composition — Ideogram owns this"]
-    G["GPT-4o layout planner<br/>emits design intent as TEXT prompt"]:::new
-    R["Ideogram V4 Remix<br/>POST /v1/ideogram-v4/remix<br/>image + text_prompt<br/>$0.06 x N variations"]:::new
+  subgraph Plan["Intent — LLM reasons about photo content"]
+    G["GPT-4o layout planner<br/>emits: templateId · scrimSide · palette<br/>NO pixel coordinates"]:::new
   end
 
-  F["Flat composition<br/>real house, Ideogram's own text baked in<br/>(text correctness NOT required here)"]:::flat
-
-  E{{"User picks a variation<br/>and clicks Edit"}}:::gate
-
-  subgraph Extract["Geometry Extraction — best-effort, never a hard dependency"]
-    L["Ideogram Layerize Text<br/>POST /v1/ideogram-v3/layerize-text<br/>$0.09 x 1 — LAZY, on edit only"]:::new
-    B["base_image_url<br/>composition with all text erased"]:::new
-    T["text_blocks[]<br/>x · y · width · height · angle<br/>font_name · font_size · color · alignment · role"]:::new
-    FB["Fallback: prose-inferred layout<br/>'upper portion' · 'large headline' · 'centered'<br/>used when detection is poor"]:::fallback
+  subgraph Render["Geometry — flow renderer owns this (US-AI-043)"]
+    TR["Template registry<br/>templates.ts — data only, no logic<br/>3 templates: left-scrim-hero · bottom-band · corner-card<br/>Adding a template = data change, no renderer edits"]:::good
+    LE["layoutDesign()<br/>layoutEngine.ts — pure, deterministic<br/>regions as fractions × canvas size<br/>cursor-based flow → non-overlap is structural<br/>overflow: shrink → truncate → never vanish"]:::good
+    EL["LayoutElement[]<br/>slot · text · geometry · placement<br/>shape-compatible with ComposedTextElement<br/>consumable by loadComposedDesignToCanvas"]:::good
   end
 
-  M["Block to field mapper<br/>1. fuzzy match vs canonical text (primary)<br/>2. role field (tiebreak)<br/>3. font_size ranking (tiebreak)<br/>unmatched blocks re-render their OWN detected text"]:::new
-
-  subgraph Render["Typography — our system owns this"]
-    C["Canvas renderer<br/>background layer + slot-tagged text elements"]:::good
-    S["templateSlots.ts<br/>property.price · property.headline · agent.name ..."]:::good
+  subgraph Canvas["Typography — our system owns this"]
+    C["Canvas renderer (US-AI-032)<br/>loadComposedDesignToCanvas()<br/>background photo layer + slot-tagged text elements"]:::good
+    S["slotIds.ts<br/>property.price · property.headline · agent.name ..."]:::good
     V["Final verification<br/>canonical strings present and exact — deterministic,<br/>no longer an AI reliability problem"]:::good
   end
 
   OUT["Editable listing design<br/>real house + exact text + live editing"]:::out
 
-  P --> R
-  D --> G --> R
-  R --> F
-  F --> E
-  E -->|lazy boundary| L
-  L --> B
-  L --> T
-  T -->|good detection| M
-  T -.->|poor / no detection| FB
-  FB --> M
-  D ==>|canonical text wins| M
-  B --> C
-  M --> C
+  P --> C
+  D --> G
+  G -->|templateId · scrimSide · palette| LE
+  D -->|values: Partial&lt;Record&lt;SlotId,string&gt;&gt;| LE
+  TR --> LE
+  LE --> EL
+  EL --> C
   C --> S --> V --> OUT
 
   classDef truth    fill:#0b3b2e,stroke:#14532d,color:#ecfdf5;
