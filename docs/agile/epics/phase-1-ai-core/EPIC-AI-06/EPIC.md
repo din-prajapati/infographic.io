@@ -34,9 +34,10 @@
 |----------|-------|-----------|------|--------|----|
 | [US-AI-031](stories/US-AI-031/STORY.md) | Real property photo as composition source | M-AI-17 | L | 🟡 AC2–AC7 done; AC1 gated on credit | — |
 | [US-AI-031b](stories/US-AI-031b/STORY.md) | Layer extraction and canonical text rendering | M-AI-17 | L | 🟡 AC2–AC9 done; AC1 gated on credit | — |
-| [US-AI-032](stories/US-AI-032/STORY.md) | Editable listing canvas | M-AI-18 | L | 🟡 T1/T6 done; T2–T5 open | — |
+| [US-AI-032](stories/US-AI-032/STORY.md) | Editable listing canvas | M-AI-18 | L | 🟡 All tasks done; ACs pending browser verify | — |
 | [US-AI-043](stories/US-AI-043/STORY.md) | Layout engine — templates + flow renderer | TBD | L | ✅ Done (pre-PR) | — |
-| [US-AI-044](stories/US-AI-044/STORY.md) | LLM layout planner | TBD | M | 🔲 Not Started | — |
+| [US-AI-044](stories/US-AI-044/STORY.md) | LLM layout planner | TBD | M | ✅ Done (pre-PR) | — |
+| [US-AI-045](stories/US-AI-045/STORY.md) | Pipeline integration | TBD | M | 🔲 Not Started | — |
 
 ---
 

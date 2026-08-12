@@ -1,0 +1,19 @@
+{
+  "story_id": "US-AI-045",
+  "title": "Pipeline integration",
+  "domain": "AI",
+  "rules_loaded": [
+    ".orion/rules/PROJECT.md",
+    ".orion/rules/AGILE.md",
+    ".orion/rules/BUSINESS_DOMAIN.md",
+    ".orion/rules/SECURITY.md"
+  ],
+  "touches": {
+    "layers": ["backend", "frontend", "docs"],
+    "modules": ["ai-generation", "infographics", "layout"]
+  },
+  "ac_coverage": {
+    "required": ["happy-path", "error-path", "regression", "edge-case"],
+    "verified": false
+  }
+}
