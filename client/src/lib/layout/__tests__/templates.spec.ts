@@ -1,15 +1,17 @@
 /**
  * templates.spec.ts — US-AI-043 T1/T2
  *
- * T1 (this commit): Region type shape tests + the regionsOverlap utility.
- * T2 (extended):   Full template registry validation — regions in bounds,
- *                   no overlaps, valid SlotIds, coverage of 7 listing slots.
+ * T1: Region type shape tests + the regionsOverlap utility.
+ * T2: Full template registry validation — regions in bounds, no overlaps,
+ *     valid SlotIds, complete coverage of the 7 listing slots.
  *
- * Non-overlap is the structural property that AC4 depends on.
- * These tests verify the TEMPLATE DATA, not the engine algorithm.
+ * Non-overlap in the template data is the prerequisite for AC4's structural
+ * guarantee: disjoint regions → disjoint output elements, by construction.
  */
 import { describe, it, expect } from 'vitest';
 import type { Region } from '@/lib/layout/types';
+import { SLOT_IDS } from '@/lib/slotIds';
+import { templateRegistry, LISTING_SLOTS } from '@/lib/layout/templates';
 
 // ---------------------------------------------------------------------------
 // Utility: rectangle intersection test for fraction-based regions.
@@ -41,6 +43,96 @@ describe('Region — type shape', () => {
     const r: Region = { x: 0.1, y: 0.2, w: 0.3, h: 0.4 };
     expect(r.x + r.w).toBeCloseTo(0.4);
     expect(r.y + r.h).toBeCloseTo(0.6);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// T2 — Template registry validation
+// ---------------------------------------------------------------------------
+describe('templateRegistry', () => {
+  it('exports at least 3 templates — AC1', () => {
+    expect(Object.keys(templateRegistry).length).toBeGreaterThanOrEqual(3);
+  });
+
+  const templates = Object.values(templateRegistry);
+
+  it('includes left-scrim-hero, bottom-band, corner-card', () => {
+    const ids = Object.keys(templateRegistry);
+    expect(ids).toContain('left-scrim-hero');
+    expect(ids).toContain('bottom-band');
+    expect(ids).toContain('corner-card');
+  });
+
+  describe.each(templates)('$name ($id)', (tpl) => {
+    it('every region has x, y, w, h within 0..1', () => {
+      for (const [name, region] of Object.entries(tpl.regions)) {
+        expect(region.x, `${name}.x`).toBeGreaterThanOrEqual(0);
+        expect(region.y, `${name}.y`).toBeGreaterThanOrEqual(0);
+        expect(region.w, `${name}.w`).toBeGreaterThan(0);
+        expect(region.h, `${name}.h`).toBeGreaterThan(0);
+        expect(region.x + region.w, `${name} right edge`).toBeLessThanOrEqual(1.0 + 1e-9);
+        expect(region.y + region.h, `${name} bottom edge`).toBeLessThanOrEqual(1.0 + 1e-9);
+      }
+    });
+
+    it('no two regions overlap — prerequisite for AC4', () => {
+      const entries = Object.entries(tpl.regions);
+      for (let i = 0; i < entries.length; i++) {
+        for (let j = i + 1; j < entries.length; j++) {
+          const [nameA, a] = entries[i];
+          const [nameB, b] = entries[j];
+          expect(
+            regionsOverlap(a, b),
+            `Regions "${nameA}" and "${nameB}" must not overlap`,
+          ).toBe(false);
+        }
+      }
+    });
+
+    it('every block.region resolves to a declared region', () => {
+      for (const block of tpl.blocks) {
+        expect(
+          tpl.regions,
+          `block.region "${block.region}" must exist in template.regions`,
+        ).toHaveProperty(block.region);
+      }
+    });
+
+    it('every slot in every block is a valid SlotId', () => {
+      const validSet = new Set<string>(SLOT_IDS);
+      for (const block of tpl.blocks) {
+        for (const slot of block.slots) {
+          expect(
+            validSet.has(slot),
+            `"${slot}" is not a registered SlotId`,
+          ).toBe(true);
+        }
+      }
+    });
+
+    it('covers all 7 listing slots exactly once across blocks', () => {
+      const seen = new Set<string>();
+      for (const block of tpl.blocks) {
+        for (const slot of block.slots) {
+          expect(seen.has(slot), `slot "${slot}" appears more than once`).toBe(false);
+          seen.add(slot);
+        }
+      }
+      for (const required of LISTING_SLOTS) {
+        expect(seen.has(required), `template must cover slot "${required}"`).toBe(true);
+      }
+    });
+
+    it('typeScale has entries for every slot used in blocks', () => {
+      for (const block of tpl.blocks) {
+        for (const slot of block.slots) {
+          expect(
+            tpl.typeScale[slot],
+            `typeScale missing entry for slot "${slot}"`,
+          ).toBeDefined();
+        }
+      }
+    });
   });
 });
 
