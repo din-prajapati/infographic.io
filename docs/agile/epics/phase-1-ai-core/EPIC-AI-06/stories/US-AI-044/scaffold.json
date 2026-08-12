@@ -1,0 +1,20 @@
+{
+  "story_id": "US-AI-044",
+  "title": "LLM layout planner",
+  "domain": "AI",
+  "rules_loaded": [
+    ".orion/rules/PROJECT.md",
+    ".orion/rules/AGILE.md",
+    ".orion/rules/BUSINESS_DOMAIN.md",
+    ".orion/rules/SECURITY.md",
+    ".orion/rules/OBSERVABILITY.md"
+  ],
+  "touches": {
+    "layers": ["backend", "docs"],
+    "modules": ["ai-generation"]
+  },
+  "ac_coverage": {
+    "required": ["happy-path", "error-path", "regression", "edge-case"],
+    "verified": false
+  }
+}
