@@ -125,14 +125,14 @@ Rules:
 
 | TC ID | Type | Priority | Scenario | Status | Finding |
 |-------|------|----------|----------|--------|---------|
-| TC-AI-043-01 | Auto | P0 | Typical values, each template → all slots present exactly once, none overlapping | 🔲 | |
-| TC-AI-043-02 | Auto | P0 | Very long headline → wraps, pushes following blocks down, still no overlap | 🔲 | |
-| TC-AI-043-03 | Auto | P0 | Full matrix (templates × long/typical/empty × 3 aspects) → no overlap anywhere | 🔲 | |
-| TC-AI-043-04 | Auto | P0 | Text exceeding its region → shrinks then ellipsises; never exceeds region bounds | 🔲 | |
-| TC-AI-043-05 | Auto | P1 | Empty agent/brokerage → block collapses, others reflow, no orphaned rule | 🔲 | |
-| TC-AI-043-06 | Auto | P1 | Same input + same canvas → byte-identical output (determinism) | 🔲 | |
-| TC-AI-043-07 | Auto | P1 | Portrait and square canvases → regions scale by fraction, no clipping | 🔲 | |
-| TC-AI-043-08 | Auto | P2 | Output shape is accepted by `loadComposedDesignToCanvas` without translation | 🔲 | |
+| TC-AI-043-01 | Auto | P0 | Typical values, each template → all slots present exactly once, none overlapping | ✅ | layoutEngine.spec.ts TC-01 — 7 elements, no overlap, within bounds |
+| TC-AI-043-02 | Auto | P0 | Very long headline → wraps, pushes following blocks down, still no overlap | ✅ | layoutEngine.spec.ts TC-02 — price.y > short-headline price.y |
+| TC-AI-043-03 | Auto | P0 | Full matrix (templates × long/typical/empty × 3 aspects) → no overlap anywhere | ✅ | layoutEngine.spec.ts TC-03/TC-07 — 27-case describe.each, all pass |
+| TC-AI-043-04 | Auto | P0 | Text exceeding its region → shrinks then ellipsises; never exceeds region bounds | ✅ | layoutEngine.spec.ts TC-04 — degraded flag, ends '…', bottom ≤ regionBottom |
+| TC-AI-043-05 | Auto | P1 | Empty agent/brokerage → block collapses, others reflow, no orphaned rule | ✅ | layoutEngine.spec.ts TC-05 — 4 elements only when agent values absent |
+| TC-AI-043-06 | Auto | P1 | Same input + same canvas → byte-identical output (determinism) | ✅ | layoutEngine.spec.ts TC-06 — JSON.stringify(r1) === JSON.stringify(r2) |
+| TC-AI-043-07 | Auto | P1 | Portrait and square canvases → regions scale by fraction, no clipping | ✅ | layoutEngine.spec.ts TC-03/TC-07 matrix — portrait 1440×2560 + square 2048×2048 |
+| TC-AI-043-08 | Auto | P2 | Output shape is accepted by `loadComposedDesignToCanvas` without translation | ✅ | layoutEngine.spec.ts TC-08 — slot, text, geometry, placement types verified |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 
