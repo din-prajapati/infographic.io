@@ -11,10 +11,10 @@
 
 ## Four Pillars Pre-flight
 
-- [ ] **Brain** — [STORY.md](./STORY.md) read: 7 typed ACs, out-of-scope listed
-- [ ] **Muscle** — file list + ordered tasks + exact commands below
-- [ ] **Map** — [ARCHITECTURE.mmd](../../ARCHITECTURE.mmd) reviewed
-- [ ] **Env** — no new env vars; no credentials or external services needed
+- [x] **Brain** — [STORY.md](./STORY.md) read: 7 typed ACs, out-of-scope listed
+- [x] **Muscle** — file list + ordered tasks + exact commands below
+- [x] **Map** — [ARCHITECTURE.mmd](../../ARCHITECTURE.mmd) reviewed
+- [x] **Env** — no new env vars; no credentials or external services needed
 
 > **Why this branch is based on m-18.** AC3 requires a suite for `client/src/lib/canvasExport.ts`. That file differs by 127 insertions / 33 deletions between `main` and `m-18` — US-AI-032 T6 added `document.fonts.ready`, the `padH = 8` padding offsets, `computeObjectFitDraw()` and crop handling. Writing the first tests against `main`'s copy would encode the **buggy** behaviour ("text has no padding", "images stretch") as expected, then break the moment m-18 merges. Base it on the fixed renderer.
 
@@ -189,15 +189,15 @@ cd client && npx vitest run   # client suite alone
 
 ## Task Checklist
 
-- [ ] T1 — client config + alias proof (same commit)
-- [ ] T2 — canvas strategy decided and documented
-- [ ] T3 — both suites under one gate; backend still 254
-- [ ] T4 — real `canvasExport` suite, importing real functions
-- [ ] T5 — gate proven to fail on a broken client test (transcript in PR)
-- [ ] T6 — docs updated, stale backend-only warning removed
-- [ ] `npm run check` passes ✅
-- [ ] `npm run test:unit` passes ✅
-- [ ] STORY.md ACs updated — only ACs actually verified ✅
+- [x] T1 — client config + alias proof (same commit)
+- [x] T2 — canvas strategy decided and documented
+- [x] T3 — both suites under one gate; backend still 254
+- [x] T4 — real `canvasExport` suite, importing real functions
+- [x] T5 — gate proven to fail on a broken client test (transcript in PR)
+- [x] T6 — docs updated, stale backend-only warning removed
+- [x] `npm run check` passes ✅
+- [x] `npm run test:unit` passes ✅
+- [x] STORY.md ACs updated — only ACs actually verified ✅
 
 ---
 

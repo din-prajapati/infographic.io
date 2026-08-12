@@ -120,3 +120,13 @@ it to a % of users → a bad release auto-rolls-back on health check.
 ---
 
 *Epic created: 2026-07-13*
+
+---
+
+## Implementation Update (log)
+
+### 2026-08-12 — US-DEPLOY-007 implementation complete (pre-PR)
+- **Files touched:** `client/vitest.config.ts` *(new)*, `package.json`, `client/src/lib/__tests__/alias-resolution.spec.ts` *(new)*, `client/src/lib/__tests__/canvasExport.spec.ts` *(new)*, `client/src/lib/canvasExport.ts`, `CLAUDE.md`, `.claude/skills/verification-gates/SKILL.md`, `docs/agile/templates/TASKS.md` *(scope drift — declared T6 exception)*
+- **ACs covered:** AC1 (jsdom config + alias), AC2 (both suites under test:unit), AC3 (22 client tests, specific geometry values), AC4 (backend still 254), AC5 (deliberate break confirmed non-zero exit + named spec; zero specs exit 1), AC6 (option b chosen: pure geometry helpers, no canvas mock — documented in config header), AC7 (CLAUDE.md + SKILL.md updated)
+- **Commits:** 6 on branch `feat/deploy/us-deploy-007-client-test-infra`
+- **Notes:** jsdom 30 incompatible with Node 20 (`html-encoding-sniffer` ESM require error) — downgraded to jsdom 25 (^25.0.1). Canvas strategy: option (b) — export `computeObjectFitDraw`, `wrapTextToWidth`, `TEXT_PAD_H`, `TEXT_PAD_TOP`, `computeCropSourceRect` for test access; no new deps beyond jsdom. `docs/agile/templates/TASKS.md` touched outside TASKS.md file list — deliberate, noted as scope drift per T6 requirement.

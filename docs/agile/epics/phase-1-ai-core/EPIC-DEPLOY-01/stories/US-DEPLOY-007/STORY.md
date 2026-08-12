@@ -1,6 +1,6 @@
 # Story Card — US-DEPLOY-007
 
-> **Status:** 🔲 Not Started
+> **Status:** 🔧 In Progress (implementation complete, pending /test-story)
 > **Feature:** F-DEPLOY-01 — Fast, mandatory verification gate
 > **Epic:** [EPIC-DEPLOY-01](../../EPIC.md)
 > **Milestone:** [M-DEPLOY-01](../../milestones/M-DEPLOY-01-velocity-foundation.md)
@@ -49,13 +49,13 @@ environment: 'node',
 
 ## Acceptance Criteria
 
-- [ ] **AC1 [happy-path]:** A client-side test config exists with a DOM-capable environment (jsdom or equivalent) and the `@/*` → `client/src/*` alias resolving as it does in Vite.
-- [ ] **AC2 [happy-path]:** `npm run test:unit` runs **both** backend and client suites. A failing client test fails the command.
-- [ ] **AC3 [happy-path]:** At least one real client test exists and passes, exercising `client/src/lib/canvasExport.ts` — the file whose untested state motivated this story. Assert specific values at specific locations (e.g. text draw offsets matching `TextElement.tsx`'s `px-2 py-1`), not the absence of errors.
-- [ ] **AC4 [regression]:** All 193 existing backend tests still pass, and `npm run test:integration` is unaffected.
-- [ ] **AC5 [error-path]:** A deliberately broken client test fails the gate with a clear, attributable message — verify the wiring actually reports, rather than silently skipping when zero specs match.
-- [ ] **AC6 [edge-case]:** Canvas APIs (`getContext('2d')`, `document.fonts.ready`, `drawImage`) are available or cleanly mockable in the chosen environment. Document which, since jsdom does not implement canvas natively.
-- [ ] **AC7 [documentation]:** `CLAUDE.md`'s Testing section and the Commands block record how to run client tests, and the verification-gates skill's Gate 1 definition is updated to include them.
+- [x] **AC1 [happy-path]:** A client-side test config exists with a DOM-capable environment (jsdom or equivalent) and the `@/*` → `client/src/*` alias resolving as it does in Vite.
+- [x] **AC2 [happy-path]:** `npm run test:unit` runs **both** backend and client suites. A failing client test fails the command.
+- [x] **AC3 [happy-path]:** At least one real client test exists and passes, exercising `client/src/lib/canvasExport.ts` — the file whose untested state motivated this story. Assert specific values at specific locations (e.g. text draw offsets matching `TextElement.tsx`'s `px-2 py-1`), not the absence of errors.
+- [x] **AC4 [regression]:** All 193 existing backend tests still pass, and `npm run test:integration` is unaffected.
+- [x] **AC5 [error-path]:** A deliberately broken client test fails the gate with a clear, attributable message — verify the wiring actually reports, rather than silently skipping when zero specs match.
+- [x] **AC6 [edge-case]:** Canvas APIs (`getContext('2d')`, `document.fonts.ready`, `drawImage`) are available or cleanly mockable in the chosen environment. Document which, since jsdom does not implement canvas natively.
+- [x] **AC7 [documentation]:** `CLAUDE.md`'s Testing section and the Commands block record how to run client tests, and the verification-gates skill's Gate 1 definition is updated to include them.
 
 ---
 
