@@ -1,6 +1,6 @@
 # Story Card — US-AI-043
 
-> **Status:** 🔲 Not Started
+> **Status:** ✅ Implementation Complete (pre-PR)
 > **Feature:** F-AI-06-04 — Layout engine (templates + flow renderer)
 > **Epic:** [EPIC-AI-06](../../EPIC.md)
 > **Milestone:** TBD — M-AI-17/18 are being re-scoped after the 2026-08-12 architecture change
@@ -44,14 +44,14 @@ This is the piece the spike's hand-authored composite proved out, generalised �
 
 ## Acceptance Criteria
 
-- [ ] **AC1 [happy-path]:** A template registry exports **at least 3** templates, each declaring named regions (e.g. `scrim`, `headlineBlock`, `statsBar`, `agentBlock`) as fractions of canvas size, so templates are resolution-independent.
-- [ ] **AC2 [happy-path]:** `layoutDesign(templateId, values, canvasSize, palette)` returns positioned elements carrying `slot`, `text`, geometry and style — consumable by `loadComposedDesignToCanvas` from [US-AI-032](../US-AI-032/STORY.md) without translation.
-- [ ] **AC3 [happy-path]:** Text is **measured and flowed**, not placed at fixed offsets. A long headline wraps and pushes subsequent elements down; a short one leaves the block compact. Measurement is injected so it is testable without a real canvas context.
-- [ ] **AC4 [error-path]:** **No two elements may ever overlap.** This is the defect that killed the LLM-coordinate approach. The engine must guarantee it structurally, and a test must assert non-overlap across the long/short/empty matrix in AC7.
-- [ ] **AC5 [edge-case]:** Text that cannot fit its region degrades deterministically — shrink within a declared range, then truncate with an ellipsis. It must **never** overflow the region, overlap a neighbour, or silently vanish.
-- [ ] **AC6 [edge-case]:** Missing or empty values collapse their block and reflow the rest. No gaps, no orphaned accent rules, no reserved space for absent content.
-- [ ] **AC7 [regression]:** A fixture matrix — every template × {long, typical, empty} values × {landscape, portrait, square} — produces valid non-overlapping layouts with every supplied value present exactly once.
-- [ ] **AC8 [documentation]:** Adding a template is documented as a data change, with the region schema specified. No renderer edits required for a new template.
+- [x] **AC1 [happy-path]:** A template registry exports **at least 3** templates, each declaring named regions (e.g. `scrim`, `headlineBlock`, `statsBar`, `agentBlock`) as fractions of canvas size, so templates are resolution-independent.
+- [x] **AC2 [happy-path]:** `layoutDesign(templateId, values, canvasSize, palette)` returns positioned elements carrying `slot`, `text`, geometry and style — consumable by `loadComposedDesignToCanvas` from [US-AI-032](../US-AI-032/STORY.md) without translation.
+- [x] **AC3 [happy-path]:** Text is **measured and flowed**, not placed at fixed offsets. A long headline wraps and pushes subsequent elements down; a short one leaves the block compact. Measurement is injected so it is testable without a real canvas context.
+- [x] **AC4 [error-path]:** **No two elements may ever overlap.** This is the defect that killed the LLM-coordinate approach. The engine must guarantee it structurally, and a test must assert non-overlap across the long/short/empty matrix in AC7.
+- [x] **AC5 [edge-case]:** Text that cannot fit its region degrades deterministically — shrink within a declared range, then truncate with an ellipsis. It must **never** overflow the region, overlap a neighbour, or silently vanish.
+- [x] **AC6 [edge-case]:** Missing or empty values collapse their block and reflow the rest. No gaps, no orphaned accent rules, no reserved space for absent content.
+- [x] **AC7 [regression]:** A fixture matrix — every template × {long, typical, empty} values × {landscape, portrait, square} — produces valid non-overlapping layouts with every supplied value present exactly once.
+- [x] **AC8 [documentation]:** Adding a template is documented as a data change, with the region schema specified. No renderer edits required for a new template.
 
 ---
 

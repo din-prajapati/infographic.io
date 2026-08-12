@@ -172,14 +172,14 @@ cd client && npx vitest run src/lib/layout --reporter=verbose
 
 ## Task Checklist
 
-- [ ] T1 — types + region validation test
-- [ ] T2 — ≥3 templates + registry validation test
-- [ ] T3 — flow engine + TC-01/02/05/06
-- [ ] T4 — overflow degradation + TC-04
-- [ ] T5 — full matrix TC-03/07/08 + ARCHITECTURE.mmd
-- [ ] `npm run check` passes ✅
-- [ ] `npm run test:unit` passes, backend still 254 ✅
-- [ ] STORY.md ACs updated — only what was verified ✅
+- [x] T1 — types + region validation test
+- [x] T2 — ≥3 templates + registry validation test
+- [x] T3 — flow engine + TC-01/02/05/06
+- [x] T4 — overflow degradation + TC-04
+- [x] T5 — full matrix TC-03/07/08 + ARCHITECTURE.mmd
+- [x] `npm run check` passes ✅
+- [x] `npm run test:unit` passes, backend still 254 ✅
+- [x] STORY.md ACs updated — only what was verified ✅
 
 ---
 
