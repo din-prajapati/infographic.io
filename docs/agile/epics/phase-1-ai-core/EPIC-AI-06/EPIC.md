@@ -71,6 +71,12 @@
 
 ## Implementation Update (log)
 
+### 2026-08-12 — US-AI-044 implementation complete (pre-PR)
+- **Files touched:** `api/src/modules/ai-generation/types/planner-intent.types.ts` (new — PlannerIntent, Palette, TemplateId, ScrimSide, DEFAULT_INTENT, isPaletteValid, isValidPlannerIntent), `api/src/modules/ai-generation/services/layout-planner.service.ts` (new — LayoutPlannerService.planLayout()), `api/src/modules/ai-generation/ai-generation.module.ts` (LayoutPlannerService added to providers + exports), `api/tests/ai-generation/planner-intent.types.spec.ts` (new — 25 tests), `api/tests/ai-generation/layout-planner.service.spec.ts` (new — 24 tests), `docs/agile/epics/phase-1-ai-core/EPIC-AI-06/ARCHITECTURE.mmd` (planner node updated from :::new to :::good, planLayout() added)
+- **ACs covered:** AC1–AC8 all verified by unit tests
+- **Commits:** 4 on branch `feat/ai/us-ai-044-layout-planner` (scaffold, T1, T2, T3)
+- **Notes:** (1) Backend test count: 303 (254 original + 25 type tests T1 + 24 service tests T2). (2) planLayout() always uses GPT-4o with detail:'low' — $0.001/call estimated. Gemini routing deferred. (3) DEFAULT_INTENT is returned on any failure — the agent always gets a design. (4) LayoutPlannerService exported from AiGenerationModule so the pipeline integration story can inject it without module changes. (5) scrimSide is validated and returned but not yet applied to templates — template flip (left↔right scrim) is deferred to the pipeline integration story.
+
 ### 2026-08-12 — US-AI-043 implementation complete (pre-PR)
 - **Files touched:** `client/src/lib/layout/types.ts` (new — Region, TemplateBlock, Template, ListingSlot, LayoutElement, LayoutInput), `client/src/lib/layout/templates.ts` (new — 3 templates: left-scrim-hero, bottom-band, corner-card; templateRegistry; LISTING_SLOTS), `client/src/lib/layout/layoutEngine.ts` (new — layoutDesign(), appendEllipsis(), buildMeasureCtx(), wrapSlot()), `client/src/lib/layout/__tests__/templates.spec.ts` (new — region schema validation, no-overlap, slot coverage), `client/src/lib/layout/__tests__/layoutEngine.spec.ts` (new — TC-01 through TC-08; 27-case describe.each matrix), `docs/agile/epics/phase-1-ai-core/EPIC-AI-06/ARCHITECTURE.mmd` (updated — replaced Remix→Layerize flow with background→planner(intent)→flow-renderer→canvas)
 - **ACs covered:** AC1, AC2, AC3, AC4, AC5, AC6, AC7, AC8 — all 8 verified by unit tests

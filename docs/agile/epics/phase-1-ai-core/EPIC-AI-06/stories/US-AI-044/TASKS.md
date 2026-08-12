@@ -75,12 +75,12 @@
 
 ## Task Checklist
 
-- [ ] T1 — PlannerIntent types + DEFAULT_INTENT + validation helpers + type tests
-- [ ] T2 — LayoutPlannerService + GPT-4o Vision call + full unit test suite
-- [ ] T3 — Module registration + ARCHITECTURE.mmd + Gate 1
-- [ ] `npm run check` passes ✅
-- [ ] `npm run test:unit` passes, backend still 254 (+ new tests additive) ✅
-- [ ] STORY.md ACs updated — only what was verified ✅
+- [x] T1 — PlannerIntent types + DEFAULT_INTENT + validation helpers + type tests
+- [x] T2 — LayoutPlannerService + GPT-4o Vision call + full unit test suite
+- [x] T3 — Module registration + ARCHITECTURE.mmd + Gate 1
+- [x] `npm run check` passes ✅
+- [x] `npm run test:unit` passes, backend 303 (254 + 49 new) ✅
+- [x] STORY.md ACs updated — only what was verified ✅
 
 ## Estimation
 

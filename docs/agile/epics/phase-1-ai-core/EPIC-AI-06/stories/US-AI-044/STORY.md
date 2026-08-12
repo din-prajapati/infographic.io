@@ -1,6 +1,6 @@
 # Story Card — US-AI-044
 
-> **Status:** 🔲 Not Started
+> **Status:** ✅ Implementation Complete (pre-PR)
 > **Feature:** F-AI-06-05 — LLM layout planner
 > **Epic:** [EPIC-AI-06](../../EPIC.md)
 > **Milestone:** TBD — M-AI-17/18 re-scope in progress
@@ -56,33 +56,33 @@ No frontend changes. No wiring to `layoutDesign()`. No canvas rendering. Intent 
 
 ## Acceptance Criteria
 
-- [ ] **AC1 [happy-path]:** `planLayout(photoUrl)` sends a GPT-4o Vision request containing the
+- [x] **AC1 [happy-path]:** `planLayout(photoUrl)` sends a GPT-4o Vision request containing the
   photo URL and a structured JSON schema, and returns a valid `PlannerIntent` with `templateId`,
   `scrimSide`, `palette` and `reasoning` when the model responds correctly.
 
-- [ ] **AC2 [happy-path]:** The returned `PlannerIntent.palette` is directly usable as
+- [x] **AC2 [happy-path]:** The returned `PlannerIntent.palette` is directly usable as
   `LayoutInput.palette` in `layoutDesign()` — same four fields (`scrim`, `accent`, `text`, `muted`),
   same types — no translation needed.
 
-- [ ] **AC3 [error-path]:** When GPT-4o returns malformed or non-JSON text, `planLayout` returns
+- [x] **AC3 [error-path]:** When GPT-4o returns malformed or non-JSON text, `planLayout` returns
   `DEFAULT_INTENT` and logs a warning. It never throws.
 
-- [ ] **AC4 [error-path]:** When the OpenAI call throws (network error, timeout, rate-limit, quota),
+- [x] **AC4 [error-path]:** When the OpenAI call throws (network error, timeout, rate-limit, quota),
   `planLayout` catches, logs the error, and returns `DEFAULT_INTENT`. It never propagates the
   exception to the caller.
 
-- [ ] **AC5 [edge-case]:** When GPT-4o returns a `templateId` not in
+- [x] **AC5 [edge-case]:** When GPT-4o returns a `templateId` not in
   `['left-scrim-hero', 'bottom-band', 'corner-card']`, the intent is rejected and `DEFAULT_INTENT`
   is returned — an unknown template ID must never reach `layoutDesign()`.
 
-- [ ] **AC6 [edge-case]:** When any palette hex field (`accent`, `text`, `muted`) fails the
+- [x] **AC6 [edge-case]:** When any palette hex field (`accent`, `text`, `muted`) fails the
   pattern `/^#[0-9a-fA-F]{6}$/`, `DEFAULT_INTENT` is returned — a malformed colour must never
   reach the canvas renderer.
 
-- [ ] **AC7 [regression]:** All existing unit tests in `api/tests/ai-generation/` pass without
+- [x] **AC7 [regression]:** All existing unit tests in `api/tests/ai-generation/` pass without
   modification after adding `LayoutPlannerService` and registering it in the module.
 
-- [ ] **AC8 [regression]:** When `OPENAI_API_KEY` is absent from the environment, `planLayout`
+- [x] **AC8 [regression]:** When `OPENAI_API_KEY` is absent from the environment, `planLayout`
   returns `DEFAULT_INTENT` immediately without attempting any OpenAI call — consistent with the
   demo-mode pattern already in `OpenAiService`.
 
@@ -141,16 +141,16 @@ no retry loop, no streaming, no conversation history.
 
 | TC ID | Type | Priority | Scenario | Status | Finding |
 |-------|------|----------|----------|--------|---------|
-| TC-AI-044-01 | Auto | P0 | Valid GPT-4o response → PlannerIntent returned with all four fields | 🔲 | |
-| TC-AI-044-02 | Auto | P0 | palette fields match LayoutInput.palette interface exactly | 🔲 | |
-| TC-AI-044-03 | Auto | P0 | Malformed JSON from GPT-4o → DEFAULT_INTENT, no throw | 🔲 | |
-| TC-AI-044-04 | Auto | P0 | OpenAI throws network error → DEFAULT_INTENT, no throw | 🔲 | |
-| TC-AI-044-05 | Auto | P0 | Unknown templateId in response → DEFAULT_INTENT | 🔲 | |
-| TC-AI-044-06 | Auto | P0 | Bad hex colour in palette → DEFAULT_INTENT | 🔲 | |
-| TC-AI-044-07 | Auto | P1 | OPENAI_API_KEY absent → DEFAULT_INTENT, zero API calls | 🔲 | |
-| TC-AI-044-08 | Auto | P1 | all-three valid templateIds returned → each parsed correctly | 🔲 | |
-| TC-AI-044-09 | Auto | P1 | all-four valid scrimSide values returned → each parsed correctly | 🔲 | |
-| TC-AI-044-10 | Auto | P2 | Existing ai-generation unit tests pass without modification | 🔲 | |
+| TC-AI-044-01 | Auto | P0 | Valid GPT-4o response → PlannerIntent returned with all four fields | ✅ | layout-planner.service.spec.ts TC-01 (2 assertions) |
+| TC-AI-044-02 | Auto | P0 | palette fields match LayoutInput.palette interface exactly | ✅ | TC-02: Object.keys check + string types |
+| TC-AI-044-03 | Auto | P0 | Malformed JSON from GPT-4o → DEFAULT_INTENT, no throw | ✅ | TC-03: prose response, broken JSON, empty string (3 cases) |
+| TC-AI-044-04 | Auto | P0 | OpenAI throws network error → DEFAULT_INTENT, no throw | ✅ | TC-04: ECONNREFUSED + quota exceeded (2 cases) |
+| TC-AI-044-05 | Auto | P0 | Unknown templateId in response → DEFAULT_INTENT | ✅ | TC-05: 'full-bleed-hero' + 'custom-layout' (2 cases) |
+| TC-AI-044-06 | Auto | P0 | Bad hex colour in palette → DEFAULT_INTENT | ✅ | TC-06: 3-digit hex, invalid char, missing field (3 cases) |
+| TC-AI-044-07 | Auto | P1 | OPENAI_API_KEY absent → DEFAULT_INTENT, zero API calls | ✅ | TC-07: no key + blank photoUrl (3 cases) |
+| TC-AI-044-08 | Auto | P1 | all-three valid templateIds returned → each parsed correctly | ✅ | TC-08: it.each 3 templateIds |
+| TC-AI-044-09 | Auto | P1 | all-four valid scrimSide values returned → each parsed correctly | ✅ | TC-09: it.each 4 scrimSides |
+| TC-AI-044-10 | Auto | P2 | Existing ai-generation unit tests pass without modification | ✅ | 303 backend tests pass (254 original + 49 new) |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 
