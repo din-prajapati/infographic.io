@@ -49,14 +49,21 @@ export const LISTING_SLOTS = [
 // Covers every slot in LISTING_SLOTS. Values scale at runtime by
 // (canvas.height / 1440) — see layoutEngine.ts step 4.
 // ---------------------------------------------------------------------------
+// Sizes are px at the 1440px reference height and scale with the canvas.
+//
+// These are the values proven in the a1-composite spike (2026-08-12), not
+// web-page sizes. A 2560x1440 listing card is a billboard: the first pass
+// shipped a 48px headline, which rendered as unreadable trim at full size.
+// See docs/testing/reports/spike-pure-canvas-2026-08-12/ — `02-a1-composite.png`
+// is the quality bar these numbers reproduce.
 const defaultTypeScale: Template['typeScale'] = {
-  'property.headline': { min: 28, ideal: 48, weight: 700 },
-  'property.price':    { min: 22, ideal: 36, weight: 700 },
-  'property.location': { min: 14, ideal: 20, weight: 400 },
-  'property.facts':    { min: 14, ideal: 18, weight: 400 },
-  'agent.name':        { min: 12, ideal: 16, weight: 600 },
-  'brand.name':        { min: 10, ideal: 14, weight: 400 },
-  'agent.phone':       { min: 10, ideal: 14, weight: 400 },
+  'property.headline': { min: 56, ideal: 104, weight: 800 },
+  'property.price':    { min: 48, ideal:  86, weight: 700 },
+  'property.location': { min: 26, ideal:  40, weight: 400 },
+  'property.facts':    { min: 24, ideal:  38, weight: 400 },
+  'agent.name':        { min: 28, ideal:  44, weight: 700 },
+  'brand.name':        { min: 20, ideal:  32, weight: 400 },
+  'agent.phone':       { min: 18, ideal:  28, weight: 400 },
 };
 
 // ---------------------------------------------------------------------------
@@ -69,30 +76,35 @@ const defaultTypeScale: Template['typeScale'] = {
 //
 // Regions (fractions — non-overlapping by design):
 //
-//   scrim:      [0.00, 0.00] → [0.38, 0.82]   left 38%, top 82%
-//   statsBar:   [0.00, 0.82] → [1.00, 1.00]   full-width bottom 18%
-//   agentBlock: [0.62, 0.58] → [1.00, 0.82]   right 38%, rows 58%–82%
+//   scrim:      [0.047, 0.26 ] → [0.377, 0.81]   copy column, inset from edges
+//   statsBar:   [0.047, 0.918] → [0.953, 1.00]   near-full-width bottom band
+//   agentBlock: [0.663, 0.58 ] → [0.963, 0.81]   right side, above the stats bar
 //
-//   scrim  and statsBar share x=0..0.38, but y-ranges are disjoint.
-//   scrim  and agentBlock share y=0.58..0.82, but x-ranges are disjoint
-//          (scrim ends at x=0.38, agentBlock starts at x=0.62).
-//   statsBar and agentBlock share x=0.62..1.0, but y-ranges are disjoint
-//          (statsBar starts at y=0.82, agentBlock ends at y=0.82).
+//   ⚠️ Regions are INSET from the canvas edges on purpose. The first pass used
+//   x=0, y=0, which flowed the headline flush into the top-left corner and put
+//   the right-aligned agent block's edge at exactly 2560px, clipping it. A
+//   region's origin IS the first element's origin — there is no separate
+//   padding — so the inset has to live here in the data.
+//
+//   Non-overlap (AC4) still holds:
+//     scrim × statsBar    — y disjoint (0.81 < 0.918)
+//     scrim × agentBlock  — x disjoint (0.377 < 0.663)
+//     statsBar × agentBlock — y disjoint (0.81 < 0.918)
 // ---------------------------------------------------------------------------
 const leftScrimHero: Template = {
   id: 'left-scrim-hero',
   name: 'Left Scrim Hero',
   regions: {
-    scrim:      { x: 0.00, y: 0.00, w: 0.38, h: 0.82 },
-    statsBar:   { x: 0.00, y: 0.82, w: 1.00, h: 0.18 },
-    agentBlock: { x: 0.62, y: 0.58, w: 0.38, h: 0.24 },
+    scrim:      { x: 0.047, y: 0.260, w: 0.330, h: 0.550 },
+    statsBar:   { x: 0.047, y: 0.918, w: 0.906, h: 0.082 },
+    agentBlock: { x: 0.663, y: 0.580, w: 0.300, h: 0.230 },
   },
   blocks: [
     {
       region: 'scrim',
       slots: ['property.headline', 'property.price', 'property.location'],
       align: 'left',
-      gap: 8,
+      gap: 40,
     },
     {
       region: 'statsBar',
@@ -104,7 +116,7 @@ const leftScrimHero: Template = {
       region: 'agentBlock',
       slots: ['agent.name', 'brand.name', 'agent.phone'],
       align: 'right',
-      gap: 4,
+      gap: 14,
     },
   ],
   scrim: { region: 'scrim', direction: 'left' },
@@ -131,21 +143,21 @@ const bottomBand: Template = {
   id: 'bottom-band',
   name: 'Bottom Band',
   regions: {
-    copyBlock:  { x: 0.02, y: 0.63, w: 0.62, h: 0.35 },
-    agentBlock: { x: 0.66, y: 0.63, w: 0.32, h: 0.35 },
+    copyBlock:  { x: 0.047, y: 0.58, w: 0.580, h: 0.38 },
+    agentBlock: { x: 0.660, y: 0.58, w: 0.290, h: 0.38 },
   },
   blocks: [
     {
       region: 'copyBlock',
       slots: ['property.headline', 'property.price', 'property.location', 'property.facts'],
       align: 'left',
-      gap: 6,
+      gap: 32,
     },
     {
       region: 'agentBlock',
       slots: ['agent.name', 'brand.name', 'agent.phone'],
       align: 'right',
-      gap: 4,
+      gap: 14,
     },
   ],
   typeScale: defaultTypeScale,
@@ -172,28 +184,28 @@ const cornerCard: Template = {
   id: 'corner-card',
   name: 'Corner Card',
   regions: {
-    headlineBlock: { x: 0.03, y: 0.38, w: 0.42, h: 0.28 },
-    detailBlock:   { x: 0.03, y: 0.66, w: 0.42, h: 0.15 },
-    agentBlock:    { x: 0.03, y: 0.81, w: 0.42, h: 0.16 },
+    headlineBlock: { x: 0.047, y: 0.28, w: 0.400, h: 0.34 },
+    detailBlock:   { x: 0.047, y: 0.64, w: 0.400, h: 0.14 },
+    agentBlock:    { x: 0.047, y: 0.80, w: 0.400, h: 0.14 },
   },
   blocks: [
     {
       region: 'headlineBlock',
       slots: ['property.headline', 'property.price'],
       align: 'left',
-      gap: 8,
+      gap: 28,
     },
     {
       region: 'detailBlock',
       slots: ['property.location', 'property.facts'],
       align: 'left',
-      gap: 4,
+      gap: 14,
     },
     {
       region: 'agentBlock',
       slots: ['agent.name', 'brand.name', 'agent.phone'],
       align: 'left',
-      gap: 3,
+      gap: 10,
     },
   ],
   typeScale: defaultTypeScale,

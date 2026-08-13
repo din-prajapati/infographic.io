@@ -190,8 +190,23 @@ export function layoutDesign(input: LayoutInput): LayoutElement[] {
     );
   }
 
-  // Step 4: scale factor for all px-at-1440 values.
-  const scale = canvas.height / 1440;
+  // Step 4: scale factor for all px-at-reference values.
+  //
+  // Scale by the MORE CONSTRAINING of the two dimensions, not by height alone.
+  //
+  // Height-only scaling is wrong for any aspect taller than the reference: a
+  // 1440x2560 portrait canvas yields height/1440 = 1.78, so type grows 78%
+  // while every region's width shrinks by 44% (regions are fractions of canvas
+  // width). Text then cannot fit its own container and the degradation path
+  // starts dropping values — violating AC5's "never silently drop a value".
+  //
+  // Taking the min keeps type proportional to whichever axis is tighter:
+  //   landscape 2560x1440 → min(1.00, 1.00) = 1.00
+  //   portrait  1440x2560 → min(0.56, 1.78) = 0.56
+  //   square    2048x2048 → min(0.80, 1.42) = 0.80
+  const REFERENCE_WIDTH = 2560;
+  const REFERENCE_HEIGHT = 1440;
+  const scale = Math.min(canvas.width / REFERENCE_WIDTH, canvas.height / REFERENCE_HEIGHT);
 
   const results: LayoutElement[] = [];
 
@@ -217,19 +232,40 @@ export function layoutDesign(input: LayoutInput): LayoutElement[] {
     // Step 2: cursor starts at the top of this region.
     let cursor = ry; // monotonically non-decreasing — the AC4 guarantee.
 
-    for (const slotId of block.slots) {
+    for (let slotIndex = 0; slotIndex < block.slots.length; slotIndex++) {
+      const slotId = block.slots[slotIndex];
+
       // Step 3a: skip absent or empty values. — AC6
       const rawText = values[slotId];
       if (!rawText || rawText.trim() === '') continue;
-
-      // Remaining vertical space in this region.
-      const remaining = regionBottom - cursor;
-      if (remaining <= 0) break; // region exhausted
 
       const typeSpec = template.typeScale[slotId];
       const idealSize = (typeSpec?.ideal ?? 16) * scale;
       const minSize   = (typeSpec?.min   ?? 12) * scale;
       const weight    = typeSpec?.weight ?? 400;
+      const minLine   = minSize * LINE_HEIGHT_RATIO;
+
+      // AC5 — reserve room for the slots that come after this one.
+      //
+      // This loop previously did `if (remaining <= 0) break`, which silently
+      // discarded every remaining slot once a region filled up. That is exactly
+      // the failure AC5 forbids: a long headline could swallow the price and
+      // the address, and the output would simply not contain them.
+      //
+      // Instead, every later non-empty slot is guaranteed one line at its
+      // minimum size (plus its gap) before this slot is allowed to claim space.
+      // An early slot can therefore shrink or truncate, but it can never
+      // starve a later one out of existence.
+      let reserved = 0;
+      for (let j = slotIndex + 1; j < block.slots.length; j++) {
+        const laterText = values[block.slots[j]];
+        if (!laterText || laterText.trim() === '') continue;
+        const laterMin = (template.typeScale[block.slots[j]]?.min ?? 12) * scale;
+        reserved += laterMin * LINE_HEIGHT_RATIO + gap;
+      }
+
+      // Never negative, and never less than one line — every value gets rendered.
+      const remaining = Math.max(minLine, regionBottom - cursor - reserved);
 
       // Step 3b–c: wrap at ideal size, compute height.
       let fontSize = idealSize;
