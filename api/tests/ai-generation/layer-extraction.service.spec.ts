@@ -11,9 +11,10 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-// Axios must be mocked before any import that loads a service using it
+// Axios must be mocked before any import that loads a service using it.
+// `get` serves the image download the multipart layerize call requires.
 vi.mock('axios', () => ({
-  default: { post: vi.fn() },
+  default: { post: vi.fn(), get: vi.fn() },
 }));
 
 // fs must be mocked for IdeogramService (which calls fs.readFileSync in generateImage)
@@ -107,7 +108,23 @@ describe('LayerExtractionService — TC-AI-031b-04 (AC6)', () => {
 
   beforeEach(() => {
     vi.resetAllMocks();
+    // The layerize endpoint takes multipart with the image binary, so the
+    // service downloads the composition first. Default that download to success;
+    // individual tests override to exercise the failure paths.
+    (axios.get as ReturnType<typeof vi.fn>).mockResolvedValue({
+      data: new ArrayBuffer(16),
+    });
     service = makeLayerExtractionService();
+  });
+
+  it('returns null when the image download itself fails', async () => {
+    (axios.get as ReturnType<typeof vi.fn>).mockRejectedValue(
+      new Error('404: image expired'),
+    );
+    const result = await service.extractTextGeometry('https://cdn.example.com/gone.jpg', 'gen-000');
+    expect(result).toBeNull();
+    // No provider spend when there is nothing to send.
+    expect(axios.post).not.toHaveBeenCalled();
   });
 
   it('returns null when axios throws a network error', async () => {
@@ -162,6 +179,15 @@ describe('LayerExtractionService — TC-AI-031b-04 (AC6)', () => {
 
     // Raw provider field 'font_name' must not leak through — only our mapped field
     expect(heading).not.toHaveProperty('font_name');
+
+    // Contract tripwire: the endpoint rejects JSON with 415 — the request body
+    // MUST be FormData carrying the image binary, and Content-Type must be left
+    // to axios so the multipart boundary is set. A JSON body here failed
+    // silently on every call from US-AI-031b until 2026-08-13.
+    const [url, body, config] = (axios.post as ReturnType<typeof vi.fn>).mock.calls[0];
+    expect(url).toContain('layerize-text');
+    expect(body).toBeInstanceOf(FormData);
+    expect(config.headers).not.toHaveProperty('Content-Type');
   });
 });
 

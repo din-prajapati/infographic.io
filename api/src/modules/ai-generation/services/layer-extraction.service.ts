@@ -23,9 +23,14 @@ import { ExtractedTextBlock } from '../types/composed-design.types';
 // US-AI-031 AC2 asks the composition step for clean typography to maximise the hit rate here.
 const LAYERIZE_ENDPOINT = 'https://api.ideogram.ai/v1/ideogram-v3/layerize-text';
 
-// 30 seconds — the provider documentation does not publish a latency SLO for this beta endpoint;
-// 30s is generous relative to the ~5-8s observed for generate calls.
-const TIMEOUT_MS = 30_000;
+// The provider publishes no latency SLO for this beta endpoint, and observed
+// latency is far above generate calls: 15s, 39s on identical images minutes
+// apart (measured live 2026-08-13 — the original 30s budget killed a call that
+// returned 6 valid blocks at 39s). 90s trades a slower worst case for not
+// discarding paid, successful extractions.
+const LAYERIZE_TIMEOUT_MS = 90_000;
+// Image download from the CDN — generously above the ~2-9s observed for ~4.5MB.
+const DOWNLOAD_TIMEOUT_MS = 30_000;
 
 /** The raw block shape returned by the Ideogram layerize-text endpoint (internal only). */
 interface RawTextBlock {
@@ -104,17 +109,26 @@ export class LayerExtractionService {
     logGen({ generationId: gid, event: 'extract:start', imageUrl });
 
     try {
-      const response = await axios.post(
-        LAYERIZE_ENDPOINT,
-        { image_url: imageUrl },
-        {
-          headers: {
-            'Api-Key': this.apiKey,
-            'Content-Type': 'application/json',
-          },
-          timeout: TIMEOUT_MS,
-        },
-      );
+      // The endpoint accepts ONLY multipart/form-data with the image binary —
+      // a JSON { image_url } body is rejected with 415 before any processing.
+      // The original implementation sent JSON, so every extraction since
+      // US-AI-031b failed silently through the catch below (found live
+      // 2026-08-13 by probing the endpoint directly). Download the composition
+      // and forward the bytes, same idiom as ideogram.service.ts remix calls.
+      const imageResponse = await axios.get(imageUrl, {
+        responseType: 'arraybuffer',
+        timeout: DOWNLOAD_TIMEOUT_MS,
+      });
+      const imageBlob = new Blob([imageResponse.data], { type: 'image/png' });
+
+      const form = new FormData();
+      form.append('image', imageBlob, 'composition.png');
+
+      const response = await axios.post(LAYERIZE_ENDPOINT, form, {
+        // Do NOT set Content-Type — axios must set the multipart boundary itself.
+        headers: { 'Api-Key': this.apiKey },
+        timeout: LAYERIZE_TIMEOUT_MS,
+      });
 
       const backgroundUrl: string | undefined = response.data?.base_image_url;
       if (!backgroundUrl) {
