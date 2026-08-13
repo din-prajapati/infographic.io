@@ -478,12 +478,34 @@ export class AiOrchestrator {
       );
     }
 
-    return {
+    // ── Cache write (AC4, AC5, AC7) ─────────────────────────────────────────
+    // Persist the freshly-extracted result so subsequent compose calls for the same
+    // variation hit the cache instead of paying $0.09 again. The degraded path
+    // (extractionResult null) already returned above — we never reach this point
+    // on a failed extraction, so the null case is structurally excluded (AC5).
+    //
+    // Non-fatal: if the Prisma update fails the caller still receives the freshly
+    // extracted design. The next request will re-extract and retry the write (AC7).
+    const result: ComposedDesign = {
       backgroundUrl,
       elements,
       extraction: { attempted: true, blocksDetected: blocks.length, matched },
       canonicalValues: canonical,
     };
+    try {
+      const existingCache = (record?.composedDesigns as Record<string, ComposedDesign> | null) ?? {};
+      await this.prisma.infographic.update({
+        where: { id: infographicId },
+        data: { composedDesigns: { ...existingCache, [cacheKey]: result } as any },
+      });
+    } catch (cacheWriteErr: any) {
+      logGen(
+        { generationId: infographicId, event: 'edit:compose:cache-write:error', error: cacheWriteErr?.message },
+        'warn',
+      );
+    }
+
+    return result;
   }
 
   private getVariationDescription(index: number, style?: string): string {

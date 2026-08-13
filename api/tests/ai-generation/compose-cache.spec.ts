@@ -185,3 +185,140 @@ describe('AiOrchestrator.composeDesignForEdit — cache hit path (AC1, AC2, AC6)
     expect(extractSpy).toHaveBeenCalledOnce();
   });
 });
+
+// ─── T3: cache write, degraded-never-cached, A/B/A, AC7 ──────────────────────
+
+/** Minimal successful extraction result used in write-path tests. */
+const GOOD_EXTRACTION = {
+  backgroundUrl: 'https://cdn.ideogram.ai/erased/abc123.jpg',
+  blocks: [
+    {
+      detectedText: 'Luxury Penthouse',
+      x: 100, y: 200, width: 800, height: 80,
+      angle: 0, fontFamily: 'Arial', fontSize: 48, lineHeight: 1.2,
+      color: '#FFFFFF', alignment: 'center' as const, role: 'heading',
+    },
+  ],
+};
+
+describe('AiOrchestrator.composeDesignForEdit — cache write path (AC4, AC5)', () => {
+  let layer: LayerExtractionService;
+
+  beforeEach(() => {
+    vi.resetAllMocks();
+    process.env.IDEOGRAM_API_KEY = 'test-key-048';
+    layer = new LayerExtractionService();
+  });
+
+  it('successful extraction writes result to composedDesigns on the Infographic record', async () => {
+    vi.spyOn(layer, 'extractTextGeometry').mockResolvedValue(GOOD_EXTRACTION);
+    const prisma = makeMockPrisma();
+    prisma.infographic.findUnique.mockResolvedValue({ id: 'inf-write-01', composedDesigns: null });
+
+    const { orch } = makeOrchestrator(layer, prisma);
+    await orch.composeDesignForEdit(SIGNED_URL_A, PROP, 'inf-write-01');
+
+    // One call is for infographic.update (cache write); usageRecord.update is also called
+    const infographicUpdateCall = prisma.infographic.update.mock.calls.find(
+      ([args]: any[]) => args?.data?.composedDesigns != null,
+    );
+    expect(infographicUpdateCall).toBeDefined();
+    const [{ data }] = infographicUpdateCall as any[];
+    const key = composeCacheKey(SIGNED_URL_A);
+    expect(data.composedDesigns).toHaveProperty(key);
+    expect(data.composedDesigns[key].backgroundUrl).toBe(GOOD_EXTRACTION.backgroundUrl);
+  });
+
+  it('TC-AI-048-04: degraded extraction (null) is NOT cached — retry re-calls extraction (AC5)', async () => {
+    const extractSpy = vi.spyOn(layer, 'extractTextGeometry');
+    const prisma = makeMockPrisma();
+    prisma.infographic.findUnique.mockResolvedValue({ id: 'inf-degrade', composedDesigns: null });
+
+    const { orch } = makeOrchestrator(layer, prisma);
+
+    // First call → extraction fails (null)
+    extractSpy.mockResolvedValueOnce(null);
+    const first = await orch.composeDesignForEdit(SIGNED_URL_A, PROP, 'inf-degrade');
+
+    // Degraded result — no overlay elements
+    expect(first.elements).toHaveLength(0);
+    expect(first.extraction.blocksDetected).toBe(0);
+
+    // Confirm nothing was written to composedDesigns
+    const cacheWriteCall = prisma.infographic.update.mock.calls.find(
+      ([args]: any[]) => args?.data?.composedDesigns != null,
+    );
+    expect(cacheWriteCall).toBeUndefined();
+
+    // Second call → extraction succeeds; cache still empty (was never written)
+    extractSpy.mockResolvedValueOnce(GOOD_EXTRACTION);
+    prisma.infographic.findUnique.mockResolvedValue({ id: 'inf-degrade', composedDesigns: null });
+    const second = await orch.composeDesignForEdit(SIGNED_URL_A, PROP, 'inf-degrade');
+
+    // Extraction was called twice (null result was never cached)
+    expect(extractSpy).toHaveBeenCalledTimes(2);
+    expect(second.elements.length).toBeGreaterThan(0);
+  });
+
+  it('TC-AI-048-05: compose A then B then A → exactly 2 extraction calls (AC4)', async () => {
+    const URL_A = SIGNED_URL_A;
+    const URL_B = 'https://cdn.ideogram.ai/compositions/xyz789/output.jpg';
+
+    const extractSpy = vi.spyOn(layer, 'extractTextGeometry').mockResolvedValue(GOOD_EXTRACTION);
+    const prisma = makeMockPrisma();
+    const { orch } = makeOrchestrator(layer, prisma);
+
+    const keyA = composeCacheKey(URL_A);
+    const keyB = composeCacheKey(URL_B);
+
+    // Call 1: variation A — cache miss → extraction fires, result written under keyA
+    prisma.infographic.findUnique.mockResolvedValue({ id: 'inf-ab', composedDesigns: null });
+    await orch.composeDesignForEdit(URL_A, PROP, 'inf-ab');
+    expect(extractSpy).toHaveBeenCalledTimes(1);
+
+    // Call 2: variation B — cache miss (only keyA stored) → extraction fires, result written under keyB
+    prisma.infographic.findUnique.mockResolvedValue({
+      id: 'inf-ab',
+      composedDesigns: { [keyA]: STORED_DESIGN },
+    });
+    await orch.composeDesignForEdit(URL_B, PROP, 'inf-ab');
+    expect(extractSpy).toHaveBeenCalledTimes(2);
+
+    // Call 3: variation A again — cache hit (keyA present) → NO extraction
+    prisma.infographic.findUnique.mockResolvedValue({
+      id: 'inf-ab',
+      composedDesigns: { [keyA]: STORED_DESIGN, [keyB]: STORED_DESIGN },
+    });
+    await orch.composeDesignForEdit(URL_A, PROP, 'inf-ab');
+    expect(extractSpy).toHaveBeenCalledTimes(2); // still 2, not 3
+  });
+});
+
+// ─── T3: TC-AI-048-07 — AC7: cache-write failure ─────────────────────────────
+
+describe('AiOrchestrator.composeDesignForEdit — AC7: cache-write failure', () => {
+  let layer: LayerExtractionService;
+
+  beforeEach(() => {
+    vi.resetAllMocks();
+    process.env.IDEOGRAM_API_KEY = 'test-key-048';
+    layer = new LayerExtractionService();
+  });
+
+  it('TC-AI-048-07: Prisma update for composedDesigns throws → freshly-extracted design is still returned (AC7)', async () => {
+    vi.spyOn(layer, 'extractTextGeometry').mockResolvedValue(GOOD_EXTRACTION);
+    const prisma = makeMockPrisma();
+    prisma.infographic.findUnique.mockResolvedValue({ id: 'inf-ac7', composedDesigns: null });
+    // Simulate DB failure during cache persistence (infographic.update throws)
+    prisma.infographic.update.mockRejectedValue(new Error('DB connection lost'));
+
+    const { orch } = makeOrchestrator(layer, prisma);
+    // Must not throw — must return the freshly-extracted design despite the write failure
+    const result = await orch.composeDesignForEdit(SIGNED_URL_A, PROP, 'inf-ac7');
+
+    expect(result.backgroundUrl).toBe(GOOD_EXTRACTION.backgroundUrl);
+    expect(result.elements.length).toBeGreaterThan(0);
+    expect(result.extraction.attempted).toBe(true);
+    expect(result.extraction.blocksDetected).toBe(GOOD_EXTRACTION.blocks.length);
+  });
+});
