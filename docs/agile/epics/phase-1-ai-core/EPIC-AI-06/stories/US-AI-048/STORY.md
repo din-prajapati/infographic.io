@@ -1,6 +1,6 @@
 # Story Card — US-AI-048
 
-> **Status:** 🔲 Not Started
+> **Status:** 🟡 Implementation complete (pre-PR)
 > **Feature:** F-AI-06-07 — Extraction cost control (compose cache)
 > **Epic:** [EPIC-AI-06](../../EPIC.md)
 > **Milestone:** [M-AI-18-editable-text-overlay](../../milestones/M-AI-18-editable-text-overlay.md)
@@ -30,13 +30,13 @@ Caching per (generation, variation image) caps editable cost at $0.09 × distinc
 
 ## Acceptance Criteria
 
-- [ ] **AC1 [happy-path]:** `POST /api/v1/infographics/generations/:id/compose` for a (generation, imageUrl) pair that has a stored result returns it **without** calling `LayerExtractionService.extractTextGeometry` (assert provider mock not called on second request).
-- [ ] **AC2 [idempotency]:** The cached path does **not** increment `costUsd` on the UsageRecord — only a real layerize call meters $0.09 (`edit:metering:ok` absent from logs on cache hit; `costUsd` unchanged in DB).
-- [ ] **AC3 [edge-case]:** Compose results are stored on the `Infographic` record in a `composedDesigns Json?` field keyed by variation imageUrl (URL stripped of `exp`/`sig` query params, since ephemeral signatures rotate while the image identity does not) — verified by a round trip: compose, read record, compose again.
-- [ ] **AC4 [idempotency]:** Distinct variations of the same generation each trigger exactly one provider call — composing variation A then B then A again = exactly 2 `extract:start` events for that generation.
-- [ ] **AC5 [regression]:** A **degraded** extraction result (provider failure → `blocksDetected:0, elements:[]`) is **not** cached — a retry after provider recovery performs a fresh extraction (transient failure must not become permanent).
-- [ ] **AC6 [happy-path]:** Cache hit is logged as a structured event `edit:compose:cache-hit` with `generationId` and `durationMs`, so the hit rate is measurable (Observability rules).
-- [ ] **AC7 [error-path]:** When the Prisma update that persists `composedDesigns` on the `Infographic` record (in `ai-orchestrator.service.ts`) throws after a successful extraction, then `composeDesignForEdit()` still returns the freshly-extracted `ComposedDesign` to the caller and logs the persistence failure — a cache-write error must not fail the user-facing compose request, and the next request retries the write rather than serving a phantom cache entry.
+- [x] **AC1 [happy-path]:** `POST /api/v1/infographics/generations/:id/compose` for a (generation, imageUrl) pair that has a stored result returns it **without** calling `LayerExtractionService.extractTextGeometry` (assert provider mock not called on second request).
+- [x] **AC2 [idempotency]:** The cached path does **not** increment `costUsd` on the UsageRecord — only a real layerize call meters $0.09 (`edit:metering:ok` absent from logs on cache hit; `costUsd` unchanged in DB).
+- [x] **AC3 [edge-case]:** Compose results are stored on the `Infographic` record in a `composedDesigns Json?` field keyed by variation imageUrl (URL stripped of `exp`/`sig` query params, since ephemeral signatures rotate while the image identity does not) — verified by a round trip: compose, read record, compose again.
+- [x] **AC4 [idempotency]:** Distinct variations of the same generation each trigger exactly one provider call — composing variation A then B then A again = exactly 2 `extract:start` events for that generation.
+- [x] **AC5 [regression]:** A **degraded** extraction result (provider failure → `blocksDetected:0, elements:[]`) is **not** cached — a retry after provider recovery performs a fresh extraction (transient failure must not become permanent).
+- [x] **AC6 [happy-path]:** Cache hit is logged as a structured event `edit:compose:cache-hit` with `generationId` and `durationMs`, so the hit rate is measurable (Observability rules).
+- [x] **AC7 [error-path]:** When the Prisma update that persists `composedDesigns` on the `Infographic` record (in `ai-orchestrator.service.ts`) throws after a successful extraction, then `composeDesignForEdit()` still returns the freshly-extracted `ComposedDesign` to the caller and logs the persistence failure — a cache-write error must not fail the user-facing compose request, and the next request retries the write rather than serving a phantom cache entry.
 
 ---
 

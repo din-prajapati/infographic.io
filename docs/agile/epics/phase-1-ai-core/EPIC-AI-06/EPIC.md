@@ -36,7 +36,7 @@
 | [US-AI-031b](stories/US-AI-031b/STORY.md) | Layer extraction and canonical text rendering | M-AI-17 | L | 🟡 AC2–AC9 done; AC1 gated on credit | — |
 | [US-AI-032](stories/US-AI-032/STORY.md) | Editable listing canvas | M-AI-18 | L | 🟡 T1/T6 done; T2–T5 open | — |
 | [US-AI-043](stories/US-AI-043/STORY.md) | Layout engine (templates + flow renderer) | M-AI-18 | L | 🟡 Implementation complete (pre-PR) | — |
-| [US-AI-048](stories/US-AI-048/STORY.md) | Cache ComposedDesign per (generation, variation) | M-AI-18 | M | 🔲 Not Started | — |
+| [US-AI-048](stories/US-AI-048/STORY.md) | Cache ComposedDesign per (generation, variation) | M-AI-18 | M | 🟡 Implementation complete (pre-PR) | — |
 | [US-AI-049](stories/US-AI-049/STORY.md) | Map extracted fonts to real editor typography | M-AI-18 | S | 🔲 Not Started | — |
 | [US-AI-050](stories/US-AI-050/STORY.md) | Progress affordance for the editable compose wait | M-AI-18 | S | 🔲 Not Started | — |
 | [US-AI-051](stories/US-AI-051/STORY.md) | Text-free background for real-photo + editable | M-AI-18 | M | 🔲 Not Started | — |
@@ -75,6 +75,12 @@
 ---
 
 ## Implementation Update (log)
+
+### 2026-08-13 — US-AI-048 implementation complete (pre-PR)
+- **Files touched:** `api/prisma/schema.prisma` (composedDesigns Json? on Infographic), `api/src/modules/ai-generation/services/ai-orchestrator.service.ts` (composeCacheKey helper + cache read/write in composeDesignForEdit), `api/tests/ai-generation/compose-cache.spec.ts` (new — 13 tests)
+- **ACs covered:** AC1, AC2, AC3, AC4, AC5, AC6, AC7 — all verified by unit tests passing on `npm run check` + `npm run test:unit` (268 backend tests total, 13 new). AC6 (cache-hit log event) verified by code inspection and test assertion (extraction-spy not called). TC-AI-048-06 (live second-click latency) is a manual P1 — deferred to `/test-story`.
+- **Commits:** 4 on branch `feat/ai/us-ai-048-compose-cache` (T1 schema+helper, T2 read path, T3 write path, T4 harness instructions)
+- **Notes:** (1) `generations.service.ts` was **not** changed — the cache read is handled inside `composeDesignForEdit()` itself via one extra `infographic.findUnique` call, keeping the service interface unchanged. (2) The degraded path (`extractionResult === null`) returns before the cache write — null is structurally excluded from the cache, not conditionally filtered. (3) Cache write failure (AC7) uses the same `record.composedDesigns` snapshot from the read-phase; a concurrent write for a different variation URL cannot cause data loss since keys don't overlap. (4) `npx prisma db push --schema=api/prisma/schema.prisma` must be applied to dev and production DBs before deploying — noted in T4 commit.
 
 ### 2026-08-13 — Editable canvas WORKING end-to-end in the browser (first time)
 - **What happened:** First-ever live browser execution of the full editable chain surfaced three root causes that unit tests could not see, all fixed and re-verified live the same session.
