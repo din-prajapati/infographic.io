@@ -331,6 +331,18 @@ export const usageAnalyticsApi = {
   },
 };
 
+/**
+ * Client-side request timeout for POST /:id/compose (US-AI-050 AC4).
+ *
+ * Must be ≥ LAYERIZE_TIMEOUT_MS (90 000ms, server-side US-AI-031b) so the
+ * server always gets to respond before the client gives up.  Set to 120 000ms
+ * to give a generous safety margin over the 90s server budget.
+ *
+ * Exported so the AC4 unit test can reference the same constant instead of
+ * repeating the literal.
+ */
+export const COMPOSE_REQUEST_TIMEOUT_MS = 120_000;
+
 export const generationsApi = {
   getUsageQuota: () =>
     apiRequest<{
@@ -368,11 +380,19 @@ export const generationsApi = {
    * Runs Ideogram Layerize-Text on the chosen variation, binds blocks to canonical listing
    * fields, and returns a ComposedDesign for the client canvas loader.
    * AC2 of US-AI-031b: extraction never runs at generate time.
+   *
+   * AC4 of US-AI-050: client timeout is COMPOSE_REQUEST_TIMEOUT_MS (≥ 90 000ms) so the
+   * server's own LAYERIZE_TIMEOUT_MS (90 000ms) can always fire first — the client never
+   * gives up while the server is still legitimately working.
    */
   getComposedDesign: (id: string, imageUrl: string) =>
     apiRequest<ComposedDesign>(
       getApiUrl(`/infographics/generations/${id}/compose`),
-      { method: 'POST', body: JSON.stringify({ imageUrl }) }
+      {
+        method: 'POST',
+        body: JSON.stringify({ imageUrl }),
+        signal: AbortSignal.timeout(COMPOSE_REQUEST_TIMEOUT_MS),
+      },
     ),
 };
 

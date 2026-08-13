@@ -33,7 +33,7 @@ feat(editor): show elapsed-time progress during the editable compose wait — US
 **Files:** `client/src/components/editor/RightSidebar.tsx`, `client/src/components/ai-chat/AIChatBox.tsx`
 **AC(s):** AC3, AC5
 
-### [ ] T3 — Client request timeout ≥ server's 90s
+### [x] T3 — Client request timeout ≥ server's 90s
 **Files:** `client/src/lib/api.ts`, `client/src/lib/__tests__/api.spec.ts` (update or new)
 **AC(s):** AC4
 
