@@ -29,7 +29,7 @@ feat(editor): map extracted font identifiers to real fonts on the editable canva
 **Files:** `client/src/lib/fontMap.ts` (new), `client/src/lib/__tests__/fontMap.spec.ts` (new)
 **AC(s):** AC1, AC2
 
-### T2 — Apply in loadComposedDesignToCanvas + font loading in shell
+### T2 — Apply in loadComposedDesignToCanvas + font loading in shell ✅
 **Files:** `client/src/lib/canvasState.ts`, `client/index.html` (or `index.css`), `api/tests/canvas/canvasState.helpers.spec.ts` (update)
 **AC(s):** AC3, AC4
 
