@@ -358,3 +358,37 @@ describe('AC3 regression guard — US-AI-031: prompt builder is photo-unaware', 
     expect(buildImagePrompt(e3PropertyData, e3Headline)).toBe(loadE3TextPrompt());
   });
 });
+
+// ---------------------------------------------------------------------------
+// US-AI-051 AC2/AC3 regression baseline — text-free prompt routing
+//
+// These tests are written BEFORE adding buildTextFreeImagePrompt so there is a
+// git record that the baseline existed before any builder change. They must
+// remain green after T2's changes because buildImagePrompt is never modified —
+// only a NEW function is added alongside it.
+//
+// TC-AI-051-02: renderMode=undefined (absent) → prompt byte-identical to today.
+// TC-AI-051-03: renderMode='editable' with no photo → prompt unchanged (builder
+//               is photo-unaware; routing is the orchestrator's job).
+// ---------------------------------------------------------------------------
+describe('US-AI-051 AC2/AC3 regression baseline — text-free routing does not touch buildImagePrompt', () => {
+  it('TC-AI-051-02: buildImagePrompt output is byte-identical to the E3 baseline regardless of caller context (AC2)', () => {
+    // Captured twice to prove determinism — same result, same reference text.
+    const promptA = buildImagePrompt(e3PropertyData, e3Headline);
+    const promptB = buildImagePrompt(e3PropertyData, e3Headline);
+    expect(promptA).toBe(promptB);
+    expect(promptA).toBe(loadE3TextPrompt());
+  });
+
+  it('TC-AI-051-03: buildImagePrompt is photo-unaware — signature does not gain renderMode or photoReference params (AC3)', () => {
+    // Function.length is 2 now (propertyData, headline).
+    // If a third param were added without a default it would be 3 — caught here.
+    expect(buildImagePrompt.length).toBe(2);
+    // Builder output for the same inputs is always the text-baked composed prompt,
+    // regardless of any mode context the orchestrator knows about.
+    const result = buildImagePrompt(e3PropertyData, e3Headline);
+    expect(result).toContain(`- Headline: "${e3Headline}"`);
+    expect(result).toContain(`- Address: ${e3PropertyData.address}`);
+    expect(result).toContain(`- Price:`);
+  });
+});
