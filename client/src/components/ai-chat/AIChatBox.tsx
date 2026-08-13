@@ -37,7 +37,8 @@ import {
   loadTestConversations,
   clearConversations,
 } from "./testConversationsData";
-import { composeFromCanonicalValues, orientationToCanvasSize } from "@/lib/layout/connectLayout";
+import { planVariationLoad } from "@/lib/layout/loadVariation";
+import { useGenerationPrefs } from "@/hooks/useGenerationPrefs";
 import {
   generationsApi,
   extractionsApi,
@@ -133,7 +134,8 @@ export function AIChatBox({
    * as slot-tagged, individually selectable canvas elements (US-AI-032 T2).
    * Provider-agnostic — describes the output shape, never the vendor.
    */
-  const [renderMode, setRenderMode] = useState<'flat' | 'editable'>('flat');
+  const renderMode = useGenerationPrefs((s) => s.renderMode);
+  const setRenderMode = useGenerationPrefs((s) => s.setRenderMode);
 
   // Conversation history with previews
   const [conversationHistory, setConversationHistory] = useState<
@@ -1103,35 +1105,20 @@ export function AIChatBox({
       // Editable path: fetch ComposedDesign (lazy extraction) then hand off.
       try {
         toast.info("Preparing editable design…", {
-          description: "Extracting text layers — this takes a few seconds.",
-        });
-        const composed = await generationsApi.getComposedDesign(
-          currentGenerationId,
-          variation.previewUrl,
-        );
-
-        // Compose from our own listing values first (US-AI-043 layout engine).
-        //
-        // Layer extraction can only recover text that is visibly present on the
-        // background, and the composition step currently produces backgrounds
-        // with no text on them (see OQ-2 findings) — so it reliably finds
-        // nothing. The layout engine has no such dependency: deterministic,
-        // offline, and driven by the values the application already holds.
-        //
-        // Extraction stays as the fallback for the case it is actually good at:
-        // a background that genuinely carries text worth preserving.
-        const canvasSize = orientationToCanvasSize(generationOrientation);
-        const laidOut = composeFromCanonicalValues({
-          canonicalValues: (composed as any)?.canonicalValues,
-          backgroundUrl: (composed as any)?.backgroundUrl ?? variation.previewUrl,
-          canvas: canvasSize,
+          description: "Composing text layers — this takes a moment.",
         });
 
-        const finalComposed = laidOut ?? composed;
-        if (!laidOut) {
-          console.warn(
-            '[AIChatBox] No canonical values to lay out — using extraction result',
-          );
+        // Shared with Quick Generate (US-AI-047) — one implementation of the
+        // flat-vs-editable decision so the two surfaces cannot drift.
+        const plan = await planVariationLoad({
+          generationId: currentGenerationId,
+          variation: { id: variation.id, imageUrl: variation.previewUrl, title: variation.title },
+          renderMode,
+          orientation: generationOrientation,
+        });
+
+        if (plan.reason) {
+          console.warn('[AIChatBox] editable degraded:', plan.reason);
         }
 
         const template: Template = {
@@ -1143,7 +1130,7 @@ export function AIChatBox({
           isAiVariation: true,
           aiOrientation: generationOrientation,
           emoji: "🎨",
-          composedDesign: finalComposed,
+          composedDesign: plan.composedDesign,
         };
         onTemplateLoad(template);
       } catch (err: any) {

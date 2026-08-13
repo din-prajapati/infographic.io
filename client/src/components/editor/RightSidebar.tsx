@@ -51,7 +51,9 @@ import { resolveLocale } from "@shared/locale";
 import { useAgentStore } from "../../hooks/useAgentStore";
 import { generationsApi, ResultVariation } from "../../lib/api";
 import { useGenerationWebSocket, GenerationProgress } from "../../hooks/useGenerationWebSocket";
-import { loadAiVariationToCanvas, deriveOrientationFromCanvas } from "../../lib/canvasState";
+import { loadAiVariationToCanvas, loadComposedDesignToCanvas, deriveOrientationFromCanvas } from "../../lib/canvasState";
+import { planVariationLoad } from "@/lib/layout/loadVariation";
+import { useGenerationPrefs } from "@/hooks/useGenerationPrefs";
 
 type TabType = "design" | "property-details" | "agent-info";
 
@@ -290,6 +292,12 @@ export function RightSidebar() {
   const [loadingVariationId, setLoadingVariationId] = useState<string | null>(null);
   const [lightboxVariation, setLightboxVariation] = useState<ResultVariation | null>(null);
 
+  // US-AI-047 — shared with the AI chat panel so both surfaces honour one setting.
+  // Previously renderMode was useState local to AIChatBox, which is why the
+  // editable feature was unreachable from this (far more prominent) button.
+  const renderMode = useGenerationPrefs((s) => s.renderMode);
+  const setRenderMode = useGenerationPrefs((s) => s.setRenderMode);
+
   const addElement = useCanvasStore((state) => state.addElement);
   const elements = useCanvasStore((state) => state.elements);
   const updateElement = useCanvasStore((state) => state.updateElement);
@@ -428,6 +436,32 @@ export function RightSidebar() {
   const handleUseDesign = async (variation: ResultVariation) => {
     setLoadingVariationId(variation.id);
     try {
+      // US-AI-047 — Quick Generate now honours renderMode. It previously called
+      // loadAiVariationToCanvas unconditionally, so the editable feature was
+      // unreachable from the most prominent generate button in the product.
+      const plan = await planVariationLoad({
+        generationId,
+        variation: { id: variation.id, imageUrl: variation.imageUrl, title: variation.title },
+        renderMode,
+        orientation: deriveOrientationFromCanvas(canvasWidth, canvasHeight),
+      });
+
+      if (plan.mode === "editable" && plan.composedDesign) {
+        const ok = await loadComposedDesignToCanvas(plan.composedDesign);
+        if (ok) {
+          setSelectedVariationId(variation.id);
+          toast.success("Editable design loaded", {
+            description: "Text elements are ready to edit in the Design tab.",
+          });
+          return;
+        }
+        // Loader refused the payload — fall through to flat rather than
+        // leaving the user with nothing.
+        console.warn("[RightSidebar] composed load failed — falling back to flat");
+      } else if (plan.reason) {
+        console.warn("[RightSidebar] editable degraded:", plan.reason);
+      }
+
       await loadAiVariationToCanvas(variation.imageUrl, variation.title ?? "AI Design");
       setSelectedVariationId(variation.id);
       toast.success("Design loaded", {
@@ -826,6 +860,37 @@ export function RightSidebar() {
               Want to iterate? Use AI Chat
             </span>
             <ArrowRight className="w-3 h-3 text-ai-accent/70 shrink-0" />
+          </div>
+
+          {/* Render mode — US-AI-047.
+              Shared with the AI chat panel via useGenerationPrefs, so the choice
+              persists across both surfaces instead of living in one panel. */}
+          <div className="px-3 pb-2 flex items-center gap-2">
+            <span className="text-xs text-muted-foreground shrink-0">Load as:</span>
+            <div className="flex rounded-md border border-border overflow-hidden text-xs">
+              <button
+                className={`px-2.5 py-1 transition-colors ${
+                  renderMode === "flat"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-background text-muted-foreground hover:text-foreground"
+                }`}
+                onClick={() => setRenderMode("flat")}
+                title="Load as a single flat image layer"
+              >
+                Flat
+              </button>
+              <button
+                className={`px-2.5 py-1 transition-colors ${
+                  renderMode === "editable"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-background text-muted-foreground hover:text-foreground"
+                }`}
+                onClick={() => setRenderMode("editable")}
+                title="Compose editable text layers over the image"
+              >
+                Editable
+              </button>
+            </div>
           </div>
 
           {/* Variation cards */}
