@@ -117,6 +117,14 @@ export function AIChatBox({
   const [currentGenerationId, setCurrentGenerationId] = useState<string | null>(
     null,
   );
+  // The generation the displayed resultVariations belong to. currentGenerationId
+  // is in-flight state and is correctly nulled at completion — but the editable
+  // path needs the id later, at Edit-click time, to call POST /:id/compose.
+  // Reading currentGenerationId there meant the editable branch was silently
+  // unreachable (found live, 2026-08-13). Pairs 1:1 with resultVariations.
+  const [resultsGenerationId, setResultsGenerationId] = useState<string | null>(
+    null,
+  );
   const [currentAiMessageId, setCurrentAiMessageId] = useState<string | null>(
     null,
   );
@@ -358,6 +366,9 @@ export function AIChatBox({
       );
 
       setResultVariations(uiVariations);
+      // Pair the results with their generation for the editable Edit path —
+      // genId is captured here because currentGenerationId is nulled below.
+      setResultsGenerationId(genId);
       if (uiVariations.length > 0) {
         setSelectedVariationId(uiVariations[0].id);
       }
@@ -705,6 +716,7 @@ export function AIChatBox({
 
     setState((prev) => ({ ...prev, isGenerating: true, error: null, inputValue: "" }));
     setResultVariations([]);
+    setResultsGenerationId(null);
     setSelectedVariationId(null);
     setGenerationSteps(steps);
     setCurrentStep(0);
@@ -969,6 +981,7 @@ export function AIChatBox({
     }));
     setGenerationSteps([]);
     setResultVariations([]);
+    setResultsGenerationId(null);
     setShowSuggestionsPanel(false);
     setShowImageUploadPanel(false);
     setShowCategoryBrowse(false);
@@ -1101,7 +1114,7 @@ export function AIChatBox({
       return;
     }
 
-    if (renderMode === 'editable' && currentGenerationId) {
+    if (renderMode === 'editable' && resultsGenerationId) {
       // Editable path: fetch ComposedDesign (lazy extraction) then hand off.
       try {
         toast.info("Preparing editable design…", {
@@ -1111,7 +1124,7 @@ export function AIChatBox({
         // Shared with Quick Generate (US-AI-047) — one implementation of the
         // flat-vs-editable decision so the two surfaces cannot drift.
         const plan = await planVariationLoad({
-          generationId: currentGenerationId,
+          generationId: resultsGenerationId,
           variation: { id: variation.id, imageUrl: variation.previewUrl, title: variation.title },
           renderMode,
           orientation: generationOrientation,
@@ -1265,6 +1278,7 @@ export function AIChatBox({
     setCurrentConversation(null);
     setConversationMessages([]);
     setResultVariations([]);
+    setResultsGenerationId(null);
     setGenerationSteps([]);
     setState((prev) => ({
       ...prev,

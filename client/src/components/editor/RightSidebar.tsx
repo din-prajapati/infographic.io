@@ -287,6 +287,13 @@ export function RightSidebar() {
   const [generationProgress, setGenerationProgress] = useState(0);
   const [generationStep, setGenerationStep] = useState("");
   const [variations, setVariations] = useState<ResultVariation[] | null>(null);
+  // The generation the displayed variations belong to. Distinct from
+  // `generationId`, which drives the WebSocket subscription and is correctly
+  // nulled at completion — nulling it also destroyed the id the editable path
+  // needs at "Use This" time, which made planVariationLoad degrade to flat on
+  // every single click (found live, 2026-08-13). The id must travel with the
+  // results it produced, not with the in-flight generation state.
+  const [resultsGenerationId, setResultsGenerationId] = useState<string | null>(null);
   const [showResults, setShowResults] = useState(false);
   const [selectedVariationId, setSelectedVariationId] = useState<string | null>(null);
   const [loadingVariationId, setLoadingVariationId] = useState<string | null>(null);
@@ -338,6 +345,9 @@ export function RightSidebar() {
         try {
           const vars = await generationsApi.getVariations(progress.generationId);
           setVariations(vars);
+          // Pair the results with their generation so the editable path can
+          // call POST /:id/compose after the WS id below is torn down.
+          setResultsGenerationId(progress.generationId);
           setShowResults(true);
         } catch {
           toast.error("Failed to load results");
@@ -403,6 +413,11 @@ export function RightSidebar() {
     try {
       const result = await generationsApi.generate({
         prompt,
+        // Structured headline, not just prose in the prompt: the backend persists
+        // it into propertyData (and skips the LLM headline call), which is what
+        // the editable compose path reads canonical values from. Without this the
+        // editable canvas gets an empty headline slot (found live, 2026-08-13).
+        headline: property.headline.trim() || undefined,
         variations: 3,
         model: "ideogram-turbo",
         orientation: deriveOrientationFromCanvas(canvasWidth, canvasHeight),
@@ -440,7 +455,7 @@ export function RightSidebar() {
       // loadAiVariationToCanvas unconditionally, so the editable feature was
       // unreachable from the most prominent generate button in the product.
       const plan = await planVariationLoad({
-        generationId,
+        generationId: resultsGenerationId,
         variation: { id: variation.id, imageUrl: variation.imageUrl, title: variation.title },
         renderMode,
         orientation: deriveOrientationFromCanvas(canvasWidth, canvasHeight),
