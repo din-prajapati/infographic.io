@@ -98,18 +98,29 @@ if (postToggle) {
 }
 
 if (useBtns) {
+  // Extraction (layerize) can take 40s+ — wait for the compose round trip
+  // itself, not a fixed delay, then for elements to land on the canvas.
+  const composeWait = page
+    .waitForResponse((r) => r.url().includes('/compose'), { timeout: 150000 })
+    .catch(() => null);
   await page.locator('button:has-text("Use")').first().click();
-  log('loading onto canvas...');
-  await page.waitForTimeout(12000);
-  await page.screenshot({ path: SP + '/photos/e2e-2-canvas.png' });
+  log('loading onto canvas... (waiting for compose, up to 150s)');
+  const composeRes = await composeWait;
+  log('compose responded: ' + (composeRes ? composeRes.status() : 'TIMEOUT'));
 
-  // What did the canvas actually get? Count draggable canvas elements and text.
-  const state = await page.evaluate(() => {
-    const rnd = document.querySelectorAll('.react-draggable, [data-element-id]');
-    const texts = [...document.querySelectorAll('.react-draggable, [data-element-id]')]
-      .map(n => (n.textContent || '').trim().slice(0, 40)).filter(Boolean);
-    return { draggableCount: rnd.length, texts: texts.slice(0, 12) };
-  });
+  // Canvas load also decodes the background through the proxy — poll for elements.
+  let state = { draggableCount: 0, texts: [] };
+  for (let i = 0; i < 30; i++) {
+    state = await page.evaluate(() => {
+      const nodes = document.querySelectorAll('.react-draggable, [data-element-id]');
+      const texts = [...nodes]
+        .map(n => (n.textContent || '').trim().slice(0, 40)).filter(Boolean);
+      return { draggableCount: nodes.length, texts: texts.slice(0, 12) };
+    });
+    if (state.draggableCount > 1) break;
+    await page.waitForTimeout(1000);
+  }
+  await page.screenshot({ path: SP + '/photos/e2e-2-canvas.png' });
   log('canvas elements: ' + JSON.stringify(state));
 
   // Try selecting a text block: click centre-left where the scrim column sits.

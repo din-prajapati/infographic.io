@@ -55,6 +55,31 @@ describe('planVariationLoad', () => {
     ).toBe(true);
   });
 
+  it('prefers extracted layers over the engine when blocks were detected', async () => {
+    // Extraction reproduces the exact design the user chose (erased background
+    // + measured blocks) — re-layout from values cannot match it, so detection
+    // wins even when canonical values are also available.
+    const extractedElements = [
+      { slot: 'price', text: '₹ 99', geometry: { x: 1, y: 2 }, placement: 'measured' },
+      { slot: null, text: 'LUXURY RESIDENCES', geometry: { x: 3, y: 4 }, placement: 'measured' },
+    ];
+    getComposedDesign.mockResolvedValue({
+      backgroundUrl: 'https://example.test/erased.png',
+      elements: extractedElements,
+      extraction: { attempted: true, blocksDetected: 2, matched: 1 },
+      canonicalValues: canonical,
+    });
+
+    const plan = await planVariationLoad({
+      generationId: 'g1', variation, renderMode: 'editable', orientation: 'landscape',
+    });
+
+    expect(plan.mode).toBe('editable');
+    // The extracted design is passed through verbatim — not re-laid-out.
+    expect(plan.composedDesign!.elements).toEqual(extractedElements);
+    expect(plan.composedDesign!.backgroundUrl).toBe('https://example.test/erased.png');
+  });
+
   it('falls back to extracted layers when there are no canonical values', async () => {
     // This is the case layer extraction is genuinely good at — an imported
     // design whose background really does carry text.

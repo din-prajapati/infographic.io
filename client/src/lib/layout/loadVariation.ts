@@ -56,8 +56,17 @@ export async function planVariationLoad(input: {
       variation.imageUrl,
     );
 
-    // Compose from our own listing data. This leads because it is
-    // deterministic and does not depend on the background carrying text.
+    // Extraction leads when it actually detected text on the background: the
+    // erased background + measured blocks reproduce the exact design the user
+    // chose, which no re-layout can match. (Extraction failed 100% of the time
+    // until 2026-08-13 — a 415 swallowed inside the service — which is why the
+    // engine was ever put first. See layer-extraction.service.ts.)
+    if (composed?.elements?.length && (composed.extraction?.blocksDetected ?? 0) > 0) {
+      return { mode: 'editable', composedDesign: composed, reason: 'used extracted layers' };
+    }
+
+    // Background carries no text (the photo-flow case, per OQ-2) — compose a
+    // layout from our own listing data instead. Deterministic, offline, free.
     const laidOut = composeFromCanonicalValues({
       canonicalValues: composed?.canonicalValues,
       backgroundUrl: composed?.backgroundUrl ?? variation.imageUrl,
@@ -66,8 +75,8 @@ export async function planVariationLoad(input: {
 
     if (laidOut) return { mode: 'editable', composedDesign: laidOut };
 
-    // Nothing to lay out — fall back to whatever extraction produced, which is
-    // the case layer extraction is genuinely good at (US-AI-031b).
+    // Last resort: extraction produced fallback-placed elements without
+    // detected blocks. Better than losing the user's editable intent.
     if (composed?.elements?.length) {
       return { mode: 'editable', composedDesign: composed, reason: 'used extracted layers' };
     }
