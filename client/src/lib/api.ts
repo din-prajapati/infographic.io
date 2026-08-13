@@ -155,6 +155,17 @@ export interface ComposedDesign {
   backgroundUrl: string;
   elements: ComposedTextElement[];
   extraction: { attempted: boolean; blocksDetected: number; matched: number };
+  /**
+   * The application's own listing values (US-AI-046).
+   *
+   * Lets the client compose a layout with the layout engine rather than relying
+   * on whatever layer extraction managed to find. Optional: absent on responses
+   * from before this field existed.
+   */
+  canonicalValues?: Partial<Record<
+    'headline' | 'address' | 'price' | 'stats' | 'agentName' | 'brokerage',
+    string
+  >>;
 }
 
 export interface GenerationStatus {

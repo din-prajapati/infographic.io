@@ -44,4 +44,15 @@ export interface ComposedDesign {
   backgroundUrl: string;         // text-erased composition
   elements: ComposedTextElement[];
   extraction: { attempted: boolean; blocksDetected: number; matched: number };
+  /**
+   * The application's own listing values, as derived by buildExpectedTexts().
+   *
+   * Returned so the client can compose a layout itself via the layout engine
+   * (US-AI-043) instead of depending on what layer extraction managed to find.
+   * The server already derives these to bind extracted blocks; surfacing them
+   * costs nothing and removes the client's need for a second round trip.
+   *
+   * Optional so older callers and the degraded early-return path stay valid.
+   */
+  canonicalValues?: Partial<Record<ListingField, string>>;
 }
