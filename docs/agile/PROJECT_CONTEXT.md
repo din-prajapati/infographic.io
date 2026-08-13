@@ -102,7 +102,7 @@ npm run dev starts:
 | Payments | PAY | Subscription, billing, RazorPay/Stripe | 02 | 01 | 001 |
 | Auth | AUTH | Login, JWT, OAuth, sessions, API keys | 02 | 01 | 001 |
 | Editor | EDIT | Canvas editor, drag-resize, export | 02 | 01 | 001 |
-| AI | AI | GPT-4o, Ideogram, generation pipeline, refinement | 08 | 35 | 043 |
+| AI | AI | GPT-4o, Ideogram, generation pipeline, refinement | 08 | 35 | 052 |
 | Usage | USAGE | Usage tracking, analytics, limit alerts | 01 | 01 | 001 |
 | Infrastructure | INFRA | Railway, Sentry, DB migrations, CI/CD | 02 | 01 | 001 |
 | Organisation | ORG | Teams, workspace, multi-user, brand kit | 01 | 01 | 001 |
@@ -111,7 +111,7 @@ npm run dev starts:
 | Mobile | MOBILE | React Native / PWA mobile app | 01 | 01 | 001 |
 | Listing Kits | KIT | Multi-format kits, lifecycle, recurring content, compliance | 02 | 05 | 007 |
 | Generation Quality | GEN | Image-generation pipeline quality, prompt engineering, cost control | 02 | 03 | 003 |
-| Launch Readiness | LAUNCH | Go-live ops: live payments, transactional email, legal pages, beta gating, metering policy, env/secrets management | 02 | 07 | 015 |
+| Launch Readiness | LAUNCH | Go-live ops: live payments, transactional email, legal pages, beta gating, metering policy, env/secrets management | 02 | 07 | 016 |
 
 > To add a new domain: append a row here, pick an unused 2-6 char UPPERCASE prefix, start all counters at `01` / `001`.
 

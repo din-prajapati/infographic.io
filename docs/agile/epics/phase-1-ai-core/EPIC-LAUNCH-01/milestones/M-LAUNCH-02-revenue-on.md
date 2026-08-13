@@ -22,10 +22,11 @@ The first real rupee can be collected defensibly: live RazorPay checkout → web
 | 2 | [US-LAUNCH-006](../stories/US-LAUNCH-006/STORY.md) | Payment receipt email on subscription charge | US-LAUNCH-002 | ✅ Done | `fa1d345` |
 | 2 | [US-LAUNCH-012](../stories/US-LAUNCH-012/STORY.md) | Payment-failed (dunning) email notification | US-LAUNCH-002 | ✅ Done | `fa1d345` |
 | 2 | [US-LAUNCH-013](../stories/US-LAUNCH-013/STORY.md) | Subscription renewal reminder email (3-day notice) | US-LAUNCH-002 | ✅ Done | `fa1d345`+`5c52dc0` |
+| 3 | [US-LAUNCH-015](../stories/US-LAUNCH-015/STORY.md) | Editable-design monetization (FREE gate + extra-compose credits) | US-AI-048 | 🔲 Not Started | — |
 
 > Closed 2026-07-29. All five merged directly to `main` — no PR was opened for any of them (documented as an explicit DoD exception on each STORY.md, consistent with this repo's precedent for US-LAUNCH-001/002/003/009/010/011). Each story's remaining manual test case(s) that require a real ₹ transaction (US-LAUNCH-006/012/013) are documented DoD exceptions, not silently dropped — they'll be exercised the first time US-LAUNCH-005 AC6 runs. US-LAUNCH-007's manual TCs were independently verified live on production 2026-07-29 (no transaction needed).
 >
-> **US-LAUNCH-005 is the only story keeping this milestone open** — AC5 (`verify:payment-prereqs` against prod) and AC6 (one real ₹ transaction + refund) remain, the latter intentionally deferred.
+> **US-LAUNCH-005 remains the only story blocking this milestone's original closure claim** — AC5/AC6 (real ₹ transaction) still open. **US-LAUNCH-015 was added 2026-08-13**, after editable canvas generation went live — a new pricing gap (editable composes cost $0.09/call with no cache and no tier gate; worst-case TEAM margin measured at 8%) discovered the same day, not a reopening of the original five. It has its own dependency (US-AI-048) and does not block US-LAUNCH-005's path to closure.
 
 > US-LAUNCH-006, US-LAUNCH-007, and US-LAUNCH-012 all touch `payments.service.ts` (cluster C2) — `orion run next` will correctly withhold parallel eligibility among these three even though there's no formal Blocked-By between them; that's the file-overlap engine working as designed, not a bug. US-LAUNCH-013 touches a new file (`renewal-reminder.service.ts`) + schema + `app.module.ts` — not in cluster C2, safe to run parallel to the other three.
 
