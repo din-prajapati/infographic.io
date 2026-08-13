@@ -16,6 +16,30 @@ import {
 import { ComposedDesign, ListingField } from '../types/composed-design.types';
 import { mapBlocksToFields } from './text-block.mapper';
 
+/**
+ * Return a stable cache key for a (generation, variation) pair.
+ *
+ * Signed CDN URLs (Ideogram, S3-compatible) carry ephemeral `exp` and `sig` query
+ * params that rotate every ~24 h. Stripping them collapses all presigns of the
+ * same underlying image to one key so the cache survives URL refresh. A plain
+ * baseURL also resolves correctly — searchParams.delete() is a no-op when the
+ * param is absent.
+ *
+ * If URL parsing fails (malformed input) we fall back to the raw string — the
+ * cache may miss on signature rotation, but this is safer than throwing.
+ */
+export function composeCacheKey(imageUrl: string): string {
+  try {
+    const u = new URL(imageUrl);
+    u.searchParams.delete('exp');
+    u.searchParams.delete('sig');
+    return u.toString();
+  } catch {
+    // Malformed URL — use as-is; misses are acceptable, errors are not.
+    return imageUrl;
+  }
+}
+
 @Injectable()
 export class AiOrchestrator {
   constructor(
@@ -369,6 +393,25 @@ export class AiOrchestrator {
     const t0 = Date.now();
     logGen({ generationId: infographicId, event: 'edit:extract:start', imageUrl });
 
+    // ── Cache check (AC1, AC2, AC3, AC6) ────────────────────────────────────
+    // Fetch composedDesigns from DB. This is a single extra read that saves the
+    // $0.09 layerize call and the 40–70 s wait on every re-compose of a variation
+    // the user has already opened. Key is the stable base URL (exp/sig stripped).
+    const cacheKey = composeCacheKey(imageUrl);
+    const record = await this.prisma.infographic.findUnique({
+      where: { id: infographicId },
+      select: { composedDesigns: true },
+    });
+    const cachedDesigns = (record?.composedDesigns as Record<string, ComposedDesign> | null) ?? {};
+    if (cacheKey in cachedDesigns) {
+      logGen({
+        generationId: infographicId,
+        event: 'edit:compose:cache-hit',
+        durationMs: elapsed(t0),
+      });
+      return cachedDesigns[cacheKey];
+    }
+
     // Build canonical values from the application's own listing record (AC8).
     // headline may be absent if the user did not supply one and the LLM value was
     // not persisted — in that case the headline block will fall through to role/fallback.
@@ -435,12 +478,34 @@ export class AiOrchestrator {
       );
     }
 
-    return {
+    // ── Cache write (AC4, AC5, AC7) ─────────────────────────────────────────
+    // Persist the freshly-extracted result so subsequent compose calls for the same
+    // variation hit the cache instead of paying $0.09 again. The degraded path
+    // (extractionResult null) already returned above — we never reach this point
+    // on a failed extraction, so the null case is structurally excluded (AC5).
+    //
+    // Non-fatal: if the Prisma update fails the caller still receives the freshly
+    // extracted design. The next request will re-extract and retry the write (AC7).
+    const result: ComposedDesign = {
       backgroundUrl,
       elements,
       extraction: { attempted: true, blocksDetected: blocks.length, matched },
       canonicalValues: canonical,
     };
+    try {
+      const existingCache = (record?.composedDesigns as Record<string, ComposedDesign> | null) ?? {};
+      await this.prisma.infographic.update({
+        where: { id: infographicId },
+        data: { composedDesigns: { ...existingCache, [cacheKey]: result } as any },
+      });
+    } catch (cacheWriteErr: any) {
+      logGen(
+        { generationId: infographicId, event: 'edit:compose:cache-write:error', error: cacheWriteErr?.message },
+        'warn',
+      );
+    }
+
+    return result;
   }
 
   private getVariationDescription(index: number, style?: string): string {

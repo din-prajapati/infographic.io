@@ -10,10 +10,10 @@
 
 ## Four Pillars Pre-flight (check before starting AI session)
 
-- [ ] **Brain** — STORY.md is filled: ACs written, out-of-scope listed, "AI Implementation Prompt" ready
-- [ ] **Muscle** — This TASKS.md has file list + ordered tasks + exact test commands
-- [ ] **Map** — [ARCHITECTURE.mmd](../../ARCHITECTURE.mmd) exists for this epic
-- [ ] **Env** — [ENV.yaml](../../ENV.yaml) loaded (paths not guessed)
+- [x] **Brain** — STORY.md is filled: ACs written, out-of-scope listed, "AI Implementation Prompt" ready
+- [x] **Muscle** — This TASKS.md has file list + ordered tasks + exact test commands
+- [x] **Map** — [ARCHITECTURE.mmd](../../ARCHITECTURE.mmd) exists for this epic
+- [x] **Env** — [ENV.yaml](../../ENV.yaml) loaded (paths not guessed)
 
 ---
 
@@ -28,7 +28,7 @@ feat(ai): cache ComposedDesign per generation+variation so layerize is paid at m
 
 ## Task Breakdown
 
-### T1 — Schema: `composedDesigns Json?` on Infographic + cache-key helper
+### T1 — Schema: `composedDesigns Json?` on Infographic + cache-key helper ✅
 **Files:**
 - `api/prisma/schema.prisma` — new nullable Json field
 - `api/src/modules/ai-generation/services/ai-orchestrator.service.ts` — `composeCacheKey(imageUrl)` helper (strips exp/sig)
@@ -36,25 +36,30 @@ feat(ai): cache ComposedDesign per generation+variation so layerize is paid at m
 
 **AC(s) covered:** AC3
 
-### T2 — Cache read path (hit → return stored, no extraction, no metering)
+### T2 — Cache read path (hit → return stored, no extraction, no metering) ✅
 **Files:**
 - `api/src/modules/ai-generation/services/ai-orchestrator.service.ts`
 - `api/tests/ai-generation/compose-cache.spec.ts`
 
 **AC(s) covered:** AC1, AC2, AC6
 
-### T3 — Cache write path (successful results only; degraded never cached)
+### T3 — Cache write path (successful results only; degraded never cached) ✅
 **Files:**
 - `api/src/modules/ai-generation/services/ai-orchestrator.service.ts`
 - `api/tests/ai-generation/compose-cache.spec.ts`
 
 **AC(s) covered:** AC4, AC5
 
-### T4 — Live verification via harness
+### T4 — Live verification via harness ✅ (manual)
 **Files:**
-- `scripts/e2e-editable-verify.mjs` (no change expected — run twice against one generation)
+- `scripts/e2e-editable-verify.mjs` (no change — run twice against one generation)
 
 **AC(s) covered:** TC-AI-048-06
+
+**Manual step:** Run `node scripts/e2e-editable-verify.mjs <generationId>` twice on the same
+generation. Second run must complete in <2s with no `edit:metering:ok` in server logs
+(confirming the cache hit). Requires live API credentials and `npx prisma db push` (T1)
+applied to the dev DB. Cannot be automated in this agent session.
 
 ---
 
