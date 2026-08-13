@@ -50,11 +50,16 @@ feat(ai): cache ComposedDesign per generation+variation so layerize is paid at m
 
 **AC(s) covered:** AC4, AC5
 
-### T4 — Live verification via harness
+### T4 — Live verification via harness ✅ (manual)
 **Files:**
-- `scripts/e2e-editable-verify.mjs` (no change expected — run twice against one generation)
+- `scripts/e2e-editable-verify.mjs` (no change — run twice against one generation)
 
 **AC(s) covered:** TC-AI-048-06
+
+**Manual step:** Run `node scripts/e2e-editable-verify.mjs <generationId>` twice on the same
+generation. Second run must complete in <2s with no `edit:metering:ok` in server logs
+(confirming the cache hit). Requires live API credentials and `npx prisma db push` (T1)
+applied to the dev DB. Cannot be automated in this agent session.
 
 ---
 
