@@ -13,6 +13,8 @@ The agent's uploaded listing photo becomes the **source image** for the composit
 | US-AI-031 | Real property photo as composition source | 🟡 AC2–AC7 verified; AC1 gated on Ideogram credit |
 | US-AI-031b | Layer extraction and canonical text rendering | 🟡 AC2–AC9 verified; AC1 gated on Ideogram credit |
 
+> **US-AI-033** moved to [EPIC-AI-08](../../../phase-4-backlog/EPIC-AI-08/EPIC.md) 2026-08-11 (scope under review, no longer in this milestone). Reconciled from a stale `origin/main` snapshot (`ef5adda`) that predated the move.
+
 ## Definition of Done
 - [ ] Generation with an uploaded photo produces output whose background is recognizably that photo
 - [ ] **Every canonical listing value renders exactly** — headline, address, price, stats, agent, brokerage. Note this is now a *deterministic rendering* property, not a verification of model output: the application typesets the text, so correctness no longer depends on the image model. The previous wording ("exact-text verification still passes on photo-backed generations") described `verifyAndRepairV4JsonPrompt`, which cannot run on this path at all.

@@ -41,6 +41,8 @@
 | [US-AI-050](stories/US-AI-050/STORY.md) | Progress affordance for the editable compose wait | M-AI-18 | S | 🔲 Not Started | — |
 | [US-AI-051](stories/US-AI-051/STORY.md) | Text-free background for real-photo + editable | M-AI-18 | M | 🔲 Not Started | — |
 
+> **US-AI-033** (synthetic-content guard) moved to [EPIC-AI-08](../../phase-4-backlog/EPIC-AI-08/EPIC.md) 2026-08-11 — scope under review, no longer tracked in this epic. `origin/main`'s snapshot of this table (merged from `ef5adda` on 2026-08-13) predated that move; reconciled here.
+
 ---
 
 ## Features in this Epic
