@@ -8,10 +8,10 @@
 
 ## Four Pillars Pre-flight
 
-- [ ] **Brain** — STORY.md filled
-- [ ] **Muscle** — this file has tasks + test commands
-- [ ] **Map** — ARCHITECTURE.mmd current
-- [ ] **Env** — ENV.yaml loaded
+- [x] **Brain** — STORY.md filled
+- [x] **Muscle** — this file has tasks + test commands
+- [x] **Map** — ARCHITECTURE.mmd current
+- [x] **Env** — ENV.yaml loaded
 
 ---
 
@@ -25,7 +25,7 @@ feat(editor): map extracted font identifiers to real fonts on the editable canva
 
 ## Task Breakdown
 
-### T1 — fontMap.ts mapper + spec
+### T1 — fontMap.ts mapper + spec ✅
 **Files:** `client/src/lib/fontMap.ts` (new), `client/src/lib/__tests__/fontMap.spec.ts` (new)
 **AC(s):** AC1, AC2
 
