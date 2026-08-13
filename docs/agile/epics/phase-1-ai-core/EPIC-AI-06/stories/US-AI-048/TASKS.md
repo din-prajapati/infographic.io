@@ -36,7 +36,7 @@ feat(ai): cache ComposedDesign per generation+variation so layerize is paid at m
 
 **AC(s) covered:** AC3
 
-### T2 — Cache read path (hit → return stored, no extraction, no metering)
+### T2 — Cache read path (hit → return stored, no extraction, no metering) ✅
 **Files:**
 - `api/src/modules/ai-generation/services/ai-orchestrator.service.ts`
 - `api/tests/ai-generation/compose-cache.spec.ts`

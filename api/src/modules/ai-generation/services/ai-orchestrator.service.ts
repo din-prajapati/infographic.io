@@ -393,6 +393,25 @@ export class AiOrchestrator {
     const t0 = Date.now();
     logGen({ generationId: infographicId, event: 'edit:extract:start', imageUrl });
 
+    // ── Cache check (AC1, AC2, AC3, AC6) ────────────────────────────────────
+    // Fetch composedDesigns from DB. This is a single extra read that saves the
+    // $0.09 layerize call and the 40–70 s wait on every re-compose of a variation
+    // the user has already opened. Key is the stable base URL (exp/sig stripped).
+    const cacheKey = composeCacheKey(imageUrl);
+    const record = await this.prisma.infographic.findUnique({
+      where: { id: infographicId },
+      select: { composedDesigns: true },
+    });
+    const cachedDesigns = (record?.composedDesigns as Record<string, ComposedDesign> | null) ?? {};
+    if (cacheKey in cachedDesigns) {
+      logGen({
+        generationId: infographicId,
+        event: 'edit:compose:cache-hit',
+        durationMs: elapsed(t0),
+      });
+      return cachedDesigns[cacheKey];
+    }
+
     // Build canonical values from the application's own listing record (AC8).
     // headline may be absent if the user did not supply one and the LLM value was
     // not persisted — in that case the headline block will fall through to role/fallback.
