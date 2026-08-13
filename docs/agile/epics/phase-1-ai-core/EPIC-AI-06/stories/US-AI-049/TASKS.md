@@ -33,7 +33,7 @@ feat(editor): map extracted font identifiers to real fonts on the editable canva
 **Files:** `client/src/lib/canvasState.ts`, `client/index.html` (or `index.css`), `api/tests/canvas/canvasState.helpers.spec.ts` (update)
 **AC(s):** AC3, AC4
 
-### T3 — Live harness verification + screenshot
+### T3 — Live harness verification + screenshot ⏸ (deferred — PROBE_TOKEN not available in CI/worktree)
 **Files:** none (run `scripts/e2e-editable-verify.mjs`); store screenshot in this story dir
 **AC(s):** AC5
 
