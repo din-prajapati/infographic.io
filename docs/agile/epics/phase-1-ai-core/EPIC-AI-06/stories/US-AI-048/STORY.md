@@ -30,12 +30,13 @@ Caching per (generation, variation image) caps editable cost at $0.09 × distinc
 
 ## Acceptance Criteria
 
-- [ ] **AC1:** `POST /api/v1/infographics/generations/:id/compose` for a (generation, imageUrl) pair that has a stored result returns it **without** calling `LayerExtractionService.extractTextGeometry` (assert provider mock not called on second request).
-- [ ] **AC2:** The cached path does **not** increment `costUsd` on the UsageRecord — only a real layerize call meters $0.09 (`edit:metering:ok` absent from logs on cache hit; `costUsd` unchanged in DB).
-- [ ] **AC3:** Compose results are stored on the `Infographic` record in a `composedDesigns Json?` field keyed by variation imageUrl (URL stripped of `exp`/`sig` query params, since ephemeral signatures rotate while the image identity does not) — verified by a round trip: compose, read record, compose again.
-- [ ] **AC4:** Distinct variations of the same generation each trigger exactly one provider call — composing variation A then B then A again = exactly 2 `extract:start` events for that generation.
-- [ ] **AC5:** A **degraded** extraction result (provider failure → `blocksDetected:0, elements:[]`) is **not** cached — a retry after provider recovery performs a fresh extraction (transient failure must not become permanent).
-- [ ] **AC6:** Cache hit is logged as a structured event `edit:compose:cache-hit` with `generationId` and `durationMs`, so the hit rate is measurable (Observability rules).
+- [ ] **AC1 [happy-path]:** `POST /api/v1/infographics/generations/:id/compose` for a (generation, imageUrl) pair that has a stored result returns it **without** calling `LayerExtractionService.extractTextGeometry` (assert provider mock not called on second request).
+- [ ] **AC2 [idempotency]:** The cached path does **not** increment `costUsd` on the UsageRecord — only a real layerize call meters $0.09 (`edit:metering:ok` absent from logs on cache hit; `costUsd` unchanged in DB).
+- [ ] **AC3 [edge-case]:** Compose results are stored on the `Infographic` record in a `composedDesigns Json?` field keyed by variation imageUrl (URL stripped of `exp`/`sig` query params, since ephemeral signatures rotate while the image identity does not) — verified by a round trip: compose, read record, compose again.
+- [ ] **AC4 [idempotency]:** Distinct variations of the same generation each trigger exactly one provider call — composing variation A then B then A again = exactly 2 `extract:start` events for that generation.
+- [ ] **AC5 [regression]:** A **degraded** extraction result (provider failure → `blocksDetected:0, elements:[]`) is **not** cached — a retry after provider recovery performs a fresh extraction (transient failure must not become permanent).
+- [ ] **AC6 [happy-path]:** Cache hit is logged as a structured event `edit:compose:cache-hit` with `generationId` and `durationMs`, so the hit rate is measurable (Observability rules).
+- [ ] **AC7 [error-path]:** When the Prisma update that persists `composedDesigns` on the `Infographic` record (in `ai-orchestrator.service.ts`) throws after a successful extraction, then `composeDesignForEdit()` still returns the freshly-extracted `ComposedDesign` to the caller and logs the persistence failure — a cache-write error must not fail the user-facing compose request, and the next request retries the write rather than serving a phantom cache entry.
 
 ---
 
@@ -99,6 +100,7 @@ Implementation rules:
 | TC-AI-048-04 | Auto | P1 | Given a degraded extraction (null), when composed again, then extraction IS retried (AC5) | 🔲 | |
 | TC-AI-048-05 | Auto | P1 | Compose A, B, A → exactly two extract:start events (AC4) | 🔲 | |
 | TC-AI-048-06 | Manual | P1 | Live: second "Use This" click on the same variation loads in <2s with no `edit:metering:ok` in server logs (AC1/2/6) | 🔲 | |
+| TC-AI-048-07 | Auto | P0 | error-path: Prisma update to persist `composedDesigns` throws after a successful extraction, when compose is called, then the freshly-extracted `ComposedDesign` is still returned to the caller and the persistence failure is logged (AC7) | 🔲 | |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 

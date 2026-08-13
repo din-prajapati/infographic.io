@@ -27,11 +27,12 @@ Layerize returns provider font identifiers (`Montserrat-Bold.ttf`, `Montserrat-M
 
 ## Acceptance Criteria
 
-- [ ] **AC1:** A pure function `mapExtractedFont(fontName, alternatives?) → { family, weight }` converts provider identifiers to CSS-resolvable families: `Montserrat-Bold.ttf` → `{ family: 'Montserrat', weight: 700 }`, `-SemiBold` → 600, `-Medium` → 500, `-Light` → 300, no suffix → 400 — unit-tested against every identifier observed in the 2026-08-13 payloads.
-- [ ] **AC2:** Unrecognisable identifiers (e.g. `IMFeFCrm28P.ttf`) fall back through `font_alternatives` (first `font__{slug}__{weight}` entry parsed the same way) and only then to Inter — never a browser default serif.
-- [ ] **AC3:** The mapped families used by extraction (at minimum: Montserrat, Playfair Display) are loaded in the editor (Google Fonts link or self-hosted) so mapped names actually resolve — verified via `document.fonts.check()` in a browser run.
-- [ ] **AC4:** `loadComposedDesignToCanvas` applies `{ family, weight }` to each TextElement (`fontFamily` + `fontWeight`/`bold`) instead of storing the raw `.ttf` string — covered by an updated helper spec.
-- [ ] **AC5:** Live re-verify with `scripts/e2e-editable-verify.mjs`: the price block renders on one line matching the preview (the "₹1.9 / Cr" wrap is gone) — screenshot recorded in the story dir.
+- [ ] **AC1 [happy-path]:** A pure function `mapExtractedFont(fontName, alternatives?) → { family, weight }` converts provider identifiers to CSS-resolvable families: `Montserrat-Bold.ttf` → `{ family: 'Montserrat', weight: 700 }`, `-SemiBold` → 600, `-Medium` → 500, `-Light` → 300, no suffix → 400 — unit-tested against every identifier observed in the 2026-08-13 payloads.
+- [ ] **AC2 [error-path]:** Unrecognisable identifiers (e.g. `IMFeFCrm28P.ttf`) fall back through `font_alternatives` (first `font__{slug}__{weight}` entry parsed the same way) and only then to Inter — never a browser default serif.
+- [ ] **AC3 [happy-path]:** The mapped families used by extraction (at minimum: Montserrat, Playfair Display) are loaded in the editor (Google Fonts link or self-hosted) so mapped names actually resolve — verified via `document.fonts.check()` in a browser run.
+- [ ] **AC4 [happy-path]:** `loadComposedDesignToCanvas` applies `{ family, weight }` to each TextElement (`fontFamily` + `fontWeight`/`bold`) instead of storing the raw `.ttf` string — covered by an updated helper spec.
+- [ ] **AC5 [regression]:** Live re-verify with `scripts/e2e-editable-verify.mjs`: the price block renders on one line matching the preview (the "₹1.9 / Cr" wrap is gone) — screenshot recorded in the story dir.
+- [ ] **AC6 [edge-case]:** Given a `font_alternatives` array that is present but empty, or contains only entries that fail the `font__{slug}__{weight}` pattern, when `mapExtractedFont` in `client/src/lib/fontMap.ts` is called with an unrecognized primary identifier and that alternatives list, then it returns `{ family: 'Inter', weight: 400 }` without throwing — unit-tested with both an empty `font_alternatives` array and an array whose every entry is unparseable.
 
 ---
 
@@ -82,6 +83,7 @@ Rules: only listed files; out-of-scope is law; tests ship with their task's comm
 | TC-AI-049-02 | Auto | P0 | Garbage identifier + alternatives list → first alternative parsed; no alternatives → Inter 400 (AC2) | 🔲 | |
 | TC-AI-049-03 | Auto | P1 | Loader spec: TextElement gets mapped family/weight, never a raw `.ttf` string (AC4) | 🔲 | |
 | TC-AI-049-04 | Manual | P1 | Live harness run: price renders one line; fonts visually match preview (AC3/5) | 🔲 | |
+| TC-AI-049-05 | Auto | P1 | edge-case: empty or fully-unparseable `font_alternatives` list falls back to Inter 400 without throwing (AC6) | 🔲 | |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 

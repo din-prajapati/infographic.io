@@ -27,11 +27,12 @@ Live-measured layerize-text latency on 2026-08-13: 15s, 39s, 62s (timeout), 40�
 
 ## Acceptance Criteria
 
-- [ ] **AC1:** While `POST /:id/compose` is in flight, the loading affordance shows elapsed time or a step label (not just a static spinner) — e.g. "Extracting text layers… 12s" — updated at least once per 5s.
-- [ ] **AC2:** If the request exceeds 20s, the message changes to acknowledge the wait explicitly (e.g. "Still working — this can take up to a minute for detailed designs") rather than staying on the initial toast copy.
-- [ ] **AC3:** The user can still cancel back to flat at any point during the wait (existing "Applied"/flat behaviour unaffected) — a cancel/dismiss control is reachable, not just a wait-it-out spinner.
-- [ ] **AC4:** On the 90s server timeout (US-AI-031b's `LAYERIZE_TIMEOUT_MS`) the client's own request timeout is ≥ the server's, so the client never times out first and shows a false failure while the server is still legitimately working.
-- [ ] **AC5:** Both surfaces (Quick Generate sidebar, AI Chat "Edit" action) show the same affordance — reuse one component/hook, not two implementations (consistent with US-AI-047's shared-state precedent).
+- [ ] **AC1 [happy-path]:** While `POST /:id/compose` is in flight, the loading affordance shows elapsed time or a step label (not just a static spinner) — e.g. "Extracting text layers… 12s" — updated at least once per 5s.
+- [ ] **AC2 [happy-path]:** If the request exceeds 20s, the message changes to acknowledge the wait explicitly (e.g. "Still working — this can take up to a minute for detailed designs") rather than staying on the initial toast copy.
+- [ ] **AC3 [regression]:** The user can still cancel back to flat at any point during the wait (existing "Applied"/flat behaviour unaffected) — a cancel/dismiss control is reachable, not just a wait-it-out spinner.
+- [ ] **AC4 [error-path]:** On the 90s server timeout (US-AI-031b's `LAYERIZE_TIMEOUT_MS`) the client's own request timeout is ≥ the server's, so the client never times out first and shows a false failure while the server is still legitimately working.
+- [ ] **AC5 [happy-path]:** Both surfaces (Quick Generate sidebar, AI Chat "Edit" action) show the same affordance — reuse one component/hook, not two implementations (consistent with US-AI-047's shared-state precedent).
+- [ ] **AC6 [edge-case]:** When the component consuming `useComposeProgress` (`RightSidebar.tsx` or `AIChatBox.tsx`) unmounts or the user navigates away before `POST /:id/compose` resolves, `useComposeProgress.ts`'s internal interval/timeout is cleared on cleanup and no state update is attempted after unmount — verified by no lingering timer and no React "state update on an unmounted component" warning in the test run.
 
 ---
 
@@ -85,6 +86,7 @@ Rules: only listed files; out-of-scope is law; tests ship with their task's comm
 | TC-AI-050-03 | Manual | P0 | Live: click Editable on Quick Generate, observe elapsed-time UI update, wait through completion (AC1/2/5) | 🔲 | |
 | TC-AI-050-04 | Manual | P1 | Live: same on AI Chat "Edit" action — identical affordance (AC5) | 🔲 | |
 | TC-AI-050-05 | Manual | P2 | Cancel mid-wait returns to a usable flat state (AC3) | 🔲 | |
+| TC-AI-050-06 | Auto | P1 | edge-case: useComposeProgress clears its timer and skips state updates when the consuming component unmounts mid-wait, no unmounted-component warning (AC6) | 🔲 | |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 
