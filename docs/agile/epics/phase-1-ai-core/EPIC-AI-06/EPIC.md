@@ -76,6 +76,12 @@
 
 ## Implementation Update (log)
 
+### 2026-08-13 — US-AI-050 implementation complete (pre-PR)
+- **Files touched:** `client/src/hooks/useComposeProgress.ts` (new), `client/src/hooks/__tests__/useComposeProgress.spec.ts` (new), `client/src/components/editor/RightSidebar.tsx`, `client/src/components/ai-chat/AIChatBox.tsx`, `client/src/lib/api.ts`, `client/src/lib/__tests__/api.spec.ts` (new)
+- **ACs covered:** AC1, AC2, AC4, AC5, AC6 (AC3 deferred to /test-story — requires live browser verification that the render-mode toggle remains accessible during compose and constitutes the "cancel/dismiss control")
+- **Commits:** 3 on branch `feat/ai/us-ai-050-editable-latency-affordance` (T1: hook + spec, T2: wire both surfaces, T3: client timeout + api spec)
+- **Notes:** (1) `@testing-library/react` is not installed — hook tests use pure exported helpers (`buildLabel`, constants) and manual interval simulation instead of `renderHook`. This follows the project's option-(b) canvas-test policy. (2) The AIChatBox toast updates via Sonner's id-keyed update: each `composeProgress.label` change calls `toast.info(label, { id: 'compose-progress', duration: Infinity })` — Sonner replaces the existing toast content in place. (3) `COMPOSE_REQUEST_TIMEOUT_MS = 120_000` (client) vs `LAYERIZE_TIMEOUT_MS = 90_000` (server) — 30s safety margin. `AbortSignal.timeout()` passes the signal into `fetch` via `apiRequest`'s `RequestInit` options. (4) The `mounted` guard in `useComposeProgress`'s cleanup function prevents any post-unmount `setElapsed` call — verified by the interval-cleanup-contract describe block.
+
 ### 2026-08-13 — Editable canvas WORKING end-to-end in the browser (first time)
 - **What happened:** First-ever live browser execution of the full editable chain surfaced three root causes that unit tests could not see, all fixed and re-verified live the same session.
 - **Root cause 1 — generation id destroyed at completion (both surfaces):** RightSidebar and AIChatBox null their in-flight generation id when a generation completes (correct — it tears down the WS subscription), but the editable path read the same state at click time. `planVariationLoad` therefore degraded to flat with `no generation id` on 100% of clicks — the editable feature was structurally unreachable from both surfaces despite US-AI-032/043/046/047 all being individually correct. Fix: `resultsGenerationId` travels with the variations it belongs to (commit `eeb0de1`).
