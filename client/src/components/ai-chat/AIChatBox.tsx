@@ -39,6 +39,7 @@ import {
 } from "./testConversationsData";
 import { planVariationLoad } from "@/lib/layout/loadVariation";
 import { useGenerationPrefs } from "@/hooks/useGenerationPrefs";
+import { useComposeProgress } from "@/hooks/useComposeProgress";
 import {
   generationsApi,
   extractionsApi,
@@ -144,6 +145,27 @@ export function AIChatBox({
    */
   const renderMode = useGenerationPrefs((s) => s.renderMode);
   const setRenderMode = useGenerationPrefs((s) => s.setRenderMode);
+
+  // US-AI-050 — tracks whether POST /:id/compose is in flight for the Edit action.
+  // Active only in editable mode while the compose call is running.
+  const [composeInFlight, setComposeInFlight] = useState(false);
+  const composeProgress = useComposeProgress(
+    composeInFlight && renderMode === "editable",
+  );
+
+  // US-AI-050 — update the compose-progress toast as the label changes (AC1/AC2).
+  // Sonner updates the existing toast when the same id is passed again.
+  // The toast is dismissed when compose finishes (setComposeInFlight(false)).
+  useEffect(() => {
+    if (!composeInFlight) {
+      toast.dismiss("compose-progress");
+      return;
+    }
+    toast.info(composeProgress.label, {
+      id: "compose-progress",
+      duration: Infinity,
+    });
+  }, [composeInFlight, composeProgress.label]);
 
   // Conversation history with previews
   const [conversationHistory, setConversationHistory] = useState<
@@ -1117,8 +1139,11 @@ export function AIChatBox({
     if (renderMode === 'editable' && resultsGenerationId) {
       // Editable path: fetch ComposedDesign (lazy extraction) then hand off.
       try {
+        // US-AI-050: start the elapsed-time progress tracker before the compose call.
+        setComposeInFlight(true);
         toast.info("Preparing editable design…", {
-          description: "Composing text layers — this takes a moment.",
+          description: "Extracting text layers — this takes a moment.",
+          id: "compose-progress",
         });
 
         // Shared with Quick Generate (US-AI-047) — one implementation of the
@@ -1145,8 +1170,11 @@ export function AIChatBox({
           emoji: "🎨",
           composedDesign: plan.composedDesign,
         };
+        // Stop the progress tracker before handing off to the canvas loader.
+        setComposeInFlight(false);
         onTemplateLoad(template);
       } catch (err: any) {
+        setComposeInFlight(false);
         console.error("[AIChatBox] Compose failed — falling back to flat", err);
         toast.error("Layer extraction failed", {
           description: "Loading as flat design instead.",

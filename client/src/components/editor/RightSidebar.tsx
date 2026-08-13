@@ -54,6 +54,7 @@ import { useGenerationWebSocket, GenerationProgress } from "../../hooks/useGener
 import { loadAiVariationToCanvas, loadComposedDesignToCanvas, deriveOrientationFromCanvas } from "../../lib/canvasState";
 import { planVariationLoad } from "@/lib/layout/loadVariation";
 import { useGenerationPrefs } from "@/hooks/useGenerationPrefs";
+import { useComposeProgress } from "@/hooks/useComposeProgress";
 
 type TabType = "design" | "property-details" | "agent-info";
 
@@ -303,6 +304,12 @@ export function RightSidebar() {
   // Previously renderMode was useState local to AIChatBox, which is why the
   // editable feature was unreachable from this (far more prominent) button.
   const renderMode = useGenerationPrefs((s) => s.renderMode);
+
+  // US-AI-050 — elapsed-time affordance while POST /:id/compose is in flight.
+  // Active only during editable mode loads; flat loads are instant and unaffected.
+  const composeProgress = useComposeProgress(
+    !!loadingVariationId && renderMode === "editable",
+  );
   const setRenderMode = useGenerationPrefs((s) => s.setRenderMode);
 
   const addElement = useCanvasStore((state) => state.addElement);
@@ -844,7 +851,9 @@ export function RightSidebar() {
                 ) : (
                   <CheckCircle2 className="w-4 h-4 mr-2" />
                 )}
-                Use This Design
+                {loadingVariationId === lightboxVariation.id && renderMode === "editable"
+                  ? composeProgress.label
+                  : "Use This Design"}
               </Button>
             </motion.div>
           </motion.div>
@@ -959,13 +968,25 @@ export function RightSidebar() {
                         disabled={loadingVariationId === variation.id}
                       >
                         {loadingVariationId === variation.id ? (
-                          <Loader2 className="w-3 h-3 animate-spin" />
+                          <>
+                            <Loader2 className="w-3 h-3 animate-spin shrink-0" />
+                            <span className="truncate">
+                              {renderMode === "editable"
+                                ? composeProgress.label
+                                : "Loading…"}
+                            </span>
+                          </>
                         ) : isSelected ? (
-                          <Check className="w-3 h-3" />
+                          <>
+                            <Check className="w-3 h-3" />
+                            Applied
+                          </>
                         ) : (
-                          <CheckCircle2 className="w-3 h-3" />
+                          <>
+                            <CheckCircle2 className="w-3 h-3" />
+                            Use This
+                          </>
                         )}
-                        {isSelected ? "Applied" : "Use This"}
                       </Button>
                       <Button
                         size="sm"
