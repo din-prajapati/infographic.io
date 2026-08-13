@@ -37,6 +37,7 @@ import {
   loadTestConversations,
   clearConversations,
 } from "./testConversationsData";
+import { composeFromCanonicalValues, orientationToCanvasSize } from "@/lib/layout/connectLayout";
 import {
   generationsApi,
   extractionsApi,
@@ -1108,6 +1109,31 @@ export function AIChatBox({
           currentGenerationId,
           variation.previewUrl,
         );
+
+        // Compose from our own listing values first (US-AI-043 layout engine).
+        //
+        // Layer extraction can only recover text that is visibly present on the
+        // background, and the composition step currently produces backgrounds
+        // with no text on them (see OQ-2 findings) — so it reliably finds
+        // nothing. The layout engine has no such dependency: deterministic,
+        // offline, and driven by the values the application already holds.
+        //
+        // Extraction stays as the fallback for the case it is actually good at:
+        // a background that genuinely carries text worth preserving.
+        const canvasSize = orientationToCanvasSize(generationOrientation);
+        const laidOut = composeFromCanonicalValues({
+          canonicalValues: (composed as any)?.canonicalValues,
+          backgroundUrl: (composed as any)?.backgroundUrl ?? variation.previewUrl,
+          canvas: canvasSize,
+        });
+
+        const finalComposed = laidOut ?? composed;
+        if (!laidOut) {
+          console.warn(
+            '[AIChatBox] No canonical values to lay out — using extraction result',
+          );
+        }
+
         const template: Template = {
           id: variation.id,
           name: variation.title || "AI Generated Design",
@@ -1117,7 +1143,7 @@ export function AIChatBox({
           isAiVariation: true,
           aiOrientation: generationOrientation,
           emoji: "🎨",
-          composedDesign: composed,
+          composedDesign: finalComposed,
         };
         onTemplateLoad(template);
       } catch (err: any) {

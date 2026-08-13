@@ -395,6 +395,10 @@ export class AiOrchestrator {
         backgroundUrl: imageUrl,
         elements: [],
         extraction: { attempted: true, blocksDetected: 0, matched: 0 },
+        // Still return the listing values: the client can compose a layout from
+        // them even though extraction found nothing. This is the common case —
+        // extraction has nothing to find when the background carries no text.
+        canonicalValues: canonical,
       };
     }
 
@@ -435,6 +439,7 @@ export class AiOrchestrator {
       backgroundUrl,
       elements,
       extraction: { attempted: true, blocksDetected: blocks.length, matched },
+      canonicalValues: canonical,
     };
   }
 
