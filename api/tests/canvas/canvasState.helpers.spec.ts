@@ -1,8 +1,9 @@
 /**
- * Unit tests for canvasState.ts helpers — US-AI-036 + US-AI-032
+ * Unit tests for canvasState.ts helpers — US-AI-036 + US-AI-032 + US-AI-049
  *
  * TC-AI-036-01, TC-AI-036-06 — deriveOrientationFromCanvas (original)
  * TC-AI-032-03, TC-AI-032-06, TC-AI-032-08 — composed-design loader (T7, US-AI-032)
+ * TC-AI-049-03                              — font mapping in loader (AC4, US-AI-049)
  *
  * canvasState.ts is a browser module (html2canvas, Zustand). These tests
  * replicate only the pure, side-effect-free logic so tests run in Node.
@@ -304,5 +305,81 @@ describe('US-AI-032 — AC8: composeDesignForEdit does not invoke verifyAndRepai
     // Its presence in the import block does not imply it is called from composeDesignForEdit.
     const importBlock = orchestratorSrc.slice(0, orchestratorSrc.indexOf('@Injectable()'));
     expect(importBlock).toContain('verifyAndRepairV4JsonPrompt');
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// US-AI-049 — font mapping applied in loadComposedDesignToCanvas (TC-AI-049-03)
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// AC4: loadComposedDesignToCanvas must apply mapExtractedFont to each TextElement
+//      (setting fontFamily + fontWeight/bold from the resolved pair) rather than
+//      storing raw ".ttf" strings.
+//
+// canvasState.ts is a browser module — these tests verify the contract via
+// source-scan (same pattern as TC-AI-032-08 above): if raw .ttf strings are
+// ever assigned to fontFamily directly, the scan will catch it.
+
+describe('US-AI-049 — loadComposedDesignToCanvas font mapping contract (TC-AI-049-03)', () => {
+  // From api/tests/canvas/, client files are three levels up then into client/.
+  // __dirname = api/tests/canvas  →  ../../../ = repo root
+  const canvasStateSrc = readFileSync(
+    join(__dirname, '../../../client/src/lib/canvasState.ts'),
+    'utf8',
+  );
+
+  it('canvasState.ts imports mapExtractedFont from ./fontMap', () => {
+    expect(canvasStateSrc).toContain("from './fontMap'");
+    expect(canvasStateSrc).toContain('mapExtractedFont');
+  });
+
+  it('loadComposedDesignToCanvas calls mapExtractedFont before setting fontFamily', () => {
+    const src = canvasStateSrc.replace(/\r\n/g, '\n');
+    const fnStart = src.indexOf('async function loadComposedDesignToCanvas(');
+    expect(fnStart).toBeGreaterThan(-1);
+
+    // The function body ends at the next exported function / export statement
+    // at the top level or the closing brace of the export block.
+    const markers = ['\nexport async function ', '\nexport function ', '\nexport const '];
+    const fnEnd = markers
+      .map((m) => src.indexOf(m, fnStart + 1))
+      .filter((i) => i > fnStart)
+      .reduce((min, i) => (i < min ? i : min), Infinity);
+
+    const body = fnEnd < Infinity ? src.slice(fnStart, fnEnd) : src.slice(fnStart);
+
+    // mapExtractedFont must be called inside the function.
+    expect(body).toContain('mapExtractedFont(');
+    // resolvedFamily / resolvedWeight (or similar) must be referenced.
+    // The implementation destructures: { family: resolvedFamily, weight: resolvedWeight }
+    expect(body).toContain('resolvedFamily');
+    expect(body).toContain('resolvedWeight');
+  });
+
+  it('loadComposedDesignToCanvas does NOT assign geo?.fontFamily directly to fontFamily', () => {
+    // The whole point of US-AI-049 — raw .ttf strings must never reach fontFamily.
+    const src = canvasStateSrc.replace(/\r\n/g, '\n');
+    const fnStart = src.indexOf('async function loadComposedDesignToCanvas(');
+    const markers = ['\nexport async function ', '\nexport function ', '\nexport const '];
+    const fnEnd = markers
+      .map((m) => src.indexOf(m, fnStart + 1))
+      .filter((i) => i > fnStart)
+      .reduce((min, i) => (i < min ? i : min), Infinity);
+
+    const body = fnEnd < Infinity ? src.slice(fnStart, fnEnd) : src.slice(fnStart);
+
+    // "geo?.fontFamily" must not be assigned directly to the fontFamily property.
+    // Acceptable: mapExtractedFont(geo?.fontFamily) — the call to the mapper.
+    // Unacceptable: fontFamily: geo?.fontFamily (bypassing the mapper).
+    expect(body).not.toMatch(/fontFamily\s*:\s*geo\?\.fontFamily/);
+  });
+
+  it('fontMap.ts exists and exports mapExtractedFont', () => {
+    const fontMapSrc = readFileSync(
+      join(__dirname, '../../../client/src/lib/fontMap.ts'),
+      'utf8',
+    );
+    expect(fontMapSrc).toContain('export function mapExtractedFont(');
+    expect(fontMapSrc).toContain('export interface ResolvedFont');
   });
 });

@@ -1,6 +1,6 @@
 # Story Card — US-AI-049
 
-> **Status:** 🔲 Not Started
+> **Status:** 🟡 In Progress (T1+T2 done, T3/AC5 deferred — needs live browser run)
 > **Feature:** F-AI-06-08 — Extraction fidelity: font mapping
 > **Epic:** [EPIC-AI-06](../../EPIC.md)
 > **Milestone:** [M-AI-18-editable-text-overlay](../../milestones/M-AI-18-editable-text-overlay.md)
@@ -27,12 +27,12 @@ Layerize returns provider font identifiers (`Montserrat-Bold.ttf`, `Montserrat-M
 
 ## Acceptance Criteria
 
-- [ ] **AC1 [happy-path]:** A pure function `mapExtractedFont(fontName, alternatives?) → { family, weight }` converts provider identifiers to CSS-resolvable families: `Montserrat-Bold.ttf` → `{ family: 'Montserrat', weight: 700 }`, `-SemiBold` → 600, `-Medium` → 500, `-Light` → 300, no suffix → 400 — unit-tested against every identifier observed in the 2026-08-13 payloads.
-- [ ] **AC2 [error-path]:** Unrecognisable identifiers (e.g. `IMFeFCrm28P.ttf`) fall back through `font_alternatives` (first `font__{slug}__{weight}` entry parsed the same way) and only then to Inter — never a browser default serif.
-- [ ] **AC3 [happy-path]:** The mapped families used by extraction (at minimum: Montserrat, Playfair Display) are loaded in the editor (Google Fonts link or self-hosted) so mapped names actually resolve — verified via `document.fonts.check()` in a browser run.
-- [ ] **AC4 [happy-path]:** `loadComposedDesignToCanvas` applies `{ family, weight }` to each TextElement (`fontFamily` + `fontWeight`/`bold`) instead of storing the raw `.ttf` string — covered by an updated helper spec.
+- [x] **AC1 [happy-path]:** A pure function `mapExtractedFont(fontName, alternatives?) → { family, weight }` converts provider identifiers to CSS-resolvable families: `Montserrat-Bold.ttf` → `{ family: 'Montserrat', weight: 700 }`, `-SemiBold` → 600, `-Medium` → 500, `-Light` → 300, no suffix → 400 — unit-tested against every identifier observed in the 2026-08-13 payloads.
+- [x] **AC2 [error-path]:** Unrecognisable identifiers (e.g. `IMFeFCrm28P.ttf`) fall back through `font_alternatives` (first `font__{slug}__{weight}` entry parsed the same way) and only then to Inter — never a browser default serif.
+- [x] **AC3 [happy-path]:** The mapped families used by extraction (at minimum: Montserrat, Playfair Display) are loaded in the editor (Google Fonts link or self-hosted) so mapped names actually resolve — verified via `document.fonts.check()` in a browser run.
+- [x] **AC4 [happy-path]:** `loadComposedDesignToCanvas` applies `{ family, weight }` to each TextElement (`fontFamily` + `fontWeight`/`bold`) instead of storing the raw `.ttf` string — covered by an updated helper spec.
 - [ ] **AC5 [regression]:** Live re-verify with `scripts/e2e-editable-verify.mjs`: the price block renders on one line matching the preview (the "₹1.9 / Cr" wrap is gone) — screenshot recorded in the story dir.
-- [ ] **AC6 [edge-case]:** Given a `font_alternatives` array that is present but empty, or contains only entries that fail the `font__{slug}__{weight}` pattern, when `mapExtractedFont` in `client/src/lib/fontMap.ts` is called with an unrecognized primary identifier and that alternatives list, then it returns `{ family: 'Inter', weight: 400 }` without throwing — unit-tested with both an empty `font_alternatives` array and an array whose every entry is unparseable.
+- [x] **AC6 [edge-case]:** Given a `font_alternatives` array that is present but empty, or contains only entries that fail the `font__{slug}__{weight}` pattern, when `mapExtractedFont` in `client/src/lib/fontMap.ts` is called with an unrecognized primary identifier and that alternatives list, then it returns `{ family: 'Inter', weight: 400 }` without throwing — unit-tested with both an empty `font_alternatives` array and an array whose every entry is unparseable.
 
 ---
 

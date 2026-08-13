@@ -8,6 +8,7 @@ import { exportCanvasToImage } from './canvasExport';
 import { useCanvasStore } from '../hooks/useCanvasStore';
 import type { ImageElement, TextElement, TextAlign } from './canvasTypes';
 import type { ComposedDesign } from './api';
+import { mapExtractedFont } from './fontMap';
 
 /**
  * Capture current canvas state as JSON.
@@ -556,6 +557,13 @@ export async function loadComposedDesignToCanvas(design: ComposedDesign): Promis
 
       const slotId = el.slot ? LISTING_FIELD_TO_SLOT[el.slot] : undefined;
 
+      // Map the provider font identifier to a CSS-resolvable family + weight.
+      // geo?.fontFamily may be "Montserrat-Bold.ttf" or an opaque hash like
+      // "IMFeFCrm28P.ttf" — neither is a valid CSS font-family value.
+      // mapExtractedFont resolves it; final fallback is Inter 400 (US-AI-049).
+      const { family: resolvedFamily, weight: resolvedWeight } =
+        mapExtractedFont(geo?.fontFamily);
+
       return {
         id: `composed-text-${Date.now()}-${index}`,
         type: 'text',
@@ -571,10 +579,10 @@ export async function loadComposedDesignToCanvas(design: ComposedDesign): Promis
         zIndex:         index + 1,
         name:           slotId ?? `Text ${index + 1}`,
         slot:           slotId,
-        fontFamily:     geo?.fontFamily  ?? GEO_DEFAULTS.fontFamily,
+        fontFamily:     resolvedFamily,
         fontSize:       safeFs,
-        fontWeight:     400,
-        bold:           false,
+        fontWeight:     resolvedWeight,
+        bold:           resolvedWeight >= 700,
         italic:         false,
         underline:      false,
         strikethrough:  false,

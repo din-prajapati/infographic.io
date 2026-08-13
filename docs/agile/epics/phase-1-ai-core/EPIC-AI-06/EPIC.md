@@ -37,7 +37,7 @@
 | [US-AI-032](stories/US-AI-032/STORY.md) | Editable listing canvas | M-AI-18 | L | 🟡 T1/T6 done; T2–T5 open | — |
 | [US-AI-043](stories/US-AI-043/STORY.md) | Layout engine (templates + flow renderer) | M-AI-18 | L | 🟡 Implementation complete (pre-PR) | — |
 | [US-AI-048](stories/US-AI-048/STORY.md) | Cache ComposedDesign per (generation, variation) | M-AI-18 | M | 🟡 Implementation complete (pre-PR) | — |
-| [US-AI-049](stories/US-AI-049/STORY.md) | Map extracted fonts to real editor typography | M-AI-18 | S | 🔲 Not Started | — |
+| [US-AI-049](stories/US-AI-049/STORY.md) | Map extracted fonts to real editor typography | M-AI-18 | S | 🟡 T1+T2 done; AC5 deferred | — |
 | [US-AI-050](stories/US-AI-050/STORY.md) | Progress affordance for the editable compose wait | M-AI-18 | S | 🟡 Implementation complete (pre-PR) | — |
 | [US-AI-051](stories/US-AI-051/STORY.md) | Text-free background for real-photo + editable | M-AI-18 | M | 🔲 Not Started | — |
 
@@ -75,6 +75,12 @@
 ---
 
 ## Implementation Update (log)
+
+### 2026-08-13 — US-AI-049 implementation complete (pre-PR)
+- **Files touched:** `client/src/lib/fontMap.ts` (new), `client/src/lib/__tests__/fontMap.spec.ts` (new), `client/src/lib/canvasState.ts`, `client/index.html`, `api/tests/canvas/canvasState.helpers.spec.ts`
+- **ACs covered:** AC1 (all observed identifiers unit-tested: Bold/SemiBold/Medium/Light/Regular/ExtraBold/ExtraLight/Thin/Black + no-suffix + multi-word family), AC2 (alternatives fallback via `font__{slug}__{weight}` parsing, final fallback Inter 400), AC3 (Montserrat + Playfair Display loaded via Google Fonts `<link>` in index.html), AC4 (source-scan + contract tests in canvasState.helpers.spec.ts confirm `mapExtractedFont` is called; raw `.ttf` assignment banned), AC6 (empty and fully-unparseable alternatives arrays → Inter 400 without throw — unit-tested). AC5 deferred — requires live browser run with `PROBE_TOKEN` + running dev server; not available in isolated worktree.
+- **Commits:** 2 on branch `feat/ai/us-ai-049-font-mapping`
+- **Notes:** (1) `font_alternatives` from the Ideogram raw payload is not yet surfaced through `ExtractedTextBlock` / `ComposedTextElement` — the mapper's `alternatives` param accepts it when available but `loadComposedDesignToCanvas` currently calls `mapExtractedFont(geo?.fontFamily)` without alternatives (pipeline gap, follow-up in layer-extraction.service.ts TBC). For the observed set (Montserrat, Playfair Display), the primary identifier parses correctly so this does not affect AC1/AC4. (2) 30 new client tests in `fontMap.spec.ts`; 4 new backend source-scan tests in `canvasState.helpers.spec.ts`. All tests pass. (3) `bold` field is now derived from `resolvedWeight >= 700` rather than hardcoded `false` — aligns the legacy bool with the numeric weight.
 
 ### 2026-08-13 — US-AI-048 implementation complete (pre-PR)
 - **Files touched:** `api/prisma/schema.prisma` (composedDesigns Json? on Infographic), `api/src/modules/ai-generation/services/ai-orchestrator.service.ts` (composeCacheKey helper + cache read/write in composeDesignForEdit), `api/tests/ai-generation/compose-cache.spec.ts` (new — 13 tests)
