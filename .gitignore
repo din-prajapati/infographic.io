@@ -74,3 +74,4 @@ archive/Images/
 # Pasted chat/LLM exports dropped at the root of .claude/. Named explicitly rather
 # than globbed, so tracked docs like .claude/skills/README.md are never caught.
 /.claude/Summarize the chat in markdown document along with.md
+.e2e-artifacts/
