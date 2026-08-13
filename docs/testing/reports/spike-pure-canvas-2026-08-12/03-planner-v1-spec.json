@@ -1,0 +1,103 @@
+{
+  "reasoning": "The photo's visual subject is the seating area and stairs, so the scrim is placed on the left.",
+  "scrim": {
+    "side": "left",
+    "widthPct": 35,
+    "color": "#000000",
+    "opacity": 0.9
+  },
+  "palette": {
+    "accent": "#FF5733",
+    "text": "#FFFFFF",
+    "muted": "#CCCCCC"
+  },
+  "elements": [
+    {
+      "slot": "headline",
+      "x": 50,
+      "y": 50,
+      "maxWidth": 800,
+      "fontSize": 48,
+      "weight": 700,
+      "color": "#FFFFFF",
+      "align": "left",
+      "onScrim": true
+    },
+    {
+      "slot": "price",
+      "x": 50,
+      "y": 120,
+      "maxWidth": 800,
+      "fontSize": 36,
+      "weight": 600,
+      "color": "#FF5733",
+      "align": "left",
+      "onScrim": true
+    },
+    {
+      "slot": "address",
+      "x": 50,
+      "y": 180,
+      "maxWidth": 800,
+      "fontSize": 24,
+      "weight": 400,
+      "color": "#FFFFFF",
+      "align": "left",
+      "onScrim": true
+    },
+    {
+      "slot": "agentName",
+      "x": 50,
+      "y": 240,
+      "maxWidth": 800,
+      "fontSize": 24,
+      "weight": 400,
+      "color": "#FFFFFF",
+      "align": "left",
+      "onScrim": true
+    },
+    {
+      "slot": "brokerage",
+      "x": 50,
+      "y": 300,
+      "maxWidth": 800,
+      "fontSize": 24,
+      "weight": 400,
+      "color": "#FFFFFF",
+      "align": "left",
+      "onScrim": true
+    },
+    {
+      "slot": "badge",
+      "x": 50,
+      "y": 360,
+      "maxWidth": 800,
+      "fontSize": 24,
+      "weight": 700,
+      "color": "#FF5733",
+      "align": "left",
+      "onScrim": true
+    },
+    {
+      "slot": "stats",
+      "x": 0,
+      "y": 1300,
+      "maxWidth": 2560,
+      "fontSize": 24,
+      "weight": 400,
+      "color": "#FFFFFF",
+      "align": "center",
+      "onScrim": false
+    }
+  ],
+  "decor": [
+    {
+      "type": "bar",
+      "x": 0,
+      "y": 1280,
+      "w": 2560,
+      "h": 60,
+      "color": "#000000"
+    }
+  ]
+}
