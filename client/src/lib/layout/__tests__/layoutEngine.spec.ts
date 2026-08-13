@@ -255,7 +255,14 @@ describe('TC-04 — overflow degradation: bounds respected, truncated text ends 
   // At that scale, typical text probably fits. Let's use corner-card's
   // headlineBlock which is only h=0.28 of 100 = 28px, and use a very
   // wide canvas so region width is narrow:
-  const narrowCanvas = { width: 40, height: 1440 }; // rw = 0.42×40 = 16.8px
+  // Was { width: 40, height: 1440 } — a 40px-wide canvas that forced overflow
+  // only because type scaled off height alone. Since the engine now scales by
+  // min(width/2560, height/1440), a tiny canvas correctly yields tiny type and
+  // nothing overflows, so that fixture no longer exercised degradation at all.
+  //
+  // Degradation is now triggered the way a real user triggers it: a normal
+  // canvas and a pathologically long value pasted into one slot.
+  const narrowCanvas = { width: 2560, height: 1440 };
 
   // scale=1 (height=1440). headlineBlock: rh=0.28×1440=403.2px, rw=16.8px.
   // idealSize=48, lineH=57.6. charWidth=48×0.55=26.4px per char.
@@ -266,8 +273,12 @@ describe('TC-04 — overflow degradation: bounds respected, truncated text ends 
   // minSize=28, lineH_min=33.6. Each char still one line. 60×33.6=2016 >> 403.2.
   // maxLines = floor(403.2/33.6) = 12. Truncate to 12 lines.
 
+  // ~640 chars. corner-card's headlineBlock is 1024x490px at 2560x1440; even
+  // shrunk to the 56px minimum this needs far more lines than fit, so it must
+  // shrink and then truncate.
   const veryLongHeadline =
-    'This is an extremely long headline that will definitely overflow any narrow region and require truncation';
+    'This is an extremely long headline that will definitely overflow the region and require truncation. '.repeat(6) +
+    'It keeps going well past any sensible listing headline so the degradation path is genuinely exercised.';
 
   it('element from overflowing slot has degraded flag', () => {
     const result = layoutDesign({
