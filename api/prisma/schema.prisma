@@ -93,21 +93,25 @@ model Template {
 }
 
 model Infographic {
-  id             String       @id @default(cuid())
-  userId         String
-  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  templateId     String
-  template       Template     @relation(fields: [templateId], references: [id])
-  propertyData   Json // Original property input
-  imageUrl       String
-  aiModel        String // ideogram-turbo, flux-pro, sdxl, etc
-  status         String       @default("pending") // pending, processing, completed, failed
-  errorMessage   String?
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @default(now()) @updatedAt
-  usageRecord    UsageRecord?
+  id              String       @id @default(cuid())
+  userId          String
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  templateId      String
+  template        Template     @relation(fields: [templateId], references: [id])
+  propertyData    Json // Original property input
+  imageUrl        String
+  aiModel         String // ideogram-turbo, flux-pro, sdxl, etc
+  status          String       @default("pending") // pending, processing, completed, failed
+  errorMessage    String?
+  /// Cache of ComposedDesign results keyed by stable variation URL (exp/sig stripped).
+  /// Written on the first successful extraction for each variation; reused on all subsequent
+  /// compose requests to avoid repeat Ideogram layerize-text calls ($0.09/call — US-AI-048).
+  composedDesigns Json?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @default(now()) @updatedAt
+  usageRecord     UsageRecord?
 
   @@index([userId])
   @@index([organizationId])

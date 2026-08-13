@@ -16,6 +16,30 @@ import {
 import { ComposedDesign, ListingField } from '../types/composed-design.types';
 import { mapBlocksToFields } from './text-block.mapper';
 
+/**
+ * Return a stable cache key for a (generation, variation) pair.
+ *
+ * Signed CDN URLs (Ideogram, S3-compatible) carry ephemeral `exp` and `sig` query
+ * params that rotate every ~24 h. Stripping them collapses all presigns of the
+ * same underlying image to one key so the cache survives URL refresh. A plain
+ * baseURL also resolves correctly — searchParams.delete() is a no-op when the
+ * param is absent.
+ *
+ * If URL parsing fails (malformed input) we fall back to the raw string — the
+ * cache may miss on signature rotation, but this is safer than throwing.
+ */
+export function composeCacheKey(imageUrl: string): string {
+  try {
+    const u = new URL(imageUrl);
+    u.searchParams.delete('exp');
+    u.searchParams.delete('sig');
+    return u.toString();
+  } catch {
+    // Malformed URL — use as-is; misses are acceptable, errors are not.
+    return imageUrl;
+  }
+}
+
 @Injectable()
 export class AiOrchestrator {
   constructor(

@@ -10,10 +10,10 @@
 
 ## Four Pillars Pre-flight (check before starting AI session)
 
-- [ ] **Brain** — STORY.md is filled: ACs written, out-of-scope listed, "AI Implementation Prompt" ready
-- [ ] **Muscle** — This TASKS.md has file list + ordered tasks + exact test commands
-- [ ] **Map** — [ARCHITECTURE.mmd](../../ARCHITECTURE.mmd) exists for this epic
-- [ ] **Env** — [ENV.yaml](../../ENV.yaml) loaded (paths not guessed)
+- [x] **Brain** — STORY.md is filled: ACs written, out-of-scope listed, "AI Implementation Prompt" ready
+- [x] **Muscle** — This TASKS.md has file list + ordered tasks + exact test commands
+- [x] **Map** — [ARCHITECTURE.mmd](../../ARCHITECTURE.mmd) exists for this epic
+- [x] **Env** — [ENV.yaml](../../ENV.yaml) loaded (paths not guessed)
 
 ---
 
@@ -28,7 +28,7 @@ feat(ai): cache ComposedDesign per generation+variation so layerize is paid at m
 
 ## Task Breakdown
 
-### T1 — Schema: `composedDesigns Json?` on Infographic + cache-key helper
+### T1 — Schema: `composedDesigns Json?` on Infographic + cache-key helper ✅
 **Files:**
 - `api/prisma/schema.prisma` — new nullable Json field
 - `api/src/modules/ai-generation/services/ai-orchestrator.service.ts` — `composeCacheKey(imageUrl)` helper (strips exp/sig)
