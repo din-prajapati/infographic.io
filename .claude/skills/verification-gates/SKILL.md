@@ -66,13 +66,19 @@ bash skills/verification-gates/scripts/pre-commit-gate.sh
 
 Or manually:
 ```bash
-npm run check          # TypeScript — 0 new errors vs baseline
-npm run test:unit      # Unit tests — all green, no regressions
+npm run check               # TypeScript — 0 new errors vs baseline
+npm run test:unit           # Both suites: backend (254) + client — all green, no regressions
 ```
+
+`npm run test:unit` runs two suites sequentially and fails fast if either fails:
+- **Backend** — `api/tests/**/*.spec.ts` via `api/vitest.config.ts` (environment: node)
+- **Client** — `client/src/**/__tests__/**/*.spec.ts` via `client/vitest.config.ts` (environment: jsdom)
+
+A change that touches only `client/src/**` is now verified by the client suite, not just tsc.
 
 **Pass criteria:**
 - `npm run check` exits 0. New errors = blocked. Pre-existing baseline errors are acceptable (document baseline count).
-- `npm run test:unit` all green.
+- `npm run test:unit` all green — both suites.
 
 **If Gate 1 fails:** Do NOT commit. Fix the errors first.
 

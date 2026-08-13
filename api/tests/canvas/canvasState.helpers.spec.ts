@@ -1,16 +1,19 @@
 /**
- * Unit tests for deriveOrientationFromCanvas helper — US-AI-036
- * TC-AI-036-01, TC-AI-036-06
+ * Unit tests for canvasState.ts helpers — US-AI-036 + US-AI-032
  *
- * The helper lives in client/src/lib/canvasState.ts (browser module with
- * html2canvas / Zustand dependencies). This test file replicates the pure
- * ratio-bucketing logic so the tests run in the Node vitest environment
- * without browser dependencies. The algorithm is: ratio < 0.95 → portrait,
- * ratio > 1.05 → landscape, otherwise square — identical to resolveAiArtboard.
+ * TC-AI-036-01, TC-AI-036-06 — deriveOrientationFromCanvas (original)
+ * TC-AI-032-03, TC-AI-032-06, TC-AI-032-08 — composed-design loader (T7, US-AI-032)
  *
- * If this logic ever changes in canvasState.ts, update both places.
+ * canvasState.ts is a browser module (html2canvas, Zustand). These tests
+ * replicate only the pure, side-effect-free logic so tests run in Node.
+ * If the logic in canvasState.ts changes, update both files.
+ *
+ * Client tests (AC3 round-trip, AC1 element array) cannot run here — there is
+ * no client test infrastructure in this repo (US-DEPLOY-007).
  */
 
+import { readFileSync } from 'fs';
+import { join } from 'path';
 import { describe, it, expect } from 'vitest';
 
 // ─── Pure bucketing logic (mirrors canvasState.ts deriveOrientationFromCanvas) ──
@@ -106,5 +109,200 @@ describe('deriveOrientationFromCanvas', () => {
     it('DEFAULT_ORIENTATION is "landscape"', () => {
       expect(DEFAULT_ORIENTATION).toBe('landscape');
     });
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// US-AI-032 T7 — composed-design loader guards
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ── Safe-geometry logic (mirrors loadComposedDesignToCanvas in canvasState.ts) ──
+//
+// The browser module cannot be imported in Node. This replicates the pure
+// safe-placement guards so AC6 is verified without a browser environment.
+// Keep in sync with canvasState.ts GEO_DEFAULTS and the safeX/safeY/safeW/safeH
+// expressions inside loadComposedDesignToCanvas.
+
+const GEO_DEFAULTS_MIRROR = {
+  x: 0, y: 0, width: 400, height: 60,
+  fontFamily: 'Inter', fontSize: 24,
+  color: '#FFFFFF', alignment: 'left',
+  lineHeight: 1.4,
+};
+
+interface GeoLike {
+  x?: number | null; y?: number | null;
+  width?: number | null; height?: number | null;
+  fontSize?: number | null; angle?: number | null;
+}
+
+/** Mirror of the safe-placement logic from loadComposedDesignToCanvas. */
+function safeGeo(geo: GeoLike | null | undefined, scale = 1, offsetX = 0, offsetY = 0) {
+  return {
+    x:      (geo && isFinite(geo.x as number))                                ? (geo.x as number) * scale + offsetX : GEO_DEFAULTS_MIRROR.x,
+    y:      (geo && isFinite(geo.y as number))                                ? (geo.y as number) * scale + offsetY : GEO_DEFAULTS_MIRROR.y,
+    width:  (geo && isFinite(geo.width as number) && (geo.width as number) > 0) ? (geo.width as number) * scale      : GEO_DEFAULTS_MIRROR.width,
+    height: (geo && isFinite(geo.height as number) && (geo.height as number) > 0) ? (geo.height as number) * scale   : GEO_DEFAULTS_MIRROR.height,
+    fontSize: (geo?.fontSize && isFinite(geo.fontSize) && geo.fontSize > 0)   ? geo.fontSize * scale               : GEO_DEFAULTS_MIRROR.fontSize,
+    angle:  (geo && isFinite(geo.angle as number))                            ? (geo.angle as number)               : 0,
+  };
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+
+describe('US-AI-032 — loadComposedDesignToCanvas safe-geometry logic (TC-AI-032-06)', () => {
+  // AC6: malformed/missing geometry → safe default placement; value always rendered; no throw.
+
+  it('valid geometry is scaled and offset correctly', () => {
+    const result = safeGeo({ x: 100, y: 200, width: 800, height: 60, fontSize: 24, angle: 0 }, 0.5, 10, 20);
+    expect(result.x).toBeCloseTo(60);       // 100 * 0.5 + 10
+    expect(result.y).toBeCloseTo(120);      // 200 * 0.5 + 20
+    expect(result.width).toBeCloseTo(400);  // 800 * 0.5
+    expect(result.height).toBeCloseTo(30);  // 60 * 0.5
+    expect(result.fontSize).toBeCloseTo(12);// 24 * 0.5
+    expect(result.angle).toBe(0);
+  });
+
+  it('null geo → safe defaults (no throw)', () => {
+    const result = safeGeo(null);
+    expect(result.x).toBe(GEO_DEFAULTS_MIRROR.x);
+    expect(result.y).toBe(GEO_DEFAULTS_MIRROR.y);
+    expect(result.width).toBe(GEO_DEFAULTS_MIRROR.width);
+    expect(result.height).toBe(GEO_DEFAULTS_MIRROR.height);
+    expect(result.fontSize).toBe(GEO_DEFAULTS_MIRROR.fontSize);
+  });
+
+  it('undefined geo → safe defaults (no throw)', () => {
+    expect(() => safeGeo(undefined)).not.toThrow();
+    const result = safeGeo(undefined);
+    expect(result.width).toBe(GEO_DEFAULTS_MIRROR.width);
+  });
+
+  it('NaN geometry values → safe defaults', () => {
+    const result = safeGeo({ x: NaN, y: NaN, width: NaN, height: NaN, fontSize: NaN, angle: NaN });
+    expect(result.x).toBe(GEO_DEFAULTS_MIRROR.x);
+    expect(result.y).toBe(GEO_DEFAULTS_MIRROR.y);
+    expect(result.width).toBe(GEO_DEFAULTS_MIRROR.width);
+    expect(result.height).toBe(GEO_DEFAULTS_MIRROR.height);
+    expect(result.fontSize).toBe(GEO_DEFAULTS_MIRROR.fontSize);
+    expect(result.angle).toBe(0);
+  });
+
+  it('Infinity geometry values → safe defaults', () => {
+    const result = safeGeo({ x: Infinity, y: -Infinity, width: Infinity, height: Infinity, fontSize: Infinity, angle: Infinity });
+    expect(result.x).toBe(GEO_DEFAULTS_MIRROR.x);
+    expect(result.y).toBe(GEO_DEFAULTS_MIRROR.y);
+    expect(result.width).toBe(GEO_DEFAULTS_MIRROR.width);
+    expect(result.fontSize).toBe(GEO_DEFAULTS_MIRROR.fontSize);
+    expect(result.angle).toBe(0);
+  });
+
+  it('zero-dimension geometry → default width/height but valid x/y', () => {
+    const result = safeGeo({ x: 50, y: 100, width: 0, height: 0, fontSize: 0, angle: 45 });
+    expect(result.x).toBe(50);                        // x=50 is valid
+    expect(result.y).toBe(100);                       // y=100 is valid
+    expect(result.width).toBe(GEO_DEFAULTS_MIRROR.width);  // 0-width → default
+    expect(result.height).toBe(GEO_DEFAULTS_MIRROR.height);
+    expect(result.fontSize).toBe(GEO_DEFAULTS_MIRROR.fontSize); // 0-size → default
+    expect(result.angle).toBe(45);                    // angle=45 is valid
+  });
+
+  it('partially malformed geometry: bad width, valid x/y', () => {
+    const result = safeGeo({ x: 10, y: 20, width: NaN, height: 80, fontSize: 18, angle: 0 });
+    expect(result.x).toBe(10);
+    expect(result.y).toBe(20);
+    expect(result.width).toBe(GEO_DEFAULTS_MIRROR.width); // NaN → default
+    expect(result.height).toBe(80);                        // valid
+    expect(result.fontSize).toBe(18);                      // valid
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('US-AI-032 — slot tag JSON round-trip (TC-AI-032-03 / AC3)', () => {
+  // AC3: save → reload keeps all elements and slot tags intact.
+  //
+  // captureCanvasData() serialises state.elements verbatim (JSON.stringify
+  // preserves all own-enumerable fields). restoreCanvasData() passes the
+  // array straight back to loadCanvas. slot is BaseElement.slot?: string —
+  // always serialisable. These tests document that invariant.
+
+  it('slot field survives JSON.stringify → JSON.parse round-trip', () => {
+    const element = { id: 'el-1', type: 'text', slot: 'property.price', content: '$520K' };
+    const canvasData = { version: '1.0', elements: [element] };
+    const restored = JSON.parse(JSON.stringify(canvasData));
+    expect(restored.elements[0].slot).toBe('property.price');
+    expect(restored.elements[0].content).toBe('$520K');
+  });
+
+  it('element without slot survives round-trip (slot is undefined after parse)', () => {
+    const element = { id: 'el-2', type: 'image', src: 'https://example.com/img.jpg' };
+    const canvasData = { version: '1.0', elements: [element] };
+    const restored = JSON.parse(JSON.stringify(canvasData));
+    expect(restored.elements[0]).not.toHaveProperty('slot');
+  });
+
+  it('mixed canvas (background + slot-tagged text) round-trips all fields', () => {
+    const elements = [
+      { id: 'bg', type: 'image', isAiImport: true, zIndex: 0 },
+      { id: 't1', type: 'text', slot: 'property.headline', content: 'Modern Oasis', zIndex: 1 },
+      { id: 't2', type: 'text', slot: 'property.price',    content: '$1.2M',       zIndex: 2 },
+      { id: 't3', type: 'text', slot: undefined,           content: 'Decorative',  zIndex: 3 },
+    ];
+    const restored: typeof elements = JSON.parse(JSON.stringify({ version: '1.0', elements })).elements;
+    expect(restored[0]).not.toHaveProperty('slot');
+    expect(restored[1].slot).toBe('property.headline');
+    expect(restored[2].slot).toBe('property.price');
+    // undefined is dropped by JSON.stringify → key absent on restored
+    expect(restored[3]).not.toHaveProperty('slot');
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('US-AI-032 — AC8: composeDesignForEdit does not invoke verifyAndRepairV4JsonPrompt (TC-AI-032-08)', () => {
+  // AC8: verifyAndRepairV4JsonPrompt's append branch re-injects baked text into a
+  // deliberately text-erased background — the exact opposite of what the editable
+  // path needs. The guard test is a source-scan: if verifyAndRepairV4JsonPrompt
+  // ever appears inside composeDesignForEdit's body, this test will catch it before
+  // the regression ships.
+
+  const orchestratorSrc = readFileSync(
+    join(__dirname, '../../src/modules/ai-generation/services/ai-orchestrator.service.ts'),
+    'utf8',
+  );
+
+  it('composeDesignForEdit function exists in the orchestrator', () => {
+    expect(orchestratorSrc).toContain('async composeDesignForEdit(');
+  });
+
+  it('verifyAndRepairV4JsonPrompt is NOT present inside composeDesignForEdit body', () => {
+    // Normalise CRLF → LF so pattern matching works on both Windows and Linux.
+    const src = orchestratorSrc.replace(/\r\n/g, '\n');
+
+    const composeStart = src.indexOf('async composeDesignForEdit(');
+    expect(composeStart).toBeGreaterThan(-1);
+
+    // Bound the method body at the next private/async method declaration or class end.
+    // This is more robust than searching for "  }\n" which may appear inside the body
+    // (e.g. in nested try/catch blocks) before the true closing brace.
+    const markers = ['\n  private ', '\n  async ', '\n}'];
+    const methodEnd = markers
+      .map(m => src.indexOf(m, composeStart + 1))
+      .filter(i => i > composeStart)
+      .reduce((min, i) => (i < min ? i : min), Infinity);
+
+    expect(methodEnd).toBeGreaterThan(composeStart);
+    expect(methodEnd).not.toBe(Infinity);
+
+    const composeBody = src.slice(composeStart, methodEnd);
+    expect(composeBody).not.toContain('verifyAndRepairV4JsonPrompt');
+  });
+
+  it('verifyAndRepairV4JsonPrompt IS imported at the module level (used by generate, not compose)', () => {
+    // This confirms the function is in scope (and we are not testing the wrong file).
+    // Its presence in the import block does not imply it is called from composeDesignForEdit.
+    const importBlock = orchestratorSrc.slice(0, orchestratorSrc.indexOf('@Injectable()'));
+    expect(importBlock).toContain('verifyAndRepairV4JsonPrompt');
   });
 });

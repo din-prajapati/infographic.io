@@ -36,13 +36,18 @@ npx prisma db push --schema=api/prisma/schema.prisma
 npx prisma studio --schema=api/prisma/schema.prisma
 
 # Tests
-npm run test:unit                          # All unit tests (mock-based, no DB needed)
+npm run test:unit                          # Both suites: backend (api/) + client (client/) — mock-based, no DB
+npm run test:unit:backend                  # Backend suite only (api/tests/**)
+npm run test:unit:client                   # Client suite only (client/src/**/__tests__/**)
 npm run test:integration                   # Integration tests (requires .env.test with Neon DB URL)
 npm run test:payments:unit                 # Payment unit tests only
 npm run test:e2e                           # Playwright E2E tests
 
-# Run a single unit test file
+# Run a single backend test file
 cd api && npx vitest run tests/payments/payments.service.spec.ts --reporter=verbose
+
+# Run the client suite standalone (from repo root)
+cd client && npx vitest run --reporter=verbose
 
 # Payment utilities
 npm run verify:payment-prereqs
@@ -112,9 +117,12 @@ In production, Vite's output is served as static files by Express.
 > Metering policy (US-LAUNCH-008): limits count **generations** (user unit); each generation writes `creditsUsed: 1` regardless of internal image-call count. `costUsd` = true provider spend for margin analytics — intentionally different from `creditsUsed`. Never zero or average `costUsd`.
 
 ### Testing
-- **Unit tests**: `api/tests/**/*.spec.ts` (exclude `*.integration.spec.ts`) — all mock-based, no DB
+- **Unit tests**: two suites, both run by `npm run test:unit`:
+  - **Backend** (`api/tests/**/*.spec.ts`, exclude `*.integration.spec.ts`) — mock-based, no DB, uses `api/vitest.config.ts` with `environment: 'node'`
+  - **Client** (`client/src/**/__tests__/**/*.spec.ts`) — DOM-capable, uses `client/vitest.config.ts` with `environment: 'jsdom'`; canvas strategy: option (b) — pure geometry helpers only (see `client/vitest.config.ts` header for rationale)
 - **Integration tests**: `api/tests/**/*.integration.spec.ts` — require `.env.test` at repo root with a real Neon connection string; scoped cleanup deletes only records with `name='Integration Test Org'`
 - Integration tests run sequentially (`singleFork: true`) with 120s timeout to handle Neon auto-pause latency
+- **Client test config**: `client/vitest.config.ts` — resolves `@/*` to `client/src/*` exactly as `vite.config.ts` does; `jsdom` v25+ is a devDependency
 
 ### Environment variables (key ones)
 ```

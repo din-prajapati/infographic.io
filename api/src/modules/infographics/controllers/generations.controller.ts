@@ -85,5 +85,34 @@ export class GenerationsController {
       throw error;
     }
   }
+
+  /**
+   * POST /:id/compose
+   *
+   * Lazy layer extraction — called only when the user clicks "Edit" in renderMode='editable'.
+   * Runs Ideogram Layerize-Text on the chosen variation, binds text blocks to canonical
+   * listing fields, and returns a ComposedDesign for the client canvas loader (US-AI-032 T4).
+   *
+   * AC2 of US-AI-031b: extraction is lazy (on edit, not on generate).
+   * AC8 of US-AI-032: verifyAndRepairV4JsonPrompt is NOT called on this path —
+   * composeDesignForEdit() goes straight to layerize-text + mapBlocksToFields.
+   */
+  @Post(':id/compose')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Compose an editable design — runs lazy layer extraction on the chosen variation',
+  })
+  async composeDesign(
+    @Param('id') id: string,
+    @Body() body: { imageUrl: string },
+  ) {
+    try {
+      return await this.generationsService.getComposedDesign(id, body.imageUrl);
+    } catch (error: any) {
+      console.error(`❌ [GenerationsController] Compose failed:`, error?.message || error);
+      throw error;
+    }
+  }
 }
 

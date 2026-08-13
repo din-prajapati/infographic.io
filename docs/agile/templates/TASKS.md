@@ -89,11 +89,14 @@ git commit -m "test(scope): T3 description — US-{DOMAIN}-{NNN}"
 # 1. TypeScript check — must pass before PR
 npm run check
 
-# 2. Unit tests — must pass before PR
+# 2. Unit tests — must pass before PR (backend + client suites; failing either fails the gate)
 npm run test:unit
 
-# 3. Specific test file (if adding/changing tests)
+# 3a. Specific backend test file (if changing api/tests/**)
 cd api && npx vitest run tests/{domain}/{file}.spec.ts --reporter=verbose
+
+# 3b. Specific client test file (if changing client/src/**/__tests__/**)
+cd client && npx vitest run --reporter=verbose
 
 # 4. E2E (if applicable)
 npm run test:e2e -- --grep "{test suite name}"

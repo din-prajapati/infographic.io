@@ -126,6 +126,14 @@ export function AIChatBox({
   const [generationQualityModel, setGenerationQualityModel] =
     useState<ImageQualityModel>("ideogram-turbo");
 
+  /**
+   * Render mode: 'flat' loads AI generations as a single raster layer (existing behaviour).
+   * 'editable' triggers lazy layer extraction on the Edit action and loads canonical text
+   * as slot-tagged, individually selectable canvas elements (US-AI-032 T2).
+   * Provider-agnostic — describes the output shape, never the vendor.
+   */
+  const [renderMode, setRenderMode] = useState<'flat' | 'editable'>('flat');
+
   // Conversation history with previews
   const [conversationHistory, setConversationHistory] = useState<
     Array<{
@@ -788,6 +796,9 @@ export function AIChatBox({
         headline: propertyHeadline.trim() || undefined,
         // Pass uploaded property photo ID as style reference (AC3)
         photoReference: photoId ?? undefined,
+        // US-AI-032 T2: signal intended render mode. 'editable' is only meaningful when
+        // a photoReference is present (the Layerize step requires a composition).
+        renderMode,
         agent: {
           name: agentInfo.name || undefined,
           brokerage: agentInfo.brokerage || undefined,
@@ -1069,9 +1080,66 @@ export function AIChatBox({
     handleGenerate();
   };
 
-  const handleEditVariation = (id: string) => {
+  /**
+   * US-AI-032 T4 — route Edit action to the right canvas loader.
+   *
+   * renderMode='flat'     → flat raster (existing path, unchanged).
+   * renderMode='editable' → call POST /compose (lazy Layerize extraction),
+   *                         carry ComposedDesign through onTemplateLoad so
+   *                         CenterCanvas can call loadComposedDesignToCanvas.
+   *
+   * 'Use' variation (handleUseVariation) always stays on the flat path —
+   * it is a quick insertion without extraction cost.
+   */
+  const handleEditVariation = async (id: string) => {
     const variation = resultVariations.find((v) => v.id === id);
-    if (variation) {
+    if (!variation) {
+      onClose();
+      return;
+    }
+
+    if (renderMode === 'editable' && currentGenerationId) {
+      // Editable path: fetch ComposedDesign (lazy extraction) then hand off.
+      try {
+        toast.info("Preparing editable design…", {
+          description: "Extracting text layers — this takes a few seconds.",
+        });
+        const composed = await generationsApi.getComposedDesign(
+          currentGenerationId,
+          variation.previewUrl,
+        );
+        const template: Template = {
+          id: variation.id,
+          name: variation.title || "AI Generated Design",
+          category: "listing-announcements",
+          description: variation.description || "AI-generated infographic design",
+          previewImage: variation.previewUrl,
+          isAiVariation: true,
+          aiOrientation: generationOrientation,
+          emoji: "🎨",
+          composedDesign: composed,
+        };
+        onTemplateLoad(template);
+      } catch (err: any) {
+        console.error("[AIChatBox] Compose failed — falling back to flat", err);
+        toast.error("Layer extraction failed", {
+          description: "Loading as flat design instead.",
+        });
+        // Degrade gracefully: fall through to flat path below.
+        const template: Template = {
+          id: variation.id,
+          name: variation.title || "AI Generated Design",
+          category: "listing-announcements",
+          description: variation.description || "AI-generated infographic design",
+          previewImage: variation.previewUrl,
+          isAiVariation: true,
+          aiOrientation: generationOrientation,
+          emoji: "🎨",
+        };
+        onTemplateLoad(template);
+      }
+    } else {
+      // Flat path (default / AC4).
       const template: Template = {
         id: variation.id,
         name: variation.title || "AI Generated Design",
@@ -1084,6 +1152,7 @@ export function AIChatBox({
       };
       onTemplateLoad(template);
     }
+
     // Close the panel but keep resultVariations in state so the user can
     // reopen the chat and pick a different variation without re-generating.
     onClose();
@@ -1409,6 +1478,35 @@ export function AIChatBox({
                       onSuggestionClick={handleSuggestionClick}
                     />
                   )}
+
+                {/* Render-mode toggle — shown when results are present (US-AI-032 T2).
+                    'flat' = raster layer (existing behavior, default).
+                    'editable' = lazy layer extraction → slot-tagged text elements.
+                    Only meaningful when a property photo was uploaded (photoReference). */}
+                {!state.isGenerating && resultVariations.length > 0 && (
+                  <div className="px-4 pb-2 flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground shrink-0">Edit as:</span>
+                    <div className="flex rounded-md border border-border overflow-hidden text-xs">
+                      <button
+                        className={`px-2.5 py-1 transition-colors ${renderMode === 'flat' ? 'bg-primary text-primary-foreground' : 'bg-background text-muted-foreground hover:text-foreground'}`}
+                        onClick={() => setRenderMode('flat')}
+                        title="Load as a single raster layer"
+                      >
+                        Flat
+                      </button>
+                      <button
+                        className={`px-2.5 py-1 transition-colors ${renderMode === 'editable' ? 'bg-primary text-primary-foreground' : 'bg-background text-muted-foreground hover:text-foreground'}`}
+                        onClick={() => setRenderMode('editable')}
+                        title="Extract text layers — editable slots in the sidebar"
+                      >
+                        Editable
+                      </button>
+                    </div>
+                    {renderMode === 'editable' && !photoId && (
+                      <span className="text-[10px] text-amber-500">Upload a photo for best results</span>
+                    )}
+                  </div>
+                )}
 
                 {/* Result Variations */}
                 {!state.isGenerating && resultVariations.length > 0 && (

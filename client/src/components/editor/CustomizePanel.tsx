@@ -23,19 +23,20 @@ import {
   updateImageSlot,
   updateTextSlot,
 } from "../../lib/templateSlots";
+import { type SlotId, assertKnownSlotId } from "../../lib/slotIds";
 
 type ControlKind = "text" | "color" | "image";
 type Group = "brand" | "property" | "agent";
 
 interface SlotField {
-  slot: string;
+  slot: SlotId;
   label: string;
   group: Group;
   control: ControlKind;
   placeholder?: string;
 }
 
-/** Canonical slot vocabulary — keep in sync with premiumTemplates.ts. */
+/** Canonical slot vocabulary — ids are sourced from slotIds.ts. */
 const SLOT_MANIFEST: SlotField[] = [
   // Brand
   { slot: "brand.logo", label: "Brand Logo", group: "brand", control: "image" },
@@ -91,6 +92,9 @@ export function CustomizePanel() {
   const activeSlots = new Set(
     elements.map((el) => el.slot).filter((s): s is string => Boolean(s)),
   );
+  // Throw in development when an element carries a slot id not in the
+  // vocabulary — a typo'd slot would otherwise silently vanish from the UI.
+  activeSlots.forEach(assertKnownSlotId);
 
   if (!hasSlots) {
     return (

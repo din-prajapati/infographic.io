@@ -78,6 +78,52 @@ export const OPENAI_COSTS = {
  */
 export const V4_MAGIC_PROMPT_COST = 0;
 
+/**
+ * Ideogram Layerize Text — text geometry extraction for the edit path (US-AI-031b).
+ * Source: https://ideogram.ai/api-pricing/ — "$0.09 per input".
+ * Endpoint: POST /v1/ideogram-v3/layerize-text
+ *
+ * This endpoint is BETA: "works best with clear, straight text in standard typography.
+ * Curved, highly stylized, decorative, or graphic-embedded text may not be detected."
+ * US-AI-031 AC2 asks the composition step for clean typography to maximise the hit rate.
+ *
+ * ⚠️ Lazy-billing wrinkle (STORY.md §Metering, CLAUDE.md):
+ * This cost attaches to an already-persisted UsageRecord from the generate step.
+ * The record's creditsUsed stays at 1 (it was set at generate time and counts
+ * generations, not edit actions). Only costUsd is incremented when extraction runs.
+ * This happens inside AiOrchestrator.composeDesignForEdit() on the edit action.
+ *
+ * Per CLAUDE.md metering policy: costUsd is true provider spend and must never
+ * be zeroed or averaged. If extraction fails, no increment is written (the provider
+ * did nothing billable — the cost only applies when base_image_url is returned).
+ *
+ * Cost comparison (from SPIKE-031 §Cost — lazy extraction is required, not optional):
+ *   Extract every variation at generate time:  3 × ($0.06 + $0.09) = $0.45/generation
+ *   Extract only the variation the user edits:  $0.18 + $0.09 = $0.27 — pinned to this
+ *   Only a fraction of generations are ever edited, so real spend is lower still.
+ */
+export const LAYERIZE_COST_PER_IMAGE = 0.09;
+
+/**
+ * Ideogram V4 Remix — source-image composition for photo-backed listing designs.
+ * Source: https://ideogram.ai/api-pricing/ — "Remix is priced per output image,
+ * same rates as Generate."
+ *
+ * Key finding from SPIKE-031 §5: the recommended Remix path is COST-NEUTRAL —
+ * switching a photo-backed generation from V4 generate to V4 Remix moves
+ * provider spend by $0.00. Photo-backed generation does not raise our COGS.
+ *
+ * Rejected alternative — Instructional Edit (POST /v1/edit, $0.20 flat):
+ * At the default 3 variations/generation that is $0.60/generation, which
+ * reaches 150% of TEAM plan monthly revenue for a single seat at cap.
+ * Gross-margin negative on SOLO, TEAM and BROKERAGE at any variation count.
+ * Source: SPIKE-031 §5, https://ideogram.ai/api-pricing/.
+ *
+ * Per CLAUDE.md metering policy: creditsUsed stays 1 per generation regardless
+ * of path; costUsd records true provider spend and must never be zeroed.
+ */
+export const REMIX_COST_PER_IMAGE = AI_MODELS['ideogram-4'].costPerImage; // $0.06 at default tier — same as generate
+
 export function getModelCost(modelName: string): number {
   const normalized =
     modelName === 'ideogram-v2' ? 'ideogram-2' : modelName;

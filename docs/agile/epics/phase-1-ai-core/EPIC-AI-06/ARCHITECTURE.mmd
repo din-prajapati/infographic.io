@@ -1,20 +1,61 @@
-flowchart LR
-  subgraph Inputs["User / External"]
-    A["Uploaded listing photo (US-AI-010)"]
-    B["Property data + brand profile"]
+%% EPIC-AI-06 — Hybrid Real-Photo Pipeline
+%% Architecture updated 2026-08-12 — US-AI-043 replaces the Remix→Layerize flow.
+%%
+%% OQ-2 (2026-08-12) disproved Ideogram V4 Remix for composition:
+%%   at image_weight=75 → real photo but no design.
+%%   at image_weight=30 → fabricated building, wrong agent, wrong price.
+%%   at image_weight=65 → illegible text, wrong price. No usable middle point.
+%%
+%% The pure-canvas spike (2026-08-12) proved the alternative:
+%%   real photo as untouched canvas layer + native text elements overlaid.
+%%   Zero fabrication, pixel-exact fidelity, $0 image-model cost, editable.
+%%
+%% The spike also proved the LLM CANNOT place pixels:
+%%   GPT-4o correctly identified scrim side ("subject is on the right → scrim left")
+%%   but produced absolute coordinates that collided (headline and price overlapping).
+%%   See spike output 04-planner-v2-constrained.png.
+%%
+%% Therefore: planner emits INTENT (template id, scrim side, palette).
+%%            flow renderer computes GEOMETRY (US-AI-043).
+%%            Collisions are structurally impossible — not detected-and-fixed.
+
+flowchart TB
+  subgraph Truth["Canonical Data — our system owns this"]
+    P["Uploaded listing photo<br/>(US-AI-010 plumbing, durable storage TBD)"]
+    D["Property data + brand profile<br/>headline · price · address · stats · agent"]:::truth
   end
-  subgraph Pipeline["AI: Hybrid Real-Photo Pipeline"]
-    C["infographic-prompt.builder.ts<br/>text-free layout prompt variant"]:::new
-    D["ideogram.service.ts<br/>image-reference / edit call"]:::new
-    E["Synthetic-content guard<br/>(US-AI-033)"]:::new
+
+  subgraph Plan["Intent — LLM reasons about photo content"]
+    G["GPT-4o layout planner<br/>emits: templateId · scrimSide · palette<br/>NO pixel coordinates"]:::new
   end
-  subgraph Editor["Editor: Hybrid Output"]
-    F["Canvas: AI background layer"]:::good
-    G["templateSlots.ts<br/>exact text as editable slots"]:::good
+
+  subgraph Render["Geometry — flow renderer owns this (US-AI-043)"]
+    TR["Template registry<br/>templates.ts — data only, no logic<br/>3 templates: left-scrim-hero · bottom-band · corner-card<br/>Adding a template = data change, no renderer edits"]:::good
+    LE["layoutDesign()<br/>layoutEngine.ts — pure, deterministic<br/>regions as fractions × canvas size<br/>cursor-based flow → non-overlap is structural<br/>overflow: shrink → truncate → never vanish"]:::good
+    EL["LayoutElement[]<br/>slot · text · geometry · placement<br/>shape-compatible with ComposedTextElement<br/>consumable by loadComposedDesignToCanvas"]:::good
   end
-  A --> D
-  B --> C --> D --> E --> F
-  B --> G
-  F --> G
-  classDef good fill:#0b3b2e,stroke:#14532d,color:#ecfdf5;
-  classDef new  fill:#1e3a5f,stroke:#2563eb,color:#eff6ff;
+
+  subgraph Canvas["Typography — our system owns this"]
+    C["Canvas renderer (US-AI-032)<br/>loadComposedDesignToCanvas()<br/>background photo layer + slot-tagged text elements"]:::good
+    S["slotIds.ts<br/>property.price · property.headline · agent.name ..."]:::good
+    V["Final verification<br/>canonical strings present and exact — deterministic,<br/>no longer an AI reliability problem"]:::good
+  end
+
+  OUT["Editable listing design<br/>real house + exact text + live editing"]:::out
+
+  P --> C
+  D --> G
+  G -->|templateId · scrimSide · palette| LE
+  D -->|values: Partial&lt;Record&lt;SlotId,string&gt;&gt;| LE
+  TR --> LE
+  LE --> EL
+  EL --> C
+  C --> S --> V --> OUT
+
+  classDef truth    fill:#0b3b2e,stroke:#14532d,color:#ecfdf5;
+  classDef good     fill:#0b3b2e,stroke:#14532d,color:#ecfdf5;
+  classDef new      fill:#1e3a5f,stroke:#2563eb,color:#eff6ff;
+  classDef flat     fill:#3f3f46,stroke:#71717a,color:#fafafa;
+  classDef fallback fill:#4a3410,stroke:#b45309,color:#fffbeb;
+  classDef gate     fill:#4c1d3d,stroke:#a21caf,color:#fdf4ff;
+  classDef out      fill:#134e4a,stroke:#0d9488,color:#f0fdfa;

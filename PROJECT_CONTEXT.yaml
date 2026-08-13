@@ -52,12 +52,12 @@ domains:
 # sweep of highest IDs actually referenced in docs/agile/ — highest source wins
 # (a skipped number is harmless; a reused one collides).
 counters:
-  ADR: 2
+  ADR: 3
   DESIGN: { epic: 5, feature: 3, story: 13 }
   PAY: { epic: 5, feature: 1, story: 102 }
   AUTH: { epic: 2, feature: 1, story: 5 }
   EDIT: { epic: 3, feature: 1, story: 5 }
-  AI: { epic: 9, feature: 35, story: 43 } # EPIC-AI-08 created 2026-07-30 (quality tiers + Campaign Mode UI, deferred from EPIC-AI-02 to Phase 4 Backlog, revenue-gated); US-AI-036/037/038 added 2026-07-29, replacing superseded US-AI-011; US-AI-039 added 2026-07-31 (Format Picker Canva-style reorg, F-AI-02-07); US-AI-040/041 added 2026-07-31 (Templates UX gaps split into two stories: US-AI-040 preview modal + tag filters, new F-AI-02-08; US-AI-041 device-mockup format previews, extends F-AI-02-07, depends on US-AI-039 merging first — US-AI-042 added 2026-08-02 (real canvas thumbnails on save, new F-AI-02-09); feature counter unchanged, both use EPIC-AI-02's epic-scoped F-AI-02-NN sub-numbering, not the global F-AI-NN sequence)
+  AI: { epic: 9, feature: 35, story: 44 } # EPIC-AI-08 created 2026-07-30 (quality tiers + Campaign Mode UI, deferred from EPIC-AI-02 to Phase 4 Backlog, revenue-gated); US-AI-036/037/038 added 2026-07-29, replacing superseded US-AI-011; US-AI-039 added 2026-07-31 (Format Picker Canva-style reorg, F-AI-02-07); US-AI-040/041 added 2026-07-31 (Templates UX gaps split into two stories: US-AI-040 preview modal + tag filters, new F-AI-02-08; US-AI-041 device-mockup format previews, extends F-AI-02-07, depends on US-AI-039 merging first — US-AI-042 added 2026-08-02 (real canvas thumbnails on save, new F-AI-02-09); feature counter unchanged, both use EPIC-AI-02's epic-scoped F-AI-02-NN sub-numbering, not the global F-AI-NN sequence)
   USAGE: { epic: 2, feature: 1, story: 1 }
   INFRA: { epic: 4, feature: 1, story: 3 }
   ORG: { epic: 3, feature: 1, story: 1 }
@@ -204,7 +204,15 @@ ac_coverage:
   default: [happy-path, error-path]
 
   # Per-domain additions — uncomment and extend for your project:
-  per_domain: {}
+  per_domain:
+    # AI stories consistently carry two risks the defaults miss:
+    #  - regression: every AI story touches a shared generation pipeline whose
+    #    existing guarantees (e.g. verifyAndRepairV4JsonPrompt, 23 tests) must survive
+    #  - edge-case: model output is non-deterministic, so partial/degenerate responses
+    #    are the normal case rather than an exception
+    # Set 2026-08-11 during the EPIC-AI-06 harden pass — per_domain was {} until then,
+    # meaning AI stories were certified against only [happy-path, error-path].
+    AI: [regression, edge-case]
   # per_domain:
   #   DESIGN: []    # add: security, session-expiry, idempotency, currency-edge, rate-limit, null-input, concurrent, rollback, offline, edge-case
   #   PAY: []    # add: security, session-expiry, idempotency, currency-edge, rate-limit, null-input, concurrent, rollback, offline, edge-case

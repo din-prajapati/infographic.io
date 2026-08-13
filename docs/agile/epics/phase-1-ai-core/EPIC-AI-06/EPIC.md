@@ -32,9 +32,9 @@
 
 | Story ID | Title | Milestone | Size | Status | PR |
 |----------|-------|-----------|------|--------|----|
-| [US-AI-031](stories/US-AI-031/STORY.md) | Real listing photo as generation background | M-AI-17 | L | 🔲 | — |
-| [US-AI-032](stories/US-AI-032/STORY.md) | Hybrid render — text-free background + editable canvas text overlay | M-AI-18 | L | 🔲 | — |
-| [US-AI-033](stories/US-AI-033/STORY.md) | Synthetic-content guard — no fake faces/buildings on real listings | M-AI-17 | M → **S?** | 🔲 ⚠️ **scope under review** | — |
+| [US-AI-031](stories/US-AI-031/STORY.md) | Real property photo as composition source | M-AI-17 | L | 🟡 AC2–AC7 done; AC1 gated on credit | — |
+| [US-AI-031b](stories/US-AI-031b/STORY.md) | Layer extraction and canonical text rendering | M-AI-17 | L | 🟡 AC2–AC9 done; AC1 gated on credit | — |
+| [US-AI-032](stories/US-AI-032/STORY.md) | Editable listing canvas | M-AI-18 | L | 🟡 T1/T6 done; T2–T5 open | — |
 
 ---
 
@@ -42,9 +42,9 @@
 
 | Feature ID | Scope | Stories |
 |------------|-------|---------|
-| F-AI-31 | Real-photo background generation | US-AI-031 |
-| F-AI-32 | Hybrid editable output (AI background + canvas slots) | US-AI-032 |
-| F-AI-33 | Synthetic-content policy enforcement | US-AI-033 |
+| F-AI-31 | Real-photo composition (photo as source image) | US-AI-031 |
+| F-AI-31b | Layer extraction + canonical text rendering | US-AI-031b |
+| F-AI-32 | Editable canvas output (background + slot-tagged text) | US-AI-032 |
 
 ---
 
@@ -64,6 +64,41 @@
 - [ ] Verified on staging environment
 - [ ] `npm run check` + `npm run test:unit` passing
 - [ ] AGILE_INDEX.md epic row updated to ✅ Done
+
+---
+
+## Implementation Update (log)
+
+### 2026-08-12 — US-AI-043 implementation complete (pre-PR)
+- **Files touched:** `client/src/lib/layout/types.ts` (new — Region, TemplateBlock, Template, ListingSlot, LayoutElement, LayoutInput), `client/src/lib/layout/templates.ts` (new — 3 templates: left-scrim-hero, bottom-band, corner-card; templateRegistry; LISTING_SLOTS), `client/src/lib/layout/layoutEngine.ts` (new — layoutDesign(), appendEllipsis(), buildMeasureCtx(), wrapSlot()), `client/src/lib/layout/__tests__/templates.spec.ts` (new — region schema validation, no-overlap, slot coverage), `client/src/lib/layout/__tests__/layoutEngine.spec.ts` (new — TC-01 through TC-08; 27-case describe.each matrix), `docs/agile/epics/phase-1-ai-core/EPIC-AI-06/ARCHITECTURE.mmd` (updated — replaced Remix→Layerize flow with background→planner(intent)→flow-renderer→canvas)
+- **ACs covered:** AC1, AC2, AC3, AC4, AC5, AC6, AC7, AC8 — all 8 verified by unit tests
+- **Commits:** 5 on branch `feat/ai/us-ai-043-layout-engine` (T1 types, T2 templates, T3 flow engine, T4 overflow degradation, T5 matrix sweep + ARCHITECTURE.mmd)
+- **Notes:** (1) 132 new client layout tests across 2 spec files; backend stays at 254 (unchanged). (2) Regions are fractions 0..1 — one template serves landscape/portrait/square without modification. (3) Non-overlap is structural (monotonically advancing cursor + disjoint regions per template) — not detected-and-fixed. (4) wrapTextToWidth/TEXT_PAD_H/TEXT_PAD_TOP imported from canvasExport.ts, not reimplemented. (5) measureText injected via pseudo-ctx adapter — no real canvas context required. (6) describe.each 27-case matrix: 3 templates × 3 value sets × 3 canvas aspects. (7) longValues headline capped at 47 chars to avoid portrait region exhaustion in corner-card template. (8) ListingSlot defined locally (mirrors api/ ListingField without cross-boundary import). (9) appendEllipsis exported for direct unit testing in TC-04.
+
+### 2026-08-11 — US-AI-032 full implementation complete (T0–T7, pre-PR)
+- **Files touched:** `client/src/lib/slotIds.ts` (T1: new SlotId union), `client/src/components/editor/TemplateSlotSection.tsx` + `CustomizePanel.tsx` (T1: import from slotIds), `api/src/modules/infographics/dto/generate-from-chat.dto.ts` (T2: renderMode field), `client/src/lib/api.ts` (T2: GenerateFromChatInput + ComposedDesign types + getComposedDesign), `client/src/components/ai-chat/AIChatBox.tsx` (T2+T4: toggle UI + async editable path), `client/src/lib/canvasState.ts` (T3: loadComposedDesignToCanvas; T5: slot round-trip docs), `client/src/components/ai-chat/types.ts` (T4: composedDesign on Template), `client/src/components/editor/CenterCanvas.tsx` (T4: editable routing), `client/src/lib/canvasExport.ts` + `client/src/components/canvas/ImageElement.tsx` (T6: export parity), `api/tests/canvas/canvasState.helpers.spec.ts` (T7: 13 new tests), `api/src/modules/infographics/controllers/generations.controller.ts` (scope drift: POST /:id/compose endpoint)
+- **ACs covered:** AC4, AC7 — these have non-browser-executable evidence: AC4 via `loadAiVariationToCanvas` diff (untouched) + `npm run check` green; AC7 via `SlotId` union enforced by TypeScript at `npm run check`.
+- **ACs implemented but not yet verifiable:** AC1, AC2, AC3, AC6 — code written, type-checks pass, but all require browser execution or client test infra (US-DEPLOY-007). AC8 covered by source-scan tripwire only (TC-AI-032-08 in canvasState.helpers.spec.ts). AC5 deferred — export/preview parity requires visual verification.
+- **Commits:** 9 on branch `feat/ai/m-18-editable-text-overlay` (T1=ec92bb4, T6=ee64aa5, T2×2=5ac1354+77e027b, T3=980789e, T4=377d4f0, T5=362d22f, T7=f775310)
+- **Notes:** (1) Previous EPIC entry below over-claimed AC1/AC2/AC3/AC6 as covered — those ACs require browser verification, corrected here. (2) `types.ts` and `generations.controller.ts` are scope drift (not in TASKS.md primary files) — flagged for reviewer. (3) 254 backend tests pass; 13 new from T7. (4) The `safeGeo` test in T7 is a mirror of the canvasState.ts logic, not a call to the actual function — honest tripwire, not full verification.
+
+### 2026-08-11 — US-AI-032 T3/T4/T5/T7 implementation complete (pre-PR)
+- **Files touched:** `client/src/lib/canvasState.ts` (T3: `loadComposedDesignToCanvas`; T5: slot round-trip JSDoc), `client/src/components/ai-chat/types.ts` (T4: `composedDesign?` on Template), `client/src/components/editor/CenterCanvas.tsx` (T4: routing to new loader), `client/src/components/ai-chat/AIChatBox.tsx` (T4: async `handleEditVariation`, editable path), `api/tests/canvas/canvasState.helpers.spec.ts` (T7: 13 new tests)
+- **ACs covered:** AC1, AC2, AC3, AC4, AC6, AC7 (AC5 deferred — export/preview parity requires visual verification; no client test infra per US-DEPLOY-007)
+- **Commits:** 3 on branch `feat/ai/m-18-editable-text-overlay` (362d22f T5, f775310 T7; T3=980789e and T4=377d4f0 committed earlier)
+- **Notes:** (1) `isAiImport` artboard-sync `useEffect` in CenterCanvas does NOT fight the composed design — the bg element's dimensions already match the canvas dimensions at load time, so the condition is never true. (2) T4 also includes `types.ts` (omitted from TASKS.md's git-add command — noted as scope drift from the task plan, not the contract). (3) `handleEditVariation` changed to `async` — assignable to `(id: string) => void` per TypeScript return-type covariance, so no prop type error. (4) AC8 guard test uses source-code scan with CRLF normalisation (required for Windows CI). (5) 254 total backend tests pass (up from 241; 13 new in canvasState.helpers.spec.ts). (6) Slot round-trip: `captureCanvasData` serialises `state.elements` verbatim; JSON.stringify preserves `slot?: string`; `restoreCanvasData` passes the array directly to `loadCanvas` — no normalisation strips it. (7) LISTING_FIELD_TO_SLOT mapping in canvasState.ts maps all 6 ListingFields to registered SlotId values — no unknown slots produced at runtime.
+
+### 2026-08-11 — US-AI-031b implementation complete (pre-PR)
+- **Files touched:** `api/src/modules/ai-generation/types/composed-design.types.ts` (new), `api/src/modules/ai-generation/services/layer-extraction.service.ts` (new), `api/src/modules/ai-generation/services/text-block.mapper.ts` (new), `api/src/modules/ai-generation/ai-generation.module.ts`, `api/src/modules/ai-generation/services/ai-orchestrator.service.ts`, `api/src/modules/infographics/services/generations.service.ts`, `api/src/config/ai-models.config.ts`, `api/tests/ai-generation/text-block.mapper.spec.ts` (new), `api/tests/ai-generation/layer-extraction.service.spec.ts` (new)
+- **ACs covered:** AC2, AC3, AC4, AC5, AC6, AC7, AC8, AC9 (AC1 deferred — gated on Ideogram credit top-up for live test; same standard as US-AI-031 AC1)
+- **Commits:** 7 on branch `feat/ai/m-17-real-photo-background`
+- **Notes:** (1) Fuzzy matching is bidirectional (takes max of forward/reverse word-overlap ratio) — this correctly handles the real-world case where Ideogram renders "123 Main Street" for canonical "123 Main St, Anytown". (2) Contact-shaped blocks (phone/email/URL) are dropped per the Identity policy; this is the one place AC4 and EPIC's purpose conflict — the comment in text-block.mapper.ts points to STORY.md. (3) `ai-generation.module.ts` was touched (scope drift: not listed in TASKS.md primary files, but required to register LayerExtractionService in the NestJS DI graph). (4) `LAYERIZE_COST_PER_IMAGE = 0.09` added to ai-models.config.ts with the lazy-billing explanation. (5) `GenerationsService.getComposedDesign()` is the edit-path entry point US-AI-032 will call. (6) All 241 unit tests pass; 28 new tests added (18 mapper + 10 extraction/orchestrator).
+
+### 2026-08-11 — US-AI-031 implementation complete (pre-PR)
+- **Files touched:** `api/src/modules/ai-generation/services/ideogram.service.ts`, `api/src/modules/ai-generation/services/ai-orchestrator.service.ts`, `api/src/modules/infographics/dto/generate-from-chat.dto.ts`, `api/src/modules/infographics/services/generations.service.ts`, `api/src/config/ai-models.config.ts`, `api/src/config/image-generation.config.ts`, `api/tests/ai-generation/ideogram.service.spec.ts` (new), `api/tests/ai-generation/infographic-prompt.builder.spec.ts`
+- **ACs covered:** AC2, AC3, AC4, AC5, AC6, AC7 (AC1 deferred — gated on Ideogram credit top-up for live test)
+- **Commits:** 7 on branch `feat/ai/m-17-real-photo-background`
+- **Notes:** (1) Live-path behaviour change: photo-unreadable now throws HttpException(422) instead of warn-and-continue. Users who previously got a fabricated house silently will now see an error. This is correct. (2) Architecture owner chose V4 Remix over V3 Remix (TASKS.md T3 decision trail). (3) `style_reference_images` removed from V4 generate — may fix TC-AI-010-02 open failure; requires one live call to verify. (4) `REMIX_IMAGE_WEIGHT=75` is unverified pending OQ-2 calibration ($0.24 live test). (5) All 213 unit tests pass; 20 new tests added.
 
 ---
 

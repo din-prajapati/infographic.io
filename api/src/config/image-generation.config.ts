@@ -50,3 +50,31 @@ export function orientationToIdeogramAspectV3(orientation?: string): string {
   }
   return ORIENTATION_TO_IDEOGRAM_ASPECT_V3[DEFAULT_ORIENTATION];
 }
+
+/**
+ * Source-image composition — V4 Remix rendering_speed map.
+ *
+ * Same model → rendering_speed lookup as the V4 generate path (V4_RENDERING_SPEED
+ * in ideogram.service.ts). Duplicated here so config is the canonical definition;
+ * ideogram.service.ts should import from here in a future cleanup.
+ */
+export const REMIX_RENDERING_SPEED: Record<string, string> = {
+  'ideogram-4-turbo':   'TURBO',
+  'ideogram-4':         'DEFAULT',
+  'ideogram-4-quality': 'QUALITY',
+};
+
+/**
+ * Strength of the source photo in the V4 Remix composition (range: 1–100).
+ * Higher values preserve more of the photo structure; lower values give the
+ * model more creative latitude for typography and overlay elements.
+ *
+ * ⚠️ UNVERIFIED — value chosen speculatively pending live testing (OQ-2 in
+ * SPIKE-031-ideogram-photo-background.md). Sweep 40 / 60 / 75 / 90 on one
+ * listing photo and pick the lowest weight where the building is still
+ * recognisable (AC1). Cost of the sweep: ~$0.24.
+ *
+ * Used in: ideogram.service.ts composeWithSourceImage() via local REMIX_IMAGE_WEIGHT.
+ * Consolidate the import in that file after the OQ-2 calibration.
+ */
+export const REMIX_IMAGE_WEIGHT = 75;

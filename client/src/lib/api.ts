@@ -111,6 +111,50 @@ export interface GenerateFromChatInput {
   locale?: 'en-US' | 'en-IN';
   /** The currency token the user typed, echoed verbatim when `locale` is unresolved. */
   currencyToken?: string;
+  /**
+   * How the client intends to render the result (US-AI-032 T2).
+   * 'flat' (default) loads as a single raster layer — existing behaviour.
+   * 'editable' triggers lazy layer extraction on the Edit action and loads canonical
+   * text as slot-tagged, independently selectable canvas elements.
+   * Provider-agnostic: describes output shape, never the vendor.
+   */
+  renderMode?: 'flat' | 'editable';
+}
+
+// ── ComposedDesign contract (mirrors api/src/modules/ai-generation/types/composed-design.types.ts) ──
+
+/** Geometry and style hints recovered for one text region. Values in source-image pixel space. */
+export interface ComposedTextElementGeometry {
+  x: number; y: number;
+  width: number; height: number;
+  angle: number;
+  fontFamily: string | null;
+  fontSize: number | null;
+  lineHeight: number | null;
+  color: string | null;
+  alignment: 'left' | 'center' | 'right' | null;
+}
+
+/** One canonical text element from the layer-extraction + binding step (US-AI-031b). */
+export interface ComposedTextElement {
+  /** Canonical listing field when matched; null for unmatched decorative blocks. */
+  slot: 'headline' | 'address' | 'price' | 'stats' | 'agentName' | 'brokerage' | null;
+  /** Canonical listing value (slot set) or detected text (slot null). Never model-authored. */
+  text: string;
+  geometry: ComposedTextElementGeometry;
+  /** 'measured' = geometry from extraction; 'fallback' = prose-inferred layout. */
+  placement: 'measured' | 'fallback';
+}
+
+/**
+ * What the Edit action hands to the client canvas loader (US-AI-031b → US-AI-032).
+ * Provider-free — no vendor shapes cross this boundary.
+ */
+export interface ComposedDesign {
+  /** Text-erased composition URL — becomes the background image element. */
+  backgroundUrl: string;
+  elements: ComposedTextElement[];
+  extraction: { attempted: boolean; blocksDetected: number; matched: number };
 }
 
 export interface GenerationStatus {
@@ -306,6 +350,18 @@ export const generationsApi = {
     apiRequest<{ id: string; status: string }>(
       getApiUrl(`/infographics/generations/${id}/regenerate`),
       { method: 'POST', body: JSON.stringify(data) }
+    ),
+
+  /**
+   * Lazy layer extraction — triggered only when the user clicks "Edit" in renderMode='editable'.
+   * Runs Ideogram Layerize-Text on the chosen variation, binds blocks to canonical listing
+   * fields, and returns a ComposedDesign for the client canvas loader.
+   * AC2 of US-AI-031b: extraction never runs at generate time.
+   */
+  getComposedDesign: (id: string, imageUrl: string) =>
+    apiRequest<ComposedDesign>(
+      getApiUrl(`/infographics/generations/${id}/compose`),
+      { method: 'POST', body: JSON.stringify({ imageUrl }) }
     ),
 };
 

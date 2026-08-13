@@ -11,6 +11,8 @@ import {
 } from '../../../config/image-generation.config';
 import { logGen, elapsed } from '../../../common/utils/ai-gen-logger';
 
+// PHOTO_UPLOADS_DIR is also declared in infographics.controller.ts — update
+// both if the upload path ever changes (US-AI-031 AC4 cross-reference).
 const PHOTO_UPLOADS_DIR = path.join(os.tmpdir(), 'ai-infographic-uploads');
 
 // ─── Ideogram endpoints ──────────────────────────────────────────────────────
@@ -18,10 +20,21 @@ const PHOTO_UPLOADS_DIR = path.join(os.tmpdir(), 'ai-infographic-uploads');
 const IDEOGRAM_V4_GENERATE_URL = 'https://api.ideogram.ai/v1/ideogram-v4/generate';
 // V4 magic prompt — converts a text prompt into an art-directed V4JsonPrompt (objects, colors, typography)
 const IDEOGRAM_V4_MAGIC_PROMPT_URL = 'https://api.ideogram.ai/v1/ideogram-v4/magic-prompt';
+// V4 remix — source-image composition; accepts image + text_prompt + image_weight + rendering_speed + resolution
+// Priced at generate tier. Architecture owner chose V4 over V3 on 2026-08-11: the magic-prompt
+// determinism argument (V3 has documented magic_prompt=OFF) dissolves once the model no longer
+// renders our canonical text at all — US-AI-031b re-renders it as canvas slots instead.
+const IDEOGRAM_V4_REMIX_URL = 'https://api.ideogram.ai/v1/ideogram-v4/remix';
 // V3 generate — multipart; supports text prompt with magic_prompt OFF (production-proven path)
 const IDEOGRAM_V3_URL = 'https://api.ideogram.ai/v1/ideogram-v3/generate';
 // Legacy V2 — JSON body; only valid for V_2 / V_2_TURBO model enums
 const IDEOGRAM_V2_URL = 'https://api.ideogram.ai/generate';
+
+// Source-image weight for V4 Remix.
+// ⚠️ UNVERIFIED — value chosen pending a live generation (OQ-2 in SPIKE-031).
+// Sweep 40/60/75/90 on one listing photo; pick the lowest where the building is
+// still recognisable. The canonical constant moves to image-generation.config.ts (T5).
+const REMIX_IMAGE_WEIGHT = 75;
 
 // V4 takes pixel resolutions (24 documented options) instead of aspect-ratio strings
 const V4_RESOLUTION: Record<string, string> = {
@@ -118,19 +131,13 @@ export class IdeogramService {
         form.append('style_type', 'DESIGN');
         form.append('rendering_speed', renderingSpeed);
 
-        // Attach property photo as Ideogram style reference if provided
+        // Attach property photo as Ideogram style reference if provided.
+        // readSourcePhoto throws HttpException(422) if the file is unreadable (AC4).
         if (photoReferencePath) {
-          const fullPath = path.join(PHOTO_UPLOADS_DIR, photoReferencePath);
-          try {
-            const photoBuffer = fs.readFileSync(fullPath);
-            const mimeType = photoReferencePath.endsWith('.png') ? 'image/png' : 'image/jpeg';
-            const photoBlob = new Blob([photoBuffer], { type: mimeType });
-            form.append('style_reference_images', photoBlob, photoReferencePath);
-            logGen({ generationId: generationId ?? 'unknown', event: 'image:reference:attached', photoReferencePath });
-          } catch (refErr: any) {
-            // Non-fatal: file may have expired or path is wrong — proceed without reference
-            logGen({ generationId: generationId ?? 'unknown', event: 'image:reference:missing', photoReferencePath, error: refErr?.message }, 'warn');
-          }
+          const photoBuffer = this.readSourcePhoto(photoReferencePath, generationId);
+          const mimeType = photoReferencePath.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg';
+          const photoBlob = new Blob([photoBuffer], { type: mimeType });
+          form.append('style_reference_images', photoBlob, photoReferencePath);
         }
 
         const response = await axios.post(IDEOGRAM_V3_URL, form, {
@@ -221,7 +228,6 @@ export class IdeogramService {
     model: string,
     orientation?: string,
     generationId?: string,
-    photoReferencePath?: string,
   ): Promise<string> {
     const t0 = Date.now();
     const resolution = V4_RESOLUTION[orientation || 'landscape'] || V4_RESOLUTION.landscape;
@@ -235,19 +241,13 @@ export class IdeogramService {
       form.append('rendering_speed', renderingSpeed);
       form.append('resolution', resolution);
 
-      // Attach property photo as style reference if provided (best-effort — V4 support TBD)
-      if (photoReferencePath) {
-        const fullPath = path.join(PHOTO_UPLOADS_DIR, photoReferencePath);
-        try {
-          const photoBuffer = fs.readFileSync(fullPath);
-          const mimeType = photoReferencePath.endsWith('.png') ? 'image/png' : 'image/jpeg';
-          const photoBlob = new Blob([photoBuffer], { type: mimeType });
-          form.append('style_reference_images', photoBlob, photoReferencePath);
-          logGen({ generationId: generationId ?? 'unknown', event: 'image:v4:reference:attached', photoReferencePath });
-        } catch (refErr: any) {
-          logGen({ generationId: generationId ?? 'unknown', event: 'image:v4:reference:missing', photoReferencePath, error: refErr?.message }, 'warn');
-        }
-      }
+      // `style_reference_images` was previously appended here but is NOT a documented
+      // parameter of POST /v1/ideogram-v4/generate. Documented params are:
+      // text_prompt, json_prompt, resolution, rendering_speed, enable_copyright_detection.
+      // An unexpected multipart field may 400 the whole request — identified in SPIKE-031 §3b
+      // as a likely root cause of the open TC-AI-010-02 failure (alternative to the 1×1 px
+      // fixture theory). Removed in US-AI-031 T2 to close that risk.
+      // Photo-backed generations now use composeWithSourceImage() on the V4 Remix endpoint.
 
       const response = await axios.post(IDEOGRAM_V4_GENERATE_URL, form, {
         // Do NOT set Content-Type here — axios must set the multipart boundary automatically
@@ -277,7 +277,123 @@ export class IdeogramService {
     }
   }
 
+  /**
+   * 💰 AI CALL — Source-image composition via V4 Remix.
+   *
+   * Uses the agent's uploaded property photo as the source image. The
+   * resulting composition contains the recognisable actual building (AC1).
+   * Text correctness is NOT a requirement of this call — US-AI-031b extracts
+   * geometry and re-renders canonical values as canvas slots.
+   *
+   * Cost: same per-image rates as V4 generate (remix is priced at generate
+   * tier per https://ideogram.ai/api-pricing/). Photo-backed generation is
+   * cost-neutral. See ai-models.config.ts REMIX_COST comment.
+   *
+   * Capability named for the operation, not the vendor — per team rule
+   * feedback-generic-ai-naming. Endpoint URL is a vendor fact and stays literal.
+   */
+  async composeWithSourceImage(
+    prompt: string,
+    photoPath: string,
+    model: string,
+    orientation?: string,
+    generationId?: string,
+  ): Promise<string> {
+    const t0 = Date.now();
+    const resolution = V4_RESOLUTION[orientation || 'landscape'] || V4_RESOLUTION.landscape;
+    const renderingSpeed = V4_RENDERING_SPEED[normalizeImageModel(model)] || 'DEFAULT';
+
+    logGen({
+      generationId: generationId ?? 'unknown',
+      event: 'image:remix:start',
+      imageModel: 'ideogram-4-remix',
+      resolution,
+      renderingSpeed,
+    });
+
+    // Throws HttpException(422) if file is unreadable (AC4) — deliberate hard-fail.
+    // See STORY.md "Behaviour change": the previous warn-and-continue produced a
+    // fabricated house and reported success. That is a trust and liability defect.
+    const photoBuffer = this.readSourcePhoto(photoPath, generationId);
+    const mimeType = photoPath.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg';
+    const photoBlob = new Blob([photoBuffer], { type: mimeType });
+
+    try {
+      const form = new FormData();
+      form.append('image', photoBlob, photoPath);
+      form.append('text_prompt', prompt);
+      form.append('image_weight', String(REMIX_IMAGE_WEIGHT));
+      form.append('rendering_speed', renderingSpeed);
+      form.append('resolution', resolution);
+
+      const response = await axios.post(IDEOGRAM_V4_REMIX_URL, form, {
+        // Do NOT set Content-Type here — axios must set the multipart boundary automatically
+        headers: { 'Api-Key': this.apiKey },
+      });
+
+      const imageUrl: string | undefined = response.data?.data?.[0]?.url;
+      if (imageUrl) {
+        logGen({
+          generationId: generationId ?? 'unknown',
+          event: 'image:remix:ok',
+          imageModel: 'ideogram-4-remix',
+          durationMs: elapsed(t0),
+        });
+        return imageUrl;
+      }
+
+      throw new Error('No image URL in remix response');
+    } catch (error: any) {
+      if (error instanceof HttpException) throw error;
+      logGen({
+        generationId: generationId ?? 'unknown',
+        event: 'image:remix:error',
+        imageModel: 'ideogram-4-remix',
+        durationMs: elapsed(t0),
+        error: error.response?.data?.message || error.message,
+        httpStatus: error.response?.status,
+      }, 'error');
+      throw new HttpException(
+        error.response?.data?.message || 'Failed to compose image with source photo',
+        error.response?.status || 500,
+      );
+    }
+  }
+
   getCostPerImage(model: string): number {
     return getModelCost(normalizeImageModel(model));
+  }
+
+  /**
+   * Read the agent's uploaded property photo from the upload directory.
+   *
+   * Throws HttpException(422) when the file is unreadable — this is the
+   * deliberate hard-fail introduced by US-AI-031 AC4.
+   *
+   * Both previous callers caught this error, logged a warning, and continued,
+   * producing a fabricated house that reported success. That is a trust and
+   * liability defect for a product premised on depicting the real listing.
+   *
+   * Log event names kept compatible with existing dashboards:
+   *   image:reference:attached  — file read successfully
+   *   image:reference:unreadable — new error event replacing the old 'missing' warn
+   */
+  private readSourcePhoto(photoPath: string, generationId?: string): Buffer {
+    const fullPath = path.join(PHOTO_UPLOADS_DIR, photoPath);
+    try {
+      const buffer = fs.readFileSync(fullPath);
+      logGen({ generationId: generationId ?? 'unknown', event: 'image:reference:attached', photoPath });
+      return buffer;
+    } catch (err: any) {
+      logGen(
+        { generationId: generationId ?? 'unknown', event: 'image:reference:unreadable', photoPath, error: err?.message },
+        'error',
+      );
+      throw new HttpException(
+        `Property photo could not be read (${photoPath}). ` +
+          'The file may have expired — please re-upload and try again.',
+        422,
+      );
+    }
   }
 }

@@ -37,6 +37,7 @@
 | [US-AI-014](stories/US-AI-014/STORY.md) | Campaign Mode UI toggle (CAP-10, backend deferred) | M-AI-07 | 🔲 |
 | [US-AI-003](stories/US-AI-003/STORY.md) | Replace Ideogram Turbo with Nano Banana Flash (FREE/SOLO) — **image half only; LLM half shipped** | M-AI-02 | 🔲 |
 | [US-AI-004](stories/US-AI-004/STORY.md) | Replace Ideogram V2 with Nano Banana Pro (TEAM/BROKERAGE) — **image half only** | M-AI-02 | 🔲 |
+| [US-AI-033](stories/US-AI-033/STORY.md) | Synthetic-content guard — no fake faces/buildings on real listings (moved from EPIC-AI-06 / M-AI-17, 2026-08-11) | — | 🔲 ⚠️ **scope under review** — do not implement as written |
 
 ---
 

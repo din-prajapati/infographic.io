@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsEnum, IsNumber, Min, Max, IsArray, ValidateNested } from 'class-validator';
+import { IsString, IsOptional, IsEnum, IsNumber, Min, Max, IsArray, ValidateNested, Matches } from 'class-validator';
 import { Type } from 'class-transformer';
 
 class AgentDto {
@@ -109,6 +109,13 @@ export class GenerateFromChatDto {
     required: false,
   })
   @IsString()
+  // AC5 — path-traversal guard: photoReference flows into path.join(PHOTO_UPLOADS_DIR, ...)
+  // and fs.readFileSync. A bare @IsString() allows '../../etc/passwd' to read arbitrary files.
+  // Only a UUID basename + permitted extension is valid; anything else is rejected at the boundary.
+  @Matches(
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.(jpg|jpeg|png)$/i,
+    { message: 'photoReference must be a UUID filename with .jpg, .jpeg or .png extension' },
+  )
   @IsOptional()
   photoReference?: string;
 
@@ -140,6 +147,20 @@ export class GenerateFromChatDto {
   @Type(() => AgentDto)
   @IsOptional()
   agent?: AgentDto;
+
+  @ApiProperty({
+    example: 'flat',
+    description:
+      'How the client intends to render the result. ' +
+      '"flat" (default) loads as a raster layer. ' +
+      '"editable" triggers lazy layer extraction on Edit and loads slot-tagged text elements.',
+    required: false,
+    enum: ['flat', 'editable'],
+    default: 'flat',
+  })
+  @IsEnum(['flat', 'editable'])
+  @IsOptional()
+  renderMode?: 'flat' | 'editable';
 }
 
 export class RegenerateDto {

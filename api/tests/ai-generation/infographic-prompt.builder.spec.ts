@@ -330,3 +330,31 @@ describe('formatSqft', () => {
     expect(formatSqft('1,850 sqft')).toBe('1,850 SQ FT');
   });
 });
+
+// ---------------------------------------------------------------------------
+// AC3 regression guard — US-AI-031
+//
+// All tests above form the no-photo regression harness. This block makes the
+// contract explicit: the prompt builder is photo-unaware. Routing is the
+// orchestrator's job; the builder stays a pure function of property data.
+//
+// If a future change adds a photoReference parameter to buildImagePrompt or
+// buildExpectedTexts, these tests will catch the scope creep before merge.
+// ---------------------------------------------------------------------------
+describe('AC3 regression guard — US-AI-031: prompt builder is photo-unaware', () => {
+  it('buildImagePrompt signature has exactly two required parameters (propertyData, headline)', () => {
+    // Function.length counts parameters without default values.
+    // buildImagePrompt(propertyData: any, headline: string) → .length = 2.
+    // If a photoReference arg is added without a default, this becomes 3 and fails.
+    expect(buildImagePrompt.length).toBe(2);
+  });
+
+  it('buildExpectedTexts signature has two required parameters (propertyData, headline)', () => {
+    expect(buildExpectedTexts.length).toBe(2);
+  });
+
+  it('the E3 canonical prompt is byte-identical — no-photo path untouched by US-AI-031', () => {
+    // Same contract as the first test in this file, labelled as AC3 evidence.
+    expect(buildImagePrompt(e3PropertyData, e3Headline)).toBe(loadE3TextPrompt());
+  });
+});
