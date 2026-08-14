@@ -1,6 +1,6 @@
 # Story Card — US-AI-045
 
-> **Status:** 🔲 Not Started
+> **Status:** ⛔ Closed — superseded, re-scoped to backlog (see Notes)
 > **Feature:** F-AI-06-06 — Pipeline integration
 > **Epic:** [EPIC-AI-06](../../EPIC.md)
 > **Milestone:** TBD
@@ -11,7 +11,31 @@
 >   - [US-AI-032](../US-AI-032/STORY.md) `loadComposedDesignToCanvas()` — ✅ Code done, ACs pending browser verify
 > **Blocks:** Live generation with real listing photos (US-AI-010 path)
 > **Linear:** LIN-XXX
-> **Created:** 2026-08-12 | **Closed:** —
+> **Created:** 2026-08-12 | **Closed:** 2026-08-14 (superseded, not shipped)
+
+---
+
+## Notes — re-scope decision (2026-08-14)
+
+This story as written below never got built, and per an explicit decision it never will be, in this form.
+
+What actually shipped instead, across US-AI-046 through US-AI-051 (2026-08-13/14): **extraction-led
+composition** (`88db72d`) is the default for editable mode — it reproduces the exact design the user
+already saw, not a re-planned one — with `layoutDesign()`/`connectLayout.ts` (US-AI-046) surviving only
+as the fallback for text-free backgrounds (the real-photo flow, US-AI-051, ✅ done and live-verified).
+The pipeline this story wanted to build — `planLayout API → layoutDesign → composeFromLayout →
+loadComposedDesignToCanvas` as the *primary* editable-mode path — is superseded by that architecture;
+building it as scoped below would duplicate what extraction already does better for the common case.
+
+`LayoutPlannerService.planLayout()` (US-AI-044) itself is not dead — it's real, tested (49 tests),
+DI-registered, and still has one genuine unfilled job: the real-photo fallback path currently always
+uses `DEFAULT_TEMPLATE_ID` with no photo awareness (`connectLayout.ts`'s `composeFromCanonicalValues`).
+Wiring the planner into *just* that path — not the whole pipeline — is real remaining scope, much
+smaller than this story. **Deliberately deferred to the backlog rather than built now** — user's call,
+2026-08-14. Tracked as [BL-07](../../../../../BACKLOG.md).
+
+Everything below this point is the original story as written 2026-08-12, kept for the record — it is
+not the plan going forward.
 
 ---
 
