@@ -3,6 +3,7 @@ import { readFileSync } from 'fs';
 import path from 'path';
 import {
   buildImagePrompt,
+  buildTextFreeImagePrompt,
   buildExpectedTexts,
   verifyAndRepairV4JsonPrompt,
   formatPriceShort,
@@ -390,5 +391,73 @@ describe('US-AI-051 AC2/AC3 regression baseline — text-free routing does not t
     expect(result).toContain(`- Headline: "${e3Headline}"`);
     expect(result).toContain(`- Address: ${e3PropertyData.address}`);
     expect(result).toContain(`- Price:`);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// US-AI-051 AC1 — buildTextFreeImagePrompt
+//
+// TC-AI-051-01: renderMode='editable' + photo → prompt omits text copy (AC1)
+// ---------------------------------------------------------------------------
+describe('buildTextFreeImagePrompt — US-AI-051 AC1 (text-free variant)', () => {
+  it('TC-AI-051-01: omits headline, price, address, agent, and stats lines (AC1)', () => {
+    const prompt = buildTextFreeImagePrompt(e3PropertyData, e3Headline);
+    // Must NOT contain any of the marketing copy lines
+    expect(prompt).not.toContain('- Headline:');
+    expect(prompt).not.toContain('- Price:');
+    expect(prompt).not.toContain('- Address:');
+    expect(prompt).not.toContain('- Agent:');
+    expect(prompt).not.toContain('- Details:');
+    // Must still be a non-empty, valid prompt (style/layout guidance stays)
+    expect(prompt.trim().length).toBeGreaterThan(0);
+    expect(prompt).toContain('- Style:');
+    // Must include the no-text directive so the model doesn't invent copy
+    expect(prompt).toContain('Do not include any headline');
+  });
+
+  it('retains color scheme hint when brand colors are present (color is visual, not text overlay)', () => {
+    const prompt = buildTextFreeImagePrompt(e3PropertyData, e3Headline);
+    expect(prompt).toContain('- Color scheme:');
+  });
+
+  it('omits color scheme line when no brand colors provided', () => {
+    const prompt = buildTextFreeImagePrompt({ agent: {} }, 'Test');
+    expect(prompt).not.toContain('- Color scheme:');
+  });
+
+  it('has exactly two parameters — same photo-unaware signature as buildImagePrompt (AC3 parity)', () => {
+    expect(buildTextFreeImagePrompt.length).toBe(2);
+  });
+
+  it('output differs from buildImagePrompt for the same inputs — it is a distinct prompt (AC1 distinctness)', () => {
+    const composed = buildImagePrompt(e3PropertyData, e3Headline);
+    const textFree = buildTextFreeImagePrompt(e3PropertyData, e3Headline);
+    expect(textFree).not.toBe(composed);
+  });
+
+  // TC-AI-051-07 — AC7 (builder side):
+  //
+  // AC7 specifies that when renderMode is malformed OR photoReference is falsy /
+  // empty-string, the ORCHESTRATOR guard (`renderMode === 'editable' &&
+  // typeof photoReference === 'string' && photoReference.length > 0`) evaluates to
+  // false and buildTextFreeImagePrompt is never called — so the composed prompt
+  // path runs unchanged.
+  //
+  // At the builder level the relevant coverage is: when the orchestrator DOES call
+  // this function (guard passed), it must not throw on shaped propertyData with
+  // missing or empty fields. Null/undefined at the top-level object is the
+  // orchestrator's guard responsibility; the builder receives only valid objects.
+  it('TC-AI-051-07: builder handles shaped propertyData with missing/empty fields without throwing (AC7 — builder side)', () => {
+    const cases: Array<[any, string]> = [
+      [{}, ''],                                        // completely empty object
+      [{ agent: {} }, 'headline'],                     // agent present, no colors/name
+      [{ agent: { brandColors: [] } }, 'headline'],    // empty brand colors array
+      [{ agent: { name: '' } }, ''],                   // empty agent name string
+      [{ price: 0 }, 'headline'],                      // zero price (formats as empty)
+    ];
+    for (const [propertyData, headline] of cases) {
+      expect(() => buildTextFreeImagePrompt(propertyData, headline)).not.toThrow();
+      expect(typeof buildTextFreeImagePrompt(propertyData, headline)).toBe('string');
+    }
   });
 });
