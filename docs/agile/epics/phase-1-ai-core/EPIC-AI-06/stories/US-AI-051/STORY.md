@@ -87,13 +87,13 @@ US-AI-047's log entry).
 
 | TC ID | Type | Priority | Scenario | Status | Finding |
 |-------|------|----------|----------|--------|---------|
-| TC-AI-051-01 | Auto | P0 | renderMode='editable' + photo present → prompt omits headline/price/address text (AC1) | 🔲 | |
-| TC-AI-051-02 | Auto | P0 | renderMode=undefined → prompt byte-identical to pre-story baseline (AC2, regression) | 🔲 | |
-| TC-AI-051-03 | Auto | P0 | renderMode='editable', no photo → prompt unchanged from today (AC3) | 🔲 | |
-| TC-AI-051-04 | Auto | P1 | Text-free background → compose returns blocksDetected:0 → planVariationLoad falls to layout-engine path, not blank (AC4) | 🔲 | |
-| TC-AI-051-05 | Manual | P1 | Live: real photo + Editable → canvas shows unmarked photo + layout-engine text elements (AC5) | 🔲 | |
+| TC-AI-051-01 | Auto | P0 | renderMode='editable' + photo present → prompt omits headline/price/address text (AC1) | ✅ Pass | `api/tests/ai-generation/infographic-prompt.builder.spec.ts` |
+| TC-AI-051-02 | Auto | P0 | renderMode=undefined → prompt byte-identical to pre-story baseline (AC2, regression) | ✅ Pass | `api/tests/ai-generation/infographic-prompt.builder.spec.ts` |
+| TC-AI-051-03 | Auto | P0 | renderMode='editable', no photo → prompt unchanged from today (AC3) | ✅ Pass | `api/tests/ai-generation/infographic-prompt.builder.spec.ts` |
+| TC-AI-051-04 | Auto | P1 | Text-free background → compose returns blocksDetected:0 → planVariationLoad falls to layout-engine path, not blank (AC4) | ✅ Pass | `client/src/lib/layout/__tests__/loadVariation.spec.ts` |
+| TC-AI-051-05 | Manual + E2E | P1 | Live: real photo + Editable → canvas shows unmarked photo + layout-engine text elements (AC5) | 🔲 | `e2e/us-ai-051-textfree-photo-background.spec.ts` — written, pending one live run (real Ideogram spend ~$0.15–0.25) |
 | TC-AI-051-06 | Auto | P0 | error-path: text-free prompt builder failure in infographic-prompt.builder.ts falls back to composed prompt via ai-orchestrator.service.ts, request does not fail (AC6) | ✅ Pass | `api/tests/ai-generation/ai-orchestrator.textfree-fallback.spec.ts` — buildTextFreeImagePrompt mocked to throw; asserts generateInfographic resolves, composeWithSourceImage receives buildImagePrompt's composed output, and the infographic record is persisted as completed |
-| TC-AI-051-07 | Auto | P1 | edge-case: malformed renderMode value or falsy/empty-string photo reference is treated as not satisfying the text-free branch condition, composed prompt unchanged (AC7) | 🔲 | |
+| TC-AI-051-07 | Auto | P1 | edge-case: malformed renderMode value or falsy/empty-string photo reference is treated as not satisfying the text-free branch condition, composed prompt unchanged (AC7) | ✅ Pass | `api/tests/ai-generation/infographic-prompt.builder.spec.ts` |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 
