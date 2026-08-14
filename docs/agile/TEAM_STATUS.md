@@ -3,7 +3,7 @@
 > **Audience:** Engineering leads and domain teams  
 > **Purpose:** Per-domain view of what's in progress, what's next, and what's blocked — mapped to epics and stories.  
 > **Update cadence:** When a story status changes (start / block / complete).  
-> **Last updated:** 2026-07-11 (Task 2 signed off ✅; PT-09 closed, PT-10/PT-11 logged from Task 2 QA fixes PR #15; added US-LAUNCH-009/010 env & secrets)
+> **Last updated:** 2026-08-14 (editable canvas proven live end-to-end and shipped to staging — US-AI-043/046/047/048/049/050/051; US-AI-044 merged from a 2-day-orphaned branch; see Session log for the full arc)
 
 ---
 
@@ -15,7 +15,7 @@
 | [Design (DESIGN)](#-design--frontend-design) | EPIC-DESIGN-01 + EPIC-DESIGN-02 | 🟡 US-003/004 staging | Live Ideogram API | Staging deploy unblocks both |
 | [Auth (AUTH)](#-auth-auth) | EPIC-AUTH-01 | ✅ Done | — | Full invite flow post-MVP |
 | [Canvas Editor (EDIT)](#-canvas-editor-edit) | EPIC-EDIT-01 | ✅ Done | — | Batch upload Phase 3 |
-| [AI Generation (AI)](#-ai-generation-ai) | EPIC-AI-00 | ✅ Done — 6/6; US-AI-003/004 + M-AI-02 moved to Phase 4 Backlog 2026-08-04 | — | EPIC-AI-02 deps (US-AI-010/011) → EPIC-AI-06 |
+| [AI Generation (AI)](#-ai-generation-ai) | EPIC-AI-06 (M-AI-18) | 🟡 Editable canvas working end-to-end, verified live on staging 2026-08-14 | US-AI-045 needs re-scope (planner vs extraction-led) | US-LAUNCH-015 (editable pricing/gating), 3 deferred live-verify ACs (048/049/050) |
 | [Infrastructure (INFRA)](#-infrastructure-infra) | EPIC-INFRA-01 | 🟡 Task 1 ✅ · Task 2 ✅ (2026-07-11) · Task 3 (prod) next | Human task | Admin dashboard Phase 5 |
 | [Launch Readiness (LAUNCH)](#-launch-readiness-launch) | EPIC-LAUNCH-01 | 🟡 12/14 stories ✅ Done (001–004, 006–013); US-LAUNCH-005 open, 014 not started | Phase 0 HUMAN Task 3 | M-LAUNCH-01 → beta (now incl. US-LAUNCH-009/010 env & secrets) · M-LAUNCH-02 → revenue |
 | [Organization (ORG)](#-organization--team-org) | — | Post-MVP | No email provider (US-LAUNCH-002 will fix) | EPIC-ORG-01 post-launch |
@@ -156,7 +156,7 @@
 **Phase:** 0 (MVP) ✅ Done · 0.5 ✅ Done (closed 2026-07-03)
 
 ### Now
-> No active development. **PT-09 closed** (below). Next: EPIC-AI-02 deps (US-AI-010/011) as prerequisites for EPIC-AI-06 — see [PHASE_TRACKER.md](PHASE_TRACKER.md).
+> **EPIC-AI-06 / M-AI-18 active.** Editable canvas (generate → extract layers → editable text on canvas) proven end-to-end live on staging 2026-08-14, after fixing three root causes unit tests couldn't see: generation-id lost at completion, layerize-text called with the wrong content-type (415 on every call since it shipped), and editable mode unreachable from AI Chat's real render path (conversation view had no edit affordance). Full arc in Session log below. Next up: US-LAUNCH-015 (editable pricing/gating — the feature is currently free and uncapped in cost), and closing 3 deferred live-verify ACs on US-AI-048/049/050.
 
 ### Done — Generation delivery fixes (EPIC-AI-07 + Task 2 QA)
 > **PT-09 ✅ Fixed & verified on staging 2026-07-09** ([US-AI-034](epics/phase-0-mvp/EPIC-AI-07/stories/US-AI-034/STORY.md), [PR #14](https://github.com/din-prajapati/infographic.io/pull/14) `9eed346`). Generation completed server-side but never rendered — REST fallback poll was gated behind the socket's `onError` (never fires on silent non-delivery) + timer-throttled in background tabs. Fix: always-on REST poll + `visibilitychange` catch-up + completion guard in `AIChatBox.tsx`. [US-AI-035](epics/phase-0-mvp/EPIC-AI-07/stories/US-AI-035/STORY.md) superseded.
@@ -2499,3 +2499,71 @@ tracker updates were all done by hand. The defect logged on 2026-08-05 stands.
 
 <!-- ai-sdlc:session-log -->
 **2026-08-10 09:30** · PR #33 merged · closed: US-AI-033
+
+<!-- ai-sdlc:session-log -->
+**2026-08-12 to 2026-08-14** · Editable canvas: built, broken, found, fixed, proven live, shipped to staging
+
+Four days of work on EPIC-AI-06 / M-AI-18 (editable canvas). The short version: everything
+looked individually correct and was, in aggregate, completely unusable — three separate,
+independent bugs each made the feature unreachable or non-functional in a way no unit test
+could see, because each bug was about the *wiring between* correct pieces, not the pieces
+themselves.
+
+**2026-08-12 — mechanism pivot.** [OQ-2](../research/oq2-image-weight-2026-08-12/FINDINGS.md) and
+a pure-canvas spike killed the original Remix-based approach (image_weight cannot preserve
+the source photo *and* compose a design; the LLM can reason about a photo but cannot place
+pixels). New architecture: a deterministic layout engine computes geometry; text bakes onto
+the composition; extraction recovers it later. US-AI-043 (layout engine, 154 tests) and
+US-AI-044 (LLM intent planner, GPT-4o Vision) shipped same-day on separate branches.
+
+**2026-08-13 — first live browser run, three root causes found and fixed same session:**
+1. Both surfaces (`RightSidebar`, `AIChatBox`) null their generation id at completion —
+   correct, it tears down the WS subscription — but the editable path read the same state at
+   click time, so it was always null. `planVariationLoad` degraded to flat on 100% of clicks.
+2. `layerize-text` (US-AI-031b, shipped weeks earlier) had never once worked: the endpoint
+   accepts only `multipart/form-data`, the service sent JSON, every call 415'd since the story
+   shipped, silently swallowed into the "no text detected" degraded path. Fixed to multipart;
+   found 6 real text blocks on the very next call.
+3. Quick Generate's headline was prose-only, never sent as the structured field, so the
+   editable canvas got an empty headline slot.
+
+Also inverted the engine-vs-extraction precedence (extraction leads when it detects text —
+more faithful than a re-layout) and shipped US-AI-046 through 051 (wiring, cache, font
+mapping, latency affordance, text-free background variant) same day, all with live
+verification, not just unit tests.
+
+**2026-08-14 — fourth bug, found while writing the live E2E test for US-AI-051:** editable
+mode was reachable in the codebase and unreachable in practice. `AIChatBox` has two
+mutually-exclusive render branches; the edit button and render-mode toggle existed only in
+the branch that can never show results (a conversation starts the instant a message is sent,
+before results exist, so the app always renders through the other branch). Fixed by wiring
+`onEditVariation` into `ConversationMessages`/`MessageBubble`. Verified live end-to-end
+against staging: real photo upload → generate → toggle → second generate → edit click → real
+compose call → `blocksDetected: 0` confirmed → layout-engine canvas elements present.
+
+Also found and fixed in passing: `.env`'s `PLAYWRIGHT_BASE_URL` points every
+`npx playwright test` invocation at deployed staging by default, not localhost — cost real
+debugging time chasing browser-engine theories before this was noticed. Now documented at the
+top of the affected spec.
+
+**US-AI-044 merge (2026-08-14):** `feat/ai/us-ai-044-layout-planner` sat unmerged for two days
+while 046–051 shipped directly to `main`. Looked destructive on a raw diff (82 files, 4300+
+deletions) — was not: the real 3-way merge found exactly 2 conflicts, both doc bookkeeping.
+`LayoutPlannerService` (GPT-4o Vision → PlannerIntent, 49 tests) merged clean, additive,
+untouched. It is not wired to anything — US-AI-045 (the story that would connect it) is
+explicitly left re-scope-pending: it was written before extraction-led composition proved to
+be the higher-fidelity default, and whether the planner step is still the intended path is a
+product call, not something resolved in the merge.
+
+**Repo hygiene same session:** main reconciled with a stale `origin/main` (1 commit apart,
+60+ commits the other way — main had never been pushed); 19 merged branches deleted (12 story
+branches + 7 orphaned `worktree-agent-*` pointers from subagent runs); `origin/dev` deleted
+(309 behind main, 0 ahead, also violated the repo's own "main only" git standard);
+`.orion-migration-backup/` and local `test-results/` cleared.
+
+**State at end of session:** `main` and `origin/main` in sync at `11b1f40`. Gate 1 green
+throughout (330 backend / 216 client tests, tsc clean). Staging verified live on the actual
+deployed environment, not just health-checked. Open: US-LAUNCH-015 (editable pricing —
+currently free and uncapped in cost), US-AI-045 re-scope decision,
+`origin/feat/epic-design-02-ui-redesign` (1 unmerged commit, still undecided), 3 deferred
+live-verify ACs on US-AI-048/049/050 (same shape as what closed 051, cheap whenever).

@@ -38,9 +38,11 @@
 | [US-AI-043](stories/US-AI-043/STORY.md) | Layout engine (templates + flow renderer) | M-AI-18 | L | 🟡 Implementation complete (pre-PR) | — |
 | [US-AI-044](stories/US-AI-044/STORY.md) | LLM layout planner | M-AI-18 | M | 🟡 Implementation complete (pre-PR); merged from a long-orphaned branch 2026-08-14, unwired to the pipeline (see US-AI-045) | — |
 | [US-AI-045](stories/US-AI-045/STORY.md) | Pipeline integration (planner → engine → canvas) | M-AI-18 | M | 🔲 Not Started — needs re-scope: written before extraction-led editable (`88db72d`) existed; check whether the planner step is still the intended path or superseded | — |
-| [US-AI-048](stories/US-AI-048/STORY.md) | Cache ComposedDesign per (generation, variation) | M-AI-18 | M | 🟡 Implementation complete (pre-PR) | — |
-| [US-AI-049](stories/US-AI-049/STORY.md) | Map extracted fonts to real editor typography | M-AI-18 | S | 🟡 T1+T2 done; AC5 deferred | — |
-| [US-AI-050](stories/US-AI-050/STORY.md) | Progress affordance for the editable compose wait | M-AI-18 | S | 🟡 Implementation complete (pre-PR) | — |
+| [US-AI-046](stories/US-AI-046/STORY.md) | Connect the layout engine to the editable canvas | M-AI-18 | M | ✅ Done — retroactive card 2026-08-14; ordering later revised same week (extraction leads) | — |
+| [US-AI-047](stories/US-AI-047/STORY.md) | Shared render-mode across generation surfaces | M-AI-18 | M | ✅ Done — retroactive card 2026-08-14; one of three reachability fixes needed for editable mode to work end to end | — |
+| [US-AI-048](stories/US-AI-048/STORY.md) | Cache ComposedDesign per (generation, variation) | M-AI-18 | M | 🟡 Implementation complete (pre-PR); 6/7 ACs, one manual live-latency TC deferred | — |
+| [US-AI-049](stories/US-AI-049/STORY.md) | Map extracted fonts to real editor typography | M-AI-18 | S | 🟡 5/6 ACs; AC5 (live browser) deferred | — |
+| [US-AI-050](stories/US-AI-050/STORY.md) | Progress affordance for the editable compose wait | M-AI-18 | S | 🟡 5/6 ACs; AC3 (live browser) deferred | — |
 | [US-AI-051](stories/US-AI-051/STORY.md) | Text-free background for real-photo + editable | M-AI-18 | M | ✅ All 7 ACs verified, Gate 1 green (pre-PR) | — |
 
 > **US-AI-033** (synthetic-content guard) moved to [EPIC-AI-08](../../phase-4-backlog/EPIC-AI-08/EPIC.md) 2026-08-11 — scope under review, no longer tracked in this epic. `origin/main`'s snapshot of this table (merged from `ef5adda` on 2026-08-13) predated that move; reconciled here.
