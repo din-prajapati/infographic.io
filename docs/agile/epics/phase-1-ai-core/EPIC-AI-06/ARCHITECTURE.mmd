@@ -1,5 +1,6 @@
 %% EPIC-AI-06 — Hybrid Real-Photo Pipeline
 %% Architecture updated 2026-08-12 — US-AI-043 replaces the Remix→Layerize flow.
+%% Architecture updated 2026-08-12 — US-AI-044 implements the GPT-4o layout planner.
 %%
 %% OQ-2 (2026-08-12) disproved Ideogram V4 Remix for composition:
 %%   at image_weight=75 → real photo but no design.
@@ -26,7 +27,7 @@ flowchart TB
   end
 
   subgraph Plan["Intent — LLM reasons about photo content"]
-    G["GPT-4o layout planner<br/>emits: templateId · scrimSide · palette<br/>NO pixel coordinates"]:::new
+    G["GPT-4o layout planner — US-AI-044<br/>LayoutPlannerService.planLayout(photoUrl)<br/>emits: templateId · scrimSide · palette<br/>falls back to DEFAULT_INTENT on any failure<br/>NO pixel coordinates"]:::good
   end
 
   subgraph Render["Geometry — flow renderer owns this (US-AI-043)"]
