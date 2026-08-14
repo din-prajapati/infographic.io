@@ -25,21 +25,23 @@ feat(ai): text-free background prompt for editable + real-photo generations — 
 
 ## Task Breakdown
 
-### T1 — Regression test FIRST: prompt output unchanged for renderMode=undefined/flat
+### T1 — Regression test FIRST: prompt output unchanged for renderMode=undefined/flat ✅
 **Files:** `api/tests/ai-generation/infographic-prompt.builder.spec.ts`
 **AC(s):** AC2, AC3 (write failing-safe baseline before any prompt-builder change)
 
-### T2 — Text-free prompt variant + routing by renderMode + photo presence
+### T2 — Text-free prompt variant + routing by renderMode + photo presence ✅
 **Files:** `api/src/modules/ai-generation/services/infographic-prompt.builder.ts`, `api/src/modules/ai-generation/services/ai-orchestrator.service.ts`, `api/tests/ai-generation/infographic-prompt.builder.spec.ts`
 **AC(s):** AC1
 
-### T3 — Confirm DTO threading (read-only trace, fix if actually broken)
+### T3 — Confirm DTO threading (read-only trace, fix if actually broken) ✅
 **Files:** `api/src/modules/infographics/dto/generate-from-chat.dto.ts` (TBC — likely no change needed, verify only)
 **AC(s):** AC1 (prerequisite)
+**Note:** DTO already had renderMode ✅. Call site in `generations.service.ts` did NOT pass it — fixed (scope drift, required for feature to function).
 
-### T4 — Compose fallback correctness on text-free background
+### T4 — Compose fallback correctness on text-free background ✅
 **Files:** `client/src/lib/layout/loadVariation.ts` (verify only — behaviour should already be correct per its existing fallback chain; add a spec case if a gap is found)
 **AC(s):** AC4
+**Note:** loadVariation.ts already correct. Added TC-AI-051-04 to loadVariation.spec.ts with photo-flow framing (unmarked listing photo URL).
 
 ### T5 — Live verification with a real uploaded photo
 **Files:** none — run `scripts/e2e-editable-verify.mjs` variant with photo upload, or manual browser pass
