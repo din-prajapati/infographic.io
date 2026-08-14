@@ -11,7 +11,7 @@ Editable canvas output: generated designs can be loaded as independently editabl
 | US-AI-032 | Hybrid render — editable canvas text overlay | 🟡 T1/T6 done; T2–T5 open |
 | US-AI-043 | Layout engine (templates + flow renderer) | 🟡 Implementation complete (pre-PR) |
 | US-AI-044 | LLM layout planner | 🟡 Implementation complete; unwired to the pipeline |
-| US-AI-045 | Pipeline integration (planner → engine → canvas) | 🔲 Not Started — needs re-scope, see below |
+| US-AI-045 | Pipeline integration (planner → engine → canvas) | ⛔ Closed 2026-08-14 — superseded by extraction-led composition; planner's narrower remaining job deferred to [BL-07](../../../../BACKLOG.md) |
 | US-AI-046 | Connect the layout engine to the editable canvas | ✅ Done |
 | US-AI-047 | Shared render-mode across generation surfaces | ✅ Done |
 | US-AI-048 | Cache ComposedDesign per (generation, variation) | 🟡 6/7 ACs; one manual live-latency TC deferred |
