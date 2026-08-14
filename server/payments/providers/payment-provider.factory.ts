@@ -171,9 +171,13 @@ export class PaymentProviderFactory {
         // Must be enabled AND configured
         return StripeProvider.isEnabled() && StripeProvider.isConfigured();
       case 'PADDLE':
-        return !!process.env.PADDLE_API_KEY;
       case 'PAYPAL':
-        return !!(process.env.PAYPAL_CLIENT_ID && process.env.PAYPAL_CLIENT_SECRET);
+        // Neither provider has an implementation (see getProviderByType, which
+        // throws for both) — no PaddleProvider/PayPalProvider class exists. The
+        // env-var checks this used to do (PADDLE_API_KEY, PAYPAL_CLIENT_ID/SECRET)
+        // were dead reads: even with those vars set, selecting the provider would
+        // still throw, so "available" was never actually true. BL-04.
+        return false;
       default:
         return false;
     }

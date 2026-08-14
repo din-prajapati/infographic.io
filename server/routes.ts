@@ -53,10 +53,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           signature = req.headers['stripe-signature'] as string;
           secret = process.env.STRIPE_WEBHOOK_SECRET;
           break;
-        case 'PADDLE':
-          signature = req.headers['paddle-signature'] as string;
-          secret = process.env.PADDLE_WEBHOOK_SECRET;
-          break;
+        // PADDLE/PAYPAL: no provider implementation exists (payment-provider.factory.ts
+        // throws for both), and isProviderAvailable() now correctly reports them
+        // unavailable — the guard above 400s before this switch is ever reached for
+        // either. This case, and its PADDLE_WEBHOOK_SECRET read, were dead. BL-04.
         default:
           return res.status(400).json({ error: 'Provider signature not found' });
       }
