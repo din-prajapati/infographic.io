@@ -1,6 +1,6 @@
 # Story Card — US-AI-032
 
-> **Status:** 🔶 In Progress (T3–T5,T7 done 2026-08-11; T6 done; awaiting /test-story)
+> **Status:** 🔶 In Progress — AC1/AC2/AC3 live-verified 2026-08-14; AC5 (export parity) and AC6 (malformed geometry) remain open, see Notes
 > **Feature:** F-AI-06-03 — Editable listing canvas
 > **Epic:** [EPIC-AI-06](../../EPIC.md)
 > **Milestone:** [M-AI-18](../../milestones/M-AI-18-editable-text-overlay.md)
@@ -43,17 +43,29 @@ Consume a `ComposedDesign` from US-AI-031b and turn it into a real, editable, pe
 
 ## Acceptance Criteria
 
-- [ ] **AC1 [happy-path]:** An edited generation opens in the editor as a background layer plus independently selectable text elements at their supplied positions.
-- [ ] **AC2 [happy-path]:** Each element carries its `slot` tag, so the existing sidebar Customize sections edit the values live (`RightSidebar.tsx:297-300` already derives active slots reactively from elements).
-- [ ] **AC3 [happy-path]:** The design persists and reloads with all elements intact.
+- [x] **AC1 [happy-path]:** An edited generation opens in the editor as a background layer plus independently selectable text elements at their supplied positions. **Live-verified 2026-08-14** — `e2e/us-ai-032-editable-canvas.spec.ts`: 2+ elements land with distinct (non-collapsed) screen positions, and clicking a text element succeeds.
+- [x] **AC2 [happy-path]:** Each element carries its `slot` tag, so the existing sidebar Customize sections edit the values live (`RightSidebar.tsx:297-300` already derives active slots reactively from elements). **Live-verified 2026-08-14** — editing the Price field under Property (reached via the "Edit Details" back-link, a real navigation step the test had to discover — see Notes) updates the on-canvas text within 10s, no reload needed.
+- [x] **AC3 [happy-path]:** The design persists and reloads with all elements intact. **Live-verified 2026-08-14** — Save → `/editor?designId=...` → hard reload → same element count, edited price value survives.
 - [x] **AC4 [regression]:** Flat mode remains available and unchanged; the user chooses per generation.
-- [ ] **AC5 [regression]:** **Export matches the composed preview at full resolution.** This is *not* true today — see Export parity below. Real work, not a checkbox.
-- [ ] **AC6 [error-path]:** An element with missing or malformed geometry renders with a safe default placement and style. Never crashes the editor, never silently drops the value.
+- [ ] **AC5 [regression]:** **Export matches the composed preview at full resolution.** This is *not* true today — see Export parity below. Real work, not a checkbox. **Not covered by the 2026-08-14 live E2E pass** — needs a pixel-diff harness against the two competing export renderers, separate scope from this pass.
+- [ ] **AC6 [error-path]:** An element with missing or malformed geometry renders with a safe default placement and style. Never crashes the editor, never silently drops the value. **Not covered by the 2026-08-14 live E2E pass** — needs a way to inject malformed geometry into a real extraction response, which a live-data test cannot control; would need a mocked/fixture-based test instead.
 - [x] **AC7 [edge-case]:** A `slot` id absent from the sidebar catalogs **fails loudly at dev time** rather than vanishing. Today `TemplateSection` returns `null` when nothing matches (`TemplateSlotSection.tsx:210-211`), so a typo'd slot silently deletes a value from the UI — exactly the failure AC6 forbids.
 
 ---
 
 ## ⚠️ Verification status — read before ticking anything else
+
+**Update 2026-08-14: AC1/AC2/AC3 resolved.** Real Playwright E2E coverage
+(`e2e/us-ai-032-editable-canvas.spec.ts`) against a live generation +
+real extraction now verifies them — this is the "client test infrastructure"
+this section originally said was missing, arriving as an E2E harness rather
+than a jsdom unit suite (the right call: the concerns here — DOM positioning,
+sidebar↔canvas reactivity, a real save→reload round trip — are genuinely
+E2E-shaped, not unit-shaped; see US-DEPLOY-007's own strategy note on why
+canvas logic stays unit-tested only at the pure-geometry-helper layer).
+AC5 and AC6 remain open — see their AC notes above. The critique below of
+the *old* AC1/2/3/6 evidence (the crude spec that didn't call real code)
+stands as history and as a caution against that failure mode recurring.
 
 **Implementation for AC1, AC2, AC3 and AC6 is complete and on the branch. Those ACs are unticked because nothing verifies them.**
 
@@ -68,6 +80,22 @@ Consume a `ComposedDesign` from US-AI-031b and turn it into a real, editable, pe
 The two ACs that remain ticked have real evidence: **AC4** because `loadAiVariationToCanvas` and both its call sites are provably untouched in the diff, and **AC7** because the `SlotId` union is enforced by `npm run check`, which passes (the dev-time throw itself is still unverified).
 
 **These ACs become verifiable when [US-DEPLOY-007](../../../EPIC-DEPLOY-01/stories/US-DEPLOY-007/STORY.md) lands.** Do not tick them on the strength of the current suite — and treat "254 tests passing" as evidence about the backend, not about this story.
+
+---
+
+## Notes — live E2E pass, 2026-08-14
+
+Writing `e2e/us-ai-032-editable-canvas.spec.ts` surfaced a real navigation
+fact not documented anywhere before this: once a design loads, the
+RightSidebar shows the **results panel** (Quick Generate button + variation
+cards), not the Design/Property/Agent tabs — those are the *pre-generation*
+property-entry form's tabs (`RightSidebar.tsx:1040-1078`), reachable again
+post-load only via the "← Edit Details" back-link (`setShowResults(false)`).
+The canvas itself is untouched by this toggle — it's purely a sidebar-view
+switch — but AC2's own claim ("the existing sidebar Customize sections edit
+the values live") is not reachable by a naive "click Property" the way a
+first read of the AC suggests. No code change needed; documenting the real
+click path here so the next person (or agent) doesn't lose time rediscovering it.
 
 ---
 
@@ -181,12 +209,12 @@ Implementation rules:
 
 | TC ID | Type | Priority | Scenario | Status | Finding |
 |-------|------|----------|----------|--------|---------|
-| TC-AI-032-01 | Manual | P0 | Edit a generation → background plus individually selectable text elements at supplied positions | 🔲 | |
-| TC-AI-032-02 | Manual | P0 | Change a slot value in the sidebar (e.g. price) → canvas updates live | 🔲 | |
-| TC-AI-032-03 | Manual | P0 | Save and reload → all elements and slot tags intact | ⏸ | Blocked — no client test infra (US-DEPLOY-007) |
-| TC-AI-032-04 | Manual | P0 | Export an editable design → pixel output matches composed preview at full resolution | ⏸ | Blocked — no client test infra (US-DEPLOY-007) |
-| TC-AI-032-05 | Manual | P0 | Flat mode → unchanged existing behaviour, no slots created | ⏸ | Blocked — flat path untouched in diff, but runtime unverified |
-| TC-AI-032-06 | Manual | P1 | Element with malformed geometry → safe default placement, no crash, value still present | ⏸ | Blocked — no client test infra (US-DEPLOY-007) |
+| TC-AI-032-01 | Auto (E2E, live) | P0 | Edit a generation → background plus individually selectable text elements at supplied positions | ✅ Pass | `e2e/us-ai-032-editable-canvas.spec.ts` — live run 2026-08-14 |
+| TC-AI-032-02 | Auto (E2E, live) | P0 | Change a slot value in the sidebar (e.g. price) → canvas updates live | ✅ Pass | `e2e/us-ai-032-editable-canvas.spec.ts` — required discovering the "Edit Details" back-link step, see Notes |
+| TC-AI-032-03 | Auto (E2E, live) | P0 | Save and reload → all elements and slot tags intact | ✅ Pass | `e2e/us-ai-032-editable-canvas.spec.ts` — element count + edited value both survive a hard reload |
+| TC-AI-032-04 | Manual | P0 | Export an editable design → pixel output matches composed preview at full resolution | ⏸ | Still blocked — needs a pixel-diff harness, separate scope from the 2026-08-14 pass |
+| TC-AI-032-05 | Manual | P0 | Flat mode → unchanged existing behaviour, no slots created | ⏸ | Not exercised by the new E2E spec (editable-only); flat path still only provably untouched in the diff |
+| TC-AI-032-06 | Manual | P1 | Element with malformed geometry → safe default placement, no crash, value still present | ⏸ | Still blocked — needs a fixture/mocked test to inject malformed geometry; a live-data test can't control this |
 | TC-AI-032-07 | Auto | P1 | Unknown slot id → loud dev-time failure, not a silent disappearance | ⚠ | Compile-time half only — `SlotId` union via `npm run check`; dev-throw unverified |
 | TC-AI-032-08 | Auto | P1 | `verifyAndRepairV4JsonPrompt` is not invoked on the editable path | ⚠ | Source-scan tripwire only — defeated by rename/alias/indirect call |
 | TC-AI-032-09 | Manual | P2 | Replace the background image with a different photo → composition holds, text elements unaffected | 🔲 | |
