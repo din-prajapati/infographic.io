@@ -92,7 +92,7 @@ US-AI-047's log entry).
 | TC-AI-051-03 | Auto | P0 | renderMode='editable', no photo → prompt unchanged from today (AC3) | 🔲 | |
 | TC-AI-051-04 | Auto | P1 | Text-free background → compose returns blocksDetected:0 → planVariationLoad falls to layout-engine path, not blank (AC4) | 🔲 | |
 | TC-AI-051-05 | Manual | P1 | Live: real photo + Editable → canvas shows unmarked photo + layout-engine text elements (AC5) | 🔲 | |
-| TC-AI-051-06 | Auto | P0 | error-path: text-free prompt builder failure in infographic-prompt.builder.ts falls back to composed prompt via ai-orchestrator.service.ts, request does not fail (AC6) | 🔲 | |
+| TC-AI-051-06 | Auto | P0 | error-path: text-free prompt builder failure in infographic-prompt.builder.ts falls back to composed prompt via ai-orchestrator.service.ts, request does not fail (AC6) | ✅ Pass | `api/tests/ai-generation/ai-orchestrator.textfree-fallback.spec.ts` — buildTextFreeImagePrompt mocked to throw; asserts generateInfographic resolves, composeWithSourceImage receives buildImagePrompt's composed output, and the infographic record is persisted as completed |
 | TC-AI-051-07 | Auto | P1 | edge-case: malformed renderMode value or falsy/empty-string photo reference is treated as not satisfying the text-free branch condition, composed prompt unchanged (AC7) | 🔲 | |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
