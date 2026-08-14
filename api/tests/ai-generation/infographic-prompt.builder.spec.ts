@@ -3,6 +3,7 @@ import { readFileSync } from 'fs';
 import path from 'path';
 import {
   buildImagePrompt,
+  buildTextFreeImagePrompt,
   buildExpectedTexts,
   verifyAndRepairV4JsonPrompt,
   formatPriceShort,
@@ -356,5 +357,107 @@ describe('AC3 regression guard — US-AI-031: prompt builder is photo-unaware', 
   it('the E3 canonical prompt is byte-identical — no-photo path untouched by US-AI-031', () => {
     // Same contract as the first test in this file, labelled as AC3 evidence.
     expect(buildImagePrompt(e3PropertyData, e3Headline)).toBe(loadE3TextPrompt());
+  });
+});
+
+// ---------------------------------------------------------------------------
+// US-AI-051 AC2/AC3 regression baseline — text-free prompt routing
+//
+// These tests are written BEFORE adding buildTextFreeImagePrompt so there is a
+// git record that the baseline existed before any builder change. They must
+// remain green after T2's changes because buildImagePrompt is never modified —
+// only a NEW function is added alongside it.
+//
+// TC-AI-051-02: renderMode=undefined (absent) → prompt byte-identical to today.
+// TC-AI-051-03: renderMode='editable' with no photo → prompt unchanged (builder
+//               is photo-unaware; routing is the orchestrator's job).
+// ---------------------------------------------------------------------------
+describe('US-AI-051 AC2/AC3 regression baseline — text-free routing does not touch buildImagePrompt', () => {
+  it('TC-AI-051-02: buildImagePrompt output is byte-identical to the E3 baseline regardless of caller context (AC2)', () => {
+    // Captured twice to prove determinism — same result, same reference text.
+    const promptA = buildImagePrompt(e3PropertyData, e3Headline);
+    const promptB = buildImagePrompt(e3PropertyData, e3Headline);
+    expect(promptA).toBe(promptB);
+    expect(promptA).toBe(loadE3TextPrompt());
+  });
+
+  it('TC-AI-051-03: buildImagePrompt is photo-unaware — signature does not gain renderMode or photoReference params (AC3)', () => {
+    // Function.length is 2 now (propertyData, headline).
+    // If a third param were added without a default it would be 3 — caught here.
+    expect(buildImagePrompt.length).toBe(2);
+    // Builder output for the same inputs is always the text-baked composed prompt,
+    // regardless of any mode context the orchestrator knows about.
+    const result = buildImagePrompt(e3PropertyData, e3Headline);
+    expect(result).toContain(`- Headline: "${e3Headline}"`);
+    expect(result).toContain(`- Address: ${e3PropertyData.address}`);
+    expect(result).toContain(`- Price:`);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// US-AI-051 AC1 — buildTextFreeImagePrompt
+//
+// TC-AI-051-01: renderMode='editable' + photo → prompt omits text copy (AC1)
+// ---------------------------------------------------------------------------
+describe('buildTextFreeImagePrompt — US-AI-051 AC1 (text-free variant)', () => {
+  it('TC-AI-051-01: omits headline, price, address, agent, and stats lines (AC1)', () => {
+    const prompt = buildTextFreeImagePrompt(e3PropertyData, e3Headline);
+    // Must NOT contain any of the marketing copy lines
+    expect(prompt).not.toContain('- Headline:');
+    expect(prompt).not.toContain('- Price:');
+    expect(prompt).not.toContain('- Address:');
+    expect(prompt).not.toContain('- Agent:');
+    expect(prompt).not.toContain('- Details:');
+    // Must still be a non-empty, valid prompt (style/layout guidance stays)
+    expect(prompt.trim().length).toBeGreaterThan(0);
+    expect(prompt).toContain('- Style:');
+    // Must include the no-text directive so the model doesn't invent copy
+    expect(prompt).toContain('Do not include any headline');
+  });
+
+  it('retains color scheme hint when brand colors are present (color is visual, not text overlay)', () => {
+    const prompt = buildTextFreeImagePrompt(e3PropertyData, e3Headline);
+    expect(prompt).toContain('- Color scheme:');
+  });
+
+  it('omits color scheme line when no brand colors provided', () => {
+    const prompt = buildTextFreeImagePrompt({ agent: {} }, 'Test');
+    expect(prompt).not.toContain('- Color scheme:');
+  });
+
+  it('has exactly two parameters — same photo-unaware signature as buildImagePrompt (AC3 parity)', () => {
+    expect(buildTextFreeImagePrompt.length).toBe(2);
+  });
+
+  it('output differs from buildImagePrompt for the same inputs — it is a distinct prompt (AC1 distinctness)', () => {
+    const composed = buildImagePrompt(e3PropertyData, e3Headline);
+    const textFree = buildTextFreeImagePrompt(e3PropertyData, e3Headline);
+    expect(textFree).not.toBe(composed);
+  });
+
+  // TC-AI-051-07 — AC7 (builder side):
+  //
+  // AC7 specifies that when renderMode is malformed OR photoReference is falsy /
+  // empty-string, the ORCHESTRATOR guard (`renderMode === 'editable' &&
+  // typeof photoReference === 'string' && photoReference.length > 0`) evaluates to
+  // false and buildTextFreeImagePrompt is never called — so the composed prompt
+  // path runs unchanged.
+  //
+  // At the builder level the relevant coverage is: when the orchestrator DOES call
+  // this function (guard passed), it must not throw on shaped propertyData with
+  // missing or empty fields. Null/undefined at the top-level object is the
+  // orchestrator's guard responsibility; the builder receives only valid objects.
+  it('TC-AI-051-07: builder handles shaped propertyData with missing/empty fields without throwing (AC7 — builder side)', () => {
+    const cases: Array<[any, string]> = [
+      [{}, ''],                                        // completely empty object
+      [{ agent: {} }, 'headline'],                     // agent present, no colors/name
+      [{ agent: { brandColors: [] } }, 'headline'],    // empty brand colors array
+      [{ agent: { name: '' } }, ''],                   // empty agent name string
+      [{ price: 0 }, 'headline'],                      // zero price (formats as empty)
+    ];
+    for (const [propertyData, headline] of cases) {
+      expect(() => buildTextFreeImagePrompt(propertyData, headline)).not.toThrow();
+      expect(typeof buildTextFreeImagePrompt(propertyData, headline)).toBe('string');
+    }
   });
 });

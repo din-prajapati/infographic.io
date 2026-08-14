@@ -8,6 +8,7 @@ import { normalizeImageModel } from '../../../config/image-generation.config';
 import { logGen, elapsed } from '../../../common/utils/ai-gen-logger';
 import {
   buildImagePrompt,
+  buildTextFreeImagePrompt,
   buildExpectedTexts,
   verifyAndRepairV4JsonPrompt,
   applyStylePreset,
@@ -52,7 +53,14 @@ export class AiOrchestrator {
   async generateInfographic(
     infographicId: string,
     propertyData: any,
-    options?: { variations?: number; style?: string; orientation?: string; photoReference?: string },
+    options?: {
+      variations?: number;
+      style?: string;
+      orientation?: string;
+      photoReference?: string;
+      /** US-AI-051: 'editable' + real photo → text-free background prompt. */
+      renderMode?: 'flat' | 'editable';
+    },
     progressGateway?: any,
   ): Promise<void> {
     const t0 = Date.now();
@@ -60,6 +68,7 @@ export class AiOrchestrator {
     const style = options?.style;
     const orientation = options?.orientation || propertyData.orientation || 'landscape';
     const photoReference = options?.photoReference;
+    const renderMode = options?.renderMode;
     const isDemoMode = process.env.DEMO_MODE === 'true';
     const imageModel = normalizeImageModel(propertyData.aiModel || 'ideogram-turbo');
 
@@ -174,11 +183,39 @@ export class AiOrchestrator {
             // Cost: remix is priced at generate tier (see ai-models.config.ts
             // REMIX_COST comment) — this branch is cost-neutral vs. today.
             // ────────────────────────────────────────────────────────────────
+
+            // ── US-AI-051: text-free variant for editable + real-photo path ─
+            // Guard (AC7): renderMode must be exactly 'editable' AND photoReference
+            // must be a non-empty string. Any other combination (flat, absent,
+            // malformed, or empty-string photo) falls through to imagePrompt.
+            let photoBasePrompt = imagePrompt;
+            const useTextFree =
+              renderMode === 'editable' &&
+              typeof photoReference === 'string' &&
+              photoReference.length > 0;
+            if (useTextFree) {
+              try {
+                photoBasePrompt = applyStylePreset(
+                  buildTextFreeImagePrompt(propertyData, headline),
+                  style,
+                );
+                logGen({ generationId: infographicId, event: 'gen:prompt:textfree:ok' });
+              } catch (tfErr: any) {
+                // AC6 — builder failure is non-fatal; fall back to the existing
+                // composed (text-baked) prompt. imagePrompt was already built above.
+                logGen(
+                  { generationId: infographicId, event: 'gen:prompt:textfree:fallback', error: tfErr?.message },
+                  'warn',
+                );
+                // photoBasePrompt stays as imagePrompt (the composed variant)
+              }
+            }
+
             const cleanTypographyInstruction =
               '\n\nTypography: use clean, straight, standard sans-serif type at high contrast. ' +
               'Avoid curved, decorative or graphic-embedded text — downstream text-detection ' +
               'degrades on those styles.';
-            const remixPrompt = imagePrompt + cleanTypographyInstruction;
+            const remixPrompt = photoBasePrompt + cleanTypographyInstruction;
 
             const t3 = Date.now();
             logGen({ generationId: infographicId, event: 'gen:image:start', imageModel, variations, orientation, mode: 'photo-remix' });

@@ -39,7 +39,7 @@
 | [US-AI-048](stories/US-AI-048/STORY.md) | Cache ComposedDesign per (generation, variation) | M-AI-18 | M | 🟡 Implementation complete (pre-PR) | — |
 | [US-AI-049](stories/US-AI-049/STORY.md) | Map extracted fonts to real editor typography | M-AI-18 | S | 🟡 T1+T2 done; AC5 deferred | — |
 | [US-AI-050](stories/US-AI-050/STORY.md) | Progress affordance for the editable compose wait | M-AI-18 | S | 🟡 Implementation complete (pre-PR) | — |
-| [US-AI-051](stories/US-AI-051/STORY.md) | Text-free background for real-photo + editable | M-AI-18 | M | 🔲 Not Started | — |
+| [US-AI-051](stories/US-AI-051/STORY.md) | Text-free background for real-photo + editable | M-AI-18 | M | 🟡 Implementation complete (pre-PR); AC5 deferred | — |
 
 > **US-AI-033** (synthetic-content guard) moved to [EPIC-AI-08](../../phase-4-backlog/EPIC-AI-08/EPIC.md) 2026-08-11 — scope under review, no longer tracked in this epic. `origin/main`'s snapshot of this table (merged from `ef5adda` on 2026-08-13) predated that move; reconciled here.
 
@@ -75,6 +75,12 @@
 ---
 
 ## Implementation Update (log)
+
+### 2026-08-14 — US-AI-051 implementation complete (pre-PR)
+- **Files touched:** `api/src/modules/ai-generation/services/infographic-prompt.builder.ts` (new `buildTextFreeImagePrompt`), `api/src/modules/ai-generation/services/ai-orchestrator.service.ts` (added `renderMode` to options + routing guard + try/catch fallback), `api/src/modules/infographics/services/generations.service.ts` (thread `renderMode: dto.renderMode` to orchestrator call — scope drift, required for end-to-end wiring), `api/tests/ai-generation/infographic-prompt.builder.spec.ts` (T1 regression baseline + T2 AC1/AC7 tests, 6 new test cases), `client/src/lib/layout/__tests__/loadVariation.spec.ts` (TC-AI-051-04 explicit AC4 test)
+- **ACs covered:** AC1 ✅ (`buildTextFreeImagePrompt` verified to omit all text copy lines, TC-AI-051-01), AC2 ✅ (byte-identical E3 prompt regression test, TC-AI-051-02), AC3 ✅ (builder signature unchanged, photo-unaware contract maintained, TC-AI-051-03), AC4 ✅ (TC-AI-051-04 in loadVariation.spec.ts — blocksDetected:0 routes to layout engine, not blank canvas), AC6 ✅ (try/catch in orchestrator around `buildTextFreeImagePrompt` falls back to `buildImagePrompt`, validated structurally), AC7 ✅ (guard condition `renderMode==='editable' && typeof photoReference==='string' && photoReference.length>0` handles malformed renderMode and falsy/empty photo; builder robustness to shaped inputs tested). AC5 deferred — requires live browser run with real uploaded photo; not available in isolated worktree.
+- **Commits:** 4 on branch `feat/ai/us-ai-051-textfree-photo-background` (T1 regression baseline, T2 builder+orchestrator+tests, T3 DTO threading, T4 AC4 spec)
+- **Notes:** (1) `generate-from-chat.dto.ts` already had `renderMode` — no change needed there. The gap was in `generations.service.ts` which was not in STORY.md's primary files list but was required for end-to-end wiring; noted as scope drift. (2) The text-free prompt is a separate exported function — `buildImagePrompt` is untouched and byte-identical for all non-target combinations. (3) TC-AI-051-06 (AC6 orchestrator fallback) is validated by the try/catch structure in `ai-orchestrator.service.ts`; a full unit test would require mocking the builder module inside an orchestrator test context (similar to compose-cache.spec.ts) — feasible in a follow-up `/test-story` pass. (4) 127 backend ai-generation tests + 216 client tests all passing; `npm run check` clean.
 
 ### 2026-08-13 — US-AI-049 implementation complete (pre-PR)
 - **Files touched:** `client/src/lib/fontMap.ts` (new), `client/src/lib/__tests__/fontMap.spec.ts` (new), `client/src/lib/canvasState.ts`, `client/index.html`, `api/tests/canvas/canvasState.helpers.spec.ts`

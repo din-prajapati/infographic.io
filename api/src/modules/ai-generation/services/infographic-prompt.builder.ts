@@ -278,6 +278,33 @@ export function applyStylePreset(prompt: string, style?: string): string {
   return modifier ? `${prompt}. Style: ${modifier}` : prompt;
 }
 
+/**
+ * Build a text-free background prompt for the real-photo + editable combination.
+ *
+ * Used ONLY when renderMode='editable' AND a photo reference is present (the
+ * composeWithSourceImage path, US-AI-031). Baking headline/price/address onto
+ * the user's actual listing photo is undesirable when Editable mode is active —
+ * the layout engine (US-AI-043) will overlay those values as live canvas elements.
+ *
+ * Every other combination (flat mode; editable + no photo) MUST use
+ * buildImagePrompt — this function is NOT a replacement, only a narrow variant
+ * for one specific path (AC2, AC3 from US-AI-051).
+ *
+ * Keeps color scheme hints because those are visual composition choices,
+ * not text the user will re-overlay as canvas elements.
+ */
+export function buildTextFreeImagePrompt(propertyData: any, headline: string): string {
+  const p = derivePromptParts(propertyData, headline);
+  const lines = [`Professional real estate listing background composition:`];
+  if (p.colors) lines.push(`- Color scheme: use ${p.colors} as the primary colors`);
+  lines.push(
+    `- Style: modern luxury real estate marketing, editorial composition`,
+    `- Layout: property photo as full background, clean composition without text overlay`,
+    `- Do not include any headline, price, address, or agent text — background only`,
+  );
+  return lines.join('\n');
+}
+
 /** Per-variation prompt suffix so V2/V3 variations differ visually. */
 export function getVariationModifier(index: number): string {
   const modifiers = [
