@@ -194,6 +194,9 @@ export class GenerationsService {
               style: dto.style,
               orientation: dto.orientation || 'landscape',
               photoReference: dto.photoReference,
+              // US-AI-051: thread renderMode so the orchestrator can select the
+              // text-free prompt variant when editable + real-photo are combined.
+              renderMode: dto.renderMode,
             },
             this.progressGateway, // Pass gateway for progress updates
           );
