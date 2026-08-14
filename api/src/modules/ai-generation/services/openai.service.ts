@@ -84,4 +84,51 @@ Return ONLY the headline text. Examples: "Stunning Hilltop Retreat", "Modern Urb
     return response.choices[0].message.content?.trim() || 'Beautiful Property';
   }
 
+  /**
+   * 💰 AI CALL — general-purpose structured (JSON) extraction, tier-routed
+   * identically to {@link analyzeProperty}: Gemini 2.5 Flash for FREE/SOLO/TEAM,
+   * GPT-4o for BROKERAGE, GPT-4o as the fallback when Gemini is unconfigured.
+   *
+   * BL-06: extraction previously reached past this class entirely (a private
+   * `openai` client field accessed via `as any` from prompt-extractor.service.ts)
+   * and called `gpt-4o` unconditionally, regardless of tier. Extraction runs on
+   * every generation, before the headline call — so an OpenAI outage or credit
+   * exhaustion failed generation for every tier, including ones already routed
+   * off OpenAI for the headline step. This method is the shared routing point
+   * both calls now go through, so that inconsistency can't recur.
+   *
+   * Returns the raw JSON string from whichever provider handled it — callers
+   * parse it themselves, same contract the direct OpenAI call had before.
+   */
+  async extractStructuredData(systemPrompt: string, userPrompt: string, planTier?: string): Promise<string> {
+    const tier = (planTier || '').toLowerCase();
+    const useGemini = GEMINI_TIERS.has(tier) && !!this.gemini;
+
+    if (useGemini) {
+      console.log(`🤖 [LLM] Gemini 2.5 Flash selected for tier="${tier}" — calling Google AI (extraction)`);
+      const model = this.gemini!.getGenerativeModel({
+        model: 'gemini-2.5-flash',
+        generationConfig: { responseMimeType: 'application/json' },
+      });
+      const result = await model.generateContent(`${systemPrompt}\n\n${userPrompt}`);
+      return result.response.text();
+    }
+
+    if (!this.openai) {
+      throw new Error('Neither OpenAI nor Gemini is configured — extraction cannot run.');
+    }
+
+    console.log(`🤖 [LLM] GPT-4o selected for tier="${tier || 'brokerage/default'}" — calling OpenAI (extraction)`);
+    const response = await this.openai.chat.completions.create({
+      model: 'gpt-4o',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt },
+      ],
+      response_format: { type: 'json_object' },
+    });
+
+    return response.choices[0].message.content || '{}';
+  }
+
 }

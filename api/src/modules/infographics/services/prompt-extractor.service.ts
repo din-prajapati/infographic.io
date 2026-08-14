@@ -94,22 +94,15 @@ ${contextMessages.length > 0 ? `\nPrevious conversation context:\n${contextMessa
 
 Return the extracted data as JSON.`;
 
-      // Call GPT-5 for extraction
-      const openai = (this.openAiService as any).openai;
-      if (!openai) {
-        throw new Error('OpenAI service not configured');
-      }
-
-      const response = await openai.chat.completions.create({
-        model: 'gpt-4o',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt },
-        ],
-        response_format: { type: 'json_object' },
-      });
-
-      const extractedJson = JSON.parse(response.choices[0].message.content || '{}');
+      // BL-06: route through the same Gemini/GPT-4o tier logic the headline
+      // call uses (ai-orchestrator.service.ts), instead of always hitting
+      // GPT-4o. Extraction runs on every generation, before the headline —
+      // hardcoding it to OpenAI meant one provider's outage/credit exhaustion
+      // failed generation for every tier, including tiers already routed off
+      // OpenAI elsewhere.
+      const planTier = await this.resolvePlanTier(organizationId);
+      const rawJson = await this.openAiService.extractStructuredData(systemPrompt, userPrompt, planTier);
+      const extractedJson = JSON.parse(rawJson || '{}');
       const extractedData: ExtractedPropertyData = {
         propertyType: extractedJson.propertyType || undefined,
         listingType: extractedJson.listingType || undefined,
@@ -188,6 +181,26 @@ Return the extracted data as JSON.`;
     } catch (error: any) {
       console.error(`❌ [Extractor] Extraction failed:`, error?.message || error);
       throw new Error(`Failed to extract property data: ${error?.message || 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * BL-06: mirrors ai-orchestrator.service.ts's planTier lookup so extraction
+   * and the headline call route identically. Non-fatal on any failure —
+   * falls back to '' (routes to GPT-4o, the safe default), matching the
+   * orchestrator's own fallback behavior; a plan-tier lookup failure must
+   * degrade routing, never break extraction outright.
+   */
+  private async resolvePlanTier(organizationId?: string): Promise<string> {
+    if (!organizationId) return '';
+    try {
+      const org = await this.prisma.organization.findUnique({
+        where: { id: organizationId },
+        select: { planTier: true },
+      });
+      return org?.planTier?.toLowerCase() || '';
+    } catch {
+      return '';
     }
   }
 
