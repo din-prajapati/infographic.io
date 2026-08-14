@@ -39,7 +39,7 @@
 | [US-AI-048](stories/US-AI-048/STORY.md) | Cache ComposedDesign per (generation, variation) | M-AI-18 | M | 🟡 Implementation complete (pre-PR) | — |
 | [US-AI-049](stories/US-AI-049/STORY.md) | Map extracted fonts to real editor typography | M-AI-18 | S | 🟡 T1+T2 done; AC5 deferred | — |
 | [US-AI-050](stories/US-AI-050/STORY.md) | Progress affordance for the editable compose wait | M-AI-18 | S | 🟡 Implementation complete (pre-PR) | — |
-| [US-AI-051](stories/US-AI-051/STORY.md) | Text-free background for real-photo + editable | M-AI-18 | M | 🟡 Implementation complete (pre-PR); AC5 deferred | — |
+| [US-AI-051](stories/US-AI-051/STORY.md) | Text-free background for real-photo + editable | M-AI-18 | M | ✅ All 7 ACs verified, Gate 1 green (pre-PR) | — |
 
 > **US-AI-033** (synthetic-content guard) moved to [EPIC-AI-08](../../phase-4-backlog/EPIC-AI-08/EPIC.md) 2026-08-11 — scope under review, no longer tracked in this epic. `origin/main`'s snapshot of this table (merged from `ef5adda` on 2026-08-13) predated that move; reconciled here.
 
@@ -75,6 +75,16 @@
 ---
 
 ## Implementation Update (log)
+
+### 2026-08-14 — Editable mode was unreachable from AI Chat's real UI (found + fixed while running TC-AI-051-05)
+- **What happened:** Writing the live E2E test for US-AI-051 (`e2e/us-ai-051-textfree-photo-background.spec.ts`) surfaced a fourth reachability bug in the same family as US-AI-047's original finding — editable mode existed correctly in the codebase and was completely unusable from the surface a real user hits.
+- **Root cause:** `AIChatBox.tsx` has two mutually-exclusive render branches gated on `hasActiveConversation` (`conversationMessages.length > 0`). The render-mode toggle and `onEditVariation` wiring existed ONLY in the `false` branch ("Default View"). But `setConversationMessages` fires at generate-*call* time — the instant a user sends their first message, before any result exists — so `hasActiveConversation` is already `true` by the time results ever render. The "Default View" branch can therefore never show results in practice; every real generation renders through `ConversationMessages` → `MessageBubble` instead, which had no editable affordance at all (`onUseVariation` only). Same failure shape as the US-AI-047 generation-id bug: individually-correct code that the actual UI path never reaches.
+- **Fix:** `MessageBubble.tsx` gained an `onEditVariation` prop and a per-variation icon button (`title="Customize in editor"`, mirrors `ResultsVariations.tsx`'s pattern). `ConversationMessages.tsx` threads the prop through. `AIChatBox.tsx` wires `onEditVariation={handleEditVariation}` into `<ConversationMessages>` and adds an "Edit as: Flat/Editable" toggle directly in the conversation view (previously only reachable in the dead branch) so the preference can be set without leaving the panel.
+- **Verified live:** `TC-AI-051-05` — real photo upload, generation #1 (flat, reveals toggle), click Editable, generation #2 (renderMode='editable' + photoReference reach the server together), click the now-reachable Edit button, real `POST /compose` fires, `extraction.blocksDetected === 0` confirmed, layout-engine canvas elements present. 55.8s, clean pass.
+- **Also found:** `MessageBubble`/`ConversationMessages` accept an `onRegenerateAll` prop that is never actually rendered/called anywhere — dead prop, not wired to any control. Not fixed (out of scope for this fix; a "Regenerate" affordance in conversation view would be a separate small story). The E2E test works around it by sending a follow-up message instead, which is the real, working way a user triggers a second generation from this view.
+- **Also found (tooling, not app):** `.env`'s `PLAYWRIGHT_BASE_URL` points every `npx playwright test` invocation at the deployed staging environment by default, not localhost. Running a spec with no override tests whatever is currently deployed there — not the working tree. Cost significant live-debugging time before being noticed; now documented at the top of the new spec file. Worth a repo-wide callout for anyone else writing/running E2E specs locally.
+- **Files touched:** `client/src/components/ai-chat/MessageBubble.tsx`, `client/src/components/ai-chat/ConversationMessages.tsx`, `client/src/components/ai-chat/AIChatBox.tsx`, `e2e/us-ai-051-textfree-photo-background.spec.ts` (new)
+- **Gate 1:** tsc clean, 216 client tests passing, no regressions.
 
 ### 2026-08-14 — US-AI-051 implementation complete (pre-PR)
 - **Files touched:** `api/src/modules/ai-generation/services/infographic-prompt.builder.ts` (new `buildTextFreeImagePrompt`), `api/src/modules/ai-generation/services/ai-orchestrator.service.ts` (added `renderMode` to options + routing guard + try/catch fallback), `api/src/modules/infographics/services/generations.service.ts` (thread `renderMode: dto.renderMode` to orchestrator call — scope drift, required for end-to-end wiring), `api/tests/ai-generation/infographic-prompt.builder.spec.ts` (T1 regression baseline + T2 AC1/AC7 tests, 6 new test cases), `client/src/lib/layout/__tests__/loadVariation.spec.ts` (TC-AI-051-04 explicit AC4 test)

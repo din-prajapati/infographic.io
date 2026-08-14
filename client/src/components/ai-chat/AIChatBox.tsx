@@ -1414,7 +1414,41 @@ export function AIChatBox({
                 selectedPreviewId={selectedVariationId}
                 onSelectPreview={setSelectedVariationId}
                 onUseVariation={handleUseVariation}
+                onEditVariation={handleEditVariation}
               />
+
+              {/* Render-mode toggle — conversation view.
+                  This is the ONLY render path once any message has been sent
+                  (see MessageBubble.tsx's onEditVariation comment for why the
+                  sibling "Default View" toggle below can never actually show
+                  with results). Placed above the input so it's reachable
+                  whether or not results exist yet — it sets the preference
+                  the NEXT generate() call reads, matching RightSidebar's
+                  same-store pattern (US-AI-047). */}
+              {!state.isGenerating && (
+                <div className="px-4 pb-2 flex items-center gap-2 shrink-0">
+                  <span className="text-xs text-muted-foreground shrink-0">Edit as:</span>
+                  <div className="flex rounded-md border border-border overflow-hidden text-xs">
+                    <button
+                      className={`px-2.5 py-1 transition-colors ${renderMode === 'flat' ? 'bg-primary text-primary-foreground' : 'bg-background text-muted-foreground hover:text-foreground'}`}
+                      onClick={() => setRenderMode('flat')}
+                      title="Load as a single raster layer"
+                    >
+                      Flat
+                    </button>
+                    <button
+                      className={`px-2.5 py-1 transition-colors ${renderMode === 'editable' ? 'bg-primary text-primary-foreground' : 'bg-background text-muted-foreground hover:text-foreground'}`}
+                      onClick={() => setRenderMode('editable')}
+                      title="Extract text layers — editable slots in the sidebar"
+                    >
+                      Editable
+                    </button>
+                  </div>
+                  {renderMode === 'editable' && !photoId && (
+                    <span className="text-[10px] text-amber-500">Upload a photo for best results</span>
+                  )}
+                </div>
+              )}
 
               {/* Progress Bar (Sticky during generation) */}
               <AnimatePresence>

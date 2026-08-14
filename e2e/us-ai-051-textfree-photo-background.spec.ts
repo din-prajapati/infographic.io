@@ -24,12 +24,26 @@
  * Cost: 2 real photo-composition generations (~$0.03-0.08 each) + 1 real
  * layerize-text extraction ($0.09) ≈ $0.15-0.25 total. retries: 0 — never
  * auto-retry a real-money test.
+ *
+ * Auth: self-registers a fresh throwaway account per run (rather than the
+ * shared TEST_USER_EMAIL/PASSWORD convention other specs use). This test
+ * needs 2 generations against a FREE-tier account (limit 3/mo); a shared
+ * account accumulates usage across every prior run of every spec and can
+ * exhaust quota mid-test. A fresh account also has zero conversation
+ * history, which matters here — this test's whole point is the render-mode
+ * toggle's first appearance in the conversation view immediately after a
+ * generation completes.
+ *
+ * Target environment: `.env`'s PLAYWRIGHT_BASE_URL points every spec at
+ * STAGING by default, not localhost — running `npx playwright test` with no
+ * override tests whatever is currently deployed there, not your working
+ * tree. To verify local changes:
+ *   PLAYWRIGHT_BASE_URL=http://localhost:5000 npx playwright test e2e/us-ai-051-textfree-photo-background.spec.ts
  */
 import { test, expect, type Page } from "@playwright/test";
 import process from "node:process";
 
-const email = process.env.TEST_USER_EMAIL;
-const password = process.env.TEST_USER_PASSWORD;
+const baseURL = (process.env.PLAYWRIGHT_BASE_URL || "http://localhost:5000").replace(/\/$/, "");
 
 /** Minimal valid 1×1 PNG (68 bytes) — same fixture as us-ai-010-photo-upload.spec.ts. */
 const TINY_PNG_BUFFER = Buffer.from(
@@ -43,47 +57,38 @@ async function waitForTemplateGallery(page: Page) {
   });
 }
 
+/** Register a fresh throwaway account and return its session. */
+async function registerFreshAccount(): Promise<{ token: string; user: unknown }> {
+  const email = `e2e-051-${Date.now()}@test.local`;
+  const res = await fetch(`${baseURL}/api/v1/auth/register`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password: "E2eProbe12345!", name: "E2E US-AI-051" }),
+  });
+  if (!res.ok) {
+    throw new Error(`Registration failed: HTTP ${res.status} — ${await res.text()}`);
+  }
+  const body = await res.json();
+  return { token: body.token, user: body.user };
+}
+
 async function ensureLoggedIn(page: Page) {
-  if (!email || !password) {
-    test.skip(true, "Set TEST_USER_EMAIL and TEST_USER_PASSWORD in .env (loaded by playwright.config) or the shell.");
+  const { token, user } = await registerFreshAccount();
+  // AuthProvider (auth.tsx) requires BOTH keys — a token with no stored user
+  // gets discarded and the app bounces to /auth on mount.
+  await page.addInitScript(([t, u]) => {
+    localStorage.setItem("auth_token", t as string);
+    localStorage.setItem("auth_user", u as string);
+  }, [token, JSON.stringify(user)]);
+
+  const res = await page.goto("/templates", { waitUntil: "domcontentloaded" });
+  if (!res || !res.ok()) {
+    throw new Error(
+      `Cannot load /templates (HTTP ${res?.status() ?? "no response"}). Check PLAYWRIGHT_BASE_URL: ${baseURL}`,
+    );
   }
 
-  const authHeading = page.getByRole("heading", { name: /welcome back/i });
-  const galleryHeading = page.getByRole("heading", { name: /template gallery/i });
-
-  for (let attempt = 0; attempt < 2; attempt++) {
-    const res = await page.goto("/templates", { waitUntil: "domcontentloaded" });
-    if (!res || !res.ok()) {
-      throw new Error(
-        `Cannot load /templates (HTTP ${res?.status() ?? "no response"}). Check PLAYWRIGHT_BASE_URL: ${process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:5000"}`,
-      );
-    }
-
-    await expect(authHeading.or(galleryHeading)).toBeVisible({ timeout: 30_000 });
-
-    if (await authHeading.isVisible()) {
-      await page.getByTestId("input-email").fill(email!);
-      await page.getByTestId("input-password").fill(password!);
-      await page.getByRole("button", { name: /^login$/i }).click();
-      try {
-        await expect(page).not.toHaveURL(/\/auth/, { timeout: 30_000 });
-      } catch {
-        if (attempt === 1) test.skip(true, "Login failed — check TEST_USER_EMAIL / TEST_USER_PASSWORD");
-        continue;
-      }
-      if (!page.url().includes("/templates")) {
-        await page.goto("/templates", { waitUntil: "domcontentloaded" });
-      }
-    }
-
-    if (page.url().includes("/auth") || (await authHeading.isVisible())) {
-      if (attempt === 1) test.skip(true, "Still on auth after login");
-      continue;
-    }
-
-    await waitForTemplateGallery(page);
-    return;
-  }
+  await waitForTemplateGallery(page);
 }
 
 async function openEditorWithChat(page: Page) {
@@ -152,17 +157,28 @@ test.describe("US-AI-051 — TC-AI-051-05: real photo + editable → text-free b
 
     // Step 4 — second, real generation with renderMode='editable' + the same
     // photo reference still attached. This is the generation whose background
-    // should come back text-free.
-    const regenerate = panel.getByRole("button", { name: /regenerate/i }).first();
-    await regenerate.click();
-    await expect(panel.getByText(/generating your infographic/i)).toBeVisible({ timeout: 15_000 });
-    await expect(panel.getByText(/generated.*variation/i)).toBeVisible({ timeout: 180_000 });
+    // should come back text-free. There is no "Regenerate" control reachable
+    // in the conversation view (MessageBubble accepts onRegenerateAll as a
+    // prop but never renders it) — a follow-up message is the real, working
+    // way a user triggers a second generation from here.
+    await textarea.pressSequentially(
+      "Same listing, try a different layout",
+      { delay: 5 },
+    );
+    await textarea.press("Control+Enter");
+    // No intermediate "generating" text wait here — for a follow-up message in
+    // an already-open conversation, the analyze→generate→complete cycle can
+    // finish fast enough that the transient placeholder is easy to miss between
+    // polls. The only assertion that actually matters for this AC is the final
+    // result; wait directly for it with a generous ceiling.
+    await expect(panel.getByText(/generated.*variation/i).last()).toBeVisible({ timeout: 180_000 });
 
     // Step 5 — trigger the real editable load path on the new result, which
     // fires POST /compose (real layerize-text call, $0.09). The per-card Edit
     // button is icon-only — its accessible name comes from `title="Customize
-    // in editor"` (ResultsVariations.tsx), not visible "Edit" text.
-    const editButton = panel.getByRole("button", { name: "Customize in editor" }).first();
+    // in editor"` (MessageBubble.tsx), not visible "Edit" text. `.last()`
+    // targets the most recent message's variations, not the first generation's.
+    const editButton = panel.getByRole("button", { name: "Customize in editor" }).last();
     await expect(editButton).toBeVisible({ timeout: 10_000 });
     await editButton.click();
 

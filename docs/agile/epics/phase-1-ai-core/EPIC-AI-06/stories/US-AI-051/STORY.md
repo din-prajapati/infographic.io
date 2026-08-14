@@ -1,6 +1,6 @@
 # Story Card — US-AI-051
 
-> **Status:** 🔶 Implementation Complete (pre-PR)
+> **Status:** ✅ All ACs Verified — Gate 1 Green (pre-PR)
 > **Feature:** F-AI-06-10 — Text-free background generation (M-AI-18's original design intent)
 > **Epic:** [EPIC-AI-06](../../EPIC.md)
 > **Milestone:** [M-AI-18-editable-text-overlay](../../milestones/M-AI-18-editable-text-overlay.md)
@@ -33,7 +33,7 @@ This story scopes the fix narrowly: read `renderMode` only where it changes anyt
 - [x] **AC2 [regression]:** When `renderMode='flat'` (or absent), behaviour is **byte-for-byte unchanged** — the existing composed (text-baked) prompt path is untouched. Regression-tested by diffing the prompt builder's output for `renderMode: undefined`.
 - [x] **AC3 [regression]:** When `renderMode='editable'` and there is **no** photo reference (the synthetic/Quick-Generate path this session verified), behaviour is unchanged — text-free generation is scoped to the real-photo flow only; the standard flow keeps generating text-baked images for extraction to detect (per `88db72d`'s finding that this is the higher-fidelity path).
 - [x] **AC4 [happy-path]:** With a text-free background, `composeDesignForEdit` naturally returns `blocksDetected: 0` (nothing to extract) — verify `planVariationLoad` falls through correctly to `composeFromCanonicalValues` (the layout-engine path), not to a blank canvas.
-- [ ] **AC5 [happy-path]:** Live verify: upload a real photo, generate with Editable selected, confirm the resulting editable canvas shows the *unmarked* photo as background with text elements from the layout engine, not extraction.
+- [x] **AC5 [happy-path]:** Live verify: upload a real photo, generate with Editable selected, confirm the resulting editable canvas shows the *unmarked* photo as background with text elements from the layout engine, not extraction.
 - [x] **AC6 [error-path]:** Given the text-free prompt builder in `infographic-prompt.builder.ts` throws or returns an empty/invalid prompt string, when `ai-orchestrator.service.ts` invokes it for the `renderMode='editable'` + photo-reference path, then the orchestrator catches the failure and falls back to building the existing composed (text-baked) prompt rather than letting the generation request fail outright.
 - [x] **AC7 [edge-case]:** Given `renderMode` arrives as an unexpected/malformed value (anything other than `'flat'`, `'editable'`, or `undefined`) or a photo reference that is present but falsy/empty-string, when `ai-orchestrator.service.ts` evaluates the branch condition guarding the text-free prompt path, then the condition is treated as not satisfied and the existing composed (text-baked) prompt build in `infographic-prompt.builder.ts` runs unchanged.
 
@@ -91,7 +91,7 @@ US-AI-047's log entry).
 | TC-AI-051-02 | Auto | P0 | renderMode=undefined → prompt byte-identical to pre-story baseline (AC2, regression) | ✅ Pass | `api/tests/ai-generation/infographic-prompt.builder.spec.ts` |
 | TC-AI-051-03 | Auto | P0 | renderMode='editable', no photo → prompt unchanged from today (AC3) | ✅ Pass | `api/tests/ai-generation/infographic-prompt.builder.spec.ts` |
 | TC-AI-051-04 | Auto | P1 | Text-free background → compose returns blocksDetected:0 → planVariationLoad falls to layout-engine path, not blank (AC4) | ✅ Pass | `client/src/lib/layout/__tests__/loadVariation.spec.ts` |
-| TC-AI-051-05 | Manual + E2E | P1 | Live: real photo + Editable → canvas shows unmarked photo + layout-engine text elements (AC5) | 🔲 | `e2e/us-ai-051-textfree-photo-background.spec.ts` — written, pending one live run (real Ideogram spend ~$0.15–0.25) |
+| TC-AI-051-05 | E2E | P1 | Live: real photo + Editable → canvas shows unmarked photo + layout-engine text elements (AC5) | ✅ Pass | `e2e/us-ai-051-textfree-photo-background.spec.ts` — live run 2026-08-14: `blocksDetected:0` confirmed, layout-engine canvas elements present. Found and fixed a real bug en route (see EPIC.md log): editable mode was unreachable from AI Chat's actual render path — `onEditVariation` and the render-mode toggle only existed in a branch (`hasActiveConversation===false`) that can never show results in practice |
 | TC-AI-051-06 | Auto | P0 | error-path: text-free prompt builder failure in infographic-prompt.builder.ts falls back to composed prompt via ai-orchestrator.service.ts, request does not fail (AC6) | ✅ Pass | `api/tests/ai-generation/ai-orchestrator.textfree-fallback.spec.ts` — buildTextFreeImagePrompt mocked to throw; asserts generateInfographic resolves, composeWithSourceImage receives buildImagePrompt's composed output, and the infographic record is persisted as completed |
 | TC-AI-051-07 | Auto | P1 | edge-case: malformed renderMode value or falsy/empty-string photo reference is treated as not satisfying the text-free branch condition, composed prompt unchanged (AC7) | ✅ Pass | `api/tests/ai-generation/infographic-prompt.builder.spec.ts` |
 

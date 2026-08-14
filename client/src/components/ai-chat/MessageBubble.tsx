@@ -6,7 +6,7 @@
 import { motion, AnimatePresence } from 'motion/react';
 import { useState } from 'react';
 import { Message } from './types';
-import { Sparkles, Check, Loader2, RefreshCw, Image as ImageIcon, AlertCircle, MapPin, DollarSign, ZoomIn, X, Maximize2 } from 'lucide-react';
+import { Sparkles, Check, Loader2, RefreshCw, Image as ImageIcon, AlertCircle, MapPin, DollarSign, ZoomIn, X, Maximize2, Edit } from 'lucide-react';
 import { Button } from '../ui/button';
 import {
   Tooltip,
@@ -21,9 +21,17 @@ interface MessageBubbleProps {
   selectedPreviewId?: string | null;
   onSelectPreview?: (id: string) => void;
   onUseVariation?: (id: string) => void;
+  // US-AI-051 T-fix: the conversation view (this component) is the ONLY render
+  // path a user reaches once any message has been sent — setConversationMessages
+  // fires at generate-call time, before results exist, so the sibling
+  // non-conversation "Default View" branch in AIChatBox can never actually show
+  // results in practice. Editable mode was reachable there and nowhere else,
+  // making it unreachable end-to-end from the AI Chat surface — the only
+  // surface with photo upload. Found live while writing TC-AI-051-05.
+  onEditVariation?: (id: string) => void;
 }
 
-export function MessageBubble({ message, index, onRegenerateAll, selectedPreviewId, onSelectPreview, onUseVariation }: MessageBubbleProps) {
+export function MessageBubble({ message, index, onRegenerateAll, selectedPreviewId, onSelectPreview, onUseVariation, onEditVariation }: MessageBubbleProps) {
   const isUser = message.type === 'user';
   const isLoading = message.isLoading;
   const isGenerating = message.isGenerating;
@@ -266,14 +274,25 @@ export function MessageBubble({ message, index, onRegenerateAll, selectedPreview
                             )}
                           </div>
 
-                          {/* Label + Use This Design button */}
+                          {/* Label + action buttons */}
                           <p className="text-[11px] text-muted-foreground truncate px-0.5">{preview.title}</p>
-                          <button
-                            className="w-full text-[10px] py-1 rounded bg-primary text-primary-foreground hover:bg-primary/90 transition-colors font-medium"
-                            onClick={() => onUseVariation?.(preview.id)}
-                          >
-                            Use This Design
-                          </button>
+                          <div className="flex gap-1">
+                            <button
+                              className="flex-1 text-[10px] py-1 rounded bg-primary text-primary-foreground hover:bg-primary/90 transition-colors font-medium"
+                              onClick={() => onUseVariation?.(preview.id)}
+                            >
+                              Use This Design
+                            </button>
+                            {onEditVariation && (
+                              <button
+                                className="w-6 h-6 shrink-0 flex items-center justify-center rounded border border-border hover:bg-muted transition-colors"
+                                onClick={() => onEditVariation(preview.id)}
+                                title="Customize in editor"
+                              >
+                                <Edit className="w-3 h-3" />
+                              </button>
+                            )}
+                          </div>
                         </div>
                       );
                     })}
