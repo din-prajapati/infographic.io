@@ -55,6 +55,43 @@ describe('planVariationLoad', () => {
     ).toBe(true);
   });
 
+  // TC-AI-051-04 — AC4: text-free background → blocksDetected:0 → layout engine, not blank (US-AI-051)
+  //
+  // When US-AI-051's text-free prompt is used, composeDesignForEdit returns
+  // blocksDetected:0 (nothing to extract). planVariationLoad must route through
+  // composeFromCanonicalValues (the layout engine) rather than producing a blank
+  // canvas or falling back to flat mode. The photo-flow background URL (unmarked
+  // listing photo) must survive as the design's backgroundUrl.
+  it('TC-AI-051-04: text-free background (blocksDetected:0) routes to layout engine — not blank canvas (AC4)', async () => {
+    // Simulate what composeDesignForEdit returns after a text-free generation:
+    // no extraction blocks found (nothing baked onto the background), but the
+    // server still returns canonicalValues so the layout engine can overlay text.
+    getComposedDesign.mockResolvedValue({
+      backgroundUrl: 'https://example.test/listing-photo-unmarked.jpg', // real, unmodified photo
+      elements: [],
+      extraction: { attempted: true, blocksDetected: 0, matched: 0 },
+      canonicalValues: canonical,
+    });
+
+    const plan = await planVariationLoad({
+      generationId: 'g-textfree-01',
+      variation,
+      renderMode: 'editable',
+      orientation: 'landscape',
+    });
+
+    expect(plan.mode).toBe('editable');
+    // Layout engine must have produced at least one element — no blank canvas
+    expect(plan.composedDesign!.elements.length, 'layout engine must produce elements').toBeGreaterThan(0);
+    // The unmarked listing photo must survive as the background
+    expect(plan.composedDesign!.backgroundUrl).toBe('https://example.test/listing-photo-unmarked.jpg');
+    // Canonical price must appear (proves it's the layout engine, not extraction)
+    expect(
+      plan.composedDesign!.elements.some((e) => e.text === canonical.price),
+      'layout engine must overlay canonical price from listing values',
+    ).toBe(true);
+  });
+
   it('prefers extracted layers over the engine when blocks were detected', async () => {
     // Extraction reproduces the exact design the user chose (erased background
     // + measured blocks) — re-layout from values cannot match it, so detection
