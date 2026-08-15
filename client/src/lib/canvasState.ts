@@ -3,7 +3,6 @@
  * Handles canvas data capture and thumbnail generation
  */
 
-import html2canvas from 'html2canvas';
 import { exportCanvasToImage } from './canvasExport';
 import { useCanvasStore } from '../hooks/useCanvasStore';
 import type { ImageElement, TextElement, TextAlign } from './canvasTypes';
@@ -660,140 +659,11 @@ export async function loadComposedDesignToCanvas(design: ComposedDesign): Promis
   }
 }
 
-/**
- * Export canvas as image using html2canvas
- */
-export async function exportCanvasAsImage(
-  format: 'png' | 'jpg' = 'png',
-  quality: number = 1.0
-): Promise<string | null> {
-  try {
-    // Find canvas container
-    const canvasElement = document.querySelector('[data-canvas-container]') as HTMLElement;
-    
-    if (!canvasElement) {
-      console.error('Canvas element not found');
-      return null;
-    }
-
-    // Create a clean copy of the canvas element
-    const canvasClone = canvasElement.cloneNode(true) as HTMLElement;
-
-    // Derive export dimensions from the artboard (store), not a hardcoded
-    // 1200×800, so format-correct templates export at native resolution —
-    // e.g. the A4 flyer (2480×3508 @ 300 DPI) ships print-ready. Large
-    // print artboards already have print-density pixels, so scale 1 keeps
-    // memory bounded; smaller artboards get scale 2 (retina-quality).
-    const { canvasWidth, canvasHeight, backgroundColor } = useCanvasStore.getState();
-    const exportW = canvasWidth || 1200;
-    const exportH = canvasHeight || 800;
-    const exportScale = Math.max(exportW, exportH) >= 2000 ? 1 : 2;
-
-    // Capture canvas with html2canvas
-    const canvas = await html2canvas(canvasElement, {
-      backgroundColor,
-      scale: exportScale, // High quality (1 for print-DPI artboards)
-      logging: false,
-      width: exportW,
-      height: exportH,
-      useCORS: true,
-      allowTaint: true,
-      onclone: (clonedDoc, clonedElement) => {
-        // Find the cloned canvas container
-        const clonedCanvas = clonedDoc.querySelector('[data-canvas-container]') as HTMLElement;
-        
-        if (!clonedCanvas) return;
-        
-        // Force inline styles to override CSS variables
-        const allElements = clonedCanvas.querySelectorAll('*');
-        allElements.forEach((el) => {
-          const htmlEl = el as HTMLElement;
-          
-          try {
-            // Get the computed style from the original document
-            const originalEl = document.querySelector(`[data-canvas-container] *:nth-child(${Array.from(clonedCanvas.querySelectorAll('*')).indexOf(el) + 1})`) as HTMLElement;
-            
-            if (originalEl) {
-              const computedStyle = window.getComputedStyle(originalEl);
-              
-              // Apply critical computed styles as inline styles
-              const criticalProps = [
-                'color',
-                'backgroundColor',
-                'borderColor',
-                'borderTopColor',
-                'borderRightColor',
-                'borderBottomColor',
-                'borderLeftColor',
-                'fill',
-                'stroke',
-              ];
-              
-              criticalProps.forEach((prop) => {
-                const value = computedStyle.getPropertyValue(prop);
-                if (value && value !== '' && value !== 'rgba(0, 0, 0, 0)' && value !== 'transparent') {
-                  htmlEl.style.setProperty(prop, value, 'important');
-                }
-              });
-            }
-          } catch (e) {
-            // Silently ignore individual element errors
-          }
-        });
-      },
-    });
-
-    const mimeType = format === 'png' ? 'image/png' : 'image/jpeg';
-    return canvas.toDataURL(mimeType, quality);
-  } catch (error) {
-    console.error('Error exporting canvas:', error);
-    
-    // Fallback: Try with simpler options
-    try {
-      const canvasElement = document.querySelector('[data-canvas-container]') as HTMLElement;
-      if (!canvasElement) return null;
-      
-      const canvas = await html2canvas(canvasElement, {
-        backgroundColor: '#ffffff',
-        scale: 1,
-        logging: false,
-        useCORS: true,
-      });
-      
-      const mimeType = format === 'png' ? 'image/png' : 'image/jpeg';
-      return canvas.toDataURL(mimeType, quality);
-    } catch (fallbackError) {
-      console.error('Fallback export also failed:', fallbackError);
-      return null;
-    }
-  }
-}
-
-/**
- * Download canvas as image file
- */
-export async function downloadCanvasImage(
-  filename: string = 'design',
-  format: 'png' | 'jpg' = 'png'
-): Promise<boolean> {
-  try {
-    const dataUrl = await exportCanvasAsImage(format);
-    
-    if (!dataUrl) {
-      return false;
-    }
-
-    // Create download link
-    const link = document.createElement('a');
-    link.href = dataUrl;
-    link.download = `${filename}.${format}`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    return true;
-  } catch (error) {
-    console.error('Error downloading canvas:', error);
-    return false;
-  }
-}
+// BL-09: exportCanvasAsImage/downloadCanvasImage (html2canvas-based) removed
+// 2026-08-15 — confirmed zero callers anywhere in the app (grep-verified).
+// The Export button has only ever called downloadCanvas() in canvasExport.ts
+// (the native-canvas renderer, built specifically to avoid this file's own
+// documented html2canvas + oklch-parsing problem — see the note at the top
+// of loadComposedDesignToCanvas). This was the "confirm which export
+// function is live" question US-AI-032's AC5 asked before changing either;
+// answered by removing the one that was never reachable.

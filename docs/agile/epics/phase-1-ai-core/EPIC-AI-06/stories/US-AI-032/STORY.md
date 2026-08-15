@@ -1,13 +1,13 @@
 # Story Card — US-AI-032
 
-> **Status:** 🔶 In Progress — AC1/2/3/4/6/7 done (AC1/2/3 live-verified 2026-08-14, AC6 unit-tested 2026-08-15). AC5 (export parity) is real, separate scope — deliberately deferred to [BL-09](../../../../../BACKLOG.md), not built this pass.
+> **Status:** ✅ Done — all 7 ACs verified. AC1/2/3 live-verified 2026-08-14; AC6 unit-tested 2026-08-15; AC5 (export parity, filed as BL-09 2026-08-14 believing it was still broken) turned out already fixed by prior work — confirmed, dead alternate export path removed, live-verified 2026-08-15. One new finding along the way, latent/unreachable: [BL-10](../../../../../BACKLOG.md) (crop coordinate-space mismatch, no crop tool exists yet to trigger it).
 > **Feature:** F-AI-06-03 — Editable listing canvas
 > **Epic:** [EPIC-AI-06](../../EPIC.md)
 > **Milestone:** [M-AI-18](../../milestones/M-AI-18-editable-text-overlay.md)
 > **Size:** L
 > **Depends on:** [US-AI-031b](../US-AI-031b/STORY.md) — consumes its `ComposedDesign` contract · US-DESIGN-012 (slot infrastructure) — ✅ Done
 > **Linear:** LIN-XXX
-> **Created:** 2026-07-03 | **Rewritten:** 2026-08-11 | **Closed:** —
+> **Created:** 2026-07-03 | **Rewritten:** 2026-08-11 | **Closed:** 2026-08-15
 
 ---
 
@@ -47,7 +47,7 @@ Consume a `ComposedDesign` from US-AI-031b and turn it into a real, editable, pe
 - [x] **AC2 [happy-path]:** Each element carries its `slot` tag, so the existing sidebar Customize sections edit the values live (`RightSidebar.tsx:297-300` already derives active slots reactively from elements). **Live-verified 2026-08-14** — editing the Price field under Property (reached via the "Edit Details" back-link, a real navigation step the test had to discover — see Notes) updates the on-canvas text within 10s, no reload needed.
 - [x] **AC3 [happy-path]:** The design persists and reloads with all elements intact. **Live-verified 2026-08-14** — Save → `/editor?designId=...` → hard reload → same element count, edited price value survives.
 - [x] **AC4 [regression]:** Flat mode remains available and unchanged; the user chooses per generation.
-- [ ] **AC5 [regression]:** **Export matches the composed preview at full resolution.** This is *not* true today — see Export parity below. Real work, not a checkbox. **Not covered by the 2026-08-14 live E2E pass** — needs a pixel-diff harness against the two competing export renderers, separate scope from this pass.
+- [x] **AC5 [regression]:** **Export matches the composed preview at full resolution.** **Resolved 2026-08-15 — the "not true today" framing below was already stale before this pass started.** Re-investigating found the 4 documented mismatches (text padding, image object-fit, crop, web-font readiness) were already fixed by commit `ee64aa5` ("T6 align export rendering with the editor preview — US-AI-032") with 21 unit tests added by `fffb9b3` (US-DEPLOY-007's T4) — both predate this session, just never reflected back into this AC. Also resolved the story's own open question — "confirm which export function the Export button actually calls" — definitively: only `canvasExport.ts`'s native-canvas renderer is reachable; `canvasState.ts`'s html2canvas alternative had zero callers anywhere in the app. **Removed the dead code** (`exportCanvasAsImage`/`downloadCanvasImage`, ~110 lines, plus the now-unused `html2canvas` import) rather than leaving two renderers to maintain in parallel. Live-verified with a new spec, `e2e/us-ai-032-export-parity.spec.ts`: a real template's Export produces a correctly-sized (2160×3840), non-trivial (2.5MB) PNG; visual comparison of preview vs. exported screenshots (`evidence/ac5-preview-2026-08-15.png` vs. `evidence/ac5-exported-2026-08-15.png`) confirms matching layout, text, and colors. **One separate, genuine finding along the way**: `ImageElement.tsx`'s crop-preview math (`getCroppedImageStyle()`) and `canvasExport.ts`'s crop math (`computeCropSourceRect()`) disagree on what coordinate space `element.crop` is in — the type's own doc comment (`canvasTypes.ts:84`) says "original-image pixel coordinates" (matching the export's assumption), but the preview's `scaleX = element.width / crop.width` only makes sense if `crop.width` is in canvas/box-pixel space. **Currently unreachable** — no `CropPanel`/`CropTool` component exists anywhere, so nothing ever sets `element.crop`; both branches are dead code today. Not fixed in this pass (real, deliberate scope decision, not an oversight) — logged as [BL-10](../../../../../BACKLOG.md) for whoever builds the crop tool.
 - [x] **AC6 [error-path]:** An element with missing or malformed geometry renders with a safe default placement and style. Never crashes the editor, never silently drops the value. **Fixed and verified 2026-08-15** — extracted the inline safe-geometry computation into a standalone pure function, `computeSafeTextGeometry` (`canvasState.ts`), matching this repo's own canvas-testing decision (`client/vitest.config.ts` header: "pure geometry helpers, zero extra dependencies" — rather than mocking the full image-fetch/canvas pipeline a live-data test can't control anyway). 9 new unit tests (`client/src/lib/__tests__/canvasState.safeGeometry.spec.ts`) cover null/undefined geo, NaN, Infinity, zero, and negative values for every field, plus a per-field (not all-or-nothing) degradation case — all pass, never throw.
 - [x] **AC7 [edge-case]:** A `slot` id absent from the sidebar catalogs **fails loudly at dev time** rather than vanishing. Today `TemplateSection` returns `null` when nothing matches (`TemplateSlotSection.tsx:210-211`), so a typo'd slot silently deletes a value from the UI — exactly the failure AC6 forbids.
 
@@ -99,22 +99,22 @@ click path here so the next person (or agent) doesn't lose time rediscovering it
 
 ---
 
-## Export parity — AC5 is real work, deferred to [BL-09](../../../../../BACKLOG.md)
+## Export parity — AC5, resolved 2026-08-15 (this section was already stale)
 
-**2026-08-15: deliberately deferred, not built.** Confirmed as genuinely separate, sizeable scope (confirm which of two competing export functions is live, build a pixel-diff harness, fix the 4 mismatches below) — user's call, alongside building AC6 in the same pass since AC6 was cheap and AC5 is not. Tracked as BL-09; this section stands as its spec.
+**Update 2026-08-15: this section described a past state.** BL-09 was filed 2026-08-14 as "deliberately deferred, not built," on the assumption the 4 mismatches below were still live. Re-investigating to actually build BL-09 found they'd already been fixed — commit `ee64aa5` ("T6 align export rendering with the editor preview — US-AI-032") plus 21 unit tests from `fffb9b3` (US-DEPLOY-007's T4), both predating this session. The real remaining BL-09 work turned out to be: confirm which export function is live (done — see AC5 above), remove the dead alternative (done), and live-verify the result (done, `e2e/us-ai-032-export-parity.spec.ts`). BL-09 is closed. Kept below for the historical record and because the crop-coordinate finding (BL-10) came directly out of re-reading this table.
 
-Export re-renders from the Zustand store rather than snapshotting the DOM (`canvasExport.ts:20-52`), which is the right architecture. But **preview and export are two independent renderers that visibly disagree**:
+Export re-renders from the Zustand store rather than snapshotting the DOM (`canvasExport.ts:20-52`), which is the right architecture. Originally, **preview and export were two independent renderers that visibly disagreed** — status per mismatch, now all fixed:
 
-| | Preview (DOM) | Export (canvas) |
-|---|---|---|
-| Text padding | `px-2 py-1` (`TextElement.tsx:184-200`) | none (`canvasExport.ts:168-275`) |
-| Image fit | `object-fit: contain` | `ctx.drawImage(img,x,y,w,h)` — **stretches** (`:466`) |
-| `element.crop` | honoured | ignored |
-| Web fonts | browser-managed | `ctx.font` set with no readiness wait |
+| | Preview (DOM) | Export (canvas) | Status |
+|---|---|---|---|
+| Text padding | `px-2 py-1` (`TextElement.tsx:184-200`) | `TEXT_PAD_H`/`TEXT_PAD_TOP` constants, kept in sync (`canvasExport.ts:172-183`) | ✅ Fixed (`ee64aa5`) |
+| Image fit | `object-fit: contain` | `computeObjectFitDraw()` honours contain/cover/fill (`:453-501`) | ✅ Fixed (`ee64aa5`) |
+| `element.crop` | honoured (`ImageElement.tsx` `getCroppedImageStyle()`) | `computeCropSourceRect()` honours it (`:513-520`) | ✅ Fixed (`ee64aa5`) — **but see BL-10**: the two implementations disagree on crop's coordinate space; currently unreachable (no crop tool exists), so latent, not live |
+| Web fonts | browser-managed | `await document.fonts.ready` before rendering (`:28`) | ✅ Fixed (`ee64aa5`) |
 
-On a design that is precisely *"background image + overlaid text"*, those are exactly the two element types that diverge.
+On a design that is precisely *"background image + overlaid text"*, those are exactly the two element types that diverge — and both are now fixed, per the `wrapTextToWidth`/`computeObjectFitDraw`/`computeCropSourceRect` unit tests in `canvasExport.spec.ts` (21 tests) plus the 2026-08-15 live re-verification above.
 
-⚠️ There are also **two competing export functions** — `canvasExport.ts:20` (native) and `canvasState.ts:423` (html2canvas, whose own comments say it breaks on this codebase's oklch theme). **First task: confirm which one the Export button actually calls.**
+~~⚠️ There are also **two competing export functions** — `canvasExport.ts:20` (native) and `canvasState.ts:423` (html2canvas, whose own comments say it breaks on this codebase's oklch theme). **First task: confirm which one the Export button actually calls.**~~ **Resolved 2026-08-15**: only `canvasExport.ts` was ever reachable — `EditorLayout.tsx`'s `handleExport` calls `downloadCanvas` from `canvasExport.ts`, confirmed by tracing the actual call chain. The html2canvas alternative had zero callers and has been removed.
 
 ---
 
@@ -214,7 +214,7 @@ Implementation rules:
 | TC-AI-032-01 | Auto (E2E, live) | P0 | Edit a generation → background plus individually selectable text elements at supplied positions | ✅ Pass | `e2e/us-ai-032-editable-canvas.spec.ts` — live run 2026-08-14 |
 | TC-AI-032-02 | Auto (E2E, live) | P0 | Change a slot value in the sidebar (e.g. price) → canvas updates live | ✅ Pass | `e2e/us-ai-032-editable-canvas.spec.ts` — required discovering the "Edit Details" back-link step, see Notes |
 | TC-AI-032-03 | Auto (E2E, live) | P0 | Save and reload → all elements and slot tags intact | ✅ Pass | `e2e/us-ai-032-editable-canvas.spec.ts` — element count + edited value both survive a hard reload |
-| TC-AI-032-04 | Manual | P0 | Export an editable design → pixel output matches composed preview at full resolution | ⏸ | Still blocked — needs a pixel-diff harness, separate scope from the 2026-08-14 pass |
+| TC-AI-032-04 | Auto (E2E, live) | P0 | Export an editable design → pixel output matches composed preview at full resolution | ✅ Pass | `e2e/us-ai-032-export-parity.spec.ts` — live 2026-08-15, 2160×3840 PNG, visual comparison in `evidence/` |
 | TC-AI-032-05 | Manual | P0 | Flat mode → unchanged existing behaviour, no slots created | ⏸ | Not exercised by the new E2E spec (editable-only); flat path still only provably untouched in the diff |
 | TC-AI-032-06 | Auto | P1 | Element with malformed geometry → safe default placement, no crash, value still present | ✅ Pass | `client/src/lib/__tests__/canvasState.safeGeometry.spec.ts` — 9 tests, 2026-08-15 |
 | TC-AI-032-07 | Auto | P1 | Unknown slot id → loud dev-time failure, not a silent disappearance | ⚠ | Compile-time half only — `SlotId` union via `npm run check`; dev-throw unverified |
