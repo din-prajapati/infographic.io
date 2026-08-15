@@ -2,7 +2,7 @@
 
 > **Story:** [STORY.md](./STORY.md)
 > **Branch:** `feat/deploy/us-deploy-007-client-test-infra` *(based on `feat/ai/m-18-editable-text-overlay`)*
-> **PR:** #_____ (fill when opened)
+> **PR:** — (no PR opened — implementation shipped directly, consistent with this repo's precedent for fast-moving same-day work; see US-AI-046/047's STORY.md notes for the same pattern)
 > **Linear:** LIN-XXX
 > **Type:** feat
 > **Estimated total:** ~3h
@@ -144,6 +144,11 @@ Temporarily break one assertion in T4's suite, run `npm run test:unit`, and conf
 Revert the break. **Paste both outputs (failing and passing) in the PR body** — that transcript is AC5's only evidence.
 
 **Commit:** none (revert leaves the tree clean). Record the transcript in the PR.
+
+> **2026-08-15 re-verification:** no PR was ever opened, so the transcript this task calls for never actually existed anywhere checked-in — the 2026-08-12 EPIC.md log claimed AC5 "confirmed" with nothing behind it. Re-ran both breaks live rather than trusting the claim:
+> - Broke `TEXT_PAD_H` (expected 999, actual 8) → `npm run test:unit` exit 1, backend suite unaffected (350/350 independently), failure named `src/lib/__tests__/canvasExport.spec.ts > ... > TEXT_PAD_H is 8px`.
+> - Pointed `client/vitest.config.ts`'s `include` at a non-matching glob → `"No test files found, exiting with code 1"`, backend suite still ran and passed independently.
+> - Both reverted immediately after; `git status --short` on both files confirmed clean before moving on. Evidence recorded in STORY.md's Test Cases table (TC-02, TC-05) since no PR exists to hold it.
 
 ---
 

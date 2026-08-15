@@ -25,6 +25,7 @@ Task 3 is signed off. No story here gates go-live.
 | [US-DEPLOY-006](../stories/US-DEPLOY-006/STORY.md) | Approval governance — RACI, required checks, runbook | S | 0.5 d | 🔲 |
 | [US-DEPLOY-004](../stories/US-DEPLOY-004/STORY.md) | Production migration workflow | M | 1 d | 🔲 |
 | [US-DEPLOY-005](../stories/US-DEPLOY-005/STORY.md) | Progressive delivery + auto-rollback | M | 1 d | 🔲 |
+| [US-DEPLOY-007](../stories/US-DEPLOY-007/STORY.md) | Client-side unit test infrastructure (unplanned — became a hard blocker for US-AI-032 AC5) | M | ~3 h | ✅ Done 2026-08-15 |
 
 **Recommended order:** 001 → 003 → 002 → 006 → 004 → 005.
 

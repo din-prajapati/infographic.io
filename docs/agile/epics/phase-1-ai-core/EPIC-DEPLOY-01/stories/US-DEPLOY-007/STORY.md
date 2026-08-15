@@ -1,6 +1,6 @@
 # Story Card — US-DEPLOY-007
 
-> **Status:** 🔧 In Progress (implementation complete, pending /test-story)
+> **Status:** ✅ Done — all 7 ACs and all 6 TCs live-verified 2026-08-15 (TASKS.md's T5 checkbox had no retrievable transcript behind it — no PR was ever opened — so TC-02/TC-05 were re-proven live rather than trusted)
 > **Feature:** F-DEPLOY-01 — Fast, mandatory verification gate
 > **Epic:** [EPIC-DEPLOY-01](../../EPIC.md)
 > **Milestone:** [M-DEPLOY-01](../../milestones/M-DEPLOY-01-velocity-foundation.md)
@@ -8,7 +8,7 @@
 > **Related:** [US-DEPLOY-001](../US-DEPLOY-001/STORY.md) (CI gate hardening — adjacent, does not overlap)
 > **Blocks:** [US-AI-032](../../../EPIC-AI-06/stories/US-AI-032/STORY.md) AC5
 > **Linear:** LIN-XXX
-> **Created:** 2026-08-11 | **Closed:** —
+> **Created:** 2026-08-11 | **Closed:** 2026-08-15
 
 ---
 
@@ -123,12 +123,12 @@ Implementation rules:
 
 | TC ID | Type | Priority | Scenario | Status | Finding |
 |-------|------|----------|----------|--------|---------|
-| TC-DEPLOY-007-01 | Auto | P0 | `npm run test:unit` runs backend + client suites; both report | 🔲 | |
-| TC-DEPLOY-007-02 | Auto | P0 | A failing client test fails `npm run test:unit` with a non-zero exit code | 🔲 | |
-| TC-DEPLOY-007-03 | Auto | P0 | Client suite for `canvasExport.ts` passes and asserts concrete draw geometry | 🔲 | |
-| TC-DEPLOY-007-04 | Auto | P0 | All 193 pre-existing backend tests still pass | 🔲 | |
-| TC-DEPLOY-007-05 | Auto | P1 | Zero matching client specs does **not** silently report green | 🔲 | |
-| TC-DEPLOY-007-06 | Manual | P1 | `@/*` alias resolves in tests exactly as in Vite | 🔲 | |
+| TC-DEPLOY-007-01 | Auto | P0 | `npm run test:unit` runs backend + client suites; both report | ✅ Pass | Live re-run 2026-08-15: `Test Files 28 passed` (backend) + `Test Files 10 passed` (client) both print, exit 0 |
+| TC-DEPLOY-007-02 | Auto | P0 | A failing client test fails `npm run test:unit` with a non-zero exit code | ✅ Pass | Live-proven 2026-08-15: deliberately broke `TEXT_PAD_H is 8px` → exit 1, backend suite unaffected (still 350/350, proving isolation), failure names the exact file/describe/test. Reverted immediately after. |
+| TC-DEPLOY-007-03 | Auto | P0 | Client suite for `canvasExport.ts` passes and asserts concrete draw geometry | ✅ Pass | `canvasExport.spec.ts` — 21 tests, concrete values (padding constants, `computeObjectFitDraw` rects, `computeCropSourceRect` coordinates), not "does not throw" |
+| TC-DEPLOY-007-04 | Auto | P0 | All pre-existing backend tests still pass | ✅ Pass | 350/350 as of 2026-08-15 (grew from 193 at story creation — expected drift, not a break) |
+| TC-DEPLOY-007-05 | Auto | P1 | Zero matching client specs does **not** silently report green | ✅ Pass | Live-proven 2026-08-15: temporarily pointed `include` at a non-matching glob → `"No test files found, exiting with code 1"`, backend suite still ran and passed (350/350) independently. Reverted immediately after. |
+| TC-DEPLOY-007-06 | Auto | P1 | `@/*` alias resolves in tests exactly as in Vite | ✅ Pass | `alias-resolution.spec.ts` — imports `@/lib/canvasTypes`, passes |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 

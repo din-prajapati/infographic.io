@@ -63,6 +63,7 @@ it to a % of users → a bad release auto-rolls-back on health check.
 | [US-DEPLOY-006](stories/US-DEPLOY-006/STORY.md) | Approval governance — RACI, required checks, runbook (solo → team) | S | 0.5 day | 🔲 | US-DEPLOY-001/002/003 |
 | [US-DEPLOY-004](stories/US-DEPLOY-004/STORY.md) | Production migration workflow (`migrate deploy` + expand/contract) | M | 1 day | 🔲 | prod has real data |
 | [US-DEPLOY-005](stories/US-DEPLOY-005/STORY.md) | Progressive delivery + auto-rollback (canary, health-gated) | M | 1 day | 🔲 | EPIC-INFRA-01 Task 3, US-DEPLOY-004 (safe rollout needs backward-compatible migrations first) |
+| [US-DEPLOY-007](stories/US-DEPLOY-007/STORY.md) | Client-side unit test infrastructure (not originally planned — became a hard blocker for US-AI-032 AC5) | M | ~3 h | ✅ Done 2026-08-15 | US-AI-032 AC5 (was blocked on this) |
 
 **Total engineering effort: ~5 focused days** (see timeline below for calendar).
 
@@ -130,3 +131,6 @@ it to a % of users → a bad release auto-rolls-back on health check.
 - **ACs covered:** AC1 (jsdom config + alias), AC2 (both suites under test:unit), AC3 (22 client tests, specific geometry values), AC4 (backend still 254), AC5 (deliberate break confirmed non-zero exit + named spec; zero specs exit 1), AC6 (option b chosen: pure geometry helpers, no canvas mock — documented in config header), AC7 (CLAUDE.md + SKILL.md updated)
 - **Commits:** 6 on branch `feat/deploy/us-deploy-007-client-test-infra`
 - **Notes:** jsdom 30 incompatible with Node 20 (`html-encoding-sniffer` ESM require error) — downgraded to jsdom 25 (^25.0.1). Canvas strategy: option (b) — export `computeObjectFitDraw`, `wrapTextToWidth`, `TEXT_PAD_H`, `TEXT_PAD_TOP`, `computeCropSourceRect` for test access; no new deps beyond jsdom. `docs/agile/templates/TASKS.md` touched outside TASKS.md file list — deliberate, noted as scope drift per T6 requirement.
+
+### 2026-08-15 — US-DEPLOY-007 closed, all 7 ACs + all 6 TCs live-verified
+The 2026-08-12 entry above claimed AC5 was "confirmed" but no PR was ever opened, so no transcript existed anywhere to check that claim against — the exact "checked but never independently verified" pattern this repo has hit before. Re-ran everything live rather than trusting the claim: TC-02 (deliberately broke `TEXT_PAD_H is 8px` → exit 1, backend suite unaffected, failure clearly attributed) and TC-05 (pointed `include` at a non-matching glob → `"No test files found, exiting with code 1"`) both reproduced cleanly; both breaks reverted immediately after, tree confirmed clean. TC-01/03/04/06 also freshly reconfirmed (backend now 350 tests, up from 193 at story creation — expected growth). Story closed.
