@@ -7,7 +7,7 @@ import html2canvas from 'html2canvas';
 import { exportCanvasToImage } from './canvasExport';
 import { useCanvasStore } from '../hooks/useCanvasStore';
 import type { ImageElement, TextElement, TextAlign } from './canvasTypes';
-import type { ComposedDesign } from './api';
+import type { ComposedDesign, ComposedTextElementGeometry } from './api';
 import { mapExtractedFont } from './fontMap';
 import { createMeasureText } from './layout/connectLayout';
 
@@ -468,6 +468,36 @@ const GEO_DEFAULTS = {
 };
 
 /**
+ * AC6 (US-AI-032) — pure geometry-safety computation, extracted from
+ * loadComposedDesignToCanvas so it's directly unit-testable without the
+ * image-fetch/canvas pipeline the rest of that function needs. Follows this
+ * repo's own canvas-testing decision (client/vitest.config.ts header):
+ * "export and test the pure geometry helpers... zero extra dependencies."
+ *
+ * `geo` may be missing entirely, or any individual field may be missing,
+ * zero, or non-finite (NaN/Infinity) — a malformed extraction must never
+ * throw, and the text VALUE is always rendered; only position/size degrade
+ * to a safe, visible default.
+ */
+export function computeSafeTextGeometry(
+  geo: ComposedTextElementGeometry | null | undefined,
+  scale: number,
+  offsetX: number,
+  offsetY: number,
+): { x: number; y: number; width: number; height: number; fontSize: number; angle: number } {
+  const x  = (geo && isFinite(geo.x))                        ? geo.x * scale + offsetX : GEO_DEFAULTS.x;
+  const y  = (geo && isFinite(geo.y))                        ? geo.y * scale + offsetY : GEO_DEFAULTS.y;
+  const width  = (geo && isFinite(geo.width) && geo.width > 0)   ? geo.width * scale       : GEO_DEFAULTS.width;
+  const height = (geo && isFinite(geo.height) && geo.height > 0) ? geo.height * scale      : GEO_DEFAULTS.height;
+  const fontSize = (geo?.fontSize && isFinite(geo.fontSize) && geo.fontSize > 0)
+    ? geo.fontSize * scale
+    : GEO_DEFAULTS.fontSize;
+  const angle = (geo && isFinite(geo.angle)) ? geo.angle : 0;
+
+  return { x, y, width, height, fontSize, angle };
+}
+
+/**
  * Load a ComposedDesign (from US-AI-031b) into the canvas as:
  *  - one background image element (isAiImport: true — artboard-sync behaviour preserved)
  *  - one text element per ComposedTextElement, carrying its slot tag and measured geometry
@@ -550,16 +580,12 @@ export async function loadComposedDesignToCanvas(design: ComposedDesign): Promis
     const textElements: TextElement[] = design.elements.map((el, index): TextElement => {
       const geo = el.geometry;
 
-      // Safe geometry — AC6: if a value is missing, zero or non-finite, fall back.
-      // The text content is always rendered; only the position / size may degrade.
-      const safeX  = (geo && isFinite(geo.x))                          ? geo.x * scale + offsetX : GEO_DEFAULTS.x;
-      const safeY  = (geo && isFinite(geo.y))                          ? geo.y * scale + offsetY : GEO_DEFAULTS.y;
-      const geoW   = (geo && isFinite(geo.width) && geo.width > 0)     ? geo.width * scale       : GEO_DEFAULTS.width;
-      const safeH  = (geo && isFinite(geo.height) && geo.height > 0)   ? geo.height * scale      : GEO_DEFAULTS.height;
-      const safeFs = (geo?.fontSize && isFinite(geo.fontSize) && geo.fontSize > 0)
-        ? geo.fontSize * scale
-        : GEO_DEFAULTS.fontSize;
-      const safeAngle = (geo && isFinite(geo.angle)) ? geo.angle : 0;
+      // Safe geometry — AC6: if a value is missing, zero or non-finite, fall
+      // back. The text content is always rendered; only the position / size
+      // may degrade. Pure computation, unit-tested directly in
+      // canvasState.safeGeometry.spec.ts.
+      const { x: safeX, y: safeY, width: geoW, height: safeH, fontSize: safeFs, angle: safeAngle } =
+        computeSafeTextGeometry(geo, scale, offsetX, offsetY);
 
       const slotId = el.slot ? LISTING_FIELD_TO_SLOT[el.slot] : undefined;
 

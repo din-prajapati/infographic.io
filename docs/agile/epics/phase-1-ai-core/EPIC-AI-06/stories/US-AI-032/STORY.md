@@ -1,6 +1,6 @@
 # Story Card — US-AI-032
 
-> **Status:** 🔶 In Progress — AC1/AC2/AC3 live-verified 2026-08-14; AC5 (export parity) and AC6 (malformed geometry) remain open, see Notes
+> **Status:** 🔶 In Progress — AC1/2/3/4/6/7 done (AC1/2/3 live-verified 2026-08-14, AC6 unit-tested 2026-08-15). AC5 (export parity) is real, separate scope — deliberately deferred to [BL-09](../../../../../BACKLOG.md), not built this pass.
 > **Feature:** F-AI-06-03 — Editable listing canvas
 > **Epic:** [EPIC-AI-06](../../EPIC.md)
 > **Milestone:** [M-AI-18](../../milestones/M-AI-18-editable-text-overlay.md)
@@ -48,7 +48,7 @@ Consume a `ComposedDesign` from US-AI-031b and turn it into a real, editable, pe
 - [x] **AC3 [happy-path]:** The design persists and reloads with all elements intact. **Live-verified 2026-08-14** — Save → `/editor?designId=...` → hard reload → same element count, edited price value survives.
 - [x] **AC4 [regression]:** Flat mode remains available and unchanged; the user chooses per generation.
 - [ ] **AC5 [regression]:** **Export matches the composed preview at full resolution.** This is *not* true today — see Export parity below. Real work, not a checkbox. **Not covered by the 2026-08-14 live E2E pass** — needs a pixel-diff harness against the two competing export renderers, separate scope from this pass.
-- [ ] **AC6 [error-path]:** An element with missing or malformed geometry renders with a safe default placement and style. Never crashes the editor, never silently drops the value. **Not covered by the 2026-08-14 live E2E pass** — needs a way to inject malformed geometry into a real extraction response, which a live-data test cannot control; would need a mocked/fixture-based test instead.
+- [x] **AC6 [error-path]:** An element with missing or malformed geometry renders with a safe default placement and style. Never crashes the editor, never silently drops the value. **Fixed and verified 2026-08-15** — extracted the inline safe-geometry computation into a standalone pure function, `computeSafeTextGeometry` (`canvasState.ts`), matching this repo's own canvas-testing decision (`client/vitest.config.ts` header: "pure geometry helpers, zero extra dependencies" — rather than mocking the full image-fetch/canvas pipeline a live-data test can't control anyway). 9 new unit tests (`client/src/lib/__tests__/canvasState.safeGeometry.spec.ts`) cover null/undefined geo, NaN, Infinity, zero, and negative values for every field, plus a per-field (not all-or-nothing) degradation case — all pass, never throw.
 - [x] **AC7 [edge-case]:** A `slot` id absent from the sidebar catalogs **fails loudly at dev time** rather than vanishing. Today `TemplateSection` returns `null` when nothing matches (`TemplateSlotSection.tsx:210-211`), so a typo'd slot silently deletes a value from the UI — exactly the failure AC6 forbids.
 
 ---
@@ -99,7 +99,9 @@ click path here so the next person (or agent) doesn't lose time rediscovering it
 
 ---
 
-## Export parity — AC5 is real work
+## Export parity — AC5 is real work, deferred to [BL-09](../../../../../BACKLOG.md)
+
+**2026-08-15: deliberately deferred, not built.** Confirmed as genuinely separate, sizeable scope (confirm which of two competing export functions is live, build a pixel-diff harness, fix the 4 mismatches below) — user's call, alongside building AC6 in the same pass since AC6 was cheap and AC5 is not. Tracked as BL-09; this section stands as its spec.
 
 Export re-renders from the Zustand store rather than snapshotting the DOM (`canvasExport.ts:20-52`), which is the right architecture. But **preview and export are two independent renderers that visibly disagree**:
 
@@ -214,7 +216,7 @@ Implementation rules:
 | TC-AI-032-03 | Auto (E2E, live) | P0 | Save and reload → all elements and slot tags intact | ✅ Pass | `e2e/us-ai-032-editable-canvas.spec.ts` — element count + edited value both survive a hard reload |
 | TC-AI-032-04 | Manual | P0 | Export an editable design → pixel output matches composed preview at full resolution | ⏸ | Still blocked — needs a pixel-diff harness, separate scope from the 2026-08-14 pass |
 | TC-AI-032-05 | Manual | P0 | Flat mode → unchanged existing behaviour, no slots created | ⏸ | Not exercised by the new E2E spec (editable-only); flat path still only provably untouched in the diff |
-| TC-AI-032-06 | Manual | P1 | Element with malformed geometry → safe default placement, no crash, value still present | ⏸ | Still blocked — needs a fixture/mocked test to inject malformed geometry; a live-data test can't control this |
+| TC-AI-032-06 | Auto | P1 | Element with malformed geometry → safe default placement, no crash, value still present | ✅ Pass | `client/src/lib/__tests__/canvasState.safeGeometry.spec.ts` — 9 tests, 2026-08-15 |
 | TC-AI-032-07 | Auto | P1 | Unknown slot id → loud dev-time failure, not a silent disappearance | ⚠ | Compile-time half only — `SlotId` union via `npm run check`; dev-throw unverified |
 | TC-AI-032-08 | Auto | P1 | `verifyAndRepairV4JsonPrompt` is not invoked on the editable path | ⚠ | Source-scan tripwire only — defeated by rename/alias/indirect call |
 | TC-AI-032-09 | Manual | P2 | Replace the background image with a different photo → composition holds, text elements unaffected | 🔲 | |
