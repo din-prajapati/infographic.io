@@ -1,6 +1,6 @@
 # Story Card — US-AI-031
 
-> **Status:** 🟡 In Progress — AC2–AC7 verified; AC1 gated on Ideogram credit (TC-AI-031-01)
+> **Status:** ✅ Done — all 7 ACs verified. AC1 live-verified 2026-08-15 after an Ideogram credit top-up: uploaded a real property photo (`client/src/assets/images/carousel/property-1.jpg`, an existing licensed product asset — a distinctive kitchen interior), generated, and the composition shows the unmistakably same kitchen (same cabinets, granite counters, skylights, wine rack, bar stools) — not an AI-invented lookalike.
 > **Feature:** F-AI-06-01 — Real property photo as composition source
 > **Epic:** [EPIC-AI-06](../../EPIC.md)
 > **Milestone:** [M-AI-17](../../milestones/M-AI-17-real-photo-background.md)
@@ -8,7 +8,7 @@
 > **Depends on:** US-AI-010 (photo upload plumbing) — ✅ Done
 > **Blocks:** [US-AI-031b](../US-AI-031b/STORY.md) (layer extraction), [US-AI-032](../US-AI-032/STORY.md) (editable canvas)
 > **Linear:** LIN-XXX
-> **Created:** 2026-07-03 | **Rewritten:** 2026-08-11 | **Closed:** —
+> **Created:** 2026-07-03 | **Rewritten:** 2026-08-11 | **Closed:** 2026-08-15
 
 ---
 
@@ -44,7 +44,7 @@ This story delivers **composition only**. A real photo goes in; a flat design co
 
 ## Acceptance Criteria
 
-- [ ] **AC1 [happy-path]:** When a photo reference is supplied, it is sent as the **source image** to the composition provider's remix capability, and the resulting composition contains the recognizable actual property — not a stylistic lookalike.
+- [x] **AC1 [happy-path]:** When a photo reference is supplied, it is sent as the **source image** to the composition provider's remix capability, and the resulting composition contains the recognizable actual property — not a stylistic lookalike. **Live-verified 2026-08-15** — `e2e/us-ai-031-real-photo-composition.spec.ts`, screenshot evidence in `evidence/ac1-real-photo-recognizable-2026-08-15.png`.
 - [x] **AC2 [happy-path]:** The composition prompt requests clean, straight, standard typography. This is *not* for text correctness (that text is discarded) but for **downstream detectability** — layer extraction in US-AI-031b degrades badly on curved or decorative type.
 - [x] **AC3 [regression]:** The **no-photo path is byte-identical to today.** The existing structured-prompt pipeline and `verifyAndRepairV4JsonPrompt` are untouched, and all 23 existing tests in `api/tests/ai-generation/infographic-prompt.builder.spec.ts` pass unchanged.
 - [x] **AC4 [error-path]:** When a photo reference is supplied but the file cannot be retrieved, **the generation fails with a clear user-facing error.** It must never silently proceed to produce a fabricated property. See "Behaviour change" — this inverts current production behaviour.
@@ -162,13 +162,13 @@ Implementation rules:
 
 | TC ID | Type | Priority | Scenario | Status | Finding |
 |-------|------|----------|----------|--------|---------|
-| TC-AI-031-01 | Manual ⛽ | P0 | Generate with a real listing photo → composition contains the recognizable actual property | 🔲 | Gated on credit top-up |
+| TC-AI-031-01 | Auto (E2E, live) | P0 | Generate with a real listing photo → composition contains the recognizable actual property | ✅ Pass | `e2e/us-ai-031-real-photo-composition.spec.ts` — live run 2026-08-15, screenshot confirms same kitchen (cabinets, counters, skylights, wine rack, bar stools) |
 | TC-AI-031-02 | Auto | P0 | Photo reference present but file absent → generation throws a clear error; no image call is made | ✅ | `ideogram.service.spec.ts` |
 | TC-AI-031-03 | Auto | P0 | No photo reference → request path and payload identical to today; all 23 builder tests green | ✅ | `infographic-prompt.builder.spec.ts` — 23 pre-existing + 3 AC3 guards green |
 | TC-AI-031-04 | Auto | P0 | `photoReference` = `"../../etc/passwd"` → rejected by DTO validation before any filesystem call | ✅ | `ideogram.service.spec.ts` |
 | TC-AI-031-05 | Auto | P1 | V4 generate payload no longer contains a `style_reference_images` field | ✅ | `ideogram.service.spec.ts` |
 | TC-AI-031-06 | Auto | P1 | Composition prompt contains the clean-typography instruction | ✅ | `ideogram.service.spec.ts` |
-| TC-AI-031-07 | Manual ⛽ | P1 | Re-run `TC-AI-010-02` with the unchanged fixture → settles fixture theory vs undocumented-parameter theory | 🔲 | Gated on credit top-up |
+| TC-AI-031-07 | Manual | P1 | Re-run `TC-AI-010-02` with the unchanged fixture → settles fixture theory vs undocumented-parameter theory | 🔲 | Not run this pass — 2026-08-15's live verification used a real photo fixture (`property-1.jpg`), not the original 1×1px repro case, so it doesn't settle this specific open question. Credit is available now; this remains a cheap follow-up whenever picked up, just not done here. |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 **⛽ = requires Ideogram API credit.** The account is currently out of credit; these are gated, consistent with how `TC-AI-010-02` is parked on US-AI-010.
