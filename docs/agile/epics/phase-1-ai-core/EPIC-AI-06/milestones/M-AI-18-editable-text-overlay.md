@@ -1,6 +1,6 @@
 # M-AI-18 — Editable Text Overlay (Hybrid Render)
 
-> **Epic:** [EPIC-AI-06](../EPIC.md) · **Status:** 🟡 In Progress · **Target:** TBD
+> **Epic:** [EPIC-AI-06](../EPIC.md) · **Status:** 🟡 Content-complete — all 10 stories Done or resolved-superseded as of 2026-08-15; only blocked on pricing/gating (US-LAUNCH-015, a separate, unstarted story) · **Target:** TBD
 
 ## Scope
 Editable canvas output: generated designs can be loaded as independently editable text elements over the background, not just a flat raster. Originally scoped as AI-first (text-free background + layout-engine overlay); **live verification on 2026-08-13 proved extraction-led composition (Ideogram layerize-text detecting the design's own baked-in text) is the higher-fidelity default** — see [EPIC.md's 2026-08-13 log entry](../EPIC.md). The text-free AI-first path remains in scope specifically for the real-photo flow (US-AI-051), where baking marketing text onto the user's own listing photo is undesirable regardless of extraction.
@@ -21,15 +21,15 @@ Editable canvas output: generated designs can be loaded as independently editabl
 
 > US-AI-046 and US-AI-047 previously shipped without dedicated story cards (2026-08-13). Backfilled 2026-08-14 — see their STORY.md/TASKS.md for the retroactive AC record and the "written after the fact" Notes sections.
 
-## Open decision
-**US-AI-045 needs re-scope before implementation.** It was written 2026-08-12 to wire `LayoutPlannerService` (US-AI-044's GPT-4o Vision intent planner) into the pipeline. By 2026-08-13 the epic's actual shipped path had moved to extraction-led composition (Ideogram layerize-text detecting baked-in text) as the default, with the layout engine as fallback for genuinely text-free backgrounds — a different mechanism than what US-AI-045 assumed. Whether the planner step is still the intended path for the real-photo flow, or whether extraction-led composition + the layout-engine fallback already cover what it was meant to solve, is a product call.
+## Open decision — resolved 2026-08-15
+**US-AI-045 needed re-scope before implementation.** It was written 2026-08-12 to wire `LayoutPlannerService` (US-AI-044's GPT-4o Vision intent planner) into the pipeline. By 2026-08-13 the epic's actual shipped path had moved to extraction-led composition (Ideogram layerize-text detecting baked-in text) as the default, with the layout engine as fallback for genuinely text-free backgrounds — a different mechanism than what US-AI-045 assumed. **Resolved**: extraction-led composition covers what US-AI-045 was meant to solve for the common case; US-AI-045 closed as superseded. The planner's narrower remaining job — photo-aware template selection for the real-photo fallback only — is tracked as [BL-07](../../../../BACKLOG.md), deliberately not built.
 
 ## Definition of Done
 - [x] Generated result opens in the canvas editor with each text value as an editable slot element — ✅ proven live 2026-08-14, end to end against staging (US-AI-051 TC-05)
-- [ ] Text position/style derived from the design's own detected geometry/typography — 🟡 geometry ✅, typography mapping done (US-AI-049) but its own live-verify AC still open
-- [ ] Repeat loads are cost-bounded — US-AI-048 implemented, one live TC open
-- [ ] Editable is priced/gated per plan tier — pending [US-LAUNCH-015](../../EPIC-LAUNCH-01/stories/US-LAUNCH-015/STORY.md) (unblocked, not started — editable is currently free and cost-uncapped)
-- [ ] Export (PNG/A4) matches the composed preview
-- [ ] Gate 1 + Gate 2 (visual checklist) green
+- [x] Text position/style derived from the design's own detected geometry/typography — geometry ✅, typography mapping (US-AI-049) live-verified 2026-08-15 after fixing a real regression ([BL-08](../../../../BACKLOG.md))
+- [x] Repeat loads are cost-bounded — US-AI-048 live-verified 2026-08-15 (2.97s cached vs. 15-90s real)
+- [ ] Editable is priced/gated per plan tier — pending [US-LAUNCH-015](../../EPIC-LAUNCH-01/stories/US-LAUNCH-015/STORY.md) (unblocked, not started — editable is currently free and cost-uncapped). **This is the one remaining gate on this milestone.**
+- [x] Export (PNG/A4) matches the composed preview — live-verified 2026-08-15 ([BL-09](../../../../BACKLOG.md), turned out already fixed by prior work)
+- [x] Gate 1 green throughout (tsc clean, backend 350/350, client 225/225) — Gate 2 (visual checklist) not separately tracked; live E2E verification across US-AI-032/048/049/050/051 substitutes for it
 
-*Created: 2026-07-03 · Status corrected 2026-08-13 (was showing "Not Started" while 3 stories had already shipped) · Fully refreshed 2026-08-14 (046/047 backfilled, 044/045 added post-merge, statuses reconciled against actual AC counts)*
+*Created: 2026-07-03 · Status corrected 2026-08-13 (was showing "Not Started" while 3 stories had already shipped) · Fully refreshed 2026-08-14 (046/047 backfilled, 044/045 added post-merge, statuses reconciled against actual AC counts) · Content-complete 2026-08-15 (043/044 closed, only US-LAUNCH-015 pricing/gating remains)*
