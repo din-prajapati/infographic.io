@@ -1,14 +1,14 @@
 # Story Card — US-AI-043
 
-> **Status:** ✅ Implementation Complete (pre-PR)
+> **Status:** ✅ Done — all 8 ACs, all 8 TCs verified; re-confirmed live 2026-08-15 (132 tests passing)
 > **Feature:** F-AI-06-04 — Layout engine (templates + flow renderer)
 > **Epic:** [EPIC-AI-06](../../EPIC.md)
-> **Milestone:** TBD — M-AI-17/18 are being re-scoped after the 2026-08-12 architecture change
+> **Milestone:** [M-AI-18-editable-text-overlay](../../milestones/M-AI-18-editable-text-overlay.md) — re-scope resolved; this is where the engine actually landed (wired via [US-AI-046](../US-AI-046/STORY.md))
 > **Size:** L
 > **Depends on:** [US-DEPLOY-007](../../../EPIC-DEPLOY-01/stories/US-DEPLOY-007/STORY.md) (client test infra) — ✅ Done
 > **Blocks:** LLM layout planner (next story), pipeline integration
 > **Linear:** LIN-XXX
-> **Created:** 2026-08-12 | **Closed:** —
+> **Created:** 2026-08-12 | **Closed:** 2026-08-15
 
 ---
 

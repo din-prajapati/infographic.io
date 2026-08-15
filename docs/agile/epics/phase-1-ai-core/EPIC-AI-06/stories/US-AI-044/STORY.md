@@ -1,14 +1,28 @@
 # Story Card — US-AI-044
 
-> **Status:** ✅ Implementation Complete (pre-PR)
+> **Status:** ✅ Done — all 8 ACs, all 10 TCs verified; re-confirmed live 2026-08-15 (49 tests passing). Built exactly what it scoped (intent generation only) — wiring was always the *next* story's job, not this one's; see Notes.
 > **Feature:** F-AI-06-05 — LLM layout planner
 > **Epic:** [EPIC-AI-06](../../EPIC.md)
-> **Milestone:** TBD — M-AI-17/18 re-scope in progress
+> **Milestone:** [M-AI-18-editable-text-overlay](../../milestones/M-AI-18-editable-text-overlay.md) — re-scope resolved
 > **Size:** M
 > **Depends on:** [US-AI-043](../US-AI-043/STORY.md) (layout engine) — ✅ Done
 > **Blocks:** Pipeline integration (wiring plannerIntent → layoutDesign → canvas)
 > **Linear:** LIN-XXX
-> **Created:** 2026-08-12 | **Closed:** —
+> **Created:** 2026-08-12 | **Closed:** 2026-08-15
+
+---
+
+## Notes — closure (2026-08-15)
+
+This service is real, tested, and DI-registered — but genuinely unwired to anything, same as when
+it shipped. That is not a gap in *this* story: "Frontend integration" and "Pipeline wiring" are
+explicitly listed under "Explicitly not in this story" above, deferred on purpose to the next story.
+That next story, [US-AI-045](../US-AI-045/STORY.md), was later closed as superseded — extraction-led
+composition turned out to be the higher-fidelity default for most generations, so the *primary*
+pipeline this planner was meant to feed was never built. The planner's narrower remaining job —
+photo-aware template selection for the real-photo fallback path only — is tracked as
+[BL-07](../../../../../BACKLOG.md), not built. This story is closed on its own terms: it delivered
+exactly the intent-generation service it scoped, verified, and nothing it promised is missing.
 
 ---
 

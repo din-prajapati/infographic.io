@@ -9,8 +9,8 @@ Editable canvas output: generated designs can be loaded as independently editabl
 | Story | Title | Status |
 |-------|-------|--------|
 | US-AI-032 | Hybrid render — editable canvas text overlay | ✅ Done — all 7 ACs, 2026-08-15 (AC5/BL-09 turned out already fixed by prior work; found [BL-10](../../../../BACKLOG.md) along the way) |
-| US-AI-043 | Layout engine (templates + flow renderer) | 🟡 Implementation complete (pre-PR) |
-| US-AI-044 | LLM layout planner | 🟡 Implementation complete; unwired to the pipeline |
+| US-AI-043 | Layout engine (templates + flow renderer) | ✅ Done — all 8 ACs, 132 tests, re-verified 2026-08-15 |
+| US-AI-044 | LLM layout planner | ✅ Done — all 8 ACs, 49 tests, re-verified 2026-08-15. Unwired by design (see its Notes) — narrower remaining job is [BL-07](../../../../BACKLOG.md) |
 | US-AI-045 | Pipeline integration (planner → engine → canvas) | ⛔ Closed 2026-08-14 — superseded by extraction-led composition; planner's narrower remaining job deferred to [BL-07](../../../../BACKLOG.md) |
 | US-AI-046 | Connect the layout engine to the editable canvas | ✅ Done |
 | US-AI-047 | Shared render-mode across generation surfaces | ✅ Done |

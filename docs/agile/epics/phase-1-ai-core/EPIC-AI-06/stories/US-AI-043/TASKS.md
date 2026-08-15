@@ -10,10 +10,13 @@
 
 ## Four Pillars Pre-flight
 
-- [ ] **Brain** — [STORY.md](./STORY.md) read: 8 typed ACs, "Explicitly not in this story" understood
-- [ ] **Muscle** — file list + ordered tasks + test commands below
-- [ ] **Map** — [ARCHITECTURE.mmd](../../ARCHITECTURE.mmd) reviewed (updated in T5)
-- [ ] **Env** — none needed. This story makes **no network calls** and requires no API keys.
+- [x] **Brain** — [STORY.md](./STORY.md) read: 8 typed ACs, "Explicitly not in this story" understood
+- [x] **Muscle** — file list + ordered tasks + test commands below
+- [x] **Map** — [ARCHITECTURE.mmd](../../ARCHITECTURE.mmd) reviewed (updated in T5)
+- [x] **Env** — none needed. This story makes **no network calls** and requires no API keys.
+
+> Retroactively checked 2026-08-15 — implementation, all 5 tasks, and Gate 1 evidence below all
+> demonstrate this pre-flight was actually done; the boxes were simply never ticked at the time.
 
 > **Read the spike first.** [`spike-pure-canvas-2026-08-12/FINDINGS.md`](../../../../../testing/reports/spike-pure-canvas-2026-08-12/FINDINGS.md) explains why the LLM must not place pixels. The overlapping headline/price in `04-planner-v2-constrained.png` is the exact defect AC4 exists to prevent.
 
