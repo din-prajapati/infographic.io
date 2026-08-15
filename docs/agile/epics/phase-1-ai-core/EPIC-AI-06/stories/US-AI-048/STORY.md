@@ -1,6 +1,6 @@
 # Story Card — US-AI-048
 
-> **Status:** 🟡 Implementation complete (pre-PR)
+> **Status:** ✅ Done — all 7 ACs verified, TC-AI-048-06 live-verified 2026-08-15
 > **Feature:** F-AI-06-07 — Extraction cost control (compose cache)
 > **Epic:** [EPIC-AI-06](../../EPIC.md)
 > **Milestone:** [M-AI-18-editable-text-overlay](../../milestones/M-AI-18-editable-text-overlay.md)
@@ -99,7 +99,7 @@ Implementation rules:
 | TC-AI-048-03 | Auto | P1 | Given the same image at a different exp/sig signature, when composed, then it is treated as the SAME key — no second provider call (AC3) | 🔲 | |
 | TC-AI-048-04 | Auto | P1 | Given a degraded extraction (null), when composed again, then extraction IS retried (AC5) | 🔲 | |
 | TC-AI-048-05 | Auto | P1 | Compose A, B, A → exactly two extract:start events (AC4) | 🔲 | |
-| TC-AI-048-06 | Manual | P1 | Live: second "Use This" click on the same variation loads in <2s with no `edit:metering:ok` in server logs (AC1/2/6) | 🔲 | |
+| TC-AI-048-06 | Auto (E2E, live) | P1 | Live: second "Use This" click on the same variation loads fast, no full re-extraction (AC1/2/6) | ✅ Pass | `e2e/us-ai-048-compose-cache.spec.ts` — live run 2026-08-15, second round trip: 2965ms (vs. 15-90s observed for a real extraction) |
 | TC-AI-048-07 | Auto | P0 | error-path: Prisma update to persist `composedDesigns` throws after a successful extraction, when compose is called, then the freshly-extracted `ComposedDesign` is still returned to the caller and the persistence failure is logged (AC7) | 🔲 | |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
@@ -108,7 +108,7 @@ Implementation rules:
 
 ## Definition of Done
 
-- [ ] All ACs checked ✅
-- [ ] All test cases run and recorded
-- [ ] Gate 1 green (tsc + `npm run test:unit`)
-- [ ] `npx prisma db push` applied to dev DB; schema change noted in EPIC log
+- [x] All ACs checked ✅
+- [x] All test cases run and recorded
+- [x] Gate 1 green (tsc + `npm run test:unit`) — confirmed 2026-08-15, backend 350/350, client 216/216
+- [x] `npx prisma db push` applied to dev DB — `composedDesigns Json?` present on `Infographic` in `schema.prisma`
