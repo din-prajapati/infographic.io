@@ -6,18 +6,18 @@
 
 ---
 
-## TL;DR
+## TL;DR — updated 2026-08-15
 
-- **Marketable beta: 1–2 days of actual work** — the only true blocker is a ~2-hour "buy a domain + deploy to production" on Day 1.
-- **Full Cursor-style deployment maturity: ~2 weeks**, running **in parallel** — it never blocks the beta.
-- **Revenue on: ~3–4 weeks**, gated by the real-photo pipeline (EPIC-AI-06), **not** by any infrastructure work.
+- **Beta:** domain is live (`buildographic.com`), M-LAUNCH-01 (all 4 stories: legal pages, email, password reset, beta mode) is Done. This section's original "1-2 days" plan has played out — verify Task 3's own checkbox status directly, this doc wasn't independently re-checked against it this pass.
+- **EPIC-AI-06 (real-photo pipeline): ✅ fully closed 2026-08-15**, both milestones, all 12 stories. No longer "the revenue prerequisite" — it's done.
+- **Revenue on: one story away.** M-LAUNCH-02 is 6/7 Done. The only remaining gate item is US-LAUNCH-005 AC5/6 — a real ₹ transaction, intentionally not yet run without an explicit go-ahead.
 
 ```
-Day 1–2      ████ Beta live + marketable          ← domain + Task 3 + beta mode
-Week 1–2     ░░░░░░░░ EPIC-DEPLOY-01 (velocity)    ← parallel, non-blocking
-Week 2–4     ░░░░░░░░ EPIC-AI-06 (real photos)     ← the revenue prerequisite
-Week 3–4     ░░░░ M-LAUNCH-02 prep                 ← parallel to AI-06
-~Week 4      ● Revenue ON (flip BETA_MODE=false)   ← gated by AI-06 + M-LAUNCH-02
+Beta live                    ████ Done — domain + M-LAUNCH-01 all 4 stories
+EPIC-DEPLOY-01 (velocity)    ░░░░░░░░ 1/7 Done (US-DEPLOY-007), rolling/non-blocking, as designed
+EPIC-AI-06 (real photos)     ████████ ✅ Done 2026-08-15 — was the revenue prerequisite, now closed
+M-LAUNCH-02 prep             ███████░ 6/7 Done
+Revenue ON (BETA_MODE=false) ○ one story away — US-LAUNCH-005 AC5/6 (real ₹ txn, needs a go-ahead)
 ```
 
 ---
@@ -84,9 +84,9 @@ Transactional email (password reset) is the only user-facing feature that **need
 | Track | Work | Effort | Timing / gate |
 |-------|------|--------|---------------|
 | [US-LAUNCH-010](epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-010/STORY.md) | Config hardening (`APP_ENV` + Zod boot validation + RazorPay guard) — **after its [prereq gate](epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-010/Pre-requisite-story.md)** (set `APP_ENV=staging` first) | ~0.5 day + gate | Week 1, when convenient |
-| [EPIC-DEPLOY-01](epics/phase-1-ai-core/EPIC-DEPLOY-01/EPIC.md) | Velocity foundation: CI gate → flags → preview envs → migrations → progressive delivery | **~4.5 focused days** | **~1.5–2 calendar weeks**, alongside beta + marketing |
-| [EPIC-AI-06](epics/phase-1-ai-core/EPIC-AI-06/EPIC.md) | Hybrid real-photo pipeline — **the chargeability gate** (replaces synthetic photos/headshots) | ~30h (~1 wk) | Before revenue |
-| M-LAUNCH-02 | Revenue-on: RazorPay live activation, receipt email, BROKERAGE gate, metering guard | ~20h + ops | Prep parallel to AI-06; **flip gated by AI-06** |
+| [EPIC-DEPLOY-01](epics/phase-1-ai-core/EPIC-DEPLOY-01/EPIC.md) | Velocity foundation: CI gate → flags → preview envs → migrations → progressive delivery | **~4.5 focused days** | 🟡 1/7 Done (US-DEPLOY-007, closed 2026-08-15 — an unplanned addition, not part of this original sequencing). US-DEPLOY-001–006 still not started, still rolling/non-blocking |
+| [EPIC-AI-06](epics/phase-1-ai-core/EPIC-AI-06/EPIC.md) | Hybrid real-photo pipeline — **the chargeability gate** (replaces synthetic photos/headshots) | ~30h (~1 wk) | ✅ **Done 2026-08-15** |
+| M-LAUNCH-02 | Revenue-on: RazorPay live activation, receipt email, BROKERAGE gate, metering guard, editable-design monetization (US-LAUNCH-015) | ~20h + ops | 🟡 6/7 Done — only US-LAUNCH-005 AC5/6 (real ₹ txn) open |
 
 ### EPIC-DEPLOY-01 internal order (recommended)
 `US-DEPLOY-001` CI gate (0.5d) → `US-DEPLOY-003` flags (0.5d) → `US-DEPLOY-002` preview envs (1.5d) → `US-DEPLOY-004` migrations (1d, *after* real data) → `US-DEPLOY-005` progressive delivery (1d).
@@ -98,12 +98,12 @@ Transactional email (password reset) is the only user-facing feature that **need
 Charging is deliberately deferred until synthetic property photos/headshots are replaced — hence the two-milestone split (beta live first, revenue second).
 
 **Revenue turns on (`BETA_MODE=false`) only when ALL of:**
-- [ ] EPIC-AI-06 shipped (real-photo pipeline — no more synthetic imagery on paid output)
-- [ ] M-LAUNCH-02 stories closed (live RazorPay, receipts, metering, BROKERAGE gate)
-- [ ] One real ₹ transaction completed end-to-end on live RazorPay and refunded
-- [ ] Domain live (RazorPay live activation + email DKIM reputation both need it)
+- [x] EPIC-AI-06 shipped (real-photo pipeline — no more synthetic imagery on paid output) — ✅ closed 2026-08-15
+- [x] M-LAUNCH-02 stories closed (live RazorPay, receipts, metering, BROKERAGE gate) — 6/7 Done, only US-LAUNCH-005 open
+- [ ] One real ₹ transaction completed end-to-end on live RazorPay and refunded — **the only unchecked box**, intentionally not run without an explicit go-ahead
+- [x] Domain live (RazorPay live activation + email DKIM reputation both need it) — `buildographic.com`, decided 2026-07-17
 
-**Estimated: ~3–4 weeks from today**, paced by EPIC-AI-06, not by infrastructure.
+**Updated 2026-08-15: one story away**, not the original "~3-4 weeks" estimate — EPIC-AI-06 and the rest of M-LAUNCH-02 are both done. US-LAUNCH-005 AC5/6 is genuinely the only remaining gate item.
 
 ---
 
@@ -116,10 +116,10 @@ Charging is deliberately deferred until synthetic property photos/headshots are 
 
 ## Risks / watch-items
 
-- **US-LAUNCH-004 (beta mode) not built yet** — until it ships, "Upgrade" buttons lead to a *test-mode* RazorPay checkout. Not a safety risk (test keys can't charge), but confusing for marketing traffic. Ship it before driving volume, or lead with Google sign-in.
-- **US-LAUNCH-010 must not be merged naively** — its boot validation can brick live staging; follow its [prereq gate](epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-010/Pre-requisite-story.md) first.
-- **`db:deploy` still uses `prisma db push`** — fine for beta, but switch to `migrate deploy` (US-DEPLOY-004) before the DB accumulates real data you can't afford to lose.
+- ~~US-LAUNCH-004 (beta mode) not built yet~~ — **stale as of 2026-08-15, US-LAUNCH-004 is Done.** Left struck through rather than deleted so the history of what this doc used to warn about isn't lost.
+- **US-LAUNCH-010 must not be merged naively** — its boot validation can brick live staging; follow its [prereq gate](epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-010/Pre-requisite-story.md) first. (US-LAUNCH-010 itself is Done as of an earlier session — this warning is about future re-merges, not a currently-open item.)
+- **`db:deploy` still uses `prisma db push`** — fine for beta, but switch to `migrate deploy` (US-DEPLOY-004) before the DB accumulates real data you can't afford to lose. Not independently re-checked this pass whether real production data now exists — worth confirming before treating this as still low-risk.
 
 ---
 
-*Timeline created: 2026-07-13. Update when Task 3 signs off or estimates shift.*
+*Timeline created: 2026-07-13. Refreshed 2026-08-15 — EPIC-AI-06 closed, M-LAUNCH-02 down to one story, stale "not built yet" claims corrected. Update when US-LAUNCH-005 closes (revenue-on flip) or estimates shift.*
