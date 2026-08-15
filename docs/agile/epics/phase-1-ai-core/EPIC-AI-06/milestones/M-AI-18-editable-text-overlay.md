@@ -15,7 +15,7 @@ Editable canvas output: generated designs can be loaded as independently editabl
 | US-AI-046 | Connect the layout engine to the editable canvas | ✅ Done |
 | US-AI-047 | Shared render-mode across generation surfaces | ✅ Done |
 | US-AI-048 | Cache ComposedDesign per (generation, variation) | 🟡 6/7 ACs; one manual live-latency TC deferred |
-| US-AI-049 | Map extracted fonts to real editor typography | 🟡 5/6 ACs; AC5 (live browser) deferred |
+| US-AI-049 | Map extracted fonts to real editor typography | 🟡 AC5 live-verified 2026-08-14 — **fails**: price still wraps 2 lines, root cause is box-width vs. mapped-font-metrics, not font-mapping. See [BL-08](../../../../BACKLOG.md) |
 | US-AI-050 | Progress affordance for the editable compose wait | ✅ Done — 6/6 ACs, AC3 live-verified 2026-08-14 |
 | US-AI-051 | Text-free background for real-photo + editable | ✅ All 7 ACs verified, live on staging |
 
