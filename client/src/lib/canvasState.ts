@@ -9,6 +9,7 @@ import { useCanvasStore } from '../hooks/useCanvasStore';
 import type { ImageElement, TextElement, TextAlign } from './canvasTypes';
 import type { ComposedDesign } from './api';
 import { mapExtractedFont } from './fontMap';
+import { createMeasureText } from './layout/connectLayout';
 
 /**
  * Capture current canvas state as JSON.
@@ -541,6 +542,11 @@ export async function loadComposedDesignToCanvas(design: ComposedDesign): Promis
     };
 
     // ── 6. Text elements — one per ComposedTextElement ────────────────────
+    // BL-08: one measurer, reused for every element (matches connectLayout.ts's
+    // own "build once, call per element" usage — real canvas context creation
+    // isn't free).
+    const measureTextWidth = createMeasureText();
+
     const textElements: TextElement[] = design.elements.map((el, index): TextElement => {
       const geo = el.geometry;
 
@@ -548,7 +554,7 @@ export async function loadComposedDesignToCanvas(design: ComposedDesign): Promis
       // The text content is always rendered; only the position / size may degrade.
       const safeX  = (geo && isFinite(geo.x))                          ? geo.x * scale + offsetX : GEO_DEFAULTS.x;
       const safeY  = (geo && isFinite(geo.y))                          ? geo.y * scale + offsetY : GEO_DEFAULTS.y;
-      const safeW  = (geo && isFinite(geo.width) && geo.width > 0)     ? geo.width * scale       : GEO_DEFAULTS.width;
+      const geoW   = (geo && isFinite(geo.width) && geo.width > 0)     ? geo.width * scale       : GEO_DEFAULTS.width;
       const safeH  = (geo && isFinite(geo.height) && geo.height > 0)   ? geo.height * scale      : GEO_DEFAULTS.height;
       const safeFs = (geo?.fontSize && isFinite(geo.fontSize) && geo.fontSize > 0)
         ? geo.fontSize * scale
@@ -563,6 +569,20 @@ export async function loadComposedDesignToCanvas(design: ComposedDesign): Promis
       // mapExtractedFont resolves it; final fallback is Inter 400 (US-AI-049).
       const { family: resolvedFamily, weight: resolvedWeight } =
         mapExtractedFont(geo?.fontFamily);
+
+      // BL-08: geoW came from the ORIGINAL image's measured bounding box —
+      // sized for whatever font the provider actually rendered with, which
+      // is frequently NOT the family resolved above (most visibly when
+      // mapping falls through to the Inter fallback, US-AI-049 AC2). A box
+      // sized for one font's glyph widths and rendered in a wider one wraps
+      // text that fit on one line in the source image (live-confirmed
+      // 2026-08-14: "₹1.9 Cr" → "₹1.9" / "Cr"). Re-measure against the font
+      // that will actually render and widen the box if it doesn't fit;
+      // never narrow it — a wider box than needed is harmless, a narrower
+      // one wraps.
+      const renderedWidth = measureTextWidth(el.text, safeFs, resolvedWeight, resolvedFamily);
+      const TEXT_BOX_PADDING = 16; // matches TextElement.tsx's own px-2 py-1 (rendered box, not source px, but a safe fixed buffer)
+      const safeW = Math.max(geoW, renderedWidth + TEXT_BOX_PADDING);
 
       return {
         id: `composed-text-${Date.now()}-${index}`,

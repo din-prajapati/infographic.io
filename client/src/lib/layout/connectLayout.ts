@@ -77,8 +77,16 @@ export function orientationToCanvasSize(
  * Falls back to a proportional estimate when no context is obtainable — jsdom
  * returns null from getContext('2d'), and a headless failure should degrade the
  * layout's precision, never break composition.
+ *
+ * The returned function measures against the Inter stack by default — the
+ * layout engine's own template typography (this module's reason for being) —
+ * but callers outside the layout-engine path (BL-08: canvasState.ts's
+ * extraction-mapped text boxes, which apply whatever font mapExtractedFont
+ * resolved, not necessarily Inter) can pass an explicit `family` per call to
+ * measure against the font that will actually render. One measurer
+ * implementation for both cases, not two — same lesson as US-AI-047/US-AI-050.
  */
-export function createMeasureText(): (t: string, fontSize: number, weight: number) => number {
+export function createMeasureText(): (t: string, fontSize: number, weight: number, family?: string) => number {
   let ctx: CanvasRenderingContext2D | null = null;
   try {
     ctx = document.createElement('canvas').getContext('2d');
@@ -88,13 +96,15 @@ export function createMeasureText(): (t: string, fontSize: number, weight: numbe
 
   if (!ctx) {
     // 0.52 approximates Inter's average advance ratio. Same constant the
-    // engine's own specs use, so behaviour stays consistent headless.
+    // engine's own specs use, so behaviour stays consistent headless. Kept
+    // as a single reasonable sans-serif estimate regardless of `family` —
+    // this branch only runs where there's no real canvas to measure with.
     return (t: string, fontSize: number) => t.length * fontSize * 0.52;
   }
 
   const context = ctx;
-  return (t: string, fontSize: number, weight: number) => {
-    context.font = `${weight} ${fontSize}px Inter, 'Segoe UI', system-ui, sans-serif`;
+  return (t: string, fontSize: number, weight: number, family?: string) => {
+    context.font = `${weight} ${fontSize}px ${family ?? "Inter, 'Segoe UI', system-ui, sans-serif"}`;
     return context.measureText(t).width;
   };
 }
