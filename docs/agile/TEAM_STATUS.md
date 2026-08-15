@@ -3,7 +3,7 @@
 > **Audience:** Engineering leads and domain teams  
 > **Purpose:** Per-domain view of what's in progress, what's next, and what's blocked — mapped to epics and stories.  
 > **Update cadence:** When a story status changes (start / block / complete).  
-> **Last updated:** 2026-08-14 (editable canvas proven live end-to-end and shipped to staging — US-AI-043/046/047/048/049/050/051; US-AI-044 merged from a 2-day-orphaned branch; see Session log for the full arc)
+> **Last updated:** 2026-08-15 (M-AI-18 milestone fully closed — 10/10 stories; US-LAUNCH-015 editable-design monetization shipped and live-verified; US-DEPLOY-007, US-AI-043, US-AI-044 all closed after re-verification found their earlier checkmarks weren't independently backed by evidence — see Session log for the full arc)
 
 ---
 
@@ -15,9 +15,9 @@
 | [Design (DESIGN)](#-design--frontend-design) | EPIC-DESIGN-01 + EPIC-DESIGN-02 | 🟡 US-003/004 staging | Live Ideogram API | Staging deploy unblocks both |
 | [Auth (AUTH)](#-auth-auth) | EPIC-AUTH-01 | ✅ Done | — | Full invite flow post-MVP |
 | [Canvas Editor (EDIT)](#-canvas-editor-edit) | EPIC-EDIT-01 | ✅ Done | — | Batch upload Phase 3 |
-| [AI Generation (AI)](#-ai-generation-ai) | EPIC-AI-06 (M-AI-18) | 🟡 Editable canvas working end-to-end, verified live on staging 2026-08-14 | US-AI-045 needs re-scope (planner vs extraction-led) | US-LAUNCH-015 (editable pricing/gating), 3 deferred live-verify ACs (048/049/050) |
-| [Infrastructure (INFRA)](#-infrastructure-infra) | EPIC-INFRA-01 | 🟡 Task 1 ✅ · Task 2 ✅ (2026-07-11) · Task 3 (prod) next | Human task | Admin dashboard Phase 5 |
-| [Launch Readiness (LAUNCH)](#-launch-readiness-launch) | EPIC-LAUNCH-01 | 🟡 12/14 stories ✅ Done (001–004, 006–013); US-LAUNCH-005 open, 014 not started | Phase 0 HUMAN Task 3 | M-LAUNCH-01 → beta (now incl. US-LAUNCH-009/010 env & secrets) · M-LAUNCH-02 → revenue |
+| [AI Generation (AI)](#-ai-generation-ai) | EPIC-AI-06 | ✅ **M-AI-18 fully closed 2026-08-15** — all 10 stories Done/resolved-superseded | M-AI-17 (real-photo, US-AI-031/031b) AC1 gated on Ideogram credit | EPIC-KIT-01 (listing kits), or spend the Ideogram credit to close M-AI-17 |
+| [Infrastructure (INFRA)](#-infrastructure-infra) | EPIC-INFRA-01 · EPIC-DEPLOY-01 | 🟡 INFRA-01: Task 1 ✅ · Task 2 ✅ (2026-07-11) · Task 3 (prod) next. DEPLOY-01: 1/7 Done (US-DEPLOY-007, 2026-08-15) | Human task (INFRA-01 Task 3) | Admin dashboard Phase 5 · US-DEPLOY-001–006 (rolling, non-blocking) |
+| [Launch Readiness (LAUNCH)](#-launch-readiness-launch) | EPIC-LAUNCH-01 | 🟡 13/15 stories ✅ Done (001–004, 006–013, 015); US-LAUNCH-005 open, 014 not started | Phase 0 HUMAN Task 3 · real ₹ txn go-ahead | M-LAUNCH-02 revenue-on gate — **one story away** (US-LAUNCH-005 AC5/6) |
 | [Organization (ORG)](#-organization--team-org) | — | Post-MVP | No email provider (US-LAUNCH-002 will fix) | EPIC-ORG-01 post-launch |
 
 ---
@@ -156,7 +156,10 @@
 **Phase:** 0 (MVP) ✅ Done · 0.5 ✅ Done (closed 2026-07-03)
 
 ### Now
-> **EPIC-AI-06 / M-AI-18 active.** Editable canvas (generate → extract layers → editable text on canvas) proven end-to-end live on staging 2026-08-14, after fixing three root causes unit tests couldn't see: generation-id lost at completion, layerize-text called with the wrong content-type (415 on every call since it shipped), and editable mode unreachable from AI Chat's real render path (conversation view had no edit affordance). Full arc in Session log below. Next up: US-LAUNCH-015 (editable pricing/gating — the feature is currently free and uncapped in cost), and closing 3 deferred live-verify ACs on US-AI-048/049/050.
+> **EPIC-AI-06 / M-AI-18 ✅ fully closed 2026-08-15 — all 10 stories Done or resolved-superseded.** What remains active in this epic is M-AI-17 (real-photo composition, US-AI-031/031b) — both are at AC2-level parity (all defensive/regression ACs verified), with only the live "does a real photo actually come through" check (AC1 on each) gated on an Ideogram credit top-up. Nothing else is blocking this epic. Next domain-level pick: EPIC-KIT-01 (listing kits, not started) or spending the Ideogram credit to close M-AI-17 outright. Full closure arc in Session log below.
+
+### Done — M-AI-18 (Editable Text Overlay), closed 2026-08-15
+> All 10 stories Done or resolved-superseded, live-verified throughout. US-AI-032 (editable canvas core), US-AI-043 (layout engine), US-AI-044 (LLM planner, built but intentionally unwired — see its Notes), US-AI-045 (closed superseded by extraction-led composition), US-AI-046/047 (canvas wiring + shared render-mode, retroactive cards), US-AI-048 (compose cache, 2.97s cached vs 15-90s real), US-AI-049 (font mapping — caught and fixed a real regression, BL-08), US-AI-050 (progress affordance), US-AI-051 (text-free real-photo background). Two real bugs found and fixed along the way, not just verified: BL-08 (text boxes wrapped when font-mapping fell back to Inter) and confirmation that BL-09 (export "parity gap") had already been fixed by prior work — the actual remaining task was removing a dead, unreachable html2canvas code path. One new latent finding logged, not fixed: BL-10 (crop coordinate-space mismatch, unreachable — no crop tool exists yet).
 
 ### Done — Generation delivery fixes (EPIC-AI-07 + Task 2 QA)
 > **PT-09 ✅ Fixed & verified on staging 2026-07-09** ([US-AI-034](epics/phase-0-mvp/EPIC-AI-07/stories/US-AI-034/STORY.md), [PR #14](https://github.com/din-prajapati/infographic.io/pull/14) `9eed346`). Generation completed server-side but never rendered — REST fallback poll was gated behind the socket's `onError` (never fires on silent non-delivery) + timer-throttled in background tabs. Fix: always-on REST poll + `visibilitychange` catch-up + completion guard in `AIChatBox.tsx`. [US-AI-035](epics/phase-0-mvp/EPIC-AI-07/stories/US-AI-035/STORY.md) superseded.
@@ -255,47 +258,30 @@
 
 **Epic lead:** Dinesh
 **Active epic:** [EPIC-LAUNCH-01](epics/phase-1-ai-core/EPIC-LAUNCH-01/EPIC.md) — Go-Live & Revenue Readiness
-**Phase:** 1 (Revenue Strategy) 🔲 Ready to start after Phase 0 deploy · **Created:** 2026-07-07
+**Phase:** 1 (Revenue Strategy) · **Created:** 2026-07-07 · **Section rewritten 2026-08-15 — was showing M-LAUNCH-01 as "none deployed" and all stories blocked on Phase 0, both stale by weeks**
 
-### Next — M-LAUNCH-01 public beta (start immediately after Phase 0 deploy)
+### Status — 2026-08-15
 
-| Story | Title | Size | Depends on |
-|-------|-------|------|------------|
-| [US-LAUNCH-001](epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-001/STORY.md) | Legal & policy pages (Terms · Privacy · Refund) | M | — |
-| [US-LAUNCH-002](epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-002/STORY.md) | Transactional email foundation | M | — |
-| [US-LAUNCH-003](epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-003/STORY.md) | Forgot / reset password flow | M | US-LAUNCH-002 |
-| [US-LAUNCH-009](epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-009/STORY.md) | Environment & secrets management convention (docs/config) | M | — |
+**M-LAUNCH-01 (public beta gate): all 7 stories ✅ Done** (US-LAUNCH-001/002/003/004/009/010/011, closed 2026-08-04) — **but the milestone itself stays formally open**, per its own STORY.md, pending Phase 0 Task 3 (production go-live), a HUMAN deploy checkbox tracked at milestone level, not a story acceptance criterion. Not independently re-verified this pass whether that checkbox has since been ticked in reality — see the Phase 0 staleness flag in `PHASE_TRACKER.md`.
 
-### Done
-| Story | Title | PR | Closed |
-|-------|-------|-----|--------|
-| [US-LAUNCH-004](epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-004/STORY.md) | Beta launch mode (checkout off · AI-content disclaimer) | [#18](https://github.com/din-prajapati/infographic.io/pull/18) | 2026-07-25 ✅ |
-| [US-LAUNCH-010](epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-010/STORY.md) | Config hardening — APP_ENV + boot validation + RazorPay guard | [#17](https://github.com/din-prajapati/infographic.io/pull/17) | 2026-07-25 ✅ |
-| [US-LAUNCH-011](epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-011/STORY.md) | Rebrand user-facing surfaces to Buildographic | [#16](https://github.com/din-prajapati/infographic.io/pull/16) | 2026-07-25 ✅ |
+**M-LAUNCH-02 (revenue-on gate): 🟡 6/7 Done — one story from closing.**
 
-> **🟡 M-LAUNCH-01 is 4/6 implemented ahead of milestone** (all on `main`, 2026-07-12, **none deployed** — milestone still blocked by Phase 0 Task 3):
-> - **US-LAUNCH-009 + US-LAUNCH-002** — parallel-worktree wave (`ec166fb`; two `code-agent` lanes, disjoint files, two-level squash-merge; Gate 1 + 7/7 email tests green).
-> - **US-LAUNCH-001** — legal pages + footer landed (`51b0040`) from its stale branch; Gate 1 green.
-> - **US-LAUNCH-003** (password reset) — 🟡 **implemented** (`1bc7346`; token model + forgot/reset endpoints + 2 pages + 8 unit tests; Gate 1 green). ⚠️ `PasswordResetToken` table created on next deploy (`db:deploy` → `prisma db push`); manual E2E pending.
-> - **US-LAUNCH-004** (beta mode) — ✅ **Done**, PR #18 merged 2026-07-25.
-> - **US-LAUNCH-010** (config hardening) — ✅ **Done**, PR #17 merged 2026-07-25 (closed late — see EPIC.md log for the CI automation bug that delayed it).
-> - **US-LAUNCH-011** (Buildographic rebrand) — ✅ **Done**, PR #16 merged 2026-07-22, closed 2026-07-25.
-> - Remaining: **US-LAUNCH-001, 002, 003, 009** — implemented and merged but not yet formally closed.
+| Story | Title | Status |
+|-------|-------|--------|
+| [US-LAUNCH-005](epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-005/STORY.md) | RazorPay live-mode activation | 🟡 AC1–4 done (live-mode approved, plans created, Railway env vars set); AC5 unconfirmed, AC6 (real ₹ txn) intentionally not run — **the only open item in this whole epic** |
+| [US-LAUNCH-006](epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-006/STORY.md) | Payment receipt email | ✅ Done |
+| [US-LAUNCH-007](epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-007/STORY.md) | BROKERAGE tier gate (PT-06) | ✅ Done |
+| [US-LAUNCH-008](epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-008/STORY.md) | Metering policy guard (1 gen = 1 credit) | ✅ Done — amended 2026-08-15 for editable-compose metering (US-LAUNCH-015) |
+| [US-LAUNCH-012](epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-012/STORY.md) | Payment-failed (dunning) email | ✅ Done |
+| [US-LAUNCH-013](epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-013/STORY.md) | Subscription renewal reminder email | ✅ Done |
+| [US-LAUNCH-015](epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-015/STORY.md) | Editable-design monetization (FREE trial gate + extra-compose credits) | ✅ **Closed 2026-08-15** — live-verified (`[201, 402]`), see Session log |
 
-### Then — M-LAUNCH-02 revenue on (prep parallel to EPIC-AI-06; flip gated by AI-06)
-
-| Story | Title | Size | Depends on |
-|-------|-------|------|------------|
-| [US-LAUNCH-005](epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-005/STORY.md) | RazorPay live-mode activation (HUMAN-heavy) | M | US-LAUNCH-001 live |
-| [US-LAUNCH-006](epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-006/STORY.md) | Payment receipt email | S | US-LAUNCH-002 |
-| [US-LAUNCH-007](epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-007/STORY.md) | BROKERAGE tier gate (PT-06) | S | — |
-| [US-LAUNCH-008](epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-008/STORY.md) | Metering policy guard (1 gen = 1 credit) | S | — |
+**Also in this epic:** US-LAUNCH-009 (env/secrets convention) and US-LAUNCH-010 (config hardening) — both ✅ Done, not part of either numbered milestone above. US-LAUNCH-011 (Buildographic rebrand) — ✅ Done. **US-LAUNCH-014 — 🔲 Not Started**, backlog.
 
 ### Blocked
 | Item | Blocked by |
 |------|-----------|
-| All stories | Phase 0 production deploy (EPIC-INFRA-01 — 3 HUMAN tasks) |
-| Revenue-on flip (`BETA_MODE=false`) | EPIC-AI-06 + all M-LAUNCH-02 stories |
+| Revenue-on flip (`BETA_MODE=false`) | US-LAUNCH-005 AC5/6 only — every other gate condition (EPIC-AI-06, rest of M-LAUNCH-02) is now closed. Needs an explicit go-ahead to run one real ₹ transaction. |
 
 ---
 
@@ -2567,3 +2553,23 @@ deployed environment, not just health-checked. Open: US-LAUNCH-015 (editable pri
 currently free and uncapped in cost), US-AI-045 re-scope decision,
 `origin/feat/epic-design-02-ui-redesign` (1 unmerged commit, still undecided), 3 deferred
 live-verify ACs on US-AI-048/049/050 (same shape as what closed 051, cheap whenever).
+
+**2026-08-15 — every item the previous entry left open, closed same day. M-AI-18 fully done; revenue-on gate down to one story.**
+
+Worked the prior session's own "Open" list top to bottom, plus everything it surfaced along the way:
+
+1. **BL-06** (extraction hardcoded to `gpt-4o`, no tier routing) — fixed. `OpenAiService.extractStructuredData()` now routes identically to the headline call (Gemini 2.5 Flash for free/solo/team, GPT-4o for brokerage). Confirmed `GEMINI_API_KEY` is genuinely set on both Railway environments, so this had real, not theoretical, impact.
+2. **US-AI-045 re-scope** — resolved. Closed as superseded by extraction-led composition (`88db72d`); the planner's narrower remaining job (photo-aware template selection for the real-photo fallback, since `connectLayout.ts` always defaults to a fixed template) deferred to **BL-07**, not built — a deliberate call, not an oversight.
+3. **`origin/feat/epic-design-02-ui-redesign`** — resolved. Its one commit (a build-SHA indicator) turned out to already be shipped on `main`, independently, with more functionality (Sentry release wiring included). Branch deleted as redundant.
+4. **US-AI-049/050/032's three deferred live-verify ACs** — all closed with new Playwright E2E specs (`e2e/us-ai-049-*`, `e2e/us-ai-050-*`, `e2e/us-ai-032-*`). US-AI-050 and (eventually) US-AI-032 passed clean. **US-AI-049's live run found a real, still-live regression**: the price block still wrapped to two lines ("₹1.9 Cr" → "₹1.9" / "Cr") — filed as **BL-08**. Root cause: `canvasState.ts` sizes each text box from the extraction's raw measured geometry, with zero adjustment for the *actually-resolved* font's glyph metrics. Fixed by re-measuring against the resolved font and widening (never narrowing) the box when it doesn't fit; reused `connectLayout.ts`'s existing measurer rather than writing a second one. Live re-verified: `lineCount: 1`.
+5. **BL-09 (export pixel parity, US-AI-032 AC5)** — investigated to actually build it, found it was **already fixed** by a prior commit (`ee64aa5`, with 21 unit tests from `fffb9b3`) that never made it back into the story card. Real remaining work turned out to be: confirm which of two competing export functions is live (only `canvasExport.ts` — the html2canvas alternative had zero callers, removed, ~110 dead lines gone), and live-verify the result (a real template's export matched its preview screenshot-for-screenshot). One genuine new finding along the way, filed separately as **BL-10**: `ImageElement.tsx`'s crop math and the export's crop math disagree on coordinate space — currently unreachable, since no crop tool exists to ever set `element.crop`.
+6. **US-AI-032 AC6** (malformed geometry → safe default) — built cheaply as asked: extracted the inline safe-geometry logic into a pure `computeSafeTextGeometry` function (matching this repo's own documented canvas-testing strategy) with 9 new unit tests. Closed the story — all 7 ACs.
+7. **US-DEPLOY-007** — closed properly, not rubber-stamped. Its own EPIC.md log had claimed AC5 ("gate actually fails on a broken test") was "confirmed" back on 2026-08-12, but no PR was ever opened, so no transcript existed anywhere to check that claim against — the same "checked but never independently verified" pattern this repo has hit before. Re-ran both proofs live: deliberately broke one assertion → `npm run test:unit` exit 1, backend suite ran independently and still passed; pointed the client vitest config at a non-matching glob → `"No test files found, exiting with code 1"`. Both reverted immediately, tree confirmed clean.
+8. **US-AI-043 / US-AI-044** — closed after the same live-vs-trust discipline. Both had sat at "Implementation complete (pre-PR)" since 2026-08-12/13, flagged across three consecutive standups. Re-ran both suites live (132 + 49 tests) rather than trusting the existing checkmarks — all still pass. US-AI-044's planner stays intentionally unwired; that was never its own scope, always the next story's.
+9. **US-LAUNCH-015** (editable-design monetization) — **built from scratch**, not just verified: FREE tier gets one lifetime editable-compose trial (org-wide, derived from existing `composedDesigns` data, no schema migration), then 402 `EDITABLE_REQUIRES_UPGRADE`, checked *before* extraction fires so a blocked request never spends the $0.09. Paid tiers get the first distinct compose per generation free, extras cost a credit, same monthly-limit check the generate path already uses. Client shows an upgrade toast (402) or reuses the existing limit toast (403) — design always still loads flat, never a dead end. 18 new backend tests + 4 new client tests. **Live-verified**: real generation, compose responses `[201, 402]`, upgrade toast confirmed, canvas stayed loaded.
+
+**Result: M-AI-18 (EPIC-AI-06) is fully Done** — all 10 stories, every Definition of Done item checked, US-LAUNCH-015 was its last open gate. **M-LAUNCH-02 (revenue-on) is 6/7 Done** — only US-LAUNCH-005 AC5/6 (a real ₹ transaction) remains, intentionally not run without an explicit go-ahead.
+
+**Phase tracker reconciliation (same session):** `PHASE_TRACKER.md` had shown Phase 1 at "🔲 Not Started, 0%" since 2026-07-07 despite weeks of shipped work underneath it. A full story-status sweep across EPIC-AI-02/06, EPIC-LAUNCH-01, EPIC-DEPLOY-01, EPIC-OBS-00, EPIC-KIT-01 found the real number: **33/54 Phase 1 stories Done (61%)**. Updated `PHASE_TRACKER.md`, `AGILE_INDEX.md`, `PROJECT_CONTEXT.yaml` (also fixed a real, pre-existing gap: the `DEPLOY` domain — in use since EPIC-DEPLOY-01, 2026-07-13 — was never registered in `domains:`/`counters:`), and this board's Launch Readiness section (was still describing M-LAUNCH-01 as "none deployed," several weeks stale).
+
+**State at end of session:** 20+ commits sit locally on `main`, none pushed to `origin` yet. Gate 1 green throughout (backend 368/368, client 229/229). Open: US-LAUNCH-005 AC5/6 (real-money go-ahead needed), US-AI-031/031b AC1 (Ideogram credit top-up needed), BL-07/BL-10 (both deliberately deferred, low urgency), EPIC-KIT-01 (not started), Phase 0's "3 HUMAN deploy tasks" claim in `PHASE_TRACKER.md` looks itself stale given live staging/production evidence throughout this session — flagged, not independently re-verified this pass.

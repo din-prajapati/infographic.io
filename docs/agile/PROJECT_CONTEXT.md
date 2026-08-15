@@ -12,7 +12,7 @@
 |-------|-------|
 | **Product** | InfographicAI — AI-powered real estate infographic SaaS |
 | **Root** | `D:/Dinesh/DCloud/GITDrive/Work/Products/InfographicEditor-Unified` |
-| **Current Phase** | Phase 0 (MVP) — ~99% complete, 3 human deploy tasks remain |
+| **Current Phase** | Phase 1 (Revenue Strategy) — 61% (33/54 stories), reconciled 2026-08-15. Revenue-on gate is one story away (US-LAUNCH-005 AC5/6, real ₹ txn). Phase 0's "~99%, 3 human deploy tasks remain" claim predates this update and was not independently re-verified — see [PHASE_TRACKER.md](PHASE_TRACKER.md) |
 | **Target Users** | Solo real estate agents, small brokerages, PropTech API teams |
 | **Primary Market** | India (RazorPay/INR); international secondary |
 
@@ -112,7 +112,10 @@ npm run dev starts:
 | Listing Kits | KIT | Multi-format kits, lifecycle, recurring content, compliance | 02 | 05 | 007 |
 | Generation Quality | GEN | Image-generation pipeline quality, prompt engineering, cost control | 02 | 03 | 003 |
 | Launch Readiness | LAUNCH | Go-live ops: live payments, transactional email, legal pages, beta gating, metering policy, env/secrets management | 02 | 07 | 016 |
+| Deployment | DEPLOY | Deployment velocity & safety: CI gate, preview envs, feature flags, migrations, progressive delivery | 02 | 01 | 008 |
 
+> **DEPLOY row added 2026-08-15** — the domain has been in use since EPIC-DEPLOY-01 (2026-07-13, 7 stories) but was never registered in this table or `PROJECT_CONTEXT.yaml`. Real gap, not a routine reconciliation.
+>
 > To add a new domain: append a row here, pick an unused 2-6 char UPPERCASE prefix, start all counters at `01` / `001`.
 
 ---
@@ -123,7 +126,7 @@ npm run dev starts:
 |-------|--------|---------|--------|-----------------|
 | Phase 0 | `phase-0-mvp` | v1.0 | 🟡 99% | Working product in production |
 | Phase 0.5 | `phase-0.5-foundation` | (parallel) | 🔲 | AI pipeline stability + model swap |
-| Phase 1 | `phase-1-ai-core` | v1.1 | 🔲 | **Revenue strategy** — real-photo hybrid + listing kits (reprioritized 2026-07-03) |
+| Phase 1 | `phase-1-ai-core` | v1.1 | 🟡 61% (33/54) | **Revenue strategy** — real-photo hybrid + listing kits (reprioritized 2026-07-03); revenue-on gate one story away as of 2026-08-15 |
 | Phase 2 | `phase-2-ai-refine` | v1.2 | 🔲 | Refine loop + conversational polish + usage/payments UI |
 | Phase 3 | `phase-3-ai-advanced` | v1.3 | 🔲 | Production tools + intelligence enrichment |
 | Phase 4 | `phase-4-backlog` | — | 🔲 Deferred | Promoted by business trigger, not calendar |
@@ -246,4 +249,4 @@ npm run verify:payment-prereqs  # Payment config smoke test
 
 | PT-12 | ✅ Fixed 2026-07-12 (`5b38ebd`) | **NestJS API un-bootable on `main`.** `EmailService` (US-LAUNCH-002, built in the parallel wave) injected `ConfigService`, which is **not provided** in this app's DI graph (the codebase reads `process.env` directly — 0 `ConfigService` usages). At real startup Nest threw `Cannot read properties of undefined (reading 'get')` and the API failed to boot — `main` had been un-bootable since the wave merged (`ec166fb`), undetected because the API was never restarted. **Passed `tsc` + 7 mocked unit tests but crashed at runtime** — the exact gap a boot/runtime check catches. **Fix:** `EmailService` reads `process.env` directly; test sets env instead of mocking config. **Prevention:** added `npm run smoke:boot` (`scripts/smoke-boot.mjs`) — boots the real app on a scratch port — and made it a mandatory Gate 4a for DI/module changes (see `verification-gates`). Found while running US-LAUNCH-003 Path-A manual walkthrough. |
 
-*Last updated: 2026-07-12 (PT-12 boot-crash fix + smoke:boot gate added; US-LAUNCH-001/002/004/009 hardened, 003 verified live) | Maintained by: Dinesh + Claude Code*
+*Last updated: 2026-08-15 (Phase 1 recalculated from a full story-status sweep — 33/54 stories, 61%, not the stale 0%/Phase-0-only picture this file showed; DEPLOY domain registered, a real pre-existing gap) | Maintained by: Dinesh + Claude Code*

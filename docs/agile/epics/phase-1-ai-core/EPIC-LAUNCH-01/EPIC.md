@@ -1,7 +1,7 @@
 # EPIC-LAUNCH-01 — Go-Live & Revenue Readiness
 
 > **Phase:** Phase 1 — Revenue Strategy (v1.1)
-> **Status:** 🟡 In Progress — 12/14 stories Done, 1 In Progress (US-LAUNCH-005), 1 Not Started (US-LAUNCH-014). The four previously held at "Implemented (awaiting M-LAUNCH-01 close)" — US-LAUNCH-001/002/003/009 — were closed 2026-08-04; the milestone gate they were waiting on (Phase 0 Task 3, production go-live) is a deploy task tracked at milestone level, not a story acceptance criterion.
+> **Status:** 🟡 In Progress — 13/15 stories Done, 1 In Progress (US-LAUNCH-005), 1 Not Started (US-LAUNCH-014). US-LAUNCH-015 (editable-design monetization) added 2026-08-13, closed 2026-08-15, live-verified. Only US-LAUNCH-005 AC5/6 (real ₹ transaction) stands between this epic and fully Done.
 > **Depends on:** EPIC-INFRA-01 (Phase 0 production deploy) for all stories · EPIC-AI-06 gates the **revenue-on switch** (M-LAUNCH-02 DoD), not M-LAUNCH-02 prep work
 > **Linear Project:** LIN-EPIC-XXX
 > **Target date:** 2026-08-15

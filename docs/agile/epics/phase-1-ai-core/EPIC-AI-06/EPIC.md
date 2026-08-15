@@ -1,7 +1,7 @@
 # EPIC-AI-06 — Hybrid Real-Photo Pipeline
 
 > **Phase:** Phase 1 — Revenue Strategy (promoted from Phase 2 on 2026-07-03)
-> **Status:** 🔲 Not Started
+> **Status:** ✅ M-AI-18 (editable overlay) fully closed 2026-08-15 — all 10 stories Done or resolved-superseded. M-AI-17 (real-photo composition, US-AI-031/031b) at AC2-level parity — only the live-photo AC1 check on each remains, gated on Ideogram credit top-up.
 > **Depends on:** EPIC-GEN-01 (V4 magic-prompt pipeline), US-AI-010 (property photo upload, EPIC-AI-02 — pull forward first)
 > **Linear Project:** LIN-EPIC-AI-06
 > **Target date:** TBD (after US-AI-010)

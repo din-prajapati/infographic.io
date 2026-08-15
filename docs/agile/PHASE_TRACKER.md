@@ -3,7 +3,7 @@
 > **Audience:** Executives, product owners, stakeholders  
 > **Purpose:** Single-page view of delivery progress across all product phases — from MVP to B2B scale.  
 > **Update cadence:** After each milestone closes or phase gate decision.  
-> **Last updated:** 2026-07-07 (EPIC-LAUNCH-01 added; Phase 1 re-ranked around beta-live / revenue-on gates; AI Chat Panel audit + hardening logged as PT-08 in [PROJECT_CONTEXT.md](PROJECT_CONTEXT.md) — no phase/gate change)
+> **Last updated:** 2026-08-15 (Phase 1 recalculated from a full story-status sweep — was showing 0%/Not Started while 33/54 stories were actually Done; M-AI-18 milestone [EPIC-AI-06] fully closed same day, US-LAUNCH-015 closed same day — Revenue-on gate now down to one story, US-LAUNCH-005)
 
 ---
 
@@ -12,14 +12,14 @@
 | Phase | Release | Business Outcome | Status | Complete | Target |
 |-------|---------|-----------------|--------|----------|--------|
 | [Phase 0](#phase-0--mvp-launch) | v1.0 | Working product in production | 🟡 In Progress | **98%** | Week 1 of launch |
-| [Phase 1](#phase-1--release-11-revenue-strategy) | v1.1 | **Revenue strategy** — go-live/revenue readiness (EPIC-LAUNCH-01), real-photo hybrid, listing kits | 🔲 Not Started | 0% | Beta: mid-Jul · Revenue: mid-Aug |
+| [Phase 1](#phase-1--release-11-revenue-strategy) | v1.1 | **Revenue strategy** — go-live/revenue readiness (EPIC-LAUNCH-01), real-photo hybrid, listing kits | 🟡 In Progress | **61%** (33/54 stories) | Beta: live · Revenue: one story from the gate (US-LAUNCH-005 AC5/6) |
 | [Phase 2](#phase-2--release-12-polish--self-serve) | v1.2 | Conversational polish, refine loop, usage/billing self-serve | 🔲 Not Started | 0% | After Phase 1 gate |
 | [Phase 3](#phase-3--release-13-speed--batch) | v1.3 | Fast generation, batch uploads, volume pricing | 🔲 Not Started | 0% | Month 3 |
 | [Phase 4](#phase-4--release-20-b2b-api) | v2.0 | Developers can build on InfographicAI via API | 🔲 Not Started | 0% | Month 3–4 |
 | [Phase 5](#phase-5--release-21-analytics--optimization) | v2.1 | Admin visibility, AI cost optimization, performance | 🔲 Not Started | 0% | Month 5–6 |
 | [Phase 6](#phase-6--release-22-production-hardening) | v2.2 | Enterprise-grade reliability, test coverage, mobile | 🔲 Not Started | 0% | Month 7+ |
 
-**Current Focus:** ① Close Phase 0 (3 HUMAN deploy tasks + 2 staging QA items — there is no URL to send anyone to until this is done). ② M-LAUNCH-01 + M-OBS-01 → free public beta. ③ EPIC-AI-06 + M-LAUNCH-02 → revenue on. Full path: [ROADMAP.md](ROADMAP.md)
+**Current Focus (2026-08-15):** M-LAUNCH-01 (public beta gate) is fully Done. EPIC-AI-06 is content-complete (M-AI-18 closed) and M-LAUNCH-02 (revenue-on gate) is 6/7 Done — **the Revenue-on gate is now one story away**: US-LAUNCH-005 AC5/6, a real ₹ transaction, intentionally not yet run. Phase 0's "3 HUMAN deploy tasks" line below has not been independently re-verified in this pass — the rest of this document's evidence (live staging/production traffic, RazorPay live-mode keys deployed) suggests it may itself be stale; worth a direct check before trusting it. Full path: [ROADMAP.md](ROADMAP.md)
 
 ---
 
@@ -102,7 +102,7 @@ Each phase requires a gate decision before the next phase starts:
 
 ## Phase 1 — Release 1.1: Revenue Strategy
 
-> **Release:** v1.1 · **Status:** 🔲 Not Started · **Re-ranked 2026-07-07 (launch-readiness assessment)**  
+> **Release:** v1.1 · **Status:** 🟡 In Progress — 61% (33/54 stories) · **Re-ranked 2026-07-07 (launch-readiness assessment)** · **Recalculated 2026-08-15**  
 > **Outcome:** The product is publicly live as a free beta, then earns its price against Canva/Ideogram-direct: agents market with their REAL listing photos, revenue is collected on live RazorPay with receipts and password recovery, and listing kits retain subscribers.  
 > **Rationale:** [docs/research/2026-07-03-V4-PIPELINE-FIX-AND-PRODUCT-STRATEGY.md](../research/2026-07-03-V4-PIPELINE-FIX-AND-PRODUCT-STRATEGY.md) + 2026-07-07 verdict: code is done, but the product is operationally unlaunchable (test-mode RazorPay, no email, no legal pages) and not honestly chargeable until real-photo pipeline ships. · **Effort:** ~70–90 hours  
 > **Full sequenced path:** [ROADMAP.md](ROADMAP.md)
@@ -115,18 +115,19 @@ Each phase requires a gate decision before the next phase starts:
 | Gate | Criteria | Unlocks |
 |------|----------|---------|
 | **Beta live** | M-LAUNCH-01 closed (legal pages · email · password reset · beta flag) + M-OBS-01 (Sentry) | Real agents on production, zero revenue claims |
-| **Revenue on** | EPIC-AI-06 shipped + M-LAUNCH-02 closed (RazorPay live · receipts · BROKERAGE gate · metering) | `BETA_MODE=false` — first real ₹ |
+| **Revenue on** | ✅ EPIC-AI-06 shipped (M-AI-18 closed 2026-08-15, all 10 stories) + M-LAUNCH-02 closed (RazorPay live · receipts · BROKERAGE gate · metering · editable monetization) — **6/7 done, only US-LAUNCH-005 AC5/6 (real ₹ transaction) remain, intentionally not run** | `BETA_MODE=false` — first real ₹, one story away |
 
 ### Planned Epics (priority order)
 
 | # | Epic | Domain | Focus | Status |
 |---|------|--------|-------|--------|
-| 1 | [EPIC-LAUNCH-01](epics/phase-1-ai-core/EPIC-LAUNCH-01/EPIC.md) · M-LAUNCH-01 | LAUNCH | **Public beta blockers** — legal pages, transactional email + password reset, beta mode | 🟡 3/7 Done, 4 merged pending Task 3 sign-off |
-| 2 | [EPIC-AI-02](epics/phase-1-ai-core/EPIC-AI-02/EPIC.md) | AI | **M-AI-06 complete 2026-08-05** — US-AI-010/036/037/038/039/040/042 Done (2026-08-03), US-PANEL-01 Done (PR #26); US-AI-011/041 superseded. Quality tiers/Campaign UI moved to EPIC-AI-08 backlog | ✅ |
-| 3 | [EPIC-AI-06](epics/phase-1-ai-core/EPIC-AI-06/EPIC.md) | AI | Hybrid Real-Photo Pipeline — **the chargeability gate** (real photo background, editable overlay, synthetic guard) | 🔲 |
-| 4 | [EPIC-LAUNCH-01](epics/phase-1-ai-core/EPIC-LAUNCH-01/EPIC.md) · M-LAUNCH-02 | LAUNCH | **Revenue on** — RazorPay live activation, receipt email, BROKERAGE gate (PT-06), metering guard (prep runs parallel to AI-06; flip gated by AI-06) | 🟡 5/6 Done — only US-LAUNCH-005 (real ₹ txn) open |
-| 5 | [EPIC-KIT-01](epics/phase-1-ai-core/EPIC-KIT-01/EPIC.md) | KIT | Listing Marketing Kits — multi-format batch, lifecycle, recurring content, compliance | 🔲 |
-| ∥ | [EPIC-OBS-00](epics/phase-1-ai-core/EPIC-OBS-00/EPIC.md) | INFRA | Sentry observability — M-OBS-01 belongs with the beta gate (first user bug must arrive via Sentry, not WhatsApp) | 🔲 |
+| 1 | [EPIC-LAUNCH-01](epics/phase-1-ai-core/EPIC-LAUNCH-01/EPIC.md) · M-LAUNCH-01 | LAUNCH | **Public beta blockers** — legal pages, transactional email + password reset, beta mode | ✅ All 4 stories Done |
+| 2 | [EPIC-AI-02](epics/phase-1-ai-core/EPIC-AI-02/EPIC.md) | AI | **M-AI-06 complete 2026-08-05** — US-AI-010/036/037/038/039/040/042 Done (2026-08-03), US-PANEL-01 Done (PR #26); US-AI-011/041 superseded. Quality tiers/Campaign UI moved to EPIC-AI-08 backlog | ✅ 10/10 |
+| 3 | [EPIC-AI-06](epics/phase-1-ai-core/EPIC-AI-06/EPIC.md) | AI | Hybrid Real-Photo Pipeline — **the chargeability gate** (real photo background, editable overlay). M-AI-18 (editable overlay) fully closed 2026-08-15, all 10 stories Done/resolved-superseded. M-AI-17 (real-photo composition, US-AI-031/031b) at AC2-level parity — only the live photo-composition check (AC1 on each) remains, gated on Ideogram credit top-up | ✅ Content-complete (credit-gated on 2 ACs) |
+| 4 | [EPIC-LAUNCH-01](epics/phase-1-ai-core/EPIC-LAUNCH-01/EPIC.md) · M-LAUNCH-02 | LAUNCH | **Revenue on** — RazorPay live activation, receipt email, BROKERAGE gate (PT-06), metering guard, editable-design monetization (US-LAUNCH-015, closed 2026-08-15) | 🟡 6/7 Done — only US-LAUNCH-005 AC5/6 (real ₹ txn) open |
+| 5 | [EPIC-KIT-01](epics/phase-1-ai-core/EPIC-KIT-01/EPIC.md) | KIT | Listing Marketing Kits — multi-format batch, lifecycle, recurring content, compliance | 🔲 0/6, not started |
+| ∥ | [EPIC-OBS-00](epics/phase-1-ai-core/EPIC-OBS-00/EPIC.md) | INFRA | Sentry observability — M-OBS-01 belongs with the beta gate (first user bug must arrive via Sentry, not WhatsApp) | 🔲 0/4, not started |
+| ∥ | [EPIC-DEPLOY-01](epics/phase-1-ai-core/EPIC-DEPLOY-01/EPIC.md) | INFRA | Deployment velocity (CI gate, preview envs, feature flags, migrations, progressive delivery) — explicitly non-blocking to beta/revenue, runs rolling | 🟡 1/7 Done — US-DEPLOY-007 (client test infra), an unplanned addition that became a hard blocker for US-AI-032, closed 2026-08-15 |
 
 > Former Phase 1 scope (usage dashboard, payment method UI, EPIC-AI-01 conversational core) moved to Phase 2 — polish follows revenue.
 

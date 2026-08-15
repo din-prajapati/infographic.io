@@ -1,7 +1,7 @@
 # EPIC-DEPLOY-01 — Deployment Velocity & Safety (Cursor-style shipping)
 
 > **Phase:** Phase 1 — Platform / Velocity
-> **Status:** 🔲 Not Started
+> **Status:** 🟡 In Progress — 1/7 Done. US-DEPLOY-007 (client-side unit test infrastructure), an unplanned addition (2026-08-11) that became a hard blocker for US-AI-032, closed 2026-08-15 (all 7 ACs + 6 TCs live-verified). US-DEPLOY-001–006 remain not started (no TASKS.md yet) — still non-blocking/rolling per this epic's own scope note below.
 > **Depends on:** EPIC-INFRA-01 Task 3 (production exists) for US-DEPLOY-005 only · [US-LAUNCH-010](../EPIC-LAUNCH-01/stories/US-LAUNCH-010/STORY.md) (`APP_ENV`) for US-DEPLOY-002/003
 > **Target date:** rolling (non-blocking) — see timeline
 > **Owner:** Dinesh
