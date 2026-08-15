@@ -10,10 +10,10 @@
 
 ## Four Pillars Pre-flight (check before starting AI session)
 
-- [ ] **Brain** — STORY.md filled; US-AI-048 merged (hard prerequisite)
-- [ ] **Muscle** — This TASKS.md has file list + ordered tasks + exact test commands
-- [ ] **Map** — [ARCHITECTURE.mmd](../../ARCHITECTURE.mmd) current
-- [ ] **Env** — [ENV.yaml](../../ENV.yaml) loaded
+- [x] **Brain** — STORY.md filled; US-AI-048 merged (hard prerequisite) — ✅ Done, live-verified
+- [x] **Muscle** — This TASKS.md has file list + ordered tasks + exact test commands
+- [x] **Map** — [ARCHITECTURE.mmd](../../ARCHITECTURE.mmd) current (this story touches no rendering/composition mechanics, only gating around it)
+- [x] **Env** — no new env vars needed; no ENV.yaml exists in this repo (checked — not applicable)
 
 ---
 
@@ -85,6 +85,16 @@ npm run test:unit
 ```
 
 ---
+
+## Task Checklist (closed 2026-08-15)
+
+- [x] T1 — Server: FREE-tier lifetime-trial gate (`EditableRequiresUpgradeException`, `hasUsedEditableTrial`, `getEffectiveTier`)
+- [x] T2 — Server: extra-compose credit increment + monthly-limit interaction (`chargeCredit` option on `composeDesignForEdit`)
+- [x] T3 — Client: 402 → flat fallback + upgrade toast on both surfaces (`ApiError`, `EDITABLE_REQUIRES_UPGRADE_REASON`)
+- [x] T4 — Pricing page copy (`shared/schema.ts` PLAN_CONFIG) + metering policy amendment (US-LAUNCH-008 + CLAUDE.md)
+- [x] `npm run check` passes ✅
+- [x] `npm run test:unit` passes — backend 368/368 (+18 new), client 229/229 (+4 new) ✅
+- [x] Live E2E: `e2e/us-launch-015-editable-monetization.spec.ts` — `[201, 402]` confirmed, upgrade toast + flat load confirmed
 
 ## Anti-patterns (story-specific)
 

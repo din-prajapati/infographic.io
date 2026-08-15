@@ -1,11 +1,32 @@
 import {
   ForbiddenException,
+  HttpException,
+  HttpStatus,
   Injectable,
   Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { SubscriptionStatus } from '@prisma/client';
 import { prisma } from '../../../database/prisma.client';
+
+/**
+ * US-LAUNCH-015 AC1 — thrown when a FREE-tier org has already used its one
+ * lifetime editable-compose trial. 402, not 403: this isn't "forbidden," it's
+ * "pay to unlock" — a distinct, typed code so the client can show an upgrade
+ * prompt rather than a generic error (AC5).
+ */
+export class EditableRequiresUpgradeException extends HttpException {
+  constructor() {
+    super(
+      {
+        statusCode: HttpStatus.PAYMENT_REQUIRED,
+        code: 'EDITABLE_REQUIRES_UPGRADE',
+        message: 'Editable designs are a paid feature. Your free trial has been used — upgrade to keep editing.',
+      },
+      HttpStatus.PAYMENT_REQUIRED,
+    );
+  }
+}
 
 /** Monthly infographic limits by plan tier (fallback when org.monthlyLimit is unset). */
 export const PLAN_TIER_MONTHLY_LIMITS: Record<string, number> = {
@@ -246,5 +267,43 @@ export class UsageLimitService {
     const organizationId = await this.resolveOrganizationIdForUser(userId);
     await this.assertCanGenerate(organizationId, creditsRequired);
     return organizationId;
+  }
+
+  /**
+   * Public wrapper around resolveEffectiveTier — US-LAUNCH-015 AC1.
+   * "Same resolver the generate path uses": the FREE-tier editable gate must
+   * see the same PENDING-subscription grace window assertCanGenerate already
+   * grants, so a user who just paid isn't gated by webhook lag.
+   */
+  async getEffectiveTier(
+    organizationId: string,
+  ): Promise<{ planTier: string; monthlyLimit: number }> {
+    const org = await prisma.organization.findUnique({ where: { id: organizationId } });
+    if (!org) {
+      throw new NotFoundException('Organization not found');
+    }
+    return this.resolveEffectiveTier(org);
+  }
+
+  /**
+   * US-LAUNCH-015 AC1/AC2 — has this organisation ever completed an editable
+   * compose, on any generation, ever? FREE tier gets exactly one lifetime
+   * trial; this is what "already used" means.
+   *
+   * Derived from persisted data (composedDesigns entries across the org's
+   * Infographics) rather than a separate counter column — survives logout/
+   * re-register of any user within the org, and needs no schema migration.
+   * A cache entry only ever exists after a real, non-degraded compose
+   * succeeded (composeDesignForEdit never writes the degraded path to
+   * cache), so "any non-empty composedDesigns" is exactly "ever composed".
+   */
+  async hasUsedEditableTrial(organizationId: string): Promise<boolean> {
+    const infographics = await prisma.infographic.findMany({
+      where: { organizationId },
+      select: { composedDesigns: true },
+    });
+    return infographics.some(
+      (i) => i.composedDesigns && Object.keys(i.composedDesigns as object).length > 0,
+    );
   }
 }

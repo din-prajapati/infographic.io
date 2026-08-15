@@ -52,7 +52,7 @@ import { useAgentStore } from "../../hooks/useAgentStore";
 import { generationsApi, ResultVariation } from "../../lib/api";
 import { useGenerationWebSocket, GenerationProgress } from "../../hooks/useGenerationWebSocket";
 import { loadAiVariationToCanvas, loadComposedDesignToCanvas, deriveOrientationFromCanvas } from "../../lib/canvasState";
-import { planVariationLoad } from "@/lib/layout/loadVariation";
+import { planVariationLoad, EDITABLE_REQUIRES_UPGRADE_REASON } from "@/lib/layout/loadVariation";
 import { useGenerationPrefs } from "@/hooks/useGenerationPrefs";
 import { useComposeProgress } from "@/hooks/useComposeProgress";
 
@@ -480,6 +480,20 @@ export function RightSidebar() {
         // Loader refused the payload — fall through to flat rather than
         // leaving the user with nothing.
         console.warn("[RightSidebar] composed load failed — falling back to flat");
+      } else if (plan.reason === EDITABLE_REQUIRES_UPGRADE_REASON) {
+        // US-LAUNCH-015 AC5 — FREE trial used. Design still loads flat below;
+        // this is purely the upgrade nudge, never a dead end.
+        toast.error("Editable designs are a paid feature", {
+          description: "Your free trial has been used. Upgrade to keep editing designs.",
+          action: { label: "View plans", onClick: () => { window.location.href = "/pricing"; } },
+        });
+      } else if (plan.reason?.toLowerCase().includes("monthly limit")) {
+        // US-LAUNCH-015 AC4 — extra compose would exceed the plan's monthly
+        // credit limit. Same toast shape the generate path already uses.
+        toast.error("Monthly limit reached", {
+          description: plan.reason,
+          action: { label: "View plans", onClick: () => { window.location.href = "/pricing"; } },
+        });
       } else if (plan.reason) {
         console.warn("[RightSidebar] editable degraded:", plan.reason);
       }

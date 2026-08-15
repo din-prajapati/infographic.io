@@ -1,6 +1,6 @@
 # M-AI-18 — Editable Text Overlay (Hybrid Render)
 
-> **Epic:** [EPIC-AI-06](../EPIC.md) · **Status:** 🟡 Content-complete — all 10 stories Done or resolved-superseded as of 2026-08-15; only blocked on pricing/gating (US-LAUNCH-015, a separate, unstarted story) · **Target:** TBD
+> **Epic:** [EPIC-AI-06](../EPIC.md) · **Status:** ✅ Done — all 10 stories Done or resolved-superseded, and US-LAUNCH-015 (pricing/gating, EPIC-LAUNCH-01) closed 2026-08-15 · **Target:** TBD
 
 ## Scope
 Editable canvas output: generated designs can be loaded as independently editable text elements over the background, not just a flat raster. Originally scoped as AI-first (text-free background + layout-engine overlay); **live verification on 2026-08-13 proved extraction-led composition (Ideogram layerize-text detecting the design's own baked-in text) is the higher-fidelity default** — see [EPIC.md's 2026-08-13 log entry](../EPIC.md). The text-free AI-first path remains in scope specifically for the real-photo flow (US-AI-051), where baking marketing text onto the user's own listing photo is undesirable regardless of extraction.
@@ -28,8 +28,8 @@ Editable canvas output: generated designs can be loaded as independently editabl
 - [x] Generated result opens in the canvas editor with each text value as an editable slot element — ✅ proven live 2026-08-14, end to end against staging (US-AI-051 TC-05)
 - [x] Text position/style derived from the design's own detected geometry/typography — geometry ✅, typography mapping (US-AI-049) live-verified 2026-08-15 after fixing a real regression ([BL-08](../../../../BACKLOG.md))
 - [x] Repeat loads are cost-bounded — US-AI-048 live-verified 2026-08-15 (2.97s cached vs. 15-90s real)
-- [ ] Editable is priced/gated per plan tier — pending [US-LAUNCH-015](../../EPIC-LAUNCH-01/stories/US-LAUNCH-015/STORY.md) (unblocked, not started — editable is currently free and cost-uncapped). **This is the one remaining gate on this milestone.**
+- [x] Editable is priced/gated per plan tier — [US-LAUNCH-015](../../EPIC-LAUNCH-01/stories/US-LAUNCH-015/STORY.md) closed 2026-08-15, live-verified (`[201, 402]` — FREE lifetime trial then upgrade-gated; paid tiers meter extra composes as credits)
 - [x] Export (PNG/A4) matches the composed preview — live-verified 2026-08-15 ([BL-09](../../../../BACKLOG.md), turned out already fixed by prior work)
-- [x] Gate 1 green throughout (tsc clean, backend 350/350, client 225/225) — Gate 2 (visual checklist) not separately tracked; live E2E verification across US-AI-032/048/049/050/051 substitutes for it
+- [x] Gate 1 green throughout (tsc clean, backend 368/368, client 229/229 as of the final US-LAUNCH-015 pass) — Gate 2 (visual checklist) not separately tracked; live E2E verification across US-AI-032/048/049/050/051/US-LAUNCH-015 substitutes for it
 
-*Created: 2026-07-03 · Status corrected 2026-08-13 (was showing "Not Started" while 3 stories had already shipped) · Fully refreshed 2026-08-14 (046/047 backfilled, 044/045 added post-merge, statuses reconciled against actual AC counts) · Content-complete 2026-08-15 (043/044 closed, only US-LAUNCH-015 pricing/gating remains)*
+*Created: 2026-07-03 · Status corrected 2026-08-13 (was showing "Not Started" while 3 stories had already shipped) · Fully refreshed 2026-08-14 (046/047 backfilled, 044/045 added post-merge, statuses reconciled against actual AC counts) · Content-complete 2026-08-15 (043/044 closed) · Fully Done 2026-08-15 (US-LAUNCH-015 closed same day, live-verified)*

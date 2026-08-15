@@ -322,3 +322,77 @@ describe('AiOrchestrator.composeDesignForEdit — AC7: cache-write failure', () 
     expect(result.extraction.blocksDetected).toBe(GOOD_EXTRACTION.blocks.length);
   });
 });
+
+// ─── US-LAUNCH-015 AC3 — extra-compose credit charged in the same write as costUsd ──
+
+describe('AiOrchestrator.composeDesignForEdit — chargeCredit option (US-LAUNCH-015 AC3)', () => {
+  let layer: LayerExtractionService;
+
+  beforeEach(() => {
+    vi.resetAllMocks();
+    process.env.IDEOGRAM_API_KEY = 'test-key-048';
+    layer = new LayerExtractionService();
+  });
+
+  it('chargeCredit: true on a successful compose increments creditsUsed alongside costUsd, in one write', async () => {
+    vi.spyOn(layer, 'extractTextGeometry').mockResolvedValue(GOOD_EXTRACTION);
+    const prisma = makeMockPrisma();
+    prisma.infographic.findUnique.mockResolvedValue({ id: 'inf-credit-01', composedDesigns: null });
+
+    const { orch } = makeOrchestrator(layer, prisma);
+    await orch.composeDesignForEdit(SIGNED_URL_A, PROP, 'inf-credit-01', { chargeCredit: true });
+
+    expect(prisma.usageRecord.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { infographicId: 'inf-credit-01' },
+        data: expect.objectContaining({
+          costUsd: { increment: expect.any(Number) },
+          creditsUsed: { increment: 1 },
+        }),
+      }),
+    );
+  });
+
+  it('chargeCredit: false (or omitted) never touches creditsUsed — matches pre-US-LAUNCH-015 behaviour', async () => {
+    vi.spyOn(layer, 'extractTextGeometry').mockResolvedValue(GOOD_EXTRACTION);
+    const prisma = makeMockPrisma();
+    prisma.infographic.findUnique.mockResolvedValue({ id: 'inf-credit-02', composedDesigns: null });
+
+    const { orch } = makeOrchestrator(layer, prisma);
+    await orch.composeDesignForEdit(SIGNED_URL_A, PROP, 'inf-credit-02'); // options omitted entirely
+
+    const call = prisma.usageRecord.update.mock.calls[0][0];
+    expect(call.data).not.toHaveProperty('creditsUsed');
+    expect(call.data.costUsd).toEqual({ increment: expect.any(Number) });
+  });
+
+  it('chargeCredit: true on a DEGRADED extraction never charges — no real compose happened, matches costUsd\'s own no-charge behaviour', async () => {
+    vi.spyOn(layer, 'extractTextGeometry').mockResolvedValue(null); // provider failure
+    const prisma = makeMockPrisma();
+    prisma.infographic.findUnique.mockResolvedValue({ id: 'inf-credit-03', composedDesigns: null });
+
+    const { orch } = makeOrchestrator(layer, prisma);
+    await orch.composeDesignForEdit(SIGNED_URL_A, PROP, 'inf-credit-03', { chargeCredit: true });
+
+    // Degraded path returns before the metering block entirely — same as costUsd.
+    expect(prisma.usageRecord.update).not.toHaveBeenCalled();
+  });
+
+  it('chargeCredit: true on a CACHE HIT never charges — already paid for, metering block is never reached', async () => {
+    const cacheKey = composeCacheKey(SIGNED_URL_A);
+    const prisma = makeMockPrisma();
+    prisma.infographic.findUnique.mockResolvedValue({
+      id: 'inf-credit-04',
+      composedDesigns: { [cacheKey]: STORED_DESIGN },
+    });
+
+    const { orch } = makeOrchestrator(layer, prisma);
+    // GenerationsService only ever passes chargeCredit:true for a genuine cache
+    // miss (US-LAUNCH-015's isExtraCompose is defined as !isCacheHit && ...),
+    // but composeDesignForEdit's own cache-hit short-circuit is the real
+    // safety net here regardless of what the caller passes.
+    await orch.composeDesignForEdit(SIGNED_URL_A, PROP, 'inf-credit-04', { chargeCredit: true });
+
+    expect(prisma.usageRecord.update).not.toHaveBeenCalled();
+  });
+});

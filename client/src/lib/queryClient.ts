@@ -26,10 +26,28 @@ function handleUnauthorized(): void {
   redirectToLogin();
 }
 
+/**
+ * Extends Error additively — existing callers checking `.message` are
+ * unaffected. Callers that need the HTTP status or a typed backend error
+ * code (e.g. US-LAUNCH-015's `EDITABLE_REQUIRES_UPGRADE`) can check `.status`
+ * / `.code` instead of parsing `.message` text.
+ */
+export class ApiError extends Error {
+  status: number;
+  code?: string;
+  constructor(message: string, status: number, code?: string) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+    this.code = code;
+  }
+}
+
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
     const text = await res.text();
     let errorMessage = res.statusText || "Unknown error";
+    let code: string | undefined;
     // Only treat as unauthorized if the HTTP status code itself is 401
     // Avoid false positives where 500 errors contain "Unauthorized" in the message
     let isUnauthorized = res.status === 401;
@@ -37,6 +55,7 @@ async function throwIfResNotOk(res: Response) {
     try {
       const json = JSON.parse(text);
       errorMessage = json.message || json.error || errorMessage;
+      code = json.code;
       // Also check json.statusCode === 401 in case of non-standard responses
       if (json.statusCode === 401) {
         isUnauthorized = true;
@@ -47,9 +66,9 @@ async function throwIfResNotOk(res: Response) {
 
     if (isUnauthorized) {
       handleUnauthorized();
-      throw new Error("Unauthorized");
+      throw new ApiError("Unauthorized", res.status);
     }
-    throw new Error(errorMessage);
+    throw new ApiError(errorMessage, res.status, code);
   }
 }
 

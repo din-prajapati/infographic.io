@@ -11,7 +11,7 @@ const { mockPrisma } = vi.hoisted(() => {
     organization: { findUnique: vi.fn(), create: vi.fn() },
     usageRecord: { findMany: vi.fn(), findFirst: vi.fn() },
     user: { findUnique: vi.fn(), update: vi.fn() },
-    infographic: { findFirst: vi.fn() },
+    infographic: { findFirst: vi.fn(), findMany: vi.fn() },
     subscription: { findFirst: vi.fn() },
   };
   return { mockPrisma };
@@ -121,5 +121,79 @@ describe('UsageLimitService', () => {
     expect(quota.organizationId).toBe('org-1');
     expect(quota.current).toBe(2);
     expect(quota.limit).toBe(3);
+  });
+
+  // ===========================================================================
+  // US-LAUNCH-015 — editable-design monetization
+  // ===========================================================================
+
+  describe('getEffectiveTier — AC1 (same resolver the generate path uses)', () => {
+    it('returns the org tier directly when not FREE', async () => {
+      mockPrisma.organization.findUnique.mockResolvedValue({
+        id: 'org-1',
+        planTier: 'team',
+        monthlyLimit: 200,
+      });
+
+      const result = await service.getEffectiveTier('org-1');
+
+      expect(result.planTier).toBe('team');
+      expect(mockPrisma.subscription.findFirst).not.toHaveBeenCalled();
+    });
+
+    it('grants a PENDING subscription tier for a FREE org (webhook-lag grace window)', async () => {
+      mockPrisma.organization.findUnique.mockResolvedValue({
+        id: 'org-1',
+        planTier: 'free',
+        monthlyLimit: 3,
+      });
+      mockPrisma.subscription.findFirst.mockResolvedValue({ planTier: 'SOLO', id: 'sub-1' });
+
+      const result = await service.getEffectiveTier('org-1');
+
+      expect(result.planTier).toBe('SOLO');
+    });
+
+    it('throws NotFoundException for a missing org', async () => {
+      mockPrisma.organization.findUnique.mockResolvedValue(null);
+
+      await expect(service.getEffectiveTier('ghost-org')).rejects.toBeInstanceOf(NotFoundException);
+    });
+  });
+
+  describe('hasUsedEditableTrial — AC1/AC2 (FREE lifetime trial, org-wide)', () => {
+    it('returns false when no infographic in the org has ever been composed', async () => {
+      mockPrisma.infographic.findMany.mockResolvedValue([
+        { composedDesigns: null },
+        { composedDesigns: {} },
+      ]);
+
+      expect(await service.hasUsedEditableTrial('org-1')).toBe(false);
+    });
+
+    it('returns true when ANY infographic in the org has a non-empty composedDesigns cache', async () => {
+      mockPrisma.infographic.findMany.mockResolvedValue([
+        { composedDesigns: null },
+        { composedDesigns: { 'https://cdn/img.jpg': { backgroundUrl: 'x', elements: [] } } },
+      ]);
+
+      expect(await service.hasUsedEditableTrial('org-1')).toBe(true);
+    });
+
+    it('returns false for an org with no infographics at all', async () => {
+      mockPrisma.infographic.findMany.mockResolvedValue([]);
+
+      expect(await service.hasUsedEditableTrial('org-1')).toBe(false);
+    });
+
+    it('queries by organizationId — trial state survives logout/re-register of any user in the org (AC2)', async () => {
+      mockPrisma.infographic.findMany.mockResolvedValue([]);
+
+      await service.hasUsedEditableTrial('org-42');
+
+      expect(mockPrisma.infographic.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { organizationId: 'org-42' } }),
+      );
+    });
   });
 });

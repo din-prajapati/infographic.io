@@ -11,7 +11,17 @@
  */
 import { generationsApi } from '@/lib/api';
 import type { ComposedDesign } from '@/lib/api';
+import { ApiError } from '@/lib/queryClient';
 import { composeFromCanonicalValues, orientationToCanvasSize } from './connectLayout';
+
+/**
+ * Reason string set on the LoadPlan when compose was blocked by
+ * US-LAUNCH-015's editable-design gate (FREE trial used, or paid-tier
+ * monthly limit hit on an extra compose). Callers key off this exact string
+ * to show an upgrade prompt instead of a generic "failed to load" message —
+ * see RightSidebar.tsx / AIChatBox.tsx.
+ */
+export const EDITABLE_REQUIRES_UPGRADE_REASON = 'editable requires upgrade';
 
 export interface VariationLike {
   id: string;
@@ -83,6 +93,17 @@ export async function planVariationLoad(input: {
 
     return { mode: 'flat', reason: 'no listing values and no extracted layers' };
   } catch (err: any) {
+    // US-LAUNCH-015 AC5: the FREE-trial gate (402, EDITABLE_REQUIRES_UPGRADE)
+    // gets a distinct, recognizable reason so callers can show an upgrade
+    // prompt instead of the generic degrade path — never throws, the user
+    // still gets their design, just flat. A paid-tier monthly-limit reject
+    // (403) falls through to the generic branch below: its message text
+    // already contains "monthly limit", which callers already know to
+    // recognize (AC4 — same shape the generate path uses).
+    if (err instanceof ApiError && (err.status === 402 || err.code === 'EDITABLE_REQUIRES_UPGRADE')) {
+      console.warn('[loadVariation] editable requires upgrade — falling back to flat');
+      return { mode: 'flat', reason: EDITABLE_REQUIRES_UPGRADE_REASON };
+    }
     console.error('[loadVariation] compose failed — falling back to flat', err);
     return { mode: 'flat', reason: err?.message ?? 'compose failed' };
   }

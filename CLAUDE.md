@@ -114,7 +114,7 @@ In production, Vite's output is served as static files by Express.
 
 ### Plan tiers and limits
 `FREE=3/mo | SOLO=50/mo | TEAM=200/mo | BROKERAGE=1000/mo | API_STARTER=5000 | API_GROWTH=20000 | API_ENTERPRISE=unlimited`
-> Metering policy (US-LAUNCH-008): limits count **generations** (user unit); each generation writes `creditsUsed: 1` regardless of internal image-call count. `costUsd` = true provider spend for margin analytics — intentionally different from `creditsUsed`. Never zero or average `costUsd`.
+> Metering policy (US-LAUNCH-008, amended by US-LAUNCH-015): limits count **generations** (user unit); each generation writes `creditsUsed: 1` regardless of internal image-call count. **Editable-design composes are metered separately**: the first distinct variation compose per generation is free on paid tiers (FREE gets one lifetime trial, then 402 `EDITABLE_REQUIRES_UPGRADE`); each *additional* distinct variation composed on the same generation also consumes 1 credit, subject to the same monthly limit. Cache hits (US-AI-048) never gate and never meter. `costUsd` = true provider spend for margin analytics — intentionally different from `creditsUsed`. Never zero or average `costUsd`.
 
 ### Testing
 - **Unit tests**: two suites, both run by `npm run test:unit`:

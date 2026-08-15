@@ -163,7 +163,8 @@ export const PLAN_CONFIG: Record<PlanTier, {
     currency: 'INR',
     limit: 3,
     userLimit: 1,
-    features: ['3 infographics/month', 'Basic templates', 'Email support'],
+    // US-LAUNCH-015 AC7: "1 trial" — the lifetime editable-compose trial (AC1/AC2).
+    features: ['3 infographics/month', 'Basic templates', 'Email support', 'Editable designs (1 trial)'],
   },
   SOLO: {
     name: 'Solo',
@@ -171,7 +172,10 @@ export const PLAN_CONFIG: Record<PlanTier, {
     currency: 'INR',
     limit: 50,
     userLimit: 1,
-    features: ['50 infographics/month', 'All templates', 'Priority support', 'Custom branding'],
+    // US-LAUNCH-015 AC7: editable is included — first distinct compose per
+    // generation is free; additional distinct composes on the same
+    // generation consume a credit (AC3). No headline price change.
+    features: ['50 infographics/month', 'All templates', 'Priority support', 'Custom branding', 'Editable designs'],
     popular: true,
   },
   TEAM: {
@@ -180,7 +184,7 @@ export const PLAN_CONFIG: Record<PlanTier, {
     currency: 'INR',
     limit: 200,
     userLimit: 5,
-    features: ['200 infographics/month', 'Team collaboration', '5 users', 'Advanced analytics'],
+    features: ['200 infographics/month', 'Team collaboration', '5 users', 'Advanced analytics', 'Editable designs'],
   },
   BROKERAGE: {
     name: 'Brokerage',
@@ -188,7 +192,7 @@ export const PLAN_CONFIG: Record<PlanTier, {
     currency: 'INR',
     limit: 1000,
     userLimit: -1, // unlimited
-    features: ['1000 infographics/month', 'Unlimited users', 'White-label', 'Dedicated support'],
+    features: ['1000 infographics/month', 'Unlimited users', 'White-label', 'Dedicated support', 'Editable designs'],
   },
   API_STARTER: {
     name: 'API Starter',

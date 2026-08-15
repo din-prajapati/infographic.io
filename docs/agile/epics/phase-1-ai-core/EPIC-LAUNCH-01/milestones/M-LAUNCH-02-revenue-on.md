@@ -1,7 +1,7 @@
 # M-LAUNCH-02-revenue-on — Revenue On (Live Payments)
 
 > **Epic:** [EPIC-LAUNCH-01](../EPIC.md)
-> **Status:** 🟡 In Progress — 5/6 stories ✅ Done (US-LAUNCH-006/007/008/012/013, closed 2026-07-29); only US-LAUNCH-005 remains open (AC1–4 done — RazorPay live-mode approved & keys deployed; AC5/6 open, real ₹ transaction intentionally not yet run)
+> **Status:** 🟡 In Progress — 6/7 stories ✅ Done (US-LAUNCH-006/007/008/012/013/015); only US-LAUNCH-005 remains open (AC1–4 done — RazorPay live-mode approved & keys deployed; AC5/6 open, real ₹ transaction intentionally not yet run)
 > **Target date:** 2026-08-15 · **Flip gated by EPIC-AI-06** (real-photo pipeline) — prep stories can run earlier in parallel
 
 ---
@@ -22,7 +22,7 @@ The first real rupee can be collected defensibly: live RazorPay checkout → web
 | 2 | [US-LAUNCH-006](../stories/US-LAUNCH-006/STORY.md) | Payment receipt email on subscription charge | US-LAUNCH-002 | ✅ Done | `fa1d345` |
 | 2 | [US-LAUNCH-012](../stories/US-LAUNCH-012/STORY.md) | Payment-failed (dunning) email notification | US-LAUNCH-002 | ✅ Done | `fa1d345` |
 | 2 | [US-LAUNCH-013](../stories/US-LAUNCH-013/STORY.md) | Subscription renewal reminder email (3-day notice) | US-LAUNCH-002 | ✅ Done | `fa1d345`+`5c52dc0` |
-| 3 | [US-LAUNCH-015](../stories/US-LAUNCH-015/STORY.md) | Editable-design monetization (FREE gate + extra-compose credits) | US-AI-048 | 🔲 Not Started | — |
+| 3 | [US-LAUNCH-015](../stories/US-LAUNCH-015/STORY.md) | Editable-design monetization (FREE gate + extra-compose credits) | US-AI-048 | ✅ Done 2026-08-15 | — |
 
 > Closed 2026-07-29. All five merged directly to `main` — no PR was opened for any of them (documented as an explicit DoD exception on each STORY.md, consistent with this repo's precedent for US-LAUNCH-001/002/003/009/010/011). Each story's remaining manual test case(s) that require a real ₹ transaction (US-LAUNCH-006/012/013) are documented DoD exceptions, not silently dropped — they'll be exercised the first time US-LAUNCH-005 AC6 runs. US-LAUNCH-007's manual TCs were independently verified live on production 2026-07-29 (no transaction needed).
 >

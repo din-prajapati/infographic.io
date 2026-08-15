@@ -150,6 +150,12 @@ describe('planVariationLoad', () => {
   });
 
   // ⚠️ KNOWN COVERAGE GAP — the server-error path is NOT unit-tested here.
+  // This includes US-LAUNCH-015's 402 EDITABLE_REQUIRES_UPGRADE branch (same
+  // catch block, same constraint) — ApiError's own status/code handling is
+  // unit-tested in isolation (queryClient.spec.ts), and the FREE-tier gate's
+  // server-side throw is fully covered (editable-gating.spec.ts). What's
+  // missing here specifically is the end-to-end "server throws 402 → client
+  // shows the upgrade toast" wiring, planned as a live E2E check (TC-LAUNCH-015-06).
   //
   // planVariationLoad wraps its network call in try/catch and returns
   // { mode: 'flat', reason } on any failure. That behaviour is real and was

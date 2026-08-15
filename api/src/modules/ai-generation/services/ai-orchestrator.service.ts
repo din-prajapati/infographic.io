@@ -421,11 +421,19 @@ export class AiOrchestrator {
    *
    * The no-photo path (generateInfographic without photoReference) is untouched — this method
    * is only invoked from GenerationsService.getComposedDesign() on user click (AC7 preserved).
+   *
+   * @param options.chargeCredit  US-LAUNCH-015 AC3 — true when GenerationsService has determined
+   *   this is an "extra" distinct compose on a paid tier (the gate/limit check already ran there,
+   *   before this call, so a blocked request never reaches here). When true and the compose
+   *   actually succeeds (not degraded, not a cache hit — those paths never reach the metering
+   *   block below), increments creditsUsed by 1 alongside the existing costUsd increment, in the
+   *   same write. Ignored on the degraded path — no distinct compose happened, nothing to charge.
    */
   async composeDesignForEdit(
     imageUrl: string,
     propertyData: any,
     infographicId: string,
+    options?: { chargeCredit?: boolean },
   ): Promise<ComposedDesign> {
     const t0 = Date.now();
     logGen({ generationId: infographicId, event: 'edit:extract:start', imageUrl });
@@ -500,14 +508,25 @@ export class AiOrchestrator {
     // ── Metering wrinkle (STORY.md §Metering, CLAUDE.md) ────────────────────
     // A lazy extraction call adds real provider spend ($0.09) to a generation record
     // that was already written and billed at generate time. Increment costUsd on the
-    // existing UsageRecord; never touch creditsUsed (remains 1 from generate time).
+    // existing UsageRecord; creditsUsed only moves when US-LAUNCH-015's chargeCredit
+    // flag says this is an extra distinct compose on a paid tier — otherwise it stays
+    // at 1 from generate time, same as before that story.
     // Non-fatal if the update fails — the design is still usable.
     try {
+      const chargeCredit = options?.chargeCredit ?? false;
       await this.prisma.usageRecord.update({
         where: { infographicId },
-        data: { costUsd: { increment: LAYERIZE_COST_PER_IMAGE } },
+        data: {
+          costUsd: { increment: LAYERIZE_COST_PER_IMAGE },
+          ...(chargeCredit ? { creditsUsed: { increment: 1 } } : {}),
+        },
       });
-      logGen({ generationId: infographicId, event: 'edit:metering:ok', costIncrement: LAYERIZE_COST_PER_IMAGE });
+      logGen({
+        generationId: infographicId,
+        event: 'edit:metering:ok',
+        costIncrement: LAYERIZE_COST_PER_IMAGE,
+        ...(chargeCredit ? { creditIncrement: 1 } : {}),
+      });
     } catch (meteringErr: any) {
       logGen(
         { generationId: infographicId, event: 'edit:metering:error', error: meteringErr?.message },

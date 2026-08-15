@@ -5,7 +5,8 @@ import { InfographicsService } from './infographics.service';
 import { AiOrchestrator } from '../../ai-generation/services/ai-orchestrator.service';
 import { TemplatesService } from '../../templates/services/templates.service';
 import { UsageAlertService } from './usage-alert.service';
-import { UsageLimitService } from './usage-limit.service';
+import { UsageLimitService, EditableRequiresUpgradeException } from './usage-limit.service';
+import { composeCacheKey } from '../../ai-generation/services/ai-orchestrator.service';
 import { GenerationProgressGateway } from '../gateways/generation-progress.gateway';
 import { GenerateFromChatDto } from '../dto/generate-from-chat.dto';
 import { ComposedDesign } from '../../ai-generation/types/composed-design.types';
@@ -324,6 +325,12 @@ export class GenerationsService {
    * Metering is handled inside AiOrchestrator.composeDesignForEdit(), which increments
    * costUsd on the existing UsageRecord without touching creditsUsed (STORY.md §Metering).
    *
+   * US-LAUNCH-015: this is also where editable-design monetization gates live —
+   * FREE tier's lifetime trial (AC1/AC2) and paid tiers' extra-compose credit
+   * (AC3/AC4). Both checks happen BEFORE the (possibly $0.09) extraction call,
+   * not after, so a blocked request never spends provider money. Cache hits
+   * bypass both gates entirely — they cost nothing and were already paid for.
+   *
    * @param infographicId   The generation whose variation the user is editing
    * @param variationImageUrl  The flat composition URL chosen by the user
    */
@@ -333,17 +340,51 @@ export class GenerationsService {
   ): Promise<ComposedDesign> {
     const infographic = await this.prisma.infographic.findUnique({
       where: { id: infographicId },
-      select: { id: true, propertyData: true, status: true },
+      select: { id: true, propertyData: true, status: true, organizationId: true, composedDesigns: true },
     });
 
     if (!infographic) {
       throw new NotFoundException(`Generation ${infographicId} not found`);
     }
 
+    const existingCache = (infographic.composedDesigns as Record<string, ComposedDesign> | null) ?? {};
+    const cacheKey = composeCacheKey(variationImageUrl);
+    const isCacheHit = cacheKey in existingCache;
+    // A distinct compose already exists on THIS generation — the next one (if
+    // allowed at all) is an "extra" one. Meaningless on the cache-hit path
+    // (no new compose happens) and always false on a passing FREE-tier path
+    // (see below), so it only ever drives a real charge on paid tiers.
+    const isExtraCompose = !isCacheHit && Object.keys(existingCache).length > 0;
+
+    // Cache hits are free and already paid for — no gate, no credit, on any tier.
+    if (!isCacheHit) {
+      const { planTier } = await this.usageLimitService.getEffectiveTier(infographic.organizationId);
+      const tier = (planTier || 'free').toLowerCase();
+
+      if (tier === 'free') {
+        // AC1/AC2: FREE gets exactly one compose, ever, org-wide — not per
+        // generation. hasUsedEditableTrial is org-wide, so if it's false here,
+        // no infographic in the org has a cache entry yet — isExtraCompose
+        // (computed from THIS infographic's cache) is therefore also false;
+        // a passing FREE request never reaches the extra-credit charge below.
+        if (await this.usageLimitService.hasUsedEditableTrial(infographic.organizationId)) {
+          throw new EditableRequiresUpgradeException();
+        }
+      } else if (isExtraCompose) {
+        // AC3/AC4: paid tiers get the first distinct variation per generation
+        // free; each additional distinct variation on the same generation
+        // costs a credit, subject to the same monthly limit the generate
+        // path enforces. Checked BEFORE extraction so a blocked request
+        // never spends the $0.09.
+        await this.usageLimitService.assertCanGenerate(infographic.organizationId, 1);
+      }
+    }
+
     return this.aiOrchestrator.composeDesignForEdit(
       variationImageUrl,
       infographic.propertyData as any,
       infographicId,
+      { chargeCredit: isExtraCompose },
     );
   }
 
