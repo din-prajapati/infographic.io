@@ -8,7 +8,7 @@
 # Docs:    https://github.com/din-prajapati/orion-ai-sdlc
 
 version: 1
-orion: "0.4.0"
+orion: "0.7.0"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # PROJECT — identity of the host project.
@@ -40,13 +40,13 @@ adapters:
       session_start: native      # Claude Code fires SessionStart natively
       per_skill_stubs: false     # opt-in: generate one 3-line stub per skill for per-skill autocomplete
   cursor:
-    enabled: false               # enable in Phase 6: orion install --tools=cursor
+    enabled: true                # Cursor adapter — ships in v0.5.0
     install_dir: ".cursor"
     options:
       session_start: first-turn-marker
       per_skill_stubs: false
   codex:
-    enabled: false               # enable in Phase 7: orion install --tools=codex
+    enabled: true                # Codex adapter — ships in v0.5.0
     install_dir: ".codex"
     options:
       session_start: first-turn-marker
@@ -336,7 +336,7 @@ skills:
       Mark a story Done and cascade all status updates: STORY.md, MILESTONE.md,
       EPIC.md (implementation log), TEAM_STATUS.md, PHASE_TRACKER.md,
       AGILE_INDEX.md. Checks DoD before closing.
-    tools: [Read, Write, Edit, Glob, Grep]
+    tools: [Read, Write, Edit, Glob, Grep, Bash]
     triggers:
       - "close story"
       - "mark done"
@@ -540,12 +540,87 @@ profiles:
     include_rules: [AGILE]
 
 # ─────────────────────────────────────────────────────────────────────────────
+# BACKENDS — CLI backend registry for `orion fleet` / `orion run` dispatch.
+#
+# Phase 6 (P6) scope boundary: CLI backends ONLY (claude-cli, codex-cli). No
+# `model:` field anywhere in this section or in resolveBackend()'s return
+# shape — CLI backends self-select their model; ORION does not pass --model
+# in P6. `type: api` registry entries and the full 7-provider registry are
+# Phase 8 (see docs/proposals/ORION-LLM-ROUTER-DESIGN.md §5/§14).
+#
+# `pricing:` below is a flat, backend-level ESTIMATE — not verified against
+# real provider invoices, and not broken out per-model (P8 will add
+# per-model pricing once `model:` selection exists). Treat as directional
+# only; used purely for the `orion fleet --max-cost-usd` pre-flight guard.
+# codex-cli's pricing is an even rougher placeholder: ORION has no live codex
+# CLI install to check actual list pricing against.
+# ─────────────────────────────────────────────────────────────────────────────
+cli_agent_engines:
+  claude:
+    mode: cli
+    bin: claude
+    args: [--print, --output-format, json]
+    detect: "which claude"
+    pricing:
+      input_per_mtok: 3.00        # ESTIMATE — unverified, Sonnet-tier list price
+      output_per_mtok: 15.00      # ESTIMATE — unverified
+
+  codex:
+    mode: cli
+    bin: codex
+    # Framework template shipped `[run, --output-format, json]` — verified WRONG
+    # 2026-08-20 against a live `codex exec --help` (codex-cli 0.148.0, now
+    # installed in this project): there is no `run` subcommand (it's `exec`,
+    # aliased `e`) and `exec` has no `--output-format` flag — non-interactive
+    # JSON comes from `--json` (JSONL event stream), not `--output-format json`.
+    # Corrected here; upstream orion-ai-sdlc template still has the stale form.
+    args: [exec, --json]
+    detect: "which codex"
+    pricing:
+      input_per_mtok: 1.50        # ESTIMATE — unverified, no live codex install to check
+      output_per_mtok: 6.00       # ESTIMATE — unverified
+
+  gemini:
+    mode: cli
+    bin: gemini
+    # Verified 2026-08-20 against a live `gemini --help` (gemini-cli 0.56.0,
+    # now installed in this project) — --output-format json, --approval-mode,
+    # and -p all exist and match this shape as documented.
+    args: [--output-format, json, --approval-mode=yolo, -p]
+    detect: "which gemini"
+    pricing:
+      # ESTIMATE — unverified, no live gemini install to check. Gemini's own
+      # --output-format json output carries no dollar figure at all (unlike
+      # claude's total_cost_usd) — these numbers exist only so orion fleet's
+      # pre-flight cost gate has something to multiply estimated tokens by.
+      input_per_mtok: 1.25        # ESTIMATE — unverified, ballpark Gemini 2.5 Pro list price
+      output_per_mtok: 5.00       # ESTIMATE — unverified
+
+# ─────────────────────────────────────────────────────────────────────────────
 # CLI — runtime settings for `orion run`, `orion fleet`, etc.
 # ─────────────────────────────────────────────────────────────────────────────
+llm:
+  # cli_agent_engine here (top-level) is the Level 1 default — US-FLEET-008 rename
+  # of the old `cli.default_backend`. migrateVocabulary() (orion doctor --fix)
+  # converted skill_overrides but left this key under the old `cli:` block
+  # unmigrated — moved here by hand 2026-08-20.
+  cli_agent_engine: claude        # claude | codex | gemini
+  skill_overrides:
+    implement-story:
+      cli_agent_engine: claude
+    harden:
+      cli_agent_engine: claude
+    _default:
+      cli_agent_engine: claude
+
 cli:
-  default_backend: claude         # claude | codex | api
   fleet:
     max_parallel: 3               # safe default; use --max=5 for aggressive
+    # Level 2 of the routing chain (docs/proposals/ORION-LLM-ROUTER-DESIGN.md §3/§8):
+    # per-skill backend preference. Keys are skill names; `_default` applies to
+    # any skill without an explicit entry. Falls through to `llm.cli_agent_engine`
+    # (Level 1) when the referenced backend is unavailable — see resolveBackend()
+    # in .orion/bin/lib/backend-router.js.
   replay:
     max_records_per_skill: 100
     max_age_days: 30

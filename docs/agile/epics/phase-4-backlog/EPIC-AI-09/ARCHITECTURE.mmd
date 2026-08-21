@@ -1,0 +1,33 @@
+flowchart LR
+  subgraph Inputs["Format taxonomy"]
+    A["formatTaxonomy.ts\n23 formats, 7 platforms"]
+  end
+
+  subgraph Existing["Existing (5 formats covered)"]
+    B["5 admin_curated Infographic rows\naiModel: canvas-template"]:::good
+    C["client/public/template-assets/\nhero photos + agent headshots + logo placeholder"]:::good
+  end
+
+  subgraph New["EPIC-AI-09 scope (18 formats missing)"]
+    D["New canvas layouts\n~13-29 positioned elements each"]:::new
+    E["Reuse photo library\n(SAMPLE_TEMPLATE_PHOTO_PROMPTS.md)\n7 new photos, not 18"]:::new
+    F["New Infographic rows\nsame shape as existing 5"]:::new
+  end
+
+  subgraph Consumers["Who reads this"]
+    G["TemplatesPage.tsx / TemplatesPanel.tsx\ngetAdminCurated()"]:::good
+    H["Format Picker Library step\n(removed — empty-grid problem;\ncandidate to re-enable once this ships)"]:::blocked
+    I["EPIC-KIT-01 (not built)\nnames 'WhatsApp card' in its own goal"]:::blocked
+  end
+
+  A --> D
+  C --> E
+  D --> F
+  E --> F
+  F --> G
+  F -.->|"would unblock"| H
+  F -.->|"product-level relevance,\nnot a verified code dep"| I
+
+  classDef good fill:#0b3b2e,stroke:#14532d,color:#ecfdf5;
+  classDef new  fill:#1e3a5f,stroke:#2563eb,color:#eff6ff;
+  classDef blocked fill:#3b2a0b,stroke:#a16207,color:#fef9c3;

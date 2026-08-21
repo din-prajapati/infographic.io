@@ -47,6 +47,12 @@ Read `PROJECT_CONTEXT.yaml`. Confirm:
 {paths.epics}/{phase}/{EPIC-ID}/milestones/M-{DOMAIN}-{NN}-{slug}.md
 ```
 
+> `orion fleet` also recognizes a directory-per-milestone layout
+> (`{EPIC-ID}/M-{DOMAIN}-{NN}-{slug}/MILESTONE.md`) — that's what
+> `orion-ai-sdlc`'s own milestones happen to use, if you're looking at this
+> repo for reference. Both shapes are permanently supported; this skill scaffolds
+> the flat-file shape above, and either is fine to use in your own project.
+
 Copy from `{paths.templates}/MILESTONE.md`. Fill:
 - Milestone ID, slug, title
 - Epic link, Feature link (if applicable)

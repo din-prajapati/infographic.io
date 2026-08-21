@@ -322,16 +322,75 @@
       }
     },
 
+    "cli_agent_engines": {
+      "type": "object",
+      "description": "Registry of AI coding-agent CLI tools orion fleet/orion run can dispatch to (was `backends:`, renamed in US-FLEET-008 — keys are plain engine names, no short-id/registry-id split).",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["mode", "bin"],
+        "properties": {
+          "mode": { "enum": ["cli", "api"] },
+          "bin": { "type": "string" },
+          "args": { "type": "array", "items": { "type": "string" } },
+          "detect": { "type": "string" },
+          "pricing": {
+            "type": "object",
+            "properties": {
+              "input_per_mtok": { "type": "number" },
+              "output_per_mtok": { "type": "number" }
+            }
+          },
+          "models": {
+            "type": "object",
+            "description": "Per-model overrides (US-FLEET-009) — default: names the model used when llm.model/--model= isn't more specific; pricing: overrides the engine-level pricing above for a known model name.",
+            "properties": {
+              "default": { "type": "string" },
+              "pricing": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "object",
+                  "properties": {
+                    "input_per_mtok": { "type": "number" },
+                    "output_per_mtok": { "type": "number" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "llm": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Routing settings (was split across cli.default_backend / cli.fleet.skill_affinities — moved here in US-FLEET-008).",
+      "properties": {
+        "cli_agent_engine": {
+          "enum": ["claude", "codex", "api"],
+          "default": "claude",
+          "description": "Level 1 of the routing chain (was cli.default_backend)."
+        },
+        "model": { "type": "string" },
+        "skill_overrides": {
+          "type": "object",
+          "description": "Level 2 of the routing chain (was cli.fleet.skill_affinities). Keys are skill names; `_default` applies to any skill without an explicit entry.",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "cli_agent_engine": { "type": "string" },
+              "model": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+
     "cli": {
       "type": "object",
       "additionalProperties": false,
-      "description": "CLI runtime settings.",
+      "description": "CLI runtime settings unrelated to routing (execution/retention knobs).",
       "properties": {
-        "default_backend": {
-          "enum": ["claude", "codex", "api"],
-          "default": "claude"
-        },
-        "default_model": { "type": "string" },
         "fleet": {
           "type": "object",
           "additionalProperties": false,

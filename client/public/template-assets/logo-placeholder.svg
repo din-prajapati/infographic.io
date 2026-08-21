@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 120" width="400" height="120">
+  <rect x="2" y="2" width="396" height="116" rx="16" fill="#ffffff" fill-opacity="0.96" stroke="#94a3b8" stroke-width="2" stroke-dasharray="6 6"/>
+  <g transform="translate(32,28)">
+    <rect width="64" height="64" rx="14" fill="#e2e8f0"/>
+    <path d="M32 16 L48 44 L16 44 Z" fill="#94a3b8"/>
+    <circle cx="32" cy="26" r="6" fill="#cbd5e1"/>
+  </g>
+  <text x="116" y="54" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700" fill="#475569">YOUR LOGO</text>
+  <text x="116" y="78" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#94a3b8">Upload your brand logo</text>
+</svg>

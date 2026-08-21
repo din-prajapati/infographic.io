@@ -1,11 +1,41 @@
 {
   "hooks": {
-    "SessionStart": [
+    "PreToolUse": [
       {
+        "matcher": "^(Edit|Write|Apply)$",
         "hooks": [
           {
             "type": "command",
-            "command": "bash ${CLAUDE_PROJECT_DIR}/.orion/hooks/session-start-recall.sh"
+            "command": "bash ${CODEX_PROJECT_DIR}/.orion/hooks/pre-edit-env-secret.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "^(Edit|Write|Apply)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CODEX_PROJECT_DIR}/.orion/hooks/pre-edit-schema-warn.sh"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "^(Edit|Write|Apply)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CODEX_PROJECT_DIR}/.orion/hooks/post-edit-tasks-sync.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "^(Edit|Write|Apply)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CODEX_PROJECT_DIR}/.orion/hooks/post-edit-story-close-check.sh"
           }
         ]
       }
@@ -15,7 +45,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ${CLAUDE_PROJECT_DIR}/.orion/hooks/stop-session-summary.sh"
+            "command": "bash ${CODEX_PROJECT_DIR}/.orion/hooks/stop-session-summary.sh"
           }
         ]
       }

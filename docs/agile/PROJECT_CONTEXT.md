@@ -102,9 +102,9 @@ npm run dev starts:
 | Payments | PAY | Subscription, billing, RazorPay/Stripe | 02 | 01 | 001 |
 | Auth | AUTH | Login, JWT, OAuth, sessions, API keys | 02 | 01 | 001 |
 | Editor | EDIT | Canvas editor, drag-resize, export | 02 | 01 | 001 |
-| AI | AI | GPT-4o, Ideogram, generation pipeline, refinement | 08 | 35 | 052 |
+| AI | AI | GPT-4o, Ideogram, generation pipeline, refinement | 10 | 35 | 052 |
 | Usage | USAGE | Usage tracking, analytics, limit alerts | 01 | 01 | 001 |
-| Infrastructure | INFRA | Railway, Sentry, DB migrations, CI/CD | 02 | 01 | 001 |
+| Infrastructure | INFRA | Railway, Sentry, DB migrations, CI/CD | 03 | 01 | 004 |
 | Organisation | ORG | Teams, workspace, multi-user, brand kit | 01 | 01 | 001 |
 | API (B2B) | API | REST API, key management, webhooks, portal | 01 | 01 | 001 |
 | Testing | TEST | Test infrastructure, coverage, QA automation | 01 | 01 | 001 |
@@ -115,6 +115,8 @@ npm run dev starts:
 | Deployment | DEPLOY | Deployment velocity & safety: CI gate, preview envs, feature flags, migrations, progressive delivery | 02 | 01 | 008 |
 
 > **DEPLOY row added 2026-08-15** — the domain has been in use since EPIC-DEPLOY-01 (2026-07-13, 7 stories) but was never registered in this table or `PROJECT_CONTEXT.yaml`. Real gap, not a routine reconciliation.
+>
+> **AI Next Epic # corrected 2026-08-20** — was showing `08`, but `EPIC-AI-00` through `EPIC-AI-08` already existed (9 epics), so `08` was already stale before `EPIC-AI-09` (Sample Template Format Expansion, Phase 4 Backlog / B-19) was created. Now `10`.
 >
 > To add a new domain: append a row here, pick an unused 2-6 char UPPERCASE prefix, start all counters at `01` / `001`.
 

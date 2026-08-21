@@ -39,16 +39,8 @@ if git -C "$PROJECT_DIR" rev-parse >/dev/null 2>&1; then
   echo "branch: $BRANCH  ·  dirty: $DIRTY file(s)  ·  last: $LAST"
 fi
 
-# Last session-log entry (one line).
-# Since 2026-08-10 stop-session-summary.sh writes to the gitignored
-# .orion/state/session-log.md instead of TEAM_STATUS.md — see that hook's header
-# for why. Read the new location first; fall back to TEAM_STATUS.md so the
-# recall line still works against pre-existing entries.
-SESSION_LOG="$PROJECT_DIR/.orion/state/session-log.md"
-if [ -s "$SESSION_LOG" ]; then
-  LAST_SESSION=$(tail -n 1 "$SESSION_LOG" 2>/dev/null)
-  [ -n "$LAST_SESSION" ] && echo "last session: $LAST_SESSION"
-elif [ -f "$STATUS_FILE" ]; then
+# Last session-log entry (one line)
+if [ -f "$STATUS_FILE" ]; then
   LAST_SESSION=$(grep -B0 -A1 '<!-- ai-sdlc:session-log -->' "$STATUS_FILE" 2>/dev/null | tail -2 | head -1)
   [ -n "$LAST_SESSION" ] && echo "last session: ${LAST_SESSION#**}"
 fi
