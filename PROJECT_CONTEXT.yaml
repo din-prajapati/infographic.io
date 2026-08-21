@@ -56,7 +56,7 @@ domains:
 counters:
   ADR: 3
   DESIGN: { epic: 5, feature: 3, story: 13 }
-  PAY: { epic: 5, feature: 1, story: 102 }
+  PAY: { epic: 6, feature: 5, story: 114 }  # EPIC-PAY-05 (Pricing Relaunch) consumed epic 5, feature 1-4, story 102-113
   AUTH: { epic: 2, feature: 1, story: 5 }
   EDIT: { epic: 3, feature: 1, story: 5 }
   AI: { epic: 9, feature: 35, story: 52 } # reconciled 2026-08-14: US-AI-044 (LLM layout planner) + US-AI-045 (pipeline integration) merged from a long-orphaned branch — both now real story cards under EPIC-AI-06. Counter already accounted for their slots (043-051 all reserved 2026-08-12/13); no change needed. EPIC-AI-08 created 2026-07-30 (quality tiers + Campaign Mode UI, deferred from EPIC-AI-02 to Phase 4 Backlog, revenue-gated); US-AI-036/037/038 added 2026-07-29, replacing superseded US-AI-011; US-AI-039 added 2026-07-31 (Format Picker Canva-style reorg, F-AI-02-07); US-AI-040/041 added 2026-07-31 (Templates UX gaps split into two stories: US-AI-040 preview modal + tag filters, new F-AI-02-08; US-AI-041 device-mockup format previews, extends F-AI-02-07, depends on US-AI-039 merging first — US-AI-042 added 2026-08-02 (real canvas thumbnails on save, new F-AI-02-09); feature counter unchanged, both use EPIC-AI-02's epic-scoped F-AI-02-NN sub-numbering, not the global F-AI-NN sequence)
@@ -216,6 +216,12 @@ ac_coverage:
     # Set 2026-08-11 during the EPIC-AI-06 harden pass — per_domain was {} until then,
     # meaning AI stories were certified against only [happy-path, error-path].
     AI: [regression, edge-case]
+    # PAY stories move money and apply discounts — the defaults miss both risks:
+    #  - security: never trust a client-computed discounted amount; server resolves
+    #    the effective price and passes offer_id to Razorpay, never the reverse
+    #  - currency-edge: paise/rupee rounding, negative/zero amounts, discount stacking
+    # Set 2026-08-21 during EPIC-PAY-05 (Pricing Relaunch) roadmap generation.
+    PAY: [security, currency-edge]
   # per_domain:
   #   DESIGN: []    # add: security, session-expiry, idempotency, currency-edge, rate-limit, null-input, concurrent, rollback, offline, edge-case
   #   PAY: []    # add: security, session-expiry, idempotency, currency-edge, rate-limit, null-input, concurrent, rollback, offline, edge-case

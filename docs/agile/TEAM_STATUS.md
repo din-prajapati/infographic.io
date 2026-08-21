@@ -11,7 +11,7 @@
 
 | Domain | Active Epic | Status | Blocked | Upcoming |
 |--------|-------------|--------|---------|----------|
-| [Payments (PAY)](#-payments-pay) | EPIC-PAY-01 | ✅ Done | PT-06 BROKERAGE | EPIC-PAY-02 Phase 1 |
+| [Payments (PAY)](#-payments-pay) | EPIC-PAY-01 ✅ · EPIC-PAY-05 🔲 | 🔲 PAY-05 scaffolded, not started | PT-06 BROKERAGE | EPIC-PAY-05 (Pricing Relaunch) — revenue-on gate, added 2026-08-21 |
 | [Design (DESIGN)](#-design--frontend-design) | EPIC-DESIGN-01 + EPIC-DESIGN-02 | 🟡 US-003/004 staging | Live Ideogram API | Staging deploy unblocks both |
 | [Auth (AUTH)](#-auth-auth) | EPIC-AUTH-01 | ✅ Done | — | Full invite flow post-MVP |
 | [Canvas Editor (EDIT)](#-canvas-editor-edit) | EPIC-EDIT-01 | ✅ Done | — | Batch upload Phase 3 |
@@ -27,13 +27,19 @@
 ## 💳 Payments (PAY)
 
 **Epic lead:** Dinesh  
-**Active epic:** [EPIC-PAY-01](epics/phase-0-mvp/EPIC-PAY-01/EPIC.md) — MVP Payments  
-**Phase:** 0 (MVP)
+**Active epic:** [EPIC-PAY-05](epics/phase-1-ai-core/EPIC-PAY-05/EPIC.md) — Pricing Relaunch (Founding Customer Launch)  
+**Phase:** 1 (Revenue Strategy)
 
 ### Now (In Progress)
-> No active development. EPIC-PAY-01 code is complete and QA-signed off.
+> **EPIC-PAY-05 scaffolded 2026-08-21, not started.** Full feasibility analysis done first (real
+> production cost data + real Railway metrics, not assumptions) before roadmap generation — see the
+> epic's own "Feasibility" section. 4 milestones, 12 stories (US-PAY-102 to US-PAY-113). Two
+> decisions locked before story-writing: campaigns (Founding/festival) are a separate, reusable
+> `PricingCampaign` system from the standing always-on annual discount; editable-design limits keep
+> the shipped US-LAUNCH-015 mechanism (relabeled, not reversed). Should ship before US-LAUNCH-005
+> AC6's real ₹ transaction runs against the *new* prices, not the old beta ones.
 
-### Done
+### Done — MVP Payments (EPIC-PAY-01)
 | Story | Title | PR | Closed |
 |-------|-------|-----|--------|
 | US-PAY-001 | RazorPay checkout (SOLO + TEAM × M/A) | — | 2026-04-10 ✅ |
@@ -46,10 +52,12 @@
 |-------|-------------|--------------|
 | PT-06 | BROKERAGE plan IDs not configured in RazorPay | Resolution scheduled: [US-LAUNCH-007](epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-007/STORY.md) gates the tier behind "Contact us"; plan creation deferred to first brokerage demand |
 
-### Next (Phase 1 — post Phase 0 gate)
+### Next (Phase 2 — separate placeholders, not part of EPIC-PAY-05)
 | Epic | Story | Focus |
 |------|-------|-------|
 | EPIC-PAY-02 | US-PAY-101 | Payment method management UI |
+| EPIC-PAY-03 | — | Stripe activation + billing portal |
+| EPIC-PAY-04 | — | API-tier volume pricing (Phase 3) |
 
 ---
 

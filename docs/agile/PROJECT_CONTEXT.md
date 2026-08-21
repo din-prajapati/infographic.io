@@ -99,7 +99,7 @@ npm run dev starts:
 | Domain | Prefix | Scope | Next Epic # | Next Feature # | Next Story # |
 |--------|--------|-------|:-----------:|:--------------:|:------------:|
 | Design | DESIGN | UI/UX, design tokens, themes, components | 05 | 03 | 013 |
-| Payments | PAY | Subscription, billing, RazorPay/Stripe | 02 | 01 | 001 |
+| Payments | PAY | Subscription, billing, RazorPay/Stripe | 06 | 05 | 114 |
 | Auth | AUTH | Login, JWT, OAuth, sessions, API keys | 02 | 01 | 001 |
 | Editor | EDIT | Canvas editor, drag-resize, export | 02 | 01 | 001 |
 | AI | AI | GPT-4o, Ideogram, generation pipeline, refinement | 10 | 35 | 052 |
@@ -117,6 +117,8 @@ npm run dev starts:
 > **DEPLOY row added 2026-08-15** — the domain has been in use since EPIC-DEPLOY-01 (2026-07-13, 7 stories) but was never registered in this table or `PROJECT_CONTEXT.yaml`. Real gap, not a routine reconciliation.
 >
 > **AI Next Epic # corrected 2026-08-20** — was showing `08`, but `EPIC-AI-00` through `EPIC-AI-08` already existed (9 epics), so `08` was already stale before `EPIC-AI-09` (Sample Template Format Expansion, Phase 4 Backlog / B-19) was created. Now `10`.
+>
+> **PAY counters corrected 2026-08-21** — this table showed `02/01/001`, but the canonical `PROJECT_CONTEXT.yaml` already had `epic:5, feature:1, story:102` (EPIC-PAY-02/03/04 are reserved placeholders in `PHASE_TRACKER.md` for payment-method UI, Stripe, and API volume pricing respectively — none scaffolded yet; `US-PAY-101` is reserved for EPIC-PAY-02's future stub). This doc's mirror was simply never updated. `EPIC-PAY-05` (Pricing Relaunch, 2026-08-21) consumed epic 5, features 1–4, stories 102–113 — now `06/05/114`.
 >
 > To add a new domain: append a row here, pick an unused 2-6 char UPPERCASE prefix, start all counters at `01` / `001`.
 
