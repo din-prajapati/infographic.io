@@ -234,6 +234,13 @@ ac_coverage:
 
 framework:
   name: "AI-SDLC"
-  version: "0.4.1"
+  version: "0.6.1"
   installed_at: "2026-07-08T07:30:06.691Z"
+  upgraded_at: "2026-08-20T00:00:00.000Z"  # manual correction — `orion migrate` cannot bump this
+    # marker on its own: migrations/ only has v0.2.0.js, so `migrate --apply` finds zero pending
+    # migrations for any project already past 0.4.1 and skips the bump entirely (see lib/migrate.js
+    # runMigrate() — the bump only happens inside the pending.length>0 branch). `orion upgrade`
+    # v0.6.1 also printed "✓ Updated PROJECT_CONTEXT.yaml framework.version" for this run without
+    # actually writing the file (confirmed via `git diff` showing zero changes pre-edit) — a real
+    # bug in upgrade.js's own reporting, not just a migrate gap. Worth filing upstream.
   context_schema_version: 1

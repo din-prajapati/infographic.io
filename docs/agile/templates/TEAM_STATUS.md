@@ -62,6 +62,18 @@ updated: 2026-05-20
 
 ---
 
+## Live Fleet Status
+
+> Auto-updated by `orion fleet` while workers are running (Phase 6 / v0.6.0).
+> Content between the anchor below and the next `---` is overwritten on
+> every dispatch — do not hand-edit this section.
+
+<!-- orion:fleet-live -->
+
+_(no active fleet run)_
+
+---
+
 ## Recent Activity (Auto-Logged)
 
 > Auto-appended by `stop-session-summary` hook at session end.

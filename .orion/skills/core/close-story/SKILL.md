@@ -1,6 +1,6 @@
 ---
 name: close-story
-version: 2.0.0
+version: 2.1.0
 description: >
   Mark a story as Done and cascade all status updates: STORY.md, parent MILESTONE.md,
   parent EPIC.md (with Implementation Update closure entry), TEAM_STATUS.md
@@ -40,7 +40,9 @@ Glob: `{paths.epics}/**/stories/{US-ID}/STORY.md`
 
 ### Step 2 — Verify DoD
 
-Check each item in STORY.md Definition of Done. If any unchecked, STOP and report:
+Run `orion lock-status {US-ID} --format=json` to check the harden lock, then check each
+item in STORY.md Definition of Done plus the lock result below. If any unchecked, STOP
+and report:
 
 ```
 ⛔ Cannot close {US-ID} — DoD incomplete:
@@ -49,9 +51,16 @@ Check each item in STORY.md Definition of Done. If any unchecked, STOP and repor
   ❌ Manual flow not verified
   ✅ PR opened
   ❌ TASKS.md task list not fully checked
+  ❌ Harden lock valid (locked: false — story was never hardened)
 
 Resolve or provide written DoD exception reason.
 ```
+
+**Lock check rule:** treat the lock as an ordinary DoD item, using the same
+STOP/bypass flow as the others:
+- `locked: false` → "❌ Harden lock valid (story was never hardened)"
+- `locked: true, sha_match: false` → "❌ Harden lock valid (story edited since harden — re-run harden or bypass)"
+- `locked: true, sha_match: true` → "✅ Harden lock valid"
 
 **DoD bypass:** If user provides written reason, document in STORY.md:
 ```markdown
@@ -168,4 +177,4 @@ Skip this prompt if the story was routine with no surprises.
 
 ---
 
-*Skill version: 2.0.0 | Updated: 2026-05-21 | Changes: ORION v0.2.0 — EPIC.md log entry, TEAM_STATUS cascade, milestone-closure entries in PHASE_TRACKER*
+*Skill version: 2.1.0 | Updated: 2026-07-13 | Changes: DoD now includes harden-lock validity (via `orion lock-status`) — closing a story whose lock is absent or stale requires the same written-exception bypass as other DoD items*

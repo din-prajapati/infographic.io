@@ -1,3 +1,10 @@
+---
+title: F-{DOMAIN}-{NN} — {Feature Name}
+type: template
+tags: [orion, template]
+updated: 2026-05-20
+---
+
 # F-{DOMAIN}-{NN} — {Feature Name}
 
 > **Epic:** [EPIC-{DOMAIN}-{NN}](../../EPIC.md)
@@ -14,17 +21,16 @@
 
 **Why:** {Business reason — what problem it solves or what opportunity it captures}
 
-**Who:** {Primary persona — e.g., "solo real estate agent", "brokerage admin", "API developer"}
+**Who:** {Primary persona — be specific}
 
-**Success signal:** {How we know this feature is working — e.g., "User can generate an infographic with intent detection in < 3s"}
+**Success signal:** {How we know this feature is working in production}
 
 ---
 
 ## Milestones in this Feature
 
 | Milestone | Goal | Target | Status | Stories |
-|-----------|------|--------|--------|---------|
-| [M-{DOMAIN}-{NN}-{slug}](../../milestones/M-{DOMAIN}-{NN}-{slug}.md) | {one-liner} | YYYY-MM-DD | 🔲 | US-{NNN}, US-{NNN} |
+|-----------|------|--------|:------:|---------|
 | [M-{DOMAIN}-{NN}-{slug}](../../milestones/M-{DOMAIN}-{NN}-{slug}.md) | {one-liner} | YYYY-MM-DD | 🔲 | US-{NNN} |
 
 ---
@@ -32,16 +38,14 @@
 ## Stories in this Feature
 
 | Story ID | Title | Milestone | Size | Status | PR |
-|----------|-------|-----------|------|--------|----|
+|----------|-------|-----------|:----:|:------:|:--:|
 | [US-{DOMAIN}-{NNN}](../../stories/US-{DOMAIN}-{NNN}/STORY.md) | {title} | M-{NN}-{slug} | M | 🔲 | — |
-| [US-{DOMAIN}-{NNN}](../../stories/US-{DOMAIN}-{NNN}/STORY.md) | {title} | M-{NN}-{slug} | M | 🔲 | — |
-| [US-{DOMAIN}-{NNN}](../../stories/US-{DOMAIN}-{NNN}/STORY.md) | {title} | M-{NN}-{slug} | S | 🔲 | — |
 
 ---
 
 ## Out of Scope (Feature Level)
 
-- {Explicit thing this feature does NOT implement — tells AI what to ignore}
+- {Explicit thing this feature does NOT implement}
 - {Another explicit exclusion}
 
 ---
@@ -60,7 +64,7 @@
 
 - [ ] All milestones in this feature are ✅ Done
 - [ ] All stories are ✅ Done (STORY.md status + PR merged)
-- [ ] Feature is demonstrable end-to-end on `localhost:5000`
+- [ ] Feature is demonstrable end-to-end locally
 - [ ] Verified on staging (if applicable)
 - [ ] EPIC.md feature row updated to ✅ Done
 - [ ] PHASE_TRACKER.md updated

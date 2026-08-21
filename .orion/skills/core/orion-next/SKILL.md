@@ -142,6 +142,16 @@ For each storyId listed in `blockedBy[]`:
 - Check that story's status in the milestone table
 - If status is NOT `✅ Done` → this story is genuinely blocked
 
+> **Doc-debt note (Phase 6 / v0.6.0):** `.orion/bin/lib/concurrency.js`
+> (US-FLEET-001) now implements a **generalized, full-graph** version of this
+> same file-overlap idea for multi-story fleet dispatch — full N-vs-N
+> transitive-overlap graph analysis over every candidate story, versus this
+> skill's prose algorithm below, which only ever compares one story
+> ("IMPLEMENT NOW") against the rest (a star topology). The two are **not**
+> kept in lock-step automatically: a future change to either's file-overlap
+> semantics must be manually mirrored in the other. Reconciling them into a
+> single implementation is explicitly out of scope for this phase.
+
 ### Step 4 — Classify Into Buckets
 
 Process stories in ascending `order` within `active`:
@@ -185,13 +195,13 @@ Omit any action that has no applicable story.
 📋  orion next — {milestone-id}: {milestone title}
 
   ✅ IMPLEMENT NOW:
-     {story-id}  {title}  [{size}]  [locked ✅, no file conflicts]
+     {story-id}  {title}  [{size}]  [locked ✅, backend: {backendId}, no file conflicts]
        → orion run implement-story {story-id}
 
   ⚡ PARALLEL-ELIGIBLE (no file overlap with {implement-now-id}):
-     {story-id}  {title}  [{size}]  [locked ✅]
+     {story-id}  {title}  [{size}]  [locked ✅, backend: {backendId}]
        → orion run implement-story {story-id}
-     {story-id}  {title}  [{size}]  [locked ✅]
+     {story-id}  {title}  [{size}]  [locked ✅, backend: {backendId}]
        → orion run implement-story {story-id}
 
   🔧 NEEDS HARDENING FIRST:
@@ -217,6 +227,19 @@ Omit any action that has no applicable story.
      3. orion run harden {needs-hardening-id}
 ```
 
+**Backend annotation (Phase 6 / v0.6.0):** `{backendId}` is whatever
+`resolveBackend('implement-story', manifest)` (from `.orion/bin/lib/backend-router.js`)
+returns for `.backendId` — this is what `orion fleet` will actually dispatch that
+story to. When `resolveBackend()` returns an error instead (e.g.
+`no-backend-available`), show the fallback wording instead of the raw error code:
+```
+[locked ✅, backend: unavailable — see 'orion doctor', no file conflicts]
+```
+This annotation is scoped ONLY to IMPLEMENT NOW and PARALLEL-ELIGIBLE — NEEDS
+HARDENING and BLOCKED entries never show a `backend:` annotation (locked or not,
+a story that isn't dispatchable yet has no meaningful backend resolution to report,
+and showing one would misleadingly imply it's ready to run).
+
 **Empty-bucket rules:**
 - If IMPLEMENT NOW is empty and PARALLEL-ELIGIBLE is empty: print
   `  (No stories are locked and ready — run hardening first)`
@@ -237,11 +260,11 @@ When a story has a lock file but SHA mismatch, show the annotation inline:
 📋  orion next — M-AUTH-01: Login & Session Hardening
 
   ✅ IMPLEMENT NOW:
-     US-AUTH-031  User login endpoint    [M]  [locked ✅, no file conflicts]
+     US-AUTH-031  User login endpoint    [M]  [locked ✅, backend: claude-cli, no file conflicts]
        → orion run implement-story US-AUTH-031
 
   ⚡ PARALLEL-ELIGIBLE (no file overlap with US-AUTH-031):
-     US-CORE-005  Health check route     [S]  [locked ✅]
+     US-CORE-005  Health check route     [S]  [locked ✅, backend: claude-cli]
        → orion run implement-story US-CORE-005
 
   🔧 NEEDS HARDENING FIRST:
@@ -279,19 +302,22 @@ When a story has a lock file but SHA mismatch, show the annotation inline:
 | Two locked stories share the same lowest order | Both become IMPLEMENT NOW; note they were designed as parallel by the milestone author |
 | TASKS.md "Primary files touched" absent AND STORY.md section absent | Assume empty file set — story has no known overlaps; mark `[file overlap unknown]` |
 
-## Connection to Phase 5 (Fleet)
+## Connection to Fleet (Phase 6)
 
 The IMPLEMENT NOW and PARALLEL-ELIGIBLE lists produced by `orion next` are exactly
-the input the Phase 5 fleet reads when dispatching parallel implementation agents:
+the input `orion fleet` reads when dispatching parallel implementation agents:
 
 ```bash
-orion fleet --milestone=M-AUTH-01 --max=3
+orion fleet --milestone=M-AUTH-01 --max=3 --max-cost-usd=5
 ```
 
 The fleet calls the same lock-state and file-overlap logic `orion next` already
-uses — no extra wiring. `harden` certifies stories; `orion next` schedules them;
-the fleet executes them. A story that isn't in IMPLEMENT NOW or PARALLEL-ELIGIBLE
-will never be handed to a fleet agent.
+uses (generalized to full N-vs-N graph analysis by `lib/concurrency.js` — see the
+doc-debt note above Step 4), plus a cost pre-flight (`resolveBackend()` +
+`estimateCost()` from `lib/backend-router.js`) before dispatching anything.
+`harden` certifies stories; `orion next` schedules them and shows which backend
+each one will run on; the fleet executes them. A story that isn't in IMPLEMENT
+NOW or PARALLEL-ELIGIBLE will never be handed to a fleet agent.
 
 ---
 

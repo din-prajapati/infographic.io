@@ -5,19 +5,19 @@
 # Records a one-line marker of repo state, to a GITIGNORED log, and only when
 # that state has actually changed since the previous turn.
 #
-# WHY THIS LOOKS DIFFERENT FROM WHAT YOU MIGHT EXPECT (fixed 2026-08-10):
-# This hook used to append four lines to docs/agile/TEAM_STATUS.md on every
-# Stop. Stop fires once per assistant turn, NOT once per session, so a single
-# working session produced dozens of near-identical entries — including
-# "(no commits this session)" stubs carrying no information at all. The result:
-#
-#   * 490 stub entries, ~1,992 of TEAM_STATUS.md's 2,499 lines — 80% of a file
-#     that is supposed to be the team's shared narrative
-#   * a permanently dirty working tree on a TRACKED doc, which blocked
-#     `git checkout` and caused rebase conflicts on real PRs more than once
+# WHY THIS LOOKS DIFFERENT FROM A NAIVE "append a summary" HOOK:
+# An earlier version of this hook appended four lines to docs/agile/TEAM_STATUS.md
+# on every Stop. Stop fires once per assistant turn, NOT once per session, so a
+# single working session produced dozens of near-identical entries — including
+# "(no commits this session)" stubs carrying no information at all. Observed in
+# production on a consumer project: 490 stub entries, ~1,992 of TEAM_STATUS.md's
+# 2,499 lines — 80% of a file that is supposed to be the team's shared narrative —
+# plus a permanently dirty working tree on a TRACKED doc, which blocked
+# `git checkout` and caused rebase conflicts on real PRs more than once.
 #
 # Three changes fix it:
-#   1. Write to .orion/state/ (gitignored) instead of a tracked document
+#   1. Write to .orion/state/ (gitignored by `orion init`'s appendGitignore()) —
+#      not a tracked document
 #   2. Deduplicate on branch + HEAD, so unchanged turns write nothing
 #   3. Never record "no commits" — absence of change is not an event
 #
@@ -45,7 +45,10 @@ LAST_COMMIT=$(git -C "$PROJECT_DIR" log --oneline -n 1 2>/dev/null || echo "")
 # "(no commits this session)" here, which is the purest form of the noise.
 [ -n "$LAST_COMMIT" ] || exit 0
 
-BRANCH=$(git -C "$PROJECT_DIR" branch --show-current 2>/dev/null || echo "detached")
+BRANCH=$(git -C "$PROJECT_DIR" branch --show-current 2>/dev/null)
+# `branch --show-current` exits 0 with EMPTY output on a detached HEAD (not a
+# non-zero exit) -- `||` alone never catches that. Explicit empty check instead.
+BRANCH="${BRANCH:-detached}"
 SIG="$BRANCH|$LAST_COMMIT"
 
 # Unchanged since the previous turn → stay silent. This is what collapses a

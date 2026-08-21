@@ -8,7 +8,7 @@
 # Docs:    https://github.com/din-prajapati/orion-ai-sdlc
 
 version: 1
-orion: "0.4.0"
+orion: "0.6.1"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # PROJECT — identity of the host project.
@@ -40,17 +40,25 @@ adapters:
       session_start: native      # Claude Code fires SessionStart natively
       per_skill_stubs: false     # opt-in: generate one 3-line stub per skill for per-skill autocomplete
   cursor:
-    enabled: false               # enable in Phase 6: orion install --tools=cursor
+    enabled: true                # Cursor adapter — ships in v0.5.0
     install_dir: ".cursor"
     options:
       session_start: first-turn-marker
       per_skill_stubs: false
   codex:
-    enabled: false               # enable in Phase 7: orion install --tools=codex
+    enabled: true                # Codex adapter — ships in v0.5.0
     install_dir: ".codex"
     options:
       session_start: first-turn-marker
       agents_md_target: "AGENTS.md"
+      per_skill_stubs: false
+  gemini:
+    enabled: true                # Gemini CLI adapter — US-CLI-007
+    install_dir: ".gemini"
+    naming:
+      router_name: "orion"       # .gemini/commands/orion.toml -> /orion in the IDE
+    options:
+      session_start: first-turn-marker  # no confirmed native SessionStart event
       per_skill_stubs: false
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -336,7 +344,7 @@ skills:
       Mark a story Done and cascade all status updates: STORY.md, MILESTONE.md,
       EPIC.md (implementation log), TEAM_STATUS.md, PHASE_TRACKER.md,
       AGILE_INDEX.md. Checks DoD before closing.
-    tools: [Read, Write, Edit, Glob, Grep]
+    tools: [Read, Write, Edit, Glob, Grep, Bash]
     triggers:
       - "close story"
       - "mark done"
@@ -475,6 +483,16 @@ intent_map:
     after-file-edit:    { surface: native, event: PostToolUse, matcher: "Edit|Write|Apply" }
     session-start:      { surface: first-turn-marker }
     session-stop:       { surface: native, event: Stop }
+  gemini:
+    # matcher values use ORION's internal Read/Write/Edit/Bash/Glob/Grep vocabulary —
+    # gemini.js's genSettings() remaps to Gemini's native tool names
+    # (read_file/write_file/replace/run_shell_command/glob/grep_search) at generate
+    # time, unlike codex's matcher above which is already hand-remapped to "Apply".
+    git.pre-push:       { surface: husky,  file: .husky/pre-push }
+    before-file-edit:   { surface: native, event: PreToolUse,  matcher: "Edit|Write" }
+    after-file-edit:    { surface: native, event: PostToolUse, matcher: "Edit|Write" }
+    session-start:      { surface: first-turn-marker }
+    session-stop:       { surface: native, event: Stop }
 
 # ─────────────────────────────────────────────────────────────────────────────
 # RULES — canonical markdown in .orion/rules/; compiled per IDE by `orion install`.
@@ -484,22 +502,22 @@ rules:
   - source: rules/AGILE.md
     scope:
       globs: ["docs/agile/**", "**/STORY.md", "**/EPIC.md", "**/MILESTONE.md", "**/TASKS.md"]
-    targets: [claude-code, cursor, codex]
+    targets: [claude-code, cursor, codex, gemini]
 
   - source: rules/DOMAIN.md
     scope:
       globs: ["src/**", "app/**", "lib/**"]
-    targets: [claude-code, cursor, codex]
+    targets: [claude-code, cursor, codex, gemini]
 
   - source: rules/SECURITY.md
     scope:
       globs: ["**/.env*", "**/secrets/**", "src/auth/**", "**/middleware/**"]
-    targets: [claude-code, cursor, codex]
+    targets: [claude-code, cursor, codex, gemini]
 
   - source: rules/OBSERVABILITY.md
     scope:
       globs: ["src/**/*.ts", "src/**/*.py", "src/**/*.js"]
-    targets: [claude-code, cursor, codex]
+    targets: [claude-code, cursor, codex, gemini]
 
 # ─────────────────────────────────────────────────────────────────────────────
 # AGENTS — role definitions. Referenced by skills[].agents.
@@ -535,10 +553,100 @@ profiles:
     include_rules: [AGILE]
 
 # ─────────────────────────────────────────────────────────────────────────────
-# CLI — runtime settings for `orion run`, `orion fleet`, etc.
+# CLI_AGENT_ENGINES — registry of AI coding-agent CLI tools `orion fleet` /
+# `orion run` can dispatch to (was `backends:` — renamed in US-FLEET-008; see
+# that story's card for the naming-convention reasoning: "backend" tried to
+# mean provider + registry-key + interface-type all at once, and needed a
+# DEFAULT_TO_REGISTRY translation table just to reconcile a short id like
+# `claude` with its "real" key `claude-cli`. Keys below ARE the plain names —
+# no more short-id/registry-id split).
+#
+# Phase 6/7 scope boundary: CLI agent engines only (claude, codex, gemini).
+# `mode: api` registry entries and the full 7-provider registry are Phase 8
+# (see docs/proposals/ORION-LLM-ROUTER-DESIGN.md §5/§14).
+#
+# `models:` (US-FLEET-009) is optional per engine — `default:` names the model
+# used when `llm.model`/`--model=` isn't set to something more specific, and
+# `pricing:` there overrides the engine-level `pricing:` above for a known
+# model name. Every number here (engine-level AND per-model) is a flat
+# ESTIMATE — not verified against real provider invoices — used purely for
+# the `orion fleet --max-cost-usd` pre-flight guard, never for billing.
+# codex's numbers are an even rougher placeholder: ORION has no live codex
+# CLI install to check actual list pricing against.
+# ─────────────────────────────────────────────────────────────────────────────
+cli_agent_engines:
+  claude:
+    mode: cli
+    bin: claude
+    args: [--print, --output-format, json]
+    detect: "which claude"
+    pricing:
+      input_per_mtok: 3.00        # ESTIMATE — unverified, Sonnet-tier list price
+      output_per_mtok: 15.00      # ESTIMATE — unverified
+    models:
+      default: claude-sonnet-4-6
+      pricing:
+        claude-sonnet-4-6: { input_per_mtok: 3.00,  output_per_mtok: 15.00 }  # ESTIMATE
+        claude-opus-4-7:   { input_per_mtok: 15.00, output_per_mtok: 75.00 } # ESTIMATE
+
+  codex:
+    mode: cli
+    bin: codex
+    args: [run, --output-format, json]
+    detect: "which codex"
+    pricing:
+      input_per_mtok: 1.50        # ESTIMATE — unverified, no live codex install to check
+      output_per_mtok: 6.00       # ESTIMATE — unverified
+    models:
+      default: gpt-5-codex
+      pricing:
+        gpt-5-codex: { input_per_mtok: 1.50, output_per_mtok: 6.00 }  # ESTIMATE — unverified
+
+  gemini:
+    mode: cli
+    bin: gemini
+    args: [--output-format, json, --approval-mode=yolo, -p]
+    detect: "which gemini"
+    pricing:
+      # ESTIMATE — unverified, no live gemini install to check. Gemini's own
+      # --output-format json output carries no dollar figure at all (unlike
+      # claude's total_cost_usd) — these numbers exist only so orion fleet's
+      # pre-flight cost gate has something to multiply estimated tokens by.
+      input_per_mtok: 1.25        # ESTIMATE — unverified, ballpark Gemini 2.5 Pro list price
+      output_per_mtok: 5.00       # ESTIMATE — unverified
+    models:
+      default: gemini-2.5-pro
+      pricing:
+        gemini-2.5-pro: { input_per_mtok: 1.25, output_per_mtok: 5.00 }  # ESTIMATE — unverified
+
+# ─────────────────────────────────────────────────────────────────────────────
+# LLM — routing settings for `orion run`, `orion fleet`, etc. (was split across
+# `cli.default_backend` / `cli.fleet.skill_affinities` — moved here in
+# US-FLEET-008 since "which AI agent engine runs this" isn't a CLI-only concern
+# once Phase 8's `mode: api` dispatch exists). Levels 1-2 of the 4-level routing
+# chain (docs/proposals/ORION-LLM-ROUTER-DESIGN.md §3/§8) live here; Levels 3-4
+# (per-domain, per-story) are still Phase 8. `cli_agent_engine`/`skill_overrides`
+# can also be overridden per-invocation, never persisted, via `orion fleet`/
+# `orion run`'s `--cli-agent-engine=`/`--model=` flags (US-FLEET-009, "Level 0").
+# ─────────────────────────────────────────────────────────────────────────────
+llm:
+  cli_agent_engine: claude        # claude | codex | api  (was cli.default_backend)
+  # model: claude-sonnet-4-6      # optional — omit to let the CLI agent engine
+                                   # self-select its own model. When set, must
+                                   # match a key under that engine's models:.
+  skill_overrides:                 # was cli.fleet.skill_affinities
+    implement-story:
+      cli_agent_engine: claude
+    harden:
+      cli_agent_engine: claude
+    _default:
+      cli_agent_engine: claude
+
+# ─────────────────────────────────────────────────────────────────────────────
+# CLI — runtime settings for `orion run`, `orion fleet`, etc. Unrelated to
+# routing (that moved to `llm:` above) — these are execution/retention knobs.
 # ─────────────────────────────────────────────────────────────────────────────
 cli:
-  default_backend: claude         # claude | codex | api
   fleet:
     max_parallel: 3               # safe default; use --max=5 for aggressive
   replay:

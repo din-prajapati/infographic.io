@@ -29,32 +29,17 @@ jobs:
           PR_TITLE: ${{ github.event.pull_request.title }}
           PR_BODY:  ${{ github.event.pull_request.body }}
         run: |
-          # A story is "closed by" this PR only if it is named in the TITLE
-          # (this repo's convention is "[US-XXX-NNN] ..." or "... — US-XXX-NNN")
-          # or on an explicit Closes:/Fixes:/Resolves: line in the body.
-          #
-          # Scraping the whole body treats every passing mention as a closure.
-          # That has misfired repeatedly: PR #20's body discussed US-DESIGN-012
-          # only to explain which stale tests were retired, and PR #19/#21
-          # mentioned the superseded US-AI-041 purely as context — all three were
-          # reported as "closed". Prose is context, not intent.
-          TITLE_IDS=$(printf '%s' "$PR_TITLE" | grep -oE 'US-[A-Z]+-[0-9]+' || true)
-          BODY_IDS=$(printf '%s' "$PR_BODY" \
-            | grep -iE '^[[:space:]]*(closes|fixes|resolves)[[:space:]]*:?[[:space:]]' \
-            | grep -oE 'US-[A-Z]+-[0-9]+' || true)
-          IDS=$(printf '%s\n%s' "$TITLE_IDS" "$BODY_IDS" \
+          IDS=$(printf '%s\n%s' "$PR_TITLE" "$PR_BODY" \
             | grep -oE 'US-[A-Z]+-[0-9]+' | sort -u | tr '\n' ' ')
-          IDS="${IDS%% }"
           echo "ids=$IDS" >> "$GITHUB_OUTPUT"
-          echo "Closing: ${IDS:-<none>}"
-          echo "(mentions elsewhere in the body are treated as context, not closure)"
+          echo "Found: $IDS"
 
       - name: Cascade status updates
         if: steps.ids.outputs.ids != ''
         env:
           PR_NUM: ${{ github.event.pull_request.number }}
           IDS: ${{ steps.ids.outputs.ids }}
-        run: bash .orion/hooks/cascade-close-story.sh
+        run: bash .claude/hooks/cascade-close-story.sh
 
       - name: Commit cascade
         if: steps.ids.outputs.ids != ''

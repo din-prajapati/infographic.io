@@ -2575,3 +2575,19 @@ Worked the prior session's own "Open" list top to bottom, plus everything it sur
 **Addendum, same day — US-AI-031/031b closed, EPIC-AI-06 now fully done.** The Ideogram account was topped up with credit later the same session. Live-verified both stories' last gated AC1 with a real photo (`client/src/assets/images/carousel/property-1.jpg`, an existing product asset — a distinctive kitchen interior): the composition is unmistakably the same kitchen (cabinets, counters, skylights, wine rack, bar stools all match), and canonical values (`$475K`, `456 Oak Avenue, Austin TX`) rendered correctly as editable elements over it. Real finding along the way: extraction itself found `blocksDetected: 0` on this photo-backed composition — not a bug, the same "real photos often carry no AI-legible baked text" pattern US-AI-051 already established, and the layout-engine fallback (built for exactly this case) carried the canonical values correctly regardless. One test-authoring mistake caught and fixed before the real assertion could run: `handleEditVariation` only triggers the compose/extraction path when `renderMode==='editable'` AT CLICK TIME, not at generate time — the first attempt generated flat and never toggled Editable, so the click silently landed on an unrelated canvas element instead of erroring. New spec: `e2e/us-ai-031-real-photo-composition.spec.ts`. **EPIC-AI-06 has no open stories or milestones left.**
 
 **State at end of session:** 20+ commits sit locally on `main`, none pushed to `origin` yet. Gate 1 green throughout (backend 368/368, client 229/229). Open: US-LAUNCH-005 AC5/6 (real-money go-ahead needed), BL-07/BL-10 (both deliberately deferred, low urgency), EPIC-KIT-01 (not started), Phase 0's "3 HUMAN deploy tasks" claim in `PHASE_TRACKER.md` looks itself stale given live staging/production evidence throughout this session — flagged, not independently re-verified this pass.
+
+<!-- ai-sdlc:session-log -->
+**2026-08-18 17:27** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-08-18 17:30** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-08-18 17:34** · branch: `main`
+  - Last commit: (no commits this session)
+
+<!-- ai-sdlc:session-log -->
+**2026-08-18 17:52** · branch: `main`
+  - Last commit: (no commits this session)

@@ -21,9 +21,14 @@ You are routing an ORION skill invocation. Do exactly this:
 3. **Resolve the canonical SKILL.md.** It lives at `.orion/<source>/SKILL.md`,
    where `<source>` is `skills[i].source` from the matching manifest entry.
 
-4. **Honor `hard_block`.** If the manifest entry has `hard_block: [...]`, and any
-   listed skill has not passed for this story (check `.orion/state/_replay/`),
-   refuse and explain which gate must pass first.
+4. **Honor `hard_block`.** If the manifest entry has `hard_block: [...]`, for each
+   listed skill check whether it has passed for this story (story-id = first forwarded
+   argument):
+   - If the blocker skill has `lock_required: true` in orion.yaml, read
+     `.orion/state/locks/<story-id>.json` (the authoritative lock record). If the file
+     is absent, refuse.
+   - Otherwise, check `.orion/state/_replay/` for a successful invocation record.
+   If any required gate has not passed, refuse and explain which gate must pass first.
 
 5. **Read the canonical SKILL.md.** Follow every instruction in it, substituting
    the forwarded arguments wherever the skill body references `$ARGUMENTS`.

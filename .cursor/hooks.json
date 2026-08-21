@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "hooks": {
+    "beforeReadFile": [
+      {
+        "command": "bash ${CURSOR_PROJECT_DIR}/.orion/hooks/pre-edit-env-secret.sh"
+      },
+      {
+        "command": "bash ${CURSOR_PROJECT_DIR}/.orion/hooks/pre-edit-schema-warn.sh"
+      }
+    ],
+    "afterFileEdit": [
+      {
+        "command": "bash ${CURSOR_PROJECT_DIR}/.orion/hooks/post-edit-tasks-sync.sh"
+      },
+      {
+        "command": "bash ${CURSOR_PROJECT_DIR}/.orion/hooks/post-edit-story-close-check.sh"
+      }
+    ],
+    "stop": [
+      {
+        "command": "bash ${CURSOR_PROJECT_DIR}/.orion/hooks/stop-session-summary.sh"
+      }
+    ]
+  }
+}

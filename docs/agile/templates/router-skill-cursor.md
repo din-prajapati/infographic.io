@@ -4,7 +4,8 @@ name: {NAME}
 description: >
   ORION dispatcher. Triggers on any ORION workflow phrase — {TRIGGERS_CONCAT}.
   Recognizes any skill name listed in .orion/orion.yaml.skills[].name.
-tools: [{TOOLS_LIST}]
+globs: []
+disable-model-invocation: false
 ---
 
 # ORION dispatcher
