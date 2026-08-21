@@ -29,6 +29,7 @@
 | B-15 | [Mobile App](#b-15--mobile-app) | Mobile | 10–14 wks | Medium | PRODUCT_ROADMAP §2.2 |
 | B-16 | [EPIC-AI-08 — Quality Tiers & Campaign Mode UI](#b-16--m-ai-07--quality-tiers--campaign-mode-ui) | AI | ~8-10h | Medium | EPIC-AI-08 (moved from EPIC-AI-02) |
 | B-17 | [EPIC-AI-08 — M-AI-02 Ideogram → Nano Banana image-model swap](#b-17--m-ai-02--ideogram--nano-banana-image-model-swap) | AI | ~6-8h | Medium | EPIC-AI-08 (moved from EPIC-AI-00, 2026-08-04) |
+| B-19 | [EPIC-AI-09 — Sample Template Format Expansion](#b-19--epic-ai-09--sample-template-format-expansion) | AI | ~27-36h | Medium | EPIC-AI-09 (added 2026-08-20, likely prerequisite/trigger-adjacent to EPIC-KIT-01) |
 
 ---
 
@@ -93,6 +94,35 @@ Swap image generation from Ideogram to Nano Banana Flash (FREE/SOLO) and Pro (TE
 | [US-AI-004](EPIC-AI-08/stories/US-AI-004/STORY.md) | Nano Banana Pro for TEAM/BROKERAGE (depends on 003) |
 
 **⚠️ Half of this already shipped — do not restart from zero.** PRs #9/#10 (2026-07-03) delivered the **LLM/text** routing to Gemini 2.5 Flash, and it is live. What remains is only the **image** path. Today `nano-banana-pro` is an *alias that resolves to `ideogram-4`* (`api/src/config/image-generation.config.ts:34`) and `AiOrchestrator` still injects `IdeogramService`, so the name is in the codebase but the migration is not. Each story card records which half landed.
+
+---
+
+### B-19 — EPIC-AI-09 — Sample Template Format Expansion
+
+**Epic:** [EPIC-AI-09](EPIC-AI-09/EPIC.md)
+**Milestone:** [M-AI-19-format-expansion](EPIC-AI-09/milestones/M-AI-19-format-expansion.md)
+**Added:** 2026-08-20, found during a format-coverage audit while wiring real images into the 5
+existing sample templates
+**Prereq:** None technical. Product-level relevance to `EPIC-KIT-01` — see the epic's own
+"Relationship to EPIC-KIT-01" section; not a verified hard dependency since Kit hasn't been built
+yet, but Kit's own Goal statement names "WhatsApp card" as a deliverable format and there is
+currently no template for WhatsApp at all.
+**Effort:** ~27–36h — XL by this project's own sizing rule, must split into ~5–6 stories
+(by platform group) before implementation starts. Stories deliberately not drafted yet.
+
+Only 5 of the 23 formats in `formatTaxonomy.ts` have an admin_curated canvas template today
+(Instagram Story, Instagram Post, Print Flyer, Email Header, Feature Sheet). The other 18 —
+including every Facebook, WhatsApp, and LinkedIn format — have zero. This is very likely why the
+Format Picker's template-suggestion step was removed in an earlier story (its own comment: picking
+a format there "meant rendering a grid that was empty for every format, which flashed a skeleton
+and then vanished") — the empty-grid symptom was fixed, not the underlying gap.
+
+Photo sourcing is already mostly solved — see
+[`docs/design/SAMPLE_TEMPLATE_PHOTO_PROMPTS.md`](../../../design/SAMPLE_TEMPLATE_PHOTO_PROMPTS.md)
+(7 new prompts, not 18, via a shared reusable photo library) — several already generated into
+`client/public/template-assets/{us,in}/`. The real remaining effort is canvas **layout design**
+(positioning 13–29 elements per template, matching each format's real-world usage convention), not
+image generation.
 
 ---
 
