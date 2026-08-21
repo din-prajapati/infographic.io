@@ -1,0 +1,26 @@
+flowchart LR
+  subgraph Inputs["User / External"]
+    A["Property photo upload\n(infographics.controller.ts)"]
+    B["Ideogram generate/remix/\nlayerize-text response"]
+  end
+
+  subgraph Domain["INFRA: Durable Asset Storage"]
+    S["StorageService\napi/src/modules/storage/"]:::new
+    R2[("Cloudflare R2 bucket\nS3-compatible")]:::new
+  end
+
+  subgraph Existing["Existing AI-generation pipeline"]
+    IG["ideogram.service.ts"]:::good
+    LE["layer-extraction.service.ts\n(composedDesigns cache, US-AI-048)"]:::good
+    DB[("Infographic.imageUrl\nPostgres / Neon")]:::good
+  end
+
+  A -->|"was: os.tmpdir()\nnow: durable"| S
+  B --> IG --> S
+  IG --> LE --> S
+  S -->|upload| R2
+  S -->|owned URL| DB
+  R2 -->|"assets.buildographic.com\n(Cloudflare CDN, zero egress)"| Client["Browser"]
+
+  classDef good fill:#0b3b2e,stroke:#14532d,color:#ecfdf5;
+  classDef new  fill:#1e3a5f,stroke:#2563eb,color:#eff6ff;

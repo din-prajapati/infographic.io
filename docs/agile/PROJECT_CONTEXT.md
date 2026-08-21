@@ -104,7 +104,7 @@ npm run dev starts:
 | Editor | EDIT | Canvas editor, drag-resize, export | 02 | 01 | 001 |
 | AI | AI | GPT-4o, Ideogram, generation pipeline, refinement | 08 | 35 | 052 |
 | Usage | USAGE | Usage tracking, analytics, limit alerts | 01 | 01 | 001 |
-| Infrastructure | INFRA | Railway, Sentry, DB migrations, CI/CD | 02 | 01 | 001 |
+| Infrastructure | INFRA | Railway, Sentry, DB migrations, CI/CD | 03 | 01 | 004 |
 | Organisation | ORG | Teams, workspace, multi-user, brand kit | 01 | 01 | 001 |
 | API (B2B) | API | REST API, key management, webhooks, portal | 01 | 01 | 001 |
 | Testing | TEST | Test infrastructure, coverage, QA automation | 01 | 01 | 001 |
