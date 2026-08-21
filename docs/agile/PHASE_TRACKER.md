@@ -115,7 +115,7 @@ Each phase requires a gate decision before the next phase starts:
 | Gate | Criteria | Unlocks |
 |------|----------|---------|
 | **Beta live** | M-LAUNCH-01 closed (legal pages · email · password reset · beta flag) + M-OBS-01 (Sentry) | Real agents on production, zero revenue claims |
-| **Revenue on** | ✅ EPIC-AI-06 shipped (M-AI-18 closed 2026-08-15, all 10 stories) + M-LAUNCH-02 closed (RazorPay live · receipts · BROKERAGE gate · metering · editable monetization) — **6/7 done, only US-LAUNCH-005 AC5/6 (real ₹ transaction) remain, intentionally not run** | `BETA_MODE=false` — first real ₹, one story away |
+| **Revenue on** | ✅ EPIC-AI-06 shipped (M-AI-18 closed 2026-08-15, all 10 stories) + M-LAUNCH-02 closed (RazorPay live · receipts · BROKERAGE gate · metering · editable monetization) — **6/7 done, only US-LAUNCH-005 AC5/6 (real ₹ transaction) remain, intentionally not run** + **EPIC-INFRA-02** (durable asset storage, added 2026-08-19, not started) + **EPIC-PAY-05** (pricing relaunch, added 2026-08-21, not started — US-LAUNCH-005 AC6 should run against relaunched prices, not old beta prices) | `BETA_MODE=false` — real ₹ transaction gated on all three closing |
 
 ### Planned Epics (priority order)
 
@@ -128,6 +128,8 @@ Each phase requires a gate decision before the next phase starts:
 | 5 | [EPIC-KIT-01](epics/phase-1-ai-core/EPIC-KIT-01/EPIC.md) | KIT | Listing Marketing Kits — multi-format batch, lifecycle, recurring content, compliance | 🔲 0/6, not started |
 | ∥ | [EPIC-OBS-00](epics/phase-1-ai-core/EPIC-OBS-00/EPIC.md) | INFRA | Sentry observability — M-OBS-01 belongs with the beta gate (first user bug must arrive via Sentry, not WhatsApp) | 🔲 0/4, not started |
 | ∥ | [EPIC-DEPLOY-01](epics/phase-1-ai-core/EPIC-DEPLOY-01/EPIC.md) | INFRA | Deployment velocity (CI gate, preview envs, feature flags, migrations, progressive delivery) — explicitly non-blocking to beta/revenue, runs rolling | 🟡 1/7 Done — US-DEPLOY-007 (client test infra), an unplanned addition that became a hard blocker for US-AI-032, closed 2026-08-15 |
+| 6 | [EPIC-INFRA-02](epics/phase-1-ai-core/EPIC-INFRA-02/EPIC.md) | INFRA | Durable Asset Storage (Cloudflare R2) — **revenue-on gate blocker, added 2026-08-19** | 🔲 0/3, not started |
+| 7 | [EPIC-PAY-05](epics/phase-1-ai-core/EPIC-PAY-05/EPIC.md) | PAY | Pricing Relaunch — Founding Customer launch, feasibility-checked 75-80% margin, generic campaign/discount architecture — **added 2026-08-21, real ₹ transaction should run against relaunched prices** | 🔲 0/12, not started |
 
 > Former Phase 1 scope (usage dashboard, payment method UI, EPIC-AI-01 conversational core) moved to Phase 2 — polish follows revenue.
 
@@ -148,6 +150,10 @@ Each phase requires a gate decision before the next phase starts:
 | EPIC-USAGE-01 | Usage | Monthly chart, cost breakdown, usage alerts — moved from old Phase 1 | 🔲 Plan |
 | EPIC-PAY-02 | Payments | Payment method management UI — moved from old Phase 1 | 🔲 Plan |
 | EPIC-PAY-03 | Payments | Stripe activation + billing portal | 🔲 Plan |
+
+> **Note (2026-08-21):** `EPIC-PAY-05` (Pricing Relaunch, Phase 1) is a distinct epic from these two
+> placeholders — it took the next free counter number rather than either of these, which remain
+> reserved for their original, different scopes. See Phase 1's epic table above.
 
 ---
 

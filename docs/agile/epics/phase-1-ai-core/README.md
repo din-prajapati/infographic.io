@@ -10,7 +10,9 @@
 |---|------|-------|--------|--------|
 | 1 | [EPIC-AI-02](EPIC-AI-02/EPIC.md) — dependency stories first | US-AI-010 photo upload + US-AI-011 format selector (rest deprioritized to Phase 2) | 🔲 Not Started | ~10h |
 | 2 | [EPIC-AI-06](EPIC-AI-06/EPIC.md) | Hybrid Real-Photo Pipeline (real photo background · editable overlay · synthetic guard) | 🔲 Not Started | ~15–25h |
-| 3 | [EPIC-KIT-01](EPIC-KIT-01/EPIC.md) | Listing Marketing Kits (multi-format batch · lifecycle · recurring content · compliance) | 🔲 Not Started | ~21–31h |
+| 3 | [EPIC-INFRA-02](EPIC-INFRA-02/EPIC.md) | Durable Asset Storage (Cloudflare R2) — revenue-on gate blocker | 🔲 Not Started | ~1 day |
+| 4 | [EPIC-PAY-05](EPIC-PAY-05/EPIC.md) | Pricing Relaunch (Founding Customer launch, campaign/discount architecture) — revenue-on gate, should ship before US-LAUNCH-005 AC6's real ₹ transaction | 🔲 Not Started | ~4–6 days |
+| 5 | [EPIC-KIT-01](EPIC-KIT-01/EPIC.md) | Listing Marketing Kits (multi-format batch · lifecycle · recurring content · compliance) | 🔲 Not Started | ~21–31h |
 | — | [EPIC-OBS-00](EPIC-OBS-00/EPIC.md) | Structured Observability (Sentry) — runs parallel, protects the above | 🔲 Not Started | ~12h |
 
 ## Phase Gate (Phase 1 → Phase 2)
@@ -19,6 +21,7 @@
 - [ ] Recurring monthly content generated for active SOLO users
 - [ ] Kit COGS ≤ $0.40 via preview/finalize flow
 - [ ] Sentry receives generation failures within 60s
+- [ ] Relaunched pricing (EPIC-PAY-05) is live before the first real ₹ transaction (US-LAUNCH-005 AC6)
 
 ## Moved to Phase 2 (2026-07-03)
 - EPIC-AI-01 Conversational AI Core (intent · pre-plan · chips)

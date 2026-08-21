@@ -1,0 +1,39 @@
+flowchart LR
+  subgraph Config["Single source of truth"]
+    PC["PLAN_CONFIG\nshared/schema.ts"]:::extend
+    PCamp[("PricingCampaign\nPrisma model")]:::new
+  end
+
+  subgraph Resolution["New: price resolution"]
+    Resolver["pricing-resolution.service.ts\ngetEffectivePrice(tier, interval)"]:::new
+  end
+
+  subgraph Display["Frontend"]
+    PP["PricingPage.tsx"]:::extend
+    LP["LandingPage.tsx\n(pricing section)"]:::extend
+  end
+
+  subgraph Checkout["Checkout / billing"]
+    PS["payments.service.ts\ncreateSubscription()"]:::extend
+    RP[("Razorpay\nPlan (immutable price)\n+ Offer (offer_id, discount)")]:::external
+  end
+
+  subgraph Entitlement["Existing entitlement layer — reused, not duplicated"]
+    ULS["UsageLimitService\nassertCanGenerate() / getEffectiveTier()"]:::good
+    GS["generations.service.ts\ngetComposedDesign()\n(US-LAUNCH-015 policy — kept, relabeled)"]:::good
+  end
+
+  PC --> Resolver
+  PCamp --> Resolver
+  Resolver -->|"regular / founding / annual price"| PP
+  Resolver --> LP
+  Resolver -->|"offer_id for active campaign"| PS
+  PS -->|"subscription + offer_id"| RP
+  RP -->|webhook| PS
+  PS -->|"tier activated"| ULS
+  GS --> ULS
+
+  classDef good   fill:#0b3b2e,stroke:#14532d,color:#ecfdf5;
+  classDef new    fill:#1e3a5f,stroke:#2563eb,color:#eff6ff;
+  classDef extend fill:#3b2a0b,stroke:#a16207,color:#fef9c3;
+  classDef external fill:#3f1d3d,stroke:#86198f,color:#fae8ff;
