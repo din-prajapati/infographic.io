@@ -5,7 +5,7 @@ import { PLAN_CONFIG } from '@shared/schema';
 
 describe('PLAN_CONFIG — PRO/AGENCY tiers (US-PAY-102)', () => {
   it('AC1 / TC-PAY-102-01: PRO matches the feasibility-checked spec exactly', () => {
-    // Rupees, not paise — matches every existing tier's convention (SOLO: 2999, TEAM: 6999).
+    // Rupees, not paise — matches every existing tier's convention (SOLO: 5499, TEAM: 21999).
     // The story's own AC1/AC4 text said "paise" (1099900); corrected after finding every
     // pre-existing tier stores rupees and subscription.service.ts does `price * 100` itself
     // when constructing a payment amount — storing paise here would have double-converted.
@@ -18,6 +18,14 @@ describe('PLAN_CONFIG — PRO/AGENCY tiers (US-PAY-102)', () => {
     expect(PLAN_CONFIG.AGENCY.price).toBe(43999);
     expect(PLAN_CONFIG.AGENCY.limit).toBe(400);
     expect(PLAN_CONFIG.AGENCY.editableLimit).toBe(150);
+  });
+
+  it('re-opened 2026-08-23: SOLO/TEAM are repriced to the PRD\'s relaunch regular price, not the beta price', () => {
+    // Real gap found while implementing US-PAY-106: no story had ever actually repriced the
+    // existing tiers from their beta values (SOLO 2999, TEAM 6999) to the relaunch's
+    // feasibility-checked numbers — US-PAY-102 originally only added PRO/AGENCY. Fixed here.
+    expect(PLAN_CONFIG.SOLO.price).toBe(5499);
+    expect(PLAN_CONFIG.TEAM.price).toBe(21999);
   });
 
   it('AC1: every paid tier carries the new editableLimit field (SOLO 10, TEAM 60)', () => {

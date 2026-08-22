@@ -5,14 +5,15 @@ import { PLAN_CONFIG, ANNUAL_MULTIPLIER, getAnnualPrice } from '@shared/schema';
 //
 // NOTE on units: this story's own AC1/AC4 text (and TC-PAY-107-01) originally said prices are
 // paise ("SOLO: 549900 × 10 = 5499000 paise = ₹54,990") — wrong. Every PLAN_CONFIG tier stores
-// integer rupees (SOLO: 2999, TEAM: 6999 — see US-PAY-102's Implementation Update log for how
-// this was caught). getAnnualPrice() is unit-agnostic (just multiplies by 10); the tests below
-// use the real, correct rupee values.
+// integer rupees (SOLO: 5499, TEAM: 21999 — see US-PAY-102's Implementation Update log for how
+// this was caught, and its 2026-08-23 re-open note for why SOLO/TEAM's own numbers changed from
+// their original 2999/6999 beta values). getAnnualPrice() is unit-agnostic (just multiplies by
+// 10); the tests below use the real, correct rupee values.
 
 describe('getAnnualPrice — standing ×10 annual formula (US-PAY-107)', () => {
   it('AC1 / TC-PAY-107-01: SOLO annual price is exactly monthly × 10 (rupees, not paise)', () => {
-    expect(PLAN_CONFIG.SOLO.price).toBe(2999);
-    expect(getAnnualPrice(PLAN_CONFIG.SOLO.price)).toBe(29990);
+    expect(PLAN_CONFIG.SOLO.price).toBe(5499);
+    expect(getAnnualPrice(PLAN_CONFIG.SOLO.price)).toBe(54990);
   });
 
   it('AC1: replaces the old ×12×0.85 formula — the two disagree, proving this is a real fix', () => {
