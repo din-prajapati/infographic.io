@@ -8,6 +8,7 @@
 |----------------|-------|
 | **How to use this whole system** | [HOW_TO_USE.md](HOW_TO_USE.md) ← start here |
 | **Phase progress (executive view)** | [PHASE_TRACKER.md](PHASE_TRACKER.md) |
+| **Every task only a human can do (dashboard/DNS/legal/real-money)** | [HUMAN_TASKS.md](HUMAN_TASKS.md) |
 | **Domain team board (what's now / next / blocked)** | [TEAM_STATUS.md](TEAM_STATUS.md) |
 | **Active story to implement next** | [TEAM_STATUS.md → Design → Ready to Start](TEAM_STATUS.md) |
 | **Git branch/commit/PR conventions** | [GIT_STRATEGY.md](GIT_STRATEGY.md) |

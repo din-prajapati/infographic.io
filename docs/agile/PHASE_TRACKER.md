@@ -19,7 +19,9 @@
 | [Phase 5](#phase-5--release-21-analytics--optimization) | v2.1 | Admin visibility, AI cost optimization, performance | 🔲 Not Started | 0% | Month 5–6 |
 | [Phase 6](#phase-6--release-22-production-hardening) | v2.2 | Enterprise-grade reliability, test coverage, mobile | 🔲 Not Started | 0% | Month 7+ |
 
-**Current Focus (2026-08-15):** M-LAUNCH-01 (public beta gate) is fully Done. EPIC-AI-06 is content-complete (M-AI-18 closed) and M-LAUNCH-02 (revenue-on gate) is 6/7 Done — **the Revenue-on gate is now one story away**: US-LAUNCH-005 AC5/6, a real ₹ transaction, intentionally not yet run. Phase 0's "3 HUMAN deploy tasks" line below has not been independently re-verified in this pass — the rest of this document's evidence (live staging/production traffic, RazorPay live-mode keys deployed) suggests it may itself be stale; worth a direct check before trusting it. Full path: [ROADMAP.md](ROADMAP.md)
+**Current Focus (2026-08-15):** M-LAUNCH-01 (public beta gate) is fully Done. EPIC-AI-06 is content-complete (M-AI-18 closed) and M-LAUNCH-02 (revenue-on gate) is 6/7 Done — **the Revenue-on gate is now one story away**: US-LAUNCH-005 AC5/6, a real ₹ transaction, intentionally not yet run. Full path: [ROADMAP.md](ROADMAP.md)
+
+**Every task in this whole tree that only a human can do — dashboard clicks, DNS, legal review, real-money go-aheads — is tracked in one place: [HUMAN_TASKS.md](HUMAN_TASKS.md).** (2026-08-22: the "Phase 0 3 HUMAN deploy tasks" staleness flagged in the note this replaces has been checked directly against `docs/testing/PHASE_0_HUMAN_QA_CHECKLIST.md` — Tasks 1 and 2 are in fact ✅ signed off (2026-06-20, 2026-07-11); Task 3 is mostly done, with 2 rows genuinely still open. See that file for the full breakdown.)
 
 ---
 
@@ -58,11 +60,12 @@ Each phase requires a gate decision before the next phase starts:
 - [x] Staging infra live (Neon + Railway) — verified 2026-07-09
 - [x] Staging E2E suite run — 87/91 non-skipped passed, 5 network-flakiness, 0 real app failures — 2026-07-09
 - [x] **🟢 PT-09 — generation results now render on staging.** Fixed via [EPIC-AI-07](epics/phase-0-mvp/EPIC-AI-07/EPIC.md) US-AI-034 (PR #14, deployed `9eed346`); re-verified live 2026-07-09 (foreground). Backgrounded-tab AC3 run still recommended.
-- [ ] US-DESIGN-003 AC3 — generation result image on staging — **STAGING QA** — I-05 unblocked ✅; I-06 (image proportions) now awaits human sign-off
-- [ ] US-DESIGN-004 AC2–4,6 — button heights, card borders, spacing — **STAGING QA**
-- [ ] Critical-path 10-flow manual test — **HUMAN TASK 1**
-- [ ] Staging smoke test (Railway) — **HUMAN TASK 2** — infra done, PT-09 blocks final sign-off
-- [ ] Production go-live + Sentry verify — **HUMAN TASK 3**
+**Human tasks (2026-08-22 correction — the 3 lines this replaces were stale):** Task 1 and Task 2
+are in fact ✅ signed off (2026-06-20, 2026-07-11 — verified directly against
+`docs/testing/PHASE_0_HUMAN_QA_CHECKLIST.md`). Task 3 is mostly done (domain live, RazorPay
+live-mode, OAuth, Sentry all verified); 2 rows remain (tag `v1.0.0`, full smoke test). US-DESIGN-003/004's
+staging visual checks are still open but low-priority/stale (dated 2026-04–06, product has moved
+far past this point). **Full detail, all phases: [HUMAN_TASKS.md](HUMAN_TASKS.md).**
 
 ### Epics in Phase 0
 
@@ -92,7 +95,7 @@ Each phase requires a gate decision before the next phase starts:
 | Human QA — US-DESIGN-001 | ✅ Verified + 3 bugs fixed | Done | ✅ |
 | Human QA — US-DESIGN-003 | 5/6 ACs ✅ · AC3 staging | Partial | 🟡 |
 | Human QA — US-DESIGN-004 | AC1,5 ✅ · AC2–4,6 staging | Partial | 🟡 |
-| **Deployment** | 0/3 HUMAN tasks | 3 tasks | ⏳ |
+| **Deployment** | 2/3 HUMAN tasks signed off, Task 3 mostly done | 3 tasks | 🟡 |
 
 **Overall Phase 0: ~99%** _(staging + 3 deploy tasks gate the final 1%)_
 
