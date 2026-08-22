@@ -206,4 +206,114 @@ describe('UsageLimitService', () => {
       );
     });
   });
+
+  // ===========================================================================
+  // US-PAY-103 — display-only editable-design remaining count
+  // ===========================================================================
+
+  describe('getEditableUsageQuota — display-only remaining count (US-PAY-103)', () => {
+    it('AC1 / TC-PAY-103-01: SOLO org with 3 credit-charged composes this cycle returns 7 remaining', async () => {
+      mockPrisma.organization.findUnique.mockResolvedValue({
+        id: 'org-1',
+        planTier: 'solo',
+        monthlyLimit: 50,
+      });
+      mockPrisma.subscription.findFirst.mockResolvedValue(null);
+      // Each credit-charged extra compose adds 1 to an existing record's creditsUsed —
+      // 3 records at creditsUsed:2 = 3 extra composes charged this cycle.
+      mockPrisma.usageRecord.findMany.mockResolvedValue([
+        { creditsUsed: 2 },
+        { creditsUsed: 2 },
+        { creditsUsed: 2 },
+      ]);
+
+      const quota = await service.getEditableUsageQuota('org-1');
+
+      expect(quota.editableLimit).toBe(10); // SOLO's EDITABLE_LIMITS_BY_TIER value
+      expect(quota.editableUsed).toBe(3);
+      expect(quota.editableRemaining).toBe(7);
+    });
+
+    it('AC2 / TC-PAY-103-02: FREE org that already used its lifetime trial returns 0 remaining', async () => {
+      mockPrisma.organization.findUnique.mockResolvedValue({
+        id: 'org-2',
+        planTier: 'free',
+        monthlyLimit: 3,
+      });
+      mockPrisma.infographic.findMany.mockResolvedValue([
+        { composedDesigns: { 'https://cdn/img.jpg': { backgroundUrl: 'x', elements: [] } } },
+      ]);
+
+      const quota = await service.getEditableUsageQuota('org-2');
+
+      expect(quota.editableLimit).toBe(1);
+      expect(quota.editableUsed).toBe(1);
+      expect(quota.editableRemaining).toBe(0);
+    });
+
+    it('AC3 / TC-PAY-103-03: a first (free) compose on a paid tier does NOT decrement the remaining count', async () => {
+      mockPrisma.organization.findUnique.mockResolvedValue({
+        id: 'org-1',
+        planTier: 'solo',
+        monthlyLimit: 50,
+      });
+      mockPrisma.subscription.findFirst.mockResolvedValue(null);
+      // creditsUsed:1 is the free first compose — the query filters creditsUsed > 1, so this
+      // record contributes 0 to editableUsed.
+      mockPrisma.usageRecord.findMany.mockResolvedValue([{ creditsUsed: 1 }]);
+
+      const quota = await service.getEditableUsageQuota('org-1');
+
+      expect(quota.editableUsed).toBe(0);
+      expect(quota.editableRemaining).toBe(10);
+    });
+
+    it('AC4: uses getEffectiveTier() (no caching) — a mid-cycle plan change reflects immediately', async () => {
+      mockPrisma.organization.findUnique.mockResolvedValue({
+        id: 'org-1',
+        planTier: 'agency',
+        monthlyLimit: 400,
+      });
+      mockPrisma.subscription.findFirst.mockResolvedValue(null);
+      mockPrisma.usageRecord.findMany.mockResolvedValue([]);
+
+      const quota = await service.getEditableUsageQuota('org-1');
+
+      expect(quota.editableLimit).toBe(150); // AGENCY's editableLimit, not a stale prior tier's
+    });
+
+    it('AC3 (security): computed from real UsageRecord data, never trusts client-supplied state', async () => {
+      mockPrisma.organization.findUnique.mockResolvedValue({
+        id: 'org-1',
+        planTier: 'solo',
+        monthlyLimit: 50,
+      });
+      mockPrisma.subscription.findFirst.mockResolvedValue(null);
+      mockPrisma.usageRecord.findMany.mockResolvedValue([]);
+
+      await service.getEditableUsageQuota('org-1');
+
+      expect(mockPrisma.usageRecord.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({ where: expect.objectContaining({ organizationId: 'org-1' }) }),
+      );
+    });
+  });
+
+  describe('getEditableUsageQuotaForUser — US-PAY-103', () => {
+    it('resolves org before returning the editable quota', async () => {
+      mockPrisma.user.findUnique.mockResolvedValue({ organizationId: 'org-1' });
+      mockPrisma.organization.findUnique.mockResolvedValue({
+        id: 'org-1',
+        planTier: 'solo',
+        monthlyLimit: 50,
+      });
+      mockPrisma.subscription.findFirst.mockResolvedValue(null);
+      mockPrisma.usageRecord.findMany.mockResolvedValue([]);
+
+      const quota = await service.getEditableUsageQuotaForUser('user-1');
+
+      expect(quota.organizationId).toBe('org-1');
+      expect(quota.editableLimit).toBe(10);
+    });
+  });
 });
