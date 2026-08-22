@@ -43,8 +43,12 @@ const envSchema = z.object({
   VITE_RAZORPAY_KEY_ID: z.string().optional(),
   RAZORPAY_PLAN_SOLO_MONTHLY: z.string().optional(),
   RAZORPAY_PLAN_SOLO_ANNUAL: z.string().optional(),
+  RAZORPAY_PLAN_PRO_MONTHLY: z.string().optional(), // US-PAY-109
+  RAZORPAY_PLAN_PRO_ANNUAL: z.string().optional(), // US-PAY-109
   RAZORPAY_PLAN_TEAM_MONTHLY: z.string().optional(),
   RAZORPAY_PLAN_TEAM_ANNUAL: z.string().optional(),
+  RAZORPAY_PLAN_AGENCY_MONTHLY: z.string().optional(), // US-PAY-109
+  RAZORPAY_PLAN_AGENCY_ANNUAL: z.string().optional(), // US-PAY-109
   RAZORPAY_PLAN_BROKERAGE_MONTHLY: z.string().optional(),
   RAZORPAY_PLAN_BROKERAGE_ANNUAL: z.string().optional(),
   RAZORPAY_PLAN_API_STARTER: z.string().optional(),
