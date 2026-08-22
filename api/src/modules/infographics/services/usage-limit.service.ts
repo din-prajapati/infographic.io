@@ -32,7 +32,9 @@ export class EditableRequiresUpgradeException extends HttpException {
 export const PLAN_TIER_MONTHLY_LIMITS: Record<string, number> = {
   free: 3,
   solo: 50,
+  pro: 100, // US-PAY-102
   team: 200,
+  agency: 400, // US-PAY-102 — distinct tier from brokerage, different volume (400 vs 1,000/mo)
   brokerage: 1000,
   api_starter: 5000,
   api_growth: 20000,
