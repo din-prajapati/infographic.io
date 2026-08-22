@@ -169,7 +169,13 @@ export const PLAN_CONFIG: Record<PlanTier, {
   },
   SOLO: {
     name: 'Solo',
-    price: 2999,
+    // US-PAY-102 (re-opened 2026-08-23): repriced from the beta price (2999) to the relaunch's
+    // feasibility-checked regular price per the PRD's finalized pricing table — this was a real
+    // gap, no story had ever actually repriced the existing tiers, only added PRO/AGENCY. Existing
+    // live Razorpay Plan objects for SOLO are price-immutable at the old rate; new Plan objects at
+    // this price are a human dashboard task (tracked in HUMAN_TASKS.md), same category as
+    // US-PAY-109's PRO/AGENCY plans.
+    price: 5499,
     currency: 'INR',
     limit: 50,
     userLimit: 1,
@@ -182,7 +188,7 @@ export const PLAN_CONFIG: Record<PlanTier, {
   },
   PRO: {
     name: 'Pro',
-    price: 10999, // rupees, matching every other tier's convention (SOLO 2999, TEAM 6999) — NOT paise
+    price: 10999, // rupees, matching every other tier's convention (SOLO 5499, TEAM 21999) — NOT paise
     currency: 'INR',
     limit: 100,
     userLimit: 1,
@@ -191,7 +197,7 @@ export const PLAN_CONFIG: Record<PlanTier, {
   },
   TEAM: {
     name: 'Team',
-    price: 6999,
+    price: 21999, // US-PAY-102 (re-opened 2026-08-23) — see SOLO's note above, same gap/fix
     currency: 'INR',
     limit: 200,
     userLimit: 5,
