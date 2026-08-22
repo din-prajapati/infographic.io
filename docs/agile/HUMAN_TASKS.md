@@ -37,6 +37,7 @@ within a phase, in the order they unblock downstream work.
 | 4 | Phase 1 | EPIC-LAUNCH-01 | US-LAUNCH-005 AC6 | One real ₹ subscription on production (smallest plan) → verify webhook activates it → refund/cancel from dashboard | 🔲 — **deliberately held**, needs your explicit go-ahead |
 | 5 | Phase 1 | EPIC-INFRA-02 | US-INFRA-001 | Provision a Cloudflare R2 bucket + S3-compatible API token | 🔲 — **blocks the story starting**, not just finishing |
 | 6 | Phase 1 | EPIC-PAY-05 (V1) | US-PAY-109 T0 | Create 4 Razorpay Plan objects: PRO monthly (₹10,999), PRO annual (₹109,990), AGENCY monthly (₹43,999), AGENCY annual (₹439,990) | 🔲 — code done, only this blocks close |
+| 6b | Phase 1 | EPIC-PAY-05 (V1) | US-PAY-102 (re-opened 2026-08-23) | Create 4 **new** Razorpay Plan objects for the repriced SOLO (₹5,499/mo, ₹54,990/yr) and TEAM (₹21,999/mo, ₹219,990/yr) — existing live SOLO/TEAM Plan objects are price-immutable at the old beta rate (₹2,999/₹6,999) and cannot be edited; new customers need a new Plan pointed at the new price | 🔲 |
 | 7 | Phase 1 | EPIC-PAY-05 (V2) | US-PAY-108 T0 | Create 4 Razorpay Offer objects (Founding-100 discount, SOLO/PRO/TEAM/AGENCY, "Forever" duration) | 🔲 — V2, not urgent yet |
 | 8 | Phase 0 | EPIC-LAUNCH-01 | US-LAUNCH-001 | Final legal review of Terms/Privacy/Refund wording — drafted content is a starting point, not legal advice, and these pages are already live in production | 🔲 — standing item, no deadline set |
 
@@ -92,6 +93,16 @@ bucket + API token exist. No AI agent can self-provision third-party cloud crede
   Founding Customer 100 campaign. Not urgent — V2 work isn't scheduled until after the first real
   transaction succeeds on V1.
 
+### 6b. US-PAY-102 (re-opened) — new Razorpay Plans for repriced SOLO/TEAM
+**Source:** [`EPIC-PAY-05/stories/US-PAY-102/STORY.md`](epics/phase-1-ai-core/EPIC-PAY-05/stories/US-PAY-102/STORY.md)
+Found 2026-08-23 while implementing `US-PAY-106`: no story had ever actually repriced SOLO/TEAM
+from their beta values to the relaunch's regular price — fixed in `PLAN_CONFIG`. Razorpay
+Subscription Plans are price-immutable once created, so the existing live SOLO/TEAM Plan objects
+stay at the old rate forever; new ones are needed at ₹5,499/mo (₹54,990/yr) and ₹21,999/mo
+(₹219,990/yr), then `RAZORPAY_PLAN_SOLO_MONTHLY`/`_ANNUAL`/`RAZORPAY_PLAN_TEAM_MONTHLY`/`_ANNUAL`
+repointed at the new IDs. Existing subscribers on the old plans are unaffected until they
+re-subscribe or upgrade — no automatic migration.
+
 ### 8. US-LAUNCH-001 — legal review
 **Source:** [`EPIC-LAUNCH-01/stories/US-LAUNCH-001/STORY.md`](epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-001/STORY.md)
 Terms of Service / Privacy Policy / Refund Policy pages are live in production (they were the
@@ -105,3 +116,5 @@ un-tracked indefinitely now that real customers can reach these pages.
 
 - **2026-08-22** — Tracker created. Full project-wide sweep for `HUMAN` markers across
   `docs/agile/epics/**`, `PHASE_TRACKER.md`, and `docs/testing/PHASE_0_HUMAN_QA_CHECKLIST.md`.
+- **2026-08-23** — Added #6b: new Razorpay Plan objects needed for repriced SOLO/TEAM (found while
+  implementing `US-PAY-106`, fixed in `US-PAY-102`, re-opened).

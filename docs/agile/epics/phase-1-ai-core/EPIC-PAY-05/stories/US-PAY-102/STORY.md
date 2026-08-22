@@ -7,7 +7,8 @@ updated: 2026-08-21
 
 # Story Card — US-PAY-102
 
-> **Status:** ✅ Done (code) — PR/manual-verify/Gate 4 still open, see TASKS.md
+> **Status:** ✅ Done (code) — **re-opened 2026-08-23** to fix a real gap (SOLO/TEAM were never
+> repriced), re-closed same day. PR/manual-verify/Gate 4 still open, see TASKS.md
 > **Feature:** F-PAY-01 — Pricing Configuration & Entitlements
 > **Epic:** [EPIC-PAY-05](../../EPIC.md)
 > **Milestone:** [M-PAY-01-pricing-foundation](../../milestones/M-PAY-01-pricing-foundation.md)
@@ -38,6 +39,13 @@ single-sourced set of tier definitions instead of drifting hardcoded copies
       and `subscription.service.ts` does `price * 100` itself when building a payment amount;
       storing paise here would have double-converted (₹10,99,900/mo instead of ₹10,999/mo). Fixed
       before this reached the pricing page. Verified — `client/src/lib/__tests__/planConfig.spec.ts`.
+      **Re-opened 2026-08-23**: found while implementing `US-PAY-106` that SOLO/TEAM's own regular
+      prices were never actually updated to the relaunch's finalized numbers by any story — this
+      story only ever added PRO/AGENCY. Fixed here: SOLO `2999 → 5499`, TEAM `6999 → 21999`
+      (BROKERAGE deliberately untouched — being phased out in favor of AGENCY, repricing/migrating
+      existing subscribers is a separate real decision per `EPIC.md`'s Out of Scope). Existing live
+      Razorpay Plan objects for SOLO/TEAM are price-immutable at the old rate; new ones at the new
+      price are a human task, tracked in `HUMAN_TASKS.md` #6b.
 - [x] **AC2 [error-path]:** When `usage-limit.service.ts`'s `resolveMonthlyLimit()` is called for
       an org on `PRO` or `AGENCY`, it returns the correct limit (100 / 400) instead of falling
       through to `undefined` or the old `PLAN_TIER_MONTHLY_LIMITS` fallback table missing these
@@ -174,6 +182,20 @@ established convention, not just internal consistency.
 Gate 1 verified clean: `npm run check` (0 errors), `npm run test:unit:backend` (370/370),
 `npm run test:unit:client` (236/237, 1 pre-existing skip). 7 commits, one per task/fix
 (`0dd872c`, `4941b2d`, `0bbc93a`, `bce3a4f`, `21e6157`, `be5ea37`-adjacent, `133f209`).
+
+**2026-08-23 — re-opened, a real gap.** Starting `US-PAY-106` (price resolution), its own AC1
+example expects `getEffectivePrice('SOLO', 'monthly')` to reflect the PRD's finalized regular
+price — but `PLAN_CONFIG.SOLO.price` was still `2999`, the old beta value. Checked the entire
+epic: no story anywhere ever repriced SOLO/TEAM/BROKERAGE to the relaunch's actual numbers — this
+story's AC1 only ever said "add PRO/AGENCY." The whole premise of this epic (fixing a measured
+margin problem via new pricing) had never been applied to the tiers whose margin problem it was
+measured on. Flagged to the user before touching anything (a business-facing repricing decision,
+not something to silently assume); confirmed: fix it here. SOLO `2999 → 5499`, TEAM `6999 →
+21999`. BROKERAGE deliberately left alone (being phased out for AGENCY; migrating existing
+subscribers is a separate decision, see `EPIC.md` Out of Scope). New human task filed:
+`HUMAN_TASKS.md` #6b — existing live Razorpay Plans for SOLO/TEAM are price-immutable, new ones
+are needed at the new prices. Commit `c89b732`. Gate 1 re-verified: `npm run check` (0 errors),
+backend 395/395, client 241/242.
 
 ---
 
