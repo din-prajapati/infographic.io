@@ -182,7 +182,7 @@ export const PLAN_CONFIG: Record<PlanTier, {
   },
   PRO: {
     name: 'Pro',
-    price: 1099900,
+    price: 10999, // rupees, matching every other tier's convention (SOLO 2999, TEAM 6999) — NOT paise
     currency: 'INR',
     limit: 100,
     userLimit: 1,
@@ -200,7 +200,7 @@ export const PLAN_CONFIG: Record<PlanTier, {
   },
   AGENCY: {
     name: 'Agency',
-    price: 4399900,
+    price: 43999, // rupees, matching every other tier's convention (BROKERAGE 24999) — NOT paise
     currency: 'INR',
     limit: 400,
     userLimit: -1, // unlimited
@@ -248,9 +248,12 @@ export const PLAN_CONFIG: Record<PlanTier, {
 // service, not here.
 export const ANNUAL_MULTIPLIER = 10;
 
-/** Integer paise in, integer paise out -- exact by construction, never rounds (AC4). */
-export function getAnnualPrice(monthlyPricePaise: number): number {
-  return monthlyPricePaise * ANNUAL_MULTIPLIER;
+/**
+ * Same unit in as out (PLAN_CONFIG.price is integer rupees, not paise — see US-PAY-102's
+ * Implementation Update log) -- exact by construction, never rounds (AC4).
+ */
+export function getAnnualPrice(monthlyPrice: number): number {
+  return monthlyPrice * ANNUAL_MULTIPLIER;
 }
 
 // Zod Schemas for API Validation

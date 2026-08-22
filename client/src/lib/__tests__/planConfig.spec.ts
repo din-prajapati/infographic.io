@@ -5,13 +5,17 @@ import { PLAN_CONFIG } from '@shared/schema';
 
 describe('PLAN_CONFIG — PRO/AGENCY tiers (US-PAY-102)', () => {
   it('AC1 / TC-PAY-102-01: PRO matches the feasibility-checked spec exactly', () => {
-    expect(PLAN_CONFIG.PRO.price).toBe(1099900);
+    // Rupees, not paise — matches every existing tier's convention (SOLO: 2999, TEAM: 6999).
+    // The story's own AC1/AC4 text said "paise" (1099900); corrected after finding every
+    // pre-existing tier stores rupees and subscription.service.ts does `price * 100` itself
+    // when constructing a payment amount — storing paise here would have double-converted.
+    expect(PLAN_CONFIG.PRO.price).toBe(10999);
     expect(PLAN_CONFIG.PRO.limit).toBe(100);
     expect(PLAN_CONFIG.PRO.editableLimit).toBe(25);
   });
 
   it('AC1 / TC-PAY-102-01: AGENCY matches the feasibility-checked spec exactly', () => {
-    expect(PLAN_CONFIG.AGENCY.price).toBe(4399900);
+    expect(PLAN_CONFIG.AGENCY.price).toBe(43999);
     expect(PLAN_CONFIG.AGENCY.limit).toBe(400);
     expect(PLAN_CONFIG.AGENCY.editableLimit).toBe(150);
   });
@@ -26,7 +30,7 @@ describe('PLAN_CONFIG — PRO/AGENCY tiers (US-PAY-102)', () => {
     expect(PLAN_CONFIG.BROKERAGE.limit).toBe(1000);
   });
 
-  it('AC4 / TC-PAY-102-03: every PLAN_CONFIG price is an integer (paise, never floating rupees)', () => {
+  it('AC4 / TC-PAY-102-03: every PLAN_CONFIG price is an integer rupee amount (never a float)', () => {
     for (const [tier, config] of Object.entries(PLAN_CONFIG)) {
       expect(Number.isInteger(config.price), `${tier}.price should be an integer`).toBe(true);
     }
