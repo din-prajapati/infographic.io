@@ -197,7 +197,7 @@ be hardened.
 | 1 | [US-PAY-107](stories/US-PAY-107/STORY.md) | Standing annual-discount formula (×10) | F-PAY-02 | M-PAY-02 | S | US-PAY-102 | ✅ (code) | — | **V1** |
 | 2 | [US-PAY-106](stories/US-PAY-106/STORY.md) | `getEffectivePrice()` resolution service | F-PAY-02 | M-PAY-02 | M | US-PAY-102, US-PAY-105 | ✅ (code) | — | V2 |
 | 1 | [US-PAY-109](stories/US-PAY-109/STORY.md) | New Razorpay Plan IDs for PRO/AGENCY tiers | F-PAY-03 | M-PAY-03 | S | US-PAY-102 | 🟡 (T0 human) | — | **V1** |
-| 3 | [US-PAY-108](stories/US-PAY-108/STORY.md) | Founding Customer 100 campaign seed + Offer linkage | F-PAY-02 | M-PAY-02 | M | US-PAY-105, US-PAY-106 | 🔲 | — | V2 |
+| 3 | [US-PAY-108](stories/US-PAY-108/STORY.md) | Founding Customer 100 campaign seed + Offer linkage | F-PAY-02 | M-PAY-02 | M | US-PAY-105, US-PAY-106 | 🟡 (T0 human) | — | V2 |
 | 2 | [US-PAY-111](stories/US-PAY-111/STORY.md) | Webhook/entitlement mapping for new tiers | F-PAY-03 | M-PAY-03 | S | US-PAY-109 | ✅ (code) | — | **V1** |
 | 2 | [US-PAY-110](stories/US-PAY-110/STORY.md) | Checkout passes `offer_id` server-side | F-PAY-03 | M-PAY-03 | M | US-PAY-106, US-PAY-108, US-PAY-109 | 🔲 | — | V2 |
 | 1 | [US-PAY-112](stories/US-PAY-112/STORY.md) | Pricing page redesign — cards, founding badge, toggle | F-PAY-04 | M-PAY-04 | L | US-PAY-102, US-PAY-106 | 🔲 | — | V2 |
@@ -318,6 +318,18 @@ For environment variables see [ENV.yaml](./ENV.yaml).
 ---
 
 ## Implementation Update (log)
+
+### 2026-08-23 — US-PAY-108 code done, blocked on T0 (human Offer objects)
+- Extended `US-PAY-106`'s `getEffectivePrice()` with the redemption-cap check (AC2) — that
+  story's own file, not a parallel mechanism.
+- Wrote `api/scripts/seed-founding-campaign.ts` (not `api/prisma/` as originally listed — matches
+  the actual location of the referenced `seed-premium-templates.ts`). Computes each tier's exact
+  discount percentage from real regular/founding prices, not a hardcoded approximation. Reuses
+  `PricingCampaignService.createCampaign()`.
+- AC1/AC3 genuinely blocked on T0 (the 4 real Razorpay Offer objects) — the script refuses to run
+  without them, verified by construction.
+- Gate 1: `npm run test:unit:backend` (410/410, up from 403). Commits `0dae9bf`, `40076f7`,
+  `40a4418`, `47ebff8`.
 
 ### 2026-08-23 — SOLO/TEAM Razorpay Plan task folded into US-PAY-109 (no new story)
 - Checked whether the SOLO/TEAM repricing (`US-PAY-102`'s re-open) needs any code: **no.**

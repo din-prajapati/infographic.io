@@ -113,16 +113,19 @@ cd api && npx vitest run tests/payments/pricing-resolution.service.spec.ts --rep
 
 ## Task Checklist
 
-- [ ] T0 — HUMAN: Razorpay Offer objects created (4 IDs recorded)
-- [ ] T1 — seed script (file: `seed-founding-campaign.ts`, type: `feat`)
-- [ ] T2 — env docs (file: `.env.example`, type: `docs`)
-- [ ] T3 — redemption-cap test (file: `pricing-resolution.service.spec.ts`, type: `test`)
-- [ ] Gate 1 passes ✅
-- [ ] Gate 4 passes ✅
-- [ ] Manual test verified ✅
-- [ ] PR opened with story card as description ✅
-- [ ] STORY.md ACs ticked off ✅
-- [ ] EPIC.md "Implementation Update" log appended ✅
+- [ ] T0 — **HUMAN, still open**: 4 Razorpay Offer objects created (IDs recorded) — folded into
+      `US-PAY-109`'s consolidated dashboard task, see `HUMAN_TASKS.md` #6/#7
+- [x] T1 — seed script (file: `api/scripts/seed-founding-campaign.ts`, type: `feat`) — commit
+      `40076f7`. **Deviation:** `api/scripts/`, not `api/prisma/` as originally listed
+- [x] T2 — env docs (file: `.env.example`, type: `docs`) — commit `40a4418`
+- [x] T3 — redemption-cap test — commit `47ebff8` (`pricing-resolution.service.spec.ts` +
+      new `founding-campaign-pricing.spec.ts` for AC4's exact percentages)
+- [x] Gate 1 passes ✅ — `npm run test:unit:backend` (410/410)
+- [ ] Gate 4 passes — not separately run this pass
+- [ ] Manual test verified — blocked on T0
+- [ ] PR opened with story card as description — pending (milestone PR)
+- [ ] STORY.md ACs ticked off — AC1/2/4 done, AC3 blocked on T0
+- [x] EPIC.md "Implementation Update" log appended ✅
 
 ---
 
