@@ -29,10 +29,24 @@ const RAZORPAY_PLAN_KEYS: PlanKeysByTier = {
     annual: 'RAZORPAY_PLAN_SOLO_ANNUAL',
     default: 'RAZORPAY_PLAN_SOLO',
   },
+  // US-PAY-102: entry exists so PRO/AGENCY are real, resolvable tiers (getAvailablePlans()
+  // iterates every PlanTier). Real env var values are US-PAY-109's job (EPIC-PAY-05 M-PAY-03) —
+  // same key-naming convention as every other tier, not a parallel mechanism.
+  PRO: {
+    monthly: 'RAZORPAY_PLAN_PRO_MONTHLY',
+    annual: 'RAZORPAY_PLAN_PRO_ANNUAL',
+    default: 'RAZORPAY_PLAN_PRO',
+  },
   TEAM: {
     monthly: 'RAZORPAY_PLAN_TEAM_MONTHLY',
     annual: 'RAZORPAY_PLAN_TEAM_ANNUAL',
     default: 'RAZORPAY_PLAN_TEAM',
+  },
+  // US-PAY-102: see PRO note above — real env var values are US-PAY-109's job.
+  AGENCY: {
+    monthly: 'RAZORPAY_PLAN_AGENCY_MONTHLY',
+    annual: 'RAZORPAY_PLAN_AGENCY_ANNUAL',
+    default: 'RAZORPAY_PLAN_AGENCY',
   },
   BROKERAGE: {
     monthly: 'RAZORPAY_PLAN_BROKERAGE_MONTHLY',
@@ -60,10 +74,20 @@ const STRIPE_PLAN_KEYS: PlanKeysByTier = {
     annual: 'STRIPE_PLAN_SOLO_ANNUAL',
     default: 'STRIPE_PLAN_SOLO',
   },
+  PRO: {
+    monthly: 'STRIPE_PLAN_PRO_MONTHLY',
+    annual: 'STRIPE_PLAN_PRO_ANNUAL',
+    default: 'STRIPE_PLAN_PRO',
+  },
   TEAM: {
     monthly: 'STRIPE_PLAN_TEAM_MONTHLY',
     annual: 'STRIPE_PLAN_TEAM_ANNUAL',
     default: 'STRIPE_PLAN_TEAM',
+  },
+  AGENCY: {
+    monthly: 'STRIPE_PLAN_AGENCY_MONTHLY',
+    annual: 'STRIPE_PLAN_AGENCY_ANNUAL',
+    default: 'STRIPE_PLAN_AGENCY',
   },
   BROKERAGE: {
     monthly: 'STRIPE_PLAN_BROKERAGE_MONTHLY',
@@ -96,9 +120,24 @@ export class PaymentsService {
       PADDLE: '',
       PAYPAL: '',
     },
+    // US-PAY-102: empty fallback (not a placeholder id) so an unconfigured PRO/AGENCY plan
+    // is detected as unconfigured (PT-06 pattern, same as BROKERAGE below) rather than
+    // silently resolving to a fake plan_pro/plan_agency id. Real values are US-PAY-109's job.
+    PRO: {
+      RAZORPAY: process.env.RAZORPAY_PLAN_PRO || '',
+      STRIPE: process.env.STRIPE_PLAN_PRO || '',
+      PADDLE: '',
+      PAYPAL: '',
+    },
     TEAM: {
       RAZORPAY: process.env.RAZORPAY_PLAN_TEAM || 'plan_team',
       STRIPE: process.env.STRIPE_PLAN_TEAM || '',
+      PADDLE: '',
+      PAYPAL: '',
+    },
+    AGENCY: {
+      RAZORPAY: process.env.RAZORPAY_PLAN_AGENCY || '',
+      STRIPE: process.env.STRIPE_PLAN_AGENCY || '',
       PADDLE: '',
       PAYPAL: '',
     },

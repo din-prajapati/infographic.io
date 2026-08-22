@@ -152,25 +152,41 @@ export class SubscriptionService {
   // Provider plan IDs - configure these in your payment provider dashboard
   private PLAN_IDS: Record<PlanTier, Record<PaymentProvider, string>> = {
     FREE: { RAZORPAY: '', STRIPE: '', PADDLE: '', PAYPAL: '' },
-    SOLO: { 
-      RAZORPAY: process.env.RAZORPAY_PLAN_SOLO || 'plan_solo', 
-      STRIPE: process.env.STRIPE_PLAN_SOLO || '', 
-      PADDLE: '', 
-      PAYPAL: '' 
+    SOLO: {
+      RAZORPAY: process.env.RAZORPAY_PLAN_SOLO || 'plan_solo',
+      STRIPE: process.env.STRIPE_PLAN_SOLO || '',
+      PADDLE: '',
+      PAYPAL: ''
     },
-    TEAM: { 
+    // US-PAY-102: entry exists so PRO is a real, selectable tier; real Razorpay Plan ID
+    // creation is US-PAY-109's job (EPIC-PAY-05 M-PAY-03) — same env-var-with-fallback
+    // pattern as every other tier here, not a parallel mechanism.
+    PRO: {
+      RAZORPAY: process.env.RAZORPAY_PLAN_PRO || 'plan_pro',
+      STRIPE: process.env.STRIPE_PLAN_PRO || '',
+      PADDLE: '',
+      PAYPAL: ''
+    },
+    TEAM: {
       RAZORPAY: process.env.RAZORPAY_PLAN_TEAM || 'plan_team', 
       STRIPE: process.env.STRIPE_PLAN_TEAM || '', 
       PADDLE: '', 
       PAYPAL: '' 
     },
-    BROKERAGE: { 
-      RAZORPAY: process.env.RAZORPAY_PLAN_BROKERAGE || 'plan_brokerage', 
-      STRIPE: process.env.STRIPE_PLAN_BROKERAGE || '', 
-      PADDLE: '', 
-      PAYPAL: '' 
+    // US-PAY-102: see PRO note above — real Razorpay Plan ID is US-PAY-109.
+    AGENCY: {
+      RAZORPAY: process.env.RAZORPAY_PLAN_AGENCY || 'plan_agency',
+      STRIPE: process.env.STRIPE_PLAN_AGENCY || '',
+      PADDLE: '',
+      PAYPAL: ''
     },
-    API_STARTER: { 
+    BROKERAGE: {
+      RAZORPAY: process.env.RAZORPAY_PLAN_BROKERAGE || 'plan_brokerage',
+      STRIPE: process.env.STRIPE_PLAN_BROKERAGE || '',
+      PADDLE: '',
+      PAYPAL: ''
+    },
+    API_STARTER: {
       RAZORPAY: process.env.RAZORPAY_PLAN_API_STARTER || 'plan_api_starter', 
       STRIPE: process.env.STRIPE_PLAN_API_STARTER || '', 
       PADDLE: '', 

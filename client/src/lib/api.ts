@@ -1,5 +1,5 @@
 import { apiRequest } from './queryClient';
-import type { RegisterInput, LoginInput, GenerateInfographicInput, AuthResponse, Template, Infographic } from '@shared/schema';
+import type { RegisterInput, LoginInput, GenerateInfographicInput, AuthResponse, Template, Infographic, PlanTier } from '@shared/schema';
 import type { DesignMetadata } from './storage';
 
 // Use environment variable for API base URL
@@ -185,7 +185,7 @@ export interface ResultVariation {
 
 // Payments API
 export interface CreateSubscriptionInput {
-  planTier: 'FREE' | 'SOLO' | 'TEAM' | 'BROKERAGE' | 'API_STARTER' | 'API_GROWTH' | 'API_ENTERPRISE';
+  planTier: PlanTier; // US-PAY-102 — single-sourced from PLAN_CONFIG's PlanTier, not a duplicated literal union
   currency?: string;
   region?: string;
   successUrl?: string;
