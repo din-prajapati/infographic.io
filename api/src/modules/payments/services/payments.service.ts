@@ -872,6 +872,19 @@ export class PaymentsService {
       return;
     }
 
+    // US-PAY-111 AC4: recorded amount should match PLAN_CONFIG for this tier exactly. A mismatch
+    // (e.g. Razorpay dashboard price drift from PLAN_CONFIG) is logged as a warning, not silently
+    // trusted -- but never blocks activation; Razorpay's charge is still the real, authoritative
+    // amount, PLAN_CONFIG is just what we expect it to be.
+    const expectedPaise = PLAN_CONFIG[subscription.planTier].price * 100;
+    if (paymentData.amount !== expectedPaise) {
+      this.logger.warn(
+        `subscription.charged amount mismatch for ${subscription.planTier}: ` +
+          `Razorpay charged ${paymentData.amount} paise, PLAN_CONFIG expects ${expectedPaise} paise ` +
+          `(subscription ${subscription.id})`,
+      );
+    }
+
     // Create payment record
     const paymentId = randomUUID();
     await this.storage.createPayment({
