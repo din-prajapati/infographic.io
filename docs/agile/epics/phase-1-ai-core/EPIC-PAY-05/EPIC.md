@@ -10,7 +10,9 @@ updated: 2026-08-21
 > **Phase:** Phase 1 — Revenue Strategy
 > **Status:** 🔲 Not Started
 > **Linear Project:** LIN-EPIC-XXX
-> **Target date:** before US-LAUNCH-005 AC6 (real ₹ transaction) and before/alongside `BETA_MODE=false`
+> **Target date:** **V1** (6 stories, see Scope split below) before US-LAUNCH-005 AC6 (real ₹
+> transaction) and before/alongside `BETA_MODE=false`. **V2** (6 stories) is explicitly decoupled
+> from that gate — no target date yet, revisit once V1 has real transaction/demand data.
 > **Owner:** Dinesh
 > **Source:** [docs/agile/PRD/2026-08-21-pricing-relaunch.md](../../../PRD/2026-08-21-pricing-relaunch.md)
 >
@@ -117,6 +119,51 @@ was considered and explicitly not chosen; if that's wrong, say so before `US-PAY
 
 ---
 
+## Scope split — V1 / V2 (decided 2026-08-22)
+
+**Why:** This epic was reality-checked against actual product stage — the app has **zero paying
+customers to date** and has not yet run its first real ₹ transaction (`US-LAUNCH-005` AC6, the last
+open item before `BETA_MODE=false`). The original 12-story scope bundled a real, measured margin fix
+(current Team margin degrades to 52%/8% once editable usage is real) together with a fully
+generalized campaign/Offer engine built for a "next campaign" that doesn't exist yet, and a page
+redesign whose per-tier feature content isn't captured in any durable file. Splitting avoids gating
+the product's very first real transaction on 12 stories' worth of unproven new infrastructure.
+
+### V1 — ship before/alongside the first real ₹ transaction
+
+| Story | What it does | Depends on |
+|---|---|---|
+| US-PAY-104 | Fix hardcoded price-text drift in `PricingPage.tsx` | — |
+| US-PAY-102 | Extend `PLAN_CONFIG` + Prisma enum with PRO/AGENCY tiers, corrected prices | — |
+| US-PAY-103 | Editable-design quota relabel (Path A) | — |
+| US-PAY-107 | Fix annual formula: wrong `×12×0.85` → correct `×10` | US-PAY-102 |
+| US-PAY-109 | Real Razorpay Plan IDs for PRO/AGENCY | US-PAY-102 |
+| US-PAY-111 | Webhook/entitlement mapping so PRO/AGENCY activate correctly | US-PAY-109 |
+
+V1 ships a correct, complete, **sellable** six-tier pricing model with the right math, on the
+existing `PricingPage.tsx` UI (no redesign, no campaign, no founding discount yet).
+
+### V2 — defer until after first real transaction / real demand signal
+
+| Story | What it does | Depends on |
+|---|---|---|
+| US-PAY-105 | New `PricingCampaign` Prisma model — generalized campaign engine | — |
+| US-PAY-106 | `getEffectivePrice()` — resolves base × campaign × annual | US-PAY-105 |
+| US-PAY-108 | Founding Customer 100 seed + Razorpay Offer linkage | US-PAY-105, US-PAY-106 |
+| US-PAY-110 | Checkout passes `offer_id` server-side (security-critical) | US-PAY-106, 108, 109 |
+| US-PAY-112 | Pricing page redesign — new cards, founding badge, toggle | US-PAY-106 |
+| US-PAY-113 | Responsive layout + comparison table (pure follow-on to 112) | US-PAY-112 |
+
+**Reconsider V2 once:** the first real transaction has succeeded (V1 proves checkout/webhook/refund
+work with real money), and there's an actual second campaign being planned (not just "the engine
+should support one" in the abstract) — otherwise the generalized campaign model is solving a
+problem that may never materialize. `US-PAY-112`/`113`'s per-tier feature content (the "5–8 key
+features" per card) also does not exist in any durable file today — only referenced as "see chat
+history 2026-08-21" in the source PRD — and needs to be captured properly before those stories can
+be hardened.
+
+---
+
 ## Features in this Epic
 
 | Feature ID | Scope | Stories | Status |
@@ -141,20 +188,23 @@ was considered and explicitly not chosen; if that's wrong, say so before `US-PAY
 
 ## Stories in this Epic
 
-| Order | Story ID | Title | Feature | Milestone | Size | Blocked By | Status | PR |
-|:-----:|----------|-------|---------|-----------|:----:|------------|:------:|:--:|
-| 1 | [US-PAY-102](stories/US-PAY-102/STORY.md) | Extend PLAN_CONFIG with PRO and AGENCY tiers | F-PAY-01 | M-PAY-01 | M | — | 🔲 | — |
-| 1 | [US-PAY-103](stories/US-PAY-103/STORY.md) | Editable-design limit relabel (Path A) | F-PAY-01 | M-PAY-01 | S | — | 🔲 | — |
-| 1 | [US-PAY-104](stories/US-PAY-104/STORY.md) | Fix PricingPage.tsx hardcoded price-text drift | F-PAY-01 | M-PAY-01 | XS | — | 🔲 | — |
-| 1 | [US-PAY-105](stories/US-PAY-105/STORY.md) | PricingCampaign Prisma model + migration | F-PAY-02 | M-PAY-02 | S | — | 🔲 | — |
-| 1 | [US-PAY-107](stories/US-PAY-107/STORY.md) | Standing annual-discount formula (×10) | F-PAY-02 | M-PAY-02 | S | US-PAY-102 | 🔲 | — |
-| 2 | [US-PAY-106](stories/US-PAY-106/STORY.md) | `getEffectivePrice()` resolution service | F-PAY-02 | M-PAY-02 | M | US-PAY-102, US-PAY-105 | 🔲 | — |
-| 1 | [US-PAY-109](stories/US-PAY-109/STORY.md) | New Razorpay Plan IDs for PRO/AGENCY tiers | F-PAY-03 | M-PAY-03 | S | US-PAY-102 | 🔲 | — |
-| 3 | [US-PAY-108](stories/US-PAY-108/STORY.md) | Founding Customer 100 campaign seed + Offer linkage | F-PAY-02 | M-PAY-02 | M | US-PAY-105, US-PAY-106 | 🔲 | — |
-| 2 | [US-PAY-111](stories/US-PAY-111/STORY.md) | Webhook/entitlement mapping for new tiers | F-PAY-03 | M-PAY-03 | S | US-PAY-109 | 🔲 | — |
-| 2 | [US-PAY-110](stories/US-PAY-110/STORY.md) | Checkout passes `offer_id` server-side | F-PAY-03 | M-PAY-03 | M | US-PAY-106, US-PAY-108, US-PAY-109 | 🔲 | — |
-| 1 | [US-PAY-112](stories/US-PAY-112/STORY.md) | Pricing page redesign — cards, founding badge, toggle | F-PAY-04 | M-PAY-04 | L | US-PAY-102, US-PAY-106 | 🔲 | — |
-| 2 | [US-PAY-113](stories/US-PAY-113/STORY.md) | Responsive layout + comparison section + messaging | F-PAY-04 | M-PAY-04 | S | US-PAY-112 | 🔲 | — |
+| Order | Story ID | Title | Feature | Milestone | Size | Blocked By | Status | PR | Version |
+|:-----:|----------|-------|---------|-----------|:----:|------------|:------:|:--:|:---:|
+| 1 | [US-PAY-102](stories/US-PAY-102/STORY.md) | Extend PLAN_CONFIG with PRO and AGENCY tiers | F-PAY-01 | M-PAY-01 | M | — | ✅ (code) | — | **V1** |
+| 1 | [US-PAY-103](stories/US-PAY-103/STORY.md) | Editable-design limit relabel (Path A) | F-PAY-01 | M-PAY-01 | S | — | 🔲 | — | **V1** |
+| 1 | [US-PAY-104](stories/US-PAY-104/STORY.md) | Fix PricingPage.tsx hardcoded price-text drift | F-PAY-01 | M-PAY-01 | XS | — | ✅ (code) | — | **V1** |
+| 1 | [US-PAY-105](stories/US-PAY-105/STORY.md) | PricingCampaign Prisma model + migration | F-PAY-02 | M-PAY-02 | S | — | 🔲 | — | V2 |
+| 1 | [US-PAY-107](stories/US-PAY-107/STORY.md) | Standing annual-discount formula (×10) | F-PAY-02 | M-PAY-02 | S | US-PAY-102 | 🔲 | — | **V1** |
+| 2 | [US-PAY-106](stories/US-PAY-106/STORY.md) | `getEffectivePrice()` resolution service | F-PAY-02 | M-PAY-02 | M | US-PAY-102, US-PAY-105 | 🔲 | — | V2 |
+| 1 | [US-PAY-109](stories/US-PAY-109/STORY.md) | New Razorpay Plan IDs for PRO/AGENCY tiers | F-PAY-03 | M-PAY-03 | S | US-PAY-102 | 🔲 | — | **V1** |
+| 3 | [US-PAY-108](stories/US-PAY-108/STORY.md) | Founding Customer 100 campaign seed + Offer linkage | F-PAY-02 | M-PAY-02 | M | US-PAY-105, US-PAY-106 | 🔲 | — | V2 |
+| 2 | [US-PAY-111](stories/US-PAY-111/STORY.md) | Webhook/entitlement mapping for new tiers | F-PAY-03 | M-PAY-03 | S | US-PAY-109 | 🔲 | — | **V1** |
+| 2 | [US-PAY-110](stories/US-PAY-110/STORY.md) | Checkout passes `offer_id` server-side | F-PAY-03 | M-PAY-03 | M | US-PAY-106, US-PAY-108, US-PAY-109 | 🔲 | — | V2 |
+| 1 | [US-PAY-112](stories/US-PAY-112/STORY.md) | Pricing page redesign — cards, founding badge, toggle | F-PAY-04 | M-PAY-04 | L | US-PAY-102, US-PAY-106 | 🔲 | — | V2 |
+| 2 | [US-PAY-113](stories/US-PAY-113/STORY.md) | Responsive layout + comparison section + messaging | F-PAY-04 | M-PAY-04 | S | US-PAY-112 | 🔲 | — | V2 |
+
+> **V1** = ship before/alongside the first real ₹ transaction (6 stories). **V2** = deferred until
+> after that transaction succeeds and real demand data exists (6 stories). See "Scope split" above.
 
 ---
 
@@ -268,6 +318,44 @@ For environment variables see [ENV.yaml](./ENV.yaml).
 ---
 
 ## Implementation Update (log)
+
+### 2026-08-22 — US-PAY-102 and US-PAY-104 finished (code) — 8 commits
+- **US-PAY-104** — banner price-text drift fix. Found already implemented (uncommitted) by an
+  earlier tooling run; independently re-verified (re-ran its test myself) before committing.
+  Commits `be5ea37`, `dd4dd3b`.
+- **US-PAY-102** — PLAN_CONFIG PRO/AGENCY tiers. Found partially implemented (uncommitted,
+  stalled asking for prisma-edit permission mid-run — declined, investigate that tool
+  separately). Finished the Prisma enum + `usage-limit.service.ts` fallback table, then found and
+  fixed 3 downstream consumers that broke when `PlanTier` widened to 9 members (one caught by a
+  real test crash) — including `payments.service.ts`, explicitly named off-limits in this story's
+  own Anti-Patterns, touched anyway because the alternative was a broken build. **Real bug caught
+  and fixed before it spread further**: this story's own AC1/AC4 text specified PRO/AGENCY prices
+  in paise, contradicting every existing tier's rupee convention — would have shown
+  ₹10,99,900/mo instead of ₹10,999/mo. Corrected, AC text fixed to match. Commits `0dd872c`,
+  `4941b2d`, `0bbc93a`, `bce3a4f`, `21e6157`, `133f209`.
+- **Both stories' code status is "Done"; full DoD (Gate 4 db-push verify, manual flow, PR) is
+  still open** — tracked per-story in their own TASKS.md.
+- Gate 1 verified clean across the whole change: `npm run check` (0 errors),
+  `npm run test:unit:backend` (370/370), `npm run test:unit:client` (236/237).
+
+### 2026-08-22 — Scope split into V1/V2 after reality check
+- Epic reality-checked against actual product stage: zero paying customers to date, first real ₹
+  transaction (`US-LAUNCH-005` AC6) not yet run. Full 12-story scope would have gated that first
+  transaction on an entirely new, unproven pricing/campaign/Offer engine.
+- **V1 (6 stories, ship before the first transaction):** US-PAY-102, 103, 104, 107, 109, 111 — a
+  correct, sellable six-tier model with the right math, on the existing pricing-page UI.
+- **V2 (6 stories, deferred):** US-PAY-105, 106, 108, 110, 112, 113 — the generalized
+  campaign/Offer engine and the visual relaunch, both premature relative to zero real demand
+  signal. Re-evaluate once V1 has run a real transaction and an actual second campaign is being
+  planned (not just architecturally supported).
+- US-PAY-102 kept in V1 specifically to avoid a second schema/enum migration later once real
+  subscription rows exist — cheap now, expensive once there's real customer data to migrate around.
+- US-PAY-107 and US-PAY-109/111 pulled into V1 (originally scoped V2) so PRO/AGENCY are fully
+  **sellable at launch**, not just present in config.
+- Flagged, not yet resolved: `US-PAY-112`/`113`'s per-tier "5–8 key features" content exists only
+  as "see chat history 2026-08-21" in the source PRD — no durable file captures it. Needs to be
+  written down properly before those V2 stories can be hardened.
+- See `M-PAY-01` through `M-PAY-04` milestone files for the same split annotated per-milestone.
 
 ### 2026-08-21 — Epic scaffolded from PRD
 - **PRD:** [docs/agile/PRD/2026-08-21-pricing-relaunch.md](../../../PRD/2026-08-21-pricing-relaunch.md)
