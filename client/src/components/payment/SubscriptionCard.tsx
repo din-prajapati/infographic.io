@@ -16,7 +16,7 @@ import {
 import { CreditCard, Calendar, TrendingUp, Loader2, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { queryClient } from "@/lib/queryClient";
-import { paymentsApi, getApiUrl } from "@/lib/api";
+import { paymentsApi, generationsApi, getApiUrl } from "@/lib/api";
 import { PLAN_CONFIG, type Subscription, type SubscriptionStatus } from "@shared/schema";
 import { Link } from "wouter";
 
@@ -97,6 +97,13 @@ export function SubscriptionCard({ organization }: SubscriptionCardProps) {
     usage?: { current: number; limit: number };
   }>({
     queryKey: [getApiUrl('/payments/subscription')],
+  });
+
+  // US-PAY-103: editable-design remaining count, sourced server-side from real
+  // UsageRecord metering data (never client-trusted — AC3).
+  const { data: editableQuota } = useQuery({
+    queryKey: [getApiUrl('/infographics/generations/usage/quota/editable')],
+    queryFn: () => generationsApi.getEditableUsageQuota(),
   });
 
   const handleRefreshStatus = async () => {
@@ -209,9 +216,9 @@ export function SubscriptionCard({ organization }: SubscriptionCardProps) {
               </span>
             </div>
             {monthlyLimit > 0 && (
-              <Progress 
-                value={Math.min(usagePercent, 100)} 
-                className="h-2" 
+              <Progress
+                value={Math.min(usagePercent, 100)}
+                className="h-2"
                 data-testid="progress-usage"
               />
             )}
@@ -226,6 +233,22 @@ export function SubscriptionCard({ organization }: SubscriptionCardProps) {
               </p>
             )}
           </div>
+
+          {/* US-PAY-103: Editable designs remaining — count only decrements when a
+              credit-charged extra compose runs (US-LAUNCH-015 policy, kept intact) */}
+          {editableQuota != null && (
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">Editable Designs</span>
+              <span
+                className="font-medium"
+                data-testid="text-editable-remaining"
+              >
+                {editableQuota.editableRemaining === -1
+                  ? 'Unlimited remaining'
+                  : `${editableQuota.editableRemaining} remaining this month`}
+              </span>
+            </div>
+          )}
 
           {/* Billing Period */}
           {subscription && (

@@ -353,6 +353,16 @@ export const generationsApi = {
       remaining: number;
     }>(getApiUrl('/infographics/generations/usage/quota')),
 
+  // US-PAY-103 — display-only editable-design remaining count
+  getEditableUsageQuota: () =>
+    apiRequest<{
+      organizationId: string;
+      planTier: string;
+      editableLimit: number;
+      editableUsed: number;
+      editableRemaining: number;
+    }>(getApiUrl('/infographics/generations/usage/quota/editable')),
+
   // Generate from chat prompt
   generate: (data: GenerateFromChatInput) =>
     apiRequest<{ id: string; status: string; conversationId?: string }>(
