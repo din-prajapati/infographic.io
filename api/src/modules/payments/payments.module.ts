@@ -6,6 +6,7 @@ import { SubscriptionStorageService } from './services/subscription-storage.serv
 import { UsageAnalyticsService } from './services/usage-analytics.service';
 import { RenewalReminderService } from './services/renewal-reminder.service';
 import { PricingCampaignService } from './services/pricing-campaign.service';
+import { PricingResolutionService } from './services/pricing-resolution.service';
 import { PrismaService } from '../../common/services/prisma.service';
 import { DatabaseModule } from '../../database/database.module';
 import { EmailModule } from '../email/email.module';
@@ -37,7 +38,9 @@ import { EmailService } from '../email/email.service';
     // RenewalReminderService's own prisma access), registered so US-PAY-106's price-resolution
     // service can @Inject() it once that story is implemented.
     PricingCampaignService,
+    // US-PAY-106 — depends on PricingCampaignService above; NestJS resolves it via standard DI.
+    PricingResolutionService,
   ],
-  exports: [PaymentsService, UsageAnalyticsService, PricingCampaignService],
+  exports: [PaymentsService, UsageAnalyticsService, PricingCampaignService, PricingResolutionService],
 })
 export class PaymentsModule {}
