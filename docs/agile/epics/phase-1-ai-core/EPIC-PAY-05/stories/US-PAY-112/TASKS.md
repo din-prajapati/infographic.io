@@ -122,16 +122,16 @@ npm run test:unit
 
 ## Task Checklist
 
-- [ ] T1 — pricing API endpoint (file: `pricing.controller.ts`, type: `feat`)
-- [ ] T2 — card redesign (file: `PricingPage.tsx`, type: `feat`)
-- [ ] T3 — landing page parity (file: `LandingPage.tsx`, type: `feat`)
-- [ ] T4 — tests (file: `PricingPage.spec.tsx`, type: `test`)
-- [ ] Gate 1 passes ✅
-- [ ] Gate 2 passes ✅
-- [ ] Manual test verified ✅ (staging, with and without active campaign)
-- [ ] PR opened with story card as description ✅
-- [ ] STORY.md ACs ticked off ✅
-- [ ] EPIC.md "Implementation Update" log appended ✅
+- [x] T1 — pricing API endpoint (file: `pricing.controller.ts`, type: `feat`)
+- [x] T2 — card redesign (file: `PricingPage.tsx`, type: `feat`)
+- [x] T3 — landing page parity (file: `LandingPage.tsx`, type: `feat`)
+- [x] T4 — tests (file: `PricingPage.spec.tsx`, type: `test`)
+- [x] Gate 1 passes ✅ (`npm run check` + `npm run test:unit` — 33+14 files, 663 tests green)
+- [x] Gate 2 passes ✅ (card/teaser display logic unit-tested via extracted pure functions)
+- [ ] Manual test verified (staging, with and without active campaign) — blocked on US-PAY-109 human task (Razorpay Plan objects) for a real checkout click-through
+- [ ] PR opened with story card as description — milestone PR not yet opened
+- [x] STORY.md ACs ticked off ✅
+- [x] EPIC.md "Implementation Update" log appended ✅
 
 ---
 
