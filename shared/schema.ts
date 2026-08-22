@@ -214,6 +214,7 @@ export const PLAN_CONFIG: Record<PlanTier, {
     limit: 1000,
     userLimit: -1, // unlimited
     features: ['1000 infographics/month', 'Unlimited users', 'White-label', 'Dedicated support', 'Editable designs'],
+    editableLimit: 100, // US-PAY-103: migrated from the retired EDITABLE_LIMITS_BY_TIER table
   },
   API_STARTER: {
     name: 'API Starter',
@@ -222,6 +223,7 @@ export const PLAN_CONFIG: Record<PlanTier, {
     limit: 5000,
     userLimit: 1,
     features: ['5000 API calls/month', 'REST API access', 'Webhook support', 'Technical support'],
+    editableLimit: -1, // unlimited — US-PAY-103: migrated from the retired EDITABLE_LIMITS_BY_TIER table
   },
   API_GROWTH: {
     name: 'API Growth',
@@ -230,6 +232,7 @@ export const PLAN_CONFIG: Record<PlanTier, {
     limit: 20000,
     userLimit: 3,
     features: ['20000 API calls/month', 'Priority API access', 'SLA guarantee', 'Dedicated account manager'],
+    editableLimit: -1, // unlimited — US-PAY-103
   },
   API_ENTERPRISE: {
     name: 'API Enterprise',
@@ -238,6 +241,7 @@ export const PLAN_CONFIG: Record<PlanTier, {
     limit: -1, // unlimited
     userLimit: -1, // unlimited
     features: ['Unlimited API calls', 'Custom SLA', 'On-premise option', '24/7 support', 'Custom integrations'],
+    editableLimit: -1, // unlimited — US-PAY-103
   },
 };
 
