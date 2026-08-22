@@ -39,6 +39,16 @@ describe('UsageLimitService', () => {
     ).toBe(Infinity);
   });
 
+  describe('resolveMonthlyLimit — PRO/AGENCY fallback (US-PAY-102 AC2, TC-PAY-102-02)', () => {
+    it('falls through to the PRO tier fallback (100) when org.monthlyLimit is unset', () => {
+      expect(service.resolveMonthlyLimit({ planTier: 'pro', monthlyLimit: 0 })).toBe(100);
+    });
+
+    it('falls through to the AGENCY tier fallback (400) when org.monthlyLimit is unset', () => {
+      expect(service.resolveMonthlyLimit({ planTier: 'agency', monthlyLimit: 0 })).toBe(400);
+    });
+  });
+
   it('assertCanGenerate throws 403 when at limit', async () => {
     mockPrisma.organization.findUnique.mockResolvedValue({
       id: 'org-1',
