@@ -194,11 +194,11 @@ be hardened.
 | 1 | [US-PAY-103](stories/US-PAY-103/STORY.md) | Editable-design limit relabel (Path A) | F-PAY-01 | M-PAY-01 | S | — | 🔲 | — | **V1** |
 | 1 | [US-PAY-104](stories/US-PAY-104/STORY.md) | Fix PricingPage.tsx hardcoded price-text drift | F-PAY-01 | M-PAY-01 | XS | — | ✅ (code) | — | **V1** |
 | 1 | [US-PAY-105](stories/US-PAY-105/STORY.md) | PricingCampaign Prisma model + migration | F-PAY-02 | M-PAY-02 | S | — | 🔲 | — | V2 |
-| 1 | [US-PAY-107](stories/US-PAY-107/STORY.md) | Standing annual-discount formula (×10) | F-PAY-02 | M-PAY-02 | S | US-PAY-102 | 🔲 | — | **V1** |
+| 1 | [US-PAY-107](stories/US-PAY-107/STORY.md) | Standing annual-discount formula (×10) | F-PAY-02 | M-PAY-02 | S | US-PAY-102 | ✅ (code) | — | **V1** |
 | 2 | [US-PAY-106](stories/US-PAY-106/STORY.md) | `getEffectivePrice()` resolution service | F-PAY-02 | M-PAY-02 | M | US-PAY-102, US-PAY-105 | 🔲 | — | V2 |
 | 1 | [US-PAY-109](stories/US-PAY-109/STORY.md) | New Razorpay Plan IDs for PRO/AGENCY tiers | F-PAY-03 | M-PAY-03 | S | US-PAY-102 | 🔲 | — | **V1** |
 | 3 | [US-PAY-108](stories/US-PAY-108/STORY.md) | Founding Customer 100 campaign seed + Offer linkage | F-PAY-02 | M-PAY-02 | M | US-PAY-105, US-PAY-106 | 🔲 | — | V2 |
-| 2 | [US-PAY-111](stories/US-PAY-111/STORY.md) | Webhook/entitlement mapping for new tiers | F-PAY-03 | M-PAY-03 | S | US-PAY-109 | 🔲 | — | **V1** |
+| 2 | [US-PAY-111](stories/US-PAY-111/STORY.md) | Webhook/entitlement mapping for new tiers | F-PAY-03 | M-PAY-03 | S | US-PAY-109 | ✅ (code) | — | **V1** |
 | 2 | [US-PAY-110](stories/US-PAY-110/STORY.md) | Checkout passes `offer_id` server-side | F-PAY-03 | M-PAY-03 | M | US-PAY-106, US-PAY-108, US-PAY-109 | 🔲 | — | V2 |
 | 1 | [US-PAY-112](stories/US-PAY-112/STORY.md) | Pricing page redesign — cards, founding badge, toggle | F-PAY-04 | M-PAY-04 | L | US-PAY-102, US-PAY-106 | 🔲 | — | V2 |
 | 2 | [US-PAY-113](stories/US-PAY-113/STORY.md) | Responsive layout + comparison section + messaging | F-PAY-04 | M-PAY-04 | S | US-PAY-112 | 🔲 | — | V2 |
@@ -318,6 +318,20 @@ For environment variables see [ENV.yaml](./ENV.yaml).
 ---
 
 ## Implementation Update (log)
+
+### 2026-08-22 — Wave 1 done: US-PAY-107 and US-PAY-111 finished (code) — 4 commits
+- **US-PAY-107** — its T1/T2 (formula + PricingPage.tsx wiring) had already landed as side effects
+  of finishing 102/104; added the missing T3 (dedicated test) and corrected AC1/AC4's text, which
+  had the same wrong "paise" unit bug as 102's original text. Commit `bac046d`.
+- **US-PAY-111** — verified the story's own premise before implementing: there is **no**
+  Plan-ID-to-tier lookup table in this codebase for a webhook to extend. `planTier` is stored on
+  the `Subscription` record at checkout and read straight from `PLAN_CONFIG[subscription.planTier]`
+  — PRO/AGENCY already activated correctly with zero new mapping code once `US-PAY-102` landed,
+  proved by test rather than assumed. AC1/AC2 text corrected to describe the real mechanism. The
+  one genuinely missing piece, AC4's amount-mismatch warning, was added. Commits `eca38ea`,
+  `4c690b0`.
+- Gate 1 verified clean: `npm run check` (0 errors), `npm run test:unit:backend` (373/373 — up
+  from 370, +3 new), client suite unaffected.
 
 ### 2026-08-22 — US-PAY-102 and US-PAY-104 finished (code) — 8 commits
 - **US-PAY-104** — banner price-text drift fix. Found already implemented (uncommitted) by an
