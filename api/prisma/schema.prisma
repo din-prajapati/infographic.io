@@ -216,7 +216,9 @@ enum PaymentStatus {
 enum PlanTier {
   FREE
   SOLO
+  PRO
   TEAM
+  AGENCY
   BROKERAGE
   API_STARTER
   API_GROWTH
