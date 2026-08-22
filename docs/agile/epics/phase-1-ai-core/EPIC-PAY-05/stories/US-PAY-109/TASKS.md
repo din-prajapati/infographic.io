@@ -113,16 +113,21 @@ cd api && npx vitest run tests/payments/payments.service.spec.ts --reporter=verb
 
 ## Task Checklist
 
-- [ ] T0 — HUMAN: Razorpay Plan objects created (4 IDs recorded)
-- [ ] T1 — extend RAZORPAY_PLAN_KEYS (file: `payments.service.ts`, type: `feat`)
-- [ ] T2 — env docs (file: `.env.example`/`env.validation.ts`, type: `docs`)
-- [ ] T3 — unconfigured-tier test (file: `payments.service.spec.ts`, type: `test`)
-- [ ] Gate 1 passes ✅
-- [ ] Gate 4 passes ✅
-- [ ] Manual test verified ✅
-- [ ] PR opened with story card as description ✅
-- [ ] STORY.md ACs ticked off ✅
-- [ ] EPIC.md "Implementation Update" log appended ✅
+- [ ] T0 — **HUMAN, still open**: Razorpay Plan objects created (4 IDs recorded) — nothing else in
+      this story can fully close until this happens
+- [x] T1 — extend RAZORPAY_PLAN_KEYS (file: `payments.service.ts`, type: `feat`) — landed as a
+      side effect of `US-PAY-102`'s commit `bce3a4f`
+- [x] T2 — env docs (file: `.env.example`/`env.validation.ts`, type: `docs`) — commit `bda66cb`
+- [x] T3 — unconfigured-tier test — commit `5f2b2a6`. **Deviation:** planned file was
+      `payments.service.spec.ts`; used `plan-availability.spec.ts` instead — the dedicated
+      `US-LAUNCH-007` test file for exactly this `configured` mechanism, a better fit than a
+      generic extend.
+- [x] Gate 1 passes ✅ — `npm run check` (0 errors), 377/377 backend tests pass
+- [ ] Gate 4 passes — not separately run this pass
+- [ ] Manual test verified — blocked on T0
+- [ ] PR opened with story card as description — pending
+- [ ] STORY.md ACs ticked off — AC1-3 done, AC4 blocked on T0
+- [x] EPIC.md "Implementation Update" log appended ✅
 
 ---
 

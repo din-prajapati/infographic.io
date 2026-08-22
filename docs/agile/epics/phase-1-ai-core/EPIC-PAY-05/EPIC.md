@@ -196,7 +196,7 @@ be hardened.
 | 1 | [US-PAY-105](stories/US-PAY-105/STORY.md) | PricingCampaign Prisma model + migration | F-PAY-02 | M-PAY-02 | S | — | 🔲 | — | V2 |
 | 1 | [US-PAY-107](stories/US-PAY-107/STORY.md) | Standing annual-discount formula (×10) | F-PAY-02 | M-PAY-02 | S | US-PAY-102 | ✅ (code) | — | **V1** |
 | 2 | [US-PAY-106](stories/US-PAY-106/STORY.md) | `getEffectivePrice()` resolution service | F-PAY-02 | M-PAY-02 | M | US-PAY-102, US-PAY-105 | 🔲 | — | V2 |
-| 1 | [US-PAY-109](stories/US-PAY-109/STORY.md) | New Razorpay Plan IDs for PRO/AGENCY tiers | F-PAY-03 | M-PAY-03 | S | US-PAY-102 | 🔲 | — | **V1** |
+| 1 | [US-PAY-109](stories/US-PAY-109/STORY.md) | New Razorpay Plan IDs for PRO/AGENCY tiers | F-PAY-03 | M-PAY-03 | S | US-PAY-102 | 🟡 (T0 human) | — | **V1** |
 | 3 | [US-PAY-108](stories/US-PAY-108/STORY.md) | Founding Customer 100 campaign seed + Offer linkage | F-PAY-02 | M-PAY-02 | M | US-PAY-105, US-PAY-106 | 🔲 | — | V2 |
 | 2 | [US-PAY-111](stories/US-PAY-111/STORY.md) | Webhook/entitlement mapping for new tiers | F-PAY-03 | M-PAY-03 | S | US-PAY-109 | ✅ (code) | — | **V1** |
 | 2 | [US-PAY-110](stories/US-PAY-110/STORY.md) | Checkout passes `offer_id` server-side | F-PAY-03 | M-PAY-03 | M | US-PAY-106, US-PAY-108, US-PAY-109 | 🔲 | — | V2 |
@@ -318,6 +318,17 @@ For environment variables see [ENV.yaml](./ENV.yaml).
 ---
 
 ## Implementation Update (log)
+
+### 2026-08-22 — Wave 2 done: US-PAY-109 code complete, blocked on T0 (human) — 2 commits
+- T1 (`RAZORPAY_PLAN_KEYS` entries) had already landed as a side effect of `US-PAY-102`'s
+  downstream-consumer fix. Completed T2 (`.env.example`/`env.validation.ts` docs) and T3
+  (unconfigured-tier tests, added to `plan-availability.spec.ts` — the dedicated `US-LAUNCH-007`
+  test file, better fit than the originally-planned generic extend).
+- AC1-3 done and verified by test. **AC4 and full closure are genuinely blocked on T0** — a human
+  creating 4 real Razorpay Plan objects in the dashboard (PRO monthly/annual, AGENCY
+  monthly/annual) and recording their IDs. Not faked, not worked around.
+- Commits `bda66cb`, `5f2b2a6`. Gate 1: `npm run check` (0 errors), `npm run test:unit:backend`
+  (377/377, up from 373).
 
 ### 2026-08-22 — Wave 1 done: US-PAY-107 and US-PAY-111 finished (code) — 4 commits
 - **US-PAY-107** — its T1/T2 (formula + PricingPage.tsx wiring) had already landed as side effects

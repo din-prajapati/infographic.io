@@ -7,13 +7,14 @@ updated: 2026-08-21
 
 # Story Card — US-PAY-109
 
-> **Status:** 🔲 Not Started
+> **Status:** 🟡 In Progress (code done) — blocked on T0 HUMAN task (real Razorpay Plan objects),
+> see TASKS.md
 > **Feature:** F-PAY-03 — Billing Integration (Razorpay)
 > **Epic:** [EPIC-PAY-05](../../EPIC.md)
 > **Milestone:** [M-PAY-03-billing-integration](../../milestones/M-PAY-03-billing-integration.md)
 > **Linear:** LIN-XXX
 > **Size:** S
-> **Created:** 2026-08-21 | **Closed:** —
+> **Created:** 2026-08-21 | **Closed:** — (AC4 needs T0 first)
 
 ---
 
@@ -28,20 +29,24 @@ updated: 2026-08-21
 
 ## Acceptance Criteria
 
-- [ ] **AC1 [happy-path]:** `payments.service.ts`'s `RAZORPAY_PLAN_KEYS` includes
+- [x] **AC1 [happy-path]:** `payments.service.ts`'s `RAZORPAY_PLAN_KEYS` includes
       `RAZORPAY_PLAN_PRO_MONTHLY`, `RAZORPAY_PLAN_PRO_ANNUAL`, `RAZORPAY_PLAN_AGENCY_MONTHLY`,
       `RAZORPAY_PLAN_AGENCY_ANNUAL`, following the exact same lookup pattern already used for
-      SOLO/TEAM/BROKERAGE.
-- [ ] **AC2 [error-path]:** When a `RAZORPAY_PLAN_PRO_*` env var is unset, `PricingPage.tsx`'s
+      SOLO/TEAM/BROKERAGE. Landed as a side effect of `US-PAY-102`'s downstream-consumer fix
+      (commit `bce3a4f`); env docs completed here (`.env.example`, `env.validation.ts`).
+- [x] **AC2 [error-path]:** When a `RAZORPAY_PLAN_PRO_*` env var is unset, `PricingPage.tsx`'s
       existing `unconfiguredPaidTiers` mechanism (US-LAUNCH-007) correctly shows "Contact us" for
-      PRO instead of a broken checkout button — verified, not assumed to already work by analogy.
-- [ ] **AC3 [security]:** No placeholder fallback (`process.env.RAZORPAY_PLAN_PRO ||
-      'plan_pro'`-style) ships to a path that could reach production — either the env var is set, or
-      the tier is correctly marked unconfigured, never a fake plan ID that would fail at Razorpay.
+      PRO instead of a broken checkout button. Verified, not assumed — new tests in
+      `plan-availability.spec.ts` prove `getAvailablePlans()` reports `configured: false` for
+      PRO/AGENCY without their env vars, and `true` once set.
+- [x] **AC3 [security]:** No placeholder fallback (`process.env.RAZORPAY_PLAN_PRO ||
+      'plan_pro'`-style) ships to a path that could reach production. Confirmed by construction
+      (both `RAZORPAY_PLAN_KEYS.PRO` and `PLAN_IDS.PRO.RAZORPAY` fall back to `''`, never a fake
+      id) and by test.
 - [ ] **AC4 [currency-edge]:** Each configured Razorpay Plan's actual dashboard-set amount matches
-      `PLAN_CONFIG`'s value exactly (₹10,999/mo for PRO, ₹43,999/mo for AGENCY) — verified manually
-      against the Razorpay dashboard, since the app cannot introspect Razorpay Plan amounts at
-      runtime.
+      `PLAN_CONFIG`'s value exactly (₹10,999/mo for PRO, ₹43,999/mo for AGENCY) — **genuinely
+      blocked on T0** (a human creating the 4 real Razorpay Plan objects), cannot be verified from
+      code. Not run this pass.
 
 ---
 
@@ -105,9 +110,9 @@ Rules:
 
 | TC ID | Type | Priority | Scenario | Status | Finding |
 |-------|------|:--------:|----------|:------:|---------|
-| TC-PAY-109-01 | Unit | P0 | Given RAZORPAY_PLAN_PRO_MONTHLY set, when resolved, then the correct plan ID is used for a PRO monthly subscription | 🔲 | |
-| TC-PAY-109-02 | Unit | P0 | Given RAZORPAY_PLAN_PRO_MONTHLY unset, when PricingPage renders, then PRO shows "Contact us" not a checkout button | 🔲 | |
-| TC-PAY-109-03 | Manual | P1 | Given the Razorpay dashboard, when PRO/AGENCY Plan amounts are checked, then they match PLAN_CONFIG exactly | 🔲 | |
+| TC-PAY-109-01 | Unit | P0 | Given RAZORPAY_PLAN_PRO_MONTHLY set, when resolved, then the correct plan ID is used for a PRO monthly subscription | ✅ | |
+| TC-PAY-109-02 | Unit | P0 | Given RAZORPAY_PLAN_PRO_MONTHLY unset, when PricingPage renders, then PRO shows "Contact us" not a checkout button | ✅ | Verified via `getAvailablePlans()`'s `configured` flag, the same mechanism the page reads |
+| TC-PAY-109-03 | Manual | P1 | Given the Razorpay dashboard, when PRO/AGENCY Plan amounts are checked, then they match PLAN_CONFIG exactly | ⏸ | Blocked on T0 (human dashboard task) |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 
@@ -115,19 +120,28 @@ Rules:
 
 ## Definition of Done
 
-- [ ] All ACs checked ✅
-- [ ] All test cases run and recorded
-- [ ] Gate 1 passes
-- [ ] Gate 4 passes (backend)
-- [ ] Manual flow verified
+- [ ] All ACs checked ✅ — AC1/2/3 done; AC4 genuinely blocked on T0 (human)
+- [x] All test cases run and recorded (TC-03 blocked, recorded as such)
+- [x] Gate 1 passes
+- [ ] Gate 4 passes (backend) — not separately run this pass
+- [ ] Manual flow verified — blocked on T0
 - [ ] PR merged
 - [ ] No console errors for the changed flow
-- [ ] [TASKS.md](./TASKS.md) task list fully checked
-- [ ] STORY.md status updated to ✅ Done
+- [ ] [TASKS.md](./TASKS.md) task list fully checked — T0 (human) still open
+- [ ] STORY.md status updated to ✅ Done — stays 🟡 until T0 clears
 
 ---
 
 ## Implementation Update (log)
+
+**2026-08-22.** T1 (`RAZORPAY_PLAN_KEYS` entries) had already landed as a side effect of
+`US-PAY-102`'s downstream-consumer fix — found already correct, not redone. Completed T2 (env
+docs) and T3 (unconfigured-tier tests, in `plan-availability.spec.ts` — the dedicated
+`US-LAUNCH-007` test file, a better home than the originally-planned
+`payments.service.spec.ts`). AC1-3 are genuinely done and verified by test — this story cannot go
+further than that without T0 (a human creating 4 real Razorpay Plan objects in the dashboard);
+AC4 stays open, not faked. Commits `bda66cb`, `5f2b2a6`. Gate 1: `npm run check` (0 errors),
+`npm run test:unit:backend` (377/377, up from 373, +4 new).
 
 ---
 
