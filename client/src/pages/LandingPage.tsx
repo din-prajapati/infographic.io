@@ -31,6 +31,8 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { PLAN_CONFIG } from "@shared/schema";
+import { useQuery } from "@tanstack/react-query";
+import { pricingApi, type EffectivePriceResult } from "@/lib/api";
 
 import carouselImage1 from "@/assets/images/carousel/property-1.jpg";
 import carouselImage2 from "@/assets/images/carousel/property-2.jpg";
@@ -115,6 +117,10 @@ const planIcons: Record<string, typeof Gift> = {
   TEAM: Building,
 };
 
+// US-PAY-112 T3: teaser stays a 3-tier FREE/SOLO/TEAM preview (full 5-tier grid lives on
+// /pricing) — only structural, tier-independent data here. Live prices come from the same
+// GET /api/v1/pricing endpoint the main pricing page uses, so a founding-campaign badge/price
+// never drifts between the two pages.
 const pricingPlans = (["FREE", "SOLO", "TEAM"] as const).map((tier) => {
   const config = PLAN_CONFIG[tier];
   return {
@@ -122,7 +128,6 @@ const pricingPlans = (["FREE", "SOLO", "TEAM"] as const).map((tier) => {
     name: config.name,
     icon: planIcons[tier] ?? Gift,
     description: tier === "FREE" ? "Get started with essential features" : tier === "SOLO" ? "Perfect for individual agents" : "Built for real estate teams",
-    price: config.price,
     features: config.features,
   };
 });
@@ -162,13 +167,16 @@ export default function LandingPage() {
     setAnnualToggles((prev) => ({ ...prev, [tier]: !prev[tier] }));
   };
 
-  const calculateAnnualPrice = (monthlyPrice: number): number => {
-    return Math.round(monthlyPrice * 12 * 0.85);
-  };
-
-  const calculateMonthlySavings = (monthlyPrice: number): number => {
-    return Math.round(monthlyPrice * 12 * 0.15);
-  };
+  // US-PAY-112 T3: resolved server-side by getEffectivePrice() (base price x campaign discount x
+  // the x10 annual formula, US-PAY-107) -- never recomputed here. Replaces the old stale
+  // x12x0.85 local formula.
+  const { data: pricingData } = useQuery({
+    queryKey: ["/api/v1/pricing"],
+    queryFn: () => pricingApi.getPricing(),
+  });
+  const pricingByTier = new Map<string, { monthly: EffectivePriceResult; annual: EffectivePriceResult }>(
+    (pricingData?.plans ?? []).map((p) => [p.tier, { monthly: p.monthly, annual: p.annual }]),
+  );
 
   useEffect(() => {
     const video = videoRef.current;
@@ -367,16 +375,27 @@ export default function LandingPage() {
             <p className="text-xs uppercase tracking-widest text-primary mb-4">PRICING</p>
             <h2 className="text-3xl md:text-5xl font-bold text-black mb-4">Simple, Transparent Pricing</h2>
             <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-              Start free and upgrade as you grow. Annual billing saves 15%.
+              Start free and upgrade as you grow. Annual billing gets you 2 months free.
             </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-6">
             {pricingPlans.map((plan) => {
               const isAnnual = annualToggles[plan.tier] || false;
-              const showAnnualToggle = plan.price > 0;
-              const displayPrice = isAnnual ? Math.round(calculateAnnualPrice(plan.price) / 12) : plan.price;
-              const savings = calculateMonthlySavings(plan.price);
+              const tierPricing = pricingByTier.get(plan.tier);
+              const monthly = tierPricing?.monthly;
+              const annual = tierPricing?.annual;
+              const showAnnualToggle = (monthly?.regularPrice ?? 0) > 0;
+              const active = isAnnual ? annual : monthly;
+              const hasFoundingPrice =
+                active != null && active.campaignId != null && active.effectivePrice !== active.regularPrice;
+              const displayPrice = isAnnual
+                ? Math.round((annual?.effectivePrice ?? 0) / 12)
+                : (monthly?.effectivePrice ?? 0);
+              const displayRegular = isAnnual
+                ? Math.round((annual?.regularPrice ?? 0) / 12)
+                : (monthly?.regularPrice ?? 0);
+              const savings = (monthly?.regularPrice ?? 0) * 12 - (annual?.regularPrice ?? 0);
               const PlanIcon = plan.icon;
 
               return (
@@ -401,16 +420,26 @@ export default function LandingPage() {
 
                   <div className="mb-6">
                     <div className="flex items-baseline gap-2">
+                      {hasFoundingPrice && (
+                        <span className="text-lg text-gray-400 line-through">
+                          ₹{displayRegular.toLocaleString()}
+                        </span>
+                      )}
                       <span className="text-4xl font-bold text-black">
                         ₹{displayPrice.toLocaleString()}
                       </span>
                       <span className="text-base text-gray-500">/ month</span>
-                      {isAnnual && plan.price > 0 && (
+                      {isAnnual && showAnnualToggle && (
                         <span className="text-sm text-primary font-medium bg-primary/10 px-2 py-0.5 rounded-full">
                           Save ₹{savings.toLocaleString()}
                         </span>
                       )}
                     </div>
+                    {hasFoundingPrice && active?.badge && (
+                      <span className="inline-block mt-2 text-xs font-semibold text-amber-600 bg-amber-100 px-2 py-0.5 rounded-full">
+                        {active.badge}
+                      </span>
+                    )}
                   </div>
 
                   <ul className="space-y-3 mb-8 flex-1">
