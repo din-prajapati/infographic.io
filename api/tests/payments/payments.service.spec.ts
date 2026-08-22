@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { SubscriptionStatus, PaymentStatus } from '@prisma/client';
 import { PaymentsService } from '../../src/modules/payments/services/payments.service';
+import { PLAN_CONFIG } from '@shared/schema';
 
 // ---------------------------------------------------------------------------
 // vi.hoisted ensures these exist before vi.mock hoists the factory to the top
@@ -448,6 +449,73 @@ describe('PaymentsService', () => {
       await service.handleSubscriptionCharged(razorpayChargedEvent(), 'RAZORPAY');
 
       expect(mockStorage.createPayment).not.toHaveBeenCalled();
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // handleSubscriptionCharged — PRO/AGENCY entitlement mapping (US-PAY-111)
+  //
+  // AC1: there is no separate Plan-ID-to-tier lookup for the webhook to extend -- planTier is
+  // already stored on the Subscription record at checkout time (createSubscription) and this
+  // handler reads it directly via PLAN_CONFIG[subscription.planTier]. Verified here rather than
+  // assumed: a PRO subscription activates with PRO's real entitlements using the exact same code
+  // path as every other tier, with zero PRO/AGENCY-specific branching.
+  // -------------------------------------------------------------------------
+  describe('handleSubscriptionCharged() — PRO/AGENCY (US-PAY-111)', () => {
+    beforeEach(() => {
+      mockStorage.getPaymentByExternalId.mockResolvedValue(null);
+      mockStorage.getOrganization.mockResolvedValue({ id: 'org_001' });
+      mockStorage.createPayment.mockImplementation((data) => Promise.resolve({ ...data }));
+    });
+
+    it('AC1 / TC-PAY-111-01: a PENDING PRO subscription activates with PRO entitlements (no new mapping needed)', async () => {
+      mockStorage.getSubscriptionByExternalId.mockResolvedValue({
+        ...TEST_SUBSCRIPTION,
+        planTier: 'PRO',
+        status: SubscriptionStatus.PENDING,
+      });
+
+      const event = razorpayChargedEvent();
+      event.payload.payment.entity.amount = 1099900; // PLAN_CONFIG.PRO.price (10999) * 100
+
+      await service.handleSubscriptionCharged(event, 'RAZORPAY');
+
+      expect(mockStorage.updateOrganization).toHaveBeenCalledWith(
+        'org_001',
+        expect.objectContaining({ planTier: 'PRO', monthlyLimit: PLAN_CONFIG.PRO.limit }),
+      );
+    });
+
+    it('AC4 / TC-PAY-111-03: logs a warning (never blocks) when the charged amount does not match PLAN_CONFIG', async () => {
+      mockStorage.getSubscriptionByExternalId.mockResolvedValue({
+        ...TEST_SUBSCRIPTION,
+        planTier: 'AGENCY',
+      });
+      const warnSpy = vi.spyOn((service as any).logger, 'warn');
+
+      const event = razorpayChargedEvent();
+      event.payload.payment.entity.amount = 999900; // wrong -- AGENCY should be 4399900
+
+      await service.handleSubscriptionCharged(event, 'RAZORPAY');
+
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('amount mismatch'));
+      // Still processes normally -- a mismatch is logged, never silently trusted, but never blocks.
+      expect(mockStorage.createPayment).toHaveBeenCalled();
+    });
+
+    it('AC4: no warning logged when the charged amount matches PLAN_CONFIG exactly', async () => {
+      mockStorage.getSubscriptionByExternalId.mockResolvedValue({
+        ...TEST_SUBSCRIPTION,
+        planTier: 'AGENCY',
+      });
+      const warnSpy = vi.spyOn((service as any).logger, 'warn');
+
+      const event = razorpayChargedEvent();
+      event.payload.payment.entity.amount = 4399900; // PLAN_CONFIG.AGENCY.price (43999) * 100
+
+      await service.handleSubscriptionCharged(event, 'RAZORPAY');
+
+      expect(warnSpy).not.toHaveBeenCalledWith(expect.stringContaining('amount mismatch'));
     });
   });
 
