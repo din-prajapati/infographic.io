@@ -38,7 +38,21 @@ const planDescriptions: Record<string, string> = {
 import { toast } from "sonner";
 import { queryClient, redirectToLogin } from "@/lib/queryClient";
 import { paymentsApi, type ProviderInfo } from "@/lib/api";
-import { PLAN_CONFIG, type PlanTier } from "@shared/schema";
+import { PLAN_CONFIG, getAnnualPrice, type PlanTier } from "@shared/schema";
+
+/**
+ * Test-mode banner recurring-amount text, derived from PLAN_CONFIG at call time.
+ * Exported (not inlined in JSX) so a test can mutate a PLAN_CONFIG price and assert the
+ * text tracks it with zero code edits — US-PAY-104 AC1/AC2.
+ */
+export function getTestModeBannerAmounts(
+  config: Pick<typeof PLAN_CONFIG, "SOLO" | "TEAM"> = PLAN_CONFIG,
+): { solo: string; team: string } {
+  return {
+    solo: config.SOLO.price.toLocaleString(),
+    team: config.TEAM.price.toLocaleString(),
+  };
+}
 
 declare global {
   interface Window {
@@ -172,13 +186,16 @@ export default function PricingPage() {
   const subscriptionBillingIsAnnual = (sub: { billingPeriod?: string }) =>
     String(sub.billingPeriod ?? "MONTHLY").toUpperCase() === "ANNUAL";
 
-  // Calculate annual price with 15% discount
+  // Standing annual discount: monthly x 10 (2 months free) -- US-PAY-107. Not a promotional
+  // campaign; that composes separately in the US-PAY-106 resolution service.
   const calculateAnnualPrice = (monthlyPrice: number): number => {
-    return Math.round(monthlyPrice * 12 * 0.85);
+    return getAnnualPrice(monthlyPrice);
   };
 
+  // Derived from the same x10 formula so the "Save ₹X" badge always matches the displayed
+  // annual price: 2 months free = monthly x 12 - monthly x 10.
   const calculateMonthlySavings = (monthlyPrice: number): number => {
-    return Math.round(monthlyPrice * 12 * 0.15);
+    return monthlyPrice * 12 - getAnnualPrice(monthlyPrice);
   };
 
   // Create subscription mutation
@@ -466,7 +483,7 @@ export default function PricingPage() {
             </div>
             <p className="text-sm text-muted-foreground mb-3">
               For <strong>subscriptions</strong>, Razorpay often shows a small <strong>refundable auth charge</strong> (e.g. ₹5) in the price summary first; the modal copy should still state the full recurring amount (
-              <strong>Solo ₹2,999/mo</strong>, <strong>Team ₹6,999/mo</strong>, or annual equivalent). If you only see ₹1 or wrong recurring text, check Dashboard plan amounts and <code className="bg-muted px-1 rounded text-xs">RAZORPAY_PLAN_*</code> in <code className="bg-muted px-1 rounded text-xs">.env</code>.
+              <strong>Solo ₹{getTestModeBannerAmounts().solo}/mo</strong>, <strong>Team ₹{getTestModeBannerAmounts().team}/mo</strong>, or annual equivalent). If you only see ₹1 or wrong recurring text, check Dashboard plan amounts and <code className="bg-muted px-1 rounded text-xs">RAZORPAY_PLAN_*</code> in <code className="bg-muted px-1 rounded text-xs">.env</code>.
             </p>
             <div className="flex items-start gap-2 text-sm text-muted-foreground">
               <CreditCard className="h-4 w-4 shrink-0 mt-0.5" />
