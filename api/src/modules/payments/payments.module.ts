@@ -5,6 +5,7 @@ import { PaymentsService } from './services/payments.service';
 import { SubscriptionStorageService } from './services/subscription-storage.service';
 import { UsageAnalyticsService } from './services/usage-analytics.service';
 import { RenewalReminderService } from './services/renewal-reminder.service';
+import { PricingCampaignService } from './services/pricing-campaign.service';
 import { PrismaService } from '../../common/services/prisma.service';
 import { DatabaseModule } from '../../database/database.module';
 import { EmailModule } from '../email/email.module';
@@ -32,7 +33,11 @@ import { EmailService } from '../email/email.service';
       useFactory: (emailService: EmailService) => new RenewalReminderService(emailService),
       inject: [EmailService],
     },
+    // US-PAY-105 — no constructor deps (uses the prisma singleton directly, same as
+    // RenewalReminderService's own prisma access), registered so US-PAY-106's price-resolution
+    // service can @Inject() it once that story is implemented.
+    PricingCampaignService,
   ],
-  exports: [PaymentsService, UsageAnalyticsService],
+  exports: [PaymentsService, UsageAnalyticsService, PricingCampaignService],
 })
 export class PaymentsModule {}
