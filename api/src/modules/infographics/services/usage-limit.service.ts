@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import { SubscriptionStatus } from '@prisma/client';
 import { prisma } from '../../../database/prisma.client';
+import { PLAN_CONFIG, type PlanTier } from '@shared/schema';
 
 /**
  * US-LAUNCH-015 AC1 — thrown when a FREE-tier org has already used its one
@@ -42,21 +43,23 @@ export const PLAN_TIER_MONTHLY_LIMITS: Record<string, number> = {
 };
 
 /**
- * US-PAY-103 — per-tier cap on credit-charged editable composes per billing
- * cycle.  FREE is handled separately via hasUsedEditableTrial() (1 lifetime
- * trial, not a monthly allowance).  -1 = unlimited (API tiers).
+ * US-PAY-103 — per-tier cap on credit-charged editable composes per billing cycle. FREE is
+ * handled separately via hasUsedEditableTrial() (1 lifetime trial, not a monthly allowance).
  *
- * Values match the editableLimit column being added by US-PAY-102; kept here
- * as a local constant until that story lands and PLAN_CONFIG grows the field.
+ * Reads PLAN_CONFIG[tier].editableLimit directly (US-PAY-102 added this field) rather than
+ * duplicating the numbers in a second local table — the prior version of this file kept a
+ * hand-maintained EDITABLE_LIMITS_BY_TIER map "until PLAN_CONFIG grows the field," which it
+ * now has. That map was missing PRO and AGENCY entirely (both would have silently fallen
+ * through to a generic `?? 10` default — AGENCY's real limit is 150) — caught by
+ * US-PAY-103's own TC-PAY-103 AC4 test, fixed by retiring the duplicate instead of patching it.
  */
-export const EDITABLE_LIMITS_BY_TIER: Record<string, number> = {
-  solo: 10,
-  team: 60,
-  brokerage: 100,
-  api_starter: -1,
-  api_growth: -1,
-  api_enterprise: -1,
-};
+function editableLimitForTier(tier: string): number {
+  const tierUpper = tier.toUpperCase() as PlanTier;
+  // Every real paid tier sets editableLimit explicitly in PLAN_CONFIG (including -1 for the
+  // unlimited API tiers). This fallback only matters for a tier that's added without setting
+  // it — defaults conservative (10), never unlimited, so that mistake fails safe.
+  return PLAN_CONFIG[tierUpper]?.editableLimit ?? 10;
+}
 
 export interface UsageQuotaSnapshot {
   organizationId: string;
@@ -344,7 +347,7 @@ export class UsageLimitService {
    * US-PAY-103 — display-only editable-design remaining count.
    *
    * FREE tier: returns 0 if the lifetime trial has been used (hasUsedEditableTrial),
-   * else 1. Paid tiers: editableLimit (from EDITABLE_LIMITS_BY_TIER) minus the
+   * else 1. Paid tiers: editableLimit (from PLAN_CONFIG) minus the
    * number of credit-charged extra composes this billing cycle.
    *
    * A credit-charged compose is one where AiOrchestrator incremented creditsUsed
@@ -372,7 +375,7 @@ export class UsageLimitService {
       };
     }
 
-    const editableLimit = EDITABLE_LIMITS_BY_TIER[tier] ?? 10;
+    const editableLimit = editableLimitForTier(tier);
     if (editableLimit === -1) {
       return {
         organizationId,
@@ -402,5 +405,11 @@ export class UsageLimitService {
       editableUsed,
       editableRemaining,
     };
+  }
+
+  /** US-PAY-103 — same userId-to-org resolution pattern as getUsageQuotaForUser(). */
+  async getEditableUsageQuotaForUser(userId: string): Promise<EditableUsageQuotaSnapshot> {
+    const organizationId = await this.resolveOrganizationIdForUser(userId);
+    return this.getEditableUsageQuota(organizationId);
   }
 }
