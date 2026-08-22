@@ -344,3 +344,28 @@ model PasswordResetToken {
   @@index([userId])
   @@index([tokenHash])
 }
+
+// US-PAY-105 — generic, reusable promotional-discount campaign (Founding Customer 100 is simply
+// the first row, not a special case). tierDiscounts holds a per-tier map, e.g.
+// { SOLO: { type: "PERCENT", value: 27.3 }, ... } -- see US-PAY-108 for the actual seed row.
+model PricingCampaign {
+  id              String    @id @default(cuid())
+  code            String    @unique // e.g. "FOUNDING100", "DIWALI2026" -- immutable after creation (AC3)
+  name            String
+  displayBadge    String?
+  tierDiscounts   Json // Record<PlanTier, { type: "PERCENT" | "FLAT"; value: number; razorpayOfferId?: string }>
+  startsAt        DateTime
+  endsAt          DateTime?
+  maxRedemptions  Int?
+  redemptionsUsed Int       @default(0)
+  isActive        Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // AC2: at most one row with isActive:true at a time. Postgres partial unique indexes aren't
+  // expressible in Prisma's schema DSL directly, so the guard is enforced in
+  // PricingCampaignService.activateCampaign() (a transaction that deactivates every other row
+  // first) rather than here -- see that service for the actual guarantee.
+  @@index([isActive])
+  @@index([code])
+}
