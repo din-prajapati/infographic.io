@@ -193,7 +193,7 @@ be hardened.
 | 1 | [US-PAY-102](stories/US-PAY-102/STORY.md) | Extend PLAN_CONFIG with PRO and AGENCY tiers | F-PAY-01 | M-PAY-01 | M | — | ✅ (code) | — | **V1** |
 | 1 | [US-PAY-103](stories/US-PAY-103/STORY.md) | Editable-design limit relabel (Path A) | F-PAY-01 | M-PAY-01 | S | — | ✅ (code) | — | **V1** |
 | 1 | [US-PAY-104](stories/US-PAY-104/STORY.md) | Fix PricingPage.tsx hardcoded price-text drift | F-PAY-01 | M-PAY-01 | XS | — | ✅ (code) | — | **V1** |
-| 1 | [US-PAY-105](stories/US-PAY-105/STORY.md) | PricingCampaign Prisma model + migration | F-PAY-02 | M-PAY-02 | S | — | 🔲 | — | V2 |
+| 1 | [US-PAY-105](stories/US-PAY-105/STORY.md) | PricingCampaign Prisma model + migration | F-PAY-02 | M-PAY-02 | S | — | ✅ (code) | — | V2 |
 | 1 | [US-PAY-107](stories/US-PAY-107/STORY.md) | Standing annual-discount formula (×10) | F-PAY-02 | M-PAY-02 | S | US-PAY-102 | ✅ (code) | — | **V1** |
 | 2 | [US-PAY-106](stories/US-PAY-106/STORY.md) | `getEffectivePrice()` resolution service | F-PAY-02 | M-PAY-02 | M | US-PAY-102, US-PAY-105 | 🔲 | — | V2 |
 | 1 | [US-PAY-109](stories/US-PAY-109/STORY.md) | New Razorpay Plan IDs for PRO/AGENCY tiers | F-PAY-03 | M-PAY-03 | S | US-PAY-102 | 🟡 (T0 human) | — | **V1** |
@@ -318,6 +318,19 @@ For environment variables see [ENV.yaml](./ENV.yaml).
 ---
 
 ## Implementation Update (log)
+
+### 2026-08-23 — V2 implementation begins: US-PAY-105 done (code)
+- First V2 story implemented, after verifying its Gemini-produced hardening lock was still valid
+  (all 6 V2 `STORY.md`s confirmed unchanged since locking via git log — the lock's own `story_sha`
+  field is known unreliable cross-engine, see 2026-08-22 harden-tooling notes, so content-staleness
+  was checked directly instead).
+- `PricingCampaignService` (create/activate/deactivate + single-active guard + `tierDiscounts`
+  validation) registered in `PaymentsModule` — needed so `US-PAY-106` can `@Inject()` it next.
+- Gate 1: `npm run check` (0 errors), `npm run test:unit:backend` (395/395, up from 383).
+  Commits `8efc0e1`, `2bd8339`, `1d05c4b`.
+- **Next in the V2 dependency chain**: `US-PAY-106` (`getEffectivePrice()`, needs 102+105, both now
+  done) → `US-PAY-108`/`US-PAY-112` → `US-PAY-110` (blocked on `US-PAY-109`'s human task) →
+  `US-PAY-113`.
 
 ### 2026-08-22 — Wave 3 done: US-PAY-103 finished (code) — all V1 stories now code-complete
 - `getEditableUsageQuota()` itself was already committed (`480c31e`, by you). Found two real

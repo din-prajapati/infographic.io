@@ -105,15 +105,17 @@ cd api && npx vitest run tests/payments/pricing-campaign.service.spec.ts --repor
 
 ## Task Checklist
 
-- [ ] T1 — Prisma model + migration (file: `schema.prisma`, type: `feat`)
-- [ ] T2 — service + guards (file: `pricing-campaign.service.ts`, type: `feat`)
-- [ ] T3 — unit tests (file: `pricing-campaign.service.spec.ts`, type: `test`)
-- [ ] Gate 1 passes ✅
-- [ ] Gate 4 passes ✅
-- [ ] Manual test verified ✅
-- [ ] PR opened with story card as description ✅
-- [ ] STORY.md ACs ticked off ✅
-- [ ] EPIC.md "Implementation Update" log appended ✅
+- [x] T1 — Prisma model (file: `schema.prisma`, type: `feat`) — commit `8efc0e1`. **Deviation:**
+      `npx prisma generate` only, not `migrate dev` (this project uses `db push`, see US-PAY-102's log)
+- [x] T2 — service + guards (file: `pricing-campaign.service.ts`, type: `feat`) — commit `2bd8339`.
+      Also registered in `payments.module.ts` (not in original file list, necessary for DI)
+- [x] T3 — unit tests (file: `pricing-campaign.service.spec.ts`, type: `test`) — commit `1d05c4b`
+- [x] Gate 1 passes ✅ — `npm run check` (0 errors), 395/395 backend tests pass
+- [ ] Gate 4 passes — not separately run this pass
+- [ ] Manual test verified — pending
+- [ ] PR opened with story card as description — pending (milestone PR)
+- [x] STORY.md ACs ticked off ✅
+- [x] EPIC.md "Implementation Update" log appended ✅
 
 ---
 
