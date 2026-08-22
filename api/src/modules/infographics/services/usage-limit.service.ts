@@ -39,12 +39,43 @@ export const PLAN_TIER_MONTHLY_LIMITS: Record<string, number> = {
   api_enterprise: -1,
 };
 
+/**
+ * US-PAY-103 — per-tier cap on credit-charged editable composes per billing
+ * cycle.  FREE is handled separately via hasUsedEditableTrial() (1 lifetime
+ * trial, not a monthly allowance).  -1 = unlimited (API tiers).
+ *
+ * Values match the editableLimit column being added by US-PAY-102; kept here
+ * as a local constant until that story lands and PLAN_CONFIG grows the field.
+ */
+export const EDITABLE_LIMITS_BY_TIER: Record<string, number> = {
+  solo: 10,
+  team: 60,
+  brokerage: 100,
+  api_starter: -1,
+  api_growth: -1,
+  api_enterprise: -1,
+};
+
 export interface UsageQuotaSnapshot {
   organizationId: string;
   planTier: string;
   current: number;
   limit: number;
   remaining: number;
+}
+
+/**
+ * US-PAY-103 — snapshot returned by getEditableUsageQuota().
+ * editableLimit / editableRemaining of -1 mean "unlimited".
+ */
+export interface EditableUsageQuotaSnapshot {
+  organizationId: string;
+  planTier: string;
+  /** -1 = unlimited */
+  editableLimit: number;
+  editableUsed: number;
+  /** -1 = unlimited */
+  editableRemaining: number;
 }
 
 @Injectable()
@@ -305,5 +336,69 @@ export class UsageLimitService {
     return infographics.some(
       (i) => i.composedDesigns && Object.keys(i.composedDesigns as object).length > 0,
     );
+  }
+
+  /**
+   * US-PAY-103 — display-only editable-design remaining count.
+   *
+   * FREE tier: returns 0 if the lifetime trial has been used (hasUsedEditableTrial),
+   * else 1. Paid tiers: editableLimit (from EDITABLE_LIMITS_BY_TIER) minus the
+   * number of credit-charged extra composes this billing cycle.
+   *
+   * A credit-charged compose is one where AiOrchestrator incremented creditsUsed
+   * (chargeCredit=true). Each such increment adds 1 to the existing UsageRecord's
+   * creditsUsed column, so sum(creditsUsed − 1) across records with creditsUsed > 1
+   * equals the total number of extra composes charged this cycle.
+   *
+   * Uses getEffectiveTier() — same resolver as the generate path — so a mid-cycle
+   * plan change is reflected immediately with no caching (AC4).
+   *
+   * This method is read-only and does NOT modify gating logic (Out of Scope).
+   */
+  async getEditableUsageQuota(organizationId: string): Promise<EditableUsageQuotaSnapshot> {
+    const effective = await this.getEffectiveTier(organizationId);
+    const tier = (effective.planTier || 'free').toLowerCase();
+
+    if (tier === 'free') {
+      const trialUsed = await this.hasUsedEditableTrial(organizationId);
+      return {
+        organizationId,
+        planTier: effective.planTier,
+        editableLimit: 1,
+        editableUsed: trialUsed ? 1 : 0,
+        editableRemaining: trialUsed ? 0 : 1,
+      };
+    }
+
+    const editableLimit = EDITABLE_LIMITS_BY_TIER[tier] ?? 10;
+    if (editableLimit === -1) {
+      return {
+        organizationId,
+        planTier: effective.planTier,
+        editableLimit: -1,
+        editableUsed: 0,
+        editableRemaining: -1,
+      };
+    }
+
+    const { start, end } = this.monthWindow();
+    const records = await prisma.usageRecord.findMany({
+      where: {
+        organizationId,
+        createdAt: { gte: start, lte: end },
+        creditsUsed: { gt: 1 },
+      },
+      select: { creditsUsed: true },
+    });
+    const editableUsed = records.reduce((sum, r) => sum + (r.creditsUsed - 1), 0);
+    const editableRemaining = Math.max(0, editableLimit - editableUsed);
+
+    return {
+      organizationId,
+      planTier: effective.planTier,
+      editableLimit,
+      editableUsed,
+      editableRemaining,
+    };
   }
 }
