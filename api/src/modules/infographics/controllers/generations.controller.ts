@@ -21,6 +21,19 @@ export class GenerationsController {
     return this.usageLimitService.getUsageQuotaForUser(req.user.id);
   }
 
+  /**
+   * US-PAY-103 — display-only editable-design remaining count. Separate route (not merged
+   * into usage/quota above) since it's a distinct concern with its own shape; AC3: computed
+   * entirely server-side from real UsageRecord/composedDesigns data.
+   */
+  @Get('usage/quota/editable')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get current editable-design remaining count for the organization' })
+  async getEditableUsageQuota(@Req() req: any) {
+    return this.usageLimitService.getEditableUsageQuotaForUser(req.user.id);
+  }
+
   @Post()
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth()
