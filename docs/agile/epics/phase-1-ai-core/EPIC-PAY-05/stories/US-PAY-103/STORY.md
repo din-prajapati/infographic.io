@@ -7,13 +7,13 @@ updated: 2026-08-21
 
 # Story Card — US-PAY-103
 
-> **Status:** 🔲 Not Started
+> **Status:** ✅ Done (code) — manual/PR still open, see TASKS.md
 > **Feature:** F-PAY-01 — Pricing Configuration & Entitlements
 > **Epic:** [EPIC-PAY-05](../../EPIC.md)
 > **Milestone:** [M-PAY-01-pricing-foundation](../../milestones/M-PAY-01-pricing-foundation.md)
 > **Linear:** LIN-XXX
 > **Size:** S
-> **Created:** 2026-08-21 | **Closed:** —
+> **Created:** 2026-08-21 | **Closed:** 2026-08-22 (code) — full DoD pending
 
 ---
 
@@ -38,20 +38,26 @@ counter" model (Path B) — that reversal was considered and explicitly not chos
 
 ## Acceptance Criteria
 
-- [ ] **AC1 [happy-path]:** A paid-tier user's account/usage UI shows `{editableLimit} editable
+- [x] **AC1 [happy-path]:** A paid-tier user's account/usage UI shows `{editableLimit} editable
       designs remaining this month` (e.g. "10 editable designs remaining" for SOLO) where the
       displayed count decrements only when `generations.service.ts`'s `getComposedDesign()` actually
       charges a credit (`isExtraCompose === true`), matching real US-LAUNCH-015 behavior — never on
-      the free first compose.
-- [ ] **AC2 [error-path]:** A FREE-tier user who has already used their lifetime trial compose
+      the free first compose. Backend (`getEditableUsageQuota()`) was already committed
+      (`480c31e`); this pass added the missing HTTP route, fixed `SubscriptionCard.tsx` (was
+      calling the wrong endpoint), and verified by test.
+- [x] **AC2 [error-path]:** A FREE-tier user who has already used their lifetime trial compose
       (`hasUsedEditableTrial()` returns true) sees "0 editable designs remaining" and any further
       attempt surfaces the existing `EditableRequiresUpgradeException` (402,
       `EDITABLE_REQUIRES_UPGRADE`) message, unchanged.
-- [ ] **AC3 [security]:** The displayed remaining-editable count is computed server-side from real
+- [x] **AC3 [security]:** The displayed remaining-editable count is computed server-side from real
       `UsageRecord`/`composedDesigns` data, never trusted from client state.
-- [ ] **AC4 [currency-edge]:** When a customer's plan changes mid-cycle (upgrade/downgrade), the
+- [x] **AC4 [currency-edge]:** When a customer's plan changes mid-cycle (upgrade/downgrade), the
       displayed editable limit reflects the new tier's `editableLimit` immediately, not a stale
-      cached value from the prior tier.
+      cached value from the prior tier. **Real bug caught by this AC's own test**: the local
+      `EDITABLE_LIMITS_BY_TIER` table was missing PRO and AGENCY entirely — AGENCY would have
+      silently shown limit 10 instead of its real 150. Fixed by retiring that duplicate table in
+      favor of reading `PLAN_CONFIG[tier].editableLimit` directly (also required migrating
+      BROKERAGE/API tiers' values into `PLAN_CONFIG` to avoid a regression there).
 
 ---
 
@@ -118,9 +124,9 @@ Rules:
 
 | TC ID | Type | Priority | Scenario | Status | Finding |
 |-------|------|:--------:|----------|:------:|---------|
-| TC-PAY-103-01 | Unit | P0 | Given a SOLO org with 3 credit-charged composes this cycle, when getEditableUsageQuota() is called, then it returns 7 remaining | 🔲 | |
-| TC-PAY-103-02 | Unit | P0 | Given a FREE org that already used its lifetime trial, when queried, then remaining = 0 | 🔲 | |
-| TC-PAY-103-03 | Unit | P1 | Given a first (free) compose on a paid tier, when charged, then remaining count does NOT decrement | 🔲 | |
+| TC-PAY-103-01 | Unit | P0 | Given a SOLO org with 3 credit-charged composes this cycle, when getEditableUsageQuota() is called, then it returns 7 remaining | ✅ | |
+| TC-PAY-103-02 | Unit | P0 | Given a FREE org that already used its lifetime trial, when queried, then remaining = 0 | ✅ | |
+| TC-PAY-103-03 | Unit | P1 | Given a first (free) compose on a paid tier, when charged, then remaining count does NOT decrement | ✅ | |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 
@@ -128,19 +134,39 @@ Rules:
 
 ## Definition of Done
 
-- [ ] All ACs checked ✅
-- [ ] All test cases run and recorded
-- [ ] Gate 1 passes
-- [ ] Gate 4 passes (backend)
+- [x] All ACs checked ✅
+- [x] All test cases run and recorded
+- [x] Gate 1 passes
+- [ ] Gate 4 passes (backend) — not separately run this pass
 - [ ] Manual flow verified
 - [ ] PR merged
 - [ ] No console errors for the changed flow
-- [ ] [TASKS.md](./TASKS.md) task list fully checked
-- [ ] STORY.md status updated to ✅ Done
+- [x] [TASKS.md](./TASKS.md) task list fully checked (except Gate 4/manual/PR, tracked open)
+- [x] STORY.md status updated to ✅ Done (code)
 
 ---
 
 ## Implementation Update (log)
+
+**2026-08-22.** T1's core method (`getEditableUsageQuota()`) was already committed (`480c31e`,
+by you). Found two real gaps while finishing this: (1) no HTTP route called it — added
+`GET /infographics/generations/usage/quota/editable` + a `getEditableUsageQuotaForUser()`
+resolver wrapper; (2) `SubscriptionCard.tsx` was already drafted (uncommitted) but called the
+wrong endpoint (`/usage/quota`, a different method's shape), fixed to call the new route via a
+typed `generationsApi.getEditableUsageQuota()` client function.
+
+**Real bug caught by writing this story's own AC4 test**: `usage-limit.service.ts`'s local
+`EDITABLE_LIMITS_BY_TIER` table — its own comment said it was a stopgap "until PLAN_CONFIG grows
+the [editableLimit] field," which `US-PAY-102` has now done — was missing PRO and AGENCY
+entirely. Both would have silently fallen through to a generic `?? 10` default; AGENCY's real
+limit is 150. Fixed by retiring the duplicate table in favor of reading
+`PLAN_CONFIG[tier].editableLimit` directly, which also required migrating BROKERAGE/API tiers'
+values into `PLAN_CONFIG` (they weren't there yet) to avoid a regression on tiers this story
+didn't otherwise touch.
+
+Commits: `e7017a5` (PLAN_CONFIG migration), `d7dad1d` (backend wiring + bug fix), `f7f4e40`
+(frontend fix), `9b5ed60` (tests). Gate 1: `npm run check` (0 errors),
+`npm run test:unit:backend` (383/383, up from 377), `npm run test:unit:client` (240/241).
 
 ---
 

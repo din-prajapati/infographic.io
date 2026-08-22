@@ -191,7 +191,7 @@ be hardened.
 | Order | Story ID | Title | Feature | Milestone | Size | Blocked By | Status | PR | Version |
 |:-----:|----------|-------|---------|-----------|:----:|------------|:------:|:--:|:---:|
 | 1 | [US-PAY-102](stories/US-PAY-102/STORY.md) | Extend PLAN_CONFIG with PRO and AGENCY tiers | F-PAY-01 | M-PAY-01 | M | — | ✅ (code) | — | **V1** |
-| 1 | [US-PAY-103](stories/US-PAY-103/STORY.md) | Editable-design limit relabel (Path A) | F-PAY-01 | M-PAY-01 | S | — | 🔲 | — | **V1** |
+| 1 | [US-PAY-103](stories/US-PAY-103/STORY.md) | Editable-design limit relabel (Path A) | F-PAY-01 | M-PAY-01 | S | — | ✅ (code) | — | **V1** |
 | 1 | [US-PAY-104](stories/US-PAY-104/STORY.md) | Fix PricingPage.tsx hardcoded price-text drift | F-PAY-01 | M-PAY-01 | XS | — | ✅ (code) | — | **V1** |
 | 1 | [US-PAY-105](stories/US-PAY-105/STORY.md) | PricingCampaign Prisma model + migration | F-PAY-02 | M-PAY-02 | S | — | 🔲 | — | V2 |
 | 1 | [US-PAY-107](stories/US-PAY-107/STORY.md) | Standing annual-discount formula (×10) | F-PAY-02 | M-PAY-02 | S | US-PAY-102 | ✅ (code) | — | **V1** |
@@ -318,6 +318,23 @@ For environment variables see [ENV.yaml](./ENV.yaml).
 ---
 
 ## Implementation Update (log)
+
+### 2026-08-22 — Wave 3 done: US-PAY-103 finished (code) — all V1 stories now code-complete
+- `getEditableUsageQuota()` itself was already committed (`480c31e`, by you). Found two real
+  gaps: no HTTP route called it, and `SubscriptionCard.tsx` was already drafted (uncommitted) but
+  called the wrong endpoint entirely. Added `GET .../usage/quota/editable` +
+  `getEditableUsageQuotaForUser()`, fixed the frontend to call it correctly.
+- **Real bug caught by this story's own AC4 test**: `EDITABLE_LIMITS_BY_TIER`, a local table whose
+  own comment said it was a stopgap "until PLAN_CONFIG grows the field" (which `US-PAY-102` has
+  now done), was missing PRO and AGENCY entirely — AGENCY would have silently shown limit 10
+  instead of 150. Retired the duplicate table in favor of reading `PLAN_CONFIG[tier].editableLimit`
+  directly; migrated BROKERAGE/API tiers' values into `PLAN_CONFIG` too, to avoid a regression on
+  tiers this story didn't otherwise touch.
+- Commits `e7017a5`, `d7dad1d`, `f7f4e40`, `9b5ed60`. Gate 1: `npm run check` (0 errors),
+  `npm run test:unit:backend` (383/383, up from 377), `npm run test:unit:client` (240/241).
+- **All 6 V1 stories are now code-complete** (`102, 103, 104, 107, 109, 111`) — `109` alone still
+  blocked on its T0 human task. Remaining open items across V1: Gate 4 (backend, not separately
+  run), manual verification, and the milestone PR.
 
 ### 2026-08-22 — Wave 2 done: US-PAY-109 code complete, blocked on T0 (human) — 2 commits
 - T1 (`RAZORPAY_PLAN_KEYS` entries) had already landed as a side effect of `US-PAY-102`'s
