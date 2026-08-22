@@ -64,6 +64,48 @@ export function getTestModeBannerAmounts(
   };
 }
 
+export interface PricingCardDisplay {
+  showAnnualToggle: boolean;
+  hasFoundingPrice: boolean;
+  displayEffective: number;
+  displayRegular: number;
+  annualSavings: number;
+  annualEffectiveTotal: number;
+}
+
+/**
+ * Pure per-card pricing derivation for US-PAY-112 — exported (not inlined in JSX) so a test can
+ * assert the founding-badge/strikethrough/annual-equivalent logic against fixed EffectivePriceResult
+ * fixtures, the same pattern getTestModeBannerAmounts() established for US-PAY-104. Every number
+ * here comes only from the two EffectivePriceResult objects the pricing API returned — this
+ * function never invents a discount or price itself (US-PAY-112 AC3).
+ */
+export function computePricingCardDisplay(
+  monthly: EffectivePriceResult | undefined,
+  annual: EffectivePriceResult | undefined,
+  isAnnual: boolean,
+  isStatic: boolean,
+): PricingCardDisplay {
+  const activePricing = isAnnual ? annual : monthly;
+  const showAnnualToggle = !isStatic && (monthly?.regularPrice ?? 0) > 0;
+  const hasFoundingPrice =
+    !isStatic &&
+    activePricing != null &&
+    activePricing.campaignId != null &&
+    activePricing.effectivePrice !== activePricing.regularPrice;
+
+  const displayEffective = isAnnual
+    ? Math.round((annual?.effectivePrice ?? 0) / 12)
+    : (monthly?.effectivePrice ?? 0);
+  const displayRegular = isAnnual
+    ? Math.round((annual?.regularPrice ?? 0) / 12)
+    : (monthly?.regularPrice ?? 0);
+  const annualSavings = (monthly?.regularPrice ?? 0) * 12 - (annual?.regularPrice ?? 0);
+  const annualEffectiveTotal = annual?.effectivePrice ?? 0;
+
+  return { showAnnualToggle, hasFoundingPrice, displayEffective, displayRegular, annualSavings, annualEffectiveTotal };
+}
+
 declare global {
   interface Window {
     Razorpay: any;
@@ -527,36 +569,25 @@ export default function PricingPage() {
             // the pricing API (getEffectivePrice() server-side); never recomputed here.
             const monthlyPricing = plan.monthly;
             const annualPricing = plan.annual;
-            const showAnnualToggle = !plan.isStatic && (monthlyPricing?.regularPrice ?? 0) > 0;
+            const showAnnualToggleBase = !plan.isStatic && (monthlyPricing?.regularPrice ?? 0) > 0;
 
             /** Paid current tier: reflect API billing period (annual vs monthly), not local toggle. */
             const isPaidCurrentCard =
-              isCurrentPlan && showAnnualToggle && subscription != null;
+              isCurrentPlan && showAnnualToggleBase && subscription != null;
             const isAnnual = isPaidCurrentCard
               ? subscriptionBillingIsAnnual(subscription as { billingPeriod?: string })
               : annualToggles[plan.tier] || false;
             const annualSwitchLocked = isPaidCurrentCard;
 
             const activePricing = isAnnual ? annualPricing : monthlyPricing;
-            // AC2: no active campaign -> campaignId is null -> no badge, no strikethrough. Never
-            // leftover founding markup when nothing is active.
-            const hasFoundingPrice =
-              !plan.isStatic &&
-              activePricing != null &&
-              activePricing.campaignId != null &&
-              activePricing.effectivePrice !== activePricing.regularPrice;
-
-            // AC4: every displayed number is formatted with the page's single existing
-            // .toLocaleString() convention, from integer rupees (US-PAY-104) — never re-derived.
-            const displayEffective = isAnnual
-              ? Math.round((annualPricing?.effectivePrice ?? 0) / 12)
-              : (monthlyPricing?.effectivePrice ?? 0);
-            const displayRegular = isAnnual
-              ? Math.round((annualPricing?.regularPrice ?? 0) / 12)
-              : (monthlyPricing?.regularPrice ?? 0);
-            const annualSavings =
-              (monthlyPricing?.regularPrice ?? 0) * 12 - (annualPricing?.regularPrice ?? 0);
-            const annualEffectiveTotal = annualPricing?.effectivePrice ?? 0;
+            const {
+              showAnnualToggle,
+              hasFoundingPrice,
+              displayEffective,
+              displayRegular,
+              annualSavings,
+              annualEffectiveTotal,
+            } = computePricingCardDisplay(monthlyPricing, annualPricing, isAnnual, plan.isStatic);
 
             const subscriptionAmountInr =
               subscription?.amount != null
