@@ -90,6 +90,55 @@ describe('PricingResolutionService.getEffectivePrice (US-PAY-106)', () => {
   });
 
   // ---------------------------------------------------------------------------
+  // US-PAY-108 AC2 (TC-PAY-108-02) — redemption cap
+  // ---------------------------------------------------------------------------
+  describe('US-PAY-108 AC2 (TC-PAY-108-02): redemption-cap fallback', () => {
+    it('falls back to the regular price once redemptionsUsed reaches maxRedemptions', async () => {
+      mockCampaignService.getActiveCampaign.mockResolvedValue({
+        code: 'FOUNDING100',
+        displayBadge: 'FOUNDING MEMBER PRICE',
+        maxRedemptions: 100,
+        redemptionsUsed: 100,
+        tierDiscounts: { SOLO: { type: 'PERCENT', value: 27.278 } },
+      });
+
+      const result = await service.getEffectivePrice('SOLO', 'monthly');
+
+      expect(result.effectivePrice).toBe(PLAN_CONFIG.SOLO.price);
+      expect(result.campaignId).toBeNull();
+      expect(result.badge).toBeUndefined();
+    });
+
+    it('still applies the discount when redemptionsUsed is below the cap', async () => {
+      mockCampaignService.getActiveCampaign.mockResolvedValue({
+        code: 'FOUNDING100',
+        displayBadge: 'FOUNDING MEMBER PRICE',
+        maxRedemptions: 100,
+        redemptionsUsed: 99,
+        tierDiscounts: { SOLO: { type: 'PERCENT', value: 27.278 } },
+      });
+
+      const result = await service.getEffectivePrice('SOLO', 'monthly');
+
+      expect(result.effectivePrice).toBe(3999);
+      expect(result.campaignId).toBe('FOUNDING100');
+    });
+
+    it('a campaign with no maxRedemptions (uncapped) is never affected by this check', async () => {
+      mockCampaignService.getActiveCampaign.mockResolvedValue({
+        code: 'FOUNDING100',
+        maxRedemptions: null,
+        redemptionsUsed: 5000,
+        tierDiscounts: { SOLO: { type: 'PERCENT', value: 27.278 } },
+      });
+
+      const result = await service.getEffectivePrice('SOLO', 'monthly');
+
+      expect(result.campaignId).toBe('FOUNDING100');
+    });
+  });
+
+  // ---------------------------------------------------------------------------
   // AC3 (TC-PAY-106-03) — server-only, no client-mutable input
   // ---------------------------------------------------------------------------
   describe('AC3 (TC-PAY-106-03): server-only, satisfied by construction', () => {
