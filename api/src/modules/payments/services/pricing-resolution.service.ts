@@ -32,7 +32,16 @@ export class PricingResolutionService {
     interval: 'monthly' | 'annual',
   ): Promise<EffectivePriceResult> {
     const regularMonthly = PLAN_CONFIG[tier].price;
-    const campaign = await this.campaignService.getActiveCampaign();
+    let campaign = await this.campaignService.getActiveCampaign();
+
+    // US-PAY-108 AC2: once a capped campaign's redemptions are exhausted, treat it as if it
+    // weren't active at all — falls back to the regular price for every tier, not just the ones
+    // that happened to hit the cap first. The increment itself happens at checkout (US-PAY-110);
+    // this is purely the read-side respect for that cap.
+    if (campaign && campaign.maxRedemptions != null && campaign.redemptionsUsed >= campaign.maxRedemptions) {
+      campaign = null;
+    }
+
     const discount = campaign ? (campaign.tierDiscounts as any)?.[tier] : undefined;
 
     let effectiveMonthly = regularMonthly;
