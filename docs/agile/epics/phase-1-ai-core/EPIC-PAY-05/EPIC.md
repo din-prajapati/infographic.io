@@ -319,6 +319,17 @@ For environment variables see [ENV.yaml](./ENV.yaml).
 
 ## Implementation Update (log)
 
+### 2026-08-23 — SOLO/TEAM Razorpay Plan task folded into US-PAY-109 (no new story)
+- Checked whether the SOLO/TEAM repricing (`US-PAY-102`'s re-open) needs any code: **no.**
+  `RAZORPAY_PLAN_SOLO_MONTHLY`/`_ANNUAL`/`RAZORPAY_PLAN_TEAM_MONTHLY`/`_ANNUAL` already existed as
+  env-var keys before this relaunch (unlike PRO/AGENCY, which needed brand-new keys — real code,
+  already done). The app already reads whatever plan id is in those vars — repricing SOLO/TEAM is
+  100% a human dashboard task: create 4 new Plan objects, repoint 4 existing env vars.
+- Folded into `US-PAY-109` as a new AC5, rather than a new story or a fragmented `HUMAN_TASKS.md`
+  entry — same task shape (create Plan objects, wire env vars) that story already owns for
+  PRO/AGENCY. `US-PAY-109`'s T0 is now one consolidated 8-Plan-object dashboard task.
+- No code changed; docs only (`US-PAY-109` STORY.md/TASKS.md, `HUMAN_TASKS.md` #6 merged).
+
 ### 2026-08-23 — US-PAY-106 done (code) — getEffectivePrice() live
 - Composes `PLAN_CONFIG` base price + active `PricingCampaign`'s `PERCENT` discount + the standing
   ×10 annual multiplier. `FLAT`-type discounts explicitly rejected (thrown), never guessed at.

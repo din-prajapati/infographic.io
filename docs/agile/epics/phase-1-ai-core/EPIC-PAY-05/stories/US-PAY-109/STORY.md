@@ -9,6 +9,9 @@ updated: 2026-08-21
 
 > **Status:** 🟡 In Progress (code done) — blocked on T0 HUMAN task (real Razorpay Plan objects),
 > see TASKS.md
+> **Scope extended 2026-08-23**: now also covers the new SOLO/TEAM Razorpay Plans made necessary
+> by `US-PAY-102`'s repricing (see AC5) — folded in here rather than a new story, since it's the
+> exact same task shape (create Plan objects, wire env vars) this story already does for PRO/AGENCY.
 > **Feature:** F-PAY-03 — Billing Integration (Razorpay)
 > **Epic:** [EPIC-PAY-05](../../EPIC.md)
 > **Milestone:** [M-PAY-03-billing-integration](../../milestones/M-PAY-03-billing-integration.md)
@@ -47,6 +50,14 @@ updated: 2026-08-21
       `PLAN_CONFIG`'s value exactly (₹10,999/mo for PRO, ₹43,999/mo for AGENCY) — **genuinely
       blocked on T0** (a human creating the 4 real Razorpay Plan objects), cannot be verified from
       code. Not run this pass.
+- [ ] **AC5 [added 2026-08-23, currency-edge]:** New Razorpay Plans exist for the repriced SOLO
+      (₹5,499/mo, ₹54,990/yr) and TEAM (₹21,999/mo, ₹219,990/yr — `US-PAY-102`'s re-open), and
+      `RAZORPAY_PLAN_SOLO_MONTHLY`/`_ANNUAL`/`RAZORPAY_PLAN_TEAM_MONTHLY`/`_ANNUAL` are repointed
+      at them. **No code change is required for this AC** — unlike PRO/AGENCY, those exact env-var
+      *keys* already existed and were already wired before this relaunch; only their *values* need
+      to change. Existing SOLO/TEAM subscribers are unaffected — their subscription stays bound to
+      whichever Plan object it was created against; only new checkouts pick up the new price.
+      Blocked on the same T0 human task as AC4.
 
 ---
 
@@ -113,6 +124,7 @@ Rules:
 | TC-PAY-109-01 | Unit | P0 | Given RAZORPAY_PLAN_PRO_MONTHLY set, when resolved, then the correct plan ID is used for a PRO monthly subscription | ✅ | |
 | TC-PAY-109-02 | Unit | P0 | Given RAZORPAY_PLAN_PRO_MONTHLY unset, when PricingPage renders, then PRO shows "Contact us" not a checkout button | ✅ | Verified via `getAvailablePlans()`'s `configured` flag, the same mechanism the page reads |
 | TC-PAY-109-03 | Manual | P1 | Given the Razorpay dashboard, when PRO/AGENCY Plan amounts are checked, then they match PLAN_CONFIG exactly | ⏸ | Blocked on T0 (human dashboard task) |
+| TC-PAY-109-04 | Manual | P1 | Given the Razorpay dashboard, when the new SOLO/TEAM Plan amounts are checked, then they match ₹5,499/₹21,999 exactly, and the env vars point at them | ⏸ | Added 2026-08-23; blocked on T0 |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 
@@ -142,6 +154,16 @@ docs) and T3 (unconfigured-tier tests, in `plan-availability.spec.ts` — the de
 further than that without T0 (a human creating 4 real Razorpay Plan objects in the dashboard);
 AC4 stays open, not faked. Commits `bda66cb`, `5f2b2a6`. Gate 1: `npm run check` (0 errors),
 `npm run test:unit:backend` (377/377, up from 373, +4 new).
+
+**2026-08-23 — scope extended, not a new story.** `US-PAY-102`'s repricing of SOLO/TEAM (found as
+a real gap while implementing `US-PAY-106`) needs new Razorpay Plan objects, same as PRO/AGENCY —
+folded in here as AC5 rather than opening a new story, since it's the identical task shape this
+story already owns. Checked the code first: no new work needed. `RAZORPAY_PLAN_SOLO_MONTHLY`/
+`_ANNUAL`/`RAZORPAY_PLAN_TEAM_MONTHLY`/`_ANNUAL` already existed as env-var keys before this
+relaunch (unlike PRO/AGENCY, which needed brand-new keys added) — the code already reads whatever
+plan id is in them. This AC is purely T0 (human): create 4 more Plan objects, repoint 4 existing
+env vars. `HUMAN_TASKS.md` #6 updated to include all 8 Plan objects (PRO/AGENCY new + SOLO/TEAM
+repriced) as one consolidated task rather than a separate #6b entry.
 
 ---
 

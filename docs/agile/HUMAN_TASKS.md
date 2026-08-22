@@ -36,8 +36,7 @@ within a phase, in the order they unblock downstream work.
 | 3 | Phase 1 | EPIC-LAUNCH-01 | US-LAUNCH-005 AC5 | Run `npm run verify:payment-prereqs` against production config | 🔲 |
 | 4 | Phase 1 | EPIC-LAUNCH-01 | US-LAUNCH-005 AC6 | One real ₹ subscription on production (smallest plan) → verify webhook activates it → refund/cancel from dashboard | 🔲 — **deliberately held**, needs your explicit go-ahead |
 | 5 | Phase 1 | EPIC-INFRA-02 | US-INFRA-001 | Provision a Cloudflare R2 bucket + S3-compatible API token | 🔲 — **blocks the story starting**, not just finishing |
-| 6 | Phase 1 | EPIC-PAY-05 (V1) | US-PAY-109 T0 | Create 4 Razorpay Plan objects: PRO monthly (₹10,999), PRO annual (₹109,990), AGENCY monthly (₹43,999), AGENCY annual (₹439,990) | 🔲 — code done, only this blocks close |
-| 6b | Phase 1 | EPIC-PAY-05 (V1) | US-PAY-102 (re-opened 2026-08-23) | Create 4 **new** Razorpay Plan objects for the repriced SOLO (₹5,499/mo, ₹54,990/yr) and TEAM (₹21,999/mo, ₹219,990/yr) — existing live SOLO/TEAM Plan objects are price-immutable at the old beta rate (₹2,999/₹6,999) and cannot be edited; new customers need a new Plan pointed at the new price | 🔲 |
+| 6 | Phase 1 | EPIC-PAY-05 (V1) | US-PAY-109 T0 | Create **8** Razorpay Plan objects — PRO monthly (₹10,999)/annual (₹109,990), AGENCY monthly (₹43,999)/annual (₹439,990) [new tiers], plus SOLO monthly (₹5,499)/annual (₹54,990), TEAM monthly (₹21,999)/annual (₹219,990) [repriced, `US-PAY-102`'s re-open — added 2026-08-23, folded into this same task rather than a new story] | 🔲 — code done, only this blocks close |
 | 7 | Phase 1 | EPIC-PAY-05 (V2) | US-PAY-108 T0 | Create 4 Razorpay Offer objects (Founding-100 discount, SOLO/PRO/TEAM/AGENCY, "Forever" duration) | 🔲 — V2, not urgent yet |
 | 8 | Phase 0 | EPIC-LAUNCH-01 | US-LAUNCH-001 | Final legal review of Terms/Privacy/Refund wording — drafted content is a starting point, not legal advice, and these pages are already live in production | 🔲 — standing item, no deadline set |
 
@@ -83,25 +82,28 @@ A **prerequisite**, not a follow-up — the story (durable asset storage, moving
 expiring CDN and the container's ephemeral tmp dir) can't start implementation until a real R2
 bucket + API token exist. No AI agent can self-provision third-party cloud credentials.
 
-### 6–7. US-PAY-109 / US-PAY-108 — Razorpay dashboard objects
-**Source:** [`EPIC-PAY-05/stories/US-PAY-109/TASKS.md`](epics/phase-1-ai-core/EPIC-PAY-05/stories/US-PAY-109/TASKS.md),
-[`US-PAY-108/TASKS.md`](epics/phase-1-ai-core/EPIC-PAY-05/stories/US-PAY-108/TASKS.md)
-- **US-PAY-109** (V1, ship before first transaction): all code is done and verified by test
-  (2026-08-22 session) — this is the *only* remaining blocker. Create 4 Plan objects, record the
-  `plan_...` IDs, set them as `RAZORPAY_PLAN_PRO_MONTHLY`/`_ANNUAL`/`RAZORPAY_PLAN_AGENCY_MONTHLY`/`_ANNUAL`.
-- **US-PAY-108** (V2, deferred — see `EPIC-PAY-05/EPIC.md` "Scope split"): 4 Offer objects for the
-  Founding Customer 100 campaign. Not urgent — V2 work isn't scheduled until after the first real
-  transaction succeeds on V1.
+### 6. US-PAY-109 — Razorpay Plan objects (new tiers + repriced tiers)
+**Source:** [`EPIC-PAY-05/stories/US-PAY-109/TASKS.md`](epics/phase-1-ai-core/EPIC-PAY-05/stories/US-PAY-109/TASKS.md)
+All code is done and verified by test — this is the *only* remaining blocker. Two distinct reasons
+land in the same T0 task, since it's the identical dashboard action either way:
+- **New tiers** (PRO, AGENCY — didn't exist before this relaunch): create 4 Plan objects, record
+  the `plan_...` IDs, set as `RAZORPAY_PLAN_PRO_MONTHLY`/`_ANNUAL`/`RAZORPAY_PLAN_AGENCY_MONTHLY`/`_ANNUAL`
+  — these env-var *keys* are new, added as part of `US-PAY-102`'s downstream-consumer fix.
+- **Repriced tiers** (SOLO, TEAM — added 2026-08-23, `US-PAY-102`'s re-open): Razorpay Subscription
+  Plans are price-immutable once created, so the existing live SOLO/TEAM Plans stay at the old
+  beta rate (₹2,999/₹6,999) forever. Create 4 *new* Plan objects at ₹5,499/mo (₹54,990/yr) and
+  ₹21,999/mo (₹219,990/yr), then repoint the **existing** `RAZORPAY_PLAN_SOLO_MONTHLY`/`_ANNUAL`/
+  `RAZORPAY_PLAN_TEAM_MONTHLY`/`_ANNUAL` env vars at them — no code change needed here, those keys
+  already existed before this relaunch. Existing subscribers on the old plans are unaffected until
+  they re-subscribe or upgrade — no automatic migration.
+- **All 8 Plan objects, one dashboard session**: PRO monthly/annual, AGENCY monthly/annual, SOLO
+  monthly/annual, TEAM monthly/annual.
 
-### 6b. US-PAY-102 (re-opened) — new Razorpay Plans for repriced SOLO/TEAM
-**Source:** [`EPIC-PAY-05/stories/US-PAY-102/STORY.md`](epics/phase-1-ai-core/EPIC-PAY-05/stories/US-PAY-102/STORY.md)
-Found 2026-08-23 while implementing `US-PAY-106`: no story had ever actually repriced SOLO/TEAM
-from their beta values to the relaunch's regular price — fixed in `PLAN_CONFIG`. Razorpay
-Subscription Plans are price-immutable once created, so the existing live SOLO/TEAM Plan objects
-stay at the old rate forever; new ones are needed at ₹5,499/mo (₹54,990/yr) and ₹21,999/mo
-(₹219,990/yr), then `RAZORPAY_PLAN_SOLO_MONTHLY`/`_ANNUAL`/`RAZORPAY_PLAN_TEAM_MONTHLY`/`_ANNUAL`
-repointed at the new IDs. Existing subscribers on the old plans are unaffected until they
-re-subscribe or upgrade — no automatic migration.
+### 7. US-PAY-108 — Razorpay Offer objects (Founding-100)
+**Source:** [`EPIC-PAY-05/stories/US-PAY-108/TASKS.md`](epics/phase-1-ai-core/EPIC-PAY-05/stories/US-PAY-108/TASKS.md)
+V2, deferred — see `EPIC-PAY-05/EPIC.md` "Scope split". 4 Offer objects for the Founding Customer
+100 campaign. Not urgent — V2 work isn't scheduled until after the first real transaction succeeds
+on V1.
 
 ### 8. US-LAUNCH-001 — legal review
 **Source:** [`EPIC-LAUNCH-01/stories/US-LAUNCH-001/STORY.md`](epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-001/STORY.md)
@@ -116,5 +118,7 @@ un-tracked indefinitely now that real customers can reach these pages.
 
 - **2026-08-22** — Tracker created. Full project-wide sweep for `HUMAN` markers across
   `docs/agile/epics/**`, `PHASE_TRACKER.md`, and `docs/testing/PHASE_0_HUMAN_QA_CHECKLIST.md`.
-- **2026-08-23** — Added #6b: new Razorpay Plan objects needed for repriced SOLO/TEAM (found while
-  implementing `US-PAY-106`, fixed in `US-PAY-102`, re-opened).
+- **2026-08-23** — SOLO/TEAM repricing gap found while implementing `US-PAY-106` (fixed in
+  `US-PAY-102`, re-opened same day) needs new Razorpay Plans, same as PRO/AGENCY — folded into
+  `US-PAY-109`'s existing T0 task (now 8 Plan objects total) rather than a new story or a
+  fragmented #6b entry.
