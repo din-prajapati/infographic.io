@@ -118,4 +118,53 @@ describe('PaymentsService — plan availability gate (US-LAUNCH-007)', () => {
 
     expect(brokerage!.configured).toBe(true);
   });
+
+  // -------------------------------------------------------------------------
+  // US-PAY-109 AC2/AC3: PRO/AGENCY correctly fall back to "unconfigured" (not a fake plan
+  // ID) when their env vars are unset -- verified, not assumed to work by analogy to
+  // BROKERAGE just because the same PlanKeysByTier pattern was used.
+  // -------------------------------------------------------------------------
+  describe('PRO/AGENCY plan availability (US-PAY-109)', () => {
+    beforeEach(() => {
+      delete process.env.RAZORPAY_PLAN_PRO;
+      delete process.env.RAZORPAY_PLAN_PRO_MONTHLY;
+      delete process.env.RAZORPAY_PLAN_PRO_ANNUAL;
+      delete process.env.RAZORPAY_PLAN_AGENCY;
+      delete process.env.RAZORPAY_PLAN_AGENCY_MONTHLY;
+      delete process.env.RAZORPAY_PLAN_AGENCY_ANNUAL;
+    });
+
+    it('AC2 / TC-PAY-109-02: PRO configured=false without env var — PricingPage shows "Contact us", not a broken checkout', () => {
+      const plans = service.getAvailablePlans();
+      const pro = plans.find((p) => p.tier === 'PRO');
+      expect(pro).toBeDefined();
+      expect(pro!.configured).toBe(false);
+    });
+
+    it('AC2: AGENCY configured=false without env var', () => {
+      const plans = service.getAvailablePlans();
+      const agency = plans.find((p) => p.tier === 'AGENCY');
+      expect(agency).toBeDefined();
+      expect(agency!.configured).toBe(false);
+    });
+
+    it('AC1 / TC-PAY-109-01: PRO configured=true once RAZORPAY_PLAN_PRO_MONTHLY is set', () => {
+      process.env.RAZORPAY_PLAN_PRO_MONTHLY = 'plan_pro_monthly_test';
+      service = new PaymentsService(mockStorage as any);
+
+      const plans = service.getAvailablePlans();
+      const pro = plans.find((p) => p.tier === 'PRO');
+      expect(pro!.configured).toBe(true);
+    });
+
+    it('AC3: no placeholder fallback ships — an unconfigured PRO never resolves to a fake plan id', () => {
+      // Confirmed by construction: RAZORPAY_PLAN_KEYS.PRO.default / PLAN_IDS.PRO.RAZORPAY both
+      // fall back to '' (never 'plan_pro'-style), so an unset env var can only ever resolve to
+      // an empty string, which getAvailablePlans() correctly reports as configured=false above
+      // — never a fake id that would fail silently at Razorpay checkout time.
+      const plans = service.getAvailablePlans();
+      const pro = plans.find((p) => p.tier === 'PRO');
+      expect(pro!.configured).toBe(false);
+    });
+  });
 });
