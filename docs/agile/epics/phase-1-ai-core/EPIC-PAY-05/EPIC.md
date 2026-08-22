@@ -195,7 +195,7 @@ be hardened.
 | 1 | [US-PAY-104](stories/US-PAY-104/STORY.md) | Fix PricingPage.tsx hardcoded price-text drift | F-PAY-01 | M-PAY-01 | XS | — | ✅ (code) | — | **V1** |
 | 1 | [US-PAY-105](stories/US-PAY-105/STORY.md) | PricingCampaign Prisma model + migration | F-PAY-02 | M-PAY-02 | S | — | ✅ (code) | — | V2 |
 | 1 | [US-PAY-107](stories/US-PAY-107/STORY.md) | Standing annual-discount formula (×10) | F-PAY-02 | M-PAY-02 | S | US-PAY-102 | ✅ (code) | — | **V1** |
-| 2 | [US-PAY-106](stories/US-PAY-106/STORY.md) | `getEffectivePrice()` resolution service | F-PAY-02 | M-PAY-02 | M | US-PAY-102, US-PAY-105 | 🔲 | — | V2 |
+| 2 | [US-PAY-106](stories/US-PAY-106/STORY.md) | `getEffectivePrice()` resolution service | F-PAY-02 | M-PAY-02 | M | US-PAY-102, US-PAY-105 | ✅ (code) | — | V2 |
 | 1 | [US-PAY-109](stories/US-PAY-109/STORY.md) | New Razorpay Plan IDs for PRO/AGENCY tiers | F-PAY-03 | M-PAY-03 | S | US-PAY-102 | 🟡 (T0 human) | — | **V1** |
 | 3 | [US-PAY-108](stories/US-PAY-108/STORY.md) | Founding Customer 100 campaign seed + Offer linkage | F-PAY-02 | M-PAY-02 | M | US-PAY-105, US-PAY-106 | 🔲 | — | V2 |
 | 2 | [US-PAY-111](stories/US-PAY-111/STORY.md) | Webhook/entitlement mapping for new tiers | F-PAY-03 | M-PAY-03 | S | US-PAY-109 | ✅ (code) | — | **V1** |
@@ -318,6 +318,17 @@ For environment variables see [ENV.yaml](./ENV.yaml).
 ---
 
 ## Implementation Update (log)
+
+### 2026-08-23 — US-PAY-106 done (code) — getEffectivePrice() live
+- Composes `PLAN_CONFIG` base price + active `PricingCampaign`'s `PERCENT` discount + the standing
+  ×10 annual multiplier. `FLAT`-type discounts explicitly rejected (thrown), never guessed at.
+  Registered in `PaymentsModule` via constructor injection of `PricingCampaignService`.
+- Same paise/rupee unit bug as `US-PAY-102`/`107` found in this story's own AC text too — corrected.
+- Gate 1: `npm run check` (0 errors), `npm run test:unit:backend` (403/403, up from 395). Commits
+  `ccbbe37`, `4c2147f`.
+- **Next in the V2 chain**: `US-PAY-108` (Founding-100 seed, needs 105+106 — both done) and
+  `US-PAY-112` (pricing page redesign, needs 106 — done) can now both proceed; `US-PAY-110` stays
+  blocked on `US-PAY-109`'s human task.
 
 ### 2026-08-23 — Real gap found and fixed: SOLO/TEAM were never repriced (US-PAY-102 re-opened)
 - While implementing `US-PAY-106`, its own AC1 example numbers didn't match reality — checked and
