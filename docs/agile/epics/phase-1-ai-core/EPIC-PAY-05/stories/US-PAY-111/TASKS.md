@@ -88,14 +88,16 @@ cd api && npx vitest run tests/payments/payments.service.spec.ts --reporter=verb
 
 ## Task Checklist
 
-- [ ] T1 — webhook mapping (file: `payments.service.ts`, type: `feat`)
-- [ ] T2 — unit tests (file: `payments.service.spec.ts`, type: `test`)
-- [ ] Gate 1 passes ✅
-- [ ] Gate 4 passes ✅
-- [ ] Manual test verified ✅
-- [ ] PR opened with story card as description ✅
-- [ ] STORY.md ACs ticked off ✅
-- [ ] EPIC.md "Implementation Update" log appended ✅
+- [x] T1 — **reframed**: no Plan-ID-to-tier mapping exists to extend (see STORY.md correction);
+      added the AC4 amount-mismatch warning instead (file: `payments.service.ts`, type: `feat`) —
+      commit `eca38ea`
+- [x] T2 — unit tests (file: `payments.service.spec.ts`, type: `test`) — commit `4c690b0`
+- [x] Gate 1 passes ✅ — `npm run check` (0 errors), 22/22 tests pass
+- [ ] Gate 4 passes — not separately run this pass
+- [ ] Manual test verified — pending
+- [ ] PR opened with story card as description — pending (milestone PR)
+- [x] STORY.md ACs ticked off ✅
+- [x] EPIC.md "Implementation Update" log appended ✅
 
 ---
 

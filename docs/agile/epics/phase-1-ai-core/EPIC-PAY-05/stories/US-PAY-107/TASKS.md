@@ -102,15 +102,19 @@ npm run test:unit
 
 ## Task Checklist
 
-- [ ] T1 — getAnnualPrice() helper (file: `shared/schema.ts`, type: `feat`)
-- [ ] T2 — replace old formula (file: `PricingPage.tsx`, type: `fix`)
-- [ ] T3 — unit tests (file: `pricing-formulas.spec.ts`, type: `test`)
-- [ ] Gate 1 passes ✅
-- [ ] Gate 2 passes ✅
-- [ ] Manual test verified ✅
-- [ ] PR opened with story card as description ✅
-- [ ] STORY.md ACs ticked off ✅
-- [ ] EPIC.md "Implementation Update" log appended ✅
+- [x] T1 — getAnnualPrice() helper (file: `shared/schema.ts`, type: `feat`) — landed as a side
+      effect of `US-PAY-102`'s commit `0dd872c` (found already correct, not redone)
+- [x] T2 — replace old formula (file: `PricingPage.tsx`, type: `fix`) — landed as a side effect of
+      `US-PAY-104`'s commit `be5ea37`
+- [x] T3 — unit tests (file: `client/src/lib/__tests__/pricingFormulas.spec.ts`, type: `test`) —
+      commit `bac046d`. **Deviation:** planned file was `shared/__tests__/pricing-formulas.spec.ts`;
+      used `client/src/lib/__tests__/` instead, same reasoning as `US-PAY-102` T4.
+- [x] Gate 1 passes ✅ — `npm run check` (0 errors), test file 4/4 pass
+- [ ] Gate 2 passes — not separately run this pass
+- [ ] Manual test verified — pending (TC-PAY-107-03)
+- [ ] PR opened with story card as description — pending (milestone PR)
+- [x] STORY.md ACs ticked off ✅
+- [x] EPIC.md "Implementation Update" log appended ✅
 
 ---
 
