@@ -319,6 +319,21 @@ For environment variables see [ENV.yaml](./ENV.yaml).
 
 ## Implementation Update (log)
 
+### 2026-08-23 — Real gap found and fixed: SOLO/TEAM were never repriced (US-PAY-102 re-opened)
+- While implementing `US-PAY-106`, its own AC1 example numbers didn't match reality — checked and
+  found that **no story in this epic ever actually repriced SOLO/TEAM/BROKERAGE** from their beta
+  values to the PRD's finalized relaunch numbers. `US-PAY-102`'s scope was only ever "add
+  PRO/AGENCY" — the epic's own stated goal (fixing a measured margin problem via new pricing) had
+  never been applied to the tiers it was measured on.
+- Flagged to the user before touching anything (a business-facing repricing decision) — confirmed:
+  fix in `US-PAY-102`, re-open it. `SOLO: 2999 → 5499`, `TEAM: 6999 → 21999`. `BROKERAGE`
+  deliberately untouched (being phased out for `AGENCY`; migrating existing subscribers is a
+  separate decision, see Out of Scope below).
+- New human task filed (`HUMAN_TASKS.md` #6b): existing live Razorpay Plan objects for SOLO/TEAM
+  are price-immutable at the old rate — new ones are needed at the new prices before real
+  customers can be charged correctly.
+- Gate 1: `npm run check` (0 errors), backend 395/395, client 241/242. Commit `c89b732`.
+
 ### 2026-08-23 — V2 implementation begins: US-PAY-105 done (code)
 - First V2 story implemented, after verifying its Gemini-produced hardening lock was still valid
   (all 6 V2 `STORY.md`s confirmed unchanged since locking via git log — the lock's own `story_sha`
