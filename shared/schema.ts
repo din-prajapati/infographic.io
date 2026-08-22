@@ -19,7 +19,7 @@ export const subscriptionStatusEnum = pgEnum('subscription_status', [
   'EXPIRED',
 ]);
 export const paymentStatusEnum = pgEnum('payment_status', ['PENDING', 'AUTHORIZED', 'CAPTURED', 'REFUNDED', 'FAILED']);
-export const planTierEnum = pgEnum('plan_tier', ['FREE', 'SOLO', 'TEAM', 'BROKERAGE', 'API_STARTER', 'API_GROWTH', 'API_ENTERPRISE']);
+export const planTierEnum = pgEnum('plan_tier', ['FREE', 'SOLO', 'PRO', 'TEAM', 'AGENCY', 'BROKERAGE', 'API_STARTER', 'API_GROWTH', 'API_ENTERPRISE']); // US-PAY-102
 
 // Users table with provider customer IDs
 export const users = pgTable('users', {
@@ -145,7 +145,7 @@ export type SubscriptionStatus =
   | 'PAUSED'
   | 'EXPIRED';
 export type PaymentStatus = 'PENDING' | 'AUTHORIZED' | 'CAPTURED' | 'REFUNDED' | 'FAILED';
-export type PlanTier = 'FREE' | 'SOLO' | 'TEAM' | 'BROKERAGE' | 'API_STARTER' | 'API_GROWTH' | 'API_ENTERPRISE';
+export type PlanTier = 'FREE' | 'SOLO' | 'PRO' | 'TEAM' | 'AGENCY' | 'BROKERAGE' | 'API_STARTER' | 'API_GROWTH' | 'API_ENTERPRISE';
 
 // Plan Configuration (used by both frontend and backend)
 export const PLAN_CONFIG: Record<PlanTier, {
@@ -156,6 +156,7 @@ export const PLAN_CONFIG: Record<PlanTier, {
   userLimit: number; // -1 = unlimited
   features: string[];
   popular?: boolean;
+  editableLimit?: number; // per-cycle credit-charged editable-compose cap; -1 = unlimited
 }> = {
   FREE: {
     name: 'Free',
@@ -177,6 +178,16 @@ export const PLAN_CONFIG: Record<PlanTier, {
     // generation consume a credit (AC3). No headline price change.
     features: ['50 infographics/month', 'All templates', 'Priority support', 'Custom branding', 'Editable designs'],
     popular: true,
+    editableLimit: 10,
+  },
+  PRO: {
+    name: 'Pro',
+    price: 1099900,
+    currency: 'INR',
+    limit: 100,
+    userLimit: 1,
+    features: ['100 infographics/month', 'All templates', 'Priority support', 'Custom branding', 'Editable designs'],
+    editableLimit: 25,
   },
   TEAM: {
     name: 'Team',
@@ -185,6 +196,16 @@ export const PLAN_CONFIG: Record<PlanTier, {
     limit: 200,
     userLimit: 5,
     features: ['200 infographics/month', 'Team collaboration', '5 users', 'Advanced analytics', 'Editable designs'],
+    editableLimit: 60,
+  },
+  AGENCY: {
+    name: 'Agency',
+    price: 4399900,
+    currency: 'INR',
+    limit: 400,
+    userLimit: -1, // unlimited
+    features: ['400 infographics/month', 'Unlimited users', 'Team collaboration', 'Advanced analytics', 'Editable designs'],
+    editableLimit: 150,
   },
   BROKERAGE: {
     name: 'Brokerage',
@@ -220,9 +241,21 @@ export const PLAN_CONFIG: Record<PlanTier, {
   },
 };
 
+// Standing annual-billing discount (US-PAY-107): annual price = 10x monthly (2 months free),
+// matching Claude/Cursor-style SaaS annual pricing. Applies to every paid tier by default --
+// a tier added to PLAN_CONFIG without an explicit override still gets this formula (AC2).
+// Composition with a time-boxed promotional campaign happens in the US-PAY-106 resolution
+// service, not here.
+export const ANNUAL_MULTIPLIER = 10;
+
+/** Integer paise in, integer paise out -- exact by construction, never rounds (AC4). */
+export function getAnnualPrice(monthlyPricePaise: number): number {
+  return monthlyPricePaise * ANNUAL_MULTIPLIER;
+}
+
 // Zod Schemas for API Validation
 export const createSubscriptionSchema = z.object({
-  planTier: z.enum(['FREE', 'SOLO', 'TEAM', 'BROKERAGE', 'API_STARTER', 'API_GROWTH', 'API_ENTERPRISE']),
+  planTier: z.enum(['FREE', 'SOLO', 'PRO', 'TEAM', 'AGENCY', 'BROKERAGE', 'API_STARTER', 'API_GROWTH', 'API_ENTERPRISE']),
   currency: z.string().default('INR'),
   region: z.string().optional(),
 });
