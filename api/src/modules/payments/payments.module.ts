@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { PaymentsController } from './controllers/payments.controller';
 import { UsageAnalyticsController } from './controllers/usage-analytics.controller';
+import { PricingController } from './controllers/pricing.controller';
 import { PaymentsService } from './services/payments.service';
 import { SubscriptionStorageService } from './services/subscription-storage.service';
 import { UsageAnalyticsService } from './services/usage-analytics.service';
@@ -14,7 +15,7 @@ import { EmailService } from '../email/email.service';
 
 @Module({
   imports: [DatabaseModule, EmailModule],
-  controllers: [PaymentsController, UsageAnalyticsController],
+  controllers: [PaymentsController, UsageAnalyticsController, PricingController],
   providers: [
     // Use global PrismaService from DatabaseModule (inject below); do not re-provide to avoid duplicate instances
     {

@@ -230,6 +230,22 @@ export interface ProviderInfo {
   stripePublishableKey: string | null;
 }
 
+// US-PAY-112 — public, unauthenticated pricing-resolution endpoint. Never recompute a discounted
+// price client-side (AC3) — this is the only source for regularPrice/effectivePrice/campaignId.
+export interface EffectivePriceResult {
+  regularPrice: number;
+  effectivePrice: number;
+  campaignId: string | null;
+  badge?: string;
+}
+
+export const pricingApi = {
+  getPricing: () =>
+    apiRequest<{
+      plans: Array<{ tier: PlanTier; monthly: EffectivePriceResult; annual: EffectivePriceResult }>;
+    }>(getApiUrl('/pricing')),
+};
+
 export const paymentsApi = {
   getProviderInfo: (currency?: string, region?: string) => {
     const params = new URLSearchParams();
