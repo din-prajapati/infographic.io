@@ -14,6 +14,8 @@ import {
   ArrowRight,
   Gift,
   Star,
+  Zap,
+  Users,
   Building,
   Loader2,
   Linkedin,
@@ -26,19 +28,27 @@ import {
 
 const PENDING_PLAN_KEY = "pending_subscription_plan";
 
-type PlanSegment = "individual" | "enterprise";
+// US-PAY-112 — the 5 real tiers shown on the pricing page, in display order, plus a 6th static
+// Enterprise "Contact Sales" card (no PLAN_CONFIG entry — custom pricing, see EPIC.md Out of
+// Scope). BROKERAGE is deliberately excluded here: being phased out in favor of AGENCY, no longer
+// marketed on this page (existing subscribers keep it on their account, see US-PAY-102's Out of
+// Scope) — this replaces the old Individual/Enterprise segment toggle, which never showed
+// PRO/AGENCY at all.
+const PUBLIC_TIERS: PlanTier[] = ["FREE", "SOLO", "PRO", "TEAM", "AGENCY"];
 
 const planDescriptions: Record<string, string> = {
   FREE: "Get started with essential features at no cost",
   SOLO: "Perfect for individual agents",
+  PRO: "For agents who list frequently",
   TEAM: "Built for real estate teams and brands",
+  AGENCY: "For agencies and brokerages at scale",
   BROKERAGE: "For brokerages with white-label needs",
 };
 
 import { toast } from "sonner";
 import { queryClient, redirectToLogin } from "@/lib/queryClient";
-import { paymentsApi, type ProviderInfo } from "@/lib/api";
-import { PLAN_CONFIG, getAnnualPrice, type PlanTier } from "@shared/schema";
+import { paymentsApi, pricingApi, type ProviderInfo, type EffectivePriceResult } from "@/lib/api";
+import { PLAN_CONFIG, type PlanTier } from "@shared/schema";
 
 /**
  * Test-mode banner recurring-amount text, derived from PLAN_CONFIG at call time.
@@ -64,13 +74,18 @@ declare global {
 const planIcons: Record<string, any> = {
   FREE: Gift,
   SOLO: Star,
+  PRO: Zap,
   TEAM: Building,
+  AGENCY: Users,
   BROKERAGE: Building,
+  ENTERPRISE: Building,
 };
 
 const featureLeadIn: Record<string, string> = {
   SOLO: "Everything in Free, plus:",
-  TEAM: "Everything in Solo, plus:",
+  PRO: "Everything in Solo, plus:",
+  TEAM: "Everything in Pro, plus:",
+  AGENCY: "Everything in Team, plus:",
   BROKERAGE: "Everything in Team, plus:",
 };
 
@@ -127,18 +142,29 @@ export default function PricingPage() {
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
   const [isSyncingStatus, setIsSyncingStatus] = useState(false);
   const [selectedCurrency, setSelectedCurrency] = useState<"INR" | "USD">("INR");
-  const [planSegment, setPlanSegment] = useState<PlanSegment>("individual");
 
   // Per-card annual toggle state
   const [annualToggles, setAnnualToggles] = useState<Record<string, boolean>>({
     SOLO: false,
+    PRO: false,
     TEAM: false,
-    BROKERAGE: false,
+    AGENCY: false,
   });
 
   const toggleAnnual = (tier: string) => {
     setAnnualToggles((prev) => ({ ...prev, [tier]: !prev[tier] }));
   };
+
+  // US-PAY-112 AC1/AC3 — the only source for regularPrice/effectivePrice/campaignId/badge.
+  // Public endpoint, no auth needed. Never recompute a discounted price client-side.
+  const { data: pricingData } = useQuery({
+    queryKey: ["/api/v1/pricing"],
+    queryFn: () => pricingApi.getPricing(),
+  });
+
+  const pricingByTier = new Map<PlanTier, { monthly: EffectivePriceResult; annual: EffectivePriceResult }>(
+    (pricingData?.plans ?? []).map((p) => [p.tier, { monthly: p.monthly, annual: p.annual }]),
+  );
 
   // Fetch provider info based on selected currency
   const { data: providerInfo } = useQuery<ProviderInfo>({
@@ -185,18 +211,6 @@ export default function PricingPage() {
 
   const subscriptionBillingIsAnnual = (sub: { billingPeriod?: string }) =>
     String(sub.billingPeriod ?? "MONTHLY").toUpperCase() === "ANNUAL";
-
-  // Standing annual discount: monthly x 10 (2 months free) -- US-PAY-107. Not a promotional
-  // campaign; that composes separately in the US-PAY-106 resolution service.
-  const calculateAnnualPrice = (monthlyPrice: number): number => {
-    return getAnnualPrice(monthlyPrice);
-  };
-
-  // Derived from the same x10 formula so the "Save ₹X" badge always matches the displayed
-  // annual price: 2 months free = monthly x 12 - monthly x 10.
-  const calculateMonthlySavings = (monthlyPrice: number): number => {
-    return monthlyPrice * 12 - getAnnualPrice(monthlyPrice);
-  };
 
   // Create subscription mutation
   const createSubscriptionMutation = useMutation({
@@ -368,19 +382,46 @@ export default function PricingPage() {
     }
   };
 
-  const allPlans = Object.entries(PLAN_CONFIG)
-    .filter(([tier]) => !tier.startsWith("API_"))
-    .map(([tier, config]) => ({
-      tier: tier as PlanTier,
-      ...config,
+  // US-PAY-112 AC1 — Free/Solo/Pro/Team/Agency render together (replaces the old Individual/
+  // Enterprise segment toggle, which never showed PRO/AGENCY at all), plus a static Enterprise
+  // "Contact Sales" card. Non-price fields (name, features, allowances) still come from
+  // PLAN_CONFIG — only price itself is server-resolved (AC3).
+  const realPlans = PUBLIC_TIERS.map((tier) => {
+    const config = PLAN_CONFIG[tier];
+    const pricing = pricingByTier.get(tier);
+    return {
+      tier: tier as PlanTier | "ENTERPRISE",
+      name: config.name,
       icon: planIcons[tier] ?? Gift,
-    }));
+      features: config.features,
+      designLimit: config.limit,
+      editableLimit: config.editableLimit,
+      isStatic: false,
+      monthly: pricing?.monthly,
+      annual: pricing?.annual,
+    };
+  });
 
-  /** TEAM only under Enterprise — avoids duplicate Team card on Individual vs Enterprise (TC-SOLO-M-01). */
-  const plans =
-    planSegment === "individual"
-      ? allPlans.filter((p) => p.tier === "FREE" || p.tier === "SOLO")
-      : allPlans.filter((p) => p.tier === "TEAM" || p.tier === "BROKERAGE");
+  const enterprisePlan = {
+    tier: "ENTERPRISE" as const,
+    name: "Enterprise",
+    icon: planIcons.ENTERPRISE ?? Building,
+    features: [
+      "Unlimited infographics",
+      "Unlimited editable designs",
+      "Dedicated account manager",
+      "Custom integrations",
+      "SLA guarantee",
+      "White-label options",
+    ],
+    designLimit: -1,
+    editableLimit: -1,
+    isStatic: true,
+    monthly: undefined,
+    annual: undefined,
+  };
+
+  const plans = [...realPlans, enterprisePlan];
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--page-bg)' }}>
@@ -431,34 +472,8 @@ export default function PricingPage() {
         </div>
       </nav>
 
-      {/* Header - Segment Toggle */}
+      {/* Header */}
       <section className="container px-6 pt-10 pb-6 text-center max-w-6xl mx-auto">
-        <div className="flex justify-center mb-6">
-          <div className="inline-flex rounded-full glass border border-border p-1">
-            <button
-              type="button"
-              onClick={() => setPlanSegment("individual")}
-              className={`rounded-full px-6 py-2.5 text-sm font-medium transition-all ${
-                planSegment === "individual"
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              Individual
-            </button>
-            <button
-              type="button"
-              onClick={() => setPlanSegment("enterprise")}
-              className={`rounded-full px-6 py-2.5 text-sm font-medium transition-all ${
-                planSegment === "enterprise"
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              Enterprise
-            </button>
-          </div>
-        </div>
 
         {/* Beta mode notice */}
         {isBetaMode && (
@@ -506,7 +521,14 @@ export default function PricingPage() {
             const isPlanLoading = loadingPlan === plan.tier;
             const PlanIcon = plan.icon;
             const leadIn = featureLeadIn[plan.tier];
-            const showAnnualToggle = plan.price > 0;
+            const isMostPopular = plan.tier === "PRO";
+
+            // US-PAY-112 AC1/AC3 — regularPrice/effectivePrice/campaignId/badge come only from
+            // the pricing API (getEffectivePrice() server-side); never recomputed here.
+            const monthlyPricing = plan.monthly;
+            const annualPricing = plan.annual;
+            const showAnnualToggle = !plan.isStatic && (monthlyPricing?.regularPrice ?? 0) > 0;
+
             /** Paid current tier: reflect API billing period (annual vs monthly), not local toggle. */
             const isPaidCurrentCard =
               isCurrentPlan && showAnnualToggle && subscription != null;
@@ -515,22 +537,54 @@ export default function PricingPage() {
               : annualToggles[plan.tier] || false;
             const annualSwitchLocked = isPaidCurrentCard;
 
-            const displayPrice = isAnnual
-              ? Math.round(calculateAnnualPrice(plan.price) / 12)
-              : plan.price;
+            const activePricing = isAnnual ? annualPricing : monthlyPricing;
+            // AC2: no active campaign -> campaignId is null -> no badge, no strikethrough. Never
+            // leftover founding markup when nothing is active.
+            const hasFoundingPrice =
+              !plan.isStatic &&
+              activePricing != null &&
+              activePricing.campaignId != null &&
+              activePricing.effectivePrice !== activePricing.regularPrice;
 
-            const savings = calculateMonthlySavings(plan.price);
-            const annualTotalInr = calculateAnnualPrice(plan.price);
+            // AC4: every displayed number is formatted with the page's single existing
+            // .toLocaleString() convention, from integer rupees (US-PAY-104) — never re-derived.
+            const displayEffective = isAnnual
+              ? Math.round((annualPricing?.effectivePrice ?? 0) / 12)
+              : (monthlyPricing?.effectivePrice ?? 0);
+            const displayRegular = isAnnual
+              ? Math.round((annualPricing?.regularPrice ?? 0) / 12)
+              : (monthlyPricing?.regularPrice ?? 0);
+            const annualSavings =
+              (monthlyPricing?.regularPrice ?? 0) * 12 - (annualPricing?.regularPrice ?? 0);
+            const annualEffectiveTotal = annualPricing?.effectivePrice ?? 0;
+
             const subscriptionAmountInr =
               subscription?.amount != null
                 ? Math.round(Number(subscription.amount) / 100)
                 : null;
 
+            const fmt = (n: number) =>
+              selectedCurrency === "INR" ? n.toLocaleString() : Math.round(n / 83).toLocaleString();
+            const currencySymbol = selectedCurrency === "INR" ? "₹" : "$";
+
             return (
               <div
                 key={plan.tier}
-                className="glass rounded-2xl border border-border p-8 flex flex-col"
+                className={`relative glass rounded-2xl border p-8 flex flex-col ${
+                  isMostPopular ? "border-primary ring-2 ring-primary/30" : "border-border"
+                }`}
               >
+                {isMostPopular && (
+                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-semibold px-3 py-1 rounded-full shadow-sm">
+                    MOST POPULAR
+                  </span>
+                )}
+                {hasFoundingPrice && activePricing?.badge && (
+                  <span className="absolute -top-3 right-4 bg-amber-500 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-sm">
+                    {activePricing.badge}
+                  </span>
+                )}
+
                 {/* Header with Annual Toggle */}
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
@@ -558,16 +612,16 @@ export default function PricingPage() {
 
                 {/* Price */}
                 <div className="mb-6">
-                  {isPaidCurrentCard &&
-                  subscriptionAmountInr != null &&
-                  subscriptionAmountInr > 0 ? (
+                  {plan.isStatic ? (
+                    <div className="text-4xl font-bold text-foreground">Custom</div>
+                  ) : isPaidCurrentCard &&
+                    subscriptionAmountInr != null &&
+                    subscriptionAmountInr > 0 ? (
                     <div className="space-y-1">
                       <div className="flex flex-wrap items-baseline gap-2">
                         <span className="text-4xl font-bold text-foreground">
-                          {selectedCurrency === "INR" ? "₹" : "$"}
-                          {selectedCurrency === "INR"
-                            ? subscriptionAmountInr.toLocaleString()
-                            : Math.round(subscriptionAmountInr / 83).toLocaleString()}
+                          {currencySymbol}
+                          {fmt(subscriptionAmountInr)}
                         </span>
                         <span className="text-base text-muted-foreground">
                           {isAnnual ? "/ year" : "/ month"}
@@ -580,11 +634,8 @@ export default function PricingPage() {
                       </div>
                       {isAnnual && (
                         <p className="text-sm text-muted-foreground">
-                          ≈{" "}
-                          {selectedCurrency === "INR" ? "₹" : "$"}
-                          {selectedCurrency === "INR"
-                            ? Math.round(subscriptionAmountInr / 12).toLocaleString()
-                            : Math.round(subscriptionAmountInr / 12 / 83).toLocaleString()}
+                          ≈ {currencySymbol}
+                          {fmt(Math.round(subscriptionAmountInr / 12))}
                           /mo equivalent
                         </p>
                       )}
@@ -592,33 +643,37 @@ export default function PricingPage() {
                   ) : (
                     <>
                       <div className="flex flex-wrap items-baseline gap-2">
+                        {hasFoundingPrice && (
+                          <span className="text-lg text-muted-foreground line-through">
+                            {currencySymbol}
+                            {fmt(displayRegular)}
+                          </span>
+                        )}
                         <span className="text-4xl font-bold text-foreground">
-                          {selectedCurrency === "INR" ? "₹" : "$"}
-                          {selectedCurrency === "INR"
-                            ? displayPrice.toLocaleString()
-                            : Math.round(displayPrice / 83).toLocaleString()}
+                          {currencySymbol}
+                          {fmt(displayEffective)}
                         </span>
                         <span className="text-base text-muted-foreground">
-                          {isAnnual && plan.price > 0 ? "/ month equiv." : "/ month"}
+                          {isAnnual ? "/ month equiv." : "/ month"}
                         </span>
-                        {isAnnual && plan.price > 0 && (
+                        {isAnnual && (
                           <span className="text-sm text-teal-400 font-medium bg-teal-400/10 px-2 py-0.5 rounded-full">
-                            Save{" "}
-                            {selectedCurrency === "INR" ? "₹" : "$"}
-                            {selectedCurrency === "INR"
-                              ? savings.toLocaleString()
-                              : Math.round(savings / 83).toLocaleString()}
+                            Save {currencySymbol}
+                            {fmt(annualSavings)}
                           </span>
                         )}
                       </div>
-                      {isAnnual && plan.price > 0 && (
+                      {isAnnual && (
                         <p className="text-sm text-muted-foreground mt-2">
-                          Billed annually at{" "}
-                          {selectedCurrency === "INR" ? "₹" : "$"}
-                          {selectedCurrency === "INR"
-                            ? annualTotalInr.toLocaleString()
-                            : Math.round(annualTotalInr / 83).toLocaleString()}
-                          /year (15% off vs monthly×12)
+                          Billed annually at {currencySymbol}
+                          {fmt(annualEffectiveTotal)}
+                          /year
+                        </p>
+                      )}
+                      {!plan.isStatic && (
+                        <p className="text-xs text-muted-foreground mt-2">
+                          {plan.designLimit === -1 ? "Unlimited" : plan.designLimit} designs/mo ·{" "}
+                          {plan.editableLimit === -1 ? "unlimited" : plan.editableLimit} editable
                         </p>
                       )}
                     </>
@@ -642,7 +697,14 @@ export default function PricingPage() {
                 </ul>
 
                 {/* CTA Button */}
-                {isBetaMode && plan.price > 0 ? (
+                {plan.isStatic ? (
+                  <a
+                    href="mailto:hello@buildographic.com"
+                    className="w-full h-12 rounded-full font-medium flex items-center justify-center gap-2 bg-accent text-foreground hover:bg-accent/80 transition-colors"
+                  >
+                    Contact Sales
+                  </a>
+                ) : isBetaMode && (monthlyPricing?.regularPrice ?? 0) > 0 ? (
                   <Button
                     className="w-full h-12 rounded-full font-medium bg-accent text-muted-foreground cursor-not-allowed"
                     disabled
@@ -665,7 +727,7 @@ export default function PricingPage() {
                         : "bg-primary hover:bg-primary/90 text-primary-foreground"
                     }`}
                     disabled={isCurrentPlan || isPendingPlan || isPlanLoading}
-                    onClick={() => handleSubscribe(plan.tier)}
+                    onClick={() => handleSubscribe(plan.tier as PlanTier)}
                   >
                     {isPlanLoading ? (
                       <>
