@@ -200,7 +200,7 @@ be hardened.
 | 3 | [US-PAY-108](stories/US-PAY-108/STORY.md) | Founding Customer 100 campaign seed + Offer linkage | F-PAY-02 | M-PAY-02 | M | US-PAY-105, US-PAY-106 | 🟡 (T0 human) | — | V2 |
 | 2 | [US-PAY-111](stories/US-PAY-111/STORY.md) | Webhook/entitlement mapping for new tiers | F-PAY-03 | M-PAY-03 | S | US-PAY-109 | ✅ (code) | — | **V1** |
 | 2 | [US-PAY-110](stories/US-PAY-110/STORY.md) | Checkout passes `offer_id` server-side | F-PAY-03 | M-PAY-03 | M | US-PAY-106, US-PAY-108, US-PAY-109 | 🔲 | — | V2 |
-| 1 | [US-PAY-112](stories/US-PAY-112/STORY.md) | Pricing page redesign — cards, founding badge, toggle | F-PAY-04 | M-PAY-04 | L | US-PAY-102, US-PAY-106 | 🔲 | — | V2 |
+| 1 | [US-PAY-112](stories/US-PAY-112/STORY.md) | Pricing page redesign — cards, founding badge, toggle | F-PAY-04 | M-PAY-04 | L | US-PAY-102, US-PAY-106 | ✅ (code) | — | V2 |
 | 2 | [US-PAY-113](stories/US-PAY-113/STORY.md) | Responsive layout + comparison section + messaging | F-PAY-04 | M-PAY-04 | S | US-PAY-112 | 🔲 | — | V2 |
 
 > **V1** = ship before/alongside the first real ₹ transaction (6 stories). **V2** = deferred until
@@ -232,7 +232,7 @@ flowchart LR
   end
 
   subgraph M4["M-PAY-04 — Pricing Page Relaunch"]
-    US112["US-PAY-112\nCard redesign"]:::blocked
+    US112["US-PAY-112\nCard redesign"]:::done
     US113["US-PAY-113\nResponsive + comparison"]:::blocked
   end
 
@@ -268,8 +268,9 @@ flowchart LR
 | `api/src/modules/infographics/services/generations.service.ts` | US-PAY-103 | backend | 🔲 |
 | `api/src/modules/payments/services/payments.service.ts` | US-PAY-109, US-PAY-110, US-PAY-111 | backend | 🔲 |
 | `.env.example` (`RAZORPAY_PLAN_PRO_*`, `RAZORPAY_PLAN_AGENCY_*`) | US-PAY-109 | config | 🔲 |
-| `client/src/pages/PricingPage.tsx` | US-PAY-104, US-PAY-112, US-PAY-113 | frontend | 🔲 |
-| `client/src/pages/LandingPage.tsx` (pricing section) | US-PAY-112 | frontend | 🔲 |
+| `client/src/pages/PricingPage.tsx` | US-PAY-104, US-PAY-112, US-PAY-113 | frontend | ✅ (US-PAY-112 done; US-PAY-113 pending) |
+| `client/src/pages/LandingPage.tsx` (pricing section) | US-PAY-112 | frontend | ✅ |
+| `api/src/modules/payments/controllers/pricing.controller.ts` (new) | US-PAY-112 | backend | ✅ |
 
 ---
 
@@ -318,6 +319,32 @@ For environment variables see [ENV.yaml](./ENV.yaml).
 ---
 
 ## Implementation Update (log)
+
+### 2026-08-23 — US-PAY-112 done (code) — pricing page redesign, 5-tier relaunch
+- Added `GET /api/v1/pricing` (`pricing.controller.ts`, public/unauthenticated) — thin orchestrator
+  over `US-PAY-106`'s `getEffectivePrice()` for both intervals across the five public tiers
+  (FREE/SOLO/PRO/TEAM/AGENCY; BROKERAGE excluded — being phased out; ENTERPRISE excluded — static,
+  no `PLAN_CONFIG` entry).
+- Redesigned `PricingPage.tsx`'s card grid to source every price from that endpoint instead of
+  computing annual/discount math client-side (retired the stale ×12×0.85 local formula and the old
+  `plan.price` field entirely). Added PRO + AGENCY cards, dropped the old Individual/Enterprise
+  segment toggle for one unified grid + a static Enterprise card (Custom price, Contact Sales CTA,
+  no annual toggle, never calls `handleSubscribe` with a non-`PlanTier` value). Added the
+  founding-campaign badge + strikethrough regular price (shown only when `campaignId` is non-null
+  and `effectivePrice !== regularPrice` — correctly excludes the redemption-cap-reached edge case)
+  and PRO's "MOST POPULAR" ribbon.
+- Updated `LandingPage.tsx`'s pricing teaser (kept at its existing 3-tier FREE/SOLO/TEAM scope) to
+  pull from the same endpoint, so a founding badge/price can never drift between the two pages.
+- Extracted the per-card derivation into a pure `computePricingCardDisplay()` function (same
+  pattern `getTestModeBannerAmounts()` established for `US-PAY-104`) — 8 new tests; plus 4 tests
+  for the new controller.
+- Gate 1: `npm run check` (0 errors, whole repo). `npm run test:unit` — 33 backend files/414 tests +
+  14 client files/249 tests (1 pre-existing skip), all green. Commits `a7c02fb`, `caaf58c`,
+  `f2d4cd5`, `8fd2946`.
+- **Deferred, not this story's scope**: a real staging checkout click-through stays blocked on
+  `US-PAY-109`'s human task (Razorpay Plan objects) — this story is about correct price *display*.
+- **Next in the V2 chain**: `US-PAY-113` (responsive layout + comparison table, depends on 112 —
+  done) can now proceed; `US-PAY-110` stays blocked on `US-PAY-109`'s human task.
 
 ### 2026-08-23 — US-PAY-108 code done, blocked on T0 (human Offer objects)
 - Extended `US-PAY-106`'s `getEffectivePrice()` with the redemption-cap check (AC2) — that
