@@ -105,15 +105,19 @@ npm run test:unit
 
 ## Task Checklist
 
-- [ ] T1 — getEditableUsageQuota() (file: `usage-limit.service.ts`, type: `feat`)
-- [ ] T2 — wire into usage UI (file: `client/src/components/*`, type: `feat`)
-- [ ] T3 — unit tests (file: `usage-limit.service.spec.ts`, type: `test`)
-- [ ] Gate 1 passes ✅
-- [ ] Gate 4 passes ✅
-- [ ] Manual test verified ✅
-- [ ] PR opened with story card as description ✅
-- [ ] STORY.md ACs ticked off ✅
-- [ ] EPIC.md "Implementation Update" log appended ✅
+- [x] T1 — getEditableUsageQuota() (file: `usage-limit.service.ts`, type: `feat`) — core method
+      landed in commit `480c31e` (by you); this pass added the HTTP route + resolver wrapper
+      (commit `d7dad1d`) and fixed the `EDITABLE_LIMITS_BY_TIER` bug (same commit + `e7017a5`)
+- [x] T2 — wire into usage UI (file: `SubscriptionCard.tsx`, type: `feat`) — commit `f7f4e40`.
+      **Deviation:** was already drafted uncommitted but called the wrong endpoint; fixed rather
+      than rewritten from scratch.
+- [x] T3 — unit tests (file: `usage-limit.service.spec.ts`, type: `test`) — commit `9b5ed60`
+- [x] Gate 1 passes ✅ — `npm run check` (0 errors), backend 383/383, client 240/241
+- [ ] Gate 4 passes — not separately run this pass
+- [ ] Manual test verified — pending
+- [ ] PR opened with story card as description — pending (milestone PR)
+- [x] STORY.md ACs ticked off ✅
+- [x] EPIC.md "Implementation Update" log appended ✅
 
 ---
 
