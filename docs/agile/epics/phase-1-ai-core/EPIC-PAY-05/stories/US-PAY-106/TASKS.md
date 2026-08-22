@@ -93,14 +93,14 @@ cd api && npx vitest run tests/payments/pricing-resolution.service.spec.ts --rep
 
 ## Task Checklist
 
-- [ ] T1 — resolution service (file: `pricing-resolution.service.ts`, type: `feat`)
-- [ ] T2 — unit tests (file: `pricing-resolution.service.spec.ts`, type: `test`)
-- [ ] Gate 1 passes ✅
-- [ ] Gate 4 passes ✅
-- [ ] Manual test verified ✅
-- [ ] PR opened with story card as description ✅
-- [ ] STORY.md ACs ticked off ✅
-- [ ] EPIC.md "Implementation Update" log appended ✅
+- [x] T1 — resolution service (file: `pricing-resolution.service.ts`, type: `feat`) — commit `ccbbe37`
+- [x] T2 — unit tests (file: `pricing-resolution.service.spec.ts`, type: `test`) — commit `4c2147f`
+- [x] Gate 1 passes ✅ — `npm run check` (0 errors), 403/403 backend tests pass
+- [ ] Gate 4 passes — not separately run this pass
+- [ ] Manual test verified — pending
+- [ ] PR opened with story card as description — pending (milestone PR)
+- [x] STORY.md ACs ticked off ✅
+- [x] EPIC.md "Implementation Update" log appended ✅
 
 ---
 
