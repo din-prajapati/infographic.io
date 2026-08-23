@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
 import { PlanTier } from '@prisma/client';
 import { prisma } from '../../../database/prisma.client';
 
@@ -34,6 +34,8 @@ export interface CreatePricingCampaignInput {
  */
 @Injectable()
 export class PricingCampaignService {
+  private readonly logger = new Logger(PricingCampaignService.name);
+
   /**
    * AC4: validates tierDiscounts shape and value ranges before persisting. Throws
    * BadRequestException on the first invalid entry found (400, not a silent clamp/skip).
@@ -117,8 +119,23 @@ export class PricingCampaignService {
     return prisma.pricingCampaign.update({ where: { id }, data: { isActive: false } });
   }
 
-  /** Used by US-PAY-106's price resolution — the single source for "what's active right now." */
+  /**
+   * Used by US-PAY-106's price resolution — the single source for "what's active right now."
+   *
+   * Never lets a lookup failure (missing table, connection drop, etc.) take down the whole
+   * pricing page — degrades to "no active campaign" (regular price only) instead of throwing, so
+   * a campaign-store outage never means every tier's price display breaks. The error is still
+   * logged with full context so the underlying issue isn't silently swallowed.
+   */
   async getActiveCampaign() {
-    return prisma.pricingCampaign.findFirst({ where: { isActive: true } });
+    try {
+      return await prisma.pricingCampaign.findFirst({ where: { isActive: true } });
+    } catch (error) {
+      this.logger.error(
+        `getActiveCampaign() failed — falling back to no active campaign (regular price only): ${error instanceof Error ? error.message : error}`,
+        error instanceof Error ? error.stack : undefined,
+      );
+      return null;
+    }
   }
 }

@@ -186,5 +186,18 @@ describe('PricingCampaignService (US-PAY-105)', () => {
       expect(result).toEqual({ id: 'camp_1', isActive: true });
       expect(mockPrisma.pricingCampaign.findFirst).toHaveBeenCalledWith({ where: { isActive: true } });
     });
+
+    // Regression: a missing-table / DB error here (e.g. a migration that hasn't been pushed yet)
+    // previously threw all the way up through getEffectivePrice() and 500'd the entire pricing
+    // page for every tier. It must degrade to "no active campaign" instead.
+    it('falls back to null instead of throwing when the lookup fails', async () => {
+      mockPrisma.pricingCampaign.findFirst.mockRejectedValue(
+        new Error('The table `public.PricingCampaign` does not exist in the current database.'),
+      );
+
+      const result = await service.getActiveCampaign();
+
+      expect(result).toBeNull();
+    });
   });
 });
