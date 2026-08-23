@@ -1,0 +1,25 @@
+flowchart LR
+  subgraph Before["Today — buried, post-generation only"]
+    Gen1["Generate variations"] --> Panel1["RightSidebar variations panel"]
+    Panel1 --> Toggle1["'Load as: Flat / Editable'\ntoggle, RightSidebar.tsx:903-932"]:::remove
+  end
+
+  subgraph After["US-EDIT-005 — floating canvas control"]
+    Canvas["CenterCanvas.tsx"] --> Toolbar["CanvasEditToolbar.tsx (new)\n'Edit elements' — persistent,\nvisible before any generation"]:::new
+    Toolbar -->|"first click, not composed"| Loading["Real loading state\n15-90s, US-AI-048"]:::new
+    Toolbar -->|"click, cache hit"| Instant["Near-instant, no loading state"]:::new
+    Loading --> Compose["setRenderMode('editable')\nuseGenerationPrefs.ts"]:::existing
+    Instant --> Compose
+    Toolbar -->|"2nd/3rd variation composed"| Charge["Credit charge confirmation\nisExtraCompose===true"]:::new
+    Toolbar -->|"FREE, trial used"| Upgrade["Dedicated upgrade prompt\n(replaces bare toast)"]:::new
+  end
+
+  Compose --> Pipeline["Existing compose pipeline\ngenerations.service.ts\nUS-LAUNCH-015 (unchanged)"]:::good
+
+  Toolbar -.->|"quota badge — BLOCKED"| PayDep["getEditableUsageQuota()\nUS-PAY-103, EPIC-PAY-05\n(not built yet)"]:::blocked
+
+  classDef good     fill:#0b3b2e,stroke:#14532d,color:#ecfdf5;
+  classDef new      fill:#1e3a5f,stroke:#2563eb,color:#eff6ff;
+  classDef existing fill:#3b2a0b,stroke:#a16207,color:#fef9c3;
+  classDef remove   fill:#3f1d1d,stroke:#7f1d1d,color:#fecaca;
+  classDef blocked  fill:#3f1d3d,stroke:#86198f,color:#fae8ff;
