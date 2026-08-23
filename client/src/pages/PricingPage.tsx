@@ -13,11 +13,6 @@ import {
 import {
   Check,
   ArrowRight,
-  Gift,
-  Star,
-  Zap,
-  Users,
-  Building,
   Loader2,
   Linkedin,
   Twitter,
@@ -45,23 +40,69 @@ const planDescriptions: Record<string, string> = {
   AGENCY: "For high-volume real-estate marketing agencies",
 };
 
-// Local, presentational-only marketing subtext for each PLAN_CONFIG feature string — keyed by the
-// literal feature text so it can never silently mismatch if PLAN_CONFIG's feature list changes
-// (falls back to no subtext for anything unmapped, never invents a description for an unknown
-// feature). Deliberately NOT written into PLAN_CONFIG (shared/schema.ts) — that stays the single
-// source of truth for entitlements; this is copy only, local to this page.
-const featureCopy: Record<string, string> = {
-  "Basic templates": "Real-estate template catalog.",
-  "Email support": "Standard email response times.",
-  "Editable designs (1 trial)": "One free multi-layer canvas edit to try it out.",
-  "All templates": "All real-estate templates & styles.",
-  "Priority support": "Faster response when you need help.",
-  "Custom branding": "Agency logo, brand colors & agent details.",
-  "Editable designs": "Multi-layer canvas editor included.",
-  "Team collaboration": "Shared design library across your team.",
-  "5 users": "Up to 5 team members on one plan.",
-  "Advanced analytics": "Usage dashboard & generation history.",
-  "Unlimited users": "No per-seat limit on your organization.",
+interface FeatureBullet {
+  title: string;
+  description?: string;
+  linkText?: string;
+  linkHref?: string;
+}
+
+/**
+ * Per-tier card feature-bullet copy, matching design-preview-pricing.html's actual bespoke
+ * wording per tier (not the generic PLAN_CONFIG.features strings — those stay the entitlement
+ * source of truth for the comparison table below; this is presentational-only card copy, local
+ * to this page). `firstLineDetail` is the second line under the dynamic "{limit} AI Marketing
+ * Designs / mo" title (always present, never omitted or invented per tier).
+ *
+ * One deliberate change from the mockup: the mockup's SOLO card claims "PDF, JPG & PNG Export" —
+ * that contradicts this same page's own FAQ ("PDF export is coming soon"). Kept the FAQ's real
+ * product state authoritative and rephrased that one bullet rather than copying the mockup's
+ * unverified claim verbatim.
+ */
+type PublicTier = "FREE" | "SOLO" | "PRO" | "TEAM" | "AGENCY";
+
+const planFeatureBullets: Record<PublicTier, { firstLineDetail: string; bullets: FeatureBullet[] }> = {
+  FREE: {
+    firstLineDetail: "Real-estate template catalog.",
+    bullets: [
+      { title: "Instagram & WhatsApp formats", description: "1:1 Square & 9:16 Story sizes." },
+      { title: "JPG / PNG high-res export", description: "Clean downloads with no watermarks." },
+      { title: "Multi-layer Canvas Editor Trial", linkText: "Explore editor →", linkHref: "#what-is-design" },
+    ],
+  },
+  SOLO: {
+    firstLineDetail: "All real-estate templates & styles.",
+    bullets: [
+      { title: "Multi-layer Canvas Editor Included", linkText: "Edit text, colors, shapes & photos →", linkHref: "#capabilities" },
+      { title: "Custom Brand Setup", description: "Agency logo, brand colors & agent headshot." },
+      { title: "JPG & PNG Export", description: "High-resolution, social-ready downloads." },
+    ],
+  },
+  PRO: {
+    firstLineDetail: "Priority generation render queue.",
+    bullets: [
+      { title: "Multi-layer Canvas Editor Included", linkText: "Full multi-layer customization →", linkHref: "#capabilities" },
+      { title: "Custom Brand Setup & Presets", description: "Logos, color palettes & agent branding." },
+      { title: "All Real Estate Templates & Sizes", description: "Listings, open house, price drops & flyers." },
+      { title: "Usage Dashboard & Priority Support", linkText: "Compare all features →", linkHref: "#comparison" },
+    ],
+  },
+  TEAM: {
+    firstLineDetail: "High volume creative pipeline.",
+    bullets: [
+      { title: "Multi-layer Canvas Editor Included", linkText: "Full multi-layer customization →", linkHref: "#capabilities" },
+      { title: "Organization Asset Storage", description: "Centralized logo, photos & design library." },
+      { title: "Priority Support & Fast Renders", description: "Expedited generation processing." },
+    ],
+  },
+  AGENCY: {
+    firstLineDetail: "Agency-scale generation capacity.",
+    bullets: [
+      { title: "Multi-layer Canvas Editor Included", linkText: "Full multi-layer customization →", linkHref: "#capabilities" },
+      { title: "Multi-Property Asset Organization", description: "Organize designs by property listing and style." },
+      { title: "Dedicated Account Assistance", description: "Priority customer support & onboarding." },
+    ],
+  },
 };
 
 import { toast } from "sonner";
@@ -182,14 +223,6 @@ declare global {
     Stripe: any;
   }
 }
-
-const planIcons: Record<string, any> = {
-  FREE: Gift,
-  SOLO: Star,
-  PRO: Zap,
-  TEAM: Building,
-  AGENCY: Users,
-};
 
 const faqs = [
   {
@@ -530,7 +563,6 @@ export default function PricingPage() {
     return {
       tier,
       name: config.name,
-      icon: planIcons[tier] ?? Gift,
       features: config.features,
       designLimit: config.limit,
       editableLimit: config.editableLimit,
@@ -548,6 +580,36 @@ export default function PricingPage() {
   // confusing row per tier (each tier's own count string only checks true for itself) that restates
   // the same number rather than comparing anything.
   const comparisonRows = buildComparisonRows(realPlans.map((p) => ({ features: p.features.slice(1) })));
+  // Re-groups buildComparisonRows()'s flat output into the mockup's 3-category layout — pure
+  // reorganization of the same real PLAN_CONFIG-backed rows, no new claims added. Explicit
+  // allow-lists (not a generic bucket-by-guess) so a feature never lands in the wrong category
+  // silently.
+  const templateAccessRows = comparisonRows.filter((r) => ["Basic templates", "All templates"].includes(r.feature));
+  const editableAccessRows = comparisonRows.filter((r) => ["Editable designs (1 trial)", "Editable designs"].includes(r.feature));
+  const brandingRows = comparisonRows.filter((r) => r.feature === "Custom branding");
+  const platformRows = comparisonRows.filter((r) =>
+    ["Priority support", "Team collaboration", "5 users", "Advanced analytics", "Unlimited users"].includes(r.feature),
+  );
+
+  const renderComparisonRow = (row: ComparisonRow) => (
+    <tr key={row.feature}>
+      <td className="p-4 px-5 font-semibold text-[#1e1c1a]">{row.feature}</td>
+      {row.presence.map((has, i) => (
+        <td
+          key={realPlans[i].tier}
+          className={`p-4 text-center ${
+            realPlans[i].tier === "PRO" ? "bg-[#fff5ee]/40 border-x border-[#eb5e28]/20" : ""
+          }`}
+        >
+          {has ? (
+            <Check className="h-4 w-4 text-[#eb5e28] mx-auto" />
+          ) : (
+            <span className="text-[#8c8780]/50">–</span>
+          )}
+        </td>
+      ))}
+    </tr>
+  );
 
   return (
     <div
@@ -708,8 +770,8 @@ export default function PricingPage() {
               const isCurrentPlan = currentPlan === plan.tier;
               const isPendingPlan = pendingPlanTier === plan.tier;
               const isPlanLoading = loadingPlan === plan.tier;
-              const PlanIcon = plan.icon;
               const isMostPopular = plan.tier === "PRO";
+              const bulletsData = planFeatureBullets[plan.tier as PublicTier];
 
               // US-PAY-112 AC1/AC3 — regularPrice/effectivePrice/campaignId/badge come only from
               // the pricing API (getEffectivePrice() server-side); never recomputed here.
@@ -743,8 +805,6 @@ export default function PricingPage() {
                 selectedCurrency === "INR" ? n.toLocaleString() : Math.round(n / 83).toLocaleString();
               const currencySymbol = selectedCurrency === "INR" ? "₹" : "$";
 
-              const restFeatures = plan.features.slice(1);
-
               return (
                 <div
                   key={plan.tier}
@@ -766,10 +826,7 @@ export default function PricingPage() {
                       </div>
                     )}
 
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-xl font-bold text-[#1e1c1a]">{plan.name}</h3>
-                      <PlanIcon className="h-4 w-4 text-[#8c8780]" />
-                    </div>
+                    <h3 className="text-xl font-bold text-[#1e1c1a]">{plan.name}</h3>
                     <p className="text-xs text-[#68645e] mt-1 min-h-[32px] leading-relaxed">
                       {planDescriptions[plan.tier]}
                     </p>
@@ -854,6 +911,8 @@ export default function PricingPage() {
                           "Activating..."
                         ) : plan.tier === "FREE" ? (
                           "Get started free"
+                        ) : plan.tier === "PRO" ? (
+                          "Choose Pro"
                         ) : (
                           `Get started with ${plan.name}`
                         )}
@@ -877,16 +936,22 @@ export default function PricingPage() {
                         <div className="font-bold">
                           {plan.designLimit === -1 ? "Unlimited" : plan.designLimit} AI Marketing Designs / mo
                         </div>
-                        <div className="text-[11px] text-[#68645e] mt-0.5">
-                          {plan.editableLimit === -1 ? "Unlimited" : plan.editableLimit} editable designs / mo.
-                        </div>
+                        <div className="text-[11px] text-[#68645e] mt-0.5">{bulletsData.firstLineDetail}</div>
                         <div className="text-[11px] text-[#68645e]">Generated designs remain in your library.</div>
                       </div>
-                      {restFeatures.map((feature) => (
-                        <div key={feature}>
-                          <div className="font-bold">{feature}</div>
-                          {featureCopy[feature] && (
-                            <div className="text-[11px] text-[#68645e] mt-0.5">{featureCopy[feature]}</div>
+                      {bulletsData.bullets.map((bullet) => (
+                        <div key={bullet.title}>
+                          <div className="font-bold">{bullet.title}</div>
+                          {bullet.description && (
+                            <div className="text-[11px] text-[#68645e] mt-0.5">{bullet.description}</div>
+                          )}
+                          {bullet.linkText && (
+                            <a
+                              href={bullet.linkHref}
+                              className="text-[#0066cc] text-[11px] hover:underline font-medium block mt-0.5"
+                            >
+                              {bullet.linkText}
+                            </a>
                           )}
                         </div>
                       ))}
@@ -1005,30 +1070,38 @@ export default function PricingPage() {
                         ))}
                       </tr>
 
+                      {templateAccessRows.map(renderComparisonRow)}
+                      {editableAccessRows.map(renderComparisonRow)}
+
                       <tr className="bg-[#faf9f6]">
                         <td colSpan={realPlans.length + 1} className="px-5 py-2.5 font-bold uppercase tracking-wider text-[11px] text-[#1e1c1a]">
-                          Included Features
+                          Branding &amp; Customization
                         </td>
                       </tr>
-                      {comparisonRows.map((row) => (
-                        <tr key={row.feature}>
-                          <td className="p-4 px-5 font-semibold text-[#1e1c1a]">{row.feature}</td>
-                          {row.presence.map((has, i) => (
-                            <td
-                              key={realPlans[i].tier}
-                              className={`p-4 text-center ${
-                                realPlans[i].tier === "PRO" ? "bg-[#fff5ee]/40 border-x border-[#eb5e28]/20" : ""
-                              }`}
-                            >
-                              {has ? (
-                                <Check className="h-4 w-4 text-[#eb5e28] mx-auto" />
-                              ) : (
-                                <span className="text-[#8c8780]/50">–</span>
-                              )}
-                            </td>
-                          ))}
-                        </tr>
-                      ))}
+                      {brandingRows.map(renderComparisonRow)}
+                      {/* Always true, every tier — real behavior (Infographic records persist in
+                          the design library), already stated on every card above; not derived
+                          from buildComparisonRows() since there's no per-tier variance to show. */}
+                      <tr>
+                        <td className="p-4 px-5 font-semibold text-[#1e1c1a]">Design persistence in your library</td>
+                        {realPlans.map((plan) => (
+                          <td
+                            key={plan.tier}
+                            className={`p-4 text-center ${
+                              plan.tier === "PRO" ? "bg-[#fff5ee]/40 border-x border-[#eb5e28]/20" : ""
+                            }`}
+                          >
+                            <Check className="h-4 w-4 text-[#eb5e28] mx-auto" />
+                          </td>
+                        ))}
+                      </tr>
+
+                      <tr className="bg-[#faf9f6]">
+                        <td colSpan={realPlans.length + 1} className="px-5 py-2.5 font-bold uppercase tracking-wider text-[11px] text-[#1e1c1a]">
+                          Platform &amp; Support
+                        </td>
+                      </tr>
+                      {platformRows.map(renderComparisonRow)}
                     </tbody>
                   </table>
                 </div>
