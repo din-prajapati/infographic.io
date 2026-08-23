@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, Component, type ReactNode } from "react";
 import { Link, useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -104,6 +104,57 @@ export function computePricingCardDisplay(
   const annualEffectiveTotal = annual?.effectivePrice ?? 0;
 
   return { showAnnualToggle, hasFoundingPrice, displayEffective, displayRegular, annualSavings, annualEffectiveTotal };
+}
+
+export interface ComparisonRow {
+  feature: string;
+  presence: boolean[]; // one entry per plan, same order as the input array
+}
+
+/**
+ * Builds the full feature-matrix comparison table rows for US-PAY-113 AC2 — the union of every
+ * distinct feature string across all plans, in first-seen order, with a per-plan checkmark. Reads
+ * only the same `features` arrays already rendered on the cards above (`PLAN_CONFIG` real tiers +
+ * the static Enterprise entry) — never invents a capability that isn't already data-backed.
+ * Exported (not inlined in JSX) so a test can assert the union/ordering/presence logic directly,
+ * same pattern as computePricingCardDisplay() and getTestModeBannerAmounts().
+ */
+export function buildComparisonRows(
+  comparisonPlans: Array<{ features: string[] }>,
+): ComparisonRow[] {
+  const seen: string[] = [];
+  for (const plan of comparisonPlans) {
+    for (const feature of plan.features) {
+      if (!seen.includes(feature)) seen.push(feature);
+    }
+  }
+  return seen.map((feature) => ({
+    feature,
+    presence: comparisonPlans.map((p) => p.features.includes(feature)),
+  }));
+}
+
+/**
+ * US-PAY-113 AC2 — the comparison table is a sibling section below the pricing cards, not a
+ * dependency of them. This boundary makes that explicit: a render failure here fails silently
+ * (renders nothing) rather than taking the rest of the page down, so the cards above always keep
+ * working standalone.
+ */
+class ComparisonSectionBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
+  constructor(props: { children: ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  componentDidCatch(error: Error) {
+    console.error("Pricing comparison table failed to render:", error);
+  }
+  render() {
+    if (this.state.hasError) return null;
+    return this.props.children;
+  }
 }
 
 declare global {
@@ -465,6 +516,12 @@ export default function PricingPage() {
 
   const plans = [...realPlans, enterprisePlan];
 
+  // US-PAY-113 AC2 — full feature-matrix comparison, gated behind an env flag (defaults on) so it
+  // can be turned off independently of the cards above, and rendered inside a local error
+  // boundary so a failure here never takes the cards with it.
+  const comparisonTableEnabled = import.meta.env.VITE_PRICING_COMPARISON_ENABLED !== "false";
+  const comparisonRows = buildComparisonRows(plans);
+
   return (
     <div className="min-h-screen" style={{ background: 'var(--page-bg)' }}>
       {/* Nav - Dark glass style */}
@@ -519,6 +576,15 @@ export default function PricingPage() {
 
       {/* Header */}
       <section className="container px-6 pt-10 pb-6 text-center max-w-6xl mx-auto">
+        {/* US-PAY-113 AC2 (messaging): real-estate specialization, exact PRD-approved copy */}
+        <h1 className="text-3xl md:text-5xl font-bold text-foreground mb-4">
+          Create professional real-estate marketing creatives in minutes — without hiring a
+          designer
+        </h1>
+        <p className="text-muted-foreground text-lg max-w-2xl mx-auto mb-8">
+          AI-powered property marketing, branding and campaign creation built specifically for
+          real estate
+        </p>
 
         {/* Beta mode notice */}
         {isBetaMode && (
@@ -793,6 +859,72 @@ export default function PricingPage() {
           })}
         </div>
       </section>
+
+      {/* Comparison Table — US-PAY-113 AC2: full feature breakdown, independent of the cards
+          above (own error boundary + env flag; a failure here never affects the cards). */}
+      {comparisonTableEnabled && (
+        <ComparisonSectionBoundary>
+          <section className="container px-6 pb-20 max-w-6xl mx-auto">
+            <div className="text-center mb-10">
+              <p className="text-xs uppercase tracking-widest text-primary mb-2">COMPARE PLANS</p>
+              <h2 className="text-2xl md:text-4xl font-bold text-foreground">
+                See the full feature breakdown
+              </h2>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[640px] border-collapse text-sm">
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className="text-left py-3 pr-4 text-muted-foreground font-medium">
+                      Feature
+                    </th>
+                    {plans.map((plan) => (
+                      <th
+                        key={plan.tier}
+                        className="text-center py-3 px-3 text-foreground font-semibold whitespace-nowrap"
+                      >
+                        {plan.name}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="border-b border-border/50">
+                    <td className="py-3 pr-4 text-muted-foreground">Infographics / month</td>
+                    {plans.map((plan) => (
+                      <td key={plan.tier} className="text-center py-3 px-3 text-foreground">
+                        {plan.designLimit === -1 ? "Unlimited" : plan.designLimit}
+                      </td>
+                    ))}
+                  </tr>
+                  <tr className="border-b border-border/50">
+                    <td className="py-3 pr-4 text-muted-foreground">Editable designs / month</td>
+                    {plans.map((plan) => (
+                      <td key={plan.tier} className="text-center py-3 px-3 text-foreground">
+                        {plan.editableLimit === -1 ? "Unlimited" : plan.editableLimit}
+                      </td>
+                    ))}
+                  </tr>
+                  {comparisonRows.map((row) => (
+                    <tr key={row.feature} className="border-b border-border/50">
+                      <td className="py-3 pr-4 text-muted-foreground">{row.feature}</td>
+                      {row.presence.map((has, i) => (
+                        <td key={plans[i].tier} className="text-center py-3 px-3">
+                          {has ? (
+                            <Check className="h-4 w-4 text-emerald-400 mx-auto" />
+                          ) : (
+                            <span className="text-muted-foreground/40">–</span>
+                          )}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </ComparisonSectionBoundary>
+      )}
 
       {/* FAQ Section - Dark with floating typography */}
       <section className="relative bg-background py-20 overflow-hidden">

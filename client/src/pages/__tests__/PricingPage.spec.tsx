@@ -11,7 +11,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { getTestModeBannerAmounts, computePricingCardDisplay } from '@/pages/PricingPage';
+import { getTestModeBannerAmounts, computePricingCardDisplay, buildComparisonRows } from '@/pages/PricingPage';
 import { PLAN_CONFIG } from '@shared/schema';
 import type { EffectivePriceResult } from '@/lib/api';
 
@@ -106,5 +106,50 @@ describe('computePricingCardDisplay (US-PAY-112)', () => {
     expect(result.displayRegular).toBe(0);
     expect(result.hasFoundingPrice).toBe(false);
     expect(result.showAnnualToggle).toBe(false);
+  });
+});
+
+// ─── buildComparisonRows — US-PAY-113 AC2 ────────────────────────────────────────────
+
+describe('buildComparisonRows (US-PAY-113)', () => {
+  it('produces one row per distinct feature, in first-seen order across plans', () => {
+    const plans = [
+      { features: ['A', 'B'] },
+      { features: ['B', 'C'] },
+    ];
+    const rows = buildComparisonRows(plans);
+    expect(rows.map((r) => r.feature)).toEqual(['A', 'B', 'C']);
+  });
+
+  it('marks presence per plan in the same order the plans were given', () => {
+    const plans = [
+      { features: ['A', 'B'] },
+      { features: ['B', 'C'] },
+    ];
+    const rows = buildComparisonRows(plans);
+    expect(rows.find((r) => r.feature === 'A')!.presence).toEqual([true, false]);
+    expect(rows.find((r) => r.feature === 'B')!.presence).toEqual([true, true]);
+    expect(rows.find((r) => r.feature === 'C')!.presence).toEqual([false, true]);
+  });
+
+  it('never fabricates a feature not present in any input plan', () => {
+    const plans = [{ features: ['Only this one'] }];
+    const rows = buildComparisonRows(plans);
+    expect(rows).toEqual([{ feature: 'Only this one', presence: [true] }]);
+  });
+
+  it('an empty plan list produces an empty row set, not an error', () => {
+    expect(buildComparisonRows([])).toEqual([]);
+  });
+
+  it('against the real PLAN_CONFIG public tiers: every row has a presence entry per plan, no crashes', () => {
+    const realPlans = (["FREE", "SOLO", "PRO", "TEAM", "AGENCY"] as const).map((tier) => ({
+      features: PLAN_CONFIG[tier].features,
+    }));
+    const rows = buildComparisonRows(realPlans);
+    expect(rows.length).toBeGreaterThan(0);
+    for (const row of rows) {
+      expect(row.presence).toHaveLength(realPlans.length);
+    }
   });
 });
