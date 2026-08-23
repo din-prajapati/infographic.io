@@ -599,23 +599,34 @@ export default function PricingPage() {
     ["Priority support", "Team collaboration", "5 users", "Advanced analytics", "Unlimited users"].includes(r.feature),
   );
 
-  const renderComparisonRow = (row: ComparisonRow) => (
+  // Check + label rendered together, colored per column (PRO gets the brand-orange accent, every
+  // other "true" cell gets the dark text color) — the "visually appealing" tick+text treatment
+  // from the mockup, applied only to rows this table already carries (real PLAN_CONFIG-backed
+  // capabilities), not new unbacked claims.
+  const renderComparisonRow = (row: ComparisonRow, trueLabel: string = "Included") => (
     <tr key={row.feature}>
       <td className="p-4 px-5 font-semibold text-[#1e1c1a]">{row.feature}</td>
-      {row.presence.map((has, i) => (
-        <td
-          key={realPlans[i].tier}
-          className={`p-4 text-center ${
-            realPlans[i].tier === "PRO" ? "bg-[#fff5ee]/40 border-x border-[#eb5e28]/20" : ""
-          }`}
-        >
-          {has ? (
-            <Check className="h-4 w-4 text-[#eb5e28] mx-auto" />
-          ) : (
-            <span className="text-[#8c8780]/50">–</span>
-          )}
-        </td>
-      ))}
+      {row.presence.map((has, i) => {
+        const isPro = realPlans[i].tier === "PRO";
+        return (
+          <td
+            key={realPlans[i].tier}
+            className={`p-4 text-center ${isPro ? "bg-[#fff5ee]/40 border-x border-[#eb5e28]/20" : ""}`}
+          >
+            {has ? (
+              <span
+                className={`inline-flex items-center gap-1 font-semibold whitespace-nowrap ${
+                  isPro ? "text-[#eb5e28]" : "text-[#1e1c1a]"
+                }`}
+              >
+                <Check className="h-3.5 w-3.5 shrink-0" /> {trueLabel}
+              </span>
+            ) : (
+              <span className="text-[#8c8780]/50">–</span>
+            )}
+          </td>
+        );
+      })}
     </tr>
   );
 
@@ -1078,30 +1089,37 @@ export default function PricingPage() {
                         ))}
                       </tr>
 
-                      {templateAccessRows.map(renderComparisonRow)}
-                      {editableAccessRows.map(renderComparisonRow)}
+                      {templateAccessRows.map((row) => renderComparisonRow(row))}
+                      {editableAccessRows.map((row) => renderComparisonRow(row))}
 
                       <tr className="bg-[#faf9f6]">
                         <td colSpan={realPlans.length + 1} className="px-5 py-2.5 font-bold uppercase tracking-wider text-[11px] text-[#1e1c1a]">
                           Branding &amp; Customization
                         </td>
                       </tr>
-                      {brandingRows.map(renderComparisonRow)}
+                      {brandingRows.map((row) => renderComparisonRow(row))}
                       {/* Always true, every tier — real behavior (Infographic records persist in
                           the design library), already stated on every card above; not derived
                           from buildComparisonRows() since there's no per-tier variance to show. */}
                       <tr>
                         <td className="p-4 px-5 font-semibold text-[#1e1c1a]">Design persistence in your library</td>
-                        {realPlans.map((plan) => (
-                          <td
-                            key={plan.tier}
-                            className={`p-4 text-center ${
-                              plan.tier === "PRO" ? "bg-[#fff5ee]/40 border-x border-[#eb5e28]/20" : ""
-                            }`}
-                          >
-                            <Check className="h-4 w-4 text-[#eb5e28] mx-auto" />
-                          </td>
-                        ))}
+                        {realPlans.map((plan) => {
+                          const isPro = plan.tier === "PRO";
+                          return (
+                            <td
+                              key={plan.tier}
+                              className={`p-4 text-center ${isPro ? "bg-[#fff5ee]/40 border-x border-[#eb5e28]/20" : ""}`}
+                            >
+                              <span
+                                className={`inline-flex items-center gap-1 font-semibold whitespace-nowrap ${
+                                  isPro ? "text-[#eb5e28]" : "text-[#1e1c1a]"
+                                }`}
+                              >
+                                <Check className="h-3.5 w-3.5 shrink-0" /> Permanent
+                              </span>
+                            </td>
+                          );
+                        })}
                       </tr>
 
                       <tr className="bg-[#faf9f6]">
@@ -1109,7 +1127,7 @@ export default function PricingPage() {
                           Platform &amp; Support
                         </td>
                       </tr>
-                      {platformRows.map(renderComparisonRow)}
+                      {platformRows.map((row) => renderComparisonRow(row))}
                     </tbody>
                   </table>
                 </div>
