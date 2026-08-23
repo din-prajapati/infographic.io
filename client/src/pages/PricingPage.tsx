@@ -1,8 +1,6 @@
 import { useState, useEffect, Component, type ReactNode } from "react";
 import { Link, useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
 import { Marquee } from "@/components/ui/marquee";
 import {
   Accordion,
@@ -12,7 +10,6 @@ import {
 } from "@/components/ui/accordion";
 import {
   Check,
-  ArrowRight,
   Loader2,
   Linkedin,
   Twitter,
@@ -351,6 +348,12 @@ export default function PricingPage() {
 
   // Set of plan tiers that are paid but NOT yet configured with a payment-provider plan ID.
   // Driven by the backend "configured" flag — not hardcoded to any specific tier.
+  //
+  // PRO is deliberately excluded from this gate at the CTA render site below (2026-08-23, per
+  // explicit user direction) even though its Razorpay Plan IDs aren't in .env yet (HUMAN_TASKS #6,
+  // US-PAY-109 T0) — real Plan objects are expected "in a couple of days." Clicking "Choose Pro"
+  // before then will attempt a real checkout against an unconfigured plan and can fail server-side.
+  // AGENCY (and any other unconfigured tier) still gets the safe "Contact us" fallback.
   const unconfiguredPaidTiers = new Set<string>(
     (plansData?.plans ?? [])
       .filter((p: { tier: string; price?: number; configured?: boolean }) =>
@@ -367,13 +370,18 @@ export default function PricingPage() {
   });
 
   const subscription = subscriptionData?.subscription;
+  const isLoggedIn = !!localStorage.getItem("auth_token");
   // ACTIVE/PAST_DUE/HALTED/PAUSED = confirmed current plan. PENDING handled separately below.
-  const currentPlan: PlanTier | "FREE" =
-    subscription &&
-    (subscription.status === "ACTIVE" ||
-      subscription.status === "PAST_DUE" ||
-      subscription.status === "HALTED" ||
-      subscription.status === "PAUSED")
+  // Anonymous visitors have no "current plan" at all — only a logged-in user without an
+  // active paid subscription defaults to FREE. Without this gate every anonymous visitor
+  // saw the Free card rendered as a disabled "Current Plan", never "Get started free".
+  const currentPlan: PlanTier | "FREE" | null = !isLoggedIn
+    ? null
+    : subscription &&
+        (subscription.status === "ACTIVE" ||
+          subscription.status === "PAST_DUE" ||
+          subscription.status === "HALTED" ||
+          subscription.status === "PAUSED")
       ? (subscription.planTier as PlanTier)
       : "FREE";
   // PENDING: payment captured but webhook not yet confirmed — show "Activating..." and block re-subscribe
@@ -882,7 +890,7 @@ export default function PricingPage() {
                       >
                         Available after beta
                       </button>
-                    ) : unconfiguredPaidTiers.has(plan.tier) ? (
+                    ) : unconfiguredPaidTiers.has(plan.tier) && plan.tier !== "PRO" ? (
                       <a
                         href="mailto:hello@buildographic.com"
                         className="w-full py-3 px-4 rounded-[8px] bg-[#2a2825] hover:bg-[#1e1c1a] text-white font-bold text-xs transition shadow-sm mb-8 flex items-center justify-center"
