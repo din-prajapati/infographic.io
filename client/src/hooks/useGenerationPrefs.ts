@@ -23,10 +23,26 @@ interface GenerationPrefsStore {
    */
   renderMode: RenderMode;
   setRenderMode: (mode: RenderMode) => void;
+  /**
+   * The generation whose results are currently on the canvas — US-EDIT-005.
+   *
+   * Mirrors RightSidebar's local `resultsGenerationId` (set once a WebSocket
+   * generation completes; deliberately outlives the in-flight `generationId`,
+   * same reasoning as that field — see RightSidebar.tsx). CanvasEditToolbar
+   * has no other way to reach the real id: the canvas's AI-imported image
+   * element carries no generation reference of its own. Without this, the
+   * floating control has no real id to call POST /:id/compose with — this is
+   * the exact "id doesn't travel with the results" bug already fixed once
+   * for the sidebar path (found live 2026-08-13); do not reintroduce it here.
+   */
+  activeGenerationId: string | null;
+  setActiveGenerationId: (id: string | null) => void;
 }
 
 export const useGenerationPrefs = create<GenerationPrefsStore>((set) => ({
   // Flat stays the default: existing behaviour is unchanged unless a user opts in.
   renderMode: 'flat',
   setRenderMode: (renderMode) => set({ renderMode }),
+  activeGenerationId: null,
+  setActiveGenerationId: (activeGenerationId) => set({ activeGenerationId }),
 }));
