@@ -11,6 +11,7 @@ import { ImageElement } from "../canvas/ImageElement";
 import { sortByZIndex } from "../../lib/canvasUtils";
 import { DimensionsDisplay } from "./DimensionsDisplay";
 import { ContextualToolbar } from "./ContextualToolbar";
+import { CanvasEditToolbar } from "./CanvasEditToolbar";
 import { usePanelState } from "../../lib/panelState";
 import { loadTemplateById } from "../../lib/storage";
 import { ImageElement as ImageElementType } from "../../lib/canvasTypes";
@@ -291,6 +292,10 @@ export function CenterCanvas({ isPreviewMode = false }: CenterCanvasProps) {
           cursor: activeTool === 'hand' ? (isPanning ? 'grabbing' : 'grab') : 'default'
         }}
       >
+        {/* Floating Edit Elements Toolbar — US-EDIT-005 */}
+        {!isPreviewMode && (
+          <CanvasEditToolbar />
+        )}
         {/* Dimensions badge — viewport-level, bottom-left corner, never overlaps artboard */}
         {selectedElement && !isPreviewMode && (
           <DimensionsDisplay element={selectedElement} />

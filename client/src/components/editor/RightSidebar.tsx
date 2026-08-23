@@ -311,6 +311,10 @@ export function RightSidebar() {
     !!loadingVariationId && renderMode === "editable",
   );
   const setRenderMode = useGenerationPrefs((s) => s.setRenderMode);
+  // US-EDIT-005 — mirrors resultsGenerationId into the shared store so the
+  // floating CanvasEditToolbar (mounted in CenterCanvas, a sibling with no
+  // other access to this id) can call POST /:id/compose with the real id.
+  const setActiveGenerationId = useGenerationPrefs((s) => s.setActiveGenerationId);
 
   const addElement = useCanvasStore((state) => state.addElement);
   const elements = useCanvasStore((state) => state.elements);
@@ -355,6 +359,7 @@ export function RightSidebar() {
           // Pair the results with their generation so the editable path can
           // call POST /:id/compose after the WS id below is torn down.
           setResultsGenerationId(progress.generationId);
+          setActiveGenerationId(progress.generationId);
           setShowResults(true);
         } catch {
           toast.error("Failed to load results");
@@ -892,43 +897,12 @@ export function RightSidebar() {
           </div>
 
           {/* AI Chat nudge — pill matching "3 results ready" style */}
-          <div className="mx-3 mt-3 flex items-center justify-between text-xs bg-ai-accent/10 text-ai-accent rounded-md px-3 py-2 border border-ai-accent/20">
+          <div className="mx-3 my-3 flex items-center justify-between text-xs bg-ai-accent/10 text-ai-accent rounded-md px-3 py-2 border border-ai-accent/20">
             <span className="flex items-center gap-1.5 font-medium">
               <Sparkles className="w-3.5 h-3.5" />
               Want to iterate? Use AI Chat
             </span>
             <ArrowRight className="w-3 h-3 text-ai-accent/70 shrink-0" />
-          </div>
-
-          {/* Render mode — US-AI-047.
-              Shared with the AI chat panel via useGenerationPrefs, so the choice
-              persists across both surfaces instead of living in one panel. */}
-          <div className="px-3 pb-2 flex items-center gap-2">
-            <span className="text-xs text-muted-foreground shrink-0">Load as:</span>
-            <div className="flex rounded-md border border-border overflow-hidden text-xs">
-              <button
-                className={`px-2.5 py-1 transition-colors ${
-                  renderMode === "flat"
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-background text-muted-foreground hover:text-foreground"
-                }`}
-                onClick={() => setRenderMode("flat")}
-                title="Load as a single flat image layer"
-              >
-                Flat
-              </button>
-              <button
-                className={`px-2.5 py-1 transition-colors ${
-                  renderMode === "editable"
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-background text-muted-foreground hover:text-foreground"
-                }`}
-                onClick={() => setRenderMode("editable")}
-                title="Compose editable text layers over the image"
-              >
-                Editable
-              </button>
-            </div>
           </div>
 
           {/* Variation cards */}
