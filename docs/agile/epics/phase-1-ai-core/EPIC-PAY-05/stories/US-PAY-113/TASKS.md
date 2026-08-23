@@ -89,14 +89,14 @@ npm run test:unit:client
 
 ## Task Checklist
 
-- [ ] T1 — responsive breakpoints (file: `PricingPage.tsx`, type: `feat`)
-- [ ] T2 — comparison section + messaging (file: `PricingPage.tsx`, type: `feat`)
-- [ ] Gate 1 passes ✅
-- [ ] Gate 2 passes ✅
-- [ ] Manual test verified ✅ (mobile + desktop, staging)
-- [ ] PR opened with story card as description ✅
-- [ ] STORY.md ACs ticked off ✅
-- [ ] EPIC.md "Implementation Update" log appended ✅
+- [x] T1 — responsive breakpoints (file: `PricingPage.tsx`, type: `feat`)
+- [x] T2 — comparison section + messaging (file: `PricingPage.tsx`, type: `feat`)
+- [x] Gate 1 passes ✅ (`npm run check` + `npm run test:unit:client` — 14 files, 254 tests green)
+- [x] Gate 2 passes ✅ (`buildComparisonRows()` unit-tested; 5 new tests)
+- [ ] Manual test verified (mobile + desktop, staging) — deferred, needs a deployed environment + real device
+- [ ] PR opened with story card as description — milestone PR not yet opened
+- [x] STORY.md ACs ticked off ✅
+- [x] EPIC.md "Implementation Update" log appended ✅
 
 ---
 
