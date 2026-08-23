@@ -201,7 +201,7 @@ be hardened.
 | 2 | [US-PAY-111](stories/US-PAY-111/STORY.md) | Webhook/entitlement mapping for new tiers | F-PAY-03 | M-PAY-03 | S | US-PAY-109 | ✅ (code) | — | **V1** |
 | 2 | [US-PAY-110](stories/US-PAY-110/STORY.md) | Checkout passes `offer_id` server-side | F-PAY-03 | M-PAY-03 | M | US-PAY-106, US-PAY-108, US-PAY-109 | 🔲 | — | V2 |
 | 1 | [US-PAY-112](stories/US-PAY-112/STORY.md) | Pricing page redesign — cards, founding badge, toggle | F-PAY-04 | M-PAY-04 | L | US-PAY-102, US-PAY-106 | ✅ (code) | — | V2 |
-| 2 | [US-PAY-113](stories/US-PAY-113/STORY.md) | Responsive layout + comparison section + messaging | F-PAY-04 | M-PAY-04 | S | US-PAY-112 | 🔲 | — | V2 |
+| 2 | [US-PAY-113](stories/US-PAY-113/STORY.md) | Responsive layout + comparison section + messaging | F-PAY-04 | M-PAY-04 | S | US-PAY-112 | ✅ (code) | — | V2 |
 
 > **V1** = ship before/alongside the first real ₹ transaction (6 stories). **V2** = deferred until
 > after that transaction succeeds and real demand data exists (6 stories). See "Scope split" above.
@@ -233,7 +233,7 @@ flowchart LR
 
   subgraph M4["M-PAY-04 — Pricing Page Relaunch"]
     US112["US-PAY-112\nCard redesign"]:::done
-    US113["US-PAY-113\nResponsive + comparison"]:::blocked
+    US113["US-PAY-113\nResponsive + comparison"]:::done
   end
 
   US102 --> US107
@@ -268,7 +268,7 @@ flowchart LR
 | `api/src/modules/infographics/services/generations.service.ts` | US-PAY-103 | backend | 🔲 |
 | `api/src/modules/payments/services/payments.service.ts` | US-PAY-109, US-PAY-110, US-PAY-111 | backend | 🔲 |
 | `.env.example` (`RAZORPAY_PLAN_PRO_*`, `RAZORPAY_PLAN_AGENCY_*`) | US-PAY-109 | config | 🔲 |
-| `client/src/pages/PricingPage.tsx` | US-PAY-104, US-PAY-112, US-PAY-113 | frontend | ✅ (US-PAY-112 done; US-PAY-113 pending) |
+| `client/src/pages/PricingPage.tsx` | US-PAY-104, US-PAY-112, US-PAY-113 | frontend | ✅ |
 | `client/src/pages/LandingPage.tsx` (pricing section) | US-PAY-112 | frontend | ✅ |
 | `api/src/modules/payments/controllers/pricing.controller.ts` (new) | US-PAY-112 | backend | ✅ |
 
@@ -319,6 +319,30 @@ For environment variables see [ENV.yaml](./ENV.yaml).
 ---
 
 ## Implementation Update (log)
+
+### 2026-08-23 — US-PAY-113 done (code) — responsive layout + comparison table + messaging
+- Fixed two real mobile-overflow sources in `PricingPage.tsx`: the nav's link row had no
+  responsive treatment at all (unlike `LandingPage.tsx`, which already hides the equivalent row
+  below `md`) — applied the same `hidden md:flex` convention. The card grid relied on `grid`'s
+  implicit single-column default with no tablet tier — made explicit:
+  `grid-cols-1 sm:grid-cols-2 lg:grid-cols-3`.
+- Added the PRD-approved real-estate-specialization headline/subhead to the page header.
+- Added a full feature-matrix comparison table below the cards (infographics/mo, editable
+  designs/mo, plus the union of every distinct feature string across all 6 plans) — derived only
+  from the same `PLAN_CONFIG` data already shown on the cards; no genuinely "hidden" long feature
+  catalog exists in `PLAN_CONFIG` beyond what the cards show, so nothing was invented. Gated
+  behind `VITE_PRICING_COMPARISON_ENABLED` (defaults on), wrapped in a local
+  `ComparisonSectionBoundary` so a render failure there can't take the cards above down with it.
+- Extracted `buildComparisonRows()` as a pure, exported function (same pattern as
+  `computePricingCardDisplay()`/`getTestModeBannerAmounts()`) — 5 new tests.
+- Gate 1: `npm run check` (0 errors, whole repo). `npm run test:unit:client` — 14 files/254 tests
+  (1 pre-existing skip), all green. Commits `b0d0c66`, `35813be`.
+- **Deferred, not this story's blocker**: a real mobile-device/staging click-through remains a
+  human task — no staging access or physical device from this session.
+- All 6 `M-PAY-04` (Pricing Page Relaunch) stories now code-complete: `US-PAY-102`, `104`, `106`,
+  `112`, `113` done; `US-PAY-108`/`109`/`110`/`111` land in other milestones. Remaining before a
+  milestone PR: the `US-PAY-109` human task (Razorpay Plan objects) unblocks `US-PAY-110`
+  (checkout `offer_id`), the last uncoded V2 story.
 
 ### 2026-08-23 — US-PAY-112 done (code) — pricing page redesign, 5-tier relaunch
 - Added `GET /api/v1/pricing` (`pricing.controller.ts`, public/unauthenticated) — thin orchestrator
