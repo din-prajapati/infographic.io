@@ -3,6 +3,7 @@ import { Link, useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { Marquee } from "@/components/ui/marquee";
 import {
   Accordion,
   AccordionContent,
@@ -28,21 +29,39 @@ import {
 
 const PENDING_PLAN_KEY = "pending_subscription_plan";
 
-// US-PAY-112 — the 5 real tiers shown on the pricing page, in display order, plus a 6th static
-// Enterprise "Contact Sales" card (no PLAN_CONFIG entry — custom pricing, see EPIC.md Out of
-// Scope). BROKERAGE is deliberately excluded here: being phased out in favor of AGENCY, no longer
+// US-PAY-112 (visual pass, 2026-08-23) — the 5 real tiers shown on the pricing page, in display
+// order. BROKERAGE is deliberately excluded here: being phased out in favor of AGENCY, no longer
 // marketed on this page (existing subscribers keep it on their account, see US-PAY-102's Out of
-// Scope) — this replaces the old Individual/Enterprise segment toggle, which never showed
-// PRO/AGENCY at all.
+// Scope). Enterprise is not a PLAN_CONFIG tier — no static grid card for it; it's an inline link on
+// the Agency card plus the CTA banner near the bottom (design-preview-pricing.html's actual layout,
+// not the old 6-card grid).
 const PUBLIC_TIERS: PlanTier[] = ["FREE", "SOLO", "PRO", "TEAM", "AGENCY"];
 
 const planDescriptions: Record<string, string> = {
-  FREE: "Get started with essential features at no cost",
-  SOLO: "Perfect for individual agents",
-  PRO: "For agents who list frequently",
-  TEAM: "Built for real estate teams and brands",
-  AGENCY: "For agencies and brokerages at scale",
-  BROKERAGE: "For brokerages with white-label needs",
+  FREE: "Try Buildographic at zero cost",
+  SOLO: "For individual real-estate agents",
+  PRO: "For power agents & active marketers",
+  TEAM: "For real-estate teams & small brokerages",
+  AGENCY: "For high-volume real-estate marketing agencies",
+};
+
+// Local, presentational-only marketing subtext for each PLAN_CONFIG feature string — keyed by the
+// literal feature text so it can never silently mismatch if PLAN_CONFIG's feature list changes
+// (falls back to no subtext for anything unmapped, never invents a description for an unknown
+// feature). Deliberately NOT written into PLAN_CONFIG (shared/schema.ts) — that stays the single
+// source of truth for entitlements; this is copy only, local to this page.
+const featureCopy: Record<string, string> = {
+  "Basic templates": "Real-estate template catalog.",
+  "Email support": "Standard email response times.",
+  "Editable designs (1 trial)": "One free multi-layer canvas edit to try it out.",
+  "All templates": "All real-estate templates & styles.",
+  "Priority support": "Faster response when you need help.",
+  "Custom branding": "Agency logo, brand colors & agent details.",
+  "Editable designs": "Multi-layer canvas editor included.",
+  "Team collaboration": "Shared design library across your team.",
+  "5 users": "Up to 5 team members on one plan.",
+  "Advanced analytics": "Usage dashboard & generation history.",
+  "Unlimited users": "No per-seat limit on your organization.",
 };
 
 import { toast } from "sonner";
@@ -114,8 +133,8 @@ export interface ComparisonRow {
 /**
  * Builds the full feature-matrix comparison table rows for US-PAY-113 AC2 — the union of every
  * distinct feature string across all plans, in first-seen order, with a per-plan checkmark. Reads
- * only the same `features` arrays already rendered on the cards above (`PLAN_CONFIG` real tiers +
- * the static Enterprise entry) — never invents a capability that isn't already data-backed.
+ * only the same `features` arrays already rendered on the cards above (real PLAN_CONFIG tiers) —
+ * never invents a capability that isn't already data-backed.
  * Exported (not inlined in JSX) so a test can assert the union/ordering/presence logic directly,
  * same pattern as computePricingCardDisplay() and getTestModeBannerAmounts().
  */
@@ -170,62 +189,89 @@ const planIcons: Record<string, any> = {
   PRO: Zap,
   TEAM: Building,
   AGENCY: Users,
-  BROKERAGE: Building,
-  ENTERPRISE: Building,
-};
-
-const featureLeadIn: Record<string, string> = {
-  SOLO: "Everything in Free, plus:",
-  PRO: "Everything in Solo, plus:",
-  TEAM: "Everything in Pro, plus:",
-  AGENCY: "Everything in Team, plus:",
-  BROKERAGE: "Everything in Team, plus:",
 };
 
 const faqs = [
   {
-    question: "How fast can I create an infographic?",
+    question: "How does the free plan work?",
     answer:
-      "Most infographics are ready in 15-20 seconds. Enter your listing details, pick a template, and the system generates the visual automatically.",
+      "The Free plan gives you 3 AI marketing designs every month at zero cost. No credit card or payment details are needed. You can generate real-estate templates and download high-resolution PNG/JPG files.",
   },
   {
-    question: "Do I need a credit card to start?",
+    question: "How fast can I create a design?",
     answer:
-      "No. The Free plan includes 3 infographics per month. Upgrade when you need more listings or custom branding.",
+      "Most designs are ready in 15-20 seconds. Enter your listing details, pick a template, and the system generates the visual automatically.",
   },
   {
-    question: "Is this built for real estate?",
+    question: "What is an Editable Design?",
     answer:
-      "Yes. Buildographic is built for agents, teams, and brokerages. Templates are designed specifically for property listings and marketing.",
+      "An Editable Design unlocks our multi-layer Canvas editor. You can customize text, replace agent photos, adjust badges, and apply your own brand palette directly in your browser instead of accepting a static image.",
+  },
+  {
+    question: "Can I change my plan later?",
+    answer:
+      "Yes, you can upgrade, switch billing cycles (monthly/yearly), or modify your subscription from your account dashboard at any time.",
+  },
+  {
+    question: "Do unused designs roll over?",
+    answer:
+      "Designs don't roll over between months. We recommend choosing a plan that matches your typical monthly listing volume — you can always upgrade later.",
   },
   {
     question: "What formats can I download?",
     answer:
       "All plans include high-resolution PNG and JPG downloads, optimized for social media and print-ready sizing. PDF export is coming soon.",
   },
+];
+
+// "What is an AI Marketing Design?" — 8 illustrative examples of real output categories. Pure
+// presentational content (no PLAN_CONFIG/backend data), matching design-preview-pricing.html.
+const designExamples = [
+  { tag: "1:1 Square", title: "Luxury Villa 4 BHK", label: "Property Listing", note: "Full showcase with specs" },
+  { tag: "9:16 Story", title: "Swipe Up For Tour", label: "Instagram Story", note: "High-converting social visual" },
+  { tag: "Direct Chat", title: "WhatsApp Brochure", label: "WhatsApp Creative", note: "Ready-to-broadcast flyer" },
+  { tag: "Event Invite", title: "Open House Showcase", label: "Open House Flyer", note: "Event date & map specs" },
+  { tag: "Price Drop", title: "Revised Pricing Alert", label: "Price Update Alert", note: "Urgency & revised pricing", accent: true },
+  { tag: "Infographic", title: "Clubhouse & Pool", label: "Amenities Breakdown", note: "Visual amenity icons" },
+  { tag: "Transit Map", title: "Metro & Commute", label: "Location Advantage", note: "Distance & transit times" },
+  { tag: "Festive Offer", title: "Seasonal Booking", label: "Festival Campaign", note: "Holiday & seasonal offers", accent: true },
+];
+
+// Platform Capabilities — 3 real, already-shipped capabilities (AI generation, the multi-layer
+// Canvas editor from EPIC-EDIT-03, and multi-format templates). Copy kept to what's confirmed real
+// rather than the mockup's unverified specifics (e.g. no A4/16:9 claim unless confirmed elsewhere).
+const capabilities = [
   {
-    question: "Do unused credits roll over?",
-    answer:
-      "Credits do not roll over between months. We recommend choosing a plan that matches your typical monthly listing volume.",
+    eyebrow: "01 / Creation",
+    title: "AI Marketing Designs",
+    description:
+      "Turn property details, pricing, specs and photos into ready-to-publish real-estate marketing creatives for Instagram, WhatsApp and listing portals.",
+    footer: "High-res JPG & PNG export →",
   },
   {
-    question: "Can I cancel anytime?",
-    answer:
-      "Yes, you can cancel your subscription at any time. You'll continue to have access until the end of your billing period.",
+    eyebrow: "02 / Customization",
+    title: "Editable Canvas",
+    description:
+      "Turn generated designs into editable, layered creatives. Update copy, images, branding and layout directly in the browser.",
+    footer: "Full multi-layer control →",
+  },
+  {
+    eyebrow: "03 / Multi-Format",
+    title: "Marketing Templates",
+    description:
+      "Choose from real-estate-ready formats, including Square posts (1:1) and vertical Stories (9:16), across the full template catalog.",
+    footer: "All formats included →",
   },
 ];
 
-// Floating typography for dark sections
-const darkFloatingChars = [
-  { char: "A", top: "10%", left: "3%", opacity: 0.12 },
-  { char: "+", top: "15%", left: "12%", opacity: 0.08 },
-  { char: "8", top: "20%", left: "8%", opacity: 0.1 },
-  { char: "X", top: "25%", left: "18%", opacity: 0.06 },
-  { char: "R", top: "12%", left: "25%", opacity: 0.08 },
-  { char: "Q", top: "8%", left: "85%", opacity: 0.08 },
-  { char: "+", top: "15%", left: "90%", opacity: 0.06 },
-  { char: "U", top: "22%", left: "82%", opacity: 0.1 },
-  { char: "S", top: "30%", left: "88%", opacity: 0.08 },
+const marqueeTags = [
+  "📸 Instagram Post & Story",
+  "💬 WhatsApp Broadcasts",
+  "🏡 Open House Flyers",
+  "🏷️ Price Drop Alerts",
+  "🏊 Amenities & Floorplans",
+  "📍 Location Advantage",
+  "🎉 Festival Campaigns",
 ];
 
 export default function PricingPage() {
@@ -236,17 +282,10 @@ export default function PricingPage() {
   const [isSyncingStatus, setIsSyncingStatus] = useState(false);
   const [selectedCurrency, setSelectedCurrency] = useState<"INR" | "USD">("INR");
 
-  // Per-card annual toggle state
-  const [annualToggles, setAnnualToggles] = useState<Record<string, boolean>>({
-    SOLO: false,
-    PRO: false,
-    TEAM: false,
-    AGENCY: false,
-  });
-
-  const toggleAnnual = (tier: string) => {
-    setAnnualToggles((prev) => ({ ...prev, [tier]: !prev[tier] }));
-  };
+  // Single global Monthly/Yearly toggle (design-preview-pricing.html) — replaces the old per-card
+  // toggle. The one real exception, a card showing the user's *actual current subscription's*
+  // billing period, is still handled per-card below via isPaidCurrentCard/subscriptionBillingIsAnnual.
+  const [isAnnualGlobal, setIsAnnualGlobal] = useState(false);
 
   // US-PAY-112 AC1/AC3 — the only source for regularPrice/effectivePrice/campaignId/badge.
   // Public endpoint, no auth needed. Never recompute a discounted price client-side.
@@ -259,11 +298,17 @@ export default function PricingPage() {
     (pricingData?.plans ?? []).map((p) => [p.tier, { monthly: p.monthly, annual: p.annual }]),
   );
 
-  // Fetch provider info based on selected currency
+  // Fetch provider info based on selected currency. USD is not really billable today (no USD field
+  // on PLAN_CONFIG/EffectivePriceResult, and the one live USD checkout path would charge the same
+  // rupee number relabeled as dollars) — so the currency toggle's USD option is gated entirely by
+  // this server-returned flag (stripeEnabled), not a frontend constant. When it flips true (real
+  // Razorpay/Stripe USD billing for global customers confirmed), the toggle appears with zero
+  // frontend redeploy needed.
   const { data: providerInfo } = useQuery<ProviderInfo>({
     queryKey: ["/api/v1/payments/provider-info", selectedCurrency],
     queryFn: () => paymentsApi.getProviderInfo(selectedCurrency),
   });
+  const usdBillingEnabled = providerInfo?.stripeEnabled === true;
 
   // Fetch plan availability — gate tiers without a configured plan ID (AC2 US-LAUNCH-007)
   const { data: plansData } = useQuery({
@@ -405,7 +450,7 @@ export default function PricingPage() {
         contact: "",
       },
       theme: {
-        color: "#000000",
+        color: "#eb5e28",
       },
     };
 
@@ -422,7 +467,7 @@ export default function PricingPage() {
     try {
       const { planTier, isAnnual } = JSON.parse(stored) as { planTier: PlanTier; isAnnual: boolean };
       if (!planTier || planTier === "FREE") return;
-      if (isAnnual) setAnnualToggles((prev) => ({ ...prev, [planTier]: true }));
+      if (isAnnual) setIsAnnualGlobal(true);
       setLoadingPlan(planTier);
       createSubscriptionMutation.mutate({ planTier, isAnnual: isAnnual ?? false });
     } catch {
@@ -458,7 +503,7 @@ export default function PricingPage() {
     if (!localStorage.getItem("auth_token")) {
       localStorage.setItem(
         PENDING_PLAN_KEY,
-        JSON.stringify({ planTier, isAnnual: annualToggles[planTier] || false }),
+        JSON.stringify({ planTier, isAnnual: isAnnualGlobal }),
       );
       redirectToLogin();
       return;
@@ -468,7 +513,7 @@ export default function PricingPage() {
     try {
       await createSubscriptionMutation.mutateAsync({
         planTier,
-        isAnnual: annualToggles[planTier] || false,
+        isAnnual: isAnnualGlobal,
       });
     } finally {
       setLoadingPlan(null);
@@ -476,499 +521,595 @@ export default function PricingPage() {
   };
 
   // US-PAY-112 AC1 — Free/Solo/Pro/Team/Agency render together (replaces the old Individual/
-  // Enterprise segment toggle, which never showed PRO/AGENCY at all), plus a static Enterprise
-  // "Contact Sales" card. Non-price fields (name, features, allowances) still come from
-  // PLAN_CONFIG — only price itself is server-resolved (AC3).
+  // Enterprise segment toggle, which never showed PRO/AGENCY at all). No static Enterprise card —
+  // see the PUBLIC_TIERS comment above. Non-price fields (name, features, allowances) still come
+  // from PLAN_CONFIG — only price itself is server-resolved (AC3).
   const realPlans = PUBLIC_TIERS.map((tier) => {
     const config = PLAN_CONFIG[tier];
     const pricing = pricingByTier.get(tier);
     return {
-      tier: tier as PlanTier | "ENTERPRISE",
+      tier,
       name: config.name,
       icon: planIcons[tier] ?? Gift,
       features: config.features,
       designLimit: config.limit,
       editableLimit: config.editableLimit,
-      isStatic: false,
       monthly: pricing?.monthly,
       annual: pricing?.annual,
     };
   });
 
-  const enterprisePlan = {
-    tier: "ENTERPRISE" as const,
-    name: "Enterprise",
-    icon: planIcons.ENTERPRISE ?? Building,
-    features: [
-      "Unlimited infographics",
-      "Unlimited editable designs",
-      "Dedicated account manager",
-      "Custom integrations",
-      "SLA guarantee",
-      "White-label options",
-    ],
-    designLimit: -1,
-    editableLimit: -1,
-    isStatic: true,
-    monthly: undefined,
-    annual: undefined,
-  };
-
-  const plans = [...realPlans, enterprisePlan];
-
   // US-PAY-113 AC2 — full feature-matrix comparison, gated behind an env flag (defaults on) so it
   // can be turned off independently of the cards above, and rendered inside a local error
   // boundary so a failure here never takes the cards with it.
   const comparisonTableEnabled = import.meta.env.VITE_PRICING_COMPARISON_ENABLED !== "false";
-  const comparisonRows = buildComparisonRows(plans);
+  // Skip each plan's first feature string (the "X infographics/month" count) — it's already shown,
+  // correctly, as the numeric "AI Marketing Designs / mo" row above. Left in, it produces a sparse,
+  // confusing row per tier (each tier's own count string only checks true for itself) that restates
+  // the same number rather than comparing anything.
+  const comparisonRows = buildComparisonRows(realPlans.map((p) => ({ features: p.features.slice(1) })));
 
   return (
-    <div className="min-h-screen" style={{ background: 'var(--page-bg)' }}>
-      {/* Nav - Dark glass style */}
-      <nav className="border-b border-border glass sticky top-0 z-50">
-        <div className="container flex h-16 items-center justify-between px-6 max-w-6xl mx-auto">
-          <Link
-            href="/"
-            className="flex flex-col items-center justify-center leading-none font-bold text-foreground"
-          >
-            <img src="/logo-icon-option6.png" alt="" className="h-7 w-7 dark:hidden" />
-            <img src="/logo-icon-option6-light.png" alt="" className="h-7 w-7 hidden dark:block" />
-            <span className="text-[10px] leading-none font-extrabold tracking-tight mt-0.5">Buildographic</span>
+    <div
+      className="min-h-screen bg-white text-[#1e1c1a]"
+      style={{ fontFamily: "'Inter', system-ui, -apple-system, sans-serif" }}
+    >
+      {/* ── NAV ─────────────────────────────────────────────────────── */}
+      <nav className="sticky top-0 z-50 w-full bg-white/90 backdrop-blur-md border-b border-[#e6e3dd]">
+        <div className="max-w-[1320px] mx-auto px-4 sm:px-8 h-16 flex items-center justify-between gap-4">
+          <Link href="/" className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-[8px] bg-[#2a2825] flex items-center justify-center text-white shadow-sm shrink-0">
+              <img src="/logo-icon-option6-light.png" alt="" className="h-4 w-4" />
+            </div>
+            <span className="font-bold text-base tracking-tight text-[#1e1c1a]">Buildographic</span>
           </Link>
-          {/* US-PAY-113 AC1: hidden below md, same convention as LandingPage.tsx's nav — this
-              codebase has no mobile hamburger menu anywhere yet, so a full-width link row here
-              would overflow the viewport on a phone. */}
-          <div className="hidden md:flex items-center gap-8">
-            <a
-              href="/#features"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground"
+
+          <div className="hidden md:flex items-center gap-1 text-sm font-medium text-[#68645e]">
+            <a href="#plans-grid" className="px-3.5 py-1.5 rounded-[8px] text-[#1e1c1a] font-semibold bg-[#e6e3dd]/40">Pricing</a>
+            <a href="#what-is-design" className="px-3.5 py-1.5 rounded-[8px] hover:text-[#1e1c1a] hover:bg-[#faf9f6] transition">What's a Design?</a>
+            <a href="#comparison" className="px-3.5 py-1.5 rounded-[8px] hover:text-[#1e1c1a] hover:bg-[#faf9f6] transition">Compare</a>
+            <a href="#capabilities" className="px-3.5 py-1.5 rounded-[8px] hover:text-[#1e1c1a] hover:bg-[#faf9f6] transition">Platform</a>
+            <a href="#faq" className="px-3.5 py-1.5 rounded-[8px] hover:text-[#1e1c1a] hover:bg-[#faf9f6] transition">FAQ</a>
+          </div>
+
+          <div className="flex items-center gap-3">
+            {/* Currency toggle — server-gated, see usdBillingEnabled comment above. Hidden (INR-only
+                badge) until Stripe/USD billing is actually confirmed live. */}
+            {usdBillingEnabled ? (
+              <div className="flex items-center bg-black/[0.04] border border-black/10 p-0.5 rounded-full shadow-sm">
+                <button
+                  onClick={() => setSelectedCurrency("INR")}
+                  className={`px-3 py-1 rounded-full text-xs font-semibold transition-all duration-200 ${
+                    selectedCurrency === "INR" ? "bg-[#2a2825] text-white shadow-sm" : "text-[#2a2825] hover:opacity-80 font-medium"
+                  }`}
+                >
+                  ₹ INR
+                </button>
+                <button
+                  onClick={() => setSelectedCurrency("USD")}
+                  className={`px-3 py-1 rounded-full text-xs font-semibold transition-all duration-200 ${
+                    selectedCurrency === "USD" ? "bg-[#2a2825] text-white shadow-sm" : "text-[#2a2825] hover:opacity-80 font-medium"
+                  }`}
+                >
+                  $ USD
+                </button>
+              </div>
+            ) : (
+              <div className="hidden sm:flex items-center bg-black/[0.04] border border-black/10 px-3 py-1 rounded-full text-xs font-semibold text-[#2a2825]">
+                ₹ INR
+              </div>
+            )}
+
+            <Link href="/auth" className="text-sm font-medium text-[#68645e] hover:text-[#1e1c1a] px-2 py-1 transition hidden sm:inline-block">
+              Log in
+            </Link>
+            <Link
+              href="/auth"
+              className="inline-flex items-center gap-1.5 bg-[#2a2825] hover:bg-[#1e1c1a] text-white text-xs font-bold px-4 py-2.5 rounded-[8px] shadow-sm transition active:scale-95"
             >
-              Features
-            </a>
-            <a
-              href="/pricing"
-              className="text-sm font-medium text-foreground"
-            >
-              Pricing
-            </a>
-            <a
-              href="/#faqs"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground"
-            >
-              FAQs
-            </a>
-            <a
-              href="#enterprise"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground"
-            >
-              Enterprise
-            </a>
-            <Link href="/auth">
-              <Button
-                className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full font-medium px-5"
-              >
-                Get Started <ArrowRight className="h-4 w-4" />
-              </Button>
+              Get started free
             </Link>
           </div>
         </div>
       </nav>
 
-      {/* Header */}
-      <section className="container px-6 pt-10 pb-6 text-center max-w-6xl mx-auto">
-        {/* US-PAY-113 AC2 (messaging): real-estate specialization, exact PRD-approved copy */}
-        <h1 className="text-3xl md:text-5xl font-bold text-foreground mb-4">
-          Create professional real-estate marketing creatives in minutes — without hiring a
-          designer
-        </h1>
-        <p className="text-muted-foreground text-lg max-w-2xl mx-auto mb-8">
-          AI-powered property marketing, branding and campaign creation built specifically for
-          real estate
-        </p>
-
-        {/* Beta mode notice */}
-        {isBetaMode && (
-          <div className="mx-auto max-w-2xl rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-4 mb-4">
-            <div className="flex items-center justify-center gap-2 text-emerald-400 font-semibold mb-1">
-              <Info className="h-4 w-4 shrink-0" />
-              Free during beta
-            </div>
-            <p className="text-sm text-muted-foreground text-center">
-              Paid plans are coming soon. Create an account and start generating — no credit card needed.
+      {/* ── HERO ────────────────────────────────────────────────────── */}
+      <section className="border-b border-[#e6e3dd]">
+        <div
+          className="pt-20 pb-16 px-4 sm:px-12 text-center"
+          style={{
+            background:
+              "radial-gradient(100% 100% at 50% 108%, #f8b868 0%, #ecd09e 26%, #b5d9ff 55%, #d9ebff 76%, #f3f8ff 100%)",
+          }}
+        >
+          <div className="max-w-4xl mx-auto flex flex-col items-center gap-3 mb-8">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#1e1c1a]/60 bg-white/40 border border-black/10 px-3 py-1 rounded-full">
+              PRICING
+            </span>
+            <h1 className="text-3xl sm:text-5xl font-bold tracking-tight text-[#1e1c1a] mt-2 leading-[1.15]">
+              AI Marketing for Real Estate. <br className="hidden sm:inline" />Priced by Output.
+            </h1>
+            <p className="text-sm sm:text-base md:text-lg text-[#1e1c1a]/70 max-w-2xl mx-auto leading-relaxed mt-1">
+              Create property creatives, campaigns and editable designs without the designer bottleneck.
             </p>
           </div>
-        )}
 
-        {/* Test mode: show Razorpay test card details and expected amounts */}
-        {typeof import.meta.env.VITE_RAZORPAY_KEY_ID === "string" &&
-          import.meta.env.VITE_RAZORPAY_KEY_ID.startsWith("rzp_test_") && (
-          <div className="mx-auto max-w-2xl rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 text-left">
-            <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400 font-medium mb-2">
-              <Info className="h-4 w-4 shrink-0" />
-              Test mode — Razorpay
-            </div>
-            <p className="text-sm text-muted-foreground mb-3">
-              For <strong>subscriptions</strong>, Razorpay often shows a small <strong>refundable auth charge</strong> (e.g. ₹5) in the price summary first; the modal copy should still state the full recurring amount (
-              <strong>Solo ₹{getTestModeBannerAmounts().solo}/mo</strong>, <strong>Team ₹{getTestModeBannerAmounts().team}/mo</strong>, or annual equivalent). If you only see ₹1 or wrong recurring text, check Dashboard plan amounts and <code className="bg-muted px-1 rounded text-xs">RAZORPAY_PLAN_*</code> in <code className="bg-muted px-1 rounded text-xs">.env</code>.
-            </p>
-            <div className="flex items-start gap-2 text-sm text-muted-foreground">
-              <CreditCard className="h-4 w-4 shrink-0 mt-0.5" />
-              <div>
-                <span className="font-medium text-foreground">Test card (subscriptions):</span>{" "}
-                <code className="bg-muted px-1 rounded">5267 3181 8797 5449</code>
-                {" "}(Mastercard). CVV: any 3 digits · Expiry: any future date · OTP: <strong>4–10 digits</strong> = success. Or use UPI: <code className="bg-muted px-1 rounded">success@razorpay</code>.
-              </div>
-            </div>
-          </div>
-        )}
-      </section>
-
-      {/* Pricing Cards - Emergent-style with per-card Annual toggle */}
-      <section className="container px-6 pb-20 max-w-6xl mx-auto">
-        {/* US-PAY-113 AC1: explicit grid-cols-1 -> sm:2 -> lg:3 so 6 cards stack cleanly on a
-            phone (no reliance on grid's implicit single-column default) and fill tablet width. */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {plans.map((plan) => {
-            const isCurrentPlan = currentPlan === plan.tier;
-            const isPendingPlan = pendingPlanTier === plan.tier;
-            const isPlanLoading = loadingPlan === plan.tier;
-            const PlanIcon = plan.icon;
-            const leadIn = featureLeadIn[plan.tier];
-            const isMostPopular = plan.tier === "PRO";
-
-            // US-PAY-112 AC1/AC3 — regularPrice/effectivePrice/campaignId/badge come only from
-            // the pricing API (getEffectivePrice() server-side); never recomputed here.
-            const monthlyPricing = plan.monthly;
-            const annualPricing = plan.annual;
-            const showAnnualToggleBase = !plan.isStatic && (monthlyPricing?.regularPrice ?? 0) > 0;
-
-            /** Paid current tier: reflect API billing period (annual vs monthly), not local toggle. */
-            const isPaidCurrentCard =
-              isCurrentPlan && showAnnualToggleBase && subscription != null;
-            const isAnnual = isPaidCurrentCard
-              ? subscriptionBillingIsAnnual(subscription as { billingPeriod?: string })
-              : annualToggles[plan.tier] || false;
-            const annualSwitchLocked = isPaidCurrentCard;
-
-            const activePricing = isAnnual ? annualPricing : monthlyPricing;
-            const {
-              showAnnualToggle,
-              hasFoundingPrice,
-              displayEffective,
-              displayRegular,
-              annualSavings,
-              annualEffectiveTotal,
-            } = computePricingCardDisplay(monthlyPricing, annualPricing, isAnnual, plan.isStatic);
-
-            const subscriptionAmountInr =
-              subscription?.amount != null
-                ? Math.round(Number(subscription.amount) / 100)
-                : null;
-
-            const fmt = (n: number) =>
-              selectedCurrency === "INR" ? n.toLocaleString() : Math.round(n / 83).toLocaleString();
-            const currencySymbol = selectedCurrency === "INR" ? "₹" : "$";
-
-            return (
-              <div
-                key={plan.tier}
-                className={`relative glass rounded-2xl border p-8 flex flex-col ${
-                  isMostPopular ? "border-primary ring-2 ring-primary/30" : "border-border"
+          <div className="inline-flex flex-col items-center">
+            <div className="bg-white/60 backdrop-blur-md border border-black/10 p-1 rounded-full flex items-center shadow-sm">
+              <button
+                onClick={() => setIsAnnualGlobal(false)}
+                className={`px-5 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 ${
+                  !isAnnualGlobal ? "bg-[#2a2825] text-white shadow-sm" : "text-[#2a2825] hover:opacity-80 font-medium"
                 }`}
               >
-                {isMostPopular && (
-                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-semibold px-3 py-1 rounded-full shadow-sm">
-                    MOST POPULAR
-                  </span>
-                )}
-                {hasFoundingPrice && activePricing?.badge && (
-                  <span className="absolute -top-3 right-4 bg-amber-500 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-sm">
-                    {activePricing.badge}
-                  </span>
-                )}
+                Monthly
+              </button>
+              <button
+                onClick={() => setIsAnnualGlobal(true)}
+                className={`px-5 py-1.5 rounded-full text-xs transition-all duration-200 flex items-center gap-1.5 ${
+                  isAnnualGlobal ? "bg-[#2a2825] text-white shadow-sm font-semibold" : "text-[#2a2825] hover:opacity-80 font-medium"
+                }`}
+              >
+                <span>Yearly</span>
+                {/* "2 months free" is the exact, always-true description of the ×10 annual formula
+                    (ANNUAL_MULTIPLIER, shared/schema.ts) — a flat percentage claim would be wrong
+                    for at least one tier's real math. */}
+                <span className="text-[11px] font-bold text-[#eb5e28] bg-[#eb5e28]/10 px-2 py-0.5 rounded-full">
+                  2 months free
+                </span>
+              </button>
+            </div>
+            <p className="text-xs text-[#68645e] mt-4 font-medium max-w-md mx-auto">
+              Your plan is based on marketing output — not per-seat software fees.
+            </p>
+          </div>
 
-                {/* Header with Annual Toggle */}
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-xl font-bold text-foreground">{plan.name}</h3>
-                    <PlanIcon className="h-5 w-5 text-muted-foreground" />
-                  </div>
-                  {showAnnualToggle && (
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-muted-foreground font-medium">Annual</span>
-                      <Switch
-                        checked={isAnnual}
-                        disabled={annualSwitchLocked}
-                        onCheckedChange={() => {
-                          if (!annualSwitchLocked) toggleAnnual(plan.tier);
-                        }}
-                        className="data-[state=checked]:bg-blue-600 border-2"
-                      />
-                    </div>
-                  )}
-                </div>
-
-                <p className="text-sm text-muted-foreground mb-6">
-                  {planDescriptions[plan.tier]}
-                </p>
-
-                {/* Price */}
-                <div className="mb-6">
-                  {plan.isStatic ? (
-                    <div className="text-4xl font-bold text-foreground">Custom</div>
-                  ) : isPaidCurrentCard &&
-                    subscriptionAmountInr != null &&
-                    subscriptionAmountInr > 0 ? (
-                    <div className="space-y-1">
-                      <div className="flex flex-wrap items-baseline gap-2">
-                        <span className="text-4xl font-bold text-foreground">
-                          {currencySymbol}
-                          {fmt(subscriptionAmountInr)}
-                        </span>
-                        <span className="text-base text-muted-foreground">
-                          {isAnnual ? "/ year" : "/ month"}
-                        </span>
-                        {isAnnual && (
-                          <span className="text-sm text-teal-400 font-medium bg-teal-400/10 px-2 py-0.5 rounded-full">
-                            Annual
-                          </span>
-                        )}
-                      </div>
-                      {isAnnual && (
-                        <p className="text-sm text-muted-foreground">
-                          ≈ {currencySymbol}
-                          {fmt(Math.round(subscriptionAmountInr / 12))}
-                          /mo equivalent
-                        </p>
-                      )}
-                    </div>
-                  ) : (
-                    <>
-                      <div className="flex flex-wrap items-baseline gap-2">
-                        {hasFoundingPrice && (
-                          <span className="text-lg text-muted-foreground line-through">
-                            {currencySymbol}
-                            {fmt(displayRegular)}
-                          </span>
-                        )}
-                        <span className="text-4xl font-bold text-foreground">
-                          {currencySymbol}
-                          {fmt(displayEffective)}
-                        </span>
-                        <span className="text-base text-muted-foreground">
-                          {isAnnual ? "/ month equiv." : "/ month"}
-                        </span>
-                        {isAnnual && (
-                          <span className="text-sm text-teal-400 font-medium bg-teal-400/10 px-2 py-0.5 rounded-full">
-                            Save {currencySymbol}
-                            {fmt(annualSavings)}
-                          </span>
-                        )}
-                      </div>
-                      {isAnnual && (
-                        <p className="text-sm text-muted-foreground mt-2">
-                          Billed annually at {currencySymbol}
-                          {fmt(annualEffectiveTotal)}
-                          /year
-                        </p>
-                      )}
-                      {!plan.isStatic && (
-                        <p className="text-xs text-muted-foreground mt-2">
-                          {plan.designLimit === -1 ? "Unlimited" : plan.designLimit} designs/mo ·{" "}
-                          {plan.editableLimit === -1 ? "unlimited" : plan.editableLimit} editable
-                        </p>
-                      )}
-                    </>
-                  )}
-                </div>
-
-                {/* Features */}
-                {leadIn && (
-                  <p className="text-sm text-muted-foreground mb-3">{leadIn}</p>
-                )}
-                <ul className="space-y-3 mb-8 flex-1">
-                  {plan.features.map((feature) => (
-                    <li
-                      key={feature}
-                      className="flex items-start gap-2 text-sm text-foreground"
-                    >
-                      <Check className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                {/* CTA Button */}
-                {plan.isStatic ? (
-                  <a
-                    href="mailto:hello@buildographic.com"
-                    className="w-full h-12 rounded-full font-medium flex items-center justify-center gap-2 bg-accent text-foreground hover:bg-accent/80 transition-colors"
-                  >
-                    Contact Sales
-                  </a>
-                ) : isBetaMode && (monthlyPricing?.regularPrice ?? 0) > 0 ? (
-                  <Button
-                    className="w-full h-12 rounded-full font-medium bg-accent text-muted-foreground cursor-not-allowed"
-                    disabled
-                  >
-                    Available after beta
-                  </Button>
-                ) : unconfiguredPaidTiers.has(plan.tier) ? (
-                  /* AC1/AC2 US-LAUNCH-007: no plan ID configured → Contact us instead of checkout */
-                  <a
-                    href="mailto:hello@buildographic.com"
-                    className="w-full h-12 rounded-full font-medium flex items-center justify-center gap-2 bg-accent text-foreground hover:bg-accent/80 transition-colors"
-                  >
-                    Contact us
-                  </a>
-                ) : (
-                  <Button
-                    className={`w-full h-12 rounded-full font-medium ${
-                      isCurrentPlan || isPendingPlan
-                        ? "bg-accent text-muted-foreground"
-                        : "bg-primary hover:bg-primary/90 text-primary-foreground"
-                    }`}
-                    disabled={isCurrentPlan || isPendingPlan || isPlanLoading}
-                    onClick={() => handleSubscribe(plan.tier as PlanTier)}
-                  >
-                    {isPlanLoading ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Processing...
-                      </>
-                    ) : isCurrentPlan ? (
-                      "Current Plan"
-                    ) : isPendingPlan ? (
-                      "Activating..."
-                    ) : (
-                      "Try Buildographic"
-                    )}
-                  </Button>
-                )}
-                {isPendingPlan && (
-                  <button
-                    onClick={handleSyncPendingStatus}
-                    disabled={isSyncingStatus}
-                    className="mt-2 w-full text-xs text-muted-foreground hover:text-foreground underline underline-offset-2 disabled:opacity-50 transition-colors"
-                  >
-                    {isSyncingStatus ? "Checking…" : "Not seeing your plan? Refresh status"}
-                  </button>
-                )}
+          {isBetaMode && (
+            <div className="mx-auto max-w-2xl mt-8 rounded-[12px] border border-emerald-600/30 bg-white/70 p-4">
+              <div className="flex items-center justify-center gap-2 text-emerald-700 font-semibold mb-1">
+                <Info className="h-4 w-4 shrink-0" />
+                Free during beta
               </div>
-            );
-          })}
+              <p className="text-sm text-[#68645e] text-center">
+                Paid plans are coming soon. Create an account and start generating — no credit card needed.
+              </p>
+            </div>
+          )}
+
+          {typeof import.meta.env.VITE_RAZORPAY_KEY_ID === "string" &&
+            import.meta.env.VITE_RAZORPAY_KEY_ID.startsWith("rzp_test_") && (
+            <div className="mx-auto max-w-2xl mt-6 rounded-[12px] border border-amber-600/30 bg-white/70 p-4 text-left">
+              <div className="flex items-center gap-2 text-amber-700 font-medium mb-2">
+                <Info className="h-4 w-4 shrink-0" />
+                Test mode — Razorpay
+              </div>
+              <p className="text-sm text-[#68645e] mb-3">
+                For <strong>subscriptions</strong>, Razorpay often shows a small <strong>refundable auth charge</strong> (e.g. ₹5) in the price summary first; the modal copy should still state the full recurring amount (
+                <strong>Solo ₹{getTestModeBannerAmounts().solo}/mo</strong>, <strong>Team ₹{getTestModeBannerAmounts().team}/mo</strong>, or annual equivalent). If you only see ₹1 or wrong recurring text, check Dashboard plan amounts and <code className="bg-[#e6e3dd]/60 px-1 rounded text-xs">RAZORPAY_PLAN_*</code> in <code className="bg-[#e6e3dd]/60 px-1 rounded text-xs">.env</code>.
+              </p>
+              <div className="flex items-start gap-2 text-sm text-[#68645e]">
+                <CreditCard className="h-4 w-4 shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-medium text-[#1e1c1a]">Test card (subscriptions):</span>{" "}
+                  <code className="bg-[#e6e3dd]/60 px-1 rounded">5267 3181 8797 5449</code>
+                  {" "}(Mastercard). CVV: any 3 digits · Expiry: any future date · OTP: <strong>4–10 digits</strong> = success. Or use UPI: <code className="bg-[#e6e3dd]/60 px-1 rounded">success@razorpay</code>.
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
-      {/* Comparison Table — US-PAY-113 AC2: full feature breakdown, independent of the cards
-          above (own error boundary + env flag; a failure here never affects the cards). */}
+      {/* ── PRICING CARDS ───────────────────────────────────────────── */}
+      <section id="plans-grid" className="border-b border-[#e6e3dd] bg-white">
+        <div className="max-w-[1320px] mx-auto border-x border-[#e6e3dd]">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 divide-y xl:divide-y-0 xl:divide-x divide-[#e6e3dd]">
+            {realPlans.map((plan) => {
+              const isCurrentPlan = currentPlan === plan.tier;
+              const isPendingPlan = pendingPlanTier === plan.tier;
+              const isPlanLoading = loadingPlan === plan.tier;
+              const PlanIcon = plan.icon;
+              const isMostPopular = plan.tier === "PRO";
+
+              // US-PAY-112 AC1/AC3 — regularPrice/effectivePrice/campaignId/badge come only from
+              // the pricing API (getEffectivePrice() server-side); never recomputed here.
+              const monthlyPricing = plan.monthly;
+              const annualPricing = plan.annual;
+              const showAnnualToggleBase = (monthlyPricing?.regularPrice ?? 0) > 0;
+
+              /** Paid current tier: reflect API billing period (annual vs monthly), not the toggle. */
+              const isPaidCurrentCard =
+                isCurrentPlan && showAnnualToggleBase && subscription != null;
+              const isAnnual = isPaidCurrentCard
+                ? subscriptionBillingIsAnnual(subscription as { billingPeriod?: string })
+                : isAnnualGlobal;
+
+              const activePricing = isAnnual ? annualPricing : monthlyPricing;
+              const {
+                hasFoundingPrice,
+                displayEffective,
+                displayRegular,
+                annualSavings,
+              } = computePricingCardDisplay(monthlyPricing, annualPricing, isAnnual, false);
+
+              const subscriptionAmountInr =
+                subscription?.amount != null
+                  ? Math.round(Number(subscription.amount) / 100)
+                  : null;
+
+              // USD figure is a display-only approximation, shown only once usdBillingEnabled is
+              // true server-side — see the currency-gating comment above the providerInfo query.
+              const fmt = (n: number) =>
+                selectedCurrency === "INR" ? n.toLocaleString() : Math.round(n / 83).toLocaleString();
+              const currencySymbol = selectedCurrency === "INR" ? "₹" : "$";
+
+              const restFeatures = plan.features.slice(1);
+
+              return (
+                <div
+                  key={plan.tier}
+                  className={`relative p-6 sm:p-8 flex flex-col justify-between transition-colors ${
+                    isMostPopular
+                      ? "bg-[#fff5ee]/40 border-y-2 xl:border-y-0 xl:border-x-2 border-[#eb5e28] shadow-[0_12px_30px_-6px_rgba(235,94,40,0.12),0_2px_8px_0_rgba(30,28,26,0.04)]"
+                      : "hover:bg-[#faf9f6]/60"
+                  }`}
+                >
+                  <div>
+                    {isMostPopular && (
+                      <div className="inline-flex items-center gap-1 text-[10px] font-extrabold text-white bg-[#eb5e28] uppercase tracking-wider px-2.5 py-0.5 rounded-full mb-2 shadow-sm">
+                        ⭐ MOST POPULAR
+                      </div>
+                    )}
+                    {hasFoundingPrice && activePricing?.badge && (
+                      <div className="inline-flex items-center gap-1 text-[10px] font-extrabold text-white bg-[#0066cc] uppercase tracking-wider px-2.5 py-0.5 rounded-full mb-2 shadow-sm ml-2">
+                        {activePricing.badge}
+                      </div>
+                    )}
+
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-xl font-bold text-[#1e1c1a]">{plan.name}</h3>
+                      <PlanIcon className="h-4 w-4 text-[#8c8780]" />
+                    </div>
+                    <p className="text-xs text-[#68645e] mt-1 min-h-[32px] leading-relaxed">
+                      {planDescriptions[plan.tier]}
+                    </p>
+
+                    {/* Price */}
+                    <div className="my-6">
+                      {isPaidCurrentCard && subscriptionAmountInr != null && subscriptionAmountInr > 0 ? (
+                        <>
+                          <div className="text-4xl sm:text-[42px] font-bold text-[#1e1c1a] tracking-tight">
+                            {currencySymbol}{fmt(subscriptionAmountInr)}
+                          </div>
+                          <div className="text-xs text-[#68645e] mt-2 font-normal">
+                            {isAnnual ? "Per year — your current plan." : "Per month — your current plan."}
+                          </div>
+                          {isAnnual && (
+                            <div className="text-[11px] text-[#8c8780]">
+                              ≈ {currencySymbol}{fmt(Math.round(subscriptionAmountInr / 12))}/mo equivalent
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <>
+                          <div className="flex items-baseline gap-2 flex-wrap">
+                            {hasFoundingPrice && (
+                              <span className="text-lg text-[#8c8780] line-through">
+                                {currencySymbol}{fmt(displayRegular)}
+                              </span>
+                            )}
+                            <span className="text-4xl sm:text-[42px] font-bold text-[#1e1c1a] tracking-tight">
+                              {currencySymbol}{fmt(displayEffective)}
+                            </span>
+                          </div>
+                          <div className="text-xs text-[#68645e] mt-2 font-normal">
+                            {isAnnual ? "Per month, billed annually." : "Per month platform fee."}
+                          </div>
+                          {isAnnual && annualSavings > 0 && (
+                            <div className="text-[11px] text-[#eb5e28] font-medium mt-0.5">
+                              Save {currencySymbol}{fmt(annualSavings)}/yr on annual billing
+                            </div>
+                          )}
+                          {plan.tier === "FREE" && (
+                            <div className="text-[11px] text-[#8c8780]">No credit card required.</div>
+                          )}
+                        </>
+                      )}
+                    </div>
+
+                    {/* CTA */}
+                    {isBetaMode && (monthlyPricing?.regularPrice ?? 0) > 0 ? (
+                      <button
+                        disabled
+                        className="w-full py-3 px-4 rounded-[8px] bg-[#e6e3dd] text-[#8c8780] font-bold text-xs mb-8 cursor-not-allowed"
+                      >
+                        Available after beta
+                      </button>
+                    ) : unconfiguredPaidTiers.has(plan.tier) ? (
+                      <a
+                        href="mailto:hello@buildographic.com"
+                        className="w-full py-3 px-4 rounded-[8px] bg-[#2a2825] hover:bg-[#1e1c1a] text-white font-bold text-xs transition shadow-sm mb-8 flex items-center justify-center"
+                      >
+                        Contact us
+                      </a>
+                    ) : (
+                      <button
+                        onClick={() => handleSubscribe(plan.tier)}
+                        disabled={isCurrentPlan || isPendingPlan || isPlanLoading}
+                        className={`w-full py-3 px-4 rounded-[8px] font-bold text-xs transition shadow-sm active:scale-95 mb-2 flex items-center justify-center gap-2 ${
+                          isCurrentPlan || isPendingPlan
+                            ? "bg-[#e6e3dd] text-[#68645e] cursor-default"
+                            : isMostPopular
+                              ? "bg-[#eb5e28] hover:bg-[#d44d18] text-white"
+                              : "bg-[#2a2825] hover:bg-[#1e1c1a] text-white"
+                        }`}
+                      >
+                        {isPlanLoading ? (
+                          <>
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" /> Processing...
+                          </>
+                        ) : isCurrentPlan ? (
+                          "Current Plan"
+                        ) : isPendingPlan ? (
+                          "Activating..."
+                        ) : plan.tier === "FREE" ? (
+                          "Get started free"
+                        ) : (
+                          `Get started with ${plan.name}`
+                        )}
+                      </button>
+                    )}
+                    {isPendingPlan && (
+                      <button
+                        onClick={handleSyncPendingStatus}
+                        disabled={isSyncingStatus}
+                        className="w-full text-xs text-[#68645e] hover:text-[#1e1c1a] underline underline-offset-2 disabled:opacity-50 transition-colors mb-6"
+                      >
+                        {isSyncingStatus ? "Checking…" : "Not seeing your plan? Refresh status"}
+                      </button>
+                    )}
+
+                    <div className="text-[10px] font-bold text-[#8c8780] uppercase tracking-wider mb-4 mt-2">
+                      WHAT YOU GET
+                    </div>
+                    <div className="space-y-4 text-xs text-[#1e1c1a]">
+                      <div>
+                        <div className="font-bold">
+                          {plan.designLimit === -1 ? "Unlimited" : plan.designLimit} AI Marketing Designs / mo
+                        </div>
+                        <div className="text-[11px] text-[#68645e] mt-0.5">
+                          {plan.editableLimit === -1 ? "Unlimited" : plan.editableLimit} editable designs / mo.
+                        </div>
+                        <div className="text-[11px] text-[#68645e]">Generated designs remain in your library.</div>
+                      </div>
+                      {restFeatures.map((feature) => (
+                        <div key={feature}>
+                          <div className="font-bold">{feature}</div>
+                          {featureCopy[feature] && (
+                            <div className="text-[11px] text-[#68645e] mt-0.5">{featureCopy[feature]}</div>
+                          )}
+                        </div>
+                      ))}
+
+                      {plan.tier === "AGENCY" && (
+                        <div className="pt-4 border-t border-[#e6e3dd] text-[11px] text-[#68645e] leading-relaxed">
+                          Need custom volume or enterprise integration?{" "}
+                          <a
+                            href="mailto:hello@buildographic.com"
+                            className="font-bold text-[#1e1c1a] underline underline-offset-2 hover:text-[#0066cc]"
+                          >
+                            Contact Sales
+                          </a>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ── "WHAT IS AN AI MARKETING DESIGN?" ──────────────────────────── */}
+      <section id="what-is-design" className="border-b border-[#e6e3dd] py-20 bg-[#faf9f6]">
+        <div className="max-w-[1320px] mx-auto px-4 sm:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-14">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#8c8780]">TRANSPARENT PRICING</span>
+            <h2 className="text-3xl sm:text-4xl font-bold text-[#1e1c1a] mt-2 mb-3 tracking-tight">
+              What is an AI Marketing Design?
+            </h2>
+            <p className="text-[#68645e] text-sm sm:text-base leading-relaxed">
+              An AI Marketing Design is <strong>one completed marketing creative</strong> generated for your property or campaign.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            {designExamples.map((ex) => (
+              <div key={ex.label} className="bg-white rounded-[12px] p-4 border border-[#e6e3dd] shadow-sm">
+                <div className="h-24 rounded-[8px] bg-[#faf9f6] flex flex-col justify-between p-3 mb-3 border border-[#e6e3dd]">
+                  <span className={`text-[10px] font-bold ${ex.accent ? "text-[#eb5e28]" : "text-[#68645e]"}`}>{ex.tag}</span>
+                  <div className="text-xs font-bold text-[#1e1c1a] truncate">{ex.title}</div>
+                </div>
+                <div className="text-xs font-bold text-[#1e1c1a]">{ex.label}</div>
+                <div className="text-[11px] text-[#8c8780]">{ex.note}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── COMPARISON TABLE — rows trace only to real PLAN_CONFIG fields / already-shipped
+          features (confirmed with the user); nothing here is invented marketing copy. ───────── */}
       {comparisonTableEnabled && (
         <ComparisonSectionBoundary>
-          <section className="container px-6 pb-20 max-w-6xl mx-auto">
-            <div className="text-center mb-10">
-              <p className="text-xs uppercase tracking-widest text-primary mb-2">COMPARE PLANS</p>
-              <h2 className="text-2xl md:text-4xl font-bold text-foreground">
-                See the full feature breakdown
-              </h2>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[640px] border-collapse text-sm">
-                <thead>
-                  <tr className="border-b border-border">
-                    <th className="text-left py-3 pr-4 text-muted-foreground font-medium">
-                      Feature
-                    </th>
-                    {plans.map((plan) => (
-                      <th
-                        key={plan.tier}
-                        className="text-center py-3 px-3 text-foreground font-semibold whitespace-nowrap"
-                      >
-                        {plan.name}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr className="border-b border-border/50">
-                    <td className="py-3 pr-4 text-muted-foreground">Infographics / month</td>
-                    {plans.map((plan) => (
-                      <td key={plan.tier} className="text-center py-3 px-3 text-foreground">
-                        {plan.designLimit === -1 ? "Unlimited" : plan.designLimit}
-                      </td>
-                    ))}
-                  </tr>
-                  <tr className="border-b border-border/50">
-                    <td className="py-3 pr-4 text-muted-foreground">Editable designs / month</td>
-                    {plans.map((plan) => (
-                      <td key={plan.tier} className="text-center py-3 px-3 text-foreground">
-                        {plan.editableLimit === -1 ? "Unlimited" : plan.editableLimit}
-                      </td>
-                    ))}
-                  </tr>
-                  {comparisonRows.map((row) => (
-                    <tr key={row.feature} className="border-b border-border/50">
-                      <td className="py-3 pr-4 text-muted-foreground">{row.feature}</td>
-                      {row.presence.map((has, i) => (
-                        <td key={plans[i].tier} className="text-center py-3 px-3">
-                          {has ? (
-                            <Check className="h-4 w-4 text-emerald-400 mx-auto" />
-                          ) : (
-                            <span className="text-muted-foreground/40">–</span>
-                          )}
+          <section id="comparison" className="border-b border-[#e6e3dd] py-20 bg-white">
+            <div className="max-w-[1320px] mx-auto px-4 sm:px-8">
+              <div className="text-center max-w-3xl mx-auto mb-14">
+                <span className="text-xs font-bold uppercase tracking-wider text-[#8c8780]">FEATURE MATRIX</span>
+                <h2 className="text-3xl sm:text-4xl font-bold text-[#1e1c1a] mt-2 mb-3 tracking-tight">
+                  Compare plans side-by-side
+                </h2>
+              </div>
+
+              <div className="rounded-[16px] border border-[#e6e3dd] overflow-hidden bg-white shadow-sm">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse min-w-[720px]">
+                    <thead>
+                      <tr className="border-b border-[#e6e3dd] bg-[#faf9f6]">
+                        <th className="p-4 sm:p-5 text-sm font-bold text-[#1e1c1a] w-1/3">Feature</th>
+                        {realPlans.map((plan) => (
+                          <th
+                            key={plan.tier}
+                            className={`p-4 text-center text-xs font-bold whitespace-nowrap ${
+                              plan.tier === "PRO"
+                                ? "text-[#eb5e28] bg-[#fff5ee]/40 border-x border-[#eb5e28]/20"
+                                : "text-[#1e1c1a]"
+                            }`}
+                          >
+                            {plan.name}{plan.tier === "PRO" ? " ⭐" : ""}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="text-xs divide-y divide-[#e6e3dd] text-[#68645e]">
+                      <tr className="bg-[#faf9f6]">
+                        <td colSpan={realPlans.length + 1} className="px-5 py-2.5 font-bold uppercase tracking-wider text-[11px] text-[#1e1c1a]">
+                          Creation &amp; Output Allowances
                         </td>
+                      </tr>
+                      <tr>
+                        <td className="p-4 px-5 font-semibold text-[#1e1c1a]">AI Marketing Designs / mo</td>
+                        {realPlans.map((plan) => (
+                          <td
+                            key={plan.tier}
+                            className={`p-4 text-center font-bold ${
+                              plan.tier === "PRO" ? "text-[#eb5e28] bg-[#fff5ee]/40 border-x border-[#eb5e28]/20" : "text-[#1e1c1a]"
+                            }`}
+                          >
+                            {plan.designLimit === -1 ? "Unlimited" : plan.designLimit}
+                          </td>
+                        ))}
+                      </tr>
+                      <tr>
+                        <td className="p-4 px-5 font-semibold text-[#1e1c1a]">Editable designs / mo</td>
+                        {realPlans.map((plan) => (
+                          <td
+                            key={plan.tier}
+                            className={`p-4 text-center font-bold ${
+                              plan.tier === "PRO" ? "text-[#eb5e28] bg-[#fff5ee]/40 border-x border-[#eb5e28]/20" : "text-[#1e1c1a]"
+                            }`}
+                          >
+                            {plan.editableLimit === -1 ? "Unlimited" : plan.editableLimit}
+                          </td>
+                        ))}
+                      </tr>
+
+                      <tr className="bg-[#faf9f6]">
+                        <td colSpan={realPlans.length + 1} className="px-5 py-2.5 font-bold uppercase tracking-wider text-[11px] text-[#1e1c1a]">
+                          Included Features
+                        </td>
+                      </tr>
+                      {comparisonRows.map((row) => (
+                        <tr key={row.feature}>
+                          <td className="p-4 px-5 font-semibold text-[#1e1c1a]">{row.feature}</td>
+                          {row.presence.map((has, i) => (
+                            <td
+                              key={realPlans[i].tier}
+                              className={`p-4 text-center ${
+                                realPlans[i].tier === "PRO" ? "bg-[#fff5ee]/40 border-x border-[#eb5e28]/20" : ""
+                              }`}
+                            >
+                              {has ? (
+                                <Check className="h-4 w-4 text-[#eb5e28] mx-auto" />
+                              ) : (
+                                <span className="text-[#8c8780]/50">–</span>
+                              )}
+                            </td>
+                          ))}
+                        </tr>
                       ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
           </section>
         </ComparisonSectionBoundary>
       )}
 
-      {/* FAQ Section - Dark with floating typography */}
-      <section className="relative bg-background py-20 overflow-hidden">
-        {/* Floating Typography */}
-        <div className="absolute inset-0 pointer-events-none select-none overflow-hidden">
-          {darkFloatingChars.map((item, i) => (
-            <span
-              key={i}
-              className="absolute text-3xl md:text-5xl lg:text-6xl font-bold text-gray-600"
-              style={{
-                top: item.top,
-                left: item.left,
-                opacity: item.opacity,
-              }}
-            >
-              {item.char}
-            </span>
-          ))}
-        </div>
-
-        <div className="container px-6 max-w-3xl mx-auto relative z-10">
-          <div className="text-center mb-12">
-            <p className="text-xs uppercase tracking-widest text-gray-500 mb-2">
-              FREQUENTLY ASKED QUESTIONS
-            </p>
-            <h2 className="text-2xl md:text-4xl font-bold text-foreground">
-              Curious about Buildographic?
+      {/* ── PLATFORM CAPABILITIES ──────────────────────────────────────── */}
+      <section id="capabilities" className="border-b border-[#e6e3dd] py-20 bg-white">
+        <div className="max-w-[1320px] mx-auto px-4 sm:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-14">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#8c8780]">PLATFORM CAPABILITIES</span>
+            <h2 className="text-3xl sm:text-4xl font-bold text-[#1e1c1a] mt-2 mb-3 tracking-tight">
+              Everything You Need to Market a Property
             </h2>
-            <p className="text-xl md:text-2xl font-bold text-foreground">
-              We got you covered
+            <p className="text-[#68645e] text-sm sm:text-base leading-relaxed">
+              From quick single-post generation to complete layered customization, Buildographic simplifies real-estate marketing.
             </p>
           </div>
 
-          <Accordion type="single" collapsible className="space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {capabilities.map((cap) => (
+              <div key={cap.title} className="bg-[#faf9f6] rounded-[16px] p-8 border border-[#e6e3dd] flex flex-col justify-between">
+                <div>
+                  <div className="text-xs font-bold text-[#eb5e28] uppercase tracking-wider mb-3">{cap.eyebrow}</div>
+                  <h3 className="text-xl font-bold text-[#1e1c1a]">{cap.title}</h3>
+                  <p className="text-sm text-[#68645e] mt-3 leading-relaxed">{cap.description}</p>
+                </div>
+                <div className="mt-8 pt-4 border-t border-[#e6e3dd] text-xs font-bold text-[#1e1c1a]">
+                  {cap.footer}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── SOCIAL PROOF MARQUEE ────────────────────────────────────────── */}
+      <section className="border-b border-[#e6e3dd] bg-white py-12">
+        <div className="max-w-[1320px] mx-auto px-4 sm:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-8">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#8c8780]">
+              BUILT FOR MODERN REAL-ESTATE MARKETING
+            </span>
+            <p className="text-[#68645e] text-sm mt-2 font-medium">
+              Designed around the workflows used by real-estate agents, brokers, marketers and property teams.
+            </p>
+          </div>
+          <div className="relative">
+            <Marquee pauseOnHover className="[--duration:30s]">
+              {marqueeTags.map((tag) => (
+                <span
+                  key={tag}
+                  className="text-[#8c8780] font-semibold text-xs tracking-wider uppercase whitespace-nowrap px-2"
+                >
+                  {tag}
+                </span>
+              ))}
+            </Marquee>
+            <div className="pointer-events-none absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-white" />
+            <div className="pointer-events-none absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-white" />
+          </div>
+        </div>
+      </section>
+
+      {/* ── FAQ ─────────────────────────────────────────────────────────── */}
+      <section id="faq" className="border-b border-[#e6e3dd] py-20 bg-[#faf9f6]">
+        <div className="max-w-[800px] mx-auto px-4 sm:px-8">
+          <div className="border-b border-[#e6e3dd] pb-2 mb-8">
+            <span className="text-xs font-bold tracking-wider text-[#8c8780] uppercase">QUESTIONS WORTH ANSWERING</span>
+          </div>
+
+          <Accordion type="single" collapsible className="divide-y divide-[#e6e3dd]">
             {faqs.map((faq, index) => (
-              <AccordionItem
-                key={index}
-                value={`faq-${index}`}
-                className="glass rounded-xl border border-border px-6 overflow-hidden"
-              >
-                <AccordionTrigger className="text-left text-foreground hover:no-underline py-5 text-base font-medium">
+              <AccordionItem key={index} value={`faq-${index}`} className="py-1 border-none">
+                <AccordionTrigger className="text-left text-[#1e1c1a] hover:no-underline py-4 text-base font-semibold hover:opacity-80">
                   {faq.question}
                 </AccordionTrigger>
-                <AccordionContent className="text-muted-foreground pb-5 text-sm leading-relaxed">
+                <AccordionContent className="text-[#68645e] pb-4 text-sm leading-relaxed">
                   {faq.answer}
                 </AccordionContent>
               </AccordionItem>
@@ -977,188 +1118,76 @@ export default function PricingPage() {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section
-        className="relative py-32 overflow-hidden bg-cover bg-center"
-        style={{
-          backgroundImage:
-            "url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1600&h=900&fit=crop')",
-        }}
-        id="enterprise"
-      >
-        <div className="absolute inset-0 bg-sky-400/20" />
-        <div className="container px-6 max-w-4xl mx-auto relative z-10 text-center">
-          <h2 className="text-4xl md:text-6xl font-bold text-white mb-4 drop-shadow-lg">
-            Start creating
-          </h2>
-          <h2 className="text-4xl md:text-6xl font-bold text-white mb-10 drop-shadow-lg">
-            on Buildographic today.
-          </h2>
-          <Link href="/auth">
-            <Button
-              size="lg"
-              className="h-14 px-8 gap-2 rounded-full bg-white hover:bg-gray-100 text-black font-medium text-lg shadow-xl"
-            >
-              Get Started <ArrowRight className="h-5 w-5" />
-            </Button>
-          </Link>
-        </div>
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
-      </section>
-
-      {/* Footer */}
-      <footer className="bg-background border-t border-border py-16">
-        <div className="container px-6 max-w-6xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
-            <div className="col-span-2 md:col-span-1">
-              <Link
-                href="/"
-                className="flex flex-col items-start gap-1 font-bold text-xl text-white mb-4"
-              >
-                <img src="/logo-icon-option6-light.png" alt="" className="h-8 w-8" />
-                <span>Buildographic</span>
-              </Link>
-              <p className="text-sm text-gray-400 leading-relaxed">
-                Create stunning property infographics for your listings.
+      {/* ── ENTERPRISE / BROKERAGE CTA BANNER ──────────────────────────── */}
+      <section id="enterprise" className="border-b border-[#e6e3dd] py-16 bg-white">
+        <div className="max-w-[1320px] mx-auto px-4 sm:px-8">
+          <div className="bg-[#2a2825] text-white rounded-[20px] p-8 sm:p-12 md:p-14 flex flex-col md:flex-row items-center justify-between gap-8 shadow-sm">
+            <div className="max-w-xl text-center md:text-left">
+              <span className="text-xs font-bold text-[#eb5e28] uppercase tracking-wider">
+                FOR BROKERAGES &amp; ENTERPRISE
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-bold mt-2 leading-tight">
+                Running a growing brokerage or real-estate organization?
+              </h2>
+              <p className="text-sm text-[#cac6bf] mt-2 leading-relaxed">
+                Get custom design volumes, dedicated support and enterprise setup tailored to your organization.
               </p>
             </div>
+            <a
+              href="mailto:hello@buildographic.com"
+              className="px-6 py-3 rounded-[8px] bg-white text-[#1e1c1a] hover:bg-[#faf9f6] font-bold text-xs transition shrink-0 shadow-sm"
+            >
+              Contact Enterprise Sales →
+            </a>
+          </div>
+        </div>
+      </section>
 
+      {/* ── FOOTER ──────────────────────────────────────────────────────── */}
+      <footer className="bg-[#faf9f6] py-14 text-xs text-[#68645e]">
+        <div className="max-w-[1320px] mx-auto px-4 sm:px-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 pb-10 border-b border-[#e6e3dd]">
             <div>
-              <h4 className="font-semibold text-white mb-4">Product</h4>
-              <ul className="space-y-3 text-sm text-gray-400">
-                <li>
-                  <Link href="/templates" className="hover:text-white">
-                    Templates
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/pricing" className="hover:text-white">
-                    Pricing
-                  </Link>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-white">
-                    Integrations
-                  </a>
-                </li>
+              <div className="font-bold text-sm text-[#1e1c1a] mb-3">Buildographic</div>
+              <p className="text-[11px] text-[#68645e] leading-relaxed">
+                AI-powered property marketing platform built for real-estate agents, teams, and brokerages.
+              </p>
+            </div>
+            <div>
+              <div className="font-semibold text-[#1e1c1a] mb-2">Product</div>
+              <ul className="space-y-1.5">
+                <li><Link href="/templates" className="hover:text-[#1e1c1a]">Templates</Link></li>
+                <li><Link href="/pricing" className="text-[#1e1c1a] font-bold">Pricing</Link></li>
               </ul>
             </div>
-
             <div>
-              <h4 className="font-semibold text-white mb-4">Solutions</h4>
-              <ul className="space-y-3 text-sm text-gray-400">
-                <li>
-                  <a href="#" className="hover:text-white">
-                    For Agents
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-white">
-                    For Teams
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-white">
-                    For Brokerages
-                  </a>
-                </li>
-                <li>
-                  <a href="#enterprise" className="hover:text-white">
-                    Enterprise
-                  </a>
-                </li>
+              <div className="font-semibold text-[#1e1c1a] mb-2">Solutions</div>
+              <ul className="space-y-1.5">
+                <li><a href="#plans-grid" className="hover:text-[#1e1c1a]">Solo Agents</a></li>
+                <li><a href="#plans-grid" className="hover:text-[#1e1c1a]">Real Estate Teams</a></li>
+                <li><a href="#plans-grid" className="hover:text-[#1e1c1a]">Agencies &amp; Brokerages</a></li>
               </ul>
             </div>
-
             <div>
-              <h4 className="font-semibold text-white mb-4">Resources</h4>
-              <ul className="space-y-3 text-sm text-gray-400">
-                <li>
-                  <a href="#" className="hover:text-white">
-                    Help Center
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-white">
-                    Tutorials
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-white">
-                    Blog
-                  </a>
-                </li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="font-semibold text-white mb-4">Company</h4>
-              <ul className="space-y-3 text-sm text-gray-400">
-                <li>
-                  <a href="#" className="hover:text-white">
-                    About
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-white">
-                    Careers
-                  </a>
-                </li>
-                <li>
-                  <a href="/terms" className="hover:text-white">
-                    Terms of Service
-                  </a>
-                </li>
-                <li>
-                  <a href="/privacy" className="hover:text-white">
-                    Privacy Policy
-                  </a>
-                </li>
-                <li>
-                  <a href="/refund-policy" className="hover:text-white">
-                    Refund &amp; Cancellation
-                  </a>
-                </li>
-                <li>
-                  <a href="/cookies" className="hover:text-white">
-                    Cookie Policy
-                  </a>
-                </li>
+              <div className="font-semibold text-[#1e1c1a] mb-2">Legal</div>
+              <ul className="space-y-1.5">
+                <li><a href="/terms" className="hover:text-[#1e1c1a]">Terms of Service</a></li>
+                <li><a href="/privacy" className="hover:text-[#1e1c1a]">Privacy Policy</a></li>
+                <li><a href="/refund-policy" className="hover:text-[#1e1c1a]">Refund &amp; Cancellation</a></li>
+                <li><a href="/cookies" className="hover:text-[#1e1c1a]">Cookie Policy</a></li>
               </ul>
             </div>
           </div>
 
-          <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-sm text-gray-500">COPYRIGHT Buildographic 2025</p>
-            <p className="text-sm text-gray-500">
-              DESIGNED FOR REAL ESTATE PROFESSIONALS
-            </p>
-            <div className="flex items-center gap-4">
-              <a
-                href="#"
-                className="text-gray-500 hover:text-white transition-colors"
-              >
-                <Linkedin className="h-5 w-5" />
-              </a>
-              <a
-                href="#"
-                className="text-gray-500 hover:text-white transition-colors"
-              >
-                <Twitter className="h-5 w-5" />
-              </a>
-              <a
-                href="#"
-                className="text-gray-500 hover:text-white transition-colors"
-              >
-                <Youtube className="h-5 w-5" />
-              </a>
-              <a
-                href="#"
-                className="text-gray-500 hover:text-white transition-colors"
-              >
-                <Instagram className="h-5 w-5" />
-              </a>
+          <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-[#8c8780]">
+            <div>© 2026 Buildographic. All rights reserved.</div>
+            <div className="flex items-center gap-3">
+              <a href="#" className="hover:text-[#1e1c1a] transition-colors"><Linkedin className="h-4 w-4" /></a>
+              <a href="#" className="hover:text-[#1e1c1a] transition-colors"><Twitter className="h-4 w-4" /></a>
+              <a href="#" className="hover:text-[#1e1c1a] transition-colors"><Youtube className="h-4 w-4" /></a>
+              <a href="#" className="hover:text-[#1e1c1a] transition-colors"><Instagram className="h-4 w-4" /></a>
             </div>
+            <div>✓ Razorpay Secured</div>
           </div>
         </div>
       </footer>
