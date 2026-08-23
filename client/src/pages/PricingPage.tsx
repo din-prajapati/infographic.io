@@ -478,7 +478,10 @@ export default function PricingPage() {
             <img src="/logo-icon-option6-light.png" alt="" className="h-7 w-7 hidden dark:block" />
             <span className="text-[10px] leading-none font-extrabold tracking-tight mt-0.5">Buildographic</span>
           </Link>
-          <div className="flex items-center gap-8">
+          {/* US-PAY-113 AC1: hidden below md, same convention as LandingPage.tsx's nav — this
+              codebase has no mobile hamburger menu anywhere yet, so a full-width link row here
+              would overflow the viewport on a phone. */}
+          <div className="hidden md:flex items-center gap-8">
             <a
               href="/#features"
               className="text-sm font-medium text-muted-foreground hover:text-foreground"
@@ -556,7 +559,9 @@ export default function PricingPage() {
 
       {/* Pricing Cards - Emergent-style with per-card Annual toggle */}
       <section className="container px-6 pb-20 max-w-6xl mx-auto">
-        <div className="grid md:grid-cols-3 gap-6">
+        {/* US-PAY-113 AC1: explicit grid-cols-1 -> sm:2 -> lg:3 so 6 cards stack cleanly on a
+            phone (no reliance on grid's implicit single-column default) and fill tablet width. */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {plans.map((plan) => {
             const isCurrentPlan = currentPlan === plan.tier;
             const isPendingPlan = pendingPlanTier === plan.tier;
