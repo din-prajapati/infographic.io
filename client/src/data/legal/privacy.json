@@ -28,7 +28,7 @@
           "style": "bullet",
           "items": [
             "Account data: name, email address, and organisation name provided during registration. If you sign in with Google, we receive your name, email address, and profile picture from Google",
-            "Listing content: property descriptions, addresses, and images you provide when creating infographics",
+            "Listing content: property descriptions, addresses, and images you provide when creating marketing designs",
             "Payment-related information (payments are processed by PCI-DSS compliant processors; we do not store full card numbers on our servers)",
             "Communication data: emails or support messages you send to us"
           ]
@@ -41,7 +41,7 @@
           "type": "list",
           "style": "bullet",
           "items": [
-            "Usage data: features used, pages visited, infographics generated, and timestamps of interactions",
+            "Usage data: features used, pages visited, designs generated, and timestamps of interactions",
             "Device and browser data: IP address, browser type, operating system, and referring URLs, collected via server logs",
             "Cookies and similar technologies (see our Cookie Policy)"
           ]
@@ -90,7 +90,7 @@
       "blocks": [
         {
           "type": "paragraph",
-          "text": "To generate infographics, listing text and images you provide are processed by our AI providers. These providers receive the content you submit solely to produce the requested visual output. We do not identify individual AI providers publicly as part of our model-opacity policy."
+          "text": "To generate marketing designs, listing text and images you provide are processed by our AI providers. These providers receive the content you submit solely to produce the requested visual output. We do not identify individual AI providers publicly as part of our model-opacity policy."
         },
         {
           "type": "paragraph",
@@ -111,7 +111,7 @@
           "style": "bullet",
           "items": [
             "Payment processor (RazorPay): for subscription management",
-            "AI providers: to generate infographic output from your listing data",
+            "AI providers: to generate marketing design output from your listing data",
             "Cloud infrastructure providers: hosting and database services that store your account data and generated content",
             "Analytics and monitoring tools: to detect errors and measure performance (data is anonymised or pseudonymised where possible)",
             "Legal authorities: where required by law or court order"
