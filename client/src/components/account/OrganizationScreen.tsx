@@ -170,7 +170,7 @@ export function OrganizationScreen() {
             <span className="font-medium text-foreground">{formatPlanTier(organization.planTier)}</span>
           </div>
           <div>
-            <span className="text-muted-foreground">Infographics / month </span>
+            <span className="text-muted-foreground">AI Marketing Designs / month </span>
             <span className="font-medium text-foreground">{organization.monthlyLimit}</span>
           </div>
         </div>

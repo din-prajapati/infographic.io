@@ -441,7 +441,7 @@ export function AIChatBox({
 
     // Surface the failure in the bubble itself. MessageBubble renders a styled
     // red error bubble when an AI message's content starts with "Error:" — so we
-    // rewrite the frozen "Generating your infographic..." placeholder into the
+    // rewrite the frozen "Generating your design..." placeholder into the
     // actual error and drop the progress steps. Without this the bubble stayed
     // stuck on the generating text (state.error is only shown in the default
     // view, not the conversation view). See I-10 / error-path twin of PT-09.
@@ -580,7 +580,7 @@ export function AIChatBox({
     toast.error("Monthly limit reached", {
       description:
         descriptionOverride ??
-        `You've used ${current} of ${limit} infographics this month${planTier ? ` on your ${planTier} plan` : ""}. Upgrade to continue generating.`,
+        `You've used ${current} of ${limit} AI Marketing Designs this month${planTier ? ` on your ${planTier} plan` : ""}. Upgrade to continue generating.`,
       action: {
         label: "View plans",
         onClick: () => {
@@ -657,7 +657,7 @@ export function AIChatBox({
           0,
           0,
           undefined,
-          "Your monthly infographic limit may already be used up. Check Account → Billing, or upgrade your plan to continue.",
+          "Your monthly design limit may already be used up. Check Account → Billing, or upgrade your plan to continue.",
         );
       }
       return false;
@@ -684,7 +684,7 @@ export function AIChatBox({
       const hintMessage: Message = {
         id: `msg-hint-${Date.now()}`,
         type: "ai",
-        content: "I need a bit more detail to generate your infographic.",
+        content: "I need a bit more detail to generate your design.",
         timestamp: new Date(),
         isValidationHint: true,
         missingFields: validation.missing,
@@ -723,7 +723,7 @@ export function AIChatBox({
     const aiMessage: Message = {
       id: aiMessageId,
       type: "ai",
-      content: "Generating your infographic...",
+      content: "Generating your design...",
       timestamp: new Date(),
       isGenerating: true,
       generationSteps: steps,
@@ -860,7 +860,7 @@ export function AIChatBox({
     } catch (error: any) {
       console.error("Generation error:", error);
 
-      let errorMessage = "Failed to generate infographic. Please try again.";
+      let errorMessage = "Failed to generate design. Please try again.";
       let isValidationError = false;
 
       if (error?.message) {
@@ -920,7 +920,7 @@ export function AIChatBox({
                   ...msg,
                   isGenerating: false,
                   content:
-                    "I need a bit more detail to generate your infographic.",
+                    "I need a bit more detail to generate your design.",
                   isValidationHint: true,
                   missingFields:
                     missingFromBackend.length > 0
@@ -1177,7 +1177,7 @@ export function AIChatBox({
           id: variation.id,
           name: variation.title || "AI Generated Design",
           category: "listing-announcements",
-          description: variation.description || "AI-generated infographic design",
+          description: variation.description || "AI-generated marketing design",
           previewImage: variation.previewUrl,
           isAiVariation: true,
           aiOrientation: generationOrientation,
@@ -1198,7 +1198,7 @@ export function AIChatBox({
           id: variation.id,
           name: variation.title || "AI Generated Design",
           category: "listing-announcements",
-          description: variation.description || "AI-generated infographic design",
+          description: variation.description || "AI-generated marketing design",
           previewImage: variation.previewUrl,
           isAiVariation: true,
           aiOrientation: generationOrientation,
@@ -1212,7 +1212,7 @@ export function AIChatBox({
         id: variation.id,
         name: variation.title || "AI Generated Design",
         category: "listing-announcements",
-        description: variation.description || "AI-generated infographic design",
+        description: variation.description || "AI-generated marketing design",
         previewImage: variation.previewUrl,
         isAiVariation: true,
         aiOrientation: generationOrientation,
@@ -1233,7 +1233,7 @@ export function AIChatBox({
         id: variation.id,
         name: variation.title || "AI Generated Design",
         category: "listing-announcements",
-        description: variation.description || "AI-generated infographic design",
+        description: variation.description || "AI-generated marketing design",
         previewImage: variation.previewUrl,
         isAiVariation: true,
         aiOrientation: generationOrientation,
@@ -1291,7 +1291,7 @@ export function AIChatBox({
   };
 
   const handleCategoryTemplateSelect = (template: Template) => {
-    setState((prev) => ({ ...prev, inputValue: `Create a ${template.name} infographic` }));
+    setState((prev) => ({ ...prev, inputValue: `Create a ${template.name} design` }));
     setShowCategoryBrowse(false);
   };
 
@@ -1475,7 +1475,7 @@ export function AIChatBox({
                     message={
                       generationSteps.find((s) => s.status === "in-progress")?.label
                       ?? generationSteps[currentStep]?.label
-                      ?? "Generating your infographic..."
+                      ?? "Generating your design..."
                     }
                     estimatedTime={45}
                   />

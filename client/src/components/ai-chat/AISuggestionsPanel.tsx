@@ -38,7 +38,7 @@ const suggestions = [
     title: 'Popular Styles',
     items: [
       'Minimalist modern design',
-      'Bold colorful infographic',
+      'Bold colorful marketing design',
       'Professional luxury branding',
     ],
   },

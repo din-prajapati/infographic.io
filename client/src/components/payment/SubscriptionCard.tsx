@@ -207,7 +207,7 @@ export function SubscriptionCard({ organization }: SubscriptionCardProps) {
             </span>
           </div>
 
-          {/* Usage Meter - Infographics generated this billing period vs plan limit */}
+          {/* Usage Meter - AI Marketing Designs generated this billing period vs plan limit */}
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Monthly Usage</span>
@@ -272,7 +272,7 @@ export function SubscriptionCard({ organization }: SubscriptionCardProps) {
                   Payment received — activating your plan
                 </p>
                 <p className="text-xs text-yellow-600/80 dark:text-yellow-400/80">
-                  Your payment was captured. You can generate infographics now — your {planConfig.name} plan limits are already in effect. This banner will disappear once activation is confirmed (usually under a minute).
+                  Your payment was captured. You can generate designs now — your {planConfig.name} plan limits are already in effect. This banner will disappear once activation is confirmed (usually under a minute).
                 </p>
                 <button
                   onClick={handleRefreshStatus}

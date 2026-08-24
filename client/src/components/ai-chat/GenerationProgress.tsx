@@ -27,7 +27,7 @@ export function GenerationProgress({ steps, currentStep }: GenerationProgressPro
       <div className="bg-gradient-to-br from-ai-accent/8 to-primary/8 border border-ai-accent/30 rounded-xl p-4"> {/* AI brand — intentional */}
         <div className="flex items-center gap-2 mb-3">
           <Loader2 className="w-4 h-4 text-ai-accent animate-spin" />
-          <h3 className="text-sm text-foreground">Generating your infographic...</h3>
+          <h3 className="text-sm text-foreground">Generating your design...</h3>
         </div>
 
         <div className="space-y-2">

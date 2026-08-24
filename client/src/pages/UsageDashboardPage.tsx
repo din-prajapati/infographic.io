@@ -132,7 +132,7 @@ export default function UsageDashboardPage() {
               <div>
                 <p className="text-sm text-muted-foreground">This Month</p>
                 <p className="text-2xl font-bold text-foreground">{currentMonthUsage}</p>
-                <p className="text-xs text-muted-foreground">infographics</p>
+                <p className="text-xs text-muted-foreground">designs</p>
               </div>
               <Zap className="h-8 w-8 text-primary" />
             </div>
@@ -167,7 +167,7 @@ export default function UsageDashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="font-semibold text-foreground">Monthly Usage</h3>
-                  <p className="mt-1 text-sm text-muted-foreground">Infographics generated per month</p>
+                  <p className="mt-1 text-sm text-muted-foreground">AI Marketing Designs generated per month</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
@@ -190,7 +190,7 @@ export default function UsageDashboardPage() {
                 </div>
               ) : monthlyUsage.length === 0 ? (
                 <div className="flex items-center justify-center h-48 text-muted-foreground">
-                  No usage data yet. Generate your first infographic!
+                  No usage data yet. Generate your first design!
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -250,7 +250,7 @@ export default function UsageDashboardPage() {
         <div className="glass overflow-hidden rounded-xl border border-border">
           <div className="border-b border-border px-6 py-4">
             <h3 className="font-semibold text-foreground">Recent Activity</h3>
-            <p className="mt-1 text-sm text-muted-foreground">Your latest infographic generations</p>
+            <p className="mt-1 text-sm text-muted-foreground">Your latest design generations</p>
           </div>
           <div className="p-6">
             {historyLoading ? (

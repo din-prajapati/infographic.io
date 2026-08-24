@@ -22,7 +22,7 @@ const carouselImages = [property1, property2, property3];
 
 const carouselTaglines = [
   'Browse thousands of properties to buy, sell, or rent with trusted agents.',
-  'AI-powered infographics for real estate professionals.',
+  'AI-powered marketing designs for real estate professionals.',
   'Create stunning property listings in seconds.',
 ];
 
@@ -134,7 +134,7 @@ export default function AuthPage() {
             <p className="text-white/70 text-sm text-center">
               {isLoginMode
                 ? "Let's login to grab amazing deals"
-                : 'Sign up to start creating stunning infographics'}
+                : 'Sign up to start creating stunning marketing designs'}
             </p>
           </div>
 

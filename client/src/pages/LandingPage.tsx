@@ -64,7 +64,7 @@ const painPointCards = [
   {
     icon: Zap,
     title: "Time-Consuming Design",
-    description: "Create professional infographics in minutes, not days.",
+    description: "Create professional marketing designs in minutes, not days.",
   },
   {
     icon: Target,
@@ -87,17 +87,17 @@ const faqs = [
   {
     question: "What is Buildographic and how does it work?",
     answer:
-      "Buildographic transforms your property listings into stunning visual infographics. Enter your property details, choose a template, and our system creates professional marketing materials ready for social media, MLS, and print.",
+      "Buildographic transforms your property listings into stunning AI marketing designs. Enter your property details, choose a template, and our system creates professional marketing materials ready for social media, MLS, and print.",
   },
   {
     question: "What can I create with Buildographic?",
     answer:
-      "Property listing infographics, open house flyers, market reports, neighborhood guides, agent branding materials, and social media graphics. All templates are designed specifically for real estate professionals.",
+      "Property listing designs, open house flyers, market reports, neighborhood guides, agent branding materials, and social media graphics. All templates are designed specifically for real estate professionals.",
   },
   {
     question: "How does pricing work?",
     answer:
-      "We offer flexible plans starting with a free tier that includes 3 infographics per month. Paid plans provide more monthly infographics, custom branding options, and priority support. Annual billing saves you 15%.",
+      "We offer flexible plans starting with a free tier that includes 3 AI marketing designs per month. Paid plans provide more monthly designs, custom branding options, and priority support. Annual billing saves you 15%.",
   },
   {
     question: "Do I need design experience?",
@@ -234,7 +234,7 @@ export default function LandingPage() {
           <div className="text-center px-6 max-w-4xl mx-auto">
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
               Create Property<br />
-              <span className="text-secondary">Infographics</span> in Minutes
+              <span className="text-secondary">Marketing Designs</span> in Minutes
             </h1>
             <p className="text-lg md:text-xl text-gray-300 mb-10 max-w-2xl mx-auto">
               Transform your listings into stunning visuals. Perfect for social media, MLS, and print marketing.
@@ -307,7 +307,7 @@ export default function LandingPage() {
               Professional Templates for Every Format
             </h2>
             <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-              Create infographics for Instagram, Facebook, LinkedIn, print flyers, MLS, and more.
+              Create marketing designs for Instagram, Facebook, LinkedIn, print flyers, MLS, and more.
             </p>
           </div>
 
@@ -486,7 +486,7 @@ export default function LandingPage() {
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-white mb-1">Brand Kit</h3>
-                    <p className="text-gray-400 text-sm">Apply custom brand palettes and colors to your infographics in the editor.</p>
+                    <p className="text-gray-400 text-sm">Apply custom brand palettes and colors to your designs in the editor.</p>
                   </div>
                 </div>
                 <div className="flex gap-4">
@@ -598,7 +598,7 @@ export default function LandingPage() {
                 <span>Buildographic</span>
               </Link>
               <p className="text-sm text-gray-600 leading-relaxed">
-                Create stunning property infographics for your listings.
+                Create stunning property marketing designs for your listings.
               </p>
             </div>
             <div>

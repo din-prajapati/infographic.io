@@ -58,7 +58,7 @@ export function AIChatInputField({
           placeholder={
             selectedChips.length > 0
               ? 'Describe what you want to create...'
-              : 'Ask AI to create a stunning real estate infographic...'
+              : 'Ask AI to create a stunning real estate marketing design...'
           }
           className="w-full min-h-[96px] outline-none text-sm text-foreground placeholder:text-muted-foreground resize-none bg-transparent"
           disabled={isGenerating}
