@@ -1,0 +1,1247 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Buildographic Pricing | AI Marketing for Real Estate — Priced by Output</title>
+  <meta name="description" content="Create property creatives, campaigns and editable designs without the designer bottleneck. Transparent output-based pricing for real estate." />
+
+  <!-- Google Fonts: Inter (Rocket.new Exact Font) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+          },
+          colors: {
+            rocketDark: '#22201d',
+            rocketCharcoal: '#2a2825',
+            rocketText: '#1e1c1a',
+            rocketMuted: '#68645e',
+            rocketSubtle: '#8c8780',
+            rocketBorder: '#e6e3dd',
+            rocketBg: '#faf9f6',
+            brandBlue: '#0066cc',
+            brandOrange: '#eb5e28',
+            brandOrangeLight: '#fff5ee',
+          },
+          borderRadius: {
+            '6': '6px',
+            '8': '8px',
+            '10': '10px',
+            '12': '12px',
+            '16': '16px',
+            '20': '20px',
+            'full': '9999px',
+          },
+          boxShadow: {
+            'card-subtle': '0 2px 8px -2px rgba(30, 28, 26, 0.05), 0 1px 2px 0 rgba(30, 28, 26, 0.02)',
+            'pro-elevated': '0 12px 30px -6px rgba(235, 94, 40, 0.12), 0 2px 8px 0 rgba(30, 28, 26, 0.04)',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background-color: #ffffff;
+      color: #1e1c1a;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Rocket Architectural Container Grid Frame */
+    .rocket-container {
+      max-width: 1320px;
+      margin-left: auto;
+      margin-right: auto;
+      border-left: 1px solid #e6e3dd;
+      border-right: 1px solid #e6e3dd;
+    }
+
+    /* Rocket.new Exact Radial Glow Gradient from Screenshot */
+    .rocket-hero-gradient {
+      background: radial-gradient(100% 100% at 50% 108%, #f8b868 0%, #ecd09e 26%, #b5d9ff 55%, #d9ebff 76%, #f3f8ff 100%);
+    }
+
+    /* Infinite Marquee */
+    @keyframes marquee-left {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+    .animate-marquee {
+      display: flex;
+      width: 200%;
+      animation: marquee-left 34s linear infinite;
+    }
+    .animate-marquee:hover {
+      animation-play-state: paused;
+    }
+
+    button, a {
+      transition: all 0.15s ease-in-out;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-white text-[#1e1c1a]">
+
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <!-- 1. TOP NAVBAR (Minimalist Rocket Style + Capsule Currency)     -->
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <header class="sticky top-0 z-50 w-full bg-white/90 backdrop-blur-md border-b border-[#e6e3dd]">
+    <div class="max-w-[1320px] mx-auto px-4 sm:px-8 h-16 flex items-center justify-between gap-4">
+      
+      <!-- Brand Logo -->
+      <a href="/" class="flex items-center gap-2.5 group">
+        <div class="w-7 h-7 rounded-8 bg-[#2a2825] flex items-center justify-center text-white shadow-sm">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 3h18v18H3z"></path>
+            <path d="M3 9h18"></path>
+            <path d="M9 21V9"></path>
+          </svg>
+        </div>
+        <span class="font-bold text-base tracking-tight text-[#1e1c1a]">
+          Buildographic
+        </span>
+      </a>
+
+      <!-- Desktop Navigation -->
+      <nav class="hidden md:flex items-center gap-1 text-sm font-medium text-[#68645e]">
+        <a href="#plans-grid" class="px-3.5 py-1.5 rounded-8 text-[#1e1c1a] font-semibold bg-[#e6e3dd]/40">Pricing</a>
+        <a href="#what-is-design" class="px-3.5 py-1.5 rounded-8 hover:text-[#1e1c1a] hover:bg-[#faf9f6] transition">What's a Design?</a>
+        <a href="#comparison" class="px-3.5 py-1.5 rounded-8 hover:text-[#1e1c1a] hover:bg-[#faf9f6] transition">Compare</a>
+        <a href="#capabilities" class="px-3.5 py-1.5 rounded-8 hover:text-[#1e1c1a] hover:bg-[#faf9f6] transition">Platform</a>
+        <a href="#faq" class="px-3.5 py-1.5 rounded-8 hover:text-[#1e1c1a] hover:bg-[#faf9f6] transition">FAQ</a>
+      </nav>
+
+      <!-- Right Action Controls -->
+      <div class="flex items-center gap-3">
+        
+        <!-- Currency Toggle (Matching Monthly/Yearly Capsule Design Principle) -->
+        <div class="flex items-center bg-black/[0.04] border border-black/10 p-0.5 rounded-full shadow-xs">
+          <button id="curr-inr" onclick="setCurrency('INR')" class="px-3 py-1 rounded-full text-xs font-semibold transition-all duration-200 bg-[#2a2825] text-white shadow-xs">
+            ₹ INR
+          </button>
+          <button id="curr-usd" onclick="setCurrency('USD')" class="px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 text-[#2a2825] hover:opacity-80">
+            $ USD
+          </button>
+        </div>
+
+        <a href="/auth" class="text-sm font-medium text-[#68645e] hover:text-[#1e1c1a] px-2 py-1 transition">Log in</a>
+        
+        <a href="/auth?plan=FREE" class="inline-flex items-center gap-1.5 bg-[#2a2825] hover:bg-[#1e1c1a] text-white text-xs font-bold px-4 py-2.5 rounded-8 shadow-sm transition active:scale-95">
+          <span>Get started free</span>
+        </a>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <!-- 2. PRICING HERO (§4: Direct Value Proposition)                 -->
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <section class="border-b border-[#e6e3dd]">
+    <div class="rocket-container rocket-hero-gradient pt-24 pb-16 px-4 sm:px-12 text-center">
+      
+      <div class="max-w-4xl mx-auto flex flex-col items-center gap-3 mb-8">
+        <!-- Eyebrow -->
+        <span class="text-xs font-bold uppercase tracking-wider text-[#1e1c1a]/60 bg-white/40 border border-black/10 px-3 py-1 rounded-full">
+          PRICING
+        </span>
+
+        <!-- Direct H1 Value Proposition -->
+        <h1 class="text-3xl sm:text-5xl md:text-[52px] font-bold tracking-tight text-[#1e1c1a] mt-2 leading-[1.15]">
+          AI Marketing for Real Estate.<br class="hidden sm:inline" /> Priced by Output.
+        </h1>
+
+        <!-- Supporting Copy -->
+        <p class="text-sm sm:text-base md:text-lg text-[#1e1c1a]/70 max-w-2xl mx-auto leading-relaxed mt-1">
+          Create property creatives, campaigns and editable designs without the designer bottleneck.
+        </p>
+      </div>
+
+      <!-- Segmented Monthly / Yearly Capsule Toggle (§4) -->
+      <div class="inline-flex flex-col items-center">
+        <div class="bg-white/60 backdrop-blur-md border border-black/10 p-1 rounded-full flex items-center shadow-sm">
+          <button id="toggle-monthly" onclick="setBillingCycle('monthly')" class="px-5 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 bg-[#2a2825] text-white shadow-sm">
+            Monthly
+          </button>
+          <button id="toggle-annual" onclick="setBillingCycle('annual')" class="px-5 py-1.5 rounded-full text-xs font-medium transition-all duration-200 text-[#2a2825] hover:opacity-80 flex items-center gap-1.5">
+            <span>Yearly</span>
+            <span class="text-[11px] font-bold text-brandOrange bg-brandOrange/10 px-2 py-0.5 rounded-full">save 20%</span>
+          </button>
+        </div>
+
+        <!-- Output-based Principle Supporting Message (§12) -->
+        <p class="text-xs text-[#68645e] mt-4 font-medium max-w-md mx-auto">
+          Your plan is based on marketing output — not the number of people who need access.
+        </p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <!-- 3. PUBLIC PRICING PLANS (5 Plans: Free, Solo, Pro, Team, Agency) -->
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <section id="plans-grid" class="border-b border-[#e6e3dd] bg-white">
+    <div class="rocket-container">
+      
+      <!-- 5-Column Divider Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 divide-y xl:divide-y-0 xl:divide-x divide-[#e6e3dd]">
+        
+        <!-- ── PLAN 1: FREE (§7) ──────────────────────────────────── -->
+        <div class="p-6 sm:p-8 flex flex-col justify-between hover:bg-[#faf9f6]/50 transition-colors">
+          <div>
+            <h3 class="text-xl font-bold text-[#1e1c1a]">Free</h3>
+            <p class="text-xs text-[#68645e] mt-1 min-h-[32px] leading-relaxed">
+              Try Buildographic at zero cost
+            </p>
+
+            <!-- Price & Fee -->
+            <div class="my-6">
+              <div class="text-4xl sm:text-[42px] font-bold text-[#1e1c1a] tracking-tight price-display" data-inr="₹0" data-usd="$0">
+                ₹0
+              </div>
+              <div class="text-xs text-[#68645e] mt-2 font-normal">
+                Per month platform fee.
+              </div>
+              <div class="text-[11px] text-[#8c8780]">
+                No payment method required.
+              </div>
+            </div>
+
+            <!-- CTA -->
+            <button onclick="handlePlanSelect('FREE')" class="w-full py-3 px-4 rounded-8 bg-[#2a2825] hover:bg-[#1e1c1a] text-white font-bold text-xs transition shadow-sm active:scale-95 mb-8">
+              Get started free
+            </button>
+
+            <!-- Feature Header -->
+            <div class="text-[10px] font-bold text-[#8c8780] uppercase tracking-wider mb-4">
+              WHAT YOU GET
+            </div>
+
+            <!-- Features List -->
+            <div class="space-y-4 text-xs text-[#1e1c1a]">
+              <div>
+                <div class="font-bold">3 AI Marketing Designs / mo</div>
+                <div class="text-[11px] text-[#68645e] mt-0.5">Real-estate templates.</div>
+                <div class="text-[11px] text-[#68645e]">Generated designs remain in your library.</div>
+              </div>
+
+              <div>
+                <div class="font-bold">Basic property creation</div>
+                <div class="text-[11px] text-[#68645e] mt-0.5">Instagram & WhatsApp formats.</div>
+              </div>
+
+              <div>
+                <div class="font-bold">JPG / PNG export</div>
+                <div class="text-[11px] text-[#68645e] mt-0.5">High-resolution downloads.</div>
+              </div>
+
+              <div>
+                <div class="font-bold">Property library access</div>
+                <a href="#what-is-design" class="text-brandBlue text-[11px] hover:underline font-medium block mt-0.5">Explore features &rarr;</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── PLAN 2: SOLO (§8) ──────────────────────────────────── -->
+        <div class="p-6 sm:p-8 flex flex-col justify-between hover:bg-[#faf9f6]/50 transition-colors">
+          <div>
+            <h3 class="text-xl font-bold text-[#1e1c1a]">Solo</h3>
+            <p class="text-xs text-[#68645e] mt-1 min-h-[32px] leading-relaxed">
+              For individual real-estate agents
+            </p>
+
+            <!-- Price & Fee -->
+            <div class="my-6">
+              <div id="solo-price" class="text-4xl sm:text-[42px] font-bold text-[#1e1c1a] tracking-tight price-display" data-monthly-inr="₹3,999" data-annual-inr="₹3,199" data-monthly-usd="$49" data-annual-usd="$39">
+                ₹3,999
+              </div>
+              <div class="text-xs text-[#68645e] mt-2 font-normal">
+                Per month platform fee.
+              </div>
+              <div id="solo-billed" class="text-[11px] text-brandOrange font-medium mt-0.5 hidden">
+                Save ₹9,600/yr on annual billing
+              </div>
+            </div>
+
+            <!-- CTA -->
+            <button onclick="handlePlanSelect('SOLO')" class="w-full py-3 px-4 rounded-8 bg-[#2a2825] hover:bg-[#1e1c1a] text-white font-bold text-xs transition shadow-sm active:scale-95 mb-8">
+              Get started with Solo
+            </button>
+
+            <!-- Feature Header -->
+            <div class="text-[10px] font-bold text-[#8c8780] uppercase tracking-wider mb-4">
+              WHAT YOU GET
+            </div>
+
+            <!-- Features List -->
+            <div class="space-y-4 text-xs text-[#1e1c1a]">
+              <div>
+                <div class="font-bold">50 AI Marketing Designs</div>
+                <div class="text-[11px] text-[#68645e] mt-0.5">Real-estate marketing formats.</div>
+                <div class="text-[11px] text-[#68645e]">Generated designs remain in your library.</div>
+              </div>
+
+              <div>
+                <div class="font-bold">10 Editable Designs (Canvas)</div>
+                <a href="#capabilities" class="text-brandBlue text-[11px] hover:underline font-medium block mt-0.5">Explore canvas editor &rarr;</a>
+              </div>
+
+              <div>
+                <div class="font-bold">1 Custom Brand Kit</div>
+                <div class="text-[11px] text-[#68645e] mt-0.5">Logo, brand colors & agent headshot.</div>
+              </div>
+
+              <div>
+                <div class="font-bold">Open-house & price-drop creatives</div>
+                <div class="text-[11px] text-[#68645e] mt-0.5">JPG / PNG / PDF export & design history.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── PLAN 3: PRO (§9: ⭐ PRIMARY CONVERSION) ─────────────── -->
+        <div class="p-6 sm:p-8 flex flex-col justify-between bg-brandOrangeLight/30 border-y-2 xl:border-y-0 xl:border-x-2 border-brandOrange relative shadow-pro-elevated">
+          
+          <div>
+            <!-- Badge -->
+            <div class="inline-flex items-center gap-1 text-[10px] font-extrabold text-white bg-brandOrange uppercase tracking-wider px-2.5 py-0.5 rounded-full mb-2 shadow-xs">
+              ⭐ MOST POPULAR
+            </div>
+
+            <h3 class="text-xl font-bold text-[#1e1c1a]">Pro</h3>
+            <p class="text-xs text-[#68645e] mt-1 min-h-[32px] leading-relaxed">
+              For power agents & marketers
+            </p>
+
+            <!-- Price & Fee -->
+            <div class="my-6">
+              <div id="pro-price" class="text-4xl sm:text-[42px] font-extrabold text-[#1e1c1a] tracking-tight price-display" data-monthly-inr="₹7,999" data-annual-inr="₹6,399" data-monthly-usd="$99" data-annual-usd="$79">
+                ₹7,999
+              </div>
+              <div class="text-xs text-[#68645e] mt-2 font-normal">
+                Per month platform fee.
+              </div>
+              <div id="pro-billed" class="text-[11px] text-brandOrange font-medium mt-0.5 hidden">
+                Save ₹19,200/yr on annual billing
+              </div>
+            </div>
+
+            <!-- CTA -->
+            <button onclick="handlePlanSelect('PRO')" class="w-full py-3 px-4 rounded-8 bg-brandOrange hover:bg-[#d44d18] text-white font-bold text-xs transition shadow-sm active:scale-95 mb-8">
+              Choose Pro
+            </button>
+
+            <!-- Feature Header -->
+            <div class="text-[10px] font-bold text-[#8c8780] uppercase tracking-wider mb-4">
+              WHAT YOU GET
+            </div>
+
+            <!-- Features List -->
+            <div class="space-y-4 text-xs text-[#1e1c1a]">
+              <div>
+                <div class="font-bold">100 AI Marketing Designs</div>
+                <div class="text-[11px] text-[#68645e] mt-0.5">Priority generation queue.</div>
+                <div class="text-[11px] text-[#68645e]">Generated designs remain in your library.</div>
+              </div>
+
+              <div>
+                <div class="font-bold">25 Editable Designs (Canvas)</div>
+                <a href="#capabilities" class="text-brandBlue text-[11px] hover:underline font-medium block mt-0.5">Explore canvas editor &rarr;</a>
+              </div>
+
+              <div>
+                <div class="font-bold">3 Custom Brand Kits</div>
+                <div class="text-[11px] text-[#68645e] mt-0.5">Multiple sub-brands & agent identities.</div>
+              </div>
+
+              <div>
+                <div class="font-bold">Property &rarr; Campaign Generation</div>
+                <div class="text-[11px] text-[#68645e] mt-0.5">1-Click 8-piece campaign batches.</div>
+              </div>
+
+              <div>
+                <div class="font-bold">Usage analytics & enhanced history</div>
+                <a href="#comparison" class="text-brandBlue text-[11px] hover:underline font-medium block mt-0.5">Compare all features &rarr;</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── PLAN 4: TEAM (§10) ─────────────────────────────────── -->
+        <div class="p-6 sm:p-8 flex flex-col justify-between hover:bg-[#faf9f6]/50 transition-colors">
+          <div>
+            <h3 class="text-xl font-bold text-[#1e1c1a]">Team</h3>
+            <p class="text-xs text-[#68645e] mt-1 min-h-[32px] leading-relaxed">
+              For real-estate teams & small brokerages
+            </p>
+
+            <!-- Price & Fee -->
+            <div class="my-6">
+              <div id="team-price" class="text-4xl sm:text-[42px] font-bold text-[#1e1c1a] tracking-tight price-display" data-monthly-inr="₹14,999" data-annual-inr="₹11,999" data-monthly-usd="$189" data-annual-usd="$149">
+                ₹14,999
+              </div>
+              <div class="text-xs text-[#68645e] mt-2 font-normal">
+                Per month platform fee.
+              </div>
+              <div id="team-billed" class="text-[11px] text-brandOrange font-medium mt-0.5 hidden">
+                Save ₹36,000/yr on annual billing
+              </div>
+            </div>
+
+            <!-- CTA -->
+            <button onclick="handlePlanSelect('TEAM')" class="w-full py-3 px-4 rounded-8 bg-[#2a2825] hover:bg-[#1e1c1a] text-white font-bold text-xs transition shadow-sm active:scale-95 mb-8">
+              Get started with Team
+            </button>
+
+            <!-- Feature Header -->
+            <div class="text-[10px] font-bold text-[#8c8780] uppercase tracking-wider mb-4">
+              WHAT YOU GET
+            </div>
+
+            <!-- Features List -->
+            <div class="space-y-4 text-xs text-[#1e1c1a]">
+              <div>
+                <div class="font-bold">200 AI Marketing Designs</div>
+                <div class="text-[11px] text-[#68645e] mt-0.5">High-volume team pipeline.</div>
+                <div class="text-[11px] text-[#68645e]">Generated designs remain in your library.</div>
+              </div>
+
+              <div>
+                <div class="font-bold">60 Editable Designs (Canvas)</div>
+                <a href="#capabilities" class="text-brandBlue text-[11px] hover:underline font-medium block mt-0.5">Explore canvas editor &rarr;</a>
+              </div>
+
+              <div>
+                <div class="font-bold">Team Workspace & Shared Assets</div>
+                <div class="text-[11px] text-[#68645e] mt-0.5">Shared brand kits, assets & templates.</div>
+              </div>
+
+              <div>
+                <div class="font-bold">Review & Approval Workflow</div>
+                <div class="text-[11px] text-[#68645e] mt-0.5">Team collaboration & priority support.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── PLAN 5: AGENCY (§11) ───────────────────────────────── -->
+        <div class="p-6 sm:p-8 flex flex-col justify-between hover:bg-[#faf9f6]/50 transition-colors">
+          <div>
+            <h3 class="text-xl font-bold text-[#1e1c1a]">Agency</h3>
+            <p class="text-xs text-[#68645e] mt-1 min-h-[32px] leading-relaxed">
+              For agencies managing multiple real-estate clients
+            </p>
+
+            <!-- Price & Fee -->
+            <div class="my-6">
+              <div id="agency-price" class="text-4xl sm:text-[42px] font-bold text-[#1e1c1a] tracking-tight price-display" data-monthly-inr="₹29,999" data-annual-inr="₹23,999" data-monthly-usd="$379" data-annual-usd="$299">
+                ₹29,999
+              </div>
+              <div class="text-xs text-[#68645e] mt-2 font-normal">
+                Per month platform fee.
+              </div>
+              <div id="agency-billed" class="text-[11px] text-brandOrange font-medium mt-0.5 hidden">
+                Save ₹72,000/yr on annual billing
+              </div>
+            </div>
+
+            <!-- CTA -->
+            <button onclick="handlePlanSelect('AGENCY')" class="w-full py-3 px-4 rounded-8 bg-[#2a2825] hover:bg-[#1e1c1a] text-white font-bold text-xs transition shadow-sm active:scale-95 mb-8">
+              Get started with Agency
+            </button>
+
+            <!-- Feature Header -->
+            <div class="text-[10px] font-bold text-[#8c8780] uppercase tracking-wider mb-4">
+              WHAT YOU GET
+            </div>
+
+            <!-- Features List -->
+            <div class="space-y-4 text-xs text-[#1e1c1a]">
+              <div>
+                <div class="font-bold">400 AI Marketing Designs</div>
+                <div class="text-[11px] text-[#68645e] mt-0.5">Agency-grade scale.</div>
+                <div class="text-[11px] text-[#68645e]">Generated designs remain in your library.</div>
+              </div>
+
+              <div>
+                <div class="font-bold">150 Editable Designs (Canvas)</div>
+                <a href="#capabilities" class="text-brandBlue text-[11px] hover:underline font-medium block mt-0.5">Explore canvas editor &rarr;</a>
+              </div>
+
+              <div>
+                <div class="font-bold">Multi-Client Workspaces</div>
+                <div class="text-[11px] text-[#68645e] mt-0.5">Client-specific branding & asset separation.</div>
+              </div>
+
+              <div>
+                <div class="font-bold">Bulk property creative workflows</div>
+                <div class="text-[11px] text-[#68645e] mt-0.5">Dedicated account manager & priority queues.</div>
+              </div>
+
+              <!-- Enterprise Link -->
+              <div class="pt-4 border-t border-[#e6e3dd] text-[11px] text-[#68645e] leading-relaxed">
+                Need brokerage SSO or custom volumes? 
+                <a href="mailto:sales@buildographic.com" class="font-bold text-[#1e1c1a] underline underline-offset-2 hover:text-brandBlue">Contact Enterprise Sales</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <!-- 4. "WHAT IS AN AI MARKETING DESIGN?" (§14: Placed BEFORE Matrix) -->
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <section id="what-is-design" class="border-b border-[#e6e3dd] py-20 bg-[#faf9f6]">
+    <div class="rocket-container px-4 sm:px-8">
+      
+      <div class="text-center max-w-3xl mx-auto mb-14">
+        <span class="text-xs font-bold uppercase tracking-wider text-[#8c8780]">
+          TRANSPARENT PRICING
+        </span>
+        <h2 class="text-3xl sm:text-4xl font-bold text-[#1e1c1a] mt-2 mb-3 tracking-tight">
+          What is an AI Marketing Design?
+        </h2>
+        <p class="text-[#68645e] text-sm sm:text-base leading-relaxed">
+          An AI Marketing Design is <strong>one completed marketing creative</strong> generated for your property or campaign.
+        </p>
+      </div>
+
+      <!-- 8 Example Visual Output Cards Grid -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+        
+        <!-- 1. Property Listing -->
+        <div class="bg-white rounded-12 p-4 border border-[#e6e3dd] shadow-sm">
+          <div class="h-24 rounded-8 bg-[#faf9f6] flex flex-col justify-between p-3 mb-3 border border-[#e6e3dd]">
+            <span class="text-[10px] font-bold text-[#68645e]">1:1 Square</span>
+            <div class="text-xs font-bold text-[#1e1c1a] truncate">Luxury Villa 4 BHK</div>
+          </div>
+          <div class="text-xs font-bold text-[#1e1c1a]">Property Listing</div>
+          <div class="text-[11px] text-[#8c8780]">Full showcase with specs</div>
+        </div>
+
+        <!-- 2. Instagram Story -->
+        <div class="bg-white rounded-12 p-4 border border-[#e6e3dd] shadow-sm">
+          <div class="h-24 rounded-8 bg-[#faf9f6] flex flex-col justify-between p-3 mb-3 border border-[#e6e3dd]">
+            <span class="text-[10px] font-bold text-[#68645e]">9:16 Story</span>
+            <div class="text-xs font-bold text-[#1e1c1a] truncate">Swipe Up For Tour</div>
+          </div>
+          <div class="text-xs font-bold text-[#1e1c1a]">Instagram Story</div>
+          <div class="text-[11px] text-[#8c8780]">High-converting social visual</div>
+        </div>
+
+        <!-- 3. WhatsApp Creative -->
+        <div class="bg-white rounded-12 p-4 border border-[#e6e3dd] shadow-sm">
+          <div class="h-24 rounded-8 bg-[#faf9f6] flex flex-col justify-between p-3 mb-3 border border-[#e6e3dd]">
+            <span class="text-[10px] font-bold text-[#68645e]">Direct Chat</span>
+            <div class="text-xs font-bold text-[#1e1c1a] truncate">WhatsApp Brochure</div>
+          </div>
+          <div class="text-xs font-bold text-[#1e1c1a]">WhatsApp Creative</div>
+          <div class="text-[11px] text-[#8c8780]">Ready-to-broadcast flyer</div>
+        </div>
+
+        <!-- 4. Open House -->
+        <div class="bg-white rounded-12 p-4 border border-[#e6e3dd] shadow-sm">
+          <div class="h-24 rounded-8 bg-[#faf9f6] flex flex-col justify-between p-3 mb-3 border border-[#e6e3dd]">
+            <span class="text-[10px] font-bold text-[#68645e]">Event Invite</span>
+            <div class="text-xs font-bold text-[#1e1c1a] truncate">Open House Showcase</div>
+          </div>
+          <div class="text-xs font-bold text-[#1e1c1a]">Open House Flyer</div>
+          <div class="text-[11px] text-[#8c8780]">Event date & map specs</div>
+        </div>
+
+        <!-- 5. Price Update -->
+        <div class="bg-white rounded-12 p-4 border border-[#e6e3dd] shadow-sm">
+          <div class="h-24 rounded-8 bg-[#faf9f6] flex flex-col justify-between p-3 mb-3 border border-[#e6e3dd]">
+            <span class="text-[10px] font-bold text-brandOrange">Price Drop</span>
+            <div class="text-xs font-bold text-[#1e1c1a] truncate">-₹15 Lakhs Alert</div>
+          </div>
+          <div class="text-xs font-bold text-[#1e1c1a]">Price Update Alert</div>
+          <div class="text-[11px] text-[#8c8780]">Urgency & revised pricing</div>
+        </div>
+
+        <!-- 6. Amenities -->
+        <div class="bg-white rounded-12 p-4 border border-[#e6e3dd] shadow-sm">
+          <div class="h-24 rounded-8 bg-[#faf9f6] flex flex-col justify-between p-3 mb-3 border border-[#e6e3dd]">
+            <span class="text-[10px] font-bold text-[#68645e]">Infographic</span>
+            <div class="text-xs font-bold text-[#1e1c1a] truncate">Clubhouse & Pool</div>
+          </div>
+          <div class="text-xs font-bold text-[#1e1c1a]">Amenities Breakdown</div>
+          <div class="text-[11px] text-[#8c8780]">Visual amenity icons</div>
+        </div>
+
+        <!-- 7. Location -->
+        <div class="bg-white rounded-12 p-4 border border-[#e6e3dd] shadow-sm">
+          <div class="h-24 rounded-8 bg-[#faf9f6] flex flex-col justify-between p-3 mb-3 border border-[#e6e3dd]">
+            <span class="text-[10px] font-bold text-[#68645e]">Transit Map</span>
+            <div class="text-xs font-bold text-[#1e1c1a] truncate">5 Mins to Metro</div>
+          </div>
+          <div class="text-xs font-bold text-[#1e1c1a]">Location Advantage</div>
+          <div class="text-[11px] text-[#8c8780]">Distance & transit times</div>
+        </div>
+
+        <!-- 8. Festival -->
+        <div class="bg-white rounded-12 p-4 border border-[#e6e3dd] shadow-sm">
+          <div class="h-24 rounded-8 bg-[#faf9f6] flex flex-col justify-between p-3 mb-3 border border-[#e6e3dd]">
+            <span class="text-[10px] font-bold text-brandOrange">Festive Offer</span>
+            <div class="text-xs font-bold text-[#1e1c1a] truncate">Diwali Booking</div>
+          </div>
+          <div class="text-xs font-bold text-[#1e1c1a]">Festival Campaign</div>
+          <div class="text-[11px] text-[#8c8780]">Holiday & seasonal offers</div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <!-- 5. FEATURE COMPARISON MATRIX (§15: Simplified 5 Categories)     -->
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <section id="comparison" class="border-b border-[#e6e3dd] py-20 bg-white">
+    <div class="rocket-container px-4 sm:px-8">
+      
+      <div class="text-center max-w-3xl mx-auto mb-14">
+        <span class="text-xs font-bold uppercase tracking-wider text-[#8c8780]">
+          FEATURE MATRIX
+        </span>
+        <h2 class="text-3xl sm:text-4xl font-bold text-[#1e1c1a] mt-2 mb-3 tracking-tight">
+          Compare plans side-by-side
+        </h2>
+        <p class="text-[#68645e] text-sm sm:text-base">
+          Choose the exact marketing output and organizational capabilities for your business.
+        </p>
+      </div>
+
+      <div class="rounded-16 border border-[#e6e3dd] overflow-hidden bg-white shadow-sm">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse min-w-[760px]">
+            
+            <thead>
+              <tr class="border-b border-[#e6e3dd] bg-[#faf9f6]">
+                <th class="p-4 sm:p-5 text-sm font-bold text-[#1e1c1a] w-1/3">Feature</th>
+                <th class="p-4 text-center text-xs font-bold text-[#1e1c1a] w-[13%]">Free</th>
+                <th class="p-4 text-center text-xs font-bold text-[#1e1c1a] w-[13%]">Solo</th>
+                <th class="p-4 text-center text-xs font-bold text-brandOrange w-[15%] bg-brandOrangeLight/30 border-x border-brandOrange/20">Pro ⭐</th>
+                <th class="p-4 text-center text-xs font-bold text-[#1e1c1a] w-[13%]">Team</th>
+                <th class="p-4 text-center text-xs font-bold text-[#1e1c1a] w-[13%]">Agency</th>
+              </tr>
+            </thead>
+
+            <tbody class="text-xs divide-y divide-[#e6e3dd] text-[#68645e]">
+              
+              <!-- Category 1: Creation (§15) -->
+              <tr class="bg-[#faf9f6]">
+                <td colspan="6" class="px-5 py-2.5 font-bold uppercase tracking-wider text-[11px] text-[#1e1c1a]">
+                  Creation
+                </td>
+              </tr>
+              <tr>
+                <td class="p-4 px-5 font-semibold text-[#1e1c1a]">AI Marketing Designs / mo</td>
+                <td class="p-4 text-center font-bold text-[#1e1c1a]">3</td>
+                <td class="p-4 text-center font-bold text-[#1e1c1a]">50</td>
+                <td class="p-4 text-center font-bold text-brandOrange bg-brandOrangeLight/30 border-x border-brandOrange/20">100</td>
+                <td class="p-4 text-center font-bold text-[#1e1c1a]">200</td>
+                <td class="p-4 text-center font-bold text-[#1e1c1a]">400</td>
+              </tr>
+              <tr>
+                <td class="p-4 px-5 font-semibold text-[#1e1c1a]">Editable Designs (Canvas Layers)</td>
+                <td class="p-4 text-center text-[#8c8780]">—</td>
+                <td class="p-4 text-center font-semibold text-[#1e1c1a]">10</td>
+                <td class="p-4 text-center font-bold text-brandOrange bg-brandOrangeLight/30 border-x border-brandOrange/20">25</td>
+                <td class="p-4 text-center font-semibold text-[#1e1c1a]">60</td>
+                <td class="p-4 text-center font-semibold text-[#1e1c1a]">150</td>
+              </tr>
+              <tr>
+                <td class="p-4 px-5 font-semibold text-[#1e1c1a]">Multi-format Export (1:1, 9:16, 16:9, A4)</td>
+                <td class="p-4 text-center">Basic</td>
+                <td class="p-4 text-center font-bold text-[#1e1c1a]">✓ Full</td>
+                <td class="p-4 text-center font-bold text-[#1e1c1a] bg-brandOrangeLight/30 border-x border-brandOrange/20">✓ Full</td>
+                <td class="p-4 text-center font-bold text-[#1e1c1a]">✓ Full</td>
+                <td class="p-4 text-center font-bold text-[#1e1c1a]">✓ Full</td>
+              </tr>
+              <tr>
+                <td class="p-4 px-5 font-semibold text-[#1e1c1a]">Property &rarr; Campaign Generation</td>
+                <td class="p-4 text-center text-[#8c8780]">—</td>
+                <td class="p-4 text-center text-[#8c8780]">—</td>
+                <td class="p-4 text-center font-bold text-[#1e1c1a] bg-brandOrangeLight/30 border-x border-brandOrange/20">✓ Included</td>
+                <td class="p-4 text-center font-bold text-[#1e1c1a]">✓ Included</td>
+                <td class="p-4 text-center font-bold text-[#1e1c1a]">✓ Included</td>
+              </tr>
+
+              <!-- Category 2: Branding (§15) -->
+              <tr class="bg-[#faf9f6]">
+                <td colspan="6" class="px-5 py-2.5 font-bold uppercase tracking-wider text-[11px] text-[#1e1c1a]">
+                  Branding
+                </td>
+              </tr>
+              <tr>
+                <td class="p-4 px-5 font-semibold text-[#1e1c1a]">Brand Kits</td>
+                <td class="p-4 text-center text-[#8c8780]">—</td>
+                <td class="p-4 text-center font-semibold">1 kit</td>
+                <td class="p-4 text-center font-bold text-brandOrange bg-brandOrangeLight/30 border-x border-brandOrange/20">3 kits</td>
+                <td class="p-4 text-center font-semibold">10 kits</td>
+                <td class="p-4 text-center font-semibold">Unlimited</td>
+              </tr>
+              <tr>
+                <td class="p-4 px-5 font-semibold text-[#1e1c1a]">Agent Personal Branding</td>
+                <td class="p-4 text-center text-[#8c8780]">—</td>
+                <td class="p-4 text-center">Basic</td>
+                <td class="p-4 text-center font-bold text-[#1e1c1a] bg-brandOrangeLight/30 border-x border-brandOrange/20">✓ Pro Suite</td>
+                <td class="p-4 text-center font-bold text-[#1e1c1a]">✓ Pro Suite</td>
+                <td class="p-4 text-center font-bold text-[#1e1c1a]">✓ White-label</td>
+              </tr>
+              <tr>
+                <td class="p-4 px-5 font-semibold text-[#1e1c1a]">Custom Branding & Fonts</td>
+                <td class="p-4 text-center text-[#8c8780]">—</td>
+                <td class="p-4 text-center">Standard</td>
+                <td class="p-4 text-center font-bold text-[#1e1c1a] bg-brandOrangeLight/30 border-x border-brandOrange/20">✓ Full</td>
+                <td class="p-4 text-center font-bold text-[#1e1c1a]">✓ Full</td>
+                <td class="p-4 text-center font-bold text-[#1e1c1a]">✓ Full</td>
+              </tr>
+
+              <!-- Category 3: Campaigns (§15) -->
+              <tr class="bg-[#faf9f6]">
+                <td colspan="6" class="px-5 py-2.5 font-bold uppercase tracking-wider text-[11px] text-[#1e1c1a]">
+                  Campaigns
+                </td>
+              </tr>
+              <tr>
+                <td class="p-4 px-5 font-semibold text-[#1e1c1a]">Campaign Generation (8-Piece Sets)</td>
+                <td class="p-4 text-center text-[#8c8780]">—</td>
+                <td class="p-4 text-center text-[#8c8780]">—</td>
+                <td class="p-4 text-center font-bold text-[#1e1c1a] bg-brandOrangeLight/30 border-x border-brandOrange/20">✓ Included</td>
+                <td class="p-4 text-center font-bold text-[#1e1c1a]">✓ Included</td>
+                <td class="p-4 text-center font-bold text-[#1e1c1a]">✓ Included</td>
+              </tr>
+              <tr>
+                <td class="p-4 px-5 font-semibold text-[#1e1c1a]">Campaign Templates</td>
+                <td class="p-4 text-center">Basic</td>
+                <td class="p-4 text-center">Standard</td>
+                <td class="p-4 text-center font-bold text-[#1e1c1a] bg-brandOrangeLight/30 border-x border-brandOrange/20">✓ All Formats</td>
+                <td class="p-4 text-center font-bold text-[#1e1c1a]">✓ All Formats</td>
+                <td class="p-4 text-center font-bold text-[#1e1c1a]">✓ All Formats</td>
+              </tr>
+              <tr>
+                <td class="p-4 px-5 font-semibold text-[#1e1c1a]">Multi-Property Workflows</td>
+                <td class="p-4 text-center text-[#8c8780]">—</td>
+                <td class="p-4 text-center text-[#8c8780]">—</td>
+                <td class="p-4 text-center font-bold text-[#1e1c1a] bg-brandOrangeLight/30 border-x border-brandOrange/20">✓ Included</td>
+                <td class="p-4 text-center font-bold text-[#1e1c1a]">✓ Included</td>
+                <td class="p-4 text-center font-bold text-[#1e1c1a]">✓ Bulk CSV</td>
+              </tr>
+
+              <!-- Category 4: Collaboration (§15) -->
+              <tr class="bg-[#faf9f6]">
+                <td colspan="6" class="px-5 py-2.5 font-bold uppercase tracking-wider text-[11px] text-[#1e1c1a]">
+                  Collaboration
+                </td>
+              </tr>
+              <tr>
+                <td class="p-4 px-5 font-semibold text-[#1e1c1a]">Team Workspace</td>
+                <td class="p-4 text-center text-[#8c8780]">—</td>
+                <td class="p-4 text-center text-[#8c8780]">—</td>
+                <td class="p-4 text-center text-[#8c8780] bg-brandOrangeLight/30 border-x border-brandOrange/20">—</td>
+                <td class="p-4 text-center font-bold text-[#1e1c1a]">✓ Team Space</td>
+                <td class="p-4 text-center font-bold text-[#1e1c1a]">✓ Multi-Workspace</td>
+              </tr>
+              <tr>
+                <td class="p-4 px-5 font-semibold text-[#1e1c1a]">Shared Asset Library</td>
+                <td class="p-4 text-center text-[#8c8780]">—</td>
+                <td class="p-4 text-center text-[#8c8780]">—</td>
+                <td class="p-4 text-center text-[#8c8780] bg-brandOrangeLight/30 border-x border-brandOrange/20">—</td>
+                <td class="p-4 text-center font-bold text-[#1e1c1a]">✓ Shared</td>
+                <td class="p-4 text-center font-bold text-[#1e1c1a]">✓ Shared</td>
+              </tr>
+              <tr>
+                <td class="p-4 px-5 font-semibold text-[#1e1c1a]">Review & Approval Workflow</td>
+                <td class="p-4 text-center text-[#8c8780]">—</td>
+                <td class="p-4 text-center text-[#8c8780]">—</td>
+                <td class="p-4 text-center text-[#8c8780] bg-brandOrangeLight/30 border-x border-brandOrange/20">—</td>
+                <td class="p-4 text-center font-bold text-[#1e1c1a]">✓ Included</td>
+                <td class="p-4 text-center font-bold text-[#1e1c1a]">✓ Included</td>
+              </tr>
+              <tr>
+                <td class="p-4 px-5 font-semibold text-[#1e1c1a]">Team Activity & History</td>
+                <td class="p-4 text-center">30 Days</td>
+                <td class="p-4 text-center">30 Days</td>
+                <td class="p-4 text-center font-bold text-[#1e1c1a] bg-brandOrangeLight/30 border-x border-brandOrange/20">Unlimited</td>
+                <td class="p-4 text-center font-bold text-[#1e1c1a]">Unlimited</td>
+                <td class="p-4 text-center font-bold text-[#1e1c1a]">Audit Logs</td>
+              </tr>
+
+              <!-- Category 5: Business & Scale (§15) -->
+              <tr class="bg-[#faf9f6]">
+                <td colspan="6" class="px-5 py-2.5 font-bold uppercase tracking-wider text-[11px] text-[#1e1c1a]">
+                  Business & Scale
+                </td>
+              </tr>
+              <tr>
+                <td class="p-4 px-5 font-semibold text-[#1e1c1a]">Multi-client Workspaces</td>
+                <td class="p-4 text-center text-[#8c8780]">—</td>
+                <td class="p-4 text-center text-[#8c8780]">—</td>
+                <td class="p-4 text-center text-[#8c8780] bg-brandOrangeLight/30 border-x border-brandOrange/20">—</td>
+                <td class="p-4 text-center text-[#8c8780]">—</td>
+                <td class="p-4 text-center font-bold text-[#1e1c1a]">✓ Multi-Client</td>
+              </tr>
+              <tr>
+                <td class="p-4 px-5 font-semibold text-[#1e1c1a]">Client Asset Separation</td>
+                <td class="p-4 text-center text-[#8c8780]">—</td>
+                <td class="p-4 text-center text-[#8c8780]">—</td>
+                <td class="p-4 text-center text-[#8c8780] bg-brandOrangeLight/30 border-x border-brandOrange/20">—</td>
+                <td class="p-4 text-center text-[#8c8780]">—</td>
+                <td class="p-4 text-center font-bold text-[#1e1c1a]">✓ Isolated</td>
+              </tr>
+              <tr>
+                <td class="p-4 px-5 font-semibold text-[#1e1c1a]">White-label Capabilities</td>
+                <td class="p-4 text-center text-[#8c8780]">—</td>
+                <td class="p-4 text-center text-[#8c8780]">—</td>
+                <td class="p-4 text-center text-[#8c8780] bg-brandOrangeLight/30 border-x border-brandOrange/20">—</td>
+                <td class="p-4 text-center text-[#8c8780]">—</td>
+                <td class="p-4 text-center font-bold text-[#1e1c1a]">✓ Presentation Hub</td>
+              </tr>
+              <tr>
+                <td class="p-4 px-5 font-semibold text-[#1e1c1a]">Support & SLA</td>
+                <td class="p-4 text-center">Community</td>
+                <td class="p-4 text-center">Standard</td>
+                <td class="p-4 text-center font-semibold text-[#1e1c1a] bg-brandOrangeLight/30 border-x border-brandOrange/20">Priority Queue</td>
+                <td class="p-4 text-center font-semibold text-[#1e1c1a]">Priority 4h</td>
+                <td class="p-4 text-center font-bold text-brandOrange">Dedicated Rep</td>
+              </tr>
+
+            </tbody>
+
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <!-- 6. PLATFORM CAPABILITIES (§16: Reframed Customer-Oriented)     -->
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <section id="capabilities" class="border-b border-[#e6e3dd] py-20 bg-white">
+    <div class="rocket-container px-4 sm:px-8">
+      
+      <div class="text-center max-w-3xl mx-auto mb-14">
+        <span class="text-xs font-bold uppercase tracking-wider text-[#8c8780]">
+          PLATFORM CAPABILITIES
+        </span>
+        <h2 class="text-3xl sm:text-4xl font-bold text-[#1e1c1a] mt-2 mb-3 tracking-tight">
+          Everything You Need to Market a Property
+        </h2>
+        <p class="text-[#68645e] text-sm sm:text-base leading-relaxed">
+          From a single property creative to a complete marketing campaign, Buildographic brings creation, editing and campaign workflows together.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        
+        <!-- Capability 01 -->
+        <div class="bg-[#faf9f6] rounded-16 p-8 border border-[#e6e3dd] flex flex-col justify-between">
+          <div>
+            <div class="text-xs font-bold text-brandOrange uppercase tracking-wider mb-3">01 / Creation</div>
+            <h3 class="text-xl font-bold text-[#1e1c1a]">AI Marketing Designs</h3>
+            <p class="text-sm text-[#68645e] mt-3 leading-relaxed">
+              Transform property details, pricing, specifications and photos into ready-to-publish real-estate marketing creatives for Instagram, WhatsApp, flyers and listing portals.
+            </p>
+          </div>
+          <div class="mt-8 pt-4 border-t border-[#e6e3dd] text-xs font-bold text-[#1e1c1a]">
+            Instant JPG & PNG Export &rarr;
+          </div>
+        </div>
+
+        <!-- Capability 02 -->
+        <div class="bg-[#faf9f6] rounded-16 p-8 border border-[#e6e3dd] flex flex-col justify-between">
+          <div>
+            <div class="text-xs font-bold text-brandOrange uppercase tracking-wider mb-3">02 / Customization</div>
+            <h3 class="text-xl font-bold text-[#1e1c1a]">Editable Canvas</h3>
+            <p class="text-sm text-[#68645e] mt-3 leading-relaxed">
+              Turn generated designs into editable layered creatives. Update copy, images, branding, amenity badges and layout directly in the browser.
+            </p>
+          </div>
+          <div class="mt-8 pt-4 border-t border-[#e6e3dd] text-xs font-bold text-[#1e1c1a]">
+            Full Multi-Layer Control &rarr;
+          </div>
+        </div>
+
+        <!-- Capability 03 -->
+        <div class="bg-[#faf9f6] rounded-16 p-8 border border-[#e6e3dd] flex flex-col justify-between">
+          <div>
+            <div class="text-xs font-bold text-brandOrange uppercase tracking-wider mb-3">03 / Scale</div>
+            <h3 class="text-xl font-bold text-[#1e1c1a]">Campaign Generation</h3>
+            <p class="text-sm text-[#68645e] mt-3 leading-relaxed">
+              Create coordinated marketing assets for a property using Buildographic’s campaign workflow. Generate a full suite of marketing creatives in a single click.
+            </p>
+          </div>
+          <div class="mt-8 pt-4 border-t border-[#e6e3dd] text-xs font-bold text-[#1e1c1a]">
+            Included in Pro, Team & Agency &rarr;
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <!-- 7. SOCIAL PROOF / INDUSTRY VALIDATION (§17: Above FAQ)         -->
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <section class="border-b border-[#e6e3dd] bg-white py-12">
+    <div class="rocket-container px-4 sm:px-8">
+      
+      <div class="text-center max-w-3xl mx-auto mb-8">
+        <span class="text-xs font-bold uppercase tracking-wider text-[#8c8780]">
+          BUILT FOR MODERN REAL-ESTATE MARKETING
+        </span>
+        <p class="text-[#68645e] text-sm mt-2 font-medium">
+          Designed around the workflows used by real-estate agents, brokers, marketers and property teams.
+        </p>
+      </div>
+
+      <!-- Real Estate Marketing Standards / Platform Compatibility Marquee -->
+      <div class="overflow-hidden relative w-full [mask-image:_linear-gradient(to_right,transparent_0,_black_64px,_black_calc(100%-64px),transparent_100%)]">
+        <div class="animate-marquee items-center gap-12 text-[#8c8780] font-semibold text-xs tracking-wider uppercase">
+          <div class="flex items-center gap-2"><span>📸 INSTAGRAM POST & STORY (1:1 / 9:16)</span></div>
+          <div class="flex items-center gap-2"><span>💬 WHATSAPP DIRECT BROADCASTS</span></div>
+          <div class="flex items-center gap-2"><span>🏡 OPEN HOUSE & SHOWCASE FLYERS</span></div>
+          <div class="flex items-center gap-2"><span>🏷️ PRICE DROP & URGENCIES</span></div>
+          <div class="flex items-center gap-2"><span>🏊 AMENITIES & FLOORPLANS</span></div>
+          <div class="flex items-center gap-2"><span>📍 TRANSIT & LOCATION ADVANTAGE</span></div>
+          <div class="flex items-center gap-2"><span>🎉 FESTIVAL & SEASONAL OFFERS</span></div>
+
+          <!-- Loop Duplication -->
+          <div class="flex items-center gap-2"><span>📸 INSTAGRAM POST & STORY (1:1 / 9:16)</span></div>
+          <div class="flex items-center gap-2"><span>💬 WHATSAPP DIRECT BROADCASTS</span></div>
+          <div class="flex items-center gap-2"><span>🏡 OPEN HOUSE & SHOWCASE FLYERS</span></div>
+          <div class="flex items-center gap-2"><span>🏷️ PRICE DROP & URGENCIES</span></div>
+          <div class="flex items-center gap-2"><span>🏊 AMENITIES & FLOORPLANS</span></div>
+          <div class="flex items-center gap-2"><span>📍 TRANSIT & LOCATION ADVANTAGE</span></div>
+          <div class="flex items-center gap-2"><span>🎉 FESTIVAL & SEASONAL OFFERS</span></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <!-- 8. QUESTIONS WORTH ANSWERING (§18: Refined 6 Questions)        -->
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <section id="faq" class="border-b border-[#e6e3dd] py-20 bg-[#faf9f6]">
+    <div class="rocket-container px-4 sm:px-8">
+      
+      <div class="max-w-[800px] mx-auto">
+        <div class="border-b border-[#e6e3dd] pb-2 mb-8">
+          <span class="text-xs font-bold tracking-wider text-[#8c8780] uppercase">
+            QUESTIONS WORTH ANSWERING
+          </span>
+        </div>
+
+        <div class="divide-y divide-[#e6e3dd]" id="faq-accordion">
+          
+          <!-- Q1 -->
+          <div class="py-5">
+            <button onclick="toggleFaq(1)" class="w-full text-left flex items-center justify-between gap-4 font-semibold text-base text-[#1e1c1a] hover:opacity-80 transition">
+              <span>How does the free plan work?</span>
+              <svg id="faq-icon-1" class="w-4 h-4 text-[#8c8780] transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </button>
+            <div id="faq-content-1" class="hidden mt-3 text-sm text-[#68645e] leading-relaxed">
+              The Free plan gives you 3 AI marketing designs every month at zero cost. No credit card or payment details are needed. You can generate real-estate templates, preview Instagram and WhatsApp formats, and download high-resolution PNG/JPG files.
+            </div>
+          </div>
+
+          <!-- Q2 -->
+          <div class="py-5">
+            <button onclick="toggleFaq(2)" class="w-full text-left flex items-center justify-between gap-4 font-semibold text-base text-[#1e1c1a] hover:opacity-80 transition">
+              <span>What is an AI Marketing Design?</span>
+              <svg id="faq-icon-2" class="w-4 h-4 text-[#8c8780] transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </button>
+            <div id="faq-content-2" class="hidden mt-3 text-sm text-[#68645e] leading-relaxed">
+              An AI Marketing Design is one finished, ready-to-publish creative generated for your property listing or campaign. Whether it is an open-house flyer, a luxury villa showcase, or a price update alert, each completed output counts as 1 design from your monthly allowance.
+            </div>
+          </div>
+
+          <!-- Q3 -->
+          <div class="py-5">
+            <button onclick="toggleFaq(3)" class="w-full text-left flex items-center justify-between gap-4 font-semibold text-base text-[#1e1c1a] hover:opacity-80 transition">
+              <span>What is an Editable Design?</span>
+              <svg id="faq-icon-3" class="w-4 h-4 text-[#8c8780] transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </button>
+            <div id="faq-content-2" class="hidden mt-3 text-sm text-[#68645e] leading-relaxed">
+              An Editable Design unlocks our layered browser Canvas editor. You can customize text, replace agent photos, adjust floorplan badges, drag shapes, and apply custom brand palettes directly in your browser rather than accepting a static image.
+            </div>
+          </div>
+
+          <!-- Q4 -->
+          <div class="py-5">
+            <button onclick="toggleFaq(4)" class="w-full text-left flex items-center justify-between gap-4 font-semibold text-base text-[#1e1c1a] hover:opacity-80 transition">
+              <span>Can I change my plan later?</span>
+              <svg id="faq-icon-4" class="w-4 h-4 text-[#8c8780] transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </button>
+            <div id="faq-content-4" class="hidden mt-3 text-sm text-[#68645e] leading-relaxed">
+              Yes, you can upgrade, switch billing cycles (monthly/yearly), or modify your subscription from your account dashboard at any time.
+            </div>
+          </div>
+
+          <!-- Q5 -->
+          <div class="py-5">
+            <button onclick="toggleFaq(5)" class="w-full text-left flex items-center justify-between gap-4 font-semibold text-base text-[#1e1c1a] hover:opacity-80 transition">
+              <span>Why no per-seat pricing on core plans?</span>
+              <svg id="faq-icon-5" class="w-4 h-4 text-[#8c8780] transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </button>
+            <div id="faq-content-5" class="hidden mt-3 text-sm text-[#68645e] leading-relaxed">
+              Because real estate marketing should be measured by outputs, not the size of your team. You pay for what you create — not for how many people log in to review drafts.
+            </div>
+          </div>
+
+          <!-- Q6 -->
+          <div class="py-5">
+            <button onclick="toggleFaq(6)" class="w-full text-left flex items-center justify-between gap-4 font-semibold text-base text-[#1e1c1a] hover:opacity-80 transition">
+              <span>What happens when I reach my monthly limit?</span>
+              <svg id="faq-icon-6" class="w-4 h-4 text-[#8c8780] transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </button>
+            <div id="faq-content-6" class="hidden mt-3 text-sm text-[#68645e] leading-relaxed">
+              Your generated designs always remain accessible in your library. When you need to create additional designs, you can upgrade to a higher tier plan anytime from your dashboard.
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <!-- 9. BROKERAGE & ENTERPRISE CTA (§19: Refined Enterprise Box)    -->
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <section class="border-b border-[#e6e3dd] py-16 bg-white">
+    <div class="rocket-container px-4 sm:px-8">
+      
+      <div class="bg-[#2a2825] text-white rounded-20 p-8 sm:p-12 md:p-14 flex flex-col md:flex-row items-center justify-between gap-8 shadow-sm">
+        <div class="max-w-xl text-center md:text-left">
+          <span class="text-xs font-bold text-brandOrange uppercase tracking-wider">
+            FOR BROKERAGES & ENTERPRISE
+          </span>
+          <h2 class="text-2xl sm:text-3xl font-bold mt-2 leading-tight">
+            Running a growing brokerage or real-estate organization?
+          </h2>
+          <p class="text-sm text-[#cac6bf] mt-2 leading-relaxed">
+            Get custom volumes, centralized branding, multiple workspaces and enterprise support tailored to your organization.
+          </p>
+        </div>
+
+        <a href="mailto:sales@buildographic.com" class="px-6 py-3 rounded-8 bg-white text-[#1e1c1a] hover:bg-[#faf9f6] font-bold text-xs transition shrink-0 shadow-sm">
+          Contact Enterprise Sales &rarr;
+        </a>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <!-- 10. FOOTER                                                     -->
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <footer class="bg-[#faf9f6] py-14 text-xs text-[#68645e]">
+    <div class="rocket-container px-4 sm:px-8">
+      
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-8 pb-10 border-b border-[#e6e3dd]">
+        <div>
+          <div class="font-bold text-sm text-[#1e1c1a] mb-3">Buildographic</div>
+          <p class="text-[11px] text-[#68645e] leading-relaxed">
+            AI-powered property marketing platform built for real-estate agents, teams, and brokerages.
+          </p>
+        </div>
+
+        <div>
+          <div class="font-semibold text-[#1e1c1a] mb-2">Product</div>
+          <ul class="space-y-1.5">
+            <li><a href="#what-is-design" class="hover:text-[#1e1c1a]">AI Designs</a></li>
+            <li><a href="#capabilities" class="hover:text-[#1e1c1a]">Canvas Editor</a></li>
+            <li><a href="#plans-grid" class="text-[#1e1c1a] font-bold">Pricing</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <div class="font-semibold text-[#1e1c1a] mb-2">Solutions</div>
+          <ul class="space-y-1.5">
+            <li><a href="#plans-grid" class="hover:text-[#1e1c1a]">Solo Agents</a></li>
+            <li><a href="#plans-grid" class="hover:text-[#1e1c1a]">Real Estate Teams</a></li>
+            <li><a href="#plans-grid" class="hover:text-[#1e1c1a]">Agencies & Brokerages</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <div class="font-semibold text-[#1e1c1a] mb-2">Legal</div>
+          <ul class="space-y-1.5">
+            <li><a href="#" class="hover:text-[#1e1c1a]">Privacy Policy</a></li>
+            <li><a href="#" class="hover:text-[#1e1c1a]">Terms of Service</a></li>
+            <li><a href="#" class="hover:text-[#1e1c1a]">Security</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-[#8c8780]">
+        <div>&copy; 2026 Buildographic Inc. All rights reserved.</div>
+        <div class="flex items-center gap-3">
+          <span>✓ Razorpay & Stripe Secured</span>
+        </div>
+      </div>
+
+    </div>
+  </footer>
+
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <!-- 11. TOAST & INTERACTIVITY JAVASCRIPT                           -->
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+    <div class="bg-[#2a2825] text-white border border-[#38342f] rounded-10 p-4 shadow-xl flex items-center gap-3 min-w-[280px]">
+      <div id="toast-icon" class="w-7 h-7 rounded-8 bg-brandOrange text-white flex items-center justify-center font-bold text-xs">
+        ✓
+      </div>
+      <div>
+        <div id="toast-title" class="text-xs font-bold text-white">Plan Selected</div>
+        <div id="toast-msg" class="text-[11px] text-[#cac6bf]">Routing to checkout...</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentCycle = 'monthly';
+    let currentCurrency = 'INR';
+
+    const pricingData = {
+      monthly: {
+        FREE: { INR: '₹0', USD: '$0' },
+        SOLO: { INR: '₹3,999', USD: '$49' },
+        PRO:  { INR: '₹7,999', USD: '$99' },
+        TEAM: { INR: '₹14,999', USD: '$189' },
+        AGENCY: { INR: '₹29,999', USD: '$379' },
+      },
+      annual: {
+        FREE: { INR: '₹0', USD: '$0' },
+        SOLO: { INR: '₹3,199', USD: '$39' },
+        PRO:  { INR: '₹6,399', USD: '$79' },
+        TEAM: { INR: '₹11,999', USD: '$149' },
+        AGENCY: { INR: '₹23,999', USD: '$299' },
+      }
+    };
+
+    function setBillingCycle(cycle) {
+      currentCycle = cycle;
+      const monthlyBtn = document.getElementById('toggle-monthly');
+      const annualBtn = document.getElementById('toggle-annual');
+
+      if (cycle === 'monthly') {
+        monthlyBtn.className = 'px-5 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 bg-[#2a2825] text-white shadow-sm';
+        annualBtn.className = 'px-5 py-1.5 rounded-full text-xs font-medium transition-all duration-200 text-[#2a2825] hover:opacity-80 flex items-center gap-1.5';
+      } else {
+        annualBtn.className = 'px-5 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 bg-[#2a2825] text-white shadow-sm flex items-center gap-1.5';
+        monthlyBtn.className = 'px-5 py-1.5 rounded-full text-xs font-medium transition-all duration-200 text-[#2a2825] hover:opacity-80';
+      }
+
+      updatePricingUI();
+    }
+
+    function setCurrency(curr) {
+      currentCurrency = curr;
+      const inrBtn = document.getElementById('curr-inr');
+      const usdBtn = document.getElementById('curr-usd');
+
+      if (curr === 'INR') {
+        inrBtn.className = 'px-3 py-1 rounded-full text-xs font-semibold transition-all duration-200 bg-[#2a2825] text-white shadow-xs';
+        usdBtn.className = 'px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 text-[#2a2825] hover:opacity-80';
+      } else {
+        usdBtn.className = 'px-3 py-1 rounded-full text-xs font-semibold transition-all duration-200 bg-[#2a2825] text-white shadow-xs';
+        inrBtn.className = 'px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 text-[#2a2825] hover:opacity-80';
+      }
+
+      updatePricingUI();
+    }
+
+    function updatePricingUI() {
+      const data = pricingData[currentCycle];
+      const isAnnual = currentCycle === 'annual';
+
+      document.getElementById('solo-price').innerText = data.SOLO[currentCurrency];
+      document.getElementById('pro-price').innerText = data.PRO[currentCurrency];
+      document.getElementById('team-price').innerText = data.TEAM[currentCurrency];
+      document.getElementById('agency-price').innerText = data.AGENCY[currentCurrency];
+
+      const soloBilled = document.getElementById('solo-billed');
+      const proBilled = document.getElementById('pro-billed');
+      const teamBilled = document.getElementById('team-billed');
+      const agencyBilled = document.getElementById('agency-billed');
+
+      if (isAnnual) {
+        soloBilled.innerText = currentCurrency === 'INR' ? 'Save ₹9,600/yr on annual billing' : 'Save $120/yr on annual billing';
+        proBilled.innerText = currentCurrency === 'INR' ? 'Save ₹19,200/yr on annual billing' : 'Save $240/yr on annual billing';
+        teamBilled.innerText = currentCurrency === 'INR' ? 'Save ₹36,000/yr on annual billing' : 'Save $480/yr on annual billing';
+        agencyBilled.innerText = currentCurrency === 'INR' ? 'Save ₹72,000/yr on annual billing' : 'Save $960/yr on annual billing';
+        
+        soloBilled.classList.remove('hidden');
+        proBilled.classList.remove('hidden');
+        teamBilled.classList.remove('hidden');
+        agencyBilled.classList.remove('hidden');
+      } else {
+        soloBilled.classList.add('hidden');
+        proBilled.classList.add('hidden');
+        teamBilled.classList.add('hidden');
+        agencyBilled.classList.add('hidden');
+      }
+    }
+
+    function toggleFaq(id) {
+      const content = document.getElementById('faq-content-' + id);
+      const icon = document.getElementById('faq-icon-' + id);
+      const isHidden = content.classList.contains('hidden');
+
+      if (isHidden) {
+        content.classList.remove('hidden');
+        icon.classList.add('rotate-180');
+      } else {
+        content.classList.add('hidden');
+        icon.classList.remove('rotate-180');
+      }
+    }
+
+    function handlePlanSelect(tier) {
+      const toast = document.getElementById('toast');
+      const title = document.getElementById('toast-title');
+      const msg = document.getElementById('toast-msg');
+
+      if (tier === 'FREE') {
+        title.innerText = 'Free Plan Activated';
+        msg.innerText = 'Routing to Buildographic canvas workspace...';
+      } else if (tier === 'AGENCY') {
+        title.innerText = 'Agency Selected';
+        msg.innerText = 'Connecting to enterprise solutions consultant...';
+      } else {
+        title.innerText = tier + ' (' + currentCycle.toUpperCase() + ') Selected';
+        msg.innerText = 'Initiating ' + (currentCurrency === 'INR' ? 'Razorpay' : 'Stripe') + ' checkout...';
+      }
+
+      toast.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
+      setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none');
+      }, 3500);
+    }
+  </script>
+</body>
+</html>
