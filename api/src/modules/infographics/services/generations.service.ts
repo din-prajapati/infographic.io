@@ -347,7 +347,7 @@ export class GenerationsService {
       throw new NotFoundException(`Generation ${infographicId} not found`);
     }
 
-    const existingCache = (infographic.composedDesigns as Record<string, ComposedDesign> | null) ?? {};
+    const existingCache = (infographic.composedDesigns as unknown as Record<string, ComposedDesign> | null) ?? {};
     const cacheKey = composeCacheKey(variationImageUrl);
     const isCacheHit = cacheKey in existingCache;
     // A distinct compose already exists on THIS generation — the next one (if

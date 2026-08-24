@@ -447,7 +447,7 @@ export class AiOrchestrator {
       where: { id: infographicId },
       select: { composedDesigns: true },
     });
-    const cachedDesigns = (record?.composedDesigns as Record<string, ComposedDesign> | null) ?? {};
+    const cachedDesigns = (record?.composedDesigns as unknown as Record<string, ComposedDesign> | null) ?? {};
     if (cacheKey in cachedDesigns) {
       logGen({
         generationId: infographicId,
@@ -549,7 +549,7 @@ export class AiOrchestrator {
       canonicalValues: canonical,
     };
     try {
-      const existingCache = (record?.composedDesigns as Record<string, ComposedDesign> | null) ?? {};
+      const existingCache = (record?.composedDesigns as unknown as Record<string, ComposedDesign> | null) ?? {};
       await this.prisma.infographic.update({
         where: { id: infographicId },
         data: { composedDesigns: { ...existingCache, [cacheKey]: result } as any },
