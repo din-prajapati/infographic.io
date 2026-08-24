@@ -112,15 +112,13 @@ Rules:
 ## Test Cases
 
 | TC ID | Type | Priority | Scenario | Status | Finding |
-|-------|------|:--------:|----------|:------:|---------|
-| TC-PAY-110-01 | Unit | P0 | Given an active Founding campaign on SOLO, when a subscription is created, then offer_id is passed and matches the campaign's razorpayOfferId | 🔲 | |
-| TC-PAY-110-02 | Unit | P0 | Given a checkout request with a manipulated client-supplied price, when processed, then the server-resolved price is used regardless | 🔲 | |
-| TC-PAY-110-03 | Unit | P0 | Given a campaign covering only SOLO/PRO, when checkout is attempted on TEAM with that campaign's offer_id, then it's rejected before reaching Razorpay | 🔲 | |
-| TC-PAY-110-04 | Unit | P1 | Given a campaign at maxRedemptions-1, when two concurrent checkouts run, then only one succeeds and redemptionsUsed ends at maxRedemptions, not over | 🔲 | |
+|-------|------|----------|----------|--------|---------|
+| TC-PAY-110-01 | Unit | P0 | happy-path: `payments.service.ts`'s subscription-creation call resolv… | 🔲 | |
+| TC-PAY-110-02 | Unit | P0 | error-path: If the checkout request body contains any client-supplied… | 🔲 | |
+| TC-PAY-110-03 | Unit | P1 | security: A request attempting to apply a campaign's `offer_id` to … | 🔲 | |
+| TC-PAY-110-04 | Unit | P1 | currency-edge: On successful checkout under an active campaign, | 🔲 | |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
-
----
 
 ## Definition of Done
 

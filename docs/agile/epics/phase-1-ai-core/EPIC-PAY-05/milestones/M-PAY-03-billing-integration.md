@@ -12,6 +12,8 @@ updated: 2026-08-21
 > **Status:** 🔲 Not Started
 > **Target date:** TBD
 > **Branch:** `feat/pay/m-01-pricing-relaunch`
+> **Version:** **Mixed** — US-PAY-109 and US-PAY-111 are V1 (PRO/AGENCY sellable at launch);
+> US-PAY-110 is V2 (needs the V2 campaign/Offer stories first). See [EPIC.md](../EPIC.md) "Scope split."
 
 ---
 
@@ -25,11 +27,11 @@ activation recognizes the new tiers.
 
 ## Stories in this Milestone
 
-| Order | Story | Title | Size | Blocked By | Status | PR |
-|:-----:|-------|-------|:----:|------------|:------:|:--:|
-| 1 | [US-PAY-109](../stories/US-PAY-109/STORY.md) | New Razorpay Plan IDs for PRO/AGENCY tiers | S | US-PAY-102 (M-PAY-01) | 🔲 | — |
-| 2 | [US-PAY-111](../stories/US-PAY-111/STORY.md) | Webhook/entitlement mapping for new tiers | S | US-PAY-109 | 🔲 | — |
-| 2 | [US-PAY-110](../stories/US-PAY-110/STORY.md) | Checkout passes `offer_id` server-side | M | US-PAY-106, US-PAY-108, US-PAY-109 | 🔲 | — |
+| Order | Story | Title | Size | Blocked By | Status | PR | Version |
+|:-----:|-------|-------|:----:|------------|:------:|:--:|:---:|
+| 1 | [US-PAY-109](../stories/US-PAY-109/STORY.md) | New Razorpay Plan IDs for PRO/AGENCY tiers | S | US-PAY-102 (M-PAY-01) | 🔲 | — | **V1** |
+| 2 | [US-PAY-111](../stories/US-PAY-111/STORY.md) | Webhook/entitlement mapping for new tiers | S | US-PAY-109 | 🔲 | — | **V1** |
+| 2 | [US-PAY-110](../stories/US-PAY-110/STORY.md) | Checkout passes `offer_id` server-side | M | US-PAY-106, US-PAY-108, US-PAY-109 | 🔲 | — | V2 |
 
 ---
 

@@ -12,6 +12,7 @@ updated: 2026-08-21
 > **Status:** 🔲 Not Started
 > **Target date:** TBD
 > **Branch:** `feat/pay/m-01-pricing-relaunch`
+> **Version:** V1 — all 3 stories ship before the first real ₹ transaction (see [EPIC.md](../EPIC.md) "Scope split")
 
 ---
 
