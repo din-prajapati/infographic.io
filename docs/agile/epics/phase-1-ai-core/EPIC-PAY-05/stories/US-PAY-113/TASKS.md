@@ -2,7 +2,7 @@
 title: PR Task List — US-PAY-113
 type: template
 tags: [orion, template]
-updated: 2026-08-21
+updated: 2026-08-24
 ---
 
 # PR Task List — US-PAY-113
@@ -11,6 +11,11 @@ updated: 2026-08-21
 > **Milestone branch:** `feat/pay/m-01-pricing-relaunch`
 > **PR:** #_____
 > **Linear:** LIN-XXX
+>
+> **2026-08-24:** T1/T2 below (breakpoints, messaging, comparison-section rendering) were since
+> rendered over by `US-PAY-112`'s visual pass (commits `381651d`, `7a31823`, `ff6209f`) — see
+> `STORY.md`'s 2026-08-24 note. No new tasks added here; `buildComparisonRows()`, this story's real
+> logic contribution, is untouched and still covered by the T2 tests below.
 
 ---
 
