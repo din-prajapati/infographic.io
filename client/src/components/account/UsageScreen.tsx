@@ -69,7 +69,7 @@ export function UsageScreen() {
 
   const usageMetrics = [
     { 
-      label: "Total Infographics", 
+      label: "Total AI Marketing Designs",
       value: totalInfographics.toString(), 
       change: "+12%", 
       positive: true,
@@ -310,7 +310,7 @@ export function UsageScreen() {
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="font-semibold text-foreground">Monthly Usage</h3>
-                <p className="text-sm text-muted-foreground mt-1">Infographics generated per month</p>
+                <p className="text-sm text-muted-foreground mt-1">AI Marketing Designs generated per month</p>
               </div>
               <TrendingUp className="w-5 h-5 text-primary" />
             </div>
@@ -386,7 +386,7 @@ export function UsageScreen() {
                 <div key={item.aiModel} className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
                   <div>
                     <p className="font-medium text-foreground">{modelDisplayLabel(item.aiModel)}</p>
-                    <p className="text-sm text-muted-foreground">{item.count} infographics</p>
+                    <p className="text-sm text-muted-foreground">{item.count} designs</p>
                   </div>
                   <div className="text-right">
                     <p className="font-semibold text-foreground">${item.totalCostUsd.toFixed(2)}</p>

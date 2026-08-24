@@ -208,7 +208,7 @@ export function TemplatesPage({ onOpenEditor }: TemplatesPageProps) {
             <div>
               <h1 className="mb-2 text-foreground">Template Gallery</h1>
               <p className="text-muted-foreground">
-                Choose from our curated collection of professional infographic templates
+                Choose from our curated collection of professional marketing design templates
               </p>
             </div>
             {/*

@@ -196,7 +196,7 @@ export function MessageBubble({ message, index, onRegenerateAll, selectedPreview
             <div className="space-y-3">
               <div className="flex items-center gap-2 mb-3">
                 <Sparkles className="w-4 h-4 text-ai-accent" />
-                <p className="text-sm font-medium text-foreground">Generating your infographic...</p>
+                <p className="text-sm font-medium text-foreground">Generating your design...</p>
               </div>
               
               <div className="space-y-2">

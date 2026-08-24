@@ -372,7 +372,7 @@ export function CenterCanvas({ isPreviewMode = false }: CenterCanvasProps) {
               return null;
             })}
 
-            {/* Empty State - Sample Infographic Placeholder */}
+            {/* Empty State - Sample Design Placeholder */}
             {!hasElements && (
               <div className="absolute inset-0 overflow-hidden pointer-events-none">
                 {/* Semi-transparent overlay to indicate placeholder */}
@@ -393,7 +393,7 @@ export function CenterCanvas({ isPreviewMode = false }: CenterCanvasProps) {
                           : '#1F1F1F',
                       }}
                     >
-                      Real Estate Infographics
+                      Real Estate Marketing Designs
                     </h1>
                   </div>
 
@@ -437,7 +437,7 @@ export function CenterCanvas({ isPreviewMode = false }: CenterCanvasProps) {
                               : '#1F1F1F',
                           }}
                         >
-                          Real Estate Infographics
+                          Real Estate Marketing Designs
                         </h2>
                         <p 
                           className="text-base transition-colors opacity-60"
@@ -447,7 +447,7 @@ export function CenterCanvas({ isPreviewMode = false }: CenterCanvasProps) {
                               : '#6B7280',
                           }}
                         >
-                          Here is where your infographics begin
+                          Here is where your designs begin
                         </p>
                       </div>
                     </div>

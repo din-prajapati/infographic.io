@@ -165,7 +165,7 @@ export const PLAN_CONFIG: Record<PlanTier, {
     limit: 3,
     userLimit: 1,
     // US-LAUNCH-015 AC7: "1 trial" — the lifetime editable-compose trial (AC1/AC2).
-    features: ['3 infographics/month', 'Basic templates', 'Email support', 'Editable designs (1 trial)'],
+    features: ['3 AI Marketing Designs/month', 'Basic templates', 'Email support', 'Editable designs (1 trial)'],
   },
   SOLO: {
     name: 'Solo',
@@ -182,7 +182,7 @@ export const PLAN_CONFIG: Record<PlanTier, {
     // US-LAUNCH-015 AC7: editable is included — first distinct compose per
     // generation is free; additional distinct composes on the same
     // generation consume a credit (AC3). No headline price change.
-    features: ['50 infographics/month', 'All templates', 'Priority support', 'Custom branding', 'Editable designs'],
+    features: ['50 AI Marketing Designs/month', 'All templates', 'Priority support', 'Custom branding', 'Editable designs'],
     popular: true,
     editableLimit: 10,
   },
@@ -192,7 +192,7 @@ export const PLAN_CONFIG: Record<PlanTier, {
     currency: 'INR',
     limit: 100,
     userLimit: 1,
-    features: ['100 infographics/month', 'All templates', 'Priority support', 'Custom branding', 'Editable designs'],
+    features: ['100 AI Marketing Designs/month', 'All templates', 'Priority support', 'Custom branding', 'Editable designs'],
     editableLimit: 25,
   },
   TEAM: {
@@ -201,7 +201,7 @@ export const PLAN_CONFIG: Record<PlanTier, {
     currency: 'INR',
     limit: 200,
     userLimit: 5,
-    features: ['200 infographics/month', 'Team collaboration', '5 users', 'Advanced analytics', 'Editable designs'],
+    features: ['200 AI Marketing Designs/month', 'Team collaboration', '5 users', 'Advanced analytics', 'Editable designs'],
     editableLimit: 60,
   },
   AGENCY: {
@@ -210,7 +210,7 @@ export const PLAN_CONFIG: Record<PlanTier, {
     currency: 'INR',
     limit: 400,
     userLimit: -1, // unlimited
-    features: ['400 infographics/month', 'Unlimited users', 'Team collaboration', 'Advanced analytics', 'Editable designs'],
+    features: ['400 AI Marketing Designs/month', 'Unlimited users', 'Team collaboration', 'Advanced analytics', 'Editable designs'],
     editableLimit: 150,
   },
   BROKERAGE: {
@@ -219,7 +219,7 @@ export const PLAN_CONFIG: Record<PlanTier, {
     currency: 'INR',
     limit: 1000,
     userLimit: -1, // unlimited
-    features: ['1000 infographics/month', 'Unlimited users', 'White-label', 'Dedicated support', 'Editable designs'],
+    features: ['1000 AI Marketing Designs/month', 'Unlimited users', 'White-label', 'Dedicated support', 'Editable designs'],
     editableLimit: 100, // US-PAY-103: migrated from the retired EDITABLE_LIMITS_BY_TIER table
   },
   API_STARTER: {

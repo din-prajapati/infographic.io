@@ -162,7 +162,7 @@ export const promptSuggestions: PromptSuggestion[] = [
   {
     id: 'ms-1',
     categoryId: 'market-stats',
-    text: 'Create a market trends report infographic',
+    text: 'Create a market trends report design',
     previewImage: 'https://images.unsplash.com/photo-1717957566742-fd92d32e01d6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxob3VzaW5nJTIwbWFya2V0JTIwdHJlbmRzJTIwY2hhcnR8ZW58MXx8fHwxNzY0OTM0ODI0fDA&ixlib=rb-4.1.0&q=80&w=400',
   },
   {
@@ -230,7 +230,7 @@ export const promptSuggestions: PromptSuggestion[] = [
   {
     id: 'nb-6',
     categoryId: 'neighborhood',
-    text: 'Design a walkability score infographic',
+    text: 'Create a walkability score design',
     previewImage: 'https://images.unsplash.com/photo-1685630484363-7a026d15ef36?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxuZWlnaGJvcmhvb2QlMjB3YWxrYWJpbGl0eXxlbnwxfHx8fDE3NjQ5MzQ4MzB8MA&ixlib=rb-4.1.0&q=80&w=400',
   },
 ];

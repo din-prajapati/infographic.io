@@ -262,7 +262,7 @@ const designExamples = [
   { tag: "Direct Chat", title: "WhatsApp Brochure", label: "WhatsApp Creative", note: "Ready-to-broadcast flyer" },
   { tag: "Event Invite", title: "Open House Showcase", label: "Open House Flyer", note: "Event date & map specs" },
   { tag: "Price Drop", title: "Revised Pricing Alert", label: "Price Update Alert", note: "Urgency & revised pricing", accent: true },
-  { tag: "Infographic", title: "Clubhouse & Pool", label: "Amenities Breakdown", note: "Visual amenity icons" },
+  { tag: "Icon Grid", title: "Clubhouse & Pool", label: "Amenities Breakdown", note: "Visual amenity icons" },
   { tag: "Transit Map", title: "Metro & Commute", label: "Location Advantage", note: "Distance & transit times" },
   { tag: "Festive Offer", title: "Seasonal Booking", label: "Festival Campaign", note: "Holiday & seasonal offers", accent: true },
 ];
@@ -583,7 +583,7 @@ export default function PricingPage() {
   // can be turned off independently of the cards above, and rendered inside a local error
   // boundary so a failure here never takes the cards with it.
   const comparisonTableEnabled = import.meta.env.VITE_PRICING_COMPARISON_ENABLED !== "false";
-  // Skip each plan's first feature string (the "X infographics/month" count) — it's already shown,
+  // Skip each plan's first feature string (the "X AI Marketing Designs/month" count) — it's already shown,
   // correctly, as the numeric "AI Marketing Designs / mo" row above. Left in, it produces a sparse,
   // confusing row per tier (each tier's own count string only checks true for itself) that restates
   // the same number rather than comparing anything.

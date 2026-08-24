@@ -125,7 +125,7 @@ export function SaveDialog({
         <DialogHeader>
           <DialogTitle>Save Your Work</DialogTitle>
           <DialogDescription>
-            Choose how to save your infographic design
+            Choose how to save your marketing design
           </DialogDescription>
         </DialogHeader>
 
@@ -148,7 +148,7 @@ export function SaveDialog({
             <Label htmlFor="design-name">Name *</Label>
             <Input
               id="design-name"
-              placeholder="e.g., Modern Real Estate Infographic"
+              placeholder="e.g., Modern Real Estate Marketing Design"
               value={name}
               onChange={(e) => setName(e.target.value)}
               maxLength={50}
