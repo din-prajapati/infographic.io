@@ -320,6 +320,40 @@ For environment variables see [ENV.yaml](./ENV.yaml).
 
 ## Implementation Update (log)
 
+### 2026-08-24 — US-PAY-112 visual pass (T5-T8) — full rebuild to a later-supplied final mockup
+- User supplied `design-preview-pricing.html` ("final curated mockup design") after `US-PAY-112`'s
+  original 2026-08-23 close and asked for a full visual rebuild — a light "Rocket"-style rebrand
+  replacing the page's dark app-shell theme entirely (nav, hero, cards, new gallery/capabilities
+  sections, marquee, restyled comparison table/FAQ/footer/Enterprise banner). Implemented **as an
+  amendment to `US-PAY-112`** on this same branch, per explicit user direction, rather than a new
+  milestone — four commits, three review rounds. Full detail in `US-PAY-112/STORY.md`'s
+  2026-08-24 note and Implementation Update entry; summary here:
+  - **Scope note:** this pass touched the comparison table's *rendering*, previously
+    `US-PAY-113`'s exclusive territory per `US-PAY-112`'s own original Out of Scope — the table's
+    underlying data logic (`buildComparisonRows()`) is untouched and stays `US-PAY-113`'s
+    authorship. `US-PAY-113/STORY.md` doesn't yet reflect this overlap — flagged, not yet done.
+  - **Locked before implementing:** real `PLAN_CONFIG` prices/×10 annual formula kept over the
+    mockup's own (lower, illustrative) numbers; the 6th static Enterprise grid card dropped to
+    match the mockup's 5-card grid (Enterprise now reached via Agency's inline link + the bottom
+    banner).
+  - **Real content bug caught, not copied**: the mockup's own comparison table and SOLO card both
+    claim PDF export is included — contradicts this same page's FAQ ("PDF export is coming soon").
+    Confirmed with the user twice (once per claim source) to keep the FAQ's real state
+    authoritative rather than ship a self-contradicting page.
+  - **Declined twice, per user confirmation**: the mockup's fuller comparison-table rows
+    (multi-format export incl. 16:9/A4, Agent Headshot & Contact Badges, Rendering Priority tiers,
+    Customer Support tiers) have no `PLAN_CONFIG` field or shipped capability behind any of them —
+    not added. Only the visual treatment (tick + colored label) was applied to rows already real.
+  - **New accepted risk**: PRO's checkout button was taken off the `US-LAUNCH-007`
+    unconfigured-tier safety gate ahead of its Razorpay Plan IDs actually existing
+    (`HUMAN_TASKS.md` #6, still open), per explicit time-boxed user direction ("a couple of days").
+    AGENCY and any other genuinely unconfigured tier still correctly shows "Contact us."
+  - Gate 1 after every commit: `npm run check` (0 errors), `npm run test:unit:client` (254/254, 1
+    pre-existing skip — `computePricingCardDisplay`/`buildComparisonRows` untouched). Commits
+    `381651d`, `7a31823`, `7068039`, `ff6209f`.
+  - **Still open**: `LandingPage.tsx` parity with the new visual system (not touched this pass);
+    `US-PAY-113/STORY.md`'s scope note; the PRO-button risk above; milestone PR still not opened.
+
 ### 2026-08-23 — US-PAY-113 done (code) — responsive layout + comparison table + messaging
 - Fixed two real mobile-overflow sources in `PricingPage.tsx`: the nav's link row had no
   responsive treatment at all (unlike `LandingPage.tsx`, which already hides the equivalent row
