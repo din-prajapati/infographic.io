@@ -1,28 +1,21 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "wouter";
-import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
 import { Marquee } from "@/components/ui/marquee";
 import {
-  Building2,
-  ArrowRight,
-  ChevronDown,
   Linkedin,
   Twitter,
   Youtube,
   Instagram,
-  Users,
-  Zap,
-  Target,
-  TrendingUp,
-  FileImage,
-  Smartphone,
-  Monitor,
-  Printer,
   Check,
-  Gift,
-  Star,
-  Building,
+  X,
+  Clock,
+  Layers,
+  Maximize,
+  Zap,
+  MessageSquare,
+  PenTool,
+  ShieldCheck,
+  ArrowRight,
 } from "lucide-react";
 import {
   Accordion,
@@ -39,48 +32,117 @@ import carouselImage2 from "@/assets/images/carousel/property-2.jpg";
 import carouselImage3 from "@/assets/images/carousel/property-3.jpg";
 import heroVideo from "@/assets/videos/hero-background.mp4";
 
-const darkFloatingChars = [
-  { char: "A", top: "10%", left: "3%", opacity: 0.15 },
-  { char: "+", top: "15%", left: "12%", opacity: 0.1 },
-  { char: "8", top: "20%", left: "8%", opacity: 0.12 },
-  { char: "X", top: "25%", left: "18%", opacity: 0.08 },
-  { char: "R", top: "12%", left: "25%", opacity: 0.1 },
-  { char: "Q", top: "8%", left: "85%", opacity: 0.1 },
-  { char: "+", top: "15%", left: "90%", opacity: 0.08 },
-  { char: "U", top: "22%", left: "82%", opacity: 0.12 },
-  { char: "S", top: "30%", left: "88%", opacity: 0.1 },
-];
+// design-preview-landing.html — visual pass, 2026-08-24. Full re-skin to the mockup, same
+// playbook as PricingPage.tsx's visual pass (US-PAY-112). Real PLAN_CONFIG data and existing
+// business logic reused unchanged; see docs/agile/PRD/2026-08-24-naming-cleanup-and-landing-
+// relaunch.md Part 2 for the 9 content-risk decisions applied throughout (each cross-referenced
+// inline below at the section it affects).
 
 const showcaseTemplates = [
-  { id: 1, title: "Modern Property Listing", format: "Instagram Story", image: carouselImage1, badge: "9:16" },
-  { id: 2, title: "Luxury Home Showcase", format: "Facebook Post", image: carouselImage2, badge: "1:1" },
-  { id: 3, title: "Commercial Property", format: "LinkedIn Banner", image: carouselImage3, badge: "16:9" },
-  { id: 4, title: "Open House Flyer", format: "Print Ready", image: carouselImage1, badge: "A4" },
-  { id: 5, title: "Market Report", format: "Email Header", image: carouselImage2, badge: "3:1" },
-  { id: 6, title: "Agent Branding", format: "MLS Ready", image: carouselImage3, badge: "MLS" },
+  { id: 1, title: "Modern Property Listing", format: "Instagram Story & Reel", image: carouselImage1, badge: "9:16" },
+  { id: 2, title: "Luxury Home Showcase", format: "Facebook & Instagram Post", image: carouselImage2, badge: "1:1" },
+  { id: 3, title: "Commercial Property", format: "LinkedIn Banner & Web", image: carouselImage3, badge: "16:9" },
+  { id: 4, title: "Open House Flyer", format: "Print Ready PDF", image: carouselImage1, badge: "A4" },
+  { id: 5, title: "Quarterly Market Report", format: "Email Newsletter Header", image: carouselImage2, badge: "3:1" },
+  { id: 6, title: "Agent Branding Showcase", format: "MLS Compliant Format", image: carouselImage3, badge: "MLS" },
 ];
 
-const painPointCards = [
+// Item 1 (PRD, Approved) — the mockup's trust marquee named real competitor brokerages
+// (Sotheby's, Keller Williams, Compass, etc.) with no evidence of any real relationship —
+// replaced with the same generic audience/use-case tag pattern the pricing page's own marquee
+// already uses, never a named third party.
+const audienceMarquee = [
+  "SOLO AGENTS",
+  "REAL ESTATE TEAMS",
+  "BROKERAGES",
+  "PROPERTY MANAGERS",
+  "LISTING MARKETERS",
+  "REAL ESTATE MARKETING AGENCIES",
+];
+
+const pillars = [
   {
-    icon: Zap,
-    title: "Time-Consuming Design",
-    description: "Create professional marketing designs in minutes, not days.",
+    number: "01",
+    eyebrow: "Ingest & Research",
+    accent: "text-brandOrange",
+    title: "Real Estate Data Extraction",
+    description:
+      "Paste raw listing descriptions or property feature bullets. AI extracts pricing, square footage, bed/bath specs, amenities, and narrative hooks automatically.",
+    footerLabel: "Amenities Mapped",
+    footerValue: "Structured in Seconds",
   },
   {
-    icon: Target,
-    title: "Inconsistent Branding",
-    description: "Maintain brand consistency across all marketing materials.",
+    number: "02",
+    eyebrow: "AI Design Studio",
+    accent: "text-brandBlue",
+    title: "Multi-Layer Canvas Editor",
+    // Item 5 (PRD, Approved) — "Vector"/"zero hallucinations" reworded to the product's real
+    // term (Multi-layer Canvas Editor) with an honest claim about not needing manual redesign.
+    description:
+      "Generates a complete layout paired with a live multi-layer canvas. Move text, adjust colors, swap badges, add shapes, and edit any marketing element — no manual redesign needed.",
+    footerLabel: "Canvas Editor",
+    footerValue: "100% Editable Text",
   },
   {
-    icon: TrendingUp,
-    title: "Low Engagement",
-    description: "Boost listing views with eye-catching visuals.",
+    number: "03",
+    eyebrow: "Brand & Distribute",
+    accent: "text-brandEmerald",
+    title: "1-Click Multi-Format Reflow",
+    description:
+      "Auto-applies your agent headshot, license disclaimer, and brokerage logo. Instantly reflows across 9:16 Stories/Reels, 1:1 Feeds, 16:9 Banners, and print-ready flyers.",
+    footerLabel: "Multi-Format",
+    footerValue: "9:16 • 1:1 • 16:9 • Print",
+  },
+];
+
+const refinementModes = [
+  {
+    icon: MessageSquare,
+    accent: "text-brandOrange bg-brandOrangeLight",
+    title: "Prompt-Driven Refinement",
+    description:
+      'Talk directly to the canvas: "Make the price badge bold saffron", "Highlight the rooftop terrace", or "Rewrite the description for luxury buyers."',
+    footerLabel: "Prompt",
+    footerValue: '"Change headline to \'Beverly Hills Masterpiece\' in bold."',
+    footerAccent: "text-brandOrange",
   },
   {
-    icon: Users,
-    title: "Team Collaboration",
-    description: "Organization-based plans support multiple users. Team workspace UI coming soon.",
+    icon: PenTool,
+    accent: "text-brandBlue bg-blue-50",
+    title: "Direct Visual Canvas Edit",
+    description:
+      "Click any element directly on the canvas. Drag text boxes, re-order layers, adjust opacity, change typography, or insert custom badges with zero friction.",
+    footerLabel: "Layer Action",
+    footerValue: "[Text_Title] Moved • Font: Inter Black 36pt",
+    footerAccent: "text-brandBlue",
   },
+  {
+    icon: ShieldCheck,
+    accent: "text-brandEmerald bg-emerald-50",
+    title: "Dynamic Brand Kit Sync",
+    description:
+      "One click stamps your agent headshot, official brokerage logo, license numbers, and custom team color palette across every single format.",
+    footerLabel: "Brand Kit",
+    footerValue: "Your Brokerage • Your Name (Active)",
+    footerAccent: "text-brandEmerald",
+  },
+];
+
+const oldWorkflow = [
+  { icon: Clock, text: "2–4 hours manually copying listing data and formatting layers" },
+  { icon: X, text: "$50–$150 per flyer when outsourcing to freelance designers" },
+  { icon: X, text: "Flat AI image generators produce unfixable text typos" },
+  { icon: Layers, text: "Must manually resize separately for Stories, Posts, & MLS" },
+];
+
+// Item 3 (PRD, Approved) — dropped the mockup's "$0.29 per design" internal-cost figure
+// (M-PAY-04's own milestone ACs ban Ideogram/GPT/API cost language on customer-facing pages);
+// replaced with the same "output-based, not per-seat" framing already locked in for /pricing.
+const newWorkflow = [
+  { icon: Zap, text: "Seconds from prompt or raw listing text to a finished design" },
+  { icon: Check, text: "Output-based pricing — you pay for what you create, not idle seats" },
+  { icon: PenTool, text: "Fully editable layers with complete typography & color control" },
+  { icon: Maximize, text: "1-click multi-format reflow across 9:16, 1:1, 16:9 & print" },
 ];
 
 const faqs = [
@@ -97,7 +159,7 @@ const faqs = [
   {
     question: "How does pricing work?",
     answer:
-      "We offer flexible plans starting with a free tier that includes 3 AI marketing designs per month. Paid plans provide more monthly designs, custom branding options, and priority support. Annual billing saves you 15%.",
+      "We offer flexible plans starting with a free tier that includes 3 AI marketing designs per month. Paid plans provide more monthly designs, custom branding options, and priority support. Annual billing gets you 2 months free.",
   },
   {
     question: "Do I need design experience?",
@@ -111,65 +173,61 @@ const faqs = [
   },
 ];
 
-const planIcons: Record<string, typeof Gift> = {
-  FREE: Gift,
-  SOLO: Star,
-  TEAM: Building,
-};
+// US-PAY-112 T3 precedent, kept: teaser stays a 3-tier FREE/SOLO/TEAM preview (full 5-tier grid
+// lives on /pricing). Live prices come from the same GET /api/v1/pricing endpoint the main
+// pricing page uses, so a founding-campaign badge/price can never drift between the two pages.
+const PUBLIC_TEASER_TIERS = ["FREE", "SOLO", "TEAM"] as const;
 
-// US-PAY-112 T3: teaser stays a 3-tier FREE/SOLO/TEAM preview (full 5-tier grid lives on
-// /pricing) — only structural, tier-independent data here. Live prices come from the same
-// GET /api/v1/pricing endpoint the main pricing page uses, so a founding-campaign badge/price
-// never drifts between the two pages.
-const pricingPlans = (["FREE", "SOLO", "TEAM"] as const).map((tier) => {
-  const config = PLAN_CONFIG[tier];
-  return {
-    tier,
-    name: config.name,
-    icon: planIcons[tier] ?? Gift,
-    description: tier === "FREE" ? "Get started with essential features" : tier === "SOLO" ? "Perfect for individual agents" : "Built for real estate teams",
-    features: config.features,
-  };
-});
+const teaserDescriptions: Record<(typeof PUBLIC_TEASER_TIERS)[number], string> = {
+  FREE: "Perfect for trying Buildographic on your next listing.",
+  SOLO: "Designed for active individual real estate agents.",
+  TEAM: "For real estate teams and brokerage offices.",
+};
 
 function TemplateCard({ template }: { template: typeof showcaseTemplates[0] }) {
   return (
-    <div className="relative group w-[280px] md:w-[320px] rounded-2xl overflow-hidden bg-gradient-to-br from-gray-900 to-gray-800 border border-border shadow-xl transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl">
-      <div className="aspect-[4/3] overflow-hidden">
+    <div className="w-[280px] sm:w-[320px] rounded-[16px] bg-[#faf9f6] border border-[#e6e3dd] overflow-hidden shadow-sm flex-shrink-0 group hover:scale-[1.02] transition-transform duration-300">
+      <div className="aspect-[4/3] overflow-hidden relative">
         <img
           src={template.image}
           alt={template.title}
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
         />
-      </div>
-      <div className="absolute top-3 right-3">
-        <span className="px-2 py-1 bg-primary/90 text-white text-xs font-medium rounded-full backdrop-blur-sm">
+        <span className="absolute top-2.5 right-2.5 px-2.5 py-0.5 rounded-full bg-[#1e1c1a]/85 text-white text-[10px] font-bold backdrop-blur-sm">
           {template.badge}
         </span>
       </div>
-      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-4">
-        <h3 className="text-white font-semibold text-sm">{template.title}</h3>
-        <p className="text-gray-400 text-xs mt-0.5">{template.format}</p>
+      <div className="p-4 bg-white border-t border-[#e6e3dd]">
+        <h4 className="text-sm font-bold text-[#1e1c1a]">{template.title}</h4>
+        <p className="text-[11px] text-[#68645e] mt-0.5">{template.format}</p>
       </div>
     </div>
   );
 }
 
 export default function LandingPage() {
-  const [showLogoReveal, setShowLogoReveal] = useState(false);
-  const [annualToggles, setAnnualToggles] = useState<Record<string, boolean>>({
-    SOLO: false,
-    TEAM: false,
-  });
+  const [scrolled, setScrolled] = useState(false);
+  const [isAnnualGlobal, setIsAnnualGlobal] = useState(false);
+  const [heroPrompt, setHeroPrompt] = useState(
+    "Luxury 4BHK Villa with private infinity pool & clubhouse view, ₹2.8 Cr",
+  );
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  const toggleAnnual = (tier: string) => {
-    setAnnualToggles((prev) => ({ ...prev, [tier]: !prev[tier] }));
-  };
+  // Item 7 (PRD, Approved) — the mockup's hero has a real-looking prompt bar; kept decorative/
+  // lead-in only for this pass. Typing a prompt just updates local state (heroPrompt below); the
+  // "Generate Marketing Design" button is a plain <Link href="/auth">, same as every other CTA on
+  // the page. Real anonymous/unauthenticated generation needs rate-limiting and abuse prevention —
+  // separate, backend-scoped work for its own story if wanted later.
 
-  // US-PAY-112 T3: resolved server-side by getEffectivePrice() (base price x campaign discount x
-  // the x10 annual formula, US-PAY-107) -- never recomputed here. Replaces the old stale
-  // x12x0.85 local formula.
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 40);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Item 6 (PRD, Approved) — same locked decision as US-PAY-112: real PLAN_CONFIG INR numbers via
+  // the existing GET /api/v1/pricing endpoint, kept to the 3-tier FREE/SOLO/TEAM teaser scope, the
+  // real x10 annual formula ("2 months free"), no currency toggle.
   const { data: pricingData } = useQuery({
     queryKey: ["/api/v1/pricing"],
     queryFn: () => pricingApi.getPricing(),
@@ -178,377 +236,431 @@ export default function LandingPage() {
     (pricingData?.plans ?? []).map((p) => [p.tier, { monthly: p.monthly, annual: p.annual }]),
   );
 
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-
-    const handleTimeUpdate = () => {
-      if (video.duration - video.currentTime <= 2) {
-        setShowLogoReveal(true);
-      } else {
-        setShowLogoReveal(false);
-      }
-    };
-
-    video.addEventListener("timeupdate", handleTimeUpdate);
-    return () => video.removeEventListener("timeupdate", handleTimeUpdate);
-  }, []);
-
   return (
-    <div className="min-h-screen bg-[#f5f5f0]">
-      {/* ==================== HERO SECTION ==================== */}
-      <section className="relative min-h-screen flex flex-col overflow-hidden bg-neutral-800">
-        <video
-          ref={videoRef}
-          autoPlay
-          muted
-          loop
-          playsInline
-          className="absolute inset-0 w-full h-full object-cover"
-        >
+    <div className="min-h-screen bg-white text-[#1e1c1a]" style={{ fontFamily: "'Inter', system-ui, -apple-system, sans-serif" }}>
+      {/* ── NAV — transparent over hero video, solid on scroll ─────────── */}
+      <header
+        className={`fixed top-0 left-0 right-0 z-50 w-full transition-all duration-300 border-b ${
+          scrolled
+            ? "bg-white/95 backdrop-blur-md border-[#e6e3dd] shadow-sm text-[#1e1c1a]"
+            : "bg-transparent border-white/10 text-white"
+        }`}
+      >
+        <div className="max-w-[1320px] mx-auto px-4 sm:px-8 h-16 flex items-center justify-between gap-4">
+          <Link href="/" className="flex items-center gap-2.5">
+            <div
+              className={`w-7 h-7 rounded-[8px] flex items-center justify-center shadow-sm shrink-0 transition-colors ${
+                scrolled ? "bg-[#2a2825] text-white" : "bg-white text-[#1e1c1a]"
+              }`}
+            >
+              <img src="/logo-icon-option6.png" alt="" className="h-4 w-4" />
+            </div>
+            <span className="font-bold text-base tracking-tight">Buildographic</span>
+          </Link>
+
+          <nav className="hidden md:flex items-center gap-1 text-sm font-medium">
+            <a href="#solutions" className={`px-3.5 py-1.5 rounded-[8px] transition ${scrolled ? "text-[#68645e] hover:text-[#1e1c1a] hover:bg-[#faf9f6]" : "text-white/80 hover:text-white hover:bg-white/10"}`}>Solutions</a>
+            <a href="#studio" className={`px-3.5 py-1.5 rounded-[8px] transition ${scrolled ? "text-[#68645e] hover:text-[#1e1c1a] hover:bg-[#faf9f6]" : "text-white/80 hover:text-white hover:bg-white/10"}`}>Canvas Editor</a>
+            <a href="#templates" className={`px-3.5 py-1.5 rounded-[8px] transition ${scrolled ? "text-[#68645e] hover:text-[#1e1c1a] hover:bg-[#faf9f6]" : "text-white/80 hover:text-white hover:bg-white/10"}`}>Templates</a>
+            <a href="#comparison" className={`px-3.5 py-1.5 rounded-[8px] transition ${scrolled ? "text-[#68645e] hover:text-[#1e1c1a] hover:bg-[#faf9f6]" : "text-white/80 hover:text-white hover:bg-white/10"}`}>Why Us</a>
+            <Link href="/pricing" className={`px-3.5 py-1.5 rounded-[8px] font-semibold transition ${scrolled ? "bg-[#e6e3dd]/40 text-[#1e1c1a]" : "bg-white/10 text-white"}`}>Pricing</Link>
+            <a href="#faq" className={`px-3.5 py-1.5 rounded-[8px] transition ${scrolled ? "text-[#68645e] hover:text-[#1e1c1a] hover:bg-[#faf9f6]" : "text-white/80 hover:text-white hover:bg-white/10"}`}>FAQ</a>
+          </nav>
+
+          <div className="flex items-center gap-3">
+            <Link href="/auth" className={`text-sm font-medium px-2 py-1 transition hidden sm:inline-block ${scrolled ? "text-[#68645e] hover:text-[#1e1c1a]" : "text-white/80 hover:text-white"}`}>
+              Log in
+            </Link>
+            <Link
+              href="/auth?provider=google"
+              className={`inline-flex items-center gap-1.5 text-xs font-bold px-4 py-2.5 rounded-[8px] shadow-sm transition active:scale-95 ${
+                scrolled ? "bg-[#2a2825] hover:bg-[#1e1c1a] text-white" : "bg-white hover:bg-gray-100 text-[#1e1c1a]"
+              }`}
+            >
+              Get started free
+            </Link>
+          </div>
+        </div>
+      </header>
+
+      {/* ── HERO — full-bleed video, real prompt bar (decorative, routes to /auth) ─────── */}
+      <section className="relative overflow-hidden bg-[#1c1a18]" id="hero-prompt">
+        <video ref={videoRef} autoPlay muted loop playsInline className="absolute inset-0 w-full h-full object-cover opacity-60 z-0">
           <source src={heroVideo} type="video/mp4" />
         </video>
-        <div className="absolute inset-0 bg-black/50" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#1c1a18]/85 via-[#1c1a18]/45 to-[#1c1a18]/90 z-0 pointer-events-none" />
 
-        <nav className="relative z-20 border-b border-white/10">
-          <div className="container flex h-16 items-center justify-between px-6 max-w-6xl mx-auto">
-            <Link href="/" className="flex flex-col items-center justify-center leading-none font-bold text-white">
-              <img src="/logo-icon-option6-light.png" alt="" className="h-7 w-7" />
-              <span className="text-[10px] leading-none font-extrabold tracking-tight mt-0.5">Buildographic</span>
-            </Link>
-            <div className="hidden md:flex items-center gap-8">
-              <a href="#templates" className="text-sm font-medium text-white/80 hover:text-white">Templates</a>
-              <a href="#pricing" className="text-sm font-medium text-white/80 hover:text-white">Pricing</a>
-              <a href="#features" className="text-sm font-medium text-white/80 hover:text-white">Features</a>
-              <a href="#faq" className="text-sm font-medium text-white/80 hover:text-white">FAQ</a>
-              <Link href="/auth">
-                <Button className="gap-2 bg-primary hover:bg-primary/90 text-white rounded-full font-medium px-5">
-                  Get Started <ArrowRight className="h-4 w-4" />
-                </Button>
-              </Link>
+        <div className="max-w-[1320px] mx-auto relative min-h-screen flex flex-col justify-between pt-24 pb-12 sm:pt-28 sm:pb-16 lg:pt-32 lg:pb-16 px-4 sm:px-8 lg:px-12 text-center z-10">
+          <div className="relative z-10 flex items-center justify-center max-w-5xl mx-auto w-full mb-4">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-white/90 text-[11px] font-medium">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span>No credit card required to start</span>
             </div>
           </div>
-        </nav>
 
-        <div className="flex-1 flex items-center justify-center relative z-10">
-          <div className="text-center px-6 max-w-4xl mx-auto">
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
-              Create Property<br />
-              <span className="text-secondary">Marketing Designs</span> in Minutes
+          <div className="relative z-10 max-w-4xl mx-auto flex flex-col items-center gap-3 my-auto py-6">
+            <span className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-amber-300 bg-amber-400/10 backdrop-blur-md border border-amber-400/25 px-4 py-1.5 rounded-full">
+              AI DESIGN STUDIO FOR REAL ESTATE
+            </span>
+
+            <h1 className="text-3xl sm:text-5xl md:text-[56px] lg:text-[60px] font-bold tracking-tight text-white leading-[1.1] drop-shadow-md">
+              Create Property Marketing Designs.<br className="hidden sm:inline" /> Not Days of Design Work.
             </h1>
-            <p className="text-lg md:text-xl text-gray-300 mb-10 max-w-2xl mx-auto">
-              Transform your listings into stunning visuals. Perfect for social media, MLS, and print marketing.
+
+            <p className="text-sm sm:text-base md:text-lg text-white/80 max-w-2xl mx-auto leading-relaxed drop-shadow-sm">
+              Transform property listings and market data into stunning, fully editable social carousels, open house flyers, and print marketing in seconds.
             </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link href="/auth?provider=google">
-                <Button size="lg" className="h-14 px-8 gap-3 rounded-full bg-white hover:bg-gray-100 text-black font-medium text-lg shadow-xl">
-                  <svg className="h-5 w-5" viewBox="0 0 24 24">
-                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-                  </svg>
-                  Continue with Google
-                </Button>
-              </Link>
-              <Link href="/auth">
-                <Button size="lg" variant="outline" className="h-14 px-8 gap-2 rounded-full border-2 border-white/30 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 hover:text-white font-medium text-lg">
-                  Continue with Email
-                </Button>
-              </Link>
+
+            <div className="w-full max-w-3xl mt-6 text-left">
+              <div className="bg-white/95 backdrop-blur-xl p-2.5 rounded-[20px] shadow-2xl border border-white/30">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                  <div className="flex items-center gap-3 px-4 py-2.5 flex-1">
+                    <Zap className="w-5 h-5 text-brandOrange flex-shrink-0" />
+                    <input
+                      type="text"
+                      value={heroPrompt}
+                      onChange={(e) => setHeroPrompt(e.target.value)}
+                      placeholder="What property do you want to market?"
+                      className="w-full bg-transparent text-[#1e1c1a] placeholder:text-[#8c8780] text-sm sm:text-base focus:outline-none font-medium"
+                    />
+                  </div>
+                  <Link
+                    href="/auth"
+                    className="px-6 py-3 rounded-[12px] bg-[#2a2825] hover:bg-[#1e1c1a] text-white font-bold text-sm flex items-center justify-center gap-2 shadow-md transition active:scale-95 flex-shrink-0"
+                  >
+                    <span>Generate Marketing Design</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </Link>
+                </div>
+
+                <div className="pt-2.5 pb-1 px-3 border-t border-black/5 flex items-center gap-2 overflow-x-auto text-xs text-[#68645e]">
+                  <span className="text-[#8c8780] font-semibold flex-shrink-0">Try:</span>
+                  {[
+                    { emoji: "🏡", label: "Luxury Penthouse", value: "Luxury 4BHK Penthouse with panoramic skyline view, ₹3.2 Cr" },
+                    { emoji: "📅", label: "Open House Flyer", value: "Open House this Sunday 2-5 PM, Modern 3BHK Apartment" },
+                    { emoji: "📊", label: "Market Trend Report", value: "Q3 Market Pulse: 14% median price rise, 18 days on market" },
+                    { emoji: "🏷️", label: "Price Reduction", value: "Just Reduced! ₹10 Lakh Price Drop on Premium Villa" },
+                  ].map((pill) => (
+                    <button
+                      key={pill.label}
+                      onClick={() => setHeroPrompt(pill.value)}
+                      className="px-2.5 py-1 rounded-full bg-black/5 hover:bg-black/10 text-[#1e1c1a] transition-colors flex-shrink-0 flex items-center gap-1.5 font-medium"
+                    >
+                      <span>{pill.emoji}</span> {pill.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className={`absolute inset-0 flex items-center justify-center bg-black/80 backdrop-blur-sm z-40 transition-all duration-1000 ease-out ${showLogoReveal ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-          <div className={`flex flex-col items-center gap-4 transition-all duration-700 delay-300 ${showLogoReveal ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-8 opacity-0 scale-95'}`}>
-            <div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center shadow-2xl shadow-teal-500/30">
-              <img src="/logo-icon-option6-light.png" alt="" className="h-12 w-12 md:h-16 md:w-16" />
+          <div className="relative z-10 grid grid-cols-2 md:grid-cols-4 gap-3.5 max-w-5xl mx-auto w-full text-center mt-6">
+            <div className="p-4 rounded-[16px] bg-white/10 backdrop-blur-md border border-white/15 text-white shadow-lg">
+              <div className="text-2xl sm:text-3xl font-extrabold text-white">Fast</div>
+              <div className="text-xs text-white/70 mt-1 font-medium">Prompt to Finished Design</div>
             </div>
-            <div className="text-center">
-              <h3 className="text-3xl md:text-4xl font-bold text-white">Buildographic</h3>
-              <p className="text-gray-400 text-lg mt-2">Real Estate Marketing Made Easy</p>
+            <div className="p-4 rounded-[16px] bg-white/10 backdrop-blur-md border border-white/15 text-white shadow-lg">
+              <div className="text-2xl sm:text-3xl font-extrabold text-amber-400">100%</div>
+              <div className="text-xs text-white/70 mt-1 font-medium">Editable Text & Layout</div>
+            </div>
+            <div className="p-4 rounded-[16px] bg-white/10 backdrop-blur-md border border-white/15 text-white shadow-lg">
+              <div className="text-2xl sm:text-3xl font-extrabold text-white">7+</div>
+              <div className="text-xs text-white/70 mt-1 font-medium">Multi-Channel Formats</div>
+            </div>
+            <div className="p-4 rounded-[16px] bg-white/10 backdrop-blur-md border border-white/15 text-white shadow-lg">
+              <div className="text-2xl sm:text-3xl font-extrabold text-emerald-400">Free</div>
+              <div className="text-xs text-white/70 mt-1 font-medium">No Credit Card to Start</div>
             </div>
           </div>
-        </div>
-
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10">
-          <ChevronDown className="h-8 w-8 text-white/60 animate-bounce" />
         </div>
       </section>
 
-      {/* ==================== UNIFIED SHOWCASE SECTION ==================== */}
-      <section id="templates" className="bg-[#0a0a0a] py-20 md:py-32">
-        <div className="container px-6 max-w-6xl mx-auto">
-          {/* Trust Badges */}
-          <div className="flex flex-wrap items-center justify-center gap-8 md:gap-16 mb-20 pb-12 border-b border-white/10">
-            <div className="text-center">
-              <p className="text-primary text-2xl md:text-3xl font-bold">2024</p>
-              <p className="text-gray-500 text-xs uppercase tracking-wide">Product Launch</p>
-            </div>
-            <div className="text-center">
-              <p className="text-white text-2xl md:text-3xl font-bold">Real Estate</p>
-              <p className="text-gray-500 text-xs uppercase tracking-wide">Purpose-Built</p>
-            </div>
-            <div className="text-center">
-              <p className="text-primary text-2xl md:text-3xl font-bold">50+</p>
-              <p className="text-gray-500 text-xs uppercase tracking-wide">Templates</p>
-            </div>
-            <div className="text-center">
-              <p className="text-white text-2xl md:text-3xl font-bold">MLS Ready</p>
-              <p className="text-gray-500 text-xs uppercase tracking-wide">Export Formats</p>
-            </div>
+      {/* ── AUDIENCE MARQUEE — generic tags, no named third parties (Item 1) ─────────── */}
+      <section className="border-b border-[#e6e3dd] bg-white py-6 overflow-hidden">
+        <div className="max-w-[1320px] mx-auto border-x-0 sm:border-x border-[#e6e3dd]">
+          <div className="overflow-x-hidden">
+            <Marquee pauseOnHover className="[--duration:30s]">
+              {[...audienceMarquee, ...audienceMarquee].map((tag, i) => (
+                <span key={i} className="text-[#8c8780] text-xs font-bold uppercase tracking-wider whitespace-nowrap px-2">
+                  {tag}
+                </span>
+              ))}
+            </Marquee>
           </div>
+        </div>
+      </section>
 
-          {/* Section Header */}
-          <div className="text-center mb-12">
-            <p className="text-xs uppercase tracking-widest text-primary/70 mb-4">TEMPLATE SHOWCASE</p>
-            <h2 className="text-3xl md:text-5xl font-bold text-white mb-4">
-              Professional Templates for Every Format
+      {/* ── 3-PILLAR FRAMEWORK ─────────────────────────────────────────── */}
+      <section id="solutions" className="border-b border-[#e6e3dd] bg-white py-20">
+        <div className="max-w-[1320px] mx-auto px-4 sm:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#8c8780]">THE SOLUTIONING FRAMEWORK</span>
+            <h2 className="text-3xl sm:text-4xl font-bold text-[#1e1c1a] mt-2 mb-3 tracking-tight">
+              From listing text to marketing-ready designs in three steps
             </h2>
-            <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-              Create marketing designs for Instagram, Facebook, LinkedIn, print flyers, MLS, and more.
+            <p className="text-[#68645e] text-sm sm:text-base">
+              Stop wrestling with generic design tools or waiting days on freelance agencies.
             </p>
           </div>
 
-          {/* Format Icons */}
-          <div className="flex items-center justify-center gap-8 mb-12">
-            <div className="text-center">
-              <Smartphone className="h-8 w-8 text-primary mx-auto mb-2" />
-              <p className="text-white text-sm">Social</p>
-            </div>
-            <div className="text-center">
-              <Monitor className="h-8 w-8 text-primary mx-auto mb-2" />
-              <p className="text-white text-sm">Web</p>
-            </div>
-            <div className="text-center">
-              <Printer className="h-8 w-8 text-primary mx-auto mb-2" />
-              <p className="text-white text-sm">Print</p>
-            </div>
-            <div className="text-center">
-              <FileImage className="h-8 w-8 text-primary mx-auto mb-2" />
-              <p className="text-white text-sm">MLS</p>
-            </div>
-          </div>
-        </div>
-
-        {/* MagicUI Marquee Showcase */}
-        <div className="relative">
-          <Marquee pauseOnHover className="[--duration:30s]">
-            {showcaseTemplates.map((template) => (
-              <TemplateCard key={template.id} template={template} />
-            ))}
-          </Marquee>
-          <Marquee reverse pauseOnHover className="[--duration:30s] mt-4">
-            {showcaseTemplates.map((template) => (
-              <TemplateCard key={`reverse-${template.id}`} template={template} />
-            ))}
-          </Marquee>
-          <div className="pointer-events-none absolute inset-y-0 left-0 w-1/4 bg-gradient-to-r from-[#0a0a0a]" />
-          <div className="pointer-events-none absolute inset-y-0 right-0 w-1/4 bg-gradient-to-l from-[#0a0a0a]" />
-        </div>
-
-        {/* Pain Point Cards */}
-        <div className="container px-6 max-w-6xl mx-auto mt-20">
-          <div className="text-center mb-12">
-            <p className="text-xs uppercase tracking-widest text-primary/70 mb-4">WHY BUILDOGRAPHIC</p>
-            <h2 className="text-3xl md:text-4xl font-bold text-white">Solve Your Marketing Challenges</h2>
-          </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {painPointCards.map((card, index) => (
-              <div key={index} className="bg-white/[0.06] border border-white/10 backdrop-blur-sm rounded-2xl p-6 hover:bg-white/[0.1] transition-colors">
-                <div className="w-12 h-12 rounded-xl bg-primary/20 border border-primary/20 flex items-center justify-center mb-4">
-                  <card.icon className="h-6 w-6 text-primary" />
+          <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-[#e6e3dd] rounded-[16px] border border-[#e6e3dd] overflow-hidden bg-white shadow-sm">
+            {pillars.map((pillar) => (
+              <div key={pillar.number} className="p-8 flex flex-col justify-between hover:bg-[#faf9f6] transition">
+                <div>
+                  <div className="w-10 h-10 rounded-[8px] bg-[#2a2825] text-white flex items-center justify-center font-bold text-sm mb-6">
+                    {pillar.number}
+                  </div>
+                  <div className={`text-xs font-bold uppercase tracking-wider mb-1.5 ${pillar.accent}`}>{pillar.eyebrow}</div>
+                  <h3 className="text-lg font-bold text-[#1e1c1a] mb-2">{pillar.title}</h3>
+                  <p className="text-xs text-[#68645e] leading-relaxed mb-6">{pillar.description}</p>
                 </div>
-                <h3 className="text-lg font-semibold text-white mb-2">{card.title}</h3>
-                <p className="text-gray-400 text-sm leading-relaxed">{card.description}</p>
+                <div className="p-3 rounded-[8px] bg-[#faf9f6] border border-[#e6e3dd] text-xs font-mono text-[#68645e]">
+                  <span className="text-[#1e1c1a] font-bold">{pillar.footerLabel}:</span> {pillar.footerValue}
+                </div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ==================== PRICING SECTION ==================== */}
-      <section id="pricing" className="bg-[#f5f5f0] py-20 md:py-32">
-        <div className="container px-6 max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <p className="text-xs uppercase tracking-widest text-primary mb-4">PRICING</p>
-            <h2 className="text-3xl md:text-5xl font-bold text-black mb-4">Simple, Transparent Pricing</h2>
-            <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-              Start free and upgrade as you grow. Annual billing gets you 2 months free.
+      {/* ── CANVAS EDITOR — 3 refinement modes (Item 8: renamed from "Vibe Studio") ────── */}
+      <section id="studio" className="border-b border-[#e6e3dd] bg-[#faf9f6] py-20">
+        <div className="max-w-[1320px] mx-auto px-4 sm:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#8c8780]">CREATIVE CONTROL</span>
+            <h2 className="text-3xl sm:text-4xl font-bold text-[#1e1c1a] mt-2 mb-3 tracking-tight">
+              Three ways to refine your designs
+            </h2>
+            <p className="text-[#68645e] text-sm sm:text-base">
+              Switch seamlessly between conversational prompts, visual drag-and-drop, and automated brand kits.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6">
-            {pricingPlans.map((plan) => {
-              const isAnnual = annualToggles[plan.tier] || false;
-              const tierPricing = pricingByTier.get(plan.tier);
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {refinementModes.map((mode) => (
+              <div key={mode.title} className="p-8 rounded-[16px] bg-white border border-[#e6e3dd] shadow-sm flex flex-col justify-between">
+                <div>
+                  <div className={`w-10 h-10 rounded-[8px] flex items-center justify-center mb-6 ${mode.accent}`}>
+                    <mode.icon className="w-5 h-5" />
+                  </div>
+                  <h3 className="text-base font-bold text-[#1e1c1a] mb-2">{mode.title}</h3>
+                  <p className="text-xs text-[#68645e] leading-relaxed mb-6">{mode.description}</p>
+                </div>
+                <div className="p-3 rounded-[8px] bg-[#faf9f6] border border-[#e6e3dd] text-[11px] text-[#68645e] font-mono">
+                  <span className={`font-bold ${mode.footerAccent}`}>{mode.footerLabel}:</span> {mode.footerValue}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── TEMPLATE MARQUEE ───────────────────────────────────────────── */}
+      <section id="templates" className="border-b border-[#e6e3dd] bg-white py-20 overflow-hidden">
+        <div className="max-w-[1320px] mx-auto px-4 sm:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-14">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#8c8780]">DESIGN-FIRST TEMPLATES</span>
+            <h2 className="text-3xl sm:text-4xl font-bold text-[#1e1c1a] mt-2 mb-3 tracking-tight">
+              Built for real estate conversion
+            </h2>
+            <p className="text-[#68645e] text-sm sm:text-base">
+              Explore proven layouts across Instagram, Facebook, LinkedIn, MLS, and print flyers.
+            </p>
+          </div>
+        </div>
+
+        <div className="relative w-full overflow-hidden">
+          <Marquee pauseOnHover className="[--duration:30s] mb-4">
+            {showcaseTemplates.map((template) => (
+              <TemplateCard key={template.id} template={template} />
+            ))}
+          </Marquee>
+          <Marquee reverse pauseOnHover className="[--duration:30s]">
+            {showcaseTemplates.map((template) => (
+              <TemplateCard key={`reverse-${template.id}`} template={template} />
+            ))}
+          </Marquee>
+          <div className="pointer-events-none absolute inset-y-0 left-0 w-24 sm:w-48 bg-gradient-to-r from-white to-transparent z-10" />
+          <div className="pointer-events-none absolute inset-y-0 right-0 w-24 sm:w-48 bg-gradient-to-l from-white to-transparent z-10" />
+        </div>
+      </section>
+
+      {/* ── OLD VS NEW WORKFLOW COMPARISON ────────────────────────────── */}
+      <section id="comparison" className="border-b border-[#e6e3dd] bg-[#faf9f6] py-20">
+        <div className="max-w-[1320px] mx-auto px-4 sm:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-14">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#8c8780]">THE SHIFT</span>
+            <h2 className="text-3xl sm:text-4xl font-bold text-[#1e1c1a] mt-2 mb-3 tracking-tight">
+              Why real estate pros choose Buildographic
+            </h2>
+            <p className="text-[#68645e] text-sm sm:text-base">
+              Stop wrestling with generic design tools or waiting days on freelance agencies.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            <div className="p-8 rounded-[24px] bg-red-50/50 border border-red-200/80">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 rounded-full bg-red-100 text-red-600 flex items-center justify-center font-bold">
+                  <X className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-red-950">The Old Workflow</h3>
+                  <p className="text-xs text-red-700">Canva, Photoshop, or Freelance Agencies</p>
+                </div>
+              </div>
+              <ul className="space-y-4 text-sm text-red-900/90 font-medium">
+                {oldWorkflow.map((item) => (
+                  <li key={item.text} className="flex items-start gap-3">
+                    <item.icon className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                    <span>{item.text}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="p-8 rounded-[24px] bg-brandOrangeLight border border-brandOrange/30 shadow-sm relative overflow-hidden">
+              <div className="absolute -top-10 -right-10 w-40 h-40 bg-brandOrange/10 rounded-full blur-2xl pointer-events-none" />
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 rounded-full bg-brandOrange text-white flex items-center justify-center font-bold">
+                  <Check className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-[#1e1c1a]">The Buildographic Way</h3>
+                  <p className="text-xs text-brandOrange font-bold">AI Design Studio & Canvas Editor</p>
+                </div>
+              </div>
+              <ul className="space-y-4 text-sm text-[#1e1c1a] font-semibold">
+                {newWorkflow.map((item) => (
+                  <li key={item.text} className="flex items-start gap-3">
+                    <item.icon className="w-5 h-5 text-brandOrange flex-shrink-0 mt-0.5" />
+                    <span>{item.text}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── PRICING SNAPSHOT — real PLAN_CONFIG data, 3-tier teaser (Item 6) ──────────── */}
+      <section className="py-24 bg-[#22201d] text-white border-b border-white/10" id="pricing">
+        <div className="max-w-[1320px] mx-auto px-4 sm:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-12">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brandOrange/20 text-brandOrange text-xs font-bold uppercase tracking-wider mb-3">
+              Output-Based Pricing
+            </div>
+            <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white">
+              Pay for results, not idle seats.
+            </h2>
+            <p className="mt-4 text-white/70 text-base sm:text-lg">
+              No designer retainers. Scale your listing marketing on transparent monthly or annual plans.
+            </p>
+
+            <div className="mt-8 inline-flex items-center p-1 rounded-full bg-white/10 border border-white/15">
+              <button
+                onClick={() => setIsAnnualGlobal(false)}
+                className={`px-5 py-2 rounded-full text-xs font-bold transition-all ${!isAnnualGlobal ? "bg-brandOrange text-white" : "text-white/70 hover:text-white"}`}
+              >
+                Monthly
+              </button>
+              <button
+                onClick={() => setIsAnnualGlobal(true)}
+                className={`px-5 py-2 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${isAnnualGlobal ? "bg-brandOrange text-white" : "text-white/70 hover:text-white"}`}
+              >
+                <span>Annual</span>
+                {/* "2 months free" is the exact, always-true description of the x10 annual formula
+                    — a flat percentage claim would be wrong for at least one tier's real math,
+                    same reasoning as PricingPage.tsx's hero toggle. */}
+                <span className="px-1.5 py-0.5 rounded bg-brandEmerald text-white text-[10px] font-extrabold">2 months free</span>
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
+            {PUBLIC_TEASER_TIERS.map((tier) => {
+              const config = PLAN_CONFIG[tier];
+              const tierPricing = pricingByTier.get(tier);
               const monthly = tierPricing?.monthly;
               const annual = tierPricing?.annual;
               const showAnnualToggle = (monthly?.regularPrice ?? 0) > 0;
+              const isAnnual = isAnnualGlobal && showAnnualToggle;
               const active = isAnnual ? annual : monthly;
               const hasFoundingPrice =
                 active != null && active.campaignId != null && active.effectivePrice !== active.regularPrice;
               const displayPrice = isAnnual
                 ? Math.round((annual?.effectivePrice ?? 0) / 12)
                 : (monthly?.effectivePrice ?? 0);
-              const displayRegular = isAnnual
-                ? Math.round((annual?.regularPrice ?? 0) / 12)
-                : (monthly?.regularPrice ?? 0);
-              const savings = (monthly?.regularPrice ?? 0) * 12 - (annual?.regularPrice ?? 0);
-              const PlanIcon = plan.icon;
+              const isMostPopular = tier === "SOLO";
 
               return (
-                <div key={plan.tier} className="glass rounded-2xl border border-border p-8 flex flex-col">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-xl font-bold text-black">{plan.name}</h3>
-                      <PlanIcon className="h-5 w-5 text-gray-400" />
+                <div
+                  key={tier}
+                  className={`p-8 rounded-[24px] flex flex-col justify-between relative ${
+                    isMostPopular
+                      ? "bg-[#2a2825] border-2 border-brandOrange shadow-[0_0_50px_-10px_rgba(235,94,40,0.35)]"
+                      : "bg-white/[0.06] border border-white/10 backdrop-blur-sm"
+                  }`}
+                >
+                  {isMostPopular && (
+                    <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-brandOrange text-white text-[11px] font-extrabold tracking-wider uppercase">
+                      Most Popular
                     </div>
-                    {showAnnualToggle && (
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-gray-500 font-medium">Annual</span>
-                        <Switch
-                          checked={isAnnual}
-                          onCheckedChange={() => toggleAnnual(plan.tier)}
-                        />
-                      </div>
-                    )}
-                  </div>
-
-                  <p className="text-sm text-gray-500 mb-6">{plan.description}</p>
-
-                  <div className="mb-6">
-                    <div className="flex items-baseline gap-2">
+                  )}
+                  <div>
+                    <div className={`text-xs font-bold uppercase mb-2 ${isMostPopular ? "text-brandOrange" : "text-white/60"}`}>
+                      {config.name}
+                    </div>
+                    <div className="flex items-baseline gap-1 mb-1">
                       {hasFoundingPrice && (
-                        <span className="text-lg text-gray-400 line-through">
-                          ₹{displayRegular.toLocaleString()}
-                        </span>
+                        <span className="text-lg text-white/40 line-through">₹{(active?.regularPrice ?? 0).toLocaleString()}</span>
                       )}
-                      <span className="text-4xl font-bold text-black">
-                        ₹{displayPrice.toLocaleString()}
-                      </span>
-                      <span className="text-base text-gray-500">/ month</span>
-                      {isAnnual && showAnnualToggle && (
-                        <span className="text-sm text-primary font-medium bg-primary/10 px-2 py-0.5 rounded-full">
-                          Save ₹{savings.toLocaleString()}
-                        </span>
-                      )}
+                      <span className="text-4xl font-extrabold text-white">₹{displayPrice.toLocaleString()}</span>
+                      <span className="text-xs text-white/60">/month</span>
                     </div>
                     {hasFoundingPrice && active?.badge && (
-                      <span className="inline-block mt-2 text-xs font-semibold text-amber-600 bg-amber-100 px-2 py-0.5 rounded-full">
-                        {active.badge}
-                      </span>
+                      <div className="text-[11px] font-bold text-brandOrange mb-3">{active.badge}</div>
                     )}
+                    <p className="text-xs text-white/60 mb-6 mt-3">{teaserDescriptions[tier]}</p>
+                    <ul className={`space-y-3 text-xs font-medium mb-8 ${isMostPopular ? "text-white/90" : "text-white/80"}`}>
+                      {config.features.slice(0, 4).map((feature) => (
+                        <li key={feature} className="flex items-center gap-2.5">
+                          <Check className={`w-4 h-4 ${isMostPopular ? "text-brandOrange" : "text-brandEmerald"}`} />
+                          <span>{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
-
-                  <ul className="space-y-3 mb-8 flex-1">
-                    {plan.features.map((feature) => (
-                      <li key={feature} className="flex items-start gap-2 text-sm text-gray-700">
-                        <Check className="h-4 w-4 text-black shrink-0 mt-0.5" />
-                        <span>{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-
-                  <Link href="/auth">
-                    <Button className="w-full h-12 bg-black hover:bg-gray-800 text-white rounded-full font-medium">
-                      Get Started
-                    </Button>
+                  <Link
+                    href={tier === "FREE" ? "/auth" : "/pricing"}
+                    className={`w-full py-3 rounded-[12px] text-center text-xs font-bold transition-colors ${
+                      isMostPopular ? "bg-brandOrange hover:bg-brandOrangeHover text-white" : "bg-white/10 hover:bg-white/20 text-white"
+                    }`}
+                  >
+                    {tier === "FREE" ? "Get Started Free" : `Get started with ${config.name}`}
                   </Link>
                 </div>
               );
             })}
           </div>
 
-          <div className="text-center mt-8">
-            <Link href="/pricing" className="text-primary hover:text-primary/80 font-medium">
-              View all plans and enterprise options →
+          <div className="text-center mt-10">
+            <Link href="/pricing" className="inline-flex items-center gap-2 text-sm font-semibold text-white/70 hover:text-white transition-colors">
+              <span>Need API access or Enterprise Brokerage plans?</span>
+              <span className="text-brandOrange underline">View Full Pricing Table →</span>
             </Link>
           </div>
         </div>
       </section>
 
-      {/* ==================== FEATURES SECTION ==================== */}
-      <section id="features" className="bg-[#0a0a0a] py-20 md:py-32">
-        <div className="container px-6 max-w-6xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <p className="text-xs uppercase tracking-widest text-primary/70 mb-4">KEY FEATURES</p>
-              <h2 className="text-3xl md:text-5xl font-bold text-white mb-8">
-                Built for Teams<br />
-                <span className="text-gray-400">& Brokerages</span>
-              </h2>
-              <div className="space-y-6">
-                <div className="flex gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-primary/20 border border-primary/20 flex items-center justify-center flex-shrink-0">
-                    <Target className="h-6 w-6 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-white mb-1">Brand Kit</h3>
-                    <p className="text-gray-400 text-sm">Apply custom brand palettes and colors to your designs in the editor.</p>
-                  </div>
-                </div>
-                <div className="flex gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-primary/20 border border-primary/20 flex items-center justify-center flex-shrink-0">
-                    <Zap className="h-6 w-6 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-white mb-1">Instant Export</h3>
-                    <p className="text-gray-400 text-sm">Download high-resolution PNG and JPG files, optimized for social media and MLS.</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="relative">
-              <div className="bg-gradient-to-br from-primary/10 to-transparent rounded-3xl p-8">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-white/[0.06] border border-white/10 backdrop-blur-sm rounded-xl p-4">
-                    <Target className="h-8 w-8 text-primary mb-2" />
-                    <p className="text-white font-semibold">Brand Kit</p>
-                    <p className="text-gray-400 text-xs mt-1">Custom branding</p>
-                  </div>
-                  <div className="bg-white/[0.06] border border-white/10 backdrop-blur-sm rounded-xl p-4">
-                    <Zap className="h-8 w-8 text-primary mb-2" />
-                    <p className="text-white font-semibold">Instant Export</p>
-                    <p className="text-gray-400 text-xs mt-1">PNG & JPG</p>
-                  </div>
-                  <div className="bg-white/[0.06] border border-white/10 backdrop-blur-sm rounded-xl p-4">
-                    <Users className="h-8 w-8 text-primary mb-2" />
-                    <p className="text-white font-semibold">Team Workspace</p>
-                    <p className="text-gray-400 text-xs mt-1">Coming soon</p>
-                  </div>
-                  <div className="bg-white/[0.06] border border-white/10 backdrop-blur-sm rounded-xl p-4">
-                    <Building2 className="h-8 w-8 text-primary mb-2" />
-                    <p className="text-white font-semibold">Multi-Agent</p>
-                    <p className="text-gray-400 text-xs mt-1">Coming soon</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ==================== FAQ SECTION ==================== */}
-      <section id="faq" className="relative bg-[#0a0a0a] py-20 md:py-32 overflow-hidden border-t border-white/10">
-        <div className="absolute inset-0 pointer-events-none select-none overflow-hidden">
-          {darkFloatingChars.map((item, i) => (
-            <span
-              key={i}
-              className="absolute text-3xl md:text-5xl lg:text-6xl font-bold text-gray-600"
-              style={{ top: item.top, left: item.left, opacity: item.opacity * 0.7 }}
-            >
-              {item.char}
-            </span>
-          ))}
-        </div>
-
-        <div className="container px-6 max-w-3xl mx-auto relative z-10">
-          <div className="text-center mb-12">
-            <p className="text-xs uppercase tracking-widest text-gray-500 mb-2">FREQUENTLY ASKED QUESTIONS</p>
-            <h2 className="text-2xl md:text-4xl font-bold text-white">Curious about Buildographic?</h2>
-            <p className="text-xl md:text-2xl font-bold text-white">We got you covered</p>
+      {/* ── FAQ ─────────────────────────────────────────────────────────── */}
+      <section id="faq" className="border-b border-[#e6e3dd] bg-[#faf9f6] py-20">
+        <div className="max-w-[800px] mx-auto px-4 sm:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-14">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#8c8780]">COMMON QUESTIONS</span>
+            <h2 className="text-3xl sm:text-4xl font-bold text-[#1e1c1a] mt-2 mb-3 tracking-tight">
+              Frequently Asked Questions
+            </h2>
           </div>
 
           <Accordion type="single" collapsible className="space-y-3">
@@ -556,12 +668,12 @@ export default function LandingPage() {
               <AccordionItem
                 key={index}
                 value={`faq-${index}`}
-                className="bg-white/[0.06] border border-white/10 backdrop-blur-sm rounded-xl px-6 overflow-hidden"
+                className="bg-white rounded-[12px] border border-[#e6e3dd] px-5 shadow-sm overflow-hidden"
               >
-                <AccordionTrigger className="text-left text-white hover:text-white hover:no-underline py-5 text-base md:text-lg font-medium [&>svg]:text-white/60">
+                <AccordionTrigger className="text-left text-[#1e1c1a] hover:no-underline py-4 text-sm font-bold [&>svg]:text-[#8c8780]">
                   {faq.question}
                 </AccordionTrigger>
-                <AccordionContent className="text-gray-400 pb-5 text-sm md:text-base leading-relaxed">
+                <AccordionContent className="text-[#68645e] pb-4 text-xs leading-relaxed">
                   {faq.answer}
                 </AccordionContent>
               </AccordionItem>
@@ -570,80 +682,104 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ==================== CTA SECTION ==================== */}
-      <section
-        className="relative py-32 md:py-48 overflow-hidden bg-cover bg-center"
-        style={{ backgroundImage: "url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1600&h=900&fit=crop')" }}
-      >
-        <div className="absolute inset-0 bg-sky-400/20" />
-        <div className="container px-6 max-w-4xl mx-auto relative z-10 text-center">
-          <h2 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-4 drop-shadow-lg">Start creating</h2>
-          <h2 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-10 drop-shadow-lg">on Buildographic today.</h2>
-          <Link href="/auth">
-            <Button size="lg" className="h-14 px-8 gap-2 rounded-full bg-white hover:bg-gray-100 text-black font-medium text-lg shadow-xl">
-              Get Started <ArrowRight className="h-5 w-5" />
-            </Button>
-          </Link>
+      {/* ── BOTTOM CTA — no fabricated customer count (Item 2) ─────────── */}
+      <section className="border-b border-[#e6e3dd] bg-white py-20 text-center">
+        <div className="max-w-[1320px] mx-auto px-4 sm:px-8">
+          <div className="max-w-3xl mx-auto space-y-5">
+            <span className="text-xs font-bold uppercase tracking-wider text-brandOrange bg-brandOrange/10 border border-brandOrange/20 px-3.5 py-1 rounded-full">
+              ⚡ GET STARTED FREE — NO CREDIT CARD REQUIRED
+            </span>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-[#1e1c1a] tracking-tight">
+              Ready to 10x your listing marketing?
+            </h2>
+            <p className="text-[#68645e] text-sm sm:text-base max-w-xl mx-auto">
+              Create stunning, on-brand marketing materials in seconds — start free, upgrade when you're ready.
+            </p>
+            <div className="pt-3 flex flex-col sm:flex-row items-center justify-center gap-3">
+              <Link
+                href="/auth?provider=google"
+                className="inline-flex items-center gap-2.5 bg-white hover:bg-gray-50 text-[#1e1c1a] text-sm font-semibold px-6 py-3.5 rounded-full border border-black/15 shadow-sm transition active:scale-95"
+              >
+                <svg className="h-4 w-4" viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                </svg>
+                <span>Continue with Google</span>
+              </Link>
+              <Link
+                href="/auth"
+                className="inline-flex items-center gap-2 bg-[#2a2825] hover:bg-[#1e1c1a] text-white text-sm font-bold px-6 py-3.5 rounded-full shadow-sm transition active:scale-95"
+              >
+                <span>Create your first marketing design free</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+            <div className="pt-1">
+              <Link href="/pricing" className="inline-flex items-center text-xs font-semibold text-[#68645e] hover:text-[#1e1c1a] transition">
+                Explore pricing & plans →
+              </Link>
+            </div>
+          </div>
         </div>
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#f5f5f0] to-transparent" />
       </section>
 
-      {/* ==================== FOOTER ==================== */}
-      <footer className="bg-[#f5f5f0] border-t border-gray-200 py-16">
-        <div className="container px-6 max-w-6xl mx-auto">
+      {/* ── FOOTER — real links, no fabricated version/status claims (Item 9) ─────────── */}
+      <footer className="bg-[#faf9f6] py-14 text-xs text-[#68645e]">
+        <div className="max-w-[1320px] mx-auto px-4 sm:px-8">
           <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
             <div className="col-span-2 md:col-span-1">
-              <Link href="/" className="flex flex-col items-start gap-1 font-bold text-xl text-black mb-4">
-                <img src="/logo-icon-option6.png" alt="" className="h-8 w-8" />
+              <Link href="/" className="flex items-center gap-2.5 font-bold text-sm text-[#1e1c1a] mb-3">
+                <img src="/logo-icon-option6.png" alt="" className="h-6 w-6" />
                 <span>Buildographic</span>
               </Link>
-              <p className="text-sm text-gray-600 leading-relaxed">
+              <p className="text-[11px] text-[#8c8780] leading-relaxed">
                 Create stunning property marketing designs for your listings.
               </p>
             </div>
             <div>
-              <h4 className="font-semibold text-black mb-4">Product</h4>
-              <ul className="space-y-3 text-sm text-gray-600">
-                <li><Link href="/templates" className="hover:text-black">Templates</Link></li>
-                <li><Link href="/pricing" className="hover:text-black">Pricing</Link></li>
-                <li><a href="#" className="hover:text-black">Integrations</a></li>
+              <h4 className="font-semibold text-[#1e1c1a] mb-3">Product</h4>
+              <ul className="space-y-2">
+                <li><Link href="/templates" className="hover:text-[#1e1c1a]">Templates</Link></li>
+                <li><Link href="/pricing" className="hover:text-[#1e1c1a]">Pricing</Link></li>
+                <li><a href="#studio" className="hover:text-[#1e1c1a]">Canvas Editor</a></li>
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold text-black mb-4">Solutions</h4>
-              <ul className="space-y-3 text-sm text-gray-600">
-                <li><a href="#" className="hover:text-black">For Agents</a></li>
-                <li><a href="#" className="hover:text-black">For Teams</a></li>
-                <li><a href="#" className="hover:text-black">For Brokerages</a></li>
+              <h4 className="font-semibold text-[#1e1c1a] mb-3">Solutions</h4>
+              <ul className="space-y-2">
+                <li><a href="#solutions" className="hover:text-[#1e1c1a]">For Agents</a></li>
+                <li><a href="#solutions" className="hover:text-[#1e1c1a]">For Teams</a></li>
+                <li><a href="#solutions" className="hover:text-[#1e1c1a]">For Brokerages</a></li>
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold text-black mb-4">Resources</h4>
-              <ul className="space-y-3 text-sm text-gray-600">
-                <li><a href="#" className="hover:text-black">Help Center</a></li>
-                <li><a href="#" className="hover:text-black">Tutorials</a></li>
-                <li><a href="#" className="hover:text-black">Blog</a></li>
+              <h4 className="font-semibold text-[#1e1c1a] mb-3">Resources</h4>
+              <ul className="space-y-2">
+                <li><a href="#faq" className="hover:text-[#1e1c1a]">Help Center</a></li>
+                <li><a href="#templates" className="hover:text-[#1e1c1a]">Templates Gallery</a></li>
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold text-black mb-4">Company</h4>
-              <ul className="space-y-3 text-sm text-gray-600">
-                <li><a href="#" className="hover:text-black">About</a></li>
-                <li><a href="/terms" className="hover:text-black">Terms of Service</a></li>
-                <li><a href="/privacy" className="hover:text-black">Privacy Policy</a></li>
-                <li><a href="/refund-policy" className="hover:text-black">Refund &amp; Cancellation</a></li>
-                <li><a href="/cookies" className="hover:text-black">Cookie Policy</a></li>
+              <h4 className="font-semibold text-[#1e1c1a] mb-3">Legal</h4>
+              <ul className="space-y-2">
+                <li><a href="/terms" className="hover:text-[#1e1c1a]">Terms of Service</a></li>
+                <li><a href="/privacy" className="hover:text-[#1e1c1a]">Privacy Policy</a></li>
+                <li><a href="/refund-policy" className="hover:text-[#1e1c1a]">Refund &amp; Cancellation</a></li>
+                <li><a href="/cookies" className="hover:text-[#1e1c1a]">Cookie Policy</a></li>
               </ul>
             </div>
           </div>
-          <div className="pt-8 border-t border-gray-200 flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-sm text-gray-500">COPYRIGHT Buildographic 2025</p>
+          <div className="pt-6 border-t border-[#e6e3dd] flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-[#8c8780]">
+            <div>© 2026 Buildographic. All rights reserved.</div>
             <div className="flex items-center gap-4">
-              <a href="#" className="text-gray-500 hover:text-black transition-colors"><Linkedin className="h-5 w-5" /></a>
-              <a href="#" className="text-gray-500 hover:text-black transition-colors"><Twitter className="h-5 w-5" /></a>
-              <a href="#" className="text-gray-500 hover:text-black transition-colors"><Youtube className="h-5 w-5" /></a>
-              <a href="#" className="text-gray-500 hover:text-black transition-colors"><Instagram className="h-5 w-5" /></a>
+              <a href="#" className="hover:text-[#1e1c1a] transition-colors"><Linkedin className="h-4 w-4" /></a>
+              <a href="#" className="hover:text-[#1e1c1a] transition-colors"><Twitter className="h-4 w-4" /></a>
+              <a href="#" className="hover:text-[#1e1c1a] transition-colors"><Youtube className="h-4 w-4" /></a>
+              <a href="#" className="hover:text-[#1e1c1a] transition-colors"><Instagram className="h-4 w-4" /></a>
             </div>
+            <div>Designed for real estate professionals</div>
           </div>
         </div>
       </footer>
