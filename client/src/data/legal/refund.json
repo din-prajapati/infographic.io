@@ -2,7 +2,7 @@
   "title": "Refund & Cancellation Policy",
   "effectiveDate": "8 July 2026",
   "intro": "This policy explains how subscriptions, cancellations, and refunds work for Buildographic. Please read it carefully before purchasing a paid plan.",
-  "contactEmail": "billing@infographicai.in",
+  "contactEmail": "billing@buildographic.com",
   "responseTime": "24 hours",
   "sections": [
     {
@@ -116,7 +116,7 @@
       "blocks": [
         {
           "type": "paragraph",
-          "text": "To request a refund, email us at billing@infographicai.in with:"
+          "text": "To request a refund, email us at billing@buildographic.com with:"
         },
         {
           "type": "list",
@@ -139,7 +139,7 @@
       "blocks": [
         {
           "type": "paragraph",
-          "text": "For billing questions or to request a refund, contact billing@infographicai.in."
+          "text": "For billing questions or to request a refund, contact billing@buildographic.com."
         }
       ]
     }
