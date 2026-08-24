@@ -12,6 +12,9 @@ updated: 2026-08-21
 > **Status:** 🔲 Not Started
 > **Target date:** TBD
 > **Branch:** `feat/pay/m-01-pricing-relaunch`
+> **Version:** **Mixed** — US-PAY-107 is V1 (ships before the first real ₹ transaction); US-PAY-105,
+> 106, 108 are V2 (deferred — generalized campaign engine, premature before real demand data). See
+> [EPIC.md](../EPIC.md) "Scope split."
 
 ---
 
@@ -26,12 +29,12 @@ frontend and checkout never compute price independently.
 
 ## Stories in this Milestone
 
-| Order | Story | Title | Size | Blocked By | Status | PR |
-|:-----:|-------|-------|:----:|------------|:------:|:--:|
-| 1 | [US-PAY-105](../stories/US-PAY-105/STORY.md) | PricingCampaign Prisma model + migration | S | — | 🔲 | — |
-| 1 | [US-PAY-107](../stories/US-PAY-107/STORY.md) | Standing annual-discount formula (×10) | S | US-PAY-102 (M-PAY-01) | 🔲 | — |
-| 2 | [US-PAY-106](../stories/US-PAY-106/STORY.md) | `getEffectivePrice()` resolution service | M | US-PAY-102, US-PAY-105 | 🔲 | — |
-| 3 | [US-PAY-108](../stories/US-PAY-108/STORY.md) | Founding Customer 100 campaign seed + Offer linkage | M | US-PAY-105, US-PAY-106 | 🔲 | — |
+| Order | Story | Title | Size | Blocked By | Status | PR | Version |
+|:-----:|-------|-------|:----:|------------|:------:|:--:|:---:|
+| 1 | [US-PAY-105](../stories/US-PAY-105/STORY.md) | PricingCampaign Prisma model + migration | S | — | 🔲 | — | V2 |
+| 1 | [US-PAY-107](../stories/US-PAY-107/STORY.md) | Standing annual-discount formula (×10) | S | US-PAY-102 (M-PAY-01) | 🔲 | — | **V1** |
+| 2 | [US-PAY-106](../stories/US-PAY-106/STORY.md) | `getEffectivePrice()` resolution service | M | US-PAY-102, US-PAY-105 | 🔲 | — | V2 |
+| 3 | [US-PAY-108](../stories/US-PAY-108/STORY.md) | Founding Customer 100 campaign seed + Offer linkage | M | US-PAY-105, US-PAY-106 | 🔲 | — | V2 |
 
 ---
 
