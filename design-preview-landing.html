@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Buildographic | AI Visual Marketing & Design Studio for Real Estate</title>
+  <meta name="description" content="Turn listings, MLS data, and property photos into high-converting social carousels, open house flyers, listing infographics, and print marketing in seconds." />
+
+  <!-- Google Fonts: Inter (Rocket.new Exact Font) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+          },
+          colors: {
+            rocketDark: '#22201d',
+            rocketCharcoal: '#2a2825',
+            rocketText: '#1e1c1a',
+            rocketMuted: '#68645e',
+            rocketSubtle: '#8c8780',
+            rocketBorder: '#e6e3dd',
+            rocketBg: '#faf9f6',
+            brandBlue: '#0066cc',
+            brandOrange: '#eb5e28',
+            brandOrangeHover: '#d44e1a',
+            brandOrangeLight: '#fff5ee',
+            brandEmerald: '#10b981',
+          },
+          borderRadius: {
+            '6': '6px',
+            '8': '8px',
+            '10': '10px',
+            '12': '12px',
+            '16': '16px',
+            '20': '20px',
+            '24': '24px',
+            'full': '9999px',
+          },
+          boxShadow: {
+            'card-subtle': '0 2px 8px -2px rgba(30, 28, 26, 0.05), 0 1px 2px 0 rgba(30, 28, 26, 0.02)',
+            'pro-elevated': '0 12px 30px -6px rgba(235, 94, 40, 0.16), 0 2px 8px 0 rgba(30, 28, 26, 0.04)',
+            'glow-orange': '0 0 50px -10px rgba(235, 94, 40, 0.35)',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background-color: #ffffff;
+      color: #1e1c1a;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Rocket Architectural Container Grid Frame (Exact from design-preview-pricing.html) */
+    .rocket-container {
+      max-width: 1320px;
+      margin-left: auto;
+      margin-right: auto;
+      border-left: 1px solid #e6e3dd;
+      border-right: 1px solid #e6e3dd;
+    }
+
+    /* Rocket.new Exact Radial Glow Gradient from Screenshot & Pricing Page */
+    .rocket-hero-gradient {
+      background: radial-gradient(100% 100% at 50% 108%, #f8b868 0%, #ecd09e 26%, #b5d9ff 55%, #d9ebff 76%, #f3f8ff 100%);
+    }
+
+    /* Infinite Marquee */
+    @keyframes marquee-left {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+    @keyframes marquee-right {
+      0% { transform: translateX(-50%); }
+      100% { transform: translateX(0); }
+    }
+    .animate-marquee {
+      display: flex;
+      width: 200%;
+      animation: marquee-left 34s linear infinite;
+    }
+    .animate-marquee:hover {
+      animation-play-state: paused;
+    }
+    .animate-marquee-reverse {
+      display: flex;
+      width: 200%;
+      animation: marquee-right 34s linear infinite;
+    }
+    .animate-marquee-reverse:hover {
+      animation-play-state: paused;
+    }
+
+    /* Custom Glassmorphism */
+    .glass-dark {
+      background: rgba(36, 34, 32, 0.75);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .glass-light {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(30, 28, 26, 0.08);
+    }
+    .glass-pill {
+      background: rgba(255, 255, 255, 0.06);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    button, a {
+      transition: all 0.15s ease-in-out;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-white text-[#1e1c1a] selection:bg-brandOrange selection:text-white">
+
+  <!-- ========================================================================= -->
+  <!-- 1. TOP NAVBAR (Transparent Fixed on Hero, Transitions to Solid on Scroll) -->
+  <!-- ========================================================================= -->
+  <header id="main-header" class="fixed top-0 left-0 right-0 z-50 w-full transition-all duration-300 bg-transparent border-b border-white/10 text-white">
+    <div class="max-w-[1320px] mx-auto px-4 sm:px-8 h-16 flex items-center justify-between gap-4">
+      
+      <!-- Brand Logo -->
+      <a href="/" class="flex items-center gap-2.5 group">
+        <div class="w-7 h-7 rounded-8 bg-white text-[#1e1c1a] flex items-center justify-center shadow-sm transition-colors" id="nav-logo-icon">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 3h18v18H3z"></path>
+            <path d="M3 9h18"></path>
+            <path d="M9 21V9"></path>
+          </svg>
+        </div>
+        <span class="font-bold text-base tracking-tight text-white transition-colors" id="nav-logo-text">
+          Buildographic
+        </span>
+      </a>
+
+      <!-- Desktop Navigation -->
+      <nav class="hidden md:flex items-center gap-1 text-sm font-medium" id="nav-links">
+        <a href="#solutions" class="nav-item px-3.5 py-1.5 rounded-8 text-white/80 hover:text-white hover:bg-white/10 transition">Solutions</a>
+        <a href="#studio" class="nav-item px-3.5 py-1.5 rounded-8 text-white/80 hover:text-white hover:bg-white/10 transition">Vibe Studio</a>
+        <a href="#templates" class="nav-item px-3.5 py-1.5 rounded-8 text-white/80 hover:text-white hover:bg-white/10 transition">Templates</a>
+        <a href="#comparison" class="nav-item px-3.5 py-1.5 rounded-8 text-white/80 hover:text-white hover:bg-white/10 transition">Why Us</a>
+        <a href="design-preview-pricing.html" id="nav-pricing-link" class="px-3.5 py-1.5 rounded-8 text-white font-semibold bg-white/10 flex items-center gap-1.5 transition">
+          <span>Pricing</span>
+          <span class="text-[10px] font-bold text-brandOrange bg-brandOrange/20 px-1.5 py-0.2 rounded-full">50% Off</span>
+        </a>
+        <a href="#faq" class="nav-item px-3.5 py-1.5 rounded-8 text-white/80 hover:text-white hover:bg-white/10 transition">FAQ</a>
+      </nav>
+
+      <!-- Right Action Controls -->
+      <div class="flex items-center gap-3">
+        <a href="/auth" id="nav-login-link" class="text-sm font-medium text-white/80 hover:text-white px-2 py-1 transition">Log in</a>
+        
+        <a href="/auth?provider=google" id="nav-cta-btn" class="inline-flex items-center gap-1.5 bg-white hover:bg-gray-100 text-[#1e1c1a] text-xs font-bold px-4 py-2.5 rounded-8 shadow-sm transition active:scale-95">
+          <span>Get started free</span>
+        </a>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ========================================================================= -->
+  <!-- 2. HERO SECTION (Full-Bleed Edge-to-Edge Video Under Transparent Navbar)  -->
+  <!-- ========================================================================= -->
+  <section class="border-b border-[#e6e3dd] relative overflow-hidden bg-[#1c1a18]">
+    
+    <!-- Full-Bleed Edge-to-Edge Video Background (Spans 100% Screen Width & Height) -->
+    <video 
+      id="hero-video-player"
+      autoplay 
+      muted 
+      loop 
+      playsinline
+      class="absolute inset-0 w-full h-full object-cover opacity-60 transition-opacity duration-700 hover:opacity-75 z-0"
+      poster="client/src/assets/images/carousel/property-1.jpg"
+    >
+      <source src="client/src/assets/videos/hero-background.mp4" type="video/mp4" />
+      <source src="attached_assets/Screen_Recording_2026-02-03_192624_1770127189268.mp4" type="video/mp4" />
+      Your browser does not support video playback.
+    </video>
+
+    <!-- Full-Bleed Cinematic Gradient Overlay -->
+    <div class="absolute inset-0 bg-gradient-to-b from-[#1c1a18]/85 via-[#1c1a18]/45 to-[#1c1a18]/90 z-0 pointer-events-none"></div>
+
+    <!-- Centered Content Container with Top Padding for Transparent Navbar -->
+    <div class="max-w-[1320px] mx-auto relative min-h-screen flex flex-col justify-between pt-24 pb-12 sm:pt-28 sm:pb-16 lg:pt-32 lg:pb-16 px-4 sm:px-8 lg:px-12 text-center z-10" id="hero-prompt">
+      
+      <!-- Top Overlay Controls / Status Bar -->
+      <div class="relative z-10 flex items-center justify-between max-w-5xl mx-auto w-full mb-4">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-white/90 text-[11px] font-medium shadow-xs">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span>Live Studio Engine</span>
+          <span class="text-white/40">•</span>
+          <span class="text-white/70">100% Vector Editable</span>
+        </div>
+
+        <!-- Video Sound & Fullscreen Controls -->
+        <div class="flex items-center gap-2">
+          <button onclick="toggleVideoSound()" id="sound-btn" class="px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 text-white/80 hover:text-white transition-colors backdrop-blur-md border border-white/15 text-xs flex items-center gap-1.5 shadow-sm">
+            <i data-lucide="volume-x" class="w-3.5 h-3.5" id="sound-icon"></i>
+            <span class="text-[11px] font-medium hidden sm:inline">Audio</span>
+          </button>
+          <a href="#studio" class="px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 text-white/80 hover:text-white transition-colors backdrop-blur-md border border-white/15 text-xs flex items-center gap-1.5 shadow-sm">
+            <span class="text-[11px] font-medium">Explore Studio</span>
+            <i data-lucide="arrow-right" class="w-3 h-3"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- Center Hero Content (Headline + Interactive Prompt Box) -->
+      <div class="relative z-10 max-w-4xl mx-auto flex flex-col items-center gap-3 my-auto py-6">
+        
+        <!-- Eyebrow Pill -->
+        <span class="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-amber-300 bg-amber-400/10 backdrop-blur-md border border-amber-400/25 px-4 py-1.5 rounded-full shadow-xs">
+          ✨ REAL ESTATE MODEL INTELLIGENCE 2.0
+        </span>
+
+        <!-- Direct H1 Value Proposition -->
+        <h1 class="text-3xl sm:text-5xl md:text-[56px] lg:text-[60px] font-bold tracking-tight text-white leading-[1.1] drop-shadow-md">
+          AI Design Studio for Real Estate.<br class="hidden sm:inline" /> Turn Listings into Viral Marketing.
+        </h1>
+
+        <!-- Supporting Copy -->
+        <p class="text-sm sm:text-base md:text-lg text-white/80 max-w-2xl mx-auto leading-relaxed drop-shadow-sm">
+          Transform property listings, MLS notes, and market data into stunning, 100% editable social carousels, open house flyers, listing infographics, and print marketing in under 60 seconds.
+        </p>
+
+        <!-- Rocket-Style Interactive Prompt Box with Frosted Glass -->
+        <div class="w-full max-w-3xl mt-6 text-left">
+          <div class="bg-white/95 backdrop-blur-xl p-2.5 rounded-20 shadow-2xl border border-white/30">
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+              <div class="flex items-center gap-3 px-4 py-2.5 flex-1">
+                <i data-lucide="sparkles" class="w-5 h-5 text-brandOrange flex-shrink-0"></i>
+                <input 
+                  type="text" 
+                  id="hero-input-field"
+                  placeholder="What property do you want to market? (e.g. Modern 4BHK Penthouse with infinity pool, $2.4M)..." 
+                  class="w-full bg-transparent text-[#1e1c1a] placeholder:text-[#8c8780] text-sm sm:text-base focus:outline-none font-medium"
+                  value="Luxury 4BHK Villa with private infinity pool & golf course view, $2.8M"
+                />
+              </div>
+              <button 
+                id="hero-generate-btn"
+                onclick="simulateGeneration()" 
+                class="px-6 py-3 rounded-12 bg-[#2a2825] hover:bg-[#1e1c1a] text-white font-bold text-sm flex items-center justify-center gap-2 shadow-md transition active:scale-95 flex-shrink-0"
+              >
+                <span id="btn-text">Generate Marketing Design</span>
+                <i data-lucide="arrow-right" class="w-4 h-4" id="btn-icon"></i>
+              </button>
+            </div>
+
+            <!-- Quick Starter Pills -->
+            <div class="pt-2.5 pb-1 px-3 border-t border-black/5 flex items-center gap-2 overflow-x-auto text-xs text-[#68645e]">
+              <span class="text-[#8c8780] font-semibold flex-shrink-0">Try:</span>
+              <button onclick="setPrompt('Luxury 4BHK Penthouse with 360 panoramic skyline view, $3.2M')" class="px-2.5 py-1 rounded-full bg-black/5 hover:bg-black/10 text-[#1e1c1a] transition-colors flex-shrink-0 flex items-center gap-1.5 font-medium">
+                <span>🏡</span> Luxury Penthouse
+              </button>
+              <button onclick="setPrompt('Open House this Sunday 2-5 PM, Modern Craftsman in Westwood')" class="px-2.5 py-1 rounded-full bg-black/5 hover:bg-black/10 text-[#1e1c1a] transition-colors flex-shrink-0 flex items-center gap-1.5 font-medium">
+                <span>📅</span> Open House Flyer
+              </button>
+              <button onclick="setPrompt('Q3 Market Pulse: 14% median price rise, 18 days on market')" class="px-2.5 py-1 rounded-full bg-black/5 hover:bg-black/10 text-[#1e1c1a] transition-colors flex-shrink-0 flex items-center gap-1.5 font-medium">
+                <span>📊</span> Market Trend Report
+              </button>
+              <button onclick="setPrompt('Just Reduced! $100k Price Drop on Beverly Hills Estate')" class="px-2.5 py-1 rounded-full bg-black/5 hover:bg-black/10 text-[#1e1c1a] transition-colors flex-shrink-0 flex items-center gap-1.5 font-medium">
+                <span>🏷️</span> Price Reduction
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Bottom Metric Cards (Frosted Glass in Rocket Container) -->
+      <div class="relative z-10 grid grid-cols-2 md:grid-cols-4 gap-3.5 max-w-5xl mx-auto w-full text-center mt-6">
+        <div class="p-4 rounded-16 bg-white/10 backdrop-blur-md border border-white/15 text-white shadow-lg">
+          <div class="text-2xl sm:text-3xl font-extrabold text-white">60s</div>
+          <div class="text-xs text-white/70 mt-1 font-medium">Prompt to High-Res Design</div>
+        </div>
+        <div class="p-4 rounded-16 bg-white/10 backdrop-blur-md border border-white/15 text-white shadow-lg">
+          <div class="text-2xl sm:text-3xl font-extrabold text-amber-400">10x</div>
+          <div class="text-xs text-white/70 mt-1 font-medium">Social Listing Views</div>
+        </div>
+        <div class="p-4 rounded-16 bg-white/10 backdrop-blur-md border border-white/15 text-white shadow-lg">
+          <div class="text-2xl sm:text-3xl font-extrabold text-white">100%</div>
+          <div class="text-xs text-white/70 mt-1 font-medium">Editable Vector Objects</div>
+        </div>
+        <div class="p-4 rounded-16 bg-white/10 backdrop-blur-md border border-white/15 text-white shadow-lg">
+          <div class="text-2xl sm:text-3xl font-extrabold text-emerald-400">7+</div>
+          <div class="text-xs text-white/70 mt-1 font-medium">Multi-Channel Formats</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- 3. RUNNING BROKERAGE TRUST MARQUEE                                        -->
+  <!-- ========================================================================= -->
+  <section class="border-b border-[#e6e3dd] bg-white py-6 overflow-hidden">
+    <div class="rocket-container border-x-0 sm:border-x">
+      <div class="overflow-x-hidden">
+        <div class="animate-marquee gap-12 items-center text-[#8c8780] text-xs font-bold uppercase tracking-wider">
+          <span class="flex items-center gap-2"><i data-lucide="building-2" class="w-4 h-4 text-brandOrange"></i> SOTHEBY'S INTERNATIONAL REALTY</span>
+          <span class="flex items-center gap-2"><i data-lucide="home" class="w-4 h-4 text-brandBlue"></i> KELLER WILLIAMS</span>
+          <span class="flex items-center gap-2"><i data-lucide="compass" class="w-4 h-4 text-brandOrange"></i> COMPASS REAL ESTATE</span>
+          <span class="flex items-center gap-2"><i data-lucide="shield" class="w-4 h-4 text-brandEmerald"></i> CENTURY 21</span>
+          <span class="flex items-center gap-2"><i data-lucide="award" class="w-4 h-4 text-brandBlue"></i> RE/MAX PREMIER</span>
+          <span class="flex items-center gap-2"><i data-lucide="building" class="w-4 h-4 text-brandOrange"></i> COLDWELL BANKER</span>
+          <span class="flex items-center gap-2"><i data-lucide="landmark" class="w-4 h-4 text-[#1e1c1a]"></i> BERKSHIRE HATHAWAY</span>
+          <!-- Duplicate for seamless loop -->
+          <span class="flex items-center gap-2"><i data-lucide="building-2" class="w-4 h-4 text-brandOrange"></i> SOTHEBY'S INTERNATIONAL REALTY</span>
+          <span class="flex items-center gap-2"><i data-lucide="home" class="w-4 h-4 text-brandBlue"></i> KELLER WILLIAMS</span>
+          <span class="flex items-center gap-2"><i data-lucide="compass" class="w-4 h-4 text-brandOrange"></i> COMPASS REAL ESTATE</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- 4. THE 3-PILLAR FRAMEWORK (Rocket Container 3-Column Divide Grid)         -->
+  <!-- ========================================================================= -->
+  <section id="solutions" class="border-b border-[#e6e3dd] bg-white py-20">
+    <div class="rocket-container px-4 sm:px-8">
+      
+      <div class="text-center max-w-3xl mx-auto mb-16">
+        <span class="text-xs font-bold uppercase tracking-wider text-[#8c8780]">
+          THE SOLUTIONING FRAMEWORK
+        </span>
+        <h2 class="text-3xl sm:text-4xl font-bold text-[#1e1c1a] mt-2 mb-3 tracking-tight">
+          From MLS text to viral marketing in three steps
+        </h2>
+        <p class="text-[#68645e] text-sm sm:text-base">
+          Stop wrestling with generic design tools or waiting days on freelance agencies.
+        </p>
+      </div>
+
+      <!-- 3-Column Divider Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-[#e6e3dd] rounded-16 border border-[#e6e3dd] overflow-hidden bg-white shadow-card-subtle">
+        
+        <!-- Pillar 1 -->
+        <div class="p-8 flex flex-col justify-between hover:bg-[#faf9f6] transition">
+          <div>
+            <div class="w-10 h-10 rounded-8 bg-[#2a2825] text-white flex items-center justify-center font-bold text-sm mb-6">
+              01
+            </div>
+            <div class="text-xs font-bold uppercase tracking-wider text-brandOrange mb-1.5">Ingest & Research</div>
+            <h3 class="text-lg font-bold text-[#1e1c1a] mb-2">Real Estate Data Extraction</h3>
+            <p class="text-xs text-[#68645e] leading-relaxed mb-6">
+              Paste raw MLS descriptions or property feature bullets. Real Estate AI extracts pricing, square footage, bed/bath specs, amenities, and narrative hooks automatically.
+            </p>
+          </div>
+          <div class="p-3 rounded-8 bg-[#faf9f6] border border-[#e6e3dd] text-xs font-mono text-[#68645e]">
+            <span class="text-[#1e1c1a] font-bold">✨ Amenities Mapped:</span> 100% Accuracy
+          </div>
+        </div>
+
+        <!-- Pillar 2 -->
+        <div class="p-8 flex flex-col justify-between hover:bg-[#faf9f6] transition">
+          <div>
+            <div class="w-10 h-10 rounded-8 bg-[#2a2825] text-white flex items-center justify-center font-bold text-sm mb-6">
+              02
+            </div>
+            <div class="text-xs font-bold uppercase tracking-wider text-brandBlue mb-1.5">AI Visual Studio</div>
+            <h3 class="text-lg font-bold text-[#1e1c1a] mb-2">Multi-Layer Vector Canvas</h3>
+            <p class="text-xs text-[#68645e] leading-relaxed mb-6">
+              Generates high-definition layout syntheses paired with a live vector canvas. Move text, adjust colors, swap badges, add custom shapes, and edit any marketing element with zero hallucinations.
+            </p>
+          </div>
+          <div class="p-3 rounded-8 bg-[#faf9f6] border border-[#e6e3dd] text-xs font-mono text-[#68645e]">
+            <span class="text-[#1e1c1a] font-bold">🎨 WYSIWYG Vector:</span> 100% Editable Text
+          </div>
+        </div>
+
+        <!-- Pillar 3 -->
+        <div class="p-8 flex flex-col justify-between hover:bg-[#faf9f6] transition">
+          <div>
+            <div class="w-10 h-10 rounded-8 bg-[#2a2825] text-white flex items-center justify-center font-bold text-sm mb-6">
+              03
+            </div>
+            <div class="text-xs font-bold uppercase tracking-wider text-brandEmerald mb-1.5">Brand & Distribute</div>
+            <h3 class="text-lg font-bold text-[#1e1c1a] mb-2">1-Click Multi-Format Reflow</h3>
+            <p class="text-xs text-[#68645e] leading-relaxed mb-6">
+              Auto-applies your agent headshot, license disclaimer, and brokerage logo. Instantly reflows across 9:16 Instagram Stories/Reels, 1:1 Feeds, 16:9 Banners, and 300 DPI Print PDFs.
+            </p>
+          </div>
+          <div class="p-3 rounded-8 bg-[#faf9f6] border border-[#e6e3dd] text-xs font-mono text-[#68645e]">
+            <span class="text-[#1e1c1a] font-bold">🚀 Multi-Format:</span> 9:16 • 1:1 • 16:9 • Print
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- 5. REFINEMENT MODES (Rocket Architectural Cards)                          -->
+  <!-- ========================================================================= -->
+  <section id="studio" class="border-b border-[#e6e3dd] bg-[#faf9f6] py-20">
+    <div class="rocket-container px-4 sm:px-8">
+      
+      <div class="text-center max-w-3xl mx-auto mb-16">
+        <span class="text-xs font-bold uppercase tracking-wider text-[#8c8780]">
+          CREATIVE CONTROL
+        </span>
+        <h2 class="text-3xl sm:text-4xl font-bold text-[#1e1c1a] mt-2 mb-3 tracking-tight">
+          Three ways to refine your designs
+        </h2>
+        <p class="text-[#68645e] text-sm sm:text-base">
+          Switch seamlessly between conversational prompts, visual drag-and-drop, and automated brand kits.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        
+        <!-- Mode 1 -->
+        <div class="p-8 rounded-16 bg-white border border-[#e6e3dd] shadow-card-subtle flex flex-col justify-between">
+          <div>
+            <div class="w-10 h-10 rounded-8 bg-brandOrangeLight text-brandOrange flex items-center justify-center mb-6">
+              <i data-lucide="message-square" class="w-5 h-5"></i>
+            </div>
+            <h3 class="text-base font-bold text-[#1e1c1a] mb-2">Prompt-Driven Refinement</h3>
+            <p class="text-xs text-[#68645e] leading-relaxed mb-6">
+              Talk directly to the canvas: "Make the price badge bold saffron", "Highlight the 360 rooftop terrace", or "Rewrite the description for luxury buyers."
+            </p>
+          </div>
+          <div class="p-3 rounded-8 bg-[#faf9f6] border border-[#e6e3dd] text-[11px] text-[#68645e] font-mono">
+            <span class="text-brandOrange font-bold">Prompt:</span> "Change headline to 'Beverly Hills Masterpiece' in bold."
+          </div>
+        </div>
+
+        <!-- Mode 2 -->
+        <div class="p-8 rounded-16 bg-white border border-[#e6e3dd] shadow-card-subtle flex flex-col justify-between">
+          <div>
+            <div class="w-10 h-10 rounded-8 bg-blue-50 text-brandBlue flex items-center justify-center mb-6">
+              <i data-lucide="pen-tool" class="w-5 h-5"></i>
+            </div>
+            <h3 class="text-base font-bold text-[#1e1c1a] mb-2">Direct Visual Canvas Edit</h3>
+            <p class="text-xs text-[#68645e] leading-relaxed mb-6">
+              Click any element directly on the screen. Drag text boxes, re-order layers, adjust opacity, change typography, or insert custom badges with zero friction.
+            </p>
+          </div>
+          <div class="p-3 rounded-8 bg-[#faf9f6] border border-[#e6e3dd] text-[11px] text-[#68645e] font-mono">
+            <span class="text-brandBlue font-bold">Layer Action:</span> [Text_Title] Moved • Font: Inter Black 36pt
+          </div>
+        </div>
+
+        <!-- Mode 3 -->
+        <div class="p-8 rounded-16 bg-white border border-[#e6e3dd] shadow-card-subtle flex flex-col justify-between">
+          <div>
+            <div class="w-10 h-10 rounded-8 bg-emerald-50 text-brandEmerald flex items-center justify-center mb-6">
+              <i data-lucide="shield-check" class="w-5 h-5"></i>
+            </div>
+            <h3 class="text-base font-bold text-[#1e1c1a] mb-2">Dynamic Brand Kit Sync</h3>
+            <p class="text-xs text-[#68645e] leading-relaxed mb-6">
+              One click stamps your agent headshot, official brokerage logo, license numbers, and custom team color palette across every single format.
+            </p>
+          </div>
+          <div class="p-3 rounded-8 bg-[#faf9f6] border border-[#e6e3dd] text-[11px] text-[#68645e] font-mono">
+            <span class="text-brandEmerald font-bold">Brand Kit:</span> Sotheby's Realty • Dinesh Prajapati (Active)
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- 6. CURATED TEMPLATES SHOWCASE (Double-Row Reverse Infinite Marquee)       -->
+  <!-- ========================================================================= -->
+  <section id="templates" class="border-b border-[#e6e3dd] bg-white py-20 overflow-hidden">
+    <div class="rocket-container px-4 sm:px-8">
+      
+      <div class="text-center max-w-3xl mx-auto mb-14">
+        <span class="text-xs font-bold uppercase tracking-wider text-[#8c8780]">
+          DESIGN-FIRST TEMPLATES
+        </span>
+        <h2 class="text-3xl sm:text-4xl font-bold text-[#1e1c1a] mt-2 mb-3 tracking-tight">
+          Architected for real estate conversion
+        </h2>
+        <p class="text-[#68645e] text-sm sm:text-base">
+          Explore proven high-converting layouts across Instagram, Facebook, LinkedIn, MLS, and A4 print flyers.
+        </p>
+      </div>
+
+    </div>
+
+    <!-- Double-Row Infinite Marquee with Gradient Fade Edges (Referenced from LandingPage.tsx) -->
+    <div class="relative w-full overflow-hidden">
+      
+      <!-- Row 1: Forward Marquee -->
+      <div class="animate-marquee gap-6 items-center mb-6">
+        
+        <!-- Template 1: 9:16 Story -->
+        <div class="w-[280px] sm:w-[320px] rounded-16 bg-[#faf9f6] border border-[#e6e3dd] overflow-hidden shadow-card-subtle flex-shrink-0 group hover:scale-[1.02] transition-transform duration-300">
+          <div class="aspect-[4/3] overflow-hidden relative">
+            <img src="client/src/assets/images/carousel/property-1.jpg" alt="Modern Property Listing" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+            <span class="absolute top-2.5 right-2.5 px-2.5 py-0.5 rounded-full bg-[#1e1c1a]/85 text-white text-[10px] font-bold backdrop-blur-sm">9:16</span>
+          </div>
+          <div class="p-4 bg-white border-t border-[#e6e3dd]">
+            <h4 class="text-sm font-bold text-[#1e1c1a]">Modern Property Listing</h4>
+            <p class="text-[11px] text-[#68645e] mt-0.5">Instagram Story & Reel</p>
+          </div>
+        </div>
+
+        <!-- Template 2: 1:1 Square -->
+        <div class="w-[280px] sm:w-[320px] rounded-16 bg-[#faf9f6] border border-[#e6e3dd] overflow-hidden shadow-card-subtle flex-shrink-0 group hover:scale-[1.02] transition-transform duration-300">
+          <div class="aspect-[4/3] overflow-hidden relative">
+            <img src="client/src/assets/images/carousel/property-2.jpg" alt="Luxury Home Showcase" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+            <span class="absolute top-2.5 right-2.5 px-2.5 py-0.5 rounded-full bg-[#1e1c1a]/85 text-white text-[10px] font-bold backdrop-blur-sm">1:1</span>
+          </div>
+          <div class="p-4 bg-white border-t border-[#e6e3dd]">
+            <h4 class="text-sm font-bold text-[#1e1c1a]">Luxury Home Showcase</h4>
+            <p class="text-[11px] text-[#68645e] mt-0.5">Facebook & Instagram Post</p>
+          </div>
+        </div>
+
+        <!-- Template 3: 16:9 Banner -->
+        <div class="w-[280px] sm:w-[320px] rounded-16 bg-[#faf9f6] border border-[#e6e3dd] overflow-hidden shadow-card-subtle flex-shrink-0 group hover:scale-[1.02] transition-transform duration-300">
+          <div class="aspect-[4/3] overflow-hidden relative">
+            <img src="client/src/assets/images/carousel/property-3.jpg" alt="Commercial Property" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+            <span class="absolute top-2.5 right-2.5 px-2.5 py-0.5 rounded-full bg-[#1e1c1a]/85 text-white text-[10px] font-bold backdrop-blur-sm">16:9</span>
+          </div>
+          <div class="p-4 bg-white border-t border-[#e6e3dd]">
+            <h4 class="text-sm font-bold text-[#1e1c1a]">Commercial Property</h4>
+            <p class="text-[11px] text-[#68645e] mt-0.5">LinkedIn Banner & Web</p>
+          </div>
+        </div>
+
+        <!-- Duplicate Row 1 Items for Seamless Loop -->
+        <div class="w-[280px] sm:w-[320px] rounded-16 bg-[#faf9f6] border border-[#e6e3dd] overflow-hidden shadow-card-subtle flex-shrink-0 group hover:scale-[1.02] transition-transform duration-300">
+          <div class="aspect-[4/3] overflow-hidden relative">
+            <img src="client/src/assets/images/carousel/property-1.jpg" alt="Modern Property Listing" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+            <span class="absolute top-2.5 right-2.5 px-2.5 py-0.5 rounded-full bg-[#1e1c1a]/85 text-white text-[10px] font-bold backdrop-blur-sm">9:16</span>
+          </div>
+          <div class="p-4 bg-white border-t border-[#e6e3dd]">
+            <h4 class="text-sm font-bold text-[#1e1c1a]">Modern Property Listing</h4>
+            <p class="text-[11px] text-[#68645e] mt-0.5">Instagram Story & Reel</p>
+          </div>
+        </div>
+
+        <div class="w-[280px] sm:w-[320px] rounded-16 bg-[#faf9f6] border border-[#e6e3dd] overflow-hidden shadow-card-subtle flex-shrink-0 group hover:scale-[1.02] transition-transform duration-300">
+          <div class="aspect-[4/3] overflow-hidden relative">
+            <img src="client/src/assets/images/carousel/property-2.jpg" alt="Luxury Home Showcase" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+            <span class="absolute top-2.5 right-2.5 px-2.5 py-0.5 rounded-full bg-[#1e1c1a]/85 text-white text-[10px] font-bold backdrop-blur-sm">1:1</span>
+          </div>
+          <div class="p-4 bg-white border-t border-[#e6e3dd]">
+            <h4 class="text-sm font-bold text-[#1e1c1a]">Luxury Home Showcase</h4>
+            <p class="text-[11px] text-[#68645e] mt-0.5">Facebook & Instagram Post</p>
+          </div>
+        </div>
+
+        <div class="w-[280px] sm:w-[320px] rounded-16 bg-[#faf9f6] border border-[#e6e3dd] overflow-hidden shadow-card-subtle flex-shrink-0 group hover:scale-[1.02] transition-transform duration-300">
+          <div class="aspect-[4/3] overflow-hidden relative">
+            <img src="client/src/assets/images/carousel/property-3.jpg" alt="Commercial Property" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+            <span class="absolute top-2.5 right-2.5 px-2.5 py-0.5 rounded-full bg-[#1e1c1a]/85 text-white text-[10px] font-bold backdrop-blur-sm">16:9</span>
+          </div>
+          <div class="p-4 bg-white border-t border-[#e6e3dd]">
+            <h4 class="text-sm font-bold text-[#1e1c1a]">Commercial Property</h4>
+            <p class="text-[11px] text-[#68645e] mt-0.5">LinkedIn Banner & Web</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 2: Reverse Marquee -->
+      <div class="animate-marquee-reverse gap-6 items-center">
+        
+        <!-- Template 4: A4 Print -->
+        <div class="w-[280px] sm:w-[320px] rounded-16 bg-[#faf9f6] border border-[#e6e3dd] overflow-hidden shadow-card-subtle flex-shrink-0 group hover:scale-[1.02] transition-transform duration-300">
+          <div class="aspect-[4/3] overflow-hidden relative">
+            <img src="client/src/assets/images/carousel/property-1.jpg" alt="Open House Flyer" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+            <span class="absolute top-2.5 right-2.5 px-2.5 py-0.5 rounded-full bg-[#1e1c1a]/85 text-white text-[10px] font-bold backdrop-blur-sm">A4</span>
+          </div>
+          <div class="p-4 bg-white border-t border-[#e6e3dd]">
+            <h4 class="text-sm font-bold text-[#1e1c1a]">Open House Flyer</h4>
+            <p class="text-[11px] text-[#68645e] mt-0.5">Print Ready PDF (300 DPI)</p>
+          </div>
+        </div>
+
+        <!-- Template 5: 3:1 Email -->
+        <div class="w-[280px] sm:w-[320px] rounded-16 bg-[#faf9f6] border border-[#e6e3dd] overflow-hidden shadow-card-subtle flex-shrink-0 group hover:scale-[1.02] transition-transform duration-300">
+          <div class="aspect-[4/3] overflow-hidden relative">
+            <img src="client/src/assets/images/carousel/property-2.jpg" alt="Market Report" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+            <span class="absolute top-2.5 right-2.5 px-2.5 py-0.5 rounded-full bg-[#1e1c1a]/85 text-white text-[10px] font-bold backdrop-blur-sm">3:1</span>
+          </div>
+          <div class="p-4 bg-white border-t border-[#e6e3dd]">
+            <h4 class="text-sm font-bold text-[#1e1c1a]">Quarterly Market Report</h4>
+            <p class="text-[11px] text-[#68645e] mt-0.5">Email Newsletter Header</p>
+          </div>
+        </div>
+
+        <!-- Template 6: MLS Ready -->
+        <div class="w-[280px] sm:w-[320px] rounded-16 bg-[#faf9f6] border border-[#e6e3dd] overflow-hidden shadow-card-subtle flex-shrink-0 group hover:scale-[1.02] transition-transform duration-300">
+          <div class="aspect-[4/3] overflow-hidden relative">
+            <img src="client/src/assets/images/carousel/property-3.jpg" alt="Agent Branding" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+            <span class="absolute top-2.5 right-2.5 px-2.5 py-0.5 rounded-full bg-[#1e1c1a]/85 text-white text-[10px] font-bold backdrop-blur-sm">MLS</span>
+          </div>
+          <div class="p-4 bg-white border-t border-[#e6e3dd]">
+            <h4 class="text-sm font-bold text-[#1e1c1a]">Agent Branding Showcase</h4>
+            <p class="text-[11px] text-[#68645e] mt-0.5">MLS Compliant Format</p>
+          </div>
+        </div>
+
+        <!-- Duplicate Row 2 Items for Seamless Loop -->
+        <div class="w-[280px] sm:w-[320px] rounded-16 bg-[#faf9f6] border border-[#e6e3dd] overflow-hidden shadow-card-subtle flex-shrink-0 group hover:scale-[1.02] transition-transform duration-300">
+          <div class="aspect-[4/3] overflow-hidden relative">
+            <img src="client/src/assets/images/carousel/property-1.jpg" alt="Open House Flyer" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+            <span class="absolute top-2.5 right-2.5 px-2.5 py-0.5 rounded-full bg-[#1e1c1a]/85 text-white text-[10px] font-bold backdrop-blur-sm">A4</span>
+          </div>
+          <div class="p-4 bg-white border-t border-[#e6e3dd]">
+            <h4 class="text-sm font-bold text-[#1e1c1a]">Open House Flyer</h4>
+            <p class="text-[11px] text-[#68645e] mt-0.5">Print Ready PDF (300 DPI)</p>
+          </div>
+        </div>
+
+        <div class="w-[280px] sm:w-[320px] rounded-16 bg-[#faf9f6] border border-[#e6e3dd] overflow-hidden shadow-card-subtle flex-shrink-0 group hover:scale-[1.02] transition-transform duration-300">
+          <div class="aspect-[4/3] overflow-hidden relative">
+            <img src="client/src/assets/images/carousel/property-2.jpg" alt="Market Report" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+            <span class="absolute top-2.5 right-2.5 px-2.5 py-0.5 rounded-full bg-[#1e1c1a]/85 text-white text-[10px] font-bold backdrop-blur-sm">3:1</span>
+          </div>
+          <div class="p-4 bg-white border-t border-[#e6e3dd]">
+            <h4 class="text-sm font-bold text-[#1e1c1a]">Quarterly Market Report</h4>
+            <p class="text-[11px] text-[#68645e] mt-0.5">Email Newsletter Header</p>
+          </div>
+        </div>
+
+        <div class="w-[280px] sm:w-[320px] rounded-16 bg-[#faf9f6] border border-[#e6e3dd] overflow-hidden shadow-card-subtle flex-shrink-0 group hover:scale-[1.02] transition-transform duration-300">
+          <div class="aspect-[4/3] overflow-hidden relative">
+            <img src="client/src/assets/images/carousel/property-3.jpg" alt="Agent Branding" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+            <span class="absolute top-2.5 right-2.5 px-2.5 py-0.5 rounded-full bg-[#1e1c1a]/85 text-white text-[10px] font-bold backdrop-blur-sm">MLS</span>
+          </div>
+          <div class="p-4 bg-white border-t border-[#e6e3dd]">
+            <h4 class="text-sm font-bold text-[#1e1c1a]">Agent Branding Showcase</h4>
+            <p class="text-[11px] text-[#68645e] mt-0.5">MLS Compliant Format</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Left and Right Gradient Fade Masks (MagicUI Edge Fade) -->
+      <div class="pointer-events-none absolute inset-y-0 left-0 w-24 sm:w-48 bg-gradient-to-r from-white to-transparent z-10"></div>
+      <div class="pointer-events-none absolute inset-y-0 right-0 w-24 sm:w-48 bg-gradient-to-l from-white to-transparent z-10"></div>
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- 7. SIDE-BY-SIDE WORKFLOW CONTRAST                                         -->
+  <!-- ========================================================================= -->
+  <section id="comparison" class="border-b border-[#e6e3dd] bg-[#faf9f6] py-20">
+    <div class="rocket-container px-4 sm:px-8">
+      
+      <div class="text-center max-w-3xl mx-auto mb-14">
+        <span class="text-xs font-bold uppercase tracking-wider text-[#8c8780]">
+          THE SHIFT
+        </span>
+        <h2 class="text-3xl sm:text-4xl font-bold text-[#1e1c1a] mt-2 mb-3 tracking-tight">
+          Why real estate pros choose Buildographic
+        </h2>
+        <p class="text-[#68645e] text-sm sm:text-base">
+          Stop wrestling with generic design tools or waiting days on freelance agencies.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+        
+        <!-- Old Workflow -->
+        <div class="p-8 rounded-24 bg-red-50/50 border border-red-200/80">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="w-10 h-10 rounded-full bg-red-100 text-red-600 flex items-center justify-center font-bold">
+              <i data-lucide="x" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <h3 class="text-lg font-bold text-red-950">The Old Workflow</h3>
+              <p class="text-xs text-red-700">Canva, Photoshop, or Freelance Agencies</p>
+            </div>
+          </div>
+          <ul class="space-y-4 text-sm text-red-900/90 font-medium">
+            <li class="flex items-start gap-3">
+              <i data-lucide="clock" class="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5"></i>
+              <span>2–4 hours manually copying MLS data and formatting layers</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <i data-lucide="dollar-sign" class="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5"></i>
+              <span>$50–$150 per flyer when outsourcing to freelance designers</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <i data-lucide="alert-triangle" class="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5"></i>
+              <span>Flat AI image generators produce unfixable text typos</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <i data-lucide="layers" class="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5"></i>
+              <span>Must manually resize separately for Stories, Posts, & MLS</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- The Buildographic Way -->
+        <div class="p-8 rounded-24 bg-brandOrangeLight border border-brandOrange/30 shadow-pro-elevated relative overflow-hidden">
+          <div class="absolute -top-10 -right-10 w-40 h-40 bg-brandOrange/10 rounded-full blur-2xl pointer-events-none"></div>
+          <div class="flex items-center gap-3 mb-6">
+            <div class="w-10 h-10 rounded-full bg-brandOrange text-white flex items-center justify-center shadow-glow-orange font-bold">
+              <i data-lucide="check" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <h3 class="text-lg font-bold text-[#1e1c1a]">The Buildographic Way</h3>
+              <p class="text-xs text-brandOrange font-bold">AI Studio & Instant Vector Canvas</p>
+            </div>
+          </div>
+          <ul class="space-y-4 text-sm text-[#1e1c1a] font-semibold">
+            <li class="flex items-start gap-3">
+              <i data-lucide="zap" class="w-5 h-5 text-brandOrange flex-shrink-0 mt-0.5"></i>
+              <span>60 seconds from prompt or raw MLS text to finished design</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <i data-lucide="badge-percent" class="w-5 h-5 text-brandOrange flex-shrink-0 mt-0.5"></i>
+              <span>Transparent output pricing starting from $0.29 per design</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <i data-lucide="pen-tool" class="w-5 h-5 text-brandOrange flex-shrink-0 mt-0.5"></i>
+              <span>100% editable vector layers with full typography & color control</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <i data-lucide="maximize" class="w-5 h-5 text-brandOrange flex-shrink-0 mt-0.5"></i>
+              <span>1-click multi-format reflow across 9:16, 1:1, 16:9 & print PDF</span>
+            </li>
+          </ul>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- 8. PRICING SNAPSHOT (Rocket-Inspired Output-Based Pricing)                 -->
+  <!-- ========================================================================= -->
+  <section class="py-24 bg-rocketDark text-white border-b border-white/10" id="pricing">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="text-center max-w-3xl mx-auto mb-12">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brandOrange/20 text-brandOrange text-xs font-bold uppercase tracking-wider mb-3">
+          Output-Based Pricing
+        </div>
+        <h2 class="text-3xl sm:text-5xl font-extrabold tracking-tight text-white">
+          Pay for results, not idle seats.
+        </h2>
+        <p class="mt-4 text-white/70 text-base sm:text-lg">
+          No designer retainers. Scale your listing marketing on transparent monthly or annual plans.
+        </p>
+
+        <!-- Billing Toggle -->
+        <div class="mt-8 inline-flex items-center p-1 rounded-full bg-white/10 border border-white/15">
+          <button id="toggle-monthly" onclick="setBilling('monthly')" class="px-5 py-2 rounded-full text-xs font-bold text-white bg-brandOrange transition-all">Monthly</button>
+          <button id="toggle-annual" onclick="setBilling('annual')" class="px-5 py-2 rounded-full text-xs font-bold text-white/70 hover:text-white transition-all flex items-center gap-1.5">
+            <span>Annual</span>
+            <span class="px-1.5 py-0.2 rounded bg-brandEmerald text-white text-[10px] font-extrabold">Save 15%</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 3 Tier Cards Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
+        
+        <!-- FREE TIER -->
+        <div class="p-8 rounded-24 glass-dark border border-white/10 flex flex-col justify-between">
+          <div>
+            <div class="text-xs font-bold uppercase text-white/60 mb-2">Free Starter</div>
+            <div class="flex items-baseline gap-1 mb-4">
+              <span class="text-4xl font-extrabold text-white">$0</span>
+              <span class="text-xs text-white/60">/month</span>
+            </div>
+            <p class="text-xs text-white/60 mb-6">Perfect for trying Buildographic on your next property listing.</p>
+            <ul class="space-y-3 text-xs text-white/80 font-medium mb-8">
+              <li class="flex items-center gap-2.5">
+                <i data-lucide="check" class="w-4 h-4 text-brandEmerald"></i>
+                <span>3 AI Marketing Designs / month</span>
+              </li>
+              <li class="flex items-center gap-2.5">
+                <i data-lucide="check" class="w-4 h-4 text-brandEmerald"></i>
+                <span>Standard Canvas Studio</span>
+              </li>
+              <li class="flex items-center gap-2.5">
+                <i data-lucide="check" class="w-4 h-4 text-brandEmerald"></i>
+                <span>Web-Resolution Exports (PNG)</span>
+              </li>
+            </ul>
+          </div>
+          <a href="/auth" class="w-full py-3 rounded-12 bg-white/10 hover:bg-white/20 text-white text-center text-xs font-bold transition-colors">
+            Get Started Free
+          </a>
+        </div>
+
+        <!-- SOLO TIER (Highlighted) -->
+        <div class="p-8 rounded-24 bg-rocketCharcoal border-2 border-brandOrange relative flex flex-col justify-between shadow-glow-orange">
+          <div class="absolute -top-3.5 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-brandOrange text-white text-[11px] font-extrabold tracking-wider uppercase">
+            Most Popular
+          </div>
+          <div>
+            <div class="text-xs font-bold uppercase text-brandOrange mb-2">Solo Agent Pro</div>
+            <div class="flex items-baseline gap-1 mb-4">
+              <span class="text-4xl font-extrabold text-white" id="price-solo">$19</span>
+              <span class="text-xs text-white/60" id="period-solo">/month</span>
+            </div>
+            <p class="text-xs text-white/60 mb-6">Designed for active individual real estate agents.</p>
+            <ul class="space-y-3 text-xs text-white/90 font-medium mb-8">
+              <li class="flex items-center gap-2.5">
+                <i data-lucide="check" class="w-4 h-4 text-brandOrange"></i>
+                <span class="font-bold">50 AI Marketing Designs / month</span>
+              </li>
+              <li class="flex items-center gap-2.5">
+                <i data-lucide="check" class="w-4 h-4 text-brandOrange"></i>
+                <span>Custom Agent Brand Kit & Logo</span>
+              </li>
+              <li class="flex items-center gap-2.5">
+                <i data-lucide="check" class="w-4 h-4 text-brandOrange"></i>
+                <span>High-Resolution PNG, JPG & Print PDF</span>
+              </li>
+              <li class="flex items-center gap-2.5">
+                <i data-lucide="check" class="w-4 h-4 text-brandOrange"></i>
+                <span>Priority AI Generation Queue</span>
+              </li>
+            </ul>
+          </div>
+          <a href="design-preview-pricing.html" class="w-full py-3 rounded-12 bg-brandOrange hover:bg-brandOrangeHover text-white text-center text-xs font-bold shadow-pro-elevated transition-colors">
+            Start 7-Day Solo Trial
+          </a>
+        </div>
+
+        <!-- TEAM TIER -->
+        <div class="p-8 rounded-24 glass-dark border border-white/10 flex flex-col justify-between">
+          <div>
+            <div class="text-xs font-bold uppercase text-white/60 mb-2">Team & Brokerage</div>
+            <div class="flex items-baseline gap-1 mb-4">
+              <span class="text-4xl font-extrabold text-white" id="price-team">$49</span>
+              <span class="text-xs text-white/60" id="period-team">/month</span>
+            </div>
+            <p class="text-xs text-white/60 mb-6">For real estate teams and brokerage offices.</p>
+            <ul class="space-y-3 text-xs text-white/80 font-medium mb-8">
+              <li class="flex items-center gap-2.5">
+                <i data-lucide="check" class="w-4 h-4 text-brandEmerald"></i>
+                <span class="font-bold">200 AI Marketing Designs / month</span>
+              </li>
+              <li class="flex items-center gap-2.5">
+                <i data-lucide="check" class="w-4 h-4 text-brandEmerald"></i>
+                <span>Multiple Agent Headshots & Profiles</span>
+              </li>
+              <li class="flex items-center gap-2.5">
+                <i data-lucide="check" class="w-4 h-4 text-brandEmerald"></i>
+                <span>Shared Team Template Library</span>
+              </li>
+              <li class="flex items-center gap-2.5">
+                <i data-lucide="check" class="w-4 h-4 text-brandEmerald"></i>
+                <span>Dedicated Account Support</span>
+              </li>
+            </ul>
+          </div>
+          <a href="design-preview-pricing.html" class="w-full py-3 rounded-12 bg-white/10 hover:bg-white/20 text-white text-center text-xs font-bold transition-colors">
+            Upgrade to Team
+          </a>
+        </div>
+
+      </div>
+
+      <div class="text-center mt-10">
+        <a href="design-preview-pricing.html" class="inline-flex items-center gap-2 text-sm font-semibold text-white/70 hover:text-white transition-colors">
+          <span>Need API access or Enterprise Brokerage plans?</span>
+          <span class="text-brandOrange underline">View Full Pricing Table →</span>
+        </a>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- 9. FAQ ACCORDION                                                          -->
+  <!-- ========================================================================= -->
+  <section id="faq" class="border-b border-[#e6e3dd] bg-[#faf9f6] py-20">
+    <div class="rocket-container px-4 sm:px-8">
+      
+      <div class="text-center max-w-3xl mx-auto mb-14">
+        <span class="text-xs font-bold uppercase tracking-wider text-[#8c8780]">
+          COMMON QUESTIONS
+        </span>
+        <h2 class="text-3xl sm:text-4xl font-bold text-[#1e1c1a] mt-2 mb-3 tracking-tight">
+          Frequently Asked Questions
+        </h2>
+      </div>
+
+      <div class="max-w-3xl mx-auto space-y-3">
+        
+        <!-- FAQ 1 -->
+        <div class="rounded-12 bg-white border border-[#e6e3dd] p-5 cursor-pointer shadow-xs" onclick="toggleFaq('faq-1')">
+          <div class="flex items-center justify-between">
+            <h4 class="text-sm font-bold text-[#1e1c1a]">What makes Buildographic different from standard AI image tools?</h4>
+            <i data-lucide="chevron-down" class="w-4 h-4 text-[#8c8780] transition-transform" id="icon-faq-1"></i>
+          </div>
+          <div id="faq-1" class="hidden mt-3 text-xs text-[#68645e] leading-relaxed border-t border-[#e6e3dd] pt-3">
+            Standard AI image generators return flat pixel files where text cannot be edited and frequently hallucinates gibberish. Buildographic is a specialized Real Estate Visual Marketing & Design Studio. It creates complete, multi-format listings (Instagram Stories, Feed Posts, Print Flyers, and Infographics) with 100% editable vector text, shapes, and dynamic agent brand kits.
+          </div>
+        </div>
+
+        <!-- FAQ 2 -->
+        <div class="rounded-12 bg-white border border-[#e6e3dd] p-5 cursor-pointer shadow-xs" onclick="toggleFaq('faq-2')">
+          <div class="flex items-center justify-between">
+            <h4 class="text-sm font-bold text-[#1e1c1a]">Can I use my own brokerage logo and agent headshot?</h4>
+            <i data-lucide="chevron-down" class="w-4 h-4 text-[#8c8780] transition-transform" id="icon-faq-2"></i>
+          </div>
+          <div id="faq-2" class="hidden mt-3 text-xs text-[#68645e] leading-relaxed border-t border-[#e6e3dd] pt-3">
+            Yes! In your Brand Kit settings, you can upload your headshot, brokerage logo, license numbers, and official brand hex colors. When generating or opening any template, your branding is dynamically stamped into the design.
+          </div>
+        </div>
+
+        <!-- FAQ 3 -->
+        <div class="rounded-12 bg-white border border-[#e6e3dd] p-5 cursor-pointer shadow-xs" onclick="toggleFaq('faq-3')">
+          <div class="flex items-center justify-between">
+            <h4 class="text-sm font-bold text-[#1e1c1a]">What export formats are supported?</h4>
+            <i data-lucide="chevron-down" class="w-4 h-4 text-[#8c8780] transition-transform" id="icon-faq-3"></i>
+          </div>
+          <div id="faq-3" class="hidden mt-3 text-xs text-[#68645e] leading-relaxed border-t border-[#e6e3dd] pt-3">
+            All plans support high-resolution PNG and JPG downloads formatted for Instagram Stories/Reels (9:16), Square Feeds (1:1), Website Banners (16:9), and MLS flyers. Paid plans also include 300 DPI vector PDF exports for physical open-house print flyers.
+          </div>
+        </div>
+
+        <!-- FAQ 4 -->
+        <div class="rounded-12 bg-white border border-[#e6e3dd] p-5 cursor-pointer shadow-xs" onclick="toggleFaq('faq-4')">
+          <div class="flex items-center justify-between">
+            <h4 class="text-sm font-bold text-[#1e1c1a]">Can I upgrade, downgrade, or cancel anytime?</h4>
+            <i data-lucide="chevron-down" class="w-4 h-4 text-[#8c8780] transition-transform" id="icon-faq-4"></i>
+          </div>
+          <div id="faq-4" class="hidden mt-3 text-xs text-[#68645e] leading-relaxed border-t border-[#e6e3dd] pt-3">
+            Absolutely. There are zero long-term commitments or lock-ins. You can switch between Monthly and Annual billing or cancel your subscription at any time directly inside your account billing dashboard.
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- 10. BOTTOM CTA BANNER                                                     -->
+  <!-- ========================================================================= -->
+  <section class="border-b border-[#e6e3dd] bg-white py-20 text-center">
+    <div class="rocket-container px-4 sm:px-8">
+      <div class="max-w-3xl mx-auto space-y-5">
+        <span class="text-xs font-bold uppercase tracking-wider text-brandOrange bg-brandOrange/10 border border-brandOrange/20 px-3.5 py-1 rounded-full">
+          ⚡ GET STARTED IN UNDER 60 SECONDS
+        </span>
+        <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold text-[#1e1c1a] tracking-tight">
+          Ready to 10x your listing marketing?
+        </h2>
+        <p class="text-[#68645e] text-sm sm:text-base max-w-xl mx-auto">
+          Join hundreds of top realtors and brokerages who create stunning, on-brand marketing materials in seconds.
+        </p>
+        <!-- Bottom Auth Button Group -->
+        <div class="pt-3 flex flex-col sm:flex-row items-center justify-center gap-3">
+          <a href="/auth?provider=google" class="inline-flex items-center gap-2.5 bg-white hover:bg-gray-50 text-[#1e1c1a] text-sm font-semibold px-6 py-3.5 rounded-full border border-black/15 shadow-sm transition active:scale-95">
+            <svg class="h-4 w-4" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+            </svg>
+            <span>Continue with Google</span>
+          </a>
+          <a href="#hero-prompt" class="inline-flex items-center gap-2 bg-[#2a2825] hover:bg-[#1e1c1a] text-white text-sm font-bold px-6 py-3.5 rounded-full shadow-sm transition active:scale-95">
+            <span>Create your first marketing design free</span>
+            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </a>
+        </div>
+        <div class="pt-1">
+          <a href="design-preview-pricing.html" class="inline-flex items-center text-xs font-semibold text-[#68645e] hover:text-[#1e1c1a] transition">
+            Explore pricing & plans →
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- 11. FOOTER (Matching design-preview-pricing.html Exact Footer)            -->
+  <!-- ========================================================================= -->
+  <footer class="bg-white text-[#68645e] py-14 text-xs">
+    <div class="max-w-[1320px] mx-auto px-4 sm:px-8">
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-8 mb-10">
+        
+        <!-- Brand Column -->
+        <div class="md:col-span-2 space-y-3">
+          <div class="flex items-center gap-2.5">
+            <div class="w-6 h-6 rounded-6 bg-[#2a2825] flex items-center justify-center text-white">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M3 3h18v18H3z"></path>
+                <path d="M3 9h18"></path>
+                <path d="M9 21V9"></path>
+              </svg>
+            </div>
+            <span class="font-bold text-sm text-[#1e1c1a]">Buildographic</span>
+          </div>
+          <p class="text-[11px] text-[#8c8780] max-w-sm leading-relaxed">
+            AI Visual Marketing & Design Studio for Real Estate. Empowering agents and brokerages to create high-converting visual marketing materials in seconds.
+          </p>
+        </div>
+
+        <!-- Links Column 1 -->
+        <div>
+          <h5 class="text-xs font-bold text-[#1e1c1a] uppercase tracking-wider mb-3">Product</h5>
+          <ul class="space-y-2 text-[11px]">
+            <li><a href="#solutions" class="hover:text-[#1e1c1a] transition">Solutions</a></li>
+            <li><a href="#studio" class="hover:text-[#1e1c1a] transition">Vibe Studio</a></li>
+            <li><a href="#templates" class="hover:text-[#1e1c1a] transition">Templates</a></li>
+            <li><a href="design-preview-pricing.html" class="hover:text-[#1e1c1a] transition">Pricing</a></li>
+          </ul>
+        </div>
+
+        <!-- Links Column 2 -->
+        <div>
+          <h5 class="text-xs font-bold text-[#1e1c1a] uppercase tracking-wider mb-3">Templates</h5>
+          <ul class="space-y-2 text-[11px]">
+            <li><a href="#templates" class="hover:text-[#1e1c1a] transition">Luxury Listings</a></li>
+            <li><a href="#templates" class="hover:text-[#1e1c1a] transition">Open House Flyers</a></li>
+            <li><a href="#templates" class="hover:text-[#1e1c1a] transition">Market Reports</a></li>
+            <li><a href="#templates" class="hover:text-[#1e1c1a] transition">Agent Branding</a></li>
+          </ul>
+        </div>
+
+        <!-- Links Column 3 -->
+        <div>
+          <h5 class="text-xs font-bold text-[#1e1c1a] uppercase tracking-wider mb-3">Legal & Support</h5>
+          <ul class="space-y-2 text-[11px]">
+            <li><a href="/legal/terms" class="hover:text-[#1e1c1a] transition">Terms of Service</a></li>
+            <li><a href="/legal/privacy" class="hover:text-[#1e1c1a] transition">Privacy Policy</a></li>
+            <li><a href="#faq" class="hover:text-[#1e1c1a] transition">Help Center</a></li>
+            <li><a href="mailto:support@buildographic.com" class="hover:text-[#1e1c1a] transition">Contact Support</a></li>
+          </ul>
+        </div>
+
+      </div>
+
+      <div class="border-t border-[#e6e3dd] pt-6 flex flex-col sm:flex-row items-center justify-between text-[11px] text-[#8c8780]">
+        <div>© 2026 Buildographic Technologies Inc. All rights reserved.</div>
+        <div class="flex items-center gap-4 mt-3 sm:mt-0">
+          <span>Real Estate Model Intelligence v2.0</span>
+          <span>Status: All Systems Operational</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ========================================================================= -->
+  <!-- JAVASCRIPT LOGIC                                                          -->
+  <!-- ========================================================================= -->
+  <script>
+    // Initialize Lucide Icons
+    lucide.createIcons();
+
+    // 1. Prompt Bar Simulation
+    function setPrompt(text) {
+      const input = document.getElementById('hero-input-field');
+      input.value = text;
+      input.focus();
+    }
+
+    function simulateGeneration() {
+      const btn = document.getElementById('hero-generate-btn');
+      const text = document.getElementById('btn-text');
+
+      btn.disabled = true;
+      text.innerText = "Synthesizing Layout...";
+      btn.classList.add('opacity-80');
+
+      setTimeout(() => {
+        text.innerText = "Launching Studio...";
+        setTimeout(() => {
+          btn.disabled = false;
+          text.innerText = "Generate Marketing Design";
+          btn.classList.remove('opacity-80');
+          window.location.href = '#studio';
+        }, 800);
+      }, 1000);
+    }
+
+    // 2. Video sound toggle
+    let isMuted = true;
+    function toggleVideoSound() {
+      const video = document.getElementById('hero-video-player');
+      const icon = document.getElementById('sound-icon');
+      if (video) {
+        isMuted = !isMuted;
+        video.muted = isMuted;
+        icon.setAttribute('data-lucide', isMuted ? 'volume-x' : 'volume-2');
+        lucide.createIcons();
+      }
+    }
+
+    // 3. Billing Toggle
+    let billingCycle = 'monthly';
+    function setBilling(cycle) {
+      billingCycle = cycle;
+      const btnM = document.getElementById('toggle-monthly');
+      const btnA = document.getElementById('toggle-annual');
+      const priceSolo = document.getElementById('price-solo');
+      const priceTeam = document.getElementById('price-team');
+      const periodSolo = document.getElementById('period-solo');
+      const periodTeam = document.getElementById('period-team');
+
+      if (!btnM || !btnA) return;
+
+      if (cycle === 'annual') {
+        btnA.classList.add('bg-brandOrange', 'text-white');
+        btnA.classList.remove('text-white/70');
+        btnM.classList.remove('bg-brandOrange', 'text-white');
+        btnM.classList.add('text-white/70');
+
+        if (priceSolo) priceSolo.innerText = '$16';
+        if (priceTeam) priceTeam.innerText = '$41';
+        if (periodSolo) periodSolo.innerText = '/mo (billed annually)';
+        if (periodTeam) periodTeam.innerText = '/mo (billed annually)';
+      } else {
+        btnM.classList.add('bg-brandOrange', 'text-white');
+        btnM.classList.remove('text-white/70');
+        btnA.classList.remove('bg-brandOrange', 'text-white');
+        btnA.classList.add('text-white/70');
+
+        if (priceSolo) priceSolo.innerText = '$19';
+        if (priceTeam) priceTeam.innerText = '$49';
+        if (periodSolo) periodSolo.innerText = '/month';
+        if (periodTeam) periodTeam.innerText = '/month';
+      }
+    }
+
+    // 4. FAQ Accordion Toggle
+    function toggleFaq(id) {
+      const content = document.getElementById(id);
+      const icon = document.getElementById('icon-' + id);
+      if (content.classList.contains('hidden')) {
+        content.classList.remove('hidden');
+        if (icon) icon.classList.add('rotate-180');
+      } else {
+        content.classList.add('hidden');
+        if (icon) icon.classList.remove('rotate-180');
+      }
+    }
+
+    // 5. Dynamic Navbar Scroll Transition (Transparent on Hero -> Solid White on Scroll)
+    window.addEventListener('scroll', () => {
+      const header = document.getElementById('main-header');
+      const logoIcon = document.getElementById('nav-logo-icon');
+      const logoText = document.getElementById('nav-logo-text');
+      const navItems = document.querySelectorAll('.nav-item');
+      const pricingLink = document.getElementById('nav-pricing-link');
+      const loginLink = document.getElementById('nav-login-link');
+      const ctaBtn = document.getElementById('nav-cta-btn');
+
+      if (!header) return;
+
+      if (window.scrollY > 40) {
+        // Scrolled state: Solid white glassmorphism
+        header.classList.remove('bg-transparent', 'border-white/10', 'text-white');
+        header.classList.add('bg-white/95', 'backdrop-blur-md', 'border-[#e6e3dd]', 'shadow-xs', 'text-[#1e1c1a]');
+
+        if (logoIcon) {
+          logoIcon.classList.remove('bg-white', 'text-[#1e1c1a]');
+          logoIcon.classList.add('bg-[#2a2825]', 'text-white');
+        }
+        if (logoText) {
+          logoText.classList.remove('text-white');
+          logoText.classList.add('text-[#1e1c1a]');
+        }
+        navItems.forEach(item => {
+          item.classList.remove('text-white/80', 'hover:text-white', 'hover:bg-white/10');
+          item.classList.add('text-[#68645e]', 'hover:text-[#1e1c1a]', 'hover:bg-[#faf9f6]');
+        });
+        if (pricingLink) {
+          pricingLink.classList.remove('bg-white/10', 'text-white');
+          pricingLink.classList.add('bg-[#e6e3dd]/40', 'text-[#1e1c1a]');
+        }
+        if (loginLink) {
+          loginLink.classList.remove('text-white/80', 'hover:text-white');
+          loginLink.classList.add('text-[#68645e]', 'hover:text-[#1e1c1a]');
+        }
+        if (ctaBtn) {
+          ctaBtn.classList.remove('bg-white', 'hover:bg-gray-100', 'text-[#1e1c1a]');
+          ctaBtn.classList.add('bg-[#2a2825]', 'hover:bg-[#1e1c1a]', 'text-white');
+        }
+      } else {
+        // Top Hero state: Transparent over video
+        header.classList.add('bg-transparent', 'border-white/10', 'text-white');
+        header.classList.remove('bg-white/95', 'backdrop-blur-md', 'border-[#e6e3dd]', 'shadow-xs', 'text-[#1e1c1a]');
+
+        if (logoIcon) {
+          logoIcon.classList.add('bg-white', 'text-[#1e1c1a]');
+          logoIcon.classList.remove('bg-[#2a2825]', 'text-white');
+        }
+        if (logoText) {
+          logoText.classList.add('text-white');
+          logoText.classList.remove('text-[#1e1c1a]');
+        }
+        navItems.forEach(item => {
+          item.classList.add('text-white/80', 'hover:text-white', 'hover:bg-white/10');
+          item.classList.remove('text-[#68645e]', 'hover:text-[#1e1c1a]', 'hover:bg-[#faf9f6]');
+        });
+        if (pricingLink) {
+          pricingLink.classList.add('bg-white/10', 'text-white');
+          pricingLink.classList.remove('bg-[#e6e3dd]/40', 'text-[#1e1c1a]');
+        }
+        if (loginLink) {
+          loginLink.classList.add('text-white/80', 'hover:text-white');
+          loginLink.classList.remove('text-[#68645e]', 'hover:text-[#1e1c1a]');
+        }
+        if (ctaBtn) {
+          ctaBtn.classList.add('bg-white', 'hover:bg-gray-100', 'text-[#1e1c1a]');
+          ctaBtn.classList.remove('bg-[#2a2825]', 'hover:bg-[#1e1c1a]', 'text-white');
+        }
+      }
+    });
+  </script>
+</body>
+</html>

@@ -110,7 +110,7 @@ text in the same marquee slot — e.g. "SOLO AGENTS" / "REAL ESTATE TEAMS" / "BR
 "PROPERTY MANAGERS" — the same pattern the pricing page's own marquee already uses (real-estate
 *use-case* tags, never a named third party). If real, consenting customer logos exist later, that's
 a separate, deliberate addition with actual permission on file, not a mockup default.
-**Your decision:** _______________________________________________
+**Your decision:** __________________________________________approved_____
 
 ---
 
@@ -123,7 +123,7 @@ right above it already does this correctly) followed by a supporting line that d
 customer count, e.g. "Create stunning, on-brand marketing materials in seconds." If the beta-mode
 banner is active (`VITE_BETA_MODE`), this section should stay consistent with that framing rather
 than implying an established customer base.
-**Your decision:** _______________________________________________
+**Your decision:** ___________________________Approved____________________
 
 ---
 
@@ -136,7 +136,7 @@ exact category of claim ("No Ideogram/GPT/API cost language anywhere on the page
 "Your plan is based on marketing output — not per-seat software fees" — or similar, pointing at the
 real plan pricing rather than an internal cost-per-unit number. No dollar-per-design figure anywhere
 on the page.
-**Your decision:** _______________________________________________
+**Your decision:** ______________________Approved_________________________
 
 ---
 
@@ -148,7 +148,7 @@ anywhere in `PLAN_CONFIG` or the subscription-creation flow today.
 build a real trial mechanic as part of this (visual-only) pass — if a 7-day trial is wanted as a
 real product feature, that's separate backend-scoped work (new `PLAN_CONFIG`/subscription fields,
 webhook handling) for its own story later.
-**Your decision:** _______________________________________________
+**Your decision:** __________________________Approved_____________________
 
 ---
 
@@ -159,7 +159,7 @@ hallucinations" is an absolute claim that's hard to stand behind.
 *Proposed remedial action:* Reword to the term the product already uses elsewhere (`EPIC-EDIT-03`):
 "Multi-layer Canvas Editor" / "fully editable text, colors, shapes & photos," not "vector." Drop
 "zero hallucinations"; replace with an honest, softer claim about not needing manual redesign.
-**Your decision:** _______________________________________________
+**Your decision:** _____________________________Approved and I agree__________________
 
 ---
 
@@ -170,7 +170,7 @@ INR numbers via the existing `GET /api/v1/pricing` endpoint, kept to the current
 FREE/SOLO/TEAM teaser scope (not a full 5-tier grid), the real ×10 annual formula labeled "2 months
 free" (not "15%"), no currency toggle — INR only, same `stripeEnabled`-gated pattern as `/pricing`.
 This one already has precedent; listed for explicit sign-off rather than as an open question.
-**Your decision:** _______________________________________________
+**Your decision:** ____________________Approved___________________________
 
 ---
 
@@ -183,7 +183,7 @@ clicking "Generate" routes to `/auth` (same as every other CTA on the page), the
 existing hero's input fields already work. Do **not** build real anonymous/unauthenticated
 generation as part of this visual pass — that needs rate-limiting, anonymous-quota handling, and
 abuse prevention, and is real backend-scoped work for its own story if wanted later.
-**Your decision:** _______________________________________________
+**Your decision:** ________________Approved_______________________________
 
 ---
 
@@ -195,7 +195,7 @@ sessions.
 section 5 (prompt-driven refinement, direct visual canvas edit, brand kit sync) is describing.
 Anchor id can stay whatever's convenient internally; the customer-facing label just needs to name a
 real thing.
-**Your decision:** _______________________________________________
+**Your decision:** _______________Approved - Use consistent name as per references found in pricing or elsewhere________________________________
 
 ---
 
@@ -206,7 +206,7 @@ versioned "model intelligence" branding used anywhere else in the product.
 `/pricing` already uses — copyright line + a real, verifiable tagline (e.g. "Designed for real
 estate professionals," already used on `/pricing`'s footer) — nothing that implies a version number
 or uptime status that doesn't exist.
-**Your decision:** _______________________________________________
+**Your decision:** _______________________Approved________________________
 
 ---
 
