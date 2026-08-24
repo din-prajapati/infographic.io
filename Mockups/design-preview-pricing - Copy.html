@@ -1,0 +1,1804 @@
+<!DOCTYPE html>
+<html lang="en" class="dark scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Buildographic Pricing — AI Real Estate Marketing Plans</title>
+  <meta name="description" content="Choose a Buildographic plan to create AI-powered property marketing creatives, campaigns and editable designs for your real-estate business." />
+
+  <!-- Google Fonts: Inter & Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Outfit', 'sans-serif'],
+          },
+          colors: {
+            bgDark: '#08090d',
+            surfaceDark: '#0e1017',
+            cardBg: '#12141e',
+            cardBorder: 'rgba(255, 255, 255, 0.08)',
+            brandBlue: {
+              DEFAULT: '#0ca0eb',
+              400: '#38bdf8',
+              500: '#0ca0eb',
+              600: '#0284c7',
+              glow: 'rgba(12, 160, 235, 0.35)',
+            },
+            brandAmber: {
+              DEFAULT: '#f59e0b',
+              400: '#fbbf24',
+              500: '#f59e0b',
+              glow: 'rgba(245, 158, 11, 0.3)',
+            },
+            accentPurple: '#8b5cf6',
+            accentEmerald: '#10b981',
+          },
+          boxShadow: {
+            'glow-blue': '0 0 35px -5px rgba(12, 160, 235, 0.3)',
+            'glow-pro': '0 0 50px -10px rgba(12, 160, 235, 0.45)',
+            'glass-elevated': '0 20px 40px -15px rgba(0, 0, 0, 0.7), inset 0 1px 1px 0 rgba(255, 255, 255, 0.1)',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* ── Custom Theme Overrides & Glassmorphism ─────────────────── */
+    :root {
+      color-scheme: dark;
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #08090d;
+      color: #f1f5f9;
+      overflow-x: hidden;
+    }
+    h1, h2, h3, h4, .font-display {
+      font-family: 'Outfit', sans-serif;
+    }
+
+    /* Ambient Background Gradients */
+    .bg-mesh {
+      background-image: 
+        radial-gradient(at 15% 15%, rgba(12, 160, 235, 0.12) 0px, transparent 50%),
+        radial-gradient(at 85% 20%, rgba(245, 158, 11, 0.08) 0px, transparent 45%),
+        radial-gradient(at 50% 60%, rgba(139, 92, 246, 0.08) 0px, transparent 55%),
+        radial-gradient(at 20% 85%, rgba(12, 160, 235, 0.1) 0px, transparent 50%);
+    }
+
+    /* Glass Effect Utilities */
+    .glass-panel {
+      background: rgba(18, 20, 30, 0.72);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .glass-panel-subtle {
+      background: rgba(22, 25, 38, 0.45);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .glass-pro-card {
+      background: linear-gradient(180deg, rgba(20, 28, 48, 0.85) 0%, rgba(14, 18, 28, 0.9) 100%);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      box-shadow: 0 20px 50px -10px rgba(12, 160, 235, 0.25), inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #08090d;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1e2433;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #2a334a;
+    }
+
+    /* Animated gradient border for hero elements */
+    @keyframes pulseGlow {
+      0%, 100% { opacity: 0.6; transform: scale(1); }
+      50% { opacity: 0.9; transform: scale(1.02); }
+    }
+    .animate-pulse-glow {
+      animation: pulseGlow 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    /* Sticky column in comparison table */
+    .sticky-col {
+      position: sticky;
+      left: 0;
+      z-index: 10;
+      background: #0d0f17;
+    }
+
+    /* Shimmer effect on Pro button */
+    .btn-shimmer {
+      position: relative;
+      overflow: hidden;
+    }
+    .btn-shimmer::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(
+        60deg,
+        transparent 30%,
+        rgba(255, 255, 255, 0.25) 50%,
+        transparent 70%
+      );
+      transform: rotate(30deg);
+      animation: shimmerPass 4s infinite linear;
+    }
+    @keyframes shimmerPass {
+      0% { transform: translateX(-100%) rotate(30deg); }
+      20%, 100% { transform: translateX(100%) rotate(30deg); }
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-mesh relative text-slate-100 selection:bg-brandBlue selection:text-white">
+
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <!-- 1. TOP NOTIFICATION BANNER (Founding Offer / Announcement) -->
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <div class="bg-gradient-to-r from-blue-900/60 via-indigo-900/60 to-amber-950/40 border-b border-white/10 text-xs py-2 px-4 text-center flex items-center justify-center gap-2">
+    <span class="inline-flex items-center gap-1 bg-amber-400/20 text-amber-300 font-semibold px-2 py-0.5 rounded-full border border-amber-400/30 text-[11px]">
+      ⭐ FOUNDING MEMBER OFFER
+    </span>
+    <span class="text-slate-300 hidden sm:inline">Lock in lifetime 28% discount on Solo & Pro tiers. Limited early-access window.</span>
+    <a href="#plans-grid" class="text-brandBlue-400 hover:text-white font-medium underline underline-offset-2 ml-1 transition">View plans &rarr;</a>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <!-- 2. STICKY NAVBAR (Existing Buildographic Header)               -->
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <header class="sticky top-0 z-50 w-full bg-[#08090d]/85 backdrop-blur-xl border-b border-white/10 transition-all duration-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+      
+      <!-- Brand Logo -->
+      <a href="/" class="flex items-center gap-3 group">
+        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-brandBlue-500 via-indigo-600 to-brandAmber-400 p-[1px] flex items-center justify-center shadow-md shadow-brandBlue/20 group-hover:scale-105 transition-transform">
+          <div class="w-full h-full bg-[#08090d] rounded-[7px] flex items-center justify-center">
+            <svg class="w-4 h-4 text-brandBlue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 3h18v18H3z"></path>
+              <path d="M3 9h18"></path>
+              <path d="M9 21V9"></path>
+            </svg>
+          </div>
+        </div>
+        <div class="flex flex-col">
+          <span class="font-display font-bold text-lg tracking-tight text-white flex items-center gap-1.5">
+            Buildographic
+            <span class="text-[10px] font-sans font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-brandBlue-500/15 text-brandBlue-400 border border-brandBlue-500/30">AI</span>
+          </span>
+        </div>
+      </a>
+
+      <!-- Desktop Navigation -->
+      <nav class="hidden md:flex items-center gap-1">
+        <a href="#features" class="px-3 py-1.5 text-sm font-medium text-slate-300 hover:text-white rounded-md hover:bg-white/5 transition">Product</a>
+        <a href="#templates" class="px-3 py-1.5 text-sm font-medium text-slate-300 hover:text-white rounded-md hover:bg-white/5 transition">Templates</a>
+        <a href="#what-is-design" class="px-3 py-1.5 text-sm font-medium text-slate-300 hover:text-white rounded-md hover:bg-white/5 transition">How it Works</a>
+        <a href="/pricing" class="px-3 py-1.5 text-sm font-semibold text-brandBlue-400 bg-brandBlue-500/10 rounded-md border border-brandBlue-500/20 shadow-sm">Pricing</a>
+        <a href="#comparison" class="px-3 py-1.5 text-sm font-medium text-slate-300 hover:text-white rounded-md hover:bg-white/5 transition">Compare</a>
+        <a href="#faq" class="px-3 py-1.5 text-sm font-medium text-slate-300 hover:text-white rounded-md hover:bg-white/5 transition">FAQ</a>
+      </nav>
+
+      <!-- Right Action Controls -->
+      <div class="flex items-center gap-3">
+        <!-- Currency Selector -->
+        <div class="hidden sm:flex items-center bg-surfaceDark border border-white/10 rounded-lg p-0.5 text-xs font-medium">
+          <button id="curr-inr" onclick="setCurrency('INR')" class="px-2 py-1 rounded bg-brandBlue-600 text-white font-semibold shadow-sm transition">₹ INR</button>
+          <button id="curr-usd" onclick="setCurrency('USD')" class="px-2 py-1 rounded text-slate-400 hover:text-white transition">$ USD</button>
+        </div>
+
+        <a href="/auth" class="text-sm font-medium text-slate-300 hover:text-white px-3 py-1.5 transition">Log in</a>
+        
+        <a href="/auth?plan=FREE" class="inline-flex items-center gap-1.5 bg-brandBlue hover:bg-brandBlue-600 text-white text-sm font-semibold px-4 py-2 rounded-lg shadow-lg shadow-brandBlue/25 transition hover:scale-[1.02] active:scale-95">
+          <span>Start Free</span>
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <!-- 3. HERO SECTION                                               -->
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <section class="relative pt-16 pb-12 md:pt-24 md:pb-16 text-center px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto">
+    
+    <!-- Background Glow -->
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-brandBlue/15 rounded-full blur-3xl pointer-events-none -z-10"></div>
+    <div class="absolute top-1/3 right-1/4 w-72 h-72 bg-brandAmber/10 rounded-full blur-3xl pointer-events-none -z-10"></div>
+
+    <!-- Eyebrow -->
+    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brandBlue-500/10 border border-brandBlue-500/20 text-brandBlue-400 text-xs font-bold uppercase tracking-widest mb-6">
+      <span class="w-1.5 h-1.5 rounded-full bg-brandBlue-400 animate-ping"></span>
+      PRICING PLANS
+    </div>
+
+    <!-- H1 Headline -->
+    <h1 class="text-3xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-white mb-6 leading-[1.15]">
+      Simple pricing. Powerful <br class="hidden sm:inline" />
+      <span class="bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">property marketing.</span>
+    </h1>
+
+    <!-- Supporting text -->
+    <p class="text-base sm:text-lg md:text-xl text-slate-300 max-w-2xl mx-auto mb-10 leading-relaxed font-normal">
+      Create professional property creatives, campaigns and branded marketing materials in minutes — without hiring a designer.
+    </p>
+
+    <!-- Billing Segmented Control Toggle -->
+    <div class="inline-flex flex-col items-center">
+      <div class="relative bg-surfaceDark/90 backdrop-blur-md border border-white/10 p-1.5 rounded-2xl flex items-center shadow-xl">
+        <button id="toggle-monthly" onclick="setBillingCycle('monthly')" class="relative px-6 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 bg-brandBlue text-white shadow-md">
+          Monthly Billing
+        </button>
+        <button id="toggle-annual" onclick="setBillingCycle('annual')" class="relative px-6 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 text-slate-400 hover:text-white flex items-center gap-2">
+          <span>Annual Billing</span>
+          <span class="bg-gradient-to-r from-amber-500 to-amber-400 text-slate-950 text-[11px] font-bold px-2 py-0.5 rounded-full shadow-sm">
+            Save 20%
+          </span>
+        </button>
+      </div>
+      <p id="billing-subtitle" class="text-xs text-slate-400 mt-3 flex items-center gap-1.5">
+        <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+        <span>Monthly commitment. Switch or cancel your subscription at any time.</span>
+      </p>
+    </div>
+
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <!-- 4. PRICING CARDS GRID (5 PLANS)                               -->
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <section id="plans-grid" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5 items-stretch">
+      
+      <!-- ── CARD 1: FREE ────────────────────────────────────────── -->
+      <div class="glass-panel rounded-2xl p-6 flex flex-col justify-between transition-all duration-300 hover:border-slate-600/80 hover:translate-y-[-2px] relative group">
+        <div>
+          <!-- Header -->
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-semibold uppercase tracking-wider text-slate-400 bg-white/5 px-2.5 py-1 rounded-md border border-white/5">Acquisition</span>
+          </div>
+          <h3 class="text-2xl font-bold text-white font-display">Free</h3>
+          <p class="text-xs text-slate-400 min-h-[32px] mt-1">Explore Buildographic at zero cost</p>
+
+          <!-- Price -->
+          <div class="my-6">
+            <div class="flex items-baseline gap-1">
+              <span class="text-3xl font-extrabold text-white price-display font-display" data-inr="₹0" data-usd="$0">₹0</span>
+              <span class="text-xs font-medium text-slate-400">/ forever</span>
+            </div>
+            <div class="text-[11px] text-slate-500 mt-1">No payment method required</div>
+          </div>
+
+          <!-- Usage Highlights -->
+          <div class="bg-white/[0.03] border border-white/[0.06] rounded-xl p-3.5 mb-6 space-y-2">
+            <div class="flex items-center justify-between text-xs">
+              <span class="font-semibold text-slate-200 flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 text-brandBlue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                AI Designs
+              </span>
+              <span class="font-bold text-brandBlue-400 bg-brandBlue-500/10 px-2 py-0.5 rounded text-[11px]">3 / month</span>
+            </div>
+            <div class="flex items-center justify-between text-xs">
+              <span class="font-semibold text-slate-400 flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                Editable Designs
+              </span>
+              <span class="text-slate-500 text-[11px]">Static only</span>
+            </div>
+          </div>
+
+          <!-- CTA Button -->
+          <button onclick="handlePlanSelect('FREE')" class="w-full py-3 px-4 rounded-xl bg-white/10 hover:bg-white/15 text-white font-semibold text-sm transition border border-white/10 shadow-sm active:scale-95 mb-6">
+            Start Creating Free
+          </button>
+          <p class="text-[11px] text-center text-slate-400 -mt-4 mb-5">No credit card required</p>
+
+          <!-- Divider -->
+          <div class="h-[1px] bg-white/10 mb-5"></div>
+
+          <!-- Feature List -->
+          <div class="space-y-2.5 text-xs text-slate-300">
+            <div class="flex items-start gap-2">
+              <svg class="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span><strong>3 AI</strong> Marketing Designs</span>
+            </div>
+            <div class="flex items-start gap-2">
+              <svg class="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>Real-estate templates</span>
+            </div>
+            <div class="flex items-start gap-2">
+              <svg class="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>Basic property creation</span>
+            </div>
+            <div class="flex items-start gap-2">
+              <svg class="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>Instagram formats (1:1, 9:16)</span>
+            </div>
+            <div class="flex items-start gap-2">
+              <svg class="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>WhatsApp status formats</span>
+            </div>
+            <div class="flex items-start gap-2">
+              <svg class="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>JPG / PNG download</span>
+            </div>
+            <div class="flex items-start gap-2">
+              <svg class="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>1 Property in library</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── CARD 2: SOLO ────────────────────────────────────────── -->
+      <div class="glass-panel rounded-2xl p-6 flex flex-col justify-between transition-all duration-300 hover:border-slate-600/80 hover:translate-y-[-2px] relative group">
+        <div>
+          <!-- Header -->
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-semibold uppercase tracking-wider text-slate-300 bg-white/5 px-2.5 py-1 rounded-md border border-white/5">Entry Paid</span>
+          </div>
+          <h3 class="text-2xl font-bold text-white font-display">Solo</h3>
+          <p class="text-xs text-slate-400 min-h-[32px] mt-1">For individual real-estate agents & brokers</p>
+
+          <!-- Price -->
+          <div class="my-6">
+            <div class="flex items-baseline gap-1">
+              <span id="solo-price" class="text-3xl font-extrabold text-white price-display font-display" data-monthly-inr="₹3,999" data-annual-inr="₹3,199" data-monthly-usd="$49" data-annual-usd="$39">₹3,999</span>
+              <span class="text-xs font-medium text-slate-400">/ month</span>
+            </div>
+            <div id="solo-anchor" class="text-[11px] text-amber-400 flex items-center gap-1.5 mt-1 font-medium">
+              <span class="line-through text-slate-500 strike-anchor" data-inr="₹5,499" data-usd="$69">₹5,499</span>
+              <span>Founding Member Price</span>
+            </div>
+            <div id="solo-billed" class="text-[10px] text-slate-500 mt-0.5 hidden">Billed annually (Save ₹9,600/yr)</div>
+          </div>
+
+          <!-- Usage Highlights -->
+          <div class="bg-white/[0.03] border border-white/[0.06] rounded-xl p-3.5 mb-6 space-y-2">
+            <div class="flex items-center justify-between text-xs">
+              <span class="font-semibold text-slate-200 flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 text-brandBlue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                AI Designs
+              </span>
+              <span class="font-bold text-white bg-blue-500/20 text-brandBlue-400 px-2 py-0.5 rounded text-[11px]">50 / month</span>
+            </div>
+            <div class="flex items-center justify-between text-xs">
+              <span class="font-semibold text-slate-200 flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                Editable Designs
+              </span>
+              <span class="font-bold text-amber-400 bg-amber-500/15 px-2 py-0.5 rounded text-[11px]">10 / month</span>
+            </div>
+          </div>
+
+          <!-- CTA Button -->
+          <button onclick="handlePlanSelect('SOLO')" class="w-full py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold text-sm transition border border-white/10 shadow-md active:scale-95 mb-6">
+            Start with Solo
+          </button>
+
+          <!-- Divider -->
+          <div class="h-[1px] bg-white/10 mb-5"></div>
+
+          <!-- Feature List -->
+          <div class="space-y-2.5 text-xs text-slate-300">
+            <div class="flex items-start gap-2">
+              <svg class="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span><strong>50 AI</strong> Marketing Designs</span>
+            </div>
+            <div class="flex items-start gap-2">
+              <svg class="w-4 h-4 text-amber-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span><strong>10 Editable</strong> Designs (Canvas)</span>
+            </div>
+            <div class="flex items-start gap-2">
+              <svg class="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span><strong>1 Brand Kit</strong> (Logo, Palette, Fonts)</span>
+            </div>
+            <div class="flex items-start gap-2">
+              <svg class="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>Property Library & AI Copy</span>
+            </div>
+            <div class="flex items-start gap-2">
+              <svg class="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>Open House & Price Update templates</span>
+            </div>
+            
+            <!-- Expandable extra features -->
+            <div id="solo-more-features" class="hidden space-y-2.5 pt-2 border-t border-white/5">
+              <div class="flex items-start gap-2">
+                <svg class="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                <span>Instagram / FB / WhatsApp sizing</span>
+              </div>
+              <div class="flex items-start gap-2">
+                <svg class="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                <span>JPG / PNG / PDF Export</span>
+              </div>
+              <div class="flex items-start gap-2">
+                <svg class="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                <span>30-Day Design History</span>
+              </div>
+            </div>
+
+            <button onclick="toggleCardFeatures('solo')" id="solo-toggle-btn" class="text-brandBlue-400 hover:text-white text-[11px] font-semibold flex items-center gap-1 pt-1 transition">
+              <span>+ 3 more features</span>
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── CARD 3: PRO (⭐ PRIMARY CONVERSION - MOST POPULAR) ─── -->
+      <div class="glass-pro-card rounded-2xl p-6 flex flex-col justify-between transition-all duration-300 hover:scale-[1.03] relative group xl:-translate-y-3 z-20 shadow-glow-pro border-brandBlue-400/50">
+        
+        <!-- Popular Badge (Floating Pill) -->
+        <div class="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-brandBlue-500 via-indigo-500 to-brandAmber-400 p-[1px] rounded-full shadow-lg shadow-brandBlue/40">
+          <div class="bg-[#08090d] px-3.5 py-0.5 rounded-full flex items-center gap-1.5 text-[11px] font-black tracking-wider uppercase text-white">
+            <span class="text-amber-300">⭐</span> MOST POPULAR
+          </div>
+        </div>
+
+        <div>
+          <!-- Header -->
+          <div class="flex items-center justify-between mb-3 pt-1">
+            <span class="text-xs font-bold uppercase tracking-wider text-brandBlue-300 bg-brandBlue-500/20 px-2.5 py-1 rounded-md border border-brandBlue-400/30">Primary Growth</span>
+          </div>
+          <h3 class="text-2xl font-black text-white font-display flex items-center gap-2">
+            Pro
+            <span class="text-xs bg-amber-400/20 text-amber-300 font-sans px-2 py-0.5 rounded-full font-bold">Recommended</span>
+          </h3>
+          <p class="text-xs text-slate-300 min-h-[32px] mt-1">For serious real-estate marketers & top producers</p>
+
+          <!-- Price -->
+          <div class="my-6">
+            <div class="flex items-baseline gap-1">
+              <span id="pro-price" class="text-4xl font-extrabold text-white price-display font-display" data-monthly-inr="₹7,999" data-annual-inr="₹6,399" data-monthly-usd="$99" data-annual-usd="$79">₹7,999</span>
+              <span class="text-xs font-medium text-slate-300">/ month</span>
+            </div>
+            <div id="pro-anchor" class="text-[11px] text-amber-300 flex items-center gap-1.5 mt-1 font-semibold">
+              <span class="line-through text-slate-400 strike-anchor" data-inr="₹10,999" data-usd="$139">₹10,999</span>
+              <span>Founding Member Price</span>
+            </div>
+            <div id="pro-billed" class="text-[10px] text-brandBlue-300 mt-0.5 hidden">Billed annually (Save ₹19,200/yr)</div>
+          </div>
+
+          <!-- Usage Highlights -->
+          <div class="bg-brandBlue-500/10 border border-brandBlue-400/30 rounded-xl p-3.5 mb-6 space-y-2 shadow-inner">
+            <div class="flex items-center justify-between text-xs">
+              <span class="font-bold text-white flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 text-brandBlue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                AI Designs
+              </span>
+              <span class="font-extrabold text-white bg-brandBlue-600 px-2 py-0.5 rounded text-[11px] shadow-sm">100 / month</span>
+            </div>
+            <div class="flex items-center justify-between text-xs">
+              <span class="font-bold text-white flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                Editable Designs
+              </span>
+              <span class="font-extrabold text-slate-950 bg-amber-400 px-2 py-0.5 rounded text-[11px] shadow-sm">25 / month</span>
+            </div>
+          </div>
+
+          <!-- CTA Button (Primary WOW styling) -->
+          <button onclick="handlePlanSelect('PRO')" class="btn-shimmer w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-brandBlue-500 via-blue-600 to-indigo-600 hover:from-brandBlue-400 hover:to-indigo-500 text-white font-bold text-sm transition shadow-lg shadow-brandBlue/30 hover:shadow-brandBlue/50 active:scale-95 mb-6 flex items-center justify-center gap-2">
+            <span>Choose Pro</span>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+          </button>
+
+          <!-- Divider -->
+          <div class="h-[1px] bg-brandBlue-400/20 mb-5"></div>
+
+          <!-- Feature List -->
+          <div class="space-y-2.5 text-xs text-slate-200">
+            <div class="text-[11px] font-bold text-brandBlue-300 uppercase tracking-wider mb-2">Everything in Solo, plus:</div>
+            
+            <div class="flex items-start gap-2">
+              <svg class="w-4 h-4 text-brandBlue-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+              <span><strong>100 AI</strong> Marketing Designs</span>
+            </div>
+            <div class="flex items-start gap-2">
+              <svg class="w-4 h-4 text-amber-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+              <span><strong>25 Editable</strong> Designs (Full Layers)</span>
+            </div>
+            <div class="flex items-start gap-2">
+              <svg class="w-4 h-4 text-brandBlue-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+              <span><strong>3 Brand Kits</strong> (Brokerage + Agent IDs)</span>
+            </div>
+            <div class="flex items-start gap-2">
+              <svg class="w-4 h-4 text-brandBlue-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+              <span><strong>Property &rarr; Campaign</strong> (Bulk Generation)</span>
+            </div>
+            <div class="flex items-start gap-2">
+              <svg class="w-4 h-4 text-brandBlue-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+              <span>Priority Fast-lane Generation</span>
+            </div>
+
+            <!-- Expandable extra features -->
+            <div id="pro-more-features" class="hidden space-y-2.5 pt-2 border-t border-white/10">
+              <div class="flex items-start gap-2">
+                <svg class="w-4 h-4 text-brandBlue-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                <span>Advanced AI Copywriting Models</span>
+              </div>
+              <div class="flex items-start gap-2">
+                <svg class="w-4 h-4 text-brandBlue-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                <span>Agent Personal Branding Packages</span>
+              </div>
+              <div class="flex items-start gap-2">
+                <svg class="w-4 h-4 text-brandBlue-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                <span>Usage Analytics & Performance Stats</span>
+              </div>
+              <div class="flex items-start gap-2">
+                <svg class="w-4 h-4 text-brandBlue-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                <span>Unlimited Design History</span>
+              </div>
+            </div>
+
+            <button onclick="toggleCardFeatures('pro')" id="pro-toggle-btn" class="text-brandBlue-300 hover:text-white text-[11px] font-bold flex items-center gap-1 pt-1 transition">
+              <span>+ 5 more features</span>
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── CARD 4: TEAM ────────────────────────────────────────── -->
+      <div class="glass-panel rounded-2xl p-6 flex flex-col justify-between transition-all duration-300 hover:border-slate-600/80 hover:translate-y-[-2px] relative group">
+        <div>
+          <!-- Header -->
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-semibold uppercase tracking-wider text-slate-300 bg-white/5 px-2.5 py-1 rounded-md border border-white/5">Expansion</span>
+          </div>
+          <h3 class="text-2xl font-bold text-white font-display">Team</h3>
+          <p class="text-xs text-slate-400 min-h-[32px] mt-1">For real-estate teams & independent brokerages</p>
+
+          <!-- Price -->
+          <div class="my-6">
+            <div class="flex items-baseline gap-1">
+              <span id="team-price" class="text-3xl font-extrabold text-white price-display font-display" data-monthly-inr="₹14,999" data-annual-inr="₹11,999" data-monthly-usd="$189" data-annual-usd="$149">₹14,999</span>
+              <span class="text-xs font-medium text-slate-400">/ month</span>
+            </div>
+            <div id="team-anchor" class="text-[11px] text-slate-400 mt-1">
+              5 seats included
+            </div>
+            <div id="team-billed" class="text-[10px] text-slate-500 mt-0.5 hidden">Billed annually (Save ₹36,000/yr)</div>
+          </div>
+
+          <!-- Usage Highlights -->
+          <div class="bg-white/[0.03] border border-white/[0.06] rounded-xl p-3.5 mb-6 space-y-2">
+            <div class="flex items-center justify-between text-xs">
+              <span class="font-semibold text-slate-200 flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 text-brandBlue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                AI Designs
+              </span>
+              <span class="font-bold text-white bg-blue-500/20 text-brandBlue-400 px-2 py-0.5 rounded text-[11px]">200 / month</span>
+            </div>
+            <div class="flex items-center justify-between text-xs">
+              <span class="font-semibold text-slate-200 flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                Editable Designs
+              </span>
+              <span class="font-bold text-amber-400 bg-amber-500/15 px-2 py-0.5 rounded text-[11px]">60 / month</span>
+            </div>
+          </div>
+
+          <!-- CTA Button -->
+          <button onclick="handlePlanSelect('TEAM')" class="w-full py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold text-sm transition border border-white/10 shadow-md active:scale-95 mb-6">
+            Build Your Team
+          </button>
+
+          <!-- Divider -->
+          <div class="h-[1px] bg-white/10 mb-5"></div>
+
+          <!-- Feature List -->
+          <div class="space-y-2.5 text-xs text-slate-300">
+            <div class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Everything in Pro, plus:</div>
+
+            <div class="flex items-start gap-2">
+              <svg class="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span><strong>5 Team Members</strong> included</span>
+            </div>
+            <div class="flex items-start gap-2">
+              <svg class="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>Shared Workspace & Asset Library</span>
+            </div>
+            <div class="flex items-start gap-2">
+              <svg class="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>Shared Brand Kits & Templates</span>
+            </div>
+            <div class="flex items-start gap-2">
+              <svg class="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>Role-based Access & Approvals</span>
+            </div>
+            <div class="flex items-start gap-2">
+              <svg class="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>Priority Customer Support</span>
+            </div>
+
+            <!-- Expandable extra features -->
+            <div id="team-more-features" class="hidden space-y-2.5 pt-2 border-t border-white/5">
+              <div class="flex items-start gap-2">
+                <svg class="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                <span>Design Comments & Threaded Review</span>
+              </div>
+              <div class="flex items-start gap-2">
+                <svg class="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                <span>Team Audit Log & Activity Stream</span>
+              </div>
+            </div>
+
+            <button onclick="toggleCardFeatures('team')" id="team-toggle-btn" class="text-brandBlue-400 hover:text-white text-[11px] font-semibold flex items-center gap-1 pt-1 transition">
+              <span>+ 3 more features</span>
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── CARD 5: AGENCY ──────────────────────────────────────── -->
+      <div class="glass-panel rounded-2xl p-6 flex flex-col justify-between transition-all duration-300 hover:border-slate-600/80 hover:translate-y-[-2px] relative group">
+        <div>
+          <!-- Header -->
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-semibold uppercase tracking-wider text-purple-300 bg-purple-500/10 px-2.5 py-1 rounded-md border border-purple-500/20">High Value</span>
+          </div>
+          <h3 class="text-2xl font-bold text-white font-display">Agency</h3>
+          <p class="text-xs text-slate-400 min-h-[32px] mt-1">For agencies & large regional brokerages</p>
+
+          <!-- Price -->
+          <div class="my-6">
+            <div class="flex items-baseline gap-1">
+              <span id="agency-price" class="text-3xl font-extrabold text-white price-display font-display" data-monthly-inr="₹29,999" data-annual-inr="₹23,999" data-monthly-usd="$379" data-annual-usd="$299">₹29,999</span>
+              <span class="text-xs font-medium text-slate-400">/ month</span>
+            </div>
+            <div id="agency-anchor" class="text-[11px] text-slate-400 mt-1">
+              Multi-client workspaces
+            </div>
+            <div id="agency-billed" class="text-[10px] text-slate-500 mt-0.5 hidden">Billed annually (Save ₹72,000/yr)</div>
+          </div>
+
+          <!-- Usage Highlights -->
+          <div class="bg-white/[0.03] border border-white/[0.06] rounded-xl p-3.5 mb-6 space-y-2">
+            <div class="flex items-center justify-between text-xs">
+              <span class="font-semibold text-slate-200 flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 text-brandBlue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                AI Designs
+              </span>
+              <span class="font-bold text-white bg-blue-500/20 text-brandBlue-400 px-2 py-0.5 rounded text-[11px]">400 / month</span>
+            </div>
+            <div class="flex items-center justify-between text-xs">
+              <span class="font-semibold text-slate-200 flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                Editable Designs
+              </span>
+              <span class="font-bold text-amber-400 bg-amber-500/15 px-2 py-0.5 rounded text-[11px]">150 / month</span>
+            </div>
+          </div>
+
+          <!-- CTA Button -->
+          <button onclick="handlePlanSelect('AGENCY')" class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-purple-700 to-indigo-700 hover:from-purple-600 hover:to-indigo-600 text-white font-semibold text-sm transition border border-purple-500/30 shadow-md active:scale-95 mb-6">
+            Talk to Sales
+          </button>
+
+          <!-- Divider -->
+          <div class="h-[1px] bg-white/10 mb-5"></div>
+
+          <!-- Feature List -->
+          <div class="space-y-2.5 text-xs text-slate-300">
+            <div class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Everything in Team, plus:</div>
+
+            <div class="flex items-start gap-2">
+              <svg class="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>Multiple Client Workspaces</span>
+            </div>
+            <div class="flex items-start gap-2">
+              <svg class="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>White-label Client Experience</span>
+            </div>
+            <div class="flex items-start gap-2">
+              <svg class="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>Bulk Property Upload & Generation</span>
+            </div>
+            <div class="flex items-start gap-2">
+              <svg class="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>Client Approval Portal</span>
+            </div>
+            <div class="flex items-start gap-2">
+              <svg class="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>Dedicated Account Manager</span>
+            </div>
+
+            <!-- Expandable extra features -->
+            <div id="agency-more-features" class="hidden space-y-2.5 pt-2 border-t border-white/5">
+              <div class="flex items-start gap-2">
+                <svg class="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                <span>Client Asset Separation & Custom Domains</span>
+              </div>
+              <div class="flex items-start gap-2">
+                <svg class="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                <span>Priority Render Cluster</span>
+              </div>
+            </div>
+
+            <button onclick="toggleCardFeatures('agency')" id="agency-toggle-btn" class="text-brandBlue-400 hover:text-white text-[11px] font-semibold flex items-center gap-1 pt-1 transition">
+              <span>+ 3 more features</span>
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <!-- 5. "WHAT COUNTS AS A DESIGN?" SECTION                         -->
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <section id="what-is-design" class="py-16 bg-surfaceDark/60 border-y border-white/5 relative">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="text-center max-w-3xl mx-auto mb-12">
+        <span class="text-xs font-bold uppercase tracking-widest text-brandAmber-400 bg-brandAmber-500/10 px-3 py-1 rounded-full border border-brandAmber-500/20">
+          CLEAR & PREDICTABLE USAGE
+        </span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-white mt-4 mb-3 font-display">
+          What is an AI Marketing Design?
+        </h2>
+        <p class="text-slate-300 text-sm sm:text-base leading-relaxed">
+          A design is <strong>one completed marketing creative</strong> generated for your property or campaign. You never have to calculate AI tokens, API credits, or prompt counts.
+        </p>
+      </div>
+
+      <!-- 8 Visual Example Cards Grid -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-10">
+        
+        <!-- 1. Property Listing -->
+        <div class="glass-panel rounded-xl p-4 border border-white/5 hover:border-brandBlue-400/40 transition group">
+          <div class="h-28 rounded-lg bg-gradient-to-br from-blue-950/60 to-slate-900 border border-white/5 flex flex-col justify-between p-3 relative overflow-hidden mb-3">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-bold bg-brandBlue/20 text-brandBlue-300 px-1.5 py-0.5 rounded border border-brandBlue/30">1:1 Square</span>
+              <span class="text-[10px] text-slate-400">₹4.2 Cr</span>
+            </div>
+            <div class="z-10">
+              <div class="text-xs font-bold text-white truncate">Luxury Villa 4 BHK</div>
+              <div class="text-[10px] text-slate-400">Whitefield, Bengaluru</div>
+            </div>
+            <div class="absolute -right-4 -bottom-4 w-16 h-16 bg-brandBlue/20 rounded-full blur-lg group-hover:scale-150 transition"></div>
+          </div>
+          <div class="text-xs font-semibold text-white">Property Listing</div>
+          <div class="text-[11px] text-slate-400">Full showcase with specs & price</div>
+        </div>
+
+        <!-- 2. Instagram Post -->
+        <div class="glass-panel rounded-xl p-4 border border-white/5 hover:border-brandBlue-400/40 transition group">
+          <div class="h-28 rounded-lg bg-gradient-to-br from-pink-950/40 via-purple-950/40 to-slate-900 border border-white/5 flex flex-col justify-between p-3 relative overflow-hidden mb-3">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-bold bg-pink-500/20 text-pink-300 px-1.5 py-0.5 rounded border border-pink-500/30">9:16 Story</span>
+              <span class="text-[10px] text-pink-300">🔥 Hot</span>
+            </div>
+            <div class="z-10">
+              <div class="text-xs font-bold text-white">Swipe Up for Virtual Tour</div>
+              <div class="text-[10px] text-slate-400">Verified Listing</div>
+            </div>
+            <div class="absolute -right-4 -bottom-4 w-16 h-16 bg-pink-500/20 rounded-full blur-lg group-hover:scale-150 transition"></div>
+          </div>
+          <div class="text-xs font-semibold text-white">Instagram Story / Reel</div>
+          <div class="text-[11px] text-slate-400">High-converting social visual</div>
+        </div>
+
+        <!-- 3. WhatsApp Creative -->
+        <div class="glass-panel rounded-xl p-4 border border-white/5 hover:border-brandBlue-400/40 transition group">
+          <div class="h-28 rounded-lg bg-gradient-to-br from-emerald-950/50 to-slate-900 border border-white/5 flex flex-col justify-between p-3 relative overflow-hidden mb-3">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-bold bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 rounded border border-emerald-500/30">Direct Chat</span>
+              <span class="text-[10px] text-emerald-400">✓✓</span>
+            </div>
+            <div class="z-10">
+              <div class="text-xs font-bold text-white">Brochure on WhatsApp</div>
+              <div class="text-[10px] text-slate-400">Ready-to-broadcast flyer</div>
+            </div>
+            <div class="absolute -right-4 -bottom-4 w-16 h-16 bg-emerald-500/20 rounded-full blur-lg group-hover:scale-150 transition"></div>
+          </div>
+          <div class="text-xs font-semibold text-white">WhatsApp Creative</div>
+          <div class="text-[11px] text-slate-400">Optimized for client forwarding</div>
+        </div>
+
+        <!-- 4. Open House -->
+        <div class="glass-panel rounded-xl p-4 border border-white/5 hover:border-brandBlue-400/40 transition group">
+          <div class="h-28 rounded-lg bg-gradient-to-br from-amber-950/50 to-slate-900 border border-white/5 flex flex-col justify-between p-3 relative overflow-hidden mb-3">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-bold bg-amber-500/20 text-amber-300 px-1.5 py-0.5 rounded border border-amber-500/30">Event Invite</span>
+              <span class="text-[10px] text-amber-400">Sun 2-5 PM</span>
+            </div>
+            <div class="z-10">
+              <div class="text-xs font-bold text-white">Open House Showcase</div>
+              <div class="text-[10px] text-slate-400">RSVP & Location Pin</div>
+            </div>
+            <div class="absolute -right-4 -bottom-4 w-16 h-16 bg-amber-500/20 rounded-full blur-lg group-hover:scale-150 transition"></div>
+          </div>
+          <div class="text-xs font-semibold text-white">Open House Flyer</div>
+          <div class="text-[11px] text-slate-400">Event date, slots & map info</div>
+        </div>
+
+        <!-- 5. Price Update -->
+        <div class="glass-panel rounded-xl p-4 border border-white/5 hover:border-brandBlue-400/40 transition group">
+          <div class="h-28 rounded-lg bg-gradient-to-br from-red-950/40 to-slate-900 border border-white/5 flex flex-col justify-between p-3 relative overflow-hidden mb-3">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-bold bg-red-500/20 text-red-300 px-1.5 py-0.5 rounded border border-red-500/30">Price Drop</span>
+              <span class="text-[10px] text-red-400">-₹15 Lakhs</span>
+            </div>
+            <div class="z-10">
+              <div class="text-xs font-bold text-white">Limited Launch Offer</div>
+              <div class="text-[10px] text-slate-400">Valid till Sunday</div>
+            </div>
+            <div class="absolute -right-4 -bottom-4 w-16 h-16 bg-red-500/20 rounded-full blur-lg group-hover:scale-150 transition"></div>
+          </div>
+          <div class="text-xs font-semibold text-white">Price Update Alert</div>
+          <div class="text-[11px] text-slate-400">Urgency & revised pricing</div>
+        </div>
+
+        <!-- 6. Amenities Infographic -->
+        <div class="glass-panel rounded-xl p-4 border border-white/5 hover:border-brandBlue-400/40 transition group">
+          <div class="h-28 rounded-lg bg-gradient-to-br from-indigo-950/50 to-slate-900 border border-white/5 flex flex-col justify-between p-3 relative overflow-hidden mb-3">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-bold bg-indigo-500/20 text-indigo-300 px-1.5 py-0.5 rounded border border-indigo-500/30">Infographic</span>
+              <span class="text-[10px] text-indigo-300">20+ Icons</span>
+            </div>
+            <div class="z-10">
+              <div class="text-xs font-bold text-white">Clubhouse & Pool Specs</div>
+              <div class="text-[10px] text-slate-400">Visual amenity breakdown</div>
+            </div>
+            <div class="absolute -right-4 -bottom-4 w-16 h-16 bg-indigo-500/20 rounded-full blur-lg group-hover:scale-150 transition"></div>
+          </div>
+          <div class="text-xs font-semibold text-white">Amenities Breakdown</div>
+          <div class="text-[11px] text-slate-400">Iconic visual facility guide</div>
+        </div>
+
+        <!-- 7. Location Advantage -->
+        <div class="glass-panel rounded-xl p-4 border border-white/5 hover:border-brandBlue-400/40 transition group">
+          <div class="h-28 rounded-lg bg-gradient-to-br from-teal-950/50 to-slate-900 border border-white/5 flex flex-col justify-between p-3 relative overflow-hidden mb-3">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-bold bg-teal-500/20 text-teal-300 px-1.5 py-0.5 rounded border border-teal-500/30">Connectivity</span>
+              <span class="text-[10px] text-teal-300">5 Mins Metro</span>
+            </div>
+            <div class="z-10">
+              <div class="text-xs font-bold text-white">Strategic Hub Map</div>
+              <div class="text-[10px] text-slate-400">Schools, IT Parks, Airport</div>
+            </div>
+            <div class="absolute -right-4 -bottom-4 w-16 h-16 bg-teal-500/20 rounded-full blur-lg group-hover:scale-150 transition"></div>
+          </div>
+          <div class="text-xs font-semibold text-white">Location Advantage</div>
+          <div class="text-[11px] text-slate-400">Distance & transit time graphics</div>
+        </div>
+
+        <!-- 8. Festival & Campaign -->
+        <div class="glass-panel rounded-xl p-4 border border-white/5 hover:border-brandBlue-400/40 transition group">
+          <div class="h-28 rounded-lg bg-gradient-to-br from-amber-950/60 via-red-950/40 to-slate-900 border border-white/5 flex flex-col justify-between p-3 relative overflow-hidden mb-3">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-bold bg-amber-500/20 text-amber-300 px-1.5 py-0.5 rounded border border-amber-500/30">Festive Offer</span>
+              <span class="text-[10px] text-amber-300">0% Stamp Duty</span>
+            </div>
+            <div class="z-10">
+              <div class="text-xs font-bold text-white">Diwali Festive Booking</div>
+              <div class="text-[10px] text-slate-400">Gold coin with every unit</div>
+            </div>
+            <div class="absolute -right-4 -bottom-4 w-16 h-16 bg-amber-500/20 rounded-full blur-lg group-hover:scale-150 transition"></div>
+          </div>
+          <div class="text-xs font-semibold text-white">Festival Campaign</div>
+          <div class="text-[11px] text-slate-400">Holiday & seasonal bookings</div>
+        </div>
+
+      </div>
+
+      <!-- Editable Design Explainer Callout Card -->
+      <div class="glass-pro-card rounded-2xl p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 border-brandBlue-500/30">
+        <div class="flex items-start gap-4">
+          <div class="w-12 h-12 rounded-xl bg-brandAmber-500/10 border border-brandAmber-500/30 flex items-center justify-center shrink-0 text-brandAmber-400">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+          </div>
+          <div>
+            <h4 class="text-lg sm:text-xl font-bold text-white font-display">What is an Editable Design?</h4>
+            <p class="text-sm text-slate-300 mt-1 max-w-3xl leading-relaxed">
+              Unlike a static image download, an <strong>Editable Design</strong> unlocks our multi-layer Canvas Editor. You can tweak text, replace agent photos, adjust floor plan badges, drag shapes, and apply custom brand palettes directly in your browser.
+            </p>
+          </div>
+        </div>
+        <a href="#comparison" class="whitespace-nowrap px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-semibold border border-white/10 transition flex items-center gap-2">
+          <span>Compare All Capabilities</span>
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <!-- 6. USAGE EXPLANATION & LIVE METER VISUAL                      -->
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <section class="py-16 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="glass-panel rounded-3xl p-6 sm:p-10 border border-white/10 relative overflow-hidden">
+      
+      <!-- Ambient Glow -->
+      <div class="absolute top-0 right-0 w-80 h-80 bg-brandBlue/10 rounded-full blur-3xl pointer-events-none"></div>
+
+      <div class="flex flex-col md:flex-row items-center justify-between gap-8">
+        
+        <!-- Left Explainer -->
+        <div class="md:w-1/2">
+          <span class="text-xs font-bold uppercase tracking-wider text-brandBlue-400 bg-brandBlue-500/10 px-2.5 py-1 rounded border border-brandBlue-500/20">
+            TRANSPARENT ACCOUNTING
+          </span>
+          <h3 class="text-2xl sm:text-3xl font-bold text-white mt-3 font-display">
+            How your monthly usage works
+          </h3>
+          <p class="text-slate-300 text-sm mt-3 leading-relaxed">
+            Your allowance refreshes at the start of every billing cycle. All plans include full high-resolution rendering, typography layouts, and zero hidden credit fees.
+          </p>
+
+          <div class="mt-6 space-y-3">
+            <div class="flex items-center gap-3 text-xs text-slate-300">
+              <div class="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 font-bold">✓</div>
+              <span><strong>Zero AI token math:</strong> 1 generated creative = 1 design count.</span>
+            </div>
+            <div class="flex items-center gap-3 text-xs text-slate-300">
+              <div class="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 font-bold">✓</div>
+              <span><strong>Unrestricted downloads:</strong> Export high-res PNG, JPG, and PDF as often as you want.</span>
+            </div>
+            <div class="flex items-center gap-3 text-xs text-slate-300">
+              <div class="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 font-bold">✓</div>
+              <span><strong>Easy upgrades:</strong> Need more designs midway? Upgrade instantly with pro-rated billing.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Interactive Usage Meter Simulation (Pro Plan Sample) -->
+        <div class="md:w-1/2 w-full bg-surfaceDark/90 border border-white/10 rounded-2xl p-6 shadow-2xl">
+          <div class="flex items-center justify-between pb-4 border-b border-white/10">
+            <div>
+              <span class="text-xs text-slate-400 font-medium">Live Dashboard Preview</span>
+              <div class="text-sm font-bold text-white flex items-center gap-2">
+                <span>Pro Plan Usage</span>
+                <span class="bg-brandBlue-500/20 text-brandBlue-400 text-[10px] font-bold px-2 py-0.5 rounded">Active</span>
+              </div>
+            </div>
+            <span class="text-xs text-slate-400">Cycle resets in 18 days</span>
+          </div>
+
+          <div class="mt-5 space-y-5">
+            <!-- Meter 1: AI Designs -->
+            <div>
+              <div class="flex justify-between text-xs mb-1.5 font-medium">
+                <span class="text-slate-200 flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-brandBlue-400"></span>
+                  AI Marketing Designs
+                </span>
+                <span class="text-slate-300 font-mono"><strong>68</strong> / 100 designs</span>
+              </div>
+              <div class="w-full h-3 bg-slate-800 rounded-full overflow-hidden p-[1px] border border-white/5">
+                <div class="h-full bg-gradient-to-r from-brandBlue-500 to-indigo-500 rounded-full transition-all duration-1000" style="width: 68%;"></div>
+              </div>
+              <div class="flex justify-between text-[10px] text-slate-500 mt-1">
+                <span>32 designs remaining</span>
+                <span>68% utilized</span>
+              </div>
+            </div>
+
+            <!-- Meter 2: Editable Designs -->
+            <div>
+              <div class="flex justify-between text-xs mb-1.5 font-medium">
+                <span class="text-slate-200 flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+                  Editable Designs (Canvas)
+                </span>
+                <span class="text-slate-300 font-mono"><strong>14</strong> / 25 unlocked</span>
+              </div>
+              <div class="w-full h-3 bg-slate-800 rounded-full overflow-hidden p-[1px] border border-white/5">
+                <div class="h-full bg-gradient-to-r from-amber-500 to-amber-400 rounded-full transition-all duration-1000" style="width: 56%;"></div>
+              </div>
+              <div class="flex justify-between text-[10px] text-slate-500 mt-1">
+                <span>11 slots remaining</span>
+                <span>56% utilized</span>
+              </div>
+            </div>
+
+            <!-- Meter 3: Brand Kits -->
+            <div>
+              <div class="flex justify-between text-xs mb-1.5 font-medium">
+                <span class="text-slate-200 flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-purple-400"></span>
+                  Brand Kits Active
+                </span>
+                <span class="text-slate-300 font-mono"><strong>3</strong> / 3 kits</span>
+              </div>
+              <div class="w-full h-3 bg-slate-800 rounded-full overflow-hidden p-[1px] border border-white/5">
+                <div class="h-full bg-purple-500 rounded-full" style="width: 100%;"></div>
+              </div>
+              <div class="flex justify-between text-[10px] text-purple-400 mt-1">
+                <span>All brand slots active</span>
+                <span>100% capacity</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <!-- 7. DETAILED FEATURE COMPARISON MATRIX TABLE                   -->
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <section id="comparison" class="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    
+    <div class="text-center max-w-3xl mx-auto mb-12">
+      <span class="text-xs font-bold uppercase tracking-widest text-brandBlue-400 bg-brandBlue-500/10 px-3 py-1 rounded-full border border-brandBlue-500/20">
+        FEATURE BREAKDOWN
+      </span>
+      <h2 class="text-3xl sm:text-4xl font-extrabold text-white mt-4 mb-3 font-display">
+        Compare plans side-by-side
+      </h2>
+      <p class="text-slate-300 text-sm sm:text-base">
+        Everything you need to create, manage and scale your property marketing campaigns.
+      </p>
+    </div>
+
+    <!-- Comparison Table Wrapper (Horizontally scrollable on mobile) -->
+    <div class="glass-panel rounded-2xl border border-white/10 overflow-hidden shadow-2xl">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse min-w-[760px]">
+          
+          <!-- Table Sticky Header -->
+          <thead>
+            <tr class="border-b border-white/10 bg-[#0d0f17]/95 backdrop-blur-md">
+              <th class="p-4 sm:p-6 text-sm font-bold text-white w-1/3 sticky-col">
+                Feature Matrix
+              </th>
+              <th class="p-4 sm:p-6 text-center text-xs font-bold text-slate-300 w-[13%]">
+                <div class="text-sm font-display text-white">Free</div>
+                <div class="text-slate-400 font-normal mt-0.5">₹0</div>
+              </th>
+              <th class="p-4 sm:p-6 text-center text-xs font-bold text-slate-300 w-[13%]">
+                <div class="text-sm font-display text-white">Solo</div>
+                <div class="text-slate-400 font-normal mt-0.5">₹3,999/mo</div>
+              </th>
+              <th class="p-4 sm:p-6 text-center text-xs font-bold text-brandBlue-400 w-[15%] bg-brandBlue-500/10 border-x border-brandBlue-500/20 relative">
+                <div class="text-sm font-display text-white flex items-center justify-center gap-1">
+                  Pro ⭐
+                </div>
+                <div class="text-brandBlue-300 font-semibold mt-0.5">₹7,999/mo</div>
+              </th>
+              <th class="p-4 sm:p-6 text-center text-xs font-bold text-slate-300 w-[13%]">
+                <div class="text-sm font-display text-white">Team</div>
+                <div class="text-slate-400 font-normal mt-0.5">₹14,999/mo</div>
+              </th>
+              <th class="p-4 sm:p-6 text-center text-xs font-bold text-slate-300 w-[13%]">
+                <div class="text-sm font-display text-white">Agency</div>
+                <div class="text-slate-400 font-normal mt-0.5">₹29,999/mo</div>
+              </th>
+            </tr>
+          </thead>
+
+          <tbody class="text-xs divide-y divide-white/5 text-slate-300">
+            
+            <!-- Category: CREATION -->
+            <tr class="bg-white/[0.02]">
+              <td colspan="6" class="px-6 py-3 font-bold uppercase tracking-wider text-[11px] text-brandBlue-400 font-display">
+                1. Creation & Output Allowances
+              </td>
+            </tr>
+            <tr class="hover:bg-white/[0.02] transition">
+              <td class="p-4 px-6 font-medium text-slate-200 sticky-col">AI Marketing Designs / mo</td>
+              <td class="p-4 text-center font-mono font-semibold">3</td>
+              <td class="p-4 text-center font-mono font-semibold">50</td>
+              <td class="p-4 text-center font-mono font-bold text-brandBlue-300 bg-brandBlue-500/5 border-x border-brandBlue-500/20">100</td>
+              <td class="p-4 text-center font-mono font-semibold">200</td>
+              <td class="p-4 text-center font-mono font-semibold">400</td>
+            </tr>
+            <tr class="hover:bg-white/[0.02] transition">
+              <td class="p-4 px-6 font-medium text-slate-200 sticky-col">Editable Designs (Canvas Layer Access)</td>
+              <td class="p-4 text-center text-slate-500">—</td>
+              <td class="p-4 text-center font-mono font-semibold text-amber-400">10</td>
+              <td class="p-4 text-center font-mono font-bold text-amber-300 bg-brandBlue-500/5 border-x border-brandBlue-500/20">25</td>
+              <td class="p-4 text-center font-mono font-semibold text-amber-400">60</td>
+              <td class="p-4 text-center font-mono font-semibold text-amber-400">150</td>
+            </tr>
+            <tr class="hover:bg-white/[0.02] transition">
+              <td class="p-4 px-6 font-medium text-slate-200 sticky-col">Multi-format Export (1:1, 9:16, 16:9, A4)</td>
+              <td class="p-4 text-center">Basic</td>
+              <td class="p-4 text-center text-emerald-400 font-bold">✓ Full</td>
+              <td class="p-4 text-center text-emerald-400 font-bold bg-brandBlue-500/5 border-x border-brandBlue-500/20">✓ Full</td>
+              <td class="p-4 text-center text-emerald-400 font-bold">✓ Full</td>
+              <td class="p-4 text-center text-emerald-400 font-bold">✓ Full</td>
+            </tr>
+            <tr class="hover:bg-white/[0.02] transition">
+              <td class="p-4 px-6 font-medium text-slate-200 sticky-col">Property &rarr; 1-Click Campaign Generation</td>
+              <td class="p-4 text-center text-slate-500">—</td>
+              <td class="p-4 text-center text-slate-500">—</td>
+              <td class="p-4 text-center text-emerald-400 font-bold bg-brandBlue-500/5 border-x border-brandBlue-500/20">✓ Included</td>
+              <td class="p-4 text-center text-emerald-400 font-bold">✓ Included</td>
+              <td class="p-4 text-center text-emerald-400 font-bold">✓ Included</td>
+            </tr>
+            <tr class="hover:bg-white/[0.02] transition">
+              <td class="p-4 px-6 font-medium text-slate-200 sticky-col">Design Variations Engine</td>
+              <td class="p-4 text-center text-slate-500">—</td>
+              <td class="p-4 text-center">Standard</td>
+              <td class="p-4 text-center font-semibold text-white bg-brandBlue-500/5 border-x border-brandBlue-500/20">Advanced</td>
+              <td class="p-4 text-center font-semibold text-white">Advanced</td>
+              <td class="p-4 text-center font-semibold text-white">Priority AI</td>
+            </tr>
+
+            <!-- Category: BRANDING -->
+            <tr class="bg-white/[0.02]">
+              <td colspan="6" class="px-6 py-3 font-bold uppercase tracking-wider text-[11px] text-amber-400 font-display">
+                2. Branding & Customization
+              </td>
+            </tr>
+            <tr class="hover:bg-white/[0.02] transition">
+              <td class="p-4 px-6 font-medium text-slate-200 sticky-col">Brand Kits (Logo, Colors, Fonts, Headshots)</td>
+              <td class="p-4 text-center text-slate-500">—</td>
+              <td class="p-4 text-center font-mono">1 kit</td>
+              <td class="p-4 text-center font-mono font-bold text-brandBlue-300 bg-brandBlue-500/5 border-x border-brandBlue-500/20">3 kits</td>
+              <td class="p-4 text-center font-mono">10 kits</td>
+              <td class="p-4 text-center font-mono">Unlimited</td>
+            </tr>
+            <tr class="hover:bg-white/[0.02] transition">
+              <td class="p-4 px-6 font-medium text-slate-200 sticky-col">Agent Personal Branding Package</td>
+              <td class="p-4 text-center text-slate-500">—</td>
+              <td class="p-4 text-center text-slate-400">Basic</td>
+              <td class="p-4 text-center text-emerald-400 font-bold bg-brandBlue-500/5 border-x border-brandBlue-500/20">✓ Pro Suite</td>
+              <td class="p-4 text-center text-emerald-400 font-bold">✓ Pro Suite</td>
+              <td class="p-4 text-center text-emerald-400 font-bold">✓ White-label</td>
+            </tr>
+            <tr class="hover:bg-white/[0.02] transition">
+              <td class="p-4 px-6 font-medium text-slate-200 sticky-col">Watermark Removal</td>
+              <td class="p-4 text-center text-slate-500">Buildographic mark</td>
+              <td class="p-4 text-center text-emerald-400 font-bold">✓ 100% Clean</td>
+              <td class="p-4 text-center text-emerald-400 font-bold bg-brandBlue-500/5 border-x border-brandBlue-500/20">✓ 100% Clean</td>
+              <td class="p-4 text-center text-emerald-400 font-bold">✓ 100% Clean</td>
+              <td class="p-4 text-center text-emerald-400 font-bold">✓ 100% Clean</td>
+            </tr>
+
+            <!-- Category: PROPERTY MANAGEMENT -->
+            <tr class="bg-white/[0.02]">
+              <td colspan="6" class="px-6 py-3 font-bold uppercase tracking-wider text-[11px] text-emerald-400 font-display">
+                3. Property Library & Assets
+              </td>
+            </tr>
+            <tr class="hover:bg-white/[0.02] transition">
+              <td class="p-4 px-6 font-medium text-slate-200 sticky-col">Saved Property Listings</td>
+              <td class="p-4 text-center font-mono">1 property</td>
+              <td class="p-4 text-center font-mono">25 properties</td>
+              <td class="p-4 text-center font-mono font-bold text-brandBlue-300 bg-brandBlue-500/5 border-x border-brandBlue-500/20">100 properties</td>
+              <td class="p-4 text-center font-mono">Unlimited</td>
+              <td class="p-4 text-center font-mono">Unlimited</td>
+            </tr>
+            <tr class="hover:bg-white/[0.02] transition">
+              <td class="p-4 px-6 font-medium text-slate-200 sticky-col">Bulk Listing / CSV Upload</td>
+              <td class="p-4 text-center text-slate-500">—</td>
+              <td class="p-4 text-center text-slate-500">—</td>
+              <td class="p-4 text-center text-slate-500 bg-brandBlue-500/5 border-x border-brandBlue-500/20">—</td>
+              <td class="p-4 text-center text-emerald-400 font-bold">✓ CSV Import</td>
+              <td class="p-4 text-center text-emerald-400 font-bold">✓ API / CSV</td>
+            </tr>
+
+            <!-- Category: TEAM & COLLABORATION -->
+            <tr class="bg-white/[0.02]">
+              <td colspan="6" class="px-6 py-3 font-bold uppercase tracking-wider text-[11px] text-purple-400 font-display">
+                4. Collaboration & Agency Infrastructure
+              </td>
+            </tr>
+            <tr class="hover:bg-white/[0.02] transition">
+              <td class="p-4 px-6 font-medium text-slate-200 sticky-col">User Seats Included</td>
+              <td class="p-4 text-center font-mono">1 seat</td>
+              <td class="p-4 text-center font-mono">1 seat</td>
+              <td class="p-4 text-center font-mono font-bold text-brandBlue-300 bg-brandBlue-500/5 border-x border-brandBlue-500/20">1 seat</td>
+              <td class="p-4 text-center font-mono font-semibold text-emerald-400">5 seats</td>
+              <td class="p-4 text-center font-mono font-semibold text-emerald-400">15+ seats</td>
+            </tr>
+            <tr class="hover:bg-white/[0.02] transition">
+              <td class="p-4 px-6 font-medium text-slate-200 sticky-col">Multi-Client Workspaces & Approval Flows</td>
+              <td class="p-4 text-center text-slate-500">—</td>
+              <td class="p-4 text-center text-slate-500">—</td>
+              <td class="p-4 text-center text-slate-500 bg-brandBlue-500/5 border-x border-brandBlue-500/20">—</td>
+              <td class="p-4 text-center text-slate-400">Internal only</td>
+              <td class="p-4 text-center text-emerald-400 font-bold">✓ Full Client Hub</td>
+            </tr>
+            <tr class="hover:bg-white/[0.02] transition">
+              <td class="p-4 px-6 font-medium text-slate-200 sticky-col">Custom Domain White-labeling</td>
+              <td class="p-4 text-center text-slate-500">—</td>
+              <td class="p-4 text-center text-slate-500">—</td>
+              <td class="p-4 text-center text-slate-500 bg-brandBlue-500/5 border-x border-brandBlue-500/20">—</td>
+              <td class="p-4 text-center text-slate-500">—</td>
+              <td class="p-4 text-center text-emerald-400 font-bold">✓ Included</td>
+            </tr>
+
+            <!-- Category: SUPPORT -->
+            <tr class="bg-white/[0.02]">
+              <td colspan="6" class="px-6 py-3 font-bold uppercase tracking-wider text-[11px] text-slate-400 font-display">
+                5. Support & Reliability
+              </td>
+            </tr>
+            <tr class="hover:bg-white/[0.02] transition">
+              <td class="p-4 px-6 font-medium text-slate-200 sticky-col">Support SLA</td>
+              <td class="p-4 text-center">Community</td>
+              <td class="p-4 text-center">Standard Email</td>
+              <td class="p-4 text-center text-brandBlue-300 font-semibold bg-brandBlue-500/5 border-x border-brandBlue-500/20">Priority Queue</td>
+              <td class="p-4 text-center text-emerald-400 font-semibold">Priority 4h</td>
+              <td class="p-4 text-center text-purple-400 font-bold">Dedicated Rep</td>
+            </tr>
+
+          </tbody>
+
+          <!-- Table Bottom Action Row -->
+          <tfoot>
+            <tr class="bg-[#0d0f17]/95 border-t border-white/10">
+              <td class="p-4 px-6 text-xs text-slate-400 sticky-col font-medium">Ready to get started?</td>
+              <td class="p-4 text-center">
+                <button onclick="handlePlanSelect('FREE')" class="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/15 text-xs font-semibold text-white transition">Start Free</button>
+              </td>
+              <td class="p-4 text-center">
+                <button onclick="handlePlanSelect('SOLO')" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-white transition">Get Solo</button>
+              </td>
+              <td class="p-4 text-center bg-brandBlue-500/10 border-x border-brandBlue-500/20">
+                <button onclick="handlePlanSelect('PRO')" class="px-4 py-1.5 rounded-lg bg-brandBlue hover:bg-brandBlue-600 text-xs font-bold text-white shadow-md shadow-brandBlue/30 transition">Get Pro ⭐</button>
+              </td>
+              <td class="p-4 text-center">
+                <button onclick="handlePlanSelect('TEAM')" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-white transition">Get Team</button>
+              </td>
+              <td class="p-4 text-center">
+                <button onclick="handlePlanSelect('AGENCY')" class="px-3 py-1.5 rounded-lg bg-purple-700 hover:bg-purple-600 text-xs font-semibold text-white transition">Contact</button>
+              </td>
+            </tr>
+          </tfoot>
+
+        </table>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <!-- 8. FREQUENTLY ASKED QUESTIONS (ACCORDION)                    -->
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <section id="faq" class="py-20 bg-surfaceDark/40 border-t border-white/5">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="text-center mb-12">
+        <span class="text-xs font-bold uppercase tracking-widest text-brandBlue-400 bg-brandBlue-500/10 px-3 py-1 rounded-full border border-brandBlue-500/20">
+          COMMON QUESTIONS
+        </span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-white mt-4 mb-3 font-display">
+          Frequently Asked Questions
+        </h2>
+        <p class="text-slate-300 text-sm sm:text-base">
+          Everything you need to know about plans, billing, and design usage.
+        </p>
+      </div>
+
+      <!-- Accordion List (All 10 Questions from Spec) -->
+      <div class="space-y-3" id="faq-accordion">
+        
+        <!-- FAQ 1 -->
+        <div class="glass-panel rounded-2xl border border-white/5 overflow-hidden transition-all duration-200">
+          <button onclick="toggleFaq(1)" class="w-full p-5 text-left flex items-center justify-between gap-4 hover:bg-white/[0.02] transition">
+            <span class="text-sm sm:text-base font-semibold text-white font-display">1. How does the free plan work?</span>
+            <svg id="faq-icon-1" class="w-4 h-4 text-slate-400 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+          </button>
+          <div id="faq-content-1" class="hidden px-5 pb-5 text-xs sm:text-sm text-slate-300 leading-relaxed border-t border-white/5 pt-3">
+            The Free plan provides 3 AI marketing designs every month at zero cost. No credit card is required to sign up. You can generate real-estate creatives, preview formats for Instagram and WhatsApp, and download high-resolution JPG or PNG assets.
+          </div>
+        </div>
+
+        <!-- FAQ 2 -->
+        <div class="glass-panel rounded-2xl border border-white/5 overflow-hidden transition-all duration-200">
+          <button onclick="toggleFaq(2)" class="w-full p-5 text-left flex items-center justify-between gap-4 hover:bg-white/[0.02] transition">
+            <span class="text-sm sm:text-base font-semibold text-white font-display">2. What is an AI Marketing Design?</span>
+            <svg id="faq-icon-2" class="w-4 h-4 text-slate-400 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+          </button>
+          <div id="faq-content-2" class="hidden px-5 pb-5 text-xs sm:text-sm text-slate-300 leading-relaxed border-t border-white/5 pt-3">
+            An AI Marketing Design is one completely generated, finished marketing creative. Whether it is a luxury villa showcase flyer, an Instagram carousel slide, an open-house invite, or an amenities infographic, each completed output counts as 1 design from your monthly allowance.
+          </div>
+        </div>
+
+        <!-- FAQ 3 -->
+        <div class="glass-panel rounded-2xl border border-white/5 overflow-hidden transition-all duration-200">
+          <button onclick="toggleFaq(3)" class="w-full p-5 text-left flex items-center justify-between gap-4 hover:bg-white/[0.02] transition">
+            <span class="text-sm sm:text-base font-semibold text-white font-display">3. What is an Editable Design?</span>
+            <svg id="faq-icon-3" class="w-4 h-4 text-slate-400 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+          </button>
+          <div id="faq-content-3" class="hidden px-5 pb-5 text-xs sm:text-sm text-slate-300 leading-relaxed border-t border-white/5 pt-3">
+            An Editable Design opens up the layered Buildographic Canvas Editor for a particular graphic. This allows you to directly customize typography, edit headline copy, swap agent photos, reposition badges, change background lighting, and fine-tune colors rather than just accepting a flat image.
+          </div>
+        </div>
+
+        <!-- FAQ 4 -->
+        <div class="glass-panel rounded-2xl border border-white/5 overflow-hidden transition-all duration-200">
+          <button onclick="toggleFaq(4)" class="w-full p-5 text-left flex items-center justify-between gap-4 hover:bg-white/[0.02] transition">
+            <span class="text-sm sm:text-base font-semibold text-white font-display">4. Can I change my plan later?</span>
+            <svg id="faq-icon-4" class="w-4 h-4 text-slate-400 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+          </button>
+          <div id="faq-content-4" class="hidden px-5 pb-5 text-xs sm:text-sm text-slate-300 leading-relaxed border-t border-white/5 pt-3">
+            Yes, you can upgrade or downgrade at any time from your Account Settings. When upgrading, your new design allowances become available immediately and billing is pro-rated for the remainder of your billing period.
+          </div>
+        </div>
+
+        <!-- FAQ 5 -->
+        <div class="glass-panel rounded-2xl border border-white/5 overflow-hidden transition-all duration-200">
+          <button onclick="toggleFaq(5)" class="w-full p-5 text-left flex items-center justify-between gap-4 hover:bg-white/[0.02] transition">
+            <span class="text-sm sm:text-base font-semibold text-white font-display">5. Can I cancel anytime?</span>
+            <svg id="faq-icon-5" class="w-4 h-4 text-slate-400 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+          </button>
+          <div id="faq-content-5" class="hidden px-5 pb-5 text-xs sm:text-sm text-slate-300 leading-relaxed border-t border-white/5 pt-3">
+            Absolutely. There are no lock-in contracts for monthly subscriptions. If you cancel, your account remains active with paid features until the end of your prepaid billing term.
+          </div>
+        </div>
+
+        <!-- FAQ 6 -->
+        <div class="glass-panel rounded-2xl border border-white/5 overflow-hidden transition-all duration-200">
+          <button onclick="toggleFaq(6)" class="w-full p-5 text-left flex items-center justify-between gap-4 hover:bg-white/[0.02] transition">
+            <span class="text-sm sm:text-base font-semibold text-white font-display">6. What happens when I reach my monthly limit?</span>
+            <svg id="faq-icon-6" class="w-4 h-4 text-slate-400 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+          </button>
+          <div id="faq-content-6" class="hidden px-5 pb-5 text-xs sm:text-sm text-slate-300 leading-relaxed border-t border-white/5 pt-3">
+            When you hit your limit, you can easily top up design bundles or upgrade to the next tier directly from your canvas or usage dashboard. You will never be charged unexpected overage fees without your explicit consent.
+          </div>
+        </div>
+
+        <!-- FAQ 7 -->
+        <div class="glass-panel rounded-2xl border border-white/5 overflow-hidden transition-all duration-200">
+          <button onclick="toggleFaq(7)" class="w-full p-5 text-left flex items-center justify-between gap-4 hover:bg-white/[0.02] transition">
+            <span class="text-sm sm:text-base font-semibold text-white font-display">7. Do unused designs roll over?</span>
+            <svg id="faq-icon-7" class="w-4 h-4 text-slate-400 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+          </button>
+          <div id="faq-content-7" class="hidden px-5 pb-5 text-xs sm:text-sm text-slate-300 leading-relaxed border-t border-white/5 pt-3">
+            Monthly plan allowances reset at the start of each renewal cycle to keep our pricing predictable and affordable. However, all designs created in previous months remain stored in your Design History and can be downloaded anytime.
+          </div>
+        </div>
+
+        <!-- FAQ 8 -->
+        <div class="glass-panel rounded-2xl border border-white/5 overflow-hidden transition-all duration-200">
+          <button onclick="toggleFaq(8)" class="w-full p-5 text-left flex items-center justify-between gap-4 hover:bg-white/[0.02] transition">
+            <span class="text-sm sm:text-base font-semibold text-white font-display">8. Can I use Buildographic for client projects?</span>
+            <svg id="faq-icon-8" class="w-4 h-4 text-slate-400 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+          </button>
+          <div id="faq-content-8" class="hidden px-5 pb-5 text-xs sm:text-sm text-slate-300 leading-relaxed border-t border-white/5 pt-3">
+            Yes! Paid plans include full commercial usage rights. If you run a marketing agency or manage multiple developer clients, our Agency plan provides dedicated client workspaces, white-label presentation links, and separated brand kits.
+          </div>
+        </div>
+
+        <!-- FAQ 9 -->
+        <div class="glass-panel rounded-2xl border border-white/5 overflow-hidden transition-all duration-200">
+          <button onclick="toggleFaq(9)" class="w-full p-5 text-left flex items-center justify-between gap-4 hover:bg-white/[0.02] transition">
+            <span class="text-sm sm:text-base font-semibold text-white font-display">9. Do you support teams and brokerages?</span>
+            <svg id="faq-icon-9" class="w-4 h-4 text-slate-400 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+          </button>
+          <div id="faq-content-9" class="hidden px-5 pb-5 text-xs sm:text-sm text-slate-300 leading-relaxed border-t border-white/5 pt-3">
+            Yes, our Team plan includes 5 user seats with shared brand kits, property asset libraries, and collaborative design comments. For large regional brokerages with 15+ agents, our Agency or Enterprise packages provide centralized administrative governance and unified invoicing.
+          </div>
+        </div>
+
+        <!-- FAQ 10 -->
+        <div class="glass-panel rounded-2xl border border-white/5 overflow-hidden transition-all duration-200">
+          <button onclick="toggleFaq(10)" class="w-full p-5 text-left flex items-center justify-between gap-4 hover:bg-white/[0.02] transition">
+            <span class="text-sm sm:text-base font-semibold text-white font-display">10. Which payment methods do you support?</span>
+            <svg id="faq-icon-10" class="w-4 h-4 text-slate-400 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+          </button>
+          <div id="faq-content-10" class="hidden px-5 pb-5 text-xs sm:text-sm text-slate-300 leading-relaxed border-t border-white/5 pt-3">
+            We support all major Indian payment methods via Razorpay (UPI, Google Pay, PhonePe, Netbanking, Credit & Debit Cards, and recurring auto-debit). For international customers outside India, we process secure payments via Stripe (Visa, Mastercard, American Express).
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <!-- 9. ENTERPRISE / NEED MORE? CTA SECTION                        -->
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <section class="py-20 relative overflow-hidden">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <!-- Photographic CTA Banner with Dark Glass & Gradient Aura -->
+      <div class="relative rounded-3xl overflow-hidden border border-brandBlue-500/30 p-8 sm:p-12 md:p-16 text-center md:text-left flex flex-col md:flex-row items-center justify-between gap-8 bg-gradient-to-r from-[#0d1322] via-[#090b12] to-[#120e24] shadow-2xl">
+        
+        <!-- Ambient Decorative Lighting Elements -->
+        <div class="absolute -top-24 -left-24 w-80 h-80 bg-brandBlue-600/20 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute -bottom-24 -right-24 w-80 h-80 bg-brandAmber-500/15 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="relative z-10 max-w-2xl">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/15 border border-purple-400/30 text-purple-300 text-xs font-bold uppercase tracking-wider mb-4">
+            <span class="w-2 h-2 rounded-full bg-purple-400"></span>
+            ENTERPRISE & LARGE BROKERAGES
+          </div>
+          <h2 class="text-3xl sm:text-4xl md:text-5xl font-black text-white font-display tracking-tight leading-tight">
+            Need custom limits or multiple branch offices?
+          </h2>
+          <p class="text-slate-300 text-sm sm:text-base mt-4 leading-relaxed font-normal">
+            Get bespoke monthly design volumes, multi-city workspace partitioning, automated MLS sync pipelines, SSO security, and dedicated real-estate marketing engineers.
+          </p>
+        </div>
+
+        <div class="relative z-10 flex flex-col sm:flex-row items-center gap-3 shrink-0">
+          <a href="mailto:sales@buildographic.com" class="w-full sm:w-auto px-8 py-4 rounded-xl bg-white text-slate-950 hover:bg-slate-200 font-bold text-sm shadow-xl transition flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-95">
+            <span>Contact Enterprise Sales</span>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+          </a>
+          <button onclick="triggerDemoModal()" class="w-full sm:w-auto px-6 py-4 rounded-xl bg-white/10 hover:bg-white/15 text-white font-semibold text-sm border border-white/10 transition">
+            Book Live Demo
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <!-- 10. FOOTER (Existing Buildographic Footer Structure)          -->
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <footer class="bg-[#050608] border-t border-white/10 pt-16 pb-12 text-xs text-slate-400">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-8 pb-12 border-b border-white/5">
+        
+        <!-- Col 1: Brand Info -->
+        <div class="col-span-2 md:col-span-1 space-y-4">
+          <div class="flex items-center gap-2.5">
+            <div class="w-7 h-7 rounded-lg bg-brandBlue flex items-center justify-center shadow-md">
+              <svg class="w-3.5 h-3.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 3h18v18H3z"></path>
+                <path d="M3 9h18"></path>
+                <path d="M9 21V9"></path>
+              </svg>
+            </div>
+            <span class="font-display font-bold text-base text-white tracking-tight">Buildographic</span>
+          </div>
+          <p class="text-[11px] leading-relaxed text-slate-400">
+            AI-powered marketing infrastructure built specifically for real-estate professionals and brokerages.
+          </p>
+          <div class="flex items-center gap-3 pt-2">
+            <a href="#" class="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-slate-400 hover:text-white transition">
+              <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+            </a>
+            <a href="#" class="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-slate-400 hover:text-white transition">
+              <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            </a>
+            <a href="#" class="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-slate-400 hover:text-white transition">
+              <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+            </a>
+          </div>
+        </div>
+
+        <!-- Col 2: Product -->
+        <div>
+          <h4 class="text-white font-semibold mb-3 text-xs uppercase tracking-wider font-display">Product</h4>
+          <ul class="space-y-2">
+            <li><a href="#canvas" class="hover:text-white transition">Canvas Editor</a></li>
+            <li><a href="#copy" class="hover:text-white transition">AI Copywriter</a></li>
+            <li><a href="#brandkits" class="hover:text-white transition">Brand Kits</a></li>
+            <li><a href="#templates" class="hover:text-white transition">Template Library</a></li>
+            <li><a href="/pricing" class="text-brandBlue-400 font-semibold">Pricing</a></li>
+            <li><a href="#changelog" class="hover:text-white transition">Changelog</a></li>
+          </ul>
+        </div>
+
+        <!-- Col 3: Solutions -->
+        <div>
+          <h4 class="text-white font-semibold mb-3 text-xs uppercase tracking-wider font-display">Solutions</h4>
+          <ul class="space-y-2">
+            <li><a href="#" class="hover:text-white transition">Solo Agents</a></li>
+            <li><a href="#" class="hover:text-white transition">Real Estate Teams</a></li>
+            <li><a href="#" class="hover:text-white transition">Commercial Brokers</a></li>
+            <li><a href="#" class="hover:text-white transition">Marketing Agencies</a></li>
+            <li><a href="#" class="hover:text-white transition">Developers & Builders</a></li>
+          </ul>
+        </div>
+
+        <!-- Col 4: Resources -->
+        <div>
+          <h4 class="text-white font-semibold mb-3 text-xs uppercase tracking-wider font-display">Resources</h4>
+          <ul class="space-y-2">
+            <li><a href="#" class="hover:text-white transition">Documentation</a></li>
+            <li><a href="#" class="hover:text-white transition">Design Guides</a></li>
+            <li><a href="#" class="hover:text-white transition">API Reference</a></li>
+            <li><a href="#" class="hover:text-white transition">Marketing Blog</a></li>
+            <li><a href="#" class="hover:text-white transition">Community Forum</a></li>
+          </ul>
+        </div>
+
+        <!-- Col 5: Company & Legal -->
+        <div>
+          <h4 class="text-white font-semibold mb-3 text-xs uppercase tracking-wider font-display">Company</h4>
+          <ul class="space-y-2">
+            <li><a href="#" class="hover:text-white transition">About Buildographic</a></li>
+            <li><a href="#" class="hover:text-white transition">Careers</a></li>
+            <li><a href="#" class="hover:text-white transition">Privacy Policy</a></li>
+            <li><a href="#" class="hover:text-white transition">Terms of Service</a></li>
+            <li><a href="#" class="hover:text-white transition">Security & Trust</a></li>
+          </ul>
+        </div>
+
+      </div>
+
+      <div class="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-slate-500">
+        <div>&copy; 2026 Buildographic Inc. All rights reserved. Designed for Real Estate Excellence.</div>
+        <div class="flex items-center gap-4">
+          <span class="inline-flex items-center gap-1 text-emerald-400">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+            Razorpay & Stripe Verified
+          </span>
+          <span>100% Data Privacy</span>
+        </div>
+      </div>
+
+    </div>
+  </footer>
+
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <!-- 11. INTERACTIVE TOAST & ANALYTICS EVENT STREAM HUD            -->
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  
+  <!-- Interactive Toast Notification Modal -->
+  <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+    <div class="glass-panel-subtle bg-slate-900/95 border border-brandBlue-400/40 rounded-xl p-4 shadow-2xl flex items-center gap-3 min-w-[300px]">
+      <div id="toast-icon" class="w-8 h-8 rounded-lg bg-brandBlue/20 text-brandBlue-400 flex items-center justify-center font-bold text-sm">
+        ✓
+      </div>
+      <div>
+        <div id="toast-title" class="text-xs font-bold text-white">Plan Selected</div>
+        <div id="toast-msg" class="text-[11px] text-slate-400">Redirecting to checkout...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Live Analytics HUD Floating Widget (Section 22 Demonstrator) -->
+  <div class="fixed bottom-4 left-4 z-50">
+    <button onclick="toggleAnalyticsHud()" class="bg-surfaceDark/95 hover:bg-slate-800 text-slate-300 hover:text-white border border-white/10 text-[11px] font-mono font-medium px-3 py-1.5 rounded-full flex items-center gap-2 shadow-lg backdrop-blur-md transition">
+      <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+      <span>Analytics HUD: <span id="event-count" class="text-brandBlue-400 font-bold">1</span> event</span>
+    </button>
+
+    <div id="analytics-panel" class="hidden mt-2 w-80 glass-panel bg-slate-950/95 rounded-xl border border-white/10 p-3 shadow-2xl text-[10px] font-mono max-h-60 overflow-y-auto">
+      <div class="flex items-center justify-between pb-2 border-b border-white/10 mb-2">
+        <span class="font-bold text-slate-300">Tracked Analytics Events (Spec §22)</span>
+        <button onclick="clearAnalyticsLog()" class="text-slate-500 hover:text-slate-300">Clear</button>
+      </div>
+      <div id="analytics-log" class="space-y-1 text-slate-400">
+        <div class="text-emerald-400">✓ [0.0s] pricing_page_viewed</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <!-- 12. CLIENT-SIDE INTERACTIVITY & STATE SCRIPT                  -->
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <script>
+    // State
+    let currentCycle = 'monthly';
+    let currentCurrency = 'INR';
+    let eventLog = ['pricing_page_viewed'];
+
+    // Currency Rates (INR to USD conversion mapping)
+    const pricingData = {
+      monthly: {
+        FREE: { INR: '₹0', USD: '$0' },
+        SOLO: { INR: '₹3,999', USD: '$49', strikeINR: '₹5,499', strikeUSD: '$69' },
+        PRO:  { INR: '₹7,999', USD: '$99', strikeINR: '₹10,999', strikeUSD: '$139' },
+        TEAM: { INR: '₹14,999', USD: '$189' },
+        AGENCY: { INR: '₹29,999', USD: '$379' },
+      },
+      annual: {
+        FREE: { INR: '₹0', USD: '$0' },
+        SOLO: { INR: '₹3,199', USD: '$39', billedINR: 'Billed annually: ₹38,388 (Save ₹9,600/yr)', billedUSD: 'Billed annually: $468 (Save $120/yr)' },
+        PRO:  { INR: '₹6,399', USD: '$79', billedINR: 'Billed annually: ₹76,788 (Save ₹19,200/yr)', billedUSD: 'Billed annually: $948 (Save $240/yr)' },
+        TEAM: { INR: '₹11,999', USD: '$149', billedINR: 'Billed annually: ₹143,988 (Save ₹36,000/yr)', billedUSD: 'Billed annually: $1,788 (Save $480/yr)' },
+        AGENCY: { INR: '₹23,999', USD: '$299', billedINR: 'Billed annually: ₹287,988 (Save ₹72,000/yr)', billedUSD: 'Billed annually: $3,588 (Save $960/yr)' },
+      }
+    };
+
+    // Set Billing Cycle (Monthly vs Annual)
+    function setBillingCycle(cycle) {
+      currentCycle = cycle;
+      trackEvent('billing_toggle_clicked', { cycle });
+
+      const monthlyBtn = document.getElementById('toggle-monthly');
+      const annualBtn = document.getElementById('toggle-annual');
+      const subtitle = document.getElementById('billing-subtitle');
+
+      if (cycle === 'monthly') {
+        monthlyBtn.className = 'relative px-6 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 bg-brandBlue text-white shadow-md';
+        annualBtn.className = 'relative px-6 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 text-slate-400 hover:text-white flex items-center gap-2';
+        subtitle.innerHTML = '<svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg><span>Monthly commitment. Switch or cancel your subscription at any time.</span>';
+      } else {
+        annualBtn.className = 'relative px-6 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 bg-brandBlue text-white shadow-md flex items-center gap-2';
+        monthlyBtn.className = 'relative px-6 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 text-slate-400 hover:text-white';
+        subtitle.innerHTML = '<svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg><span class="text-amber-300 font-medium">Annual 20% discount applied. 2 months free equivalent!</span>';
+      }
+
+      updatePricingUI();
+    }
+
+    // Set Currency
+    function setCurrency(curr) {
+      currentCurrency = curr;
+      const inrBtn = document.getElementById('curr-inr');
+      const usdBtn = document.getElementById('curr-usd');
+
+      if (curr === 'INR') {
+        inrBtn.className = 'px-2 py-1 rounded bg-brandBlue-600 text-white font-semibold shadow-sm transition';
+        usdBtn.className = 'px-2 py-1 rounded text-slate-400 hover:text-white transition';
+      } else {
+        usdBtn.className = 'px-2 py-1 rounded bg-brandBlue-600 text-white font-semibold shadow-sm transition';
+        inrBtn.className = 'px-2 py-1 rounded text-slate-400 hover:text-white transition';
+      }
+
+      updatePricingUI();
+      trackEvent('currency_changed', { currency: curr });
+    }
+
+    // Update Price Numbers & Notes in the DOM
+    function updatePricingUI() {
+      const data = pricingData[currentCycle];
+      const isAnnual = currentCycle === 'annual';
+
+      // Solo
+      const soloElem = document.getElementById('solo-price');
+      soloElem.innerText = data.SOLO[currentCurrency];
+      const soloBilled = document.getElementById('solo-billed');
+      if (isAnnual) {
+        soloBilled.innerText = data.SOLO['billed' + currentCurrency];
+        soloBilled.classList.remove('hidden');
+      } else {
+        soloBilled.classList.add('hidden');
+      }
+
+      // Pro
+      const proElem = document.getElementById('pro-price');
+      proElem.innerText = data.PRO[currentCurrency];
+      const proBilled = document.getElementById('pro-billed');
+      if (isAnnual) {
+        proBilled.innerText = data.PRO['billed' + currentCurrency];
+        proBilled.classList.remove('hidden');
+      } else {
+        proBilled.classList.add('hidden');
+      }
+
+      // Team
+      const teamElem = document.getElementById('team-price');
+      teamElem.innerText = data.TEAM[currentCurrency];
+      const teamBilled = document.getElementById('team-billed');
+      if (isAnnual) {
+        teamBilled.innerText = data.TEAM['billed' + currentCurrency];
+        teamBilled.classList.remove('hidden');
+      } else {
+        teamBilled.classList.add('hidden');
+      }
+
+      // Agency
+      const agencyElem = document.getElementById('agency-price');
+      agencyElem.innerText = data.AGENCY[currentCurrency];
+      const agencyBilled = document.getElementById('agency-billed');
+      if (isAnnual) {
+        agencyBilled.innerText = data.AGENCY['billed' + currentCurrency];
+        agencyBilled.classList.remove('hidden');
+      } else {
+        agencyBilled.classList.add('hidden');
+      }
+    }
+
+    // Toggle Expandable Features Inside Card
+    function toggleCardFeatures(plan) {
+      const container = document.getElementById(plan + '-more-features');
+      const btn = document.getElementById(plan + '-toggle-btn');
+      const isHidden = container.classList.contains('hidden');
+
+      if (isHidden) {
+        container.classList.remove('hidden');
+        btn.innerHTML = '<span>Show less</span><svg class="w-3 h-3 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>';
+      } else {
+        container.classList.add('hidden');
+        btn.innerHTML = '<span>+ more features</span><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>';
+      }
+    }
+
+    // Toggle FAQ Accordion
+    function toggleFaq(id) {
+      const content = document.getElementById('faq-content-' + id);
+      const icon = document.getElementById('faq-icon-' + id);
+      const isHidden = content.classList.contains('hidden');
+
+      if (isHidden) {
+        content.classList.remove('hidden');
+        icon.classList.add('rotate-180');
+        trackEvent('faq_opened', { faq_id: id });
+      } else {
+        content.classList.add('hidden');
+        icon.classList.remove('rotate-180');
+      }
+    }
+
+    // Handle Plan Selection (Redirect Simulation with Toast)
+    function handlePlanSelect(tier) {
+      trackEvent(tier.toLowerCase() + '_plan_clicked', { tier, cycle: currentCycle, currency: currentCurrency });
+      trackEvent('checkout_started', { tier, cycle: currentCycle });
+
+      const toast = document.getElementById('toast');
+      const title = document.getElementById('toast-title');
+      const msg = document.getElementById('toast-msg');
+
+      if (tier === 'FREE') {
+        title.innerText = 'Free Plan Activated';
+        msg.innerText = 'Routing to Buildographic canvas workspace...';
+      } else if (tier === 'AGENCY') {
+        title.innerText = 'Agency Inbound Logged';
+        msg.innerText = 'Connecting to enterprise solutions consultant...';
+      } else {
+        title.innerText = tier + ' (' + currentCycle.toUpperCase() + ') Selected';
+        msg.innerText = 'Initiating ' + (currentCurrency === 'INR' ? 'Razorpay' : 'Stripe') + ' secure subscription checkout...';
+      }
+
+      toast.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
+
+      setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none');
+      }, 4000);
+    }
+
+    function triggerDemoModal() {
+      trackEvent('enterprise_demo_requested');
+      alert('📅 Live Demo scheduler initiated! Our team will contact you within 2 business hours.');
+    }
+
+    // Analytics Logger System (Section 22 Specification)
+    function trackEvent(name, meta = {}) {
+      eventLog.push(name);
+      document.getElementById('event-count').innerText = eventLog.length;
+      
+      const logBox = document.getElementById('analytics-log');
+      const row = document.createElement('div');
+      row.className = 'text-slate-300 font-mono';
+      row.innerHTML = `<span class="text-brandBlue-400 font-semibold">⚡ ${name}</span> ${Object.keys(meta).length ? `<span class="text-slate-500">${JSON.stringify(meta)}</span>` : ''}`;
+      logBox.appendChild(row);
+      logBox.scrollTop = logBox.scrollHeight;
+    }
+
+    function toggleAnalyticsHud() {
+      const panel = document.getElementById('analytics-panel');
+      panel.classList.toggle('hidden');
+    }
+
+    function clearAnalyticsLog() {
+      eventLog = [];
+      document.getElementById('event-count').innerText = '0';
+      document.getElementById('analytics-log').innerHTML = '<div class="text-slate-500">Log cleared. Interacting with page will record events.</div>';
+    }
+  </script>
+</body>
+</html>
