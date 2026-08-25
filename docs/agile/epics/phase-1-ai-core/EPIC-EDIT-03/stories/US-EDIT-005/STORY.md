@@ -7,8 +7,9 @@ updated: 2026-08-21
 
 # Story Card — US-EDIT-005
 
-> **Status:** 🟡 In Progress — code corrected 2026-08-22, manual test cases (TC-EDIT-005-01→05)
-> not yet run; AC4's quota badge remains blocked on `US-PAY-103`
+> **Status:** 🟡 In Progress — merged (PR #35) and live-verified 2026-08-25; the verification pass
+> found and fixed two real defects that made the control non-functional in the template flow (see
+> Implementation Update). AC4's quota badge remains blocked on `US-PAY-103`.
 > **Epic:** [EPIC-EDIT-03](../../EPIC.md)
 > **Milestone:** [M-EDIT-01-editable-menu-surfacing](../../milestones/M-EDIT-01-editable-menu-surfacing.md)
 > **Linear:** LIN-XXX
@@ -207,11 +208,11 @@ Rules:
 
 | TC ID | Type | Priority | Scenario | Status | Finding |
 |-------|------|:--------:|----------|:------:|---------|
-| TC-EDIT-005-01 | Manual | P0 | Given a flat generation on the canvas, when the editor renders, then the floating "Edit elements" control is visible adjacent to the canvas | 🔲 | |
-| TC-EDIT-005-02 | Manual | P0 | Given a generation not yet composed, when "Edit elements" is clicked, then a real loading state shows for the extraction duration, then the canvas transitions to editable — quota badge unchanged | 🔲 | |
-| TC-EDIT-005-03 | Manual | P0 | Given an already-composed variation, when revisited, then it loads near-instantly with no loading state and no quota change | 🔲 | |
+| TC-EDIT-005-01 | Automated | P0 | Given a flat generation on the canvas, when the editor renders, then the floating "Edit elements" control is visible adjacent to the canvas | ✅ | Failed on first run: `hasExtractedLayers` counted a *template's* own text/shape layers as extracted output, so the control rendered "Editable layers active" on a never-composed design and the click was a permanent no-op. Fixed (`composed-` id prefix). Old sidebar toggle confirmed absent. |
+| TC-EDIT-005-02 | Automated | P0 | Given a generation not yet composed, when "Edit elements" is clicked, then a real loading state shows for the extraction duration, then the canvas transitions to editable — quota badge unchanged | ✅ | Failed on first run with HTTP 500 in ~30ms: the control posted `element.src` (a multi-MB base64 data: URL) to `/:id/compose`, blowing the 100kb `express.json()` limit — which `planVariationLoad` then reported as the misleading "No separate text layers detected". Fixed via new `ImageElement.aiSourceUrl`. Now: "Separating layers…" observed, compose 27.2s → 201. |
+| TC-EDIT-005-03 | Automated | P0 | Given an already-composed variation, when revisited, then it loads near-instantly with no loading state and no quota change | ✅ | Satisfied more strongly than a cache hit: the control short-circuits at the `isEditableMode && hasExtractedLayers` guard, so **no** second `/compose` is issued at all (asserted), no spinner, and the re-click is acknowledged rather than silently ignored. The DB-level cache-hit path remains covered by `e2e/us-ai-048-compose-cache.spec.ts` via sidebar variation re-selection, which is the flow that actually re-issues the request. |
 | TC-EDIT-005-04 | Manual | P1 | Given an editable generation, when a second/third variation is composed, then the quota badge decrements at that exact moment with a visible confirmation | ⏸ | Blocked — `/compose` response has no `isCacheHit`/`isExtraCompose` signal for the client to key a confirmation off (see AC4); needs `US-PAY-103` and/or a backend response-shape change, both out of this story's scope |
-| TC-EDIT-005-05 | Manual | P1 | Given a FREE-tier account with the lifetime editable trial already used, when "Edit elements" is clicked, then a dedicated upgrade prompt appears, not a bare toast | 🔲 | |
+| TC-EDIT-005-05 | Automated | P1 | Given a FREE-tier account with the lifetime editable trial already used, when "Edit elements" is clicked, then a dedicated upgrade prompt appears, not a bare toast | ⚠️ | **Gating verified, surface not.** Second-variation compose correctly returned 402 and upgrade messaging surfaced. The toolbar's own `Dialog` needs a canvas with no composed layers, which is unreachable in the same session once TC-02 has run (`loadAiVariationToCanvas` prepends, so composed-* elements survive). The Dialog itself remains structurally verified only. |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 
@@ -219,18 +220,20 @@ Rules:
 
 ## Definition of Done
 
-- [ ] All ACs checked ✅ — AC4 intentionally not checked (blocked, see above); AC1-3/5 checked
-      but pending manual verification below
-- [ ] All test cases run and recorded — TC-01/02/03/05 not yet run; TC-04 recorded as Blocked
-- [x] Gate 1 passes — verified 2026-08-22: `npm run check` (0 errors), `npm run test:unit:client`
-      (229 passed, 1 skipped)
-- [ ] Gate 2 passes (frontend) — structurally verified via diff (mount point, old toggle removal);
-      not yet browser-verified
-- [ ] Manual flow verified
-- [ ] PR merged
-- [ ] No console errors for the changed flow
+- [x] All ACs checked ✅ — AC4 intentionally not checked (blocked, see above); AC1-3/5 now
+      live-verified 2026-08-25, not just diff-verified
+- [x] All test cases run and recorded — TC-01/02/03 ✅, TC-05 ⚠️ (gating verified, Dialog surface
+      not reachable in-session), TC-04 remains Blocked
+- [x] Gate 1 passes — re-verified 2026-08-25 on merged `main` after the fixes below:
+      `npm run check` (0 errors), `npm run test:unit` (254 passed, 1 skipped)
+- [x] Gate 2 passes (frontend) — browser-verified 2026-08-25 via
+      `e2e/us-edit-005-canvas-edit-toolbar.spec.ts` against a live localhost dev server
+- [x] Manual flow verified — automated as a live spec so the evidence is reproducible
+- [x] PR merged — PR #35
+- [x] No console errors for the changed flow — one console entry only, the expected 402 from
+      TC-05's deliberately-blocked compose
 - [ ] [TASKS.md](./TASKS.md) task list fully checked — T4b (quota badge) correctly left unchecked
-- [ ] STORY.md status updated to ✅ Done
+- [ ] STORY.md status updated to ✅ Done — AC4/T4b still blocked on `US-PAY-103` wiring
 
 ---
 
@@ -272,5 +275,43 @@ happened. Findings and fixes:
   Gate 2 review, and sequencing AC4 with `US-PAY-103`.
 
 ---
+
+**2026-08-25 — live verification pass (post-merge).** Ran TC-01/02/03/05 against a real dev server
+via a new live spec, `e2e/us-edit-005-canvas-edit-toolbar.spec.ts` (1 real generation + 1 real
+extraction, ~$0.10-0.20 per run, retries: 0). The pass found **two real defects that made this
+control non-functional in the most common flow** — opening a template, then generating. Both were
+invisible to Gate 1 and to diff review, which is exactly why the TCs existed:
+
+1. **`hasExtractedLayers` counted template layers as extracted output.** The check was
+   `elements.some(el => el.type === 'text' || el.type === 'shape')`. Every template puts real text
+   and shape elements on the canvas, and `US-AI-036` AC3 then inserts the AI image *behind* them —
+   so the flag was true for a flat, never-composed design. The control rendered "Editable layers
+   active", and the `isEditableMode && hasExtractedLayers` guard early-returned "Design is already
+   editable", making the button a permanent no-op. Fixed by keying on the `composed-` element-id
+   prefix, which only `buildComposedTextElements` / `loadComposedDesignToCanvas` produce.
+
+2. **The compose request posted a multi-megabyte base64 data: URL.** With (1) fixed, the click
+   reached the API and got HTTP 500 in ~30ms. `loadAiVariationToCanvas` proxies the image and
+   stores the result as a base64 `data:` URL in `element.src`; the control forwarded that as
+   `imageUrl`, exceeding the default 100kb `express.json()` limit at `server/index.ts:191`.
+   `planVariationLoad` swallowed the 500 into its "background carries no text" branch, surfacing
+   the misleading toast "No separate text layers detected" — a server error reported as a benign
+   product outcome. Fixed by adding `ImageElement.aiSourceUrl` (the original provider URL, set by
+   `loadAiVariationToCanvas`) and sending that instead of `src`.
+
+After both fixes: TC-01 ✅, TC-02 ✅ (loading state observed; compose 27.2s → 201), TC-03 ✅ (no
+second `/compose` issued at all), TC-05 ⚠️ (402 gating verified; the Dialog surface is not
+reachable once TC-02 has put composed layers on the canvas). Gate 1 re-run green on merged `main`:
+`npm run check` clean, `npm run test:unit` 254 passed / 1 skipped.
+
+**Follow-ups worth filing separately (not fixed here, out of this story's scope):**
+- `planVariationLoad` treats a transport/server failure as "no text detected". A 5xx should be
+  distinguishable from a genuine zero-block extraction, or errors will keep getting reported to
+  users as product outcomes.
+- `RightSidebar`'s flat path toasts "Design loaded" without checking `loadAiVariationToCanvas`'s
+  return value, so a failed load still reports success.
+- `isEditableMode` still ORs in a session-sticky `renderMode === 'editable'`, so after one compose
+  a *subsequent* fresh generation can show "Editable layers active" until reload. Cosmetic only —
+  the functional guard requires `hasExtractedLayers` too — but misleading.
 
 *Story created: 2026-08-21*
