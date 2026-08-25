@@ -2,14 +2,16 @@
 title: M-PAY-03-billing-integration — Billing Integration
 type: milestone
 tags: [orion, pay, pricing, razorpay]
-updated: 2026-08-21
+updated: 2026-08-25
 ---
 
 # M-PAY-03-billing-integration — Billing Integration
 
 > **Epic:** [EPIC-PAY-05](../EPIC.md)
 > **Feature:** F-PAY-03
-> **Status:** 🔲 Not Started
+> **Status:** 🟡 In Progress — US-PAY-109 code-complete but blocked on T0 HUMAN task (real
+> Razorpay Plan objects); US-PAY-111 code-complete (manual/PR still open); US-PAY-110 correctly
+> not started (V2, depends on M-PAY-02's US-PAY-108 + this milestone's own US-PAY-109)
 > **Target date:** TBD
 > **Branch:** `feat/pay/m-01-pricing-relaunch`
 > **Version:** **Mixed** — US-PAY-109 and US-PAY-111 are V1 (PRO/AGENCY sellable at launch);
@@ -29,8 +31,8 @@ activation recognizes the new tiers.
 
 | Order | Story | Title | Size | Blocked By | Status | PR | Version |
 |:-----:|-------|-------|:----:|------------|:------:|:--:|:---:|
-| 1 | [US-PAY-109](../stories/US-PAY-109/STORY.md) | New Razorpay Plan IDs for PRO/AGENCY tiers | S | US-PAY-102 (M-PAY-01) | 🔲 | — | **V1** |
-| 2 | [US-PAY-111](../stories/US-PAY-111/STORY.md) | Webhook/entitlement mapping for new tiers | S | US-PAY-109 | 🔲 | — | **V1** |
+| 1 | [US-PAY-109](../stories/US-PAY-109/STORY.md) | New Razorpay Plan IDs for PRO/AGENCY tiers | S | US-PAY-102 (M-PAY-01) | 🟡 (blocked) | — | **V1** |
+| 2 | [US-PAY-111](../stories/US-PAY-111/STORY.md) | Webhook/entitlement mapping for new tiers | S | US-PAY-109 | ✅ (code) | — | **V1** |
 | 2 | [US-PAY-110](../stories/US-PAY-110/STORY.md) | Checkout passes `offer_id` server-side | M | US-PAY-106, US-PAY-108, US-PAY-109 | 🔲 | — | V2 |
 
 ---

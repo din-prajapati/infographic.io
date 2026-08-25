@@ -2,14 +2,15 @@
 title: M-PAY-02-discount-architecture — Discount Architecture
 type: milestone
 tags: [orion, pay, pricing, discounts]
-updated: 2026-08-21
+updated: 2026-08-25
 ---
 
 # M-PAY-02-discount-architecture — Discount Architecture
 
 > **Epic:** [EPIC-PAY-05](../EPIC.md)
 > **Feature:** F-PAY-02
-> **Status:** 🔲 Not Started
+> **Status:** 🟡 In Progress — US-PAY-105/106/107 code-complete (manual/PR still open);
+> US-PAY-108 code-complete but blocked on T0 HUMAN task (real Razorpay Offer objects)
 > **Target date:** TBD
 > **Branch:** `feat/pay/m-01-pricing-relaunch`
 > **Version:** **Mixed** — US-PAY-107 is V1 (ships before the first real ₹ transaction); US-PAY-105,
@@ -31,10 +32,10 @@ frontend and checkout never compute price independently.
 
 | Order | Story | Title | Size | Blocked By | Status | PR | Version |
 |:-----:|-------|-------|:----:|------------|:------:|:--:|:---:|
-| 1 | [US-PAY-105](../stories/US-PAY-105/STORY.md) | PricingCampaign Prisma model + migration | S | — | 🔲 | — | V2 |
-| 1 | [US-PAY-107](../stories/US-PAY-107/STORY.md) | Standing annual-discount formula (×10) | S | US-PAY-102 (M-PAY-01) | 🔲 | — | **V1** |
-| 2 | [US-PAY-106](../stories/US-PAY-106/STORY.md) | `getEffectivePrice()` resolution service | M | US-PAY-102, US-PAY-105 | 🔲 | — | V2 |
-| 3 | [US-PAY-108](../stories/US-PAY-108/STORY.md) | Founding Customer 100 campaign seed + Offer linkage | M | US-PAY-105, US-PAY-106 | 🔲 | — | V2 |
+| 1 | [US-PAY-105](../stories/US-PAY-105/STORY.md) | PricingCampaign Prisma model + migration | S | — | ✅ (code) | — | V2 |
+| 1 | [US-PAY-107](../stories/US-PAY-107/STORY.md) | Standing annual-discount formula (×10) | S | US-PAY-102 (M-PAY-01) | ✅ (code) | — | **V1** |
+| 2 | [US-PAY-106](../stories/US-PAY-106/STORY.md) | `getEffectivePrice()` resolution service | M | US-PAY-102, US-PAY-105 | ✅ (code) | — | V2 |
+| 3 | [US-PAY-108](../stories/US-PAY-108/STORY.md) | Founding Customer 100 campaign seed + Offer linkage | M | US-PAY-105, US-PAY-106 | 🟡 (blocked) | — | V2 |
 
 ---
 
