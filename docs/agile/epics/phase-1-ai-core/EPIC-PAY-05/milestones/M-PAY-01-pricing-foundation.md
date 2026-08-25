@@ -2,14 +2,15 @@
 title: M-PAY-01-pricing-foundation — Pricing Foundation
 type: milestone
 tags: [orion, pay, pricing]
-updated: 2026-08-21
+updated: 2026-08-25
 ---
 
 # M-PAY-01-pricing-foundation — Pricing Foundation
 
 > **Epic:** [EPIC-PAY-05](../EPIC.md)
 > **Feature:** F-PAY-01
-> **Status:** 🔲 Not Started
+> **Status:** 🟡 In Progress — US-PAY-103/104 code-complete (manual/PR still open); US-PAY-102
+> re-opened 2026-08-23 for a real SOLO/TEAM gap, in progress (8/15 tasks)
 > **Target date:** TBD
 > **Branch:** `feat/pay/m-01-pricing-relaunch`
 > **Version:** V1 — all 3 stories ship before the first real ₹ transaction (see [EPIC.md](../EPIC.md) "Scope split")
@@ -29,9 +30,9 @@ starts, since everything downstream reads from this config.
 
 | Order | Story | Title | Size | Blocked By | Status | PR |
 |:-----:|-------|-------|:----:|------------|:------:|:--:|
-| 1 | [US-PAY-102](../stories/US-PAY-102/STORY.md) | Extend PLAN_CONFIG with PRO and AGENCY tiers | M | — | 🔲 | — |
-| 1 | [US-PAY-103](../stories/US-PAY-103/STORY.md) | Editable-design limit relabel (Path A) | S | — | 🔲 | — |
-| 1 | [US-PAY-104](../stories/US-PAY-104/STORY.md) | Fix PricingPage.tsx hardcoded price-text drift | XS | — | 🔲 | — |
+| 1 | [US-PAY-102](../stories/US-PAY-102/STORY.md) | Extend PLAN_CONFIG with PRO and AGENCY tiers | M | — | 🟡 (re-opened) | — |
+| 1 | [US-PAY-103](../stories/US-PAY-103/STORY.md) | Editable-design limit relabel (Path A) | S | — | ✅ (code) | — |
+| 1 | [US-PAY-104](../stories/US-PAY-104/STORY.md) | Fix PricingPage.tsx hardcoded price-text drift | XS | — | ✅ (code) | — |
 
 All three are order 1 — independent files, no shared dependency, safe to implement in parallel.
 
