@@ -70,6 +70,14 @@ export interface ImageElement extends BaseElement {
   objectFit?: 'contain' | 'cover' | 'fill';
   /** AI-generated full-bleed import — uses background-image for reliable fit */
   isAiImport?: boolean;
+  /**
+   * The original provider URL this element was imported from. `src` holds the
+   * proxied base64 data: URL the canvas renders from, which is megabytes and
+   * cannot be sent back to the API (POST /:id/compose 500s on the 100kb JSON
+   * body limit). Anything that needs to re-reference the source image server-
+   * side must use this, not `src`.
+   */
+  aiSourceUrl?: string;
   /** Detected orientation when imported from AI (landscape 16:9, portrait 9:16, square 1:1) */
   aiOrientation?: 'landscape' | 'portrait' | 'square';
   cornerRadius: number;

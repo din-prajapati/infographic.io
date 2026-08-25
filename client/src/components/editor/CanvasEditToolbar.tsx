@@ -48,8 +48,15 @@ export function CanvasEditToolbar({ generationId }: CanvasEditToolbarProps) {
       el.type === 'image' && Boolean((el as ImageElementType).isAiImport),
   );
 
-  // Check if canvas already contains editable text/shape layers beyond just a flat background
-  const hasExtractedLayers = elements.some((el) => el.type === 'text' || el.type === 'shape');
+  // Check if canvas already contains layers produced by a real compose.
+  // Only compose output carries the `composed-` id prefix (see
+  // buildComposedTextElements / loadComposedDesignToCanvas). A *template's* own
+  // text/shape layers must never be mistaken for extracted layers: opening any
+  // template puts real text elements on the canvas, and US-AI-036 AC3 then
+  // inserts the AI image behind them — so a `type === 'text' || 'shape'` check
+  // reports "already editable" for a flat, never-extracted design and the
+  // early-return below makes "Edit elements" a permanent no-op.
+  const hasExtractedLayers = elements.some((el) => el.id.startsWith('composed-'));
   const isEditableMode = renderMode === 'editable' || hasExtractedLayers;
 
   const handleExtractLayers = async () => {
@@ -90,7 +97,11 @@ export function CanvasEditToolbar({ generationId }: CanvasEditToolbarProps) {
       // extraction finds no text.
       const plan = await planVariationLoad({
         generationId: activeGenId,
-        variation: { id: activeGenId, imageUrl: aiImportElement.src },
+        // Must be the original provider URL, never `src`: `src` is the proxied
+        // base64 data: URL the canvas renders from, and posting megabytes of it
+        // to /:id/compose blows the 100kb JSON body limit and 500s — which
+        // planVariationLoad then reports as "no separate text layers detected".
+        variation: { id: activeGenId, imageUrl: aiImportElement.aiSourceUrl ?? aiImportElement.src },
         renderMode: 'editable', // this click IS the explicit request to compose
         orientation: deriveOrientationFromCanvas(canvasWidth, canvasHeight),
       });
