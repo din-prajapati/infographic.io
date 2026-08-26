@@ -170,6 +170,53 @@ describe('PaymentsService', () => {
   });
 
   // -------------------------------------------------------------------------
+  // Currency/amount mismatch — amount is derived from PLAN_CONFIG.price (INR)
+  // and multiplied into minor units without consulting the caller's currency.
+  // Accepting a non-INR currency therefore mislabels a rupee amount.
+  // -------------------------------------------------------------------------
+  describe('createSubscription() — currency must match the plan currency', () => {
+    it('defaults to INR and stores the rupee amount in paise (INR path unchanged)', async () => {
+      await service.createSubscription(TEST_USER.id, 'SOLO' as any);
+
+      const written = mockStorage.createSubscription.mock.calls.at(-1)![0];
+      expect(written.currency).toBe('INR');
+      expect(written.amount).toBe(PLAN_CONFIG.SOLO.price * 100);
+    });
+
+    it('accepts an explicit INR currency — unchanged behaviour for Indian customers', async () => {
+      await service.createSubscription(TEST_USER.id, 'SOLO' as any, 'INR');
+
+      const written = mockStorage.createSubscription.mock.calls.at(-1)![0];
+      expect(written.currency).toBe('INR');
+      expect(written.amount).toBe(PLAN_CONFIG.SOLO.price * 100);
+    });
+
+    it('accepts lowercase inr without mis-labelling the stored currency', async () => {
+      await service.createSubscription(TEST_USER.id, 'SOLO' as any, 'inr');
+
+      const written = mockStorage.createSubscription.mock.calls.at(-1)![0];
+      expect(written.currency).toBe('INR');
+    });
+
+    it('rejects USD rather than charging the rupee number as dollars', async () => {
+      await expect(
+        service.createSubscription(TEST_USER.id, 'SOLO' as any, 'USD'),
+      ).rejects.toMatchObject({
+        response: { code: 'CURRENCY_NOT_AVAILABLE' },
+      });
+    });
+
+    it('writes no subscription row when the currency is rejected', async () => {
+      const before = mockStorage.createSubscription.mock.calls.length;
+      await service
+        .createSubscription(TEST_USER.id, 'SOLO' as any, 'USD')
+        .catch(() => undefined);
+
+      expect(mockStorage.createSubscription.mock.calls.length).toBe(before);
+    });
+  });
+
+  // -------------------------------------------------------------------------
   // PT-04: Org upgrade on first subscription.charged, not on subscription.authenticated
   // -------------------------------------------------------------------------
   describe('handleSubscriptionActivated() — authenticated vs charged', () => {

@@ -263,6 +263,26 @@ export class PaymentsService {
       throw new BadRequestException('Cannot create subscription for free plan');
     }
 
+    // The amount below is derived from planConfig.price, which is denominated in
+    // planConfig.currency (INR for every tier today) and multiplied by 100 into
+    // minor units. Nothing in that computation consults the caller's `currency`,
+    // so accepting a different one would label a rupee-derived amount as another
+    // currency -- e.g. SOLO's 5499 sent as 549900 with currency USD, a ~83x
+    // overcharge, and a Subscription row whose amount/currency pair is a lie even
+    // when the provider rejects the charge.
+    //
+    // `currency` arrives from the client (CreateSubscriptionDto.currency, no
+    // validation) so this is a trust-boundary check, not an internal assertion.
+    // Reject rather than coerce: there is no USD price to fall back to. When USD
+    // tiers are added to PLAN_CONFIG, this becomes a lookup instead of a guard.
+    const planCurrency = planConfig.currency;
+    if (currency.toUpperCase() !== planCurrency.toUpperCase()) {
+      throw new BadRequestException({
+        code: 'CURRENCY_NOT_AVAILABLE',
+        message: `Plan ${planTier} is priced in ${planCurrency} and cannot be billed in ${currency.toUpperCase()}.`,
+      });
+    }
+
     // Calculate price based on billing period
     let finalPrice = planConfig.price;
     if (billingPeriod === 'annual') {
@@ -386,8 +406,8 @@ export class PaymentsService {
         status: 'PENDING',
         currentPeriodStart: new Date(),
         currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // +30 days
-        amount: finalPrice * 100,
-        currency: currency,
+        amount: finalPrice * 100, // minor units of planCurrency (guarded === currency above)
+        currency: planCurrency,
         provider: 'STRIPE',
       };
     } else {
@@ -422,8 +442,8 @@ export class PaymentsService {
       billingPeriod: billingPeriod === 'annual' ? 'ANNUAL' : 'MONTHLY',
       currentPeriodStart: providerSubscription.currentPeriodStart,
       currentPeriodEnd: providerSubscription.currentPeriodEnd,
-      amount: finalPrice * 100, // Convert to paise/cents
-      currency,
+      amount: finalPrice * 100, // minor units of planCurrency (guarded === currency above)
+      currency: planCurrency,
       cancelAtPeriodEnd: false,
       cancelledAt: null,
     });
