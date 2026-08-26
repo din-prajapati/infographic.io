@@ -7,15 +7,17 @@ updated: 2026-08-26
 
 # Story Card — US-EDIT-005
 
-> **Status:** 🟡 In Progress — merged (PR #35) and live-verified 2026-08-25; the verification pass
-> found and fixed two real defects that made the control non-functional in the template flow (see
-> Implementation Update). AC4's quota badge remains blocked on `US-PAY-103`.
+> **Status:** ✅ Done — merged (PR #35) and live-verified 2026-08-25/26. The verification pass
+> found and fixed **three** real defects that made the control non-functional in the template flow
+> (PR #38 — see Implementation Update). **AC4 was descoped 2026-08-26** to
+> [US-EDIT-008](../US-EDIT-008/STORY.md); see the DoD exception below.
 > **Epic:** [EPIC-EDIT-03](../../EPIC.md)
 > **Milestone:** [M-EDIT-01-editable-menu-surfacing](../../milestones/M-EDIT-01-editable-menu-surfacing.md)
 > **Linear:** LIN-XXX
 > **Size:** M _(bumped from S — floating canvas component + real loading/cache/charging states,
 > not a same-file relabel)_
-> **Created:** 2026-08-21 | **Closed:** _not yet — see Status_
+> **Created:** 2026-08-21 | **Closed:** 2026-08-26 (AC4 deferred to US-EDIT-008)
+> **PR:** [#35](https://github.com/din-prajapati/infographic.io/pull/35), [#38](https://github.com/din-prajapati/infographic.io/pull/38)
 
 ---
 
@@ -71,19 +73,15 @@ redundant.
       one is Out of Scope backend work), so honesty here comes from timing, not a flag — a fast
       (cached) response resolves before the spinner would ever render; a slow (fresh) one reliably
       shows it. **Not yet manually verified** (TC-EDIT-005-03).
-- [ ] **AC4 [error-path]:** Switching to compose a *second or third* variation on the same
-      generation is the real credit-charging path (`isExtraCompose === true`,
-      `generations.service.ts:337-389`) — the quota badge decrements only at that exact moment,
-      with a visible confirmation (toast or inline change), never preemptively on the first click.
-      **Still genuinely blocked** — not just on the badge (`US-PAY-103`) but structurally: the
-      `/compose` response never returns `isCacheHit`/`isExtraCompose` to the client (confirmed by
-      reading `generations.service.ts` — those are local variables, not part of the returned
-      `ComposedDesign`), so there is no honest way to show a charge-specific confirmation without
-      either the quota badge or a backend response-shape change, and backend changes to
-      `generations.service.ts` are Out of Scope for this story. The generic "Layers separated!"
-      success toast fires only after a real state change (never preemptively), but does not (and
-      currently cannot) distinguish "this one was free" from "this one was charged." Do not fake
-      this distinction client-side — sequence with `US-PAY-103`/a backend follow-up instead.
+- [~] **AC4 [error-path]:** ~~Quota badge decrements at the exact moment of charge.~~
+      **DESCOPED 2026-08-26 → [US-EDIT-008](../US-EDIT-008/STORY.md).** Not achievable in this
+      story for a structural reason, not an incomplete one: `POST /:id/compose` never returns
+      `isCacheHit` / `isExtraCompose` to the client (they are local variables in
+      `generations.service.ts`, confirmed absent from `composed-design.types.ts`). Without that
+      signal a charge-specific confirmation would have to be guessed, and faking it was refused
+      deliberately. Half the dependency has since cleared — `getEditableUsageQuota()` shipped to
+      `main` with EPIC-PAY-05 — so the follow-up story starts from a smaller gap.
+
 - [x] **AC5 [error-path]:** For a FREE-tier user past their lifetime editable trial, clicking shows
       a clear, dedicated upgrade prompt — replacing the current bare toast
       (`RightSidebar.tsx:486`, `EditableRequiresUpgradeException` / "Editable designs are a paid
@@ -247,8 +245,15 @@ Rules:
 - [x] PR merged — PR #35
 - [x] No console errors for the changed flow — one console entry only, the expected 402 from
       TC-05's deliberately-blocked compose
-- [ ] [TASKS.md](./TASKS.md) task list fully checked — T4b (quota badge) correctly left unchecked
-- [ ] STORY.md status updated to ✅ Done — AC4/T4b still blocked on `US-PAY-103` wiring
+- [x] [TASKS.md](./TASKS.md) task list fully checked — T4b deferred to US-EDIT-008, marked as such
+- [x] STORY.md status updated to ✅ Done
+
+> **DoD exception:** AC4 (and its task T4b) descoped rather than delivered. `POST /:id/compose`
+> does not expose `isCacheHit` / `isExtraCompose` to the client, so the quota badge could not be
+> built honestly from this story's scope; the alternative was to guess at charge state, which was
+> rejected. Deferred in full to [US-EDIT-008](../US-EDIT-008/STORY.md), which owns the response-shape
+> change. The story is closed on the value it did deliver — AC1/2/3/5, all live-verified.
+> Approved by: Dinesh, 2026-08-26.
 
 ---
 

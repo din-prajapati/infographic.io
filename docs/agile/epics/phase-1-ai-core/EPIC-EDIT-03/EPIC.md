@@ -8,12 +8,10 @@ updated: 2026-08-26
 # EPIC-EDIT-03 — Editable Design Discoverability
 
 > **Phase:** Phase 1 — Revenue Strategy
-> **Status:** 🟡 In Progress — US-EDIT-005 is functionally complete and live-verified
-> (2026-08-25/26). Its verification pass found and fixed three real defects that made the
-> control non-functional in the template flow — see the story's Implementation Update.
-> Only **AC4** (quota badge at the moment of charge) remains open, and it is blocked on a
-> backend response-shape change no story currently owns (see Blockers below).
-> M-EDIT-02 (brand layers) scaffolded 2026-08-26, not started.
+> **Status:** 🟡 In Progress — **M-EDIT-01 closed 2026-08-26.** US-EDIT-005 shipped and was
+> live-verified; its AC4 was descoped to US-EDIT-008, which now owns the quota badge and the
+> backend response-shape change it depends on. M-EDIT-02 (brand layers) scaffolded, not started.
+> Open: US-EDIT-006, US-EDIT-007, US-EDIT-008.
 > **Linear Project:** LIN-EPIC-XXX
 > **Target date:** ships alongside EPIC-INFRA-02 / EPIC-PAY-05, before the revenue-on flip
 > **Owner:** Dinesh
@@ -70,7 +68,7 @@ gated behind having already generated something.
 
 | Milestone | Scope | Target | Status |
 |-----------|-------|--------|:------:|
-| [M-EDIT-01-editable-menu-surfacing](milestones/M-EDIT-01-editable-menu-surfacing.md) | Promote the existing renderMode toggle to a persistent, labeled entry point | TBD | 🔲 |
+| [M-EDIT-01-editable-menu-surfacing](milestones/M-EDIT-01-editable-menu-surfacing.md) | Promote the existing renderMode toggle to a persistent, labeled entry point | 2026-08-26 | ✅ |
 | [M-EDIT-02-brand-layers](milestones/M-EDIT-02-brand-layers.md) | Agent brand furniture (logo, licence, headshot, QR) as real canvas layers | TBD | 🔲 |
 
 ---
@@ -79,9 +77,10 @@ gated behind having already generated something.
 
 | Order | Story ID | Title | Milestone | Size | Blocked By | Status | PR |
 |:-----:|----------|-------|-----------|:----:|------------|:------:|:--:|
-| 1 | [US-EDIT-005](stories/US-EDIT-005/STORY.md) | Floating "Edit elements" control on the canvas | M-EDIT-01 | M | AC4 only — `/compose` response shape (US-PAY-103 half cleared 2026-08-26) | 🟡 AC1-3/5 done | [#35](https://github.com/din-prajapati/infographic.io/pull/35), [#38](https://github.com/din-prajapati/infographic.io/pull/38) |
+| 1 | [US-EDIT-005](stories/US-EDIT-005/STORY.md) | Floating "Edit elements" control on the canvas | M-EDIT-01 | M | — | ✅ Done | [#35](https://github.com/din-prajapati/infographic.io/pull/35), [#38](https://github.com/din-prajapati/infographic.io/pull/38) |
 | 2 | [US-EDIT-006](stories/US-EDIT-006/STORY.md) | Brand layers from existing data — logo + licence | M-EDIT-02 | M | — | 🔲 | — |
 | 3 | [US-EDIT-007](stories/US-EDIT-007/STORY.md) | Agent headshot + QR code | M-EDIT-02 | M | US-EDIT-006 | 🔲 | — |
+| 4 | [US-EDIT-008](stories/US-EDIT-008/STORY.md) | Editable quota badge + charge confirmation | M-EDIT-01 | M | — (deferred from US-EDIT-005 AC4) | 🔲 | — |
 
 > **Revised 2026-08-21** — original scope was an in-place relabel of the existing `RightSidebar`
 > toggle (S-size). Revised after reviewing `design-preview-canvas-menu.html`: a floating
@@ -151,12 +150,12 @@ gated behind having already generated something.
 | Blocker | Owner | Status |
 |---|---|---|
 | `getEditableUsageQuota()` — needed for US-EDIT-005 AC4's quota number | US-PAY-103 | ✅ **cleared 2026-08-26** — shipped to `main` with the EPIC-PAY-05 merge (`generations.controller.ts:29`, `GET /infographics/generations/usage/quota/editable`) |
-| `POST /:id/compose` does not return `isCacheHit` / `isExtraCompose` to the client | **unowned** | ❌ open — confirmed absent from `composed-design.types.ts` on `main` |
+| `POST /:id/compose` does not return `isCacheHit` / `isExtraCompose` to the client | [US-EDIT-008](stories/US-EDIT-008/STORY.md) | ✅ **owned as of 2026-08-26** — was unowned; US-EDIT-005 AC4 descoped into a story that carries it |
 
-The second one is what actually holds AC4 open. Without it the client cannot distinguish a free
-compose from a charged one, so a charge-specific confirmation would have to be guessed — which
-US-EDIT-005 deliberately refused to fake. **This needs either its own story or a formal descope
-of AC4**; leaving it open against an unowned dependency is how a story rots.
+Resolved 2026-08-26 by descoping: AC4 moved out of US-EDIT-005 into
+[US-EDIT-008](stories/US-EDIT-008/STORY.md), which owns both the badge and the response-shape
+change it needs. US-EDIT-005 closed on the value it had delivered rather than sitting open
+against a dependency nobody owned.
 
 ---
 

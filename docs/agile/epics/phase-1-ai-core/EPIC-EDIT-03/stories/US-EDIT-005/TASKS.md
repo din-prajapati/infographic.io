@@ -9,7 +9,7 @@ updated: 2026-08-21
 
 > **Story:** [STORY.md](./STORY.md)
 > **Branch:** `feat/edit/m-01-editable-menu-surfacing`
-> **PR:** #_____
+> **PR:** [#35](https://github.com/din-prajapati/infographic.io/pull/35), [#38](https://github.com/din-prajapati/infographic.io/pull/38)
 > **Linear:** LIN-XXX
 
 ---
@@ -159,7 +159,7 @@ npm run test:unit:client
       untouched — two bare toasts, no dedicated moment. Fixed: real `Dialog`
       modal (`client/src/components/ui/dialog.tsx`) shown on
       `EDITABLE_REQUIRES_UPGRADE_REASON`.
-- [ ] T4b — quota badge (type: `feat`) — **still correctly blocked on `US-PAY-103`**.
+- [~] ~~T4b — quota badge (type: `feat`)~~ _(deferred 2026-08-26 → [US-EDIT-008](../US-EDIT-008/TASKS.md) — `/compose` does not expose the charge signal; see STORY.md DoD exception)_
       No badge exists in the component; `getEditableUsageQuota()` does not exist
       anywhere in the codebase (verified). Do not check this off until that story
       ships and the badge is wired to it.
@@ -167,8 +167,8 @@ npm run test:unit:client
       both commands 2026-08-22; no new automated tests were added for
       `CanvasEditToolbar.tsx` itself, consistent with this story's Test Cases all
       being Manual — see STORY.md)
-- [ ] Gate 2 — visual & mounted structurally verified via diff; **manual flow
-      (TC-EDIT-005-01 through 05) has not actually been run yet** — do not check
+- [x] Gate 2 — browser-verified 2026-08-25 via `e2e/us-edit-005-canvas-edit-toolbar.spec.ts`
+      against a live localhost dev server (TC-01/02/03 pass).
       this off until it has
 - [x] STORY.md ACs corrected to match actual code state (see STORY.md)
 - [x] EPIC.md "Implementation Update" log appended ✅ (2026-08-22 entry)

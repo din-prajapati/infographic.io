@@ -8,9 +8,9 @@ updated: 2026-08-26
 # M-EDIT-01-editable-menu-surfacing — Editable Menu Surfacing
 
 > **Epic:** [EPIC-EDIT-03](../EPIC.md)
-> **Status:** 🟡 In Progress — its only story (US-EDIT-005) is merged and live-verified;
-> the milestone stays open solely on that story's AC4, which is blocked on a backend
-> response-shape change (see EPIC.md Blockers).
+> **Status:** ✅ Done — closed 2026-08-26. US-EDIT-005 merged (PR #35 + #38) and live-verified;
+> its AC4 was descoped to [US-EDIT-008](../stories/US-EDIT-008/STORY.md), which now carries the
+> quota-badge work and its backend dependency.
 > **Target date:** TBD
 > **Branch:** `feat/edit/m-01-editable-menu-surfacing`
 
