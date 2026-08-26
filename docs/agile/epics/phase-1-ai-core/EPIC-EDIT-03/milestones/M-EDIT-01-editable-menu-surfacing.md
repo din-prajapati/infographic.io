@@ -2,13 +2,15 @@
 title: M-EDIT-01-editable-menu-surfacing — Editable Menu Surfacing
 type: milestone
 tags: [orion, edit, ui]
-updated: 2026-08-21
+updated: 2026-08-26
 ---
 
 # M-EDIT-01-editable-menu-surfacing — Editable Menu Surfacing
 
 > **Epic:** [EPIC-EDIT-03](../EPIC.md)
-> **Status:** 🔲 Not Started
+> **Status:** 🟡 In Progress — its only story (US-EDIT-005) is merged and live-verified;
+> the milestone stays open solely on that story's AC4, which is blocked on a backend
+> response-shape change (see EPIC.md Blockers).
 > **Target date:** TBD
 > **Branch:** `feat/edit/m-01-editable-menu-surfacing`
 

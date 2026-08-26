@@ -2,13 +2,18 @@
 title: EPIC-EDIT-03 — Editable Design Discoverability
 type: epic
 tags: [orion, edit, ui, conversion]
-updated: 2026-08-21
+updated: 2026-08-26
 ---
 
 # EPIC-EDIT-03 — Editable Design Discoverability
 
 > **Phase:** Phase 1 — Revenue Strategy
-> **Status:** 🟡 In Progress — US-EDIT-005 code corrected 2026-08-22, manual verification pending
+> **Status:** 🟡 In Progress — US-EDIT-005 is functionally complete and live-verified
+> (2026-08-25/26). Its verification pass found and fixed three real defects that made the
+> control non-functional in the template flow — see the story's Implementation Update.
+> Only **AC4** (quota badge at the moment of charge) remains open, and it is blocked on a
+> backend response-shape change no story currently owns (see Blockers below).
+> M-EDIT-02 (brand layers) scaffolded 2026-08-26, not started.
 > **Linear Project:** LIN-EPIC-XXX
 > **Target date:** ships alongside EPIC-INFRA-02 / EPIC-PAY-05, before the revenue-on flip
 > **Owner:** Dinesh
@@ -17,7 +22,8 @@ updated: 2026-08-21
 > progressive generation UX," Phase 3, unscaffolded) — unrelated. This epic took the next free
 > number (`EPIC-EDIT-03`) per `PROJECT_CONTEXT.yaml`'s counter.
 >
-> Single-milestone, single-story epic — feature level intentionally skipped per template guidance
+> Feature level intentionally skipped per template guidance. Started as a single-milestone,
+> single-story epic; M-EDIT-02 (brand layers) was added 2026-08-26.
 > ("skip for simple epics with 1–2 milestones").
 
 ---
@@ -73,7 +79,7 @@ gated behind having already generated something.
 
 | Order | Story ID | Title | Milestone | Size | Blocked By | Status | PR |
 |:-----:|----------|-------|-----------|:----:|------------|:------:|:--:|
-| 1 | [US-EDIT-005](stories/US-EDIT-005/STORY.md) | Floating "Edit elements" control on the canvas | M-EDIT-01 | M | US-PAY-103 (quota badge only — see story) | 🟡 In Progress | — |
+| 1 | [US-EDIT-005](stories/US-EDIT-005/STORY.md) | Floating "Edit elements" control on the canvas | M-EDIT-01 | M | AC4 only — `/compose` response shape (US-PAY-103 half cleared 2026-08-26) | 🟡 AC1-3/5 done | [#35](https://github.com/din-prajapati/infographic.io/pull/35), [#38](https://github.com/din-prajapati/infographic.io/pull/38) |
 | 2 | [US-EDIT-006](stories/US-EDIT-006/STORY.md) | Brand layers from existing data — logo + licence | M-EDIT-02 | M | — | 🔲 | — |
 | 3 | [US-EDIT-007](stories/US-EDIT-007/STORY.md) | Agent headshot + QR code | M-EDIT-02 | M | US-EDIT-006 | 🔲 | — |
 
@@ -140,6 +146,20 @@ gated behind having already generated something.
 
 ---
 
+## Blockers
+
+| Blocker | Owner | Status |
+|---|---|---|
+| `getEditableUsageQuota()` — needed for US-EDIT-005 AC4's quota number | US-PAY-103 | ✅ **cleared 2026-08-26** — shipped to `main` with the EPIC-PAY-05 merge (`generations.controller.ts:29`, `GET /infographics/generations/usage/quota/editable`) |
+| `POST /:id/compose` does not return `isCacheHit` / `isExtraCompose` to the client | **unowned** | ❌ open — confirmed absent from `composed-design.types.ts` on `main` |
+
+The second one is what actually holds AC4 open. Without it the client cannot distinguish a free
+compose from a charged one, so a charge-specific confirmation would have to be guessed — which
+US-EDIT-005 deliberately refused to fake. **This needs either its own story or a formal descope
+of AC4**; leaving it open against an unowned dependency is how a story rots.
+
+---
+
 ## Implementation Update (log)
 
 ### 2026-08-22 — Verification + correction pass (US-EDIT-005)
@@ -174,3 +194,20 @@ gated behind having already generated something.
 ---
 
 *Epic created: 2026-08-21 | Last updated: 2026-08-21*
+
+**2026-08-26 — status reconciliation.** Epic and M-EDIT-01 headers still described the state as of
+2026-08-22 ("code corrected, manual verification pending"). Since then US-EDIT-005 was merged
+(PR #35), live-verified against a real dev server, and three defects found by that verification
+were fixed and merged (PR #38):
+
+1. `hasExtractedLayers` counted a *template's* own text/shape layers as extraction output, so the
+   control reported "Editable layers active" on a flat design and the click was a permanent no-op.
+2. The compose request posted `element.src` — a multi-MB base64 data: URL — blowing the 100kb
+   `express.json()` limit and returning 500, which `planVariationLoad` surfaced as the misleading
+   "No separate text layers detected".
+3. `isEditableMode` ORed in the session-global `renderMode`, so one compose made every canvas in
+   the session claim to be editable. Removing it also closed an unintended charge path: merely
+   clicking "Use This" on a second variation was firing a paid compose.
+
+Also recorded: US-PAY-103 shipped `getEditableUsageQuota()` to `main`, clearing half of AC4's
+dependency. The remaining half (compose response shape) is unowned — see Blockers.
