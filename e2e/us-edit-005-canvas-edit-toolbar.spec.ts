@@ -124,6 +124,23 @@ test.describe("US-EDIT-005 — floating Edit elements control (live)", () => {
       "TC-01: control offers 'Edit elements' for a flat generation",
     ).toBeVisible();
 
+    // Bug 3 regression guard: flipping AI Chat's global Flat/Editable toggle
+    // must NOT change what this control reports. Before the fix, setting
+    // renderMode='editable' made the pill claim "Editable layers active" over a
+    // flat, never-composed design.
+    const editableToggle = page.getByRole("button", { name: "Editable", exact: true });
+    if ((await editableToggle.count()) > 0) {
+      await editableToggle.first().click();
+      await page.waitForTimeout(500);
+      await expect(
+        toolbar.getByRole("button", { name: /edit elements/i }),
+        "bug 3: global renderMode toggle must not flip the canvas control's state",
+      ).toBeVisible();
+      console.log("[bug3] PASS — control unaffected by the global renderMode toggle");
+    } else {
+      console.log("[bug3] toggle not present on this surface — nothing to flip");
+    }
+
     // AC1 — replaces the old in-panel toggle, does not duplicate it.
     const oldToggle = page.getByRole("button", { name: "Editable", exact: true });
     expect(await oldToggle.count(), "AC1: old RightSidebar 'Editable' toggle is gone").toBe(0);
@@ -227,33 +244,32 @@ test.describe("US-EDIT-005 — floating Edit elements control (live)", () => {
     // The trial was consumed by TC-02. Composing a DIFFERENT variation is the
     // charged path, so this FREE account should now be blocked with the
     // dedicated upgrade prompt rather than a bare toast.
-    // NOTE on surface: the toolbar's own Dialog can only be reached from a
-    // canvas with no composed layers on it, and TC-02 has just put some there
-    // (loadAiVariationToCanvas prepends, so the composed-* elements survive).
-    // What this asserts is the gating itself — that a FREE account past its
-    // lifetime trial is blocked at the API with the upgrade reason rather than
-    // silently charged. Which surface renders that reason is asserted by the
-    // AC5 unit/structural coverage, not here.
+    // ── TC-EDIT-005-05 — charging behaviour on a second variation ───────────
+    // This changed meaning once the sticky-renderMode bug was fixed, and the new
+    // behaviour is the correct one.
+    //
+    // Before: renderMode stayed 'editable' after any compose, so merely clicking
+    // "Use This" on a second variation fired a PAID compose behind the user's
+    // back (observed live: 402 for a used FREE trial — i.e. a real charge path
+    // on a preview click). The old assertion here depended on that bug.
+    //
+    // After: placing a variation is always flat and costs nothing. Extraction is
+    // only ever the explicit "Edit elements" action.
+    //
+    // The 402 upgrade gate itself is unchanged and remains covered by
+    // api/tests/infographics/editable-gating.spec.ts, and was observed live on
+    // 2026-08-25 before this fix landed.
     const otherVariation = page.locator('button:has-text("Use This")').nth(1);
     if ((await otherVariation.count()) > 0) {
-      const blockedWait = page
-        .waitForResponse(
-          (r) => r.url().includes("/compose") && r.request().method() === "POST" && r.status() === 402,
-          { timeout: 60_000 },
-        )
-        .catch(() => null);
+      const composesBefore = composeCalls.length;
       await otherVariation.click();
-      const blocked = await blockedWait;
-      console.log(`[TC-05] second-variation compose status: ${blocked?.status() ?? "no 402 seen"}`);
-      expect(blocked?.status(), "TC-05: FREE tier past trial is blocked with 402, not charged").toBe(402);
-
-      const upgradeShown = await page
-        .getByText(/paid feature|upgrade/i)
-        .first()
-        .isVisible({ timeout: 15_000 })
-        .catch(() => false);
-      console.log(`[TC-05] upgrade messaging surfaced: ${upgradeShown}`);
-      expect(upgradeShown, "TC-05: the block is explained as an upgrade prompt").toBe(true);
+      await page.waitForTimeout(6000);
+      const composesAfter = composeCalls.length;
+      console.log(`[TC-05] composes before=${composesBefore} after=${composesAfter}`);
+      expect(
+        composesAfter,
+        "TC-05: placing another variation must not trigger a paid compose",
+      ).toBe(composesBefore);
     } else {
       console.log("[TC-05] SKIPPED — only one variation returned by this generation");
     }
