@@ -33,7 +33,10 @@ const LOADING_INDICATOR_DELAY_MS = 200;
 
 export function CanvasEditToolbar({ generationId }: CanvasEditToolbarProps) {
   const [, setLocation] = useLocation();
-  const { renderMode, setRenderMode } = useGenerationPrefs();
+  // Intentionally does not subscribe to `renderMode`. This control's state comes
+  // from the canvas only (see isEditableMode below), and it must not write the
+  // session-global preference either — reading or writing it is what let one
+  // compose leak "editable" onto every other canvas in the session.
   const activeGenerationId = useGenerationPrefs((s) => s.activeGenerationId);
   const [isExtracting, setIsExtracting] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
@@ -57,7 +60,14 @@ export function CanvasEditToolbar({ generationId }: CanvasEditToolbarProps) {
   // reports "already editable" for a flat, never-extracted design and the
   // early-return below makes "Edit elements" a permanent no-op.
   const hasExtractedLayers = elements.some((el) => el.id.startsWith('composed-'));
-  const isEditableMode = renderMode === 'editable' || hasExtractedLayers;
+
+  // Derived from the canvas ALONE. `renderMode` deliberately takes no part:
+  // it is a session-global preference written by AI Chat's Flat/Editable
+  // toggle, so ORing it in here made every canvas in the session claim to be
+  // editable once any compose had succeeded — including a freshly opened
+  // template holding no AI content at all. The control must report what is on
+  // the canvas, never what the user once preferred.
+  const isEditableMode = hasExtractedLayers;
 
   const handleExtractLayers = async () => {
     if (!aiImportElement) {
@@ -109,7 +119,12 @@ export function CanvasEditToolbar({ generationId }: CanvasEditToolbarProps) {
       if (plan.mode === 'editable' && plan.composedDesign) {
         const success = await loadComposedDesignToCanvas(plan.composedDesign);
         if (success) {
-          setRenderMode('editable');
+          // Deliberately does NOT call setRenderMode('editable'). That was the
+          // source of the stickiness: a canvas action mutating a session-global
+          // preference, which then changed how unrelated surfaces (AI Chat's
+          // toggle, RightSidebar's next "Use This") behaved. The composed
+          // elements this loader just placed are the state; nothing else needs
+          // telling.
           toast.success("Layers separated!", {
             description: "Text and graphics are now independently editable on the canvas.",
           });
