@@ -2,7 +2,7 @@
 title: Story Card — US-EDIT-005
 type: story
 tags: [orion, edit, ui, conversion]
-updated: 2026-08-21
+updated: 2026-08-26
 ---
 
 # Story Card — US-EDIT-005
@@ -98,7 +98,22 @@ redundant.
 
 ---
 
-## Dependency — not fully independent, correct the milestone note
+## Dependency — updated 2026-08-26
+
+**Half of AC4's blocker has cleared.** `getEditableUsageQuota()` shipped to `main` with the
+EPIC-PAY-05 merge — `GET /infographics/generations/usage/quota/editable`
+(`generations.controller.ts:29`). The quota *number* is now fetchable.
+
+**AC4 is still blocked**, on the other half: `POST /:id/compose` does not return
+`isCacheHit` / `isExtraCompose` to the client (confirmed absent from `composed-design.types.ts`
+on `main`). Without that signal the client cannot tell a free compose from a charged one, so a
+charge-specific confirmation would have to be guessed. Do not fake it — this needs either a
+backend response-shape story or a formal descope of AC4. Tracked in
+[EPIC.md §Blockers](../../EPIC.md#blockers).
+
+---
+
+## Dependency — original note (superseded above)
 
 The quota badge (`"10 left"` style, real number) needs `getEditableUsageQuota()`, which is
 `US-PAY-103`'s job (`EPIC-PAY-05`, `usage-limit.service.ts`) — that method doesn't exist yet. This
