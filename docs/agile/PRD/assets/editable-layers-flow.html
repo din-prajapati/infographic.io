@@ -1,0 +1,561 @@
+<title>Editable Layers Flow</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+
+<style>
+  :root {
+    --ground: #f6f7f9;
+    --surface: #ffffff;
+    --surface-2: #eef1f5;
+    --ink: #191d24;
+    --ink-2: #4a5361;
+    --ink-3: #737d8c;
+    --line: #dde2e9;
+    --line-2: #c9d1db;
+    --accent: #d94f1e;
+    --accent-soft: #fbeae3;
+    --plate: #e9edf2;
+    --plate-line: #b9c3cf;
+
+    --s-none: #6d7787;
+    --s-flat: #2b6cb0;
+    --s-work: #a86c12;
+    --s-live: #2f7d54;
+    --s-block: #b03a4a;
+
+    --shadow: 0 1px 2px rgba(20,28,40,.05), 0 8px 24px -12px rgba(20,28,40,.16);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #12151a;
+      --surface: #191d24;
+      --surface-2: #1f242c;
+      --ink: #e8ecf1;
+      --ink-2: #a8b2c0;
+      --ink-3: #7c8695;
+      --line: #2b323c;
+      --line-2: #3a424e;
+      --accent: #f2703c;
+      --accent-soft: #33201a;
+      --plate: #e9edf2;
+      --plate-line: #b9c3cf;
+
+      --s-none: #99a4b3;
+      --s-flat: #74acdf;
+      --s-work: #e0a83c;
+      --s-live: #62b98a;
+      --s-block: #e3808f;
+
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 28px -14px rgba(0,0,0,.7);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground: #12151a;
+    --surface: #191d24;
+    --surface-2: #1f242c;
+    --ink: #e8ecf1;
+    --ink-2: #a8b2c0;
+    --ink-3: #7c8695;
+    --line: #2b323c;
+    --line-2: #3a424e;
+    --accent: #f2703c;
+    --accent-soft: #33201a;
+    --plate: #e9edf2;
+    --plate-line: #b9c3cf;
+
+    --s-none: #99a4b3;
+    --s-flat: #74acdf;
+    --s-work: #e0a83c;
+    --s-live: #62b98a;
+    --s-block: #e3808f;
+
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 28px -14px rgba(0,0,0,.7);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 16.5px;
+    line-height: 1.62;
+    margin: 0;
+    padding: 0 20px 96px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 940px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 46px;
+  }
+
+  .spine { max-width: 68ch; }
+
+  /* ---------- masthead ---------- */
+  .masthead {
+    padding: 64px 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .eyebrow {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 11.5px;
+    letter-spacing: .13em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0;
+  }
+  h1 {
+    font-family: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
+    font-weight: 700;
+    font-size: clamp(2.1rem, 5.4vw, 3.15rem);
+    line-height: 1.04;
+    letter-spacing: -.022em;
+    text-wrap: balance;
+    margin: 0;
+  }
+  .standfirst {
+    font-size: 1.1rem;
+    color: var(--ink-2);
+    margin: 0;
+    max-width: 60ch;
+  }
+
+  .principle {
+    border-left: 3px solid var(--accent);
+    background: var(--accent-soft);
+    padding: 16px 20px;
+    border-radius: 0 8px 8px 0;
+    font-family: "Bricolage Grotesque", ui-sans-serif, sans-serif;
+    font-weight: 500;
+    font-size: 1.12rem;
+    line-height: 1.45;
+    color: var(--ink);
+    text-wrap: balance;
+  }
+
+  /* ---------- sections ---------- */
+  section { display: flex; flex-direction: column; gap: 18px; }
+
+  h2 {
+    font-family: "Bricolage Grotesque", ui-sans-serif, sans-serif;
+    font-weight: 700;
+    font-size: 1.52rem;
+    letter-spacing: -.014em;
+    line-height: 1.18;
+    margin: 0;
+    text-wrap: balance;
+  }
+  h3 {
+    font-family: "Bricolage Grotesque", ui-sans-serif, sans-serif;
+    font-weight: 600;
+    font-size: 1.06rem;
+    margin: 0 0 6px;
+    letter-spacing: -.008em;
+  }
+  p { margin: 0; }
+  .spine p + p { margin-top: 13px; }
+
+  code {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: .855em;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: .1em .38em;
+    color: var(--ink);
+  }
+
+  .rule { height: 1px; background: var(--line); border: 0; margin: 0; }
+
+  /* ---------- diagram plate ---------- */
+  .plate {
+    background: var(--plate);
+    border: 1px solid var(--plate-line);
+    border-radius: 12px;
+    padding: 26px 20px;
+    overflow-x: auto;
+    box-shadow: var(--shadow);
+  }
+  .plate .mermaid { display: flex; justify-content: center; min-width: 520px; }
+  .caption {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 11.5px;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin: 0;
+  }
+
+  /* ---------- state table ---------- */
+  .table-scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); box-shadow: var(--shadow); }
+  table { border-collapse: collapse; width: 100%; min-width: 660px; font-size: .945rem; }
+  thead th {
+    text-align: left;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-weight: 500;
+    font-size: 11px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    padding: 13px 18px;
+    border-bottom: 1px solid var(--line);
+    white-space: nowrap;
+  }
+  tbody td { padding: 15px 18px; border-bottom: 1px solid var(--line); vertical-align: top; color: var(--ink-2); }
+  tbody tr:last-child td { border-bottom: 0; }
+  tbody td:first-child { width: 1%; white-space: nowrap; }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: .02em;
+    color: var(--st);
+    border: 1px solid color-mix(in srgb, var(--st) 38%, transparent);
+    background: color-mix(in srgb, var(--st) 11%, transparent);
+    padding: 4px 10px 4px 8px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .chip::before {
+    content: "";
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--st);
+    flex: none;
+  }
+  .s-none  { --st: var(--s-none); }
+  .s-flat  { --st: var(--s-flat); }
+  .s-work  { --st: var(--s-work); }
+  .s-live  { --st: var(--s-live); }
+  .s-block { --st: var(--s-block); }
+
+  .label {
+    font-family: "IBM Plex Sans", sans-serif;
+    font-weight: 600;
+    color: var(--ink);
+    display: block;
+  }
+
+  /* ---------- two-up compare ---------- */
+  .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: var(--shadow);
+  }
+  .card.now { border-color: color-mix(in srgb, var(--s-block) 34%, var(--line)); }
+  .card.next { border-color: color-mix(in srgb, var(--s-live) 34%, var(--line)); }
+  .card h3 { display: flex; align-items: center; gap: 9px; }
+  .card p { color: var(--ink-2); font-size: .95rem; }
+  .card ul { margin: 10px 0 0; padding-left: 18px; color: var(--ink-2); font-size: .95rem; }
+  .card li + li { margin-top: 7px; }
+
+  /* ---------- change list ---------- */
+  .changes { display: flex; flex-direction: column; gap: 10px; }
+  .change {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 14px;
+    align-items: baseline;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 14px 18px;
+  }
+  .change .verb {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 11px;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 5px;
+    white-space: nowrap;
+  }
+  .verb.del { color: var(--s-block); background: color-mix(in srgb, var(--s-block) 12%, transparent); }
+  .verb.add { color: var(--s-live); background: color-mix(in srgb, var(--s-live) 12%, transparent); }
+  .verb.keep { color: var(--s-flat); background: color-mix(in srgb, var(--s-flat) 12%, transparent); }
+  .change div:last-child { color: var(--ink-2); font-size: .95rem; }
+
+  footer {
+    color: var(--ink-3);
+    font-size: .9rem;
+    border-top: 1px solid var(--line);
+    padding-top: 18px;
+  }
+  footer a { color: var(--accent); }
+
+  @media (max-width: 700px) {
+    .compare { grid-template-columns: 1fr; }
+    .masthead { padding-top: 44px; }
+    body { font-size: 16px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <p class="eyebrow">Buildographic · EPIC-EDIT-03 · M-EDIT-02</p>
+    <h1>Editable Layers Flow</h1>
+    <p class="standfirst">
+      How “Edit elements” behaves after the rebuild — the placement choice, the five control
+      states, and what gets deleted to make them honest.
+    </p>
+  </header>
+
+  <div class="principle spine">
+    The canvas states what it is. Nothing else gets a vote.
+  </div>
+
+  <hr class="rule">
+
+  <section>
+    <div class="spine">
+      <h2>Why the control lies today</h2>
+      <p>
+        The pill reads <strong>“Editable layers active”</strong> over a design whose text is
+        plainly baked in. The cause isn’t the canvas — it’s that
+        <code>isEditableMode</code> ORs in <code>renderMode</code>, a
+        <em>session-global preference</em> written from two unrelated places: the Flat/Editable
+        toggle in AI Chat, and silently by the toolbar itself after any successful compose.
+      </p>
+      <p>
+        Once either fires, every canvas in that session claims to be editable — including a
+        freshly opened template holding no AI content at all. The control reports a
+        <em>preference</em>, not a state.
+      </p>
+    </div>
+
+    <div class="compare">
+      <div class="card now">
+        <h3><span class="chip s-block">today</span></h3>
+        <p>Three sources of truth disagree about one question:</p>
+        <ul>
+          <li>sticky <code>renderMode</code></li>
+          <li>a canvas-content heuristic</li>
+          <li><code>activeGenerationId</code></li>
+        </ul>
+      </div>
+      <div class="card next">
+        <h3><span class="chip s-live">after</span></h3>
+        <p>One value, derived from provenance on the elements:</p>
+        <ul>
+          <li><code>composed-</code> ids mean real extracted layers</li>
+          <li><code>isAiImport</code> means an un-extracted raster</li>
+          <li><code>renderMode</code> no longer participates</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <section>
+    <div class="spine">
+      <h2>The flow, end to end</h2>
+      <p>
+        The branch that matters is what happens when a generation lands on a canvas that already
+        holds a template. That’s now the user’s call, asked once per editor session.
+      </p>
+    </div>
+
+    <div class="plate">
+<pre class="mermaid">
+%%{init: {"theme":"base","themeVariables":{"background":"#e9edf2","primaryColor":"#ffffff","primaryTextColor":"#191d24","primaryBorderColor":"#8f9bab","lineColor":"#6d7787","fontFamily":"IBM Plex Sans, sans-serif","fontSize":"14px"}}}%%
+flowchart TD
+  G["Generation completes"] --> Q{"Canvas already<br/>holds a template?"}
+  Q -- "No" --> B["Place on blank canvas<br/><i>artboard resizes to the design</i>"]
+  Q -- "Yes" --> C["Ask once per session"]
+  C --> R["Replace the template<br/><i>AI design stands alone</i>"]
+  C --> K["Use as background<br/><i>template text stays on top</i>"]
+  B --> S1["Separate text layers"]
+  R --> S1
+  K --> S2["Control hidden"]
+  S1 --> E["Compose runs"]
+  E --> L["Text layers active"]
+  S2 --> T["Template slots are<br/>already editable text"]
+
+  style S1 fill:#dce9f6,stroke:#2b6cb0,color:#12314e
+  style S2 fill:#e4e7ec,stroke:#6d7787,color:#2b3240
+  style L fill:#d9ecdf,stroke:#2f7d54,color:#14351f
+  style C fill:#fbe6dc,stroke:#d94f1e,color:#4a1c0a
+  style T fill:#e4e7ec,stroke:#6d7787,color:#2b3240
+</pre>
+    </div>
+    <p class="caption">Placement decision → control state</p>
+
+    <div class="spine">
+      <p>
+        Both placement outcomes already exist in code — they are the two branches of
+        <code>loadAiVariationToCanvas</code>, today selected by a heuristic. The change is to
+        select by the user’s choice instead. That keeps <strong>US-AI-036 AC3</strong> intact:
+        “use as background” <em>is</em> AC3, promoted from silent default to a named option.
+      </p>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <section>
+    <div class="spine">
+      <h2>Control states</h2>
+      <p>
+        Five states, one derivation, no preference input. The quiet win is the first row: with a
+        template on canvas and no AI raster, the control <em>disappears</em> — because the text a
+        user would want to edit is the template’s, and that is already real, selectable text.
+      </p>
+    </div>
+
+    <div class="plate">
+<pre class="mermaid">
+%%{init: {"theme":"base","themeVariables":{"background":"#e9edf2","primaryColor":"#ffffff","primaryTextColor":"#191d24","primaryBorderColor":"#8f9bab","lineColor":"#6d7787","fontFamily":"IBM Plex Sans, sans-serif","fontSize":"14px"}}}%%
+stateDiagram-v2
+  direction LR
+  [*] --> Hidden
+  Hidden --> Flat: AI raster placed
+  Flat --> Extracting: user clicks
+  Extracting --> Layered: compose succeeds
+  Extracting --> Blocked: quota reached
+  Blocked --> Layered: after upgrade
+  Layered --> Layered: re-click issues no compose
+
+  Hidden: Hidden
+  Flat: Separate text layers
+  Extracting: Separating…
+  Layered: Text layers active
+  Blocked: Upgrade to edit
+</pre>
+    </div>
+    <p class="caption">Derived from the canvas, never from a preference</p>
+
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th>State</th><th>Control reads</th><th>Why</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="chip s-none">hidden</span></td>
+            <td><span class="label">— nothing rendered</span></td>
+            <td>No AI raster on canvas. Template slots are already editable text; calling that “layers” is what confused the flow in the first place.</td>
+          </tr>
+          <tr>
+            <td><span class="chip s-flat">flat</span></td>
+            <td><span class="label">Separate text layers</span></td>
+            <td>An AI raster is present and un-extracted. This is the only state where the action means anything.</td>
+          </tr>
+          <tr>
+            <td><span class="chip s-work">extracting</span></td>
+            <td><span class="label">Separating…</span></td>
+            <td>Compose in flight. Real extraction runs 15–90s, so the indicator is genuine — shown only after a 200 ms delay so a fast path never flashes it.</td>
+          </tr>
+          <tr>
+            <td><span class="chip s-live">layered</span></td>
+            <td><span class="label">Text layers active</span></td>
+            <td><code>composed-</code> elements are on the canvas. Re-clicking issues no second compose and charges nothing.</td>
+          </tr>
+          <tr>
+            <td><span class="chip s-block">blocked</span></td>
+            <td><span class="label">Upgrade to edit</span></td>
+            <td>FREE tier past its lifetime trial, or monthly limit reached. Backend answers 402 before spending anything.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <section>
+    <div class="spine">
+      <h2>What actually changes</h2>
+      <p>Most of the value is in the two deletions.</p>
+    </div>
+
+    <div class="changes">
+      <div class="change">
+        <span class="verb del">delete</span>
+        <div><code>renderMode === 'editable' ||</code> from the control’s state derivation — the sticky-state bug itself.</div>
+      </div>
+      <div class="change">
+        <span class="verb del">delete</span>
+        <div><code>setRenderMode('editable')</code> as a side effect of composing — the source of the stickiness.</div>
+      </div>
+      <div class="change">
+        <span class="verb add">add</span>
+        <div>An explicit <code>mode: 'replace' | 'behind'</code> parameter on <code>loadAiVariationToCanvas</code>, replacing the <code>hasDeliberateOrigin</code> guess.</div>
+      </div>
+      <div class="change">
+        <span class="verb add">add</span>
+        <div>The placement dialog, plus session memory so further variations don’t re-prompt.</div>
+      </div>
+      <div class="change">
+        <span class="verb keep">keep</span>
+        <div>Both canvas loaders, <code>planVariationLoad</code>, the compose API, caching and credit rules — all unchanged.</div>
+      </div>
+      <div class="change">
+        <span class="verb keep">keep</span>
+        <div><code>renderMode</code> itself, narrowed to one job: intent for the <em>next</em> generation in AI Chat.</div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <section>
+    <div class="spine">
+      <h2>Shipping order</h2>
+      <p>
+        Three stories under <code>M-EDIT-02</code>, each independently shippable. The order is
+        deliberate: make the control honest, then make the canvas coherent, then stop the
+        divergence from recurring.
+      </p>
+    </div>
+
+    <div class="changes">
+      <div class="change">
+        <span class="verb keep">US-EDIT-006</span>
+        <div>Canvas provenance and derived control state; delete sticky <code>renderMode</code> from display. <strong>Alone, this fixes the reported bug.</strong></div>
+      </div>
+      <div class="change">
+        <span class="verb keep">US-EDIT-007</span>
+        <div>Placement choice dialog and the explicit loader parameter.</div>
+      </div>
+      <div class="change">
+        <span class="verb keep">US-EDIT-008</span>
+        <div>Unify all three surfaces onto one resolver.</div>
+      </div>
+    </div>
+
+    <div class="spine">
+      <p style="margin-top:6px;color:var(--ink-2);font-size:.95rem">
+        <strong style="color:var(--ink)">Prerequisite:</strong> PR #38 merges first — it lands
+        <code>aiSourceUrl</code> (without which compose returns 500) and the <code>composed-</code>
+        discriminator this flow reads provenance from.
+      </p>
+    </div>
+  </section>
+
+  <footer>
+    Source: <code>docs/agile/PRD/2026-08-25-editable-layers-ux-flow.md</code> · Placement choice decided 2026-08-25
+  </footer>
+
+</div>
