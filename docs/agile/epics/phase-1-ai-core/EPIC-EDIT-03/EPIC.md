@@ -65,6 +65,7 @@ gated behind having already generated something.
 | Milestone | Scope | Target | Status |
 |-----------|-------|--------|:------:|
 | [M-EDIT-01-editable-menu-surfacing](milestones/M-EDIT-01-editable-menu-surfacing.md) | Promote the existing renderMode toggle to a persistent, labeled entry point | TBD | 🔲 |
+| [M-EDIT-02-brand-layers](milestones/M-EDIT-02-brand-layers.md) | Agent brand furniture (logo, licence, headshot, QR) as real canvas layers | TBD | 🔲 |
 
 ---
 
@@ -73,6 +74,8 @@ gated behind having already generated something.
 | Order | Story ID | Title | Milestone | Size | Blocked By | Status | PR |
 |:-----:|----------|-------|-----------|:----:|------------|:------:|:--:|
 | 1 | [US-EDIT-005](stories/US-EDIT-005/STORY.md) | Floating "Edit elements" control on the canvas | M-EDIT-01 | M | US-PAY-103 (quota badge only — see story) | 🟡 In Progress | — |
+| 2 | [US-EDIT-006](stories/US-EDIT-006/STORY.md) | Brand layers from existing data — logo + licence | M-EDIT-02 | M | — | 🔲 | — |
+| 3 | [US-EDIT-007](stories/US-EDIT-007/STORY.md) | Agent headshot + QR code | M-EDIT-02 | M | US-EDIT-006 | 🔲 | — |
 
 > **Revised 2026-08-21** — original scope was an in-place relabel of the existing `RightSidebar`
 > toggle (S-size). Revised after reviewing `design-preview-canvas-menu.html`: a floating
