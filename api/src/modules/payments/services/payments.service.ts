@@ -17,6 +17,7 @@ import { PLAN_CONFIG } from '@shared/schema';
 // Import payment provider factory from server directory
 import { paymentProviderFactory } from '../../../../../server/payments/providers/payment-provider.factory';
 import type { PaymentProviderType } from '../../../../../server/payments/interfaces/payment-provider.interface';
+import { PricingResolutionService } from './pricing-resolution.service';
 
 /** Shape of plan env var names per tier: monthly, annual, and default (optional fallback) */
 type PlanKeysByTier = Record<PlanTier, { monthly: string; annual: string; default: string }>;
@@ -204,6 +205,16 @@ export class PaymentsService {
   constructor(
     @Inject(SubscriptionStorageService) private readonly storage: SubscriptionStorageService,
     private readonly emailService?: EmailService,
+    /**
+     * Optional so the existing unit tests can construct this service with a bare
+     * storage mock. In the Nest container it is always injected, so the campaign
+     * guard in createSubscription() always runs in production. When it is absent
+     * the fallback reads PLAN_CONFIG directly -- identical numbers, because
+     * getEffectivePrice() returns exactly the PLAN_CONFIG values when no campaign
+     * is active. The two paths only diverge under an active campaign, which is
+     * precisely the case the guard exists to catch.
+     */
+    private readonly pricingResolution?: PricingResolutionService,
   ) {}
 
   /**
@@ -284,11 +295,36 @@ export class PaymentsService {
       });
     }
 
-    // Calculate price based on billing period
-    let finalPrice = planConfig.price;
-    if (billingPeriod === 'annual') {
-      finalPrice = planConfig.annualPrice;
+    // Resolve the price through the SAME service the pricing page uses. Reading
+    // PLAN_CONFIG directly here was a real divergence: the page resolved campaign
+    // pricing via getEffectivePrice() while checkout was blind to campaigns
+    // entirely, so activating a campaign would have made /pricing advertise the
+    // founding price while checkout recorded list price.
+    const interval = billingPeriod === 'annual' ? 'annual' : 'monthly';
+    const resolved = this.pricingResolution
+      ? await this.pricingResolution.getEffectivePrice(planTier, interval)
+      : null;
+
+    // A campaign discount cannot be honoured at checkout yet: nothing passes
+    // `offer_id` to Razorpay (US-PAY-110 is unwritten), so the provider bills the
+    // plan's list amount regardless of what the page advertised. Proceeding would
+    // charge a customer MORE than the price they were shown -- refuse instead.
+    // Reachable only when someone activates a campaign before US-PAY-110 lands.
+    if (resolved && resolved.campaignId != null && resolved.effectivePrice !== resolved.regularPrice) {
+      throw new BadRequestException({
+        code: 'CAMPAIGN_NOT_APPLICABLE_AT_CHECKOUT',
+        message:
+          `Campaign "${resolved.campaignId}" advertises a discounted price that checkout cannot ` +
+          `apply yet, so this subscription would be charged the full amount. Blocking rather ` +
+          `than overcharging.`,
+      });
     }
+
+    const finalPrice = resolved
+      ? resolved.effectivePrice
+      : billingPeriod === 'annual'
+        ? planConfig.annualPrice
+        : planConfig.price;
 
     // Get appropriate provider based on currency/region
     const provider = paymentProviderFactory.getProviderByCurrency(currency) || paymentProviderFactory.getProvider(region);

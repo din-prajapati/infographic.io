@@ -170,6 +170,94 @@ describe('PaymentsService', () => {
   });
 
   // -------------------------------------------------------------------------
+  // Checkout must resolve price through the SAME service the pricing page uses.
+  // Reading PLAN_CONFIG directly meant checkout was blind to campaigns, so an
+  // active campaign would have made /pricing advertise the founding price while
+  // checkout recorded list price.
+  // -------------------------------------------------------------------------
+  describe('createSubscription() — resolves price through PricingResolutionService', () => {
+    const makeResolver = (result: any) =>
+      ({ getEffectivePrice: vi.fn().mockResolvedValue(result) }) as any;
+
+    it('records the resolver price, not a second PLAN_CONFIG read', async () => {
+      const resolver = makeResolver({
+        regularPrice: PLAN_CONFIG.SOLO.price,
+        effectivePrice: PLAN_CONFIG.SOLO.price,
+        campaignId: null,
+        badge: undefined,
+      });
+      const svc = new PaymentsService(mockStorage as any, undefined, resolver);
+
+      await svc.createSubscription(TEST_USER.id, 'SOLO' as any);
+
+      expect(resolver.getEffectivePrice).toHaveBeenCalledWith('SOLO', 'monthly');
+      const written = mockStorage.createSubscription.mock.calls.at(-1)![0];
+      expect(written.amount).toBe(PLAN_CONFIG.SOLO.price * 100);
+    });
+
+    it('asks the resolver for the annual interval when billing annually', async () => {
+      const resolver = makeResolver({
+        regularPrice: PLAN_CONFIG.SOLO.annualPrice,
+        effectivePrice: PLAN_CONFIG.SOLO.annualPrice,
+        campaignId: null,
+        badge: undefined,
+      });
+      const svc = new PaymentsService(mockStorage as any, undefined, resolver);
+
+      await svc.createSubscription(TEST_USER.id, 'SOLO' as any, 'INR', undefined, undefined, undefined, 'annual');
+
+      expect(resolver.getEffectivePrice).toHaveBeenCalledWith('SOLO', 'annual');
+      const written = mockStorage.createSubscription.mock.calls.at(-1)![0];
+      expect(written.amount).toBe(PLAN_CONFIG.SOLO.annualPrice * 100);
+    });
+
+    it('refuses rather than charging list price for an advertised campaign discount', async () => {
+      // Razorpay bills the plan's list amount because nothing passes offer_id yet
+      // (US-PAY-110). Proceeding would charge MORE than the page showed.
+      const resolver = makeResolver({
+        regularPrice: PLAN_CONFIG.SOLO.price,
+        effectivePrice: 3999,
+        campaignId: 'FOUNDING100',
+        badge: 'FOUNDING MEMBER PRICE',
+      });
+      const svc = new PaymentsService(mockStorage as any, undefined, resolver);
+
+      await expect(svc.createSubscription(TEST_USER.id, 'SOLO' as any)).rejects.toMatchObject({
+        response: { code: 'CAMPAIGN_NOT_APPLICABLE_AT_CHECKOUT' },
+      });
+    });
+
+    it('writes no subscription row when a campaign blocks checkout', async () => {
+      const resolver = makeResolver({
+        regularPrice: PLAN_CONFIG.SOLO.price,
+        effectivePrice: 3999,
+        campaignId: 'FOUNDING100',
+        badge: undefined,
+      });
+      const svc = new PaymentsService(mockStorage as any, undefined, resolver);
+      const before = mockStorage.createSubscription.mock.calls.length;
+
+      await svc.createSubscription(TEST_USER.id, 'SOLO' as any).catch(() => undefined);
+
+      expect(mockStorage.createSubscription.mock.calls.length).toBe(before);
+    });
+
+    it('does not block when a campaign is active but resolves to the same price', async () => {
+      // e.g. a campaign whose redemption cap is exhausted — nothing to honour,
+      // nothing to block.
+      const resolver = makeResolver({
+        regularPrice: PLAN_CONFIG.SOLO.price,
+        effectivePrice: PLAN_CONFIG.SOLO.price,
+        campaignId: 'FOUNDING100',
+        badge: undefined,
+      });
+      const svc = new PaymentsService(mockStorage as any, undefined, resolver);
+
+      await expect(svc.createSubscription(TEST_USER.id, 'SOLO' as any)).resolves.toBeDefined();
+    });
+  });
+
+  // -------------------------------------------------------------------------
   // Currency/amount mismatch — amount is derived from PLAN_CONFIG.price (INR)
   // and multiplied into minor units without consulting the caller's currency.
   // Accepting a non-INR currency therefore mislabels a rupee amount.
