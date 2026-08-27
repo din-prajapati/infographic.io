@@ -43,11 +43,26 @@ describe('getAnnualSavings — derived, so a badge can never contradict the pric
     expect(s.monthlyEquivalent).toBe(Math.round(PLAN_CONFIG.SOLO.annualPrice / 12));
   });
 
-  it('lands on ~20% for every paid tier — the advertised claim is true, not asserted', () => {
+  // Deliberately a band, not an equality. The authored prices are not exactly 20%
+  // off -- Solo/Pro are ~19.7%, Team/Agency ~20.1% -- and pinning the test to 20
+  // would assert a mathematical property the prices do not actually have, then
+  // fail for the wrong reason the first time a tier is legitimately authored at a
+  // different depth. What matters is that annual is a real, sane discount.
+  it('gives every paid tier a genuine annual discount in a sane band', () => {
     PAID_TIERS.forEach((tier) => {
       const s = getAnnualSavings(tier)!;
-      expect(s.percent).toBe(20);
+      expect(s.percent).toBeGreaterThanOrEqual(15);
+      expect(s.percent).toBeLessThanOrEqual(25);
     });
+  });
+
+  // The badge is a single claim covering every paid tier, so it can only be shown
+  // when the ROUNDED percentages agree. This asserts that agreement -- not that the
+  // number is 20 -- so re-authoring all four tiers to a different depth keeps the
+  // badge working, while authoring just one differently correctly breaks it.
+  it('rounded savings agree across paid tiers, so one badge can honestly cover them', () => {
+    const rounded = PAID_TIERS.map((t) => getAnnualSavings(t)!.percent);
+    expect(new Set(rounded).size).toBe(1);
   });
 
   it('annual is genuinely cheaper than 12 months of monthly, for every paid tier', () => {
