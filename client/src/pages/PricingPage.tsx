@@ -105,7 +105,7 @@ const planFeatureBullets: Record<PublicTier, { firstLineDetail: string; bullets:
 import { toast } from "sonner";
 import { queryClient, redirectToLogin } from "@/lib/queryClient";
 import { paymentsApi, pricingApi, type ProviderInfo, type EffectivePriceResult } from "@/lib/api";
-import { PLAN_CONFIG, type PlanTier } from "@shared/schema";
+import { PLAN_CONFIG, getAnnualSavings, type PlanTier } from "@shared/schema";
 
 /**
  * Test-mode banner recurring-amount text, derived from PLAN_CONFIG at call time.
@@ -304,6 +304,26 @@ const marqueeTags = [
   "🎉 Festival Campaigns",
 ];
 
+/** Paid tiers sold on this page -- the set the annual badge must be true for. */
+const PUBLIC_PAID_TIERS: PlanTier[] = ['SOLO', 'PRO', 'TEAM', 'AGENCY'];
+
+/**
+ * The annual-saving percentage shown on the Yearly toggle.
+ *
+ * Derived from the authored monthly/annual prices rather than written by hand, so
+ * the badge can never disagree with the prices on the cards below it. Returns null
+ * unless EVERY publicly-sold paid tier shares the same percentage -- a single claim
+ * covering tiers that disagree would be false for at least one of them, and the
+ * honest response is to show no badge rather than a wrong one.
+ */
+function computeAnnualSavingsPercent(): number | null {
+  const percents = PUBLIC_PAID_TIERS.map((t) => getAnnualSavings(t)?.percent).filter(
+    (p): p is number => typeof p === 'number',
+  );
+  if (percents.length !== PUBLIC_PAID_TIERS.length) return null;
+  return percents.every((p) => p === percents[0]) ? percents[0] : null;
+}
+
 export default function PricingPage() {
   const isBetaMode = import.meta.env.VITE_BETA_MODE === 'true';
 
@@ -316,6 +336,7 @@ export default function PricingPage() {
   // toggle. The one real exception, a card showing the user's *actual current subscription's*
   // billing period, is still handled per-card below via isPaidCurrentCard/subscriptionBillingIsAnnual.
   const [isAnnualGlobal, setIsAnnualGlobal] = useState(false);
+  const annualSavingsPercent = computeAnnualSavingsPercent();
 
   // US-PAY-112 AC1/AC3 — the only source for regularPrice/effectivePrice/campaignId/badge.
   // Public endpoint, no auth needed. Never recompute a discounted price client-side.
@@ -732,12 +753,16 @@ export default function PricingPage() {
                 }`}
               >
                 <span>Yearly</span>
-                {/* "2 months free" is the exact, always-true description of the ×10 annual formula
-                    (ANNUAL_MULTIPLIER, shared/schema.ts) — a flat percentage claim would be wrong
-                    for at least one tier's real math. */}
-                <span className="text-[11px] font-bold text-[#eb5e28] bg-[#eb5e28]/10 px-2 py-0.5 rounded-full">
-                  2 months free
-                </span>
+                {/* Derived from the authored monthly/annual prices (getAnnualSavings), not a
+                    hand-written claim — so this badge cannot contradict the price beside it.
+                    Every paid tier is authored to land on the same figure; if a future tier
+                    breaks that, annualSavingsPercent goes null and the badge disappears rather
+                    than advertising a number that is wrong for some tier. */}
+                {annualSavingsPercent !== null && (
+                  <span className="text-[11px] font-bold text-[#eb5e28] bg-[#eb5e28]/10 px-2 py-0.5 rounded-full">
+                    Save {annualSavingsPercent}%
+                  </span>
+                )}
               </button>
             </div>
             <p className="text-xs text-[#68645e] mt-4 font-medium max-w-md mx-auto">
