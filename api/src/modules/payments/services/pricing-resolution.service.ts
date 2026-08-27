@@ -69,9 +69,16 @@ export class PricingResolutionService {
       badge = campaign.displayBadge ?? undefined;
     }
 
-    const regularPrice = interval === 'annual' ? getAnnualPrice(regularMonthly) : regularMonthly;
+    // Annual prices are authored per tier, so the campaign discount applies to the
+    // authored annual price -- it is no longer a multiplier laid over a discounted
+    // monthly figure. Same composition, one fewer computed value to drift.
+    const regularPrice = interval === 'annual' ? getAnnualPrice(tier) : regularMonthly;
     const effectivePrice =
-      interval === 'annual' ? getAnnualPrice(effectiveMonthly) : effectiveMonthly;
+      interval === 'annual'
+        ? campaignId != null
+          ? Math.round(getAnnualPrice(tier) * (1 - discount.value / 100))
+          : getAnnualPrice(tier)
+        : effectiveMonthly;
 
     return { regularPrice, effectivePrice, campaignId, badge };
   }

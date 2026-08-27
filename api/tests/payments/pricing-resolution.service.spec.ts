@@ -65,7 +65,11 @@ describe('PricingResolutionService.getEffectivePrice (US-PAY-106)', () => {
   // AC2 / TC-PAY-106-02
   // ---------------------------------------------------------------------------
   describe('AC2 (TC-PAY-106-02): annual interval + FLAT rejection', () => {
-    it('applies the campaign discount, then the ×10 annual multiplier', async () => {
+    // Rewritten 2026-08-27: annual prices are AUTHORED per tier, not derived from a
+    // multiplier. The campaign discount now applies to the authored annual price
+    // instead of being layered over a discounted monthly figure -- same composition,
+    // one fewer computed value that could drift from what checkout charges.
+    it('applies the campaign discount to the authored annual price', async () => {
       mockCampaignService.getActiveCampaign.mockResolvedValue({
         code: 'FOUNDING100',
         displayBadge: 'FOUNDING MEMBER PRICE',
@@ -74,8 +78,21 @@ describe('PricingResolutionService.getEffectivePrice (US-PAY-106)', () => {
 
       const result = await service.getEffectivePrice('SOLO', 'annual');
 
-      expect(result.effectivePrice).toBe(3999 * 10); // 39990
-      expect(result.regularPrice).toBe(5499 * 10); // 54990
+      expect(result.regularPrice).toBe(PLAN_CONFIG.SOLO.annualPrice);
+      expect(result.effectivePrice).toBe(
+        Math.round(PLAN_CONFIG.SOLO.annualPrice * (1 - 27.278 / 100)),
+      );
+      expect(result.campaignId).toBe('FOUNDING100');
+    });
+
+    it('returns the authored annual price untouched when no campaign is active', async () => {
+      mockCampaignService.getActiveCampaign.mockResolvedValue(null);
+
+      const result = await service.getEffectivePrice('SOLO', 'annual');
+
+      expect(result.regularPrice).toBe(PLAN_CONFIG.SOLO.annualPrice);
+      expect(result.effectivePrice).toBe(PLAN_CONFIG.SOLO.annualPrice);
+      expect(result.campaignId).toBeNull();
     });
 
     it('rejects a FLAT-type tierDiscounts entry rather than silently computing a wrong number', async () => {

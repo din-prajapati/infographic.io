@@ -209,10 +209,11 @@ export class PaymentsService {
   /**
    * Calculate annual price with 15% discount
    */
-  calculateAnnualPrice(monthlyPrice: number): number {
-    const annualPrice = monthlyPrice * 12;
-    return Math.round(annualPrice * 0.85); // 15% discount
-  }
+  // calculateAnnualPrice() removed 2026-08-27. It computed monthlyPrice * 12 * 0.85
+  // ("15% off") while shared/schema.ts computed monthlyPrice * 10 ("2 months free"),
+  // so /pricing advertised one annual figure and checkout recorded another --
+  // SOLO differed by Rs 1,100/yr. Annual prices are now authored per tier in
+  // PLAN_CONFIG.annualPrice and read directly. Do not reintroduce a multiplier.
 
   /**
    * Create a new subscription for a user
@@ -286,7 +287,7 @@ export class PaymentsService {
     // Calculate price based on billing period
     let finalPrice = planConfig.price;
     if (billingPeriod === 'annual') {
-      finalPrice = this.calculateAnnualPrice(planConfig.price);
+      finalPrice = planConfig.annualPrice;
     }
 
     // Get appropriate provider based on currency/region

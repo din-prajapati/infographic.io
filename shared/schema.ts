@@ -150,7 +150,22 @@ export type PlanTier = 'FREE' | 'SOLO' | 'PRO' | 'TEAM' | 'AGENCY' | 'BROKERAGE'
 // Plan Configuration (used by both frontend and backend)
 export const PLAN_CONFIG: Record<PlanTier, {
   name: string;
+  /** Monthly list price, integer rupees (NOT paise). */
   price: number;
+  /**
+   * Annual list price, integer rupees. **Authored, never computed.**
+   *
+   * A price is a business decision, not a mathematical consequence. The previous
+   * multiplier approach let two files disagree about what a customer pays --
+   * schema.ts used x10 ("2 months free") while payments.service.ts used
+   * x12*0.85 ("15% off"), so the pricing page advertised one annual figure and
+   * checkout recorded another. There is no multiplier to drift now.
+   *
+   * Targets ~20% below 12x monthly while landing on a clean number. The
+   * displayed saving is derived from these two figures (getAnnualSavings),
+   * never hand-written.
+   */
+  annualPrice: number;
   currency: string;
   limit: number;
   userLimit: number; // -1 = unlimited
@@ -161,6 +176,7 @@ export const PLAN_CONFIG: Record<PlanTier, {
   FREE: {
     name: 'Free',
     price: 0,
+    annualPrice: 0,
     currency: 'INR',
     limit: 3,
     userLimit: 1,
@@ -176,6 +192,7 @@ export const PLAN_CONFIG: Record<PlanTier, {
     // this price are a human dashboard task (tracked in HUMAN_TASKS.md), same category as
     // US-PAY-109's PRO/AGENCY plans.
     price: 5499,
+    annualPrice: 52999,
     currency: 'INR',
     limit: 50,
     userLimit: 1,
@@ -189,6 +206,7 @@ export const PLAN_CONFIG: Record<PlanTier, {
   PRO: {
     name: 'Pro',
     price: 10999, // rupees, matching every other tier's convention (SOLO 5499, TEAM 21999) — NOT paise
+    annualPrice: 105999,
     currency: 'INR',
     limit: 100,
     userLimit: 1,
@@ -198,6 +216,7 @@ export const PLAN_CONFIG: Record<PlanTier, {
   TEAM: {
     name: 'Team',
     price: 21999, // US-PAY-102 (re-opened 2026-08-23) — see SOLO's note above, same gap/fix
+    annualPrice: 210999,
     currency: 'INR',
     limit: 200,
     userLimit: 5,
@@ -207,6 +226,7 @@ export const PLAN_CONFIG: Record<PlanTier, {
   AGENCY: {
     name: 'Agency',
     price: 43999, // rupees, matching every other tier's convention (BROKERAGE 24999) — NOT paise
+    annualPrice: 421999,
     currency: 'INR',
     limit: 400,
     userLimit: -1, // unlimited
@@ -216,6 +236,7 @@ export const PLAN_CONFIG: Record<PlanTier, {
   BROKERAGE: {
     name: 'Brokerage',
     price: 24999,
+    annualPrice: 239999,
     currency: 'INR',
     limit: 1000,
     userLimit: -1, // unlimited
@@ -225,6 +246,7 @@ export const PLAN_CONFIG: Record<PlanTier, {
   API_STARTER: {
     name: 'API Starter',
     price: 82999,
+    annualPrice: 796999,
     currency: 'INR',
     limit: 5000,
     userLimit: 1,
@@ -234,6 +256,7 @@ export const PLAN_CONFIG: Record<PlanTier, {
   API_GROWTH: {
     name: 'API Growth',
     price: 249999,
+    annualPrice: 2399999,
     currency: 'INR',
     limit: 20000,
     userLimit: 3,
@@ -243,6 +266,7 @@ export const PLAN_CONFIG: Record<PlanTier, {
   API_ENTERPRISE: {
     name: 'API Enterprise',
     price: 0,
+    annualPrice: 0,
     currency: 'INR',
     limit: -1, // unlimited
     userLimit: -1, // unlimited
@@ -251,19 +275,48 @@ export const PLAN_CONFIG: Record<PlanTier, {
   },
 };
 
-// Standing annual-billing discount (US-PAY-107): annual price = 10x monthly (2 months free),
-// matching Claude/Cursor-style SaaS annual pricing. Applies to every paid tier by default --
-// a tier added to PLAN_CONFIG without an explicit override still gets this formula (AC2).
-// Composition with a time-boxed promotional campaign happens in the US-PAY-106 resolution
-// service, not here.
-export const ANNUAL_MULTIPLIER = 10;
+// Annual pricing is AUTHORED per tier (PLAN_CONFIG.annualPrice), not derived.
+// The multiplier that used to live here was the bug: schema.ts multiplied by 10
+// while payments.service.ts multiplied by 12*0.85, so the pricing page and
+// checkout disagreed about the annual price of every tier. Nothing below
+// multiplies -- there is nothing left to diverge.
+//
+// Composition with a time-boxed promotional campaign happens in the US-PAY-106
+// resolution service, not here.
+
+/** The authored annual price for a tier, integer rupees. */
+export function getAnnualPrice(tier: PlanTier): number {
+  return PLAN_CONFIG[tier].annualPrice;
+}
+
+/** What 12 months at the monthly rate would cost -- the anchor a saving is measured against. */
+export function getAnnualListPrice(tier: PlanTier): number {
+  return PLAN_CONFIG[tier].price * 12;
+}
 
 /**
- * Same unit in as out (PLAN_CONFIG.price is integer rupees, not paise — see US-PAY-102's
- * Implementation Update log) -- exact by construction, never rounds (AC4).
+ * Saving for paying annually, DERIVED from the two authored prices so a displayed
+ * percentage can never disagree with the price printed beside it.
+ *
+ * Returns null where there is no meaningful annual saving (free tiers,
+ * contact-sales tiers) so callers render nothing rather than "Save 0%".
  */
-export function getAnnualPrice(monthlyPrice: number): number {
-  return monthlyPrice * ANNUAL_MULTIPLIER;
+export function getAnnualSavings(
+  tier: PlanTier,
+): { amount: number; percent: number; monthlyEquivalent: number } | null {
+  const monthly = PLAN_CONFIG[tier].price;
+  const annual = PLAN_CONFIG[tier].annualPrice;
+  if (monthly <= 0 || annual <= 0) return null;
+
+  const list = monthly * 12;
+  const amount = list - annual;
+  if (amount <= 0) return null;
+
+  return {
+    amount,
+    percent: Math.round((amount / list) * 100),
+    monthlyEquivalent: Math.round(annual / 12),
+  };
 }
 
 // Zod Schemas for API Validation
