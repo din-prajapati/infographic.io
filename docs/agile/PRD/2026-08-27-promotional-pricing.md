@@ -3,7 +3,7 @@ title: PRD (rough) — Promotional Pricing (Founding 100, festivals)
 type: prd
 domain: PAY
 created: 2026-08-27
-status: rough draft — not scheduled, no decisions locked
+status: rough draft — not scheduled. R1/R2 are recommendations, not decisions.
 verified_against: main @ bf55caf
 ---
 
@@ -65,12 +65,13 @@ SOLO: {
   price: 5499,
   annualPrice: 52999,
   promoPrices: {
-    FOUNDING_100: { monthly: 3999, annual: 38999 },   // illustrative, not decided
+    FOUNDING_100: { annual: 38999 },   // illustrative, not decided. Annual-only, see R1.
   },
 }
 ```
 
-Festival later adds a second key. **Prices stay in code** — reviewable in a PR,
+The shape allows `monthly` too, but R1 recommends founding not use it. A festival
+promo later adds a second key. **Prices stay in code** — reviewable in a PR,
 versioned, diffable.
 
 ### 2. `PricingCampaign` — becomes *which* promo is live, not *what it costs*
@@ -99,13 +100,14 @@ Plans are price-immutable, so every promo price needs its own Plan object:
 | | Objects | Env var pattern |
 |---|---:|---|
 | Standard | 8 | `RAZORPAY_PLAN_SOLO_MONTHLY` |
-| \+ Founding | **+8** | `RAZORPAY_PLAN_SOLO_MONTHLY_FOUNDING_100` |
-| \+ Each festival | **+8** | `RAZORPAY_PLAN_SOLO_MONTHLY_DIWALI_2026` |
+| \+ Founding (annual-only, R1) | **+4** | `RAZORPAY_PLAN_SOLO_ANNUAL_FOUNDING_100` |
+| \+ A festival (both intervals) | +8 | `RAZORPAY_PLAN_SOLO_MONTHLY_DIWALI_2026` |
 
 `getExternalPlanId()` gains a promo dimension.
 
-**This is the honest downside: every promo is 8 dashboard objects, forever.** Worth
-weighing against how often promos actually run.
+**The honest downside: every promo is 4-8 dashboard objects, forever**, and they can
+never be edited (Plans are price-immutable). Worth weighing against how often promos
+actually run. R1 halves it for founding.
 
 ### 5. Checkout guard flips meaning
 
@@ -144,22 +146,87 @@ Net trade: 4 Offers + unwritten checkout code, for 8 more Plan objects and no co
 | `getExternalPlanId()` promo dimension + guard | M |
 | `Subscription.promoCode` | XS |
 | **Fix `redemptionsUsed` incrementing** | S — needed regardless |
-| 8 Razorpay Plans per promo | HUMAN |
+| 4 Razorpay Plans (founding, annual-only per R1) | HUMAN |
 
 **Roughly one story.** Festival afterwards is **zero code** — author prices under a
-new key, create 8 Plans, flip a row.
+new key, create its Plans, flip a row.
+
+---
+
+## Recommendations (2026-08-27)
+
+### R1 — Founding is **annual-only**
+
+Do not author a founding monthly price at all.
+
+A discounted founding *monthly* is the worst of both worlds: margin given up, no cash
+gained. The only reason to run a founding program at this stage is prepay, and a
+monthly variant works against it.
+
+It also dissolves the "founding annual must be deeper than founding monthly × 12"
+problem — there is no monthly to compare against — and halves the Razorpay object
+count:
+
+| | Plan objects |
+|---|---:|
+| Founding, annual-only | **4** |
+| Founding, monthly + annual | 8 |
+
+This matches the common industry pattern: founding-member and early-bird programs are
+almost always annual-or-lifetime, because they are cash instruments rather than
+pricing tiers.
+
+### R2 — Founding price is **locked while the subscription stays active**
+
+> "Founding price, for as long as your subscription stays active." Cancel, and it is
+> gone.
+
+Two reasons, the second being the practical one:
+
+**It is the default behaviour, so it costs nothing to build.** A Razorpay subscription
+renews at its Plan's price. Put a customer on the founding Plan and they renew at the
+founding price automatically. *Reverting* to list at renewal is the option that would
+require building plan-migration logic. The customer-friendly choice is also the
+cheapest to ship.
+
+**Margin is not the constraint here — earlier caution about per-generation COGS was
+overstated.** Checked 2026-08-27:
+
+> SOLO is ₹5,499/mo for 50 designs ≈ **₹110 revenue per design**. Ideogram Turbo is
+> $0.025 (~₹2) plus GPT-4o at $0.004. Even at full quota with all 10 editable composes
+> at $0.09 (~₹7.50), annual COGS is roughly **₹4,000 against ~₹39,000** revenue.
+
+~90% gross margin at a founding price. COGS does not meaningfully constrain how deep
+the founding discount can go.
+
+The three patterns in use, for reference:
+
+| Pattern | Trade |
+|---|---|
+| **Locked while subscribed** ← recommended | goodwill, zero build, small permanent cohort |
+| Forever, surviving churn and return | maximum goodwill, messy to administer |
+| First year, then list | recovers margin, but reads as a bait-and-switch to the people who backed you earliest |
+
+The third is defensible at 50%+ discounts. At ~30% it punishes your earliest
+supporters, which is the opposite of the point.
+
+### What this settles
+
+> **Founding 100 — annual only. ₹X for the first year and every year you stay
+> subscribed.**
+
+4 Razorpay Plans · no monthly variant · no renewal-migration logic · no percentage
+math anywhere.
 
 ---
 
 ## Open questions
 
-- [ ] **Founding prices.** What are they actually? The ~27.3%/31.8% figures in
-      US-PAY-108 were percentages; this model needs authored numbers. A margin
-      decision, not a conversion.
-- [ ] **Founding annual must be deeper than founding monthly × 12**, or founding
-      customers have no reason to prepay — and prepay is the entire cash-flow point.
-- [ ] **Does founding pricing persist at renewal, or revert to list?** "Founding
-      member price, forever" vs "first year". Changes the Plan setup materially.
+- [ ] **The founding price itself.** The ~27.3%/31.8% figures in US-PAY-108 were
+      percentages; this model needs an authored number per tier. Given ~90% gross
+      margin (see R2), pick it for signalling rather than to protect margin.
+- [ ] **Which tiers get a founding price?** All four, or only SOLO/PRO where the
+      self-serve volume is?
 - [ ] Keep the `PricingCampaign` table at all, or is a config flag enough for one
       promo? The table earns its place only if promos are started/stopped without
       deploys.
