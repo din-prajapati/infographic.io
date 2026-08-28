@@ -7,7 +7,10 @@ updated: 2026-08-21
 
 # Story Card — US-PAY-110
 
-> **Status:** 🔲 Not Started
+> **Status:** 🟡 **In Progress — rescoped 2026-08-27.** AC2/AC3/AC4 are **implemented**; AC1 is
+> **void** (replaced). Not blocked on anything. Remaining: manual verification + PR.
+> The `offer_id` mechanism this story was written around no longer exists — the same protections
+> are delivered by selecting a promo Plan object instead. See "What 2026-08-27 changed".
 > **Feature:** F-PAY-03 — Billing Integration (Razorpay)
 > **Epic:** [EPIC-PAY-05](../../EPIC.md)
 > **Milestone:** [M-PAY-03-billing-integration](../../milestones/M-PAY-03-billing-integration.md)
@@ -26,24 +29,50 @@ price — closing a real class of vulnerability, not a theoretical one
 
 ---
 
+## What 2026-08-27 changed
+
+This story was written for Razorpay **Offers**: resolve the price server-side, then hand Razorpay
+an `offer_id` and let it apply the discount. The pricing module was simplified that day to the
+model most SaaS billing systems use — **a promotion is a price, not a discount** — so a promo is
+now its own price-immutable Plan object and checkout selects it directly.
+
+The *purpose* of this story is unchanged and, if anything, better served: the customer is charged
+exactly the price they were shown, and nothing the client sends can influence it. Only the
+mechanism changed.
+
+| AC | Fate |
+|---|---|
+| AC1 — pass `offer_id` to Razorpay | ❌ **Void.** Replaced by AC1′ below. Offers are not used anywhere |
+| AC2 — client-supplied price ignored | ✅ **Implemented** (`b187d4a`) — price comes from the resolver, which takes only `(tier, interval)` |
+| AC3 — reject a campaign applied to an uncovered tier | ✅ **Implemented, inverted.** Now `PROMO_PLAN_NOT_CONFIGURED` |
+| AC4 — atomic `redemptionsUsed` increment | ✅ **Implemented** — `tryConsumeRedemption()` |
+
+---
+
 ## Acceptance Criteria
 
-- [ ] **AC1 [happy-path]:** `payments.service.ts`'s subscription-creation call resolves the tier's
-      price via `getEffectivePrice()` (server-side) and, if a campaign is active for that tier,
-      passes the campaign's `razorpayOfferId` as `offer_id` to Razorpay's subscription-creation API
-      — Razorpay applies and validates the discount, the app never computes or sends a discounted
-      amount itself.
-- [ ] **AC2 [error-path]:** If the checkout request body contains any client-supplied price/discount
-      field, it is ignored entirely — the server resolves price independently regardless of what the
-      client sent. Verified with a test that sends a manipulated/incorrect price and confirms the
-      real charge still matches the server-resolved amount.
-- [ ] **AC3 [security]:** A request attempting to apply a campaign's `offer_id` to a tier that
-      campaign does not cover (`tierDiscounts` has no entry for that tier) is rejected before
-      reaching Razorpay — not passed through and left to fail at Razorpay's API.
-- [ ] **AC4 [currency-edge]:** On successful checkout under an active campaign,
-      `PricingCampaign.redemptionsUsed` is incremented atomically (transaction or row lock) — two
-      concurrent checkouts near the `maxRedemptions` cap cannot both succeed and push the count past
-      the cap.
+- [x] **AC1′ [happy-path]:** `createSubscription()` resolves the tier's price via
+      `getEffectivePrice()` (server-side) and, when a promo applies, resolves the **promo's own
+      Razorpay Plan object** (`RAZORPAY_PLAN_<TIER>_<INTERVAL>_<CODE>`) rather than the list-price
+      Plan. The app never computes a discounted amount, and never asks the provider to apply one —
+      the Plan *is* the price. Covered by `payments.service.spec.ts` ("uses the promo Plan object
+      when one IS configured").
+- [x] **AC2 [error-path]:** Any client-supplied price/discount field in the checkout request is
+      ignored entirely — the server resolves price independently. Satisfied by construction:
+      `getEffectivePrice(tier, interval)` accepts no price input at all, and `finalPrice` is taken
+      from its result. Verified in `pricing-resolution.service.spec.ts` (AC3, arity check) and
+      `payments.service.spec.ts` (written `amount` always matches the resolved price).
+- [x] **AC3 [security]:** A promo price with no corresponding Plan object is rejected **before**
+      reaching Razorpay, with `PROMO_PLAN_NOT_CONFIGURED` — never silently falling back to the
+      list-price Plan, which would charge the customer *more* than the page advertised. This is the
+      same protection the original AC3 asked for, triggered by a missing Plan instead of an
+      uncovered tier.
+- [x] **AC4 [concurrency]:** On successful checkout under an active campaign,
+      `PricingCampaign.redemptionsUsed` is incremented atomically — the cap is enforced in the
+      `WHERE` clause of a conditional `updateMany`, so Postgres serialises it and two concurrent
+      checkouts at the boundary cannot both succeed (the loser matches zero rows).
+      **This closed a real bug:** `redemptionsUsed` was previously read to enforce the cap and
+      written nowhere, so a "Founding 100" campaign would have run past 100 indefinitely.
 
 ---
 

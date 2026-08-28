@@ -36,8 +36,8 @@ within a phase, in the order they unblock downstream work.
 | 3 | Phase 1 | EPIC-LAUNCH-01 | US-LAUNCH-005 AC5 | Run `npm run verify:payment-prereqs` against production config | 🔲 |
 | 4 | Phase 1 | EPIC-LAUNCH-01 | US-LAUNCH-005 AC6 | One real ₹ subscription on production (smallest plan) → verify webhook activates it → refund/cancel from dashboard | 🔲 — **deliberately held**, needs your explicit go-ahead |
 | 5 | Phase 1 | EPIC-INFRA-02 | US-INFRA-001 | Provision a Cloudflare R2 bucket + S3-compatible API token | 🔲 — **blocks the story starting**, not just finishing |
-| 6 | Phase 1 | EPIC-PAY-05 (V1) | US-PAY-109 T0 | Create **8** Razorpay Plan objects — PRO monthly (₹10,999)/annual (₹109,990), AGENCY monthly (₹43,999)/annual (₹439,990) [new tiers], plus SOLO monthly (₹5,499)/annual (₹54,990), TEAM monthly (₹21,999)/annual (₹219,990) [repriced, `US-PAY-102`'s re-open — added 2026-08-23, folded into this same task rather than a new story] | 🔲 — code done, only this blocks close |
-| 7 | Phase 1 | EPIC-PAY-05 (V2) | US-PAY-108 T0 | Create 4 Razorpay Offer objects (Founding-100 discount, SOLO/PRO/TEAM/AGENCY, "Forever" duration) | 🔲 — V2, not urgent yet |
+| 6 | Phase 1 | EPIC-PAY-05 (V1) | US-PAY-109 T0 | Create **8** Razorpay Plan objects per tier×interval — see §6 for the exact amounts (annual figures corrected 2026-08-27: they were stale ×10-derived values, superseded by `PLAN_CONFIG`'s authored prices). Naming: `BG-<TIER>-<INTERVAL>-<YYYY>-<MM>`. **Amount field takes rupees, not paise.** | ◐ — **Test mode ✅ done** (2026-08-27, all 8 verified); **Live mode 🔲 pending** for production |
+| ~~7~~ | ~~Phase 1~~ | ~~EPIC-PAY-05 (V2)~~ | ~~US-PAY-108 T0~~ | ~~Create 4 Razorpay Offer objects (Founding-100 discount)~~ | ❌ **RETIRED 2026-08-27** — Razorpay Offers are no longer used at all. See §7 |
 | 8 | Phase 0 | EPIC-LAUNCH-01 | US-LAUNCH-001 | Final legal review of Terms/Privacy/Refund wording — drafted content is a starting point, not legal advice, and these pages are already live in production | 🔲 — standing item, no deadline set |
 
 **Likely already resolved, worth a quick verify rather than re-doing:**
@@ -91,19 +91,101 @@ land in the same T0 task, since it's the identical dashboard action either way:
   — these env-var *keys* are new, added as part of `US-PAY-102`'s downstream-consumer fix.
 - **Repriced tiers** (SOLO, TEAM — added 2026-08-23, `US-PAY-102`'s re-open): Razorpay Subscription
   Plans are price-immutable once created, so the existing live SOLO/TEAM Plans stay at the old
-  beta rate (₹2,999/₹6,999) forever. Create 4 *new* Plan objects at ₹5,499/mo (₹54,990/yr) and
-  ₹21,999/mo (₹219,990/yr), then repoint the **existing** `RAZORPAY_PLAN_SOLO_MONTHLY`/`_ANNUAL`/
-  `RAZORPAY_PLAN_TEAM_MONTHLY`/`_ANNUAL` env vars at them — no code change needed here, those keys
-  already existed before this relaunch. Existing subscribers on the old plans are unaffected until
-  they re-subscribe or upgrade — no automatic migration.
-- **All 8 Plan objects, one dashboard session**: PRO monthly/annual, AGENCY monthly/annual, SOLO
-  monthly/annual, TEAM monthly/annual.
+  beta rate (₹2,999/₹6,999) forever. Create *new* Plan objects, then repoint the **existing**
+  `RAZORPAY_PLAN_SOLO_MONTHLY`/`_ANNUAL`/`RAZORPAY_PLAN_TEAM_MONTHLY`/`_ANNUAL` env vars at them —
+  no code change needed here, those keys already existed before this relaunch. Existing subscribers
+  on the old plans are unaffected until they re-subscribe or upgrade — no automatic migration.
 
-### 7. US-PAY-108 — Razorpay Offer objects (Founding-100)
-**Source:** [`EPIC-PAY-05/stories/US-PAY-108/TASKS.md`](epics/phase-1-ai-core/EPIC-PAY-05/stories/US-PAY-108/TASKS.md)
-V2, deferred — see `EPIC-PAY-05/EPIC.md` "Scope split". 4 Offer objects for the Founding Customer
-100 campaign. Not urgent — V2 work isn't scheduled until after the first real transaction succeeds
-on V1.
+**The amounts.** `PLAN_CONFIG` in `shared/schema.ts` is canonical; these mirror it. Earlier
+revisions of this file carried ×10-derived annual figures (₹54,990 / ₹1,09,990 / ₹2,19,990 /
+₹4,39,990) that predate PR #42's authored-price model — those are **wrong**, corrected 2026-08-27.
+
+| Plan name | Description | Period | Amount (₹, as typed in dashboard) | → env var |
+|---|---|---|---:|---|
+| `BG-SOLO-MONTHLY-<YYYY-MM>` | Solo — 50 AI marketing designs/month, 1 user. Billed monthly. | monthly | 5,499 | `RAZORPAY_PLAN_SOLO_MONTHLY` |
+| `BG-SOLO-ANNUAL-<YYYY-MM>` | Solo — 50 AI marketing designs/month, 1 user. Billed annually. | yearly | 52,999 | `RAZORPAY_PLAN_SOLO_ANNUAL` |
+| `BG-PRO-MONTHLY-<YYYY-MM>` | Pro — 100 AI marketing designs/month, 1 user. Billed monthly. | monthly | 10,999 | `RAZORPAY_PLAN_PRO_MONTHLY` |
+| `BG-PRO-ANNUAL-<YYYY-MM>` | Pro — 100 AI marketing designs/month, 1 user. Billed annually. | yearly | 1,05,999 | `RAZORPAY_PLAN_PRO_ANNUAL` |
+| `BG-TEAM-MONTHLY-<YYYY-MM>` | Team — 200 AI marketing designs/month, 5 users. Billed monthly. | monthly | 21,999 | `RAZORPAY_PLAN_TEAM_MONTHLY` |
+| `BG-TEAM-ANNUAL-<YYYY-MM>` | Team — 200 AI marketing designs/month, 5 users. Billed annually. | yearly | 2,10,999 | `RAZORPAY_PLAN_TEAM_ANNUAL` |
+| `BG-AGENCY-MONTHLY-<YYYY-MM>` | Agency — 400 AI marketing designs/month, unlimited users. Billed monthly. | monthly | 43,999 | `RAZORPAY_PLAN_AGENCY_MONTHLY` |
+| `BG-AGENCY-ANNUAL-<YYYY-MM>` | Agency — 400 AI marketing designs/month, unlimited users. Billed annually. | yearly | 4,21,999 | `RAZORPAY_PLAN_AGENCY_ANNUAL` |
+
+All: Interval 1, Currency INR. Quotas and user counts come from `PLAN_CONFIG`; the quota stays
+**monthly** on annual plans, which is what "Billed annually" makes explicit. Descriptions appear on
+invoices, so they match the pricing page's wording ("AI Marketing Designs", not "infographics").
+
+Plan IDs are **per-environment** — staging needs Test-mode objects, production needs Live-mode
+objects, so this is 8 plans per mode.
+
+#### Status by mode
+
+| Mode | For | Status |
+|---|---|---|
+| **Test** | local + staging | ✅ **Done 2026-08-27.** 8 plans created as `BG-<TIER>-<INTERVAL>-2026-08`, all verified against `PLAN_CONFIG` via the API. IDs recorded below and in `~/secrets/infographicai/plan-ids.staging.env`. |
+| **Live** | production | 🔲 Not created. `2026-08` is **taken in live mode** by the abandoned 100× set — pick a distinct generation token. |
+
+Test-mode plan IDs (also in `.env` and `.env.development.example`):
+
+```
+RAZORPAY_PLAN_SOLO_MONTHLY=plan_TUnk0unqkkTA6n     RAZORPAY_PLAN_SOLO_ANNUAL=plan_TUnkphaNt7fy8y
+RAZORPAY_PLAN_PRO_MONTHLY=plan_TUnlnHnvf8Up1k      RAZORPAY_PLAN_PRO_ANNUAL=plan_TUnmpHenwVPXAs
+RAZORPAY_PLAN_TEAM_MONTHLY=plan_TUnnmrlVAvR6Dv     RAZORPAY_PLAN_TEAM_ANNUAL=plan_TUnoWAkCmYESuS
+RAZORPAY_PLAN_AGENCY_MONTHLY=plan_TUnpLHPMOrWOuE   RAZORPAY_PLAN_AGENCY_ANNUAL=plan_TUnqBkcNeLMRrM
+```
+
+### ⚠️ 2026-08-27 — a first attempt created 8 plans at 100× the price, in LIVE mode
+
+The dashboard's amount field takes **rupees**; the paise figure was typed into it. All 8 objects
+were created at 100× (e.g. SOLO monthly at ₹5,49,900 instead of ₹5,499) and Razorpay Plans can be
+neither edited nor deleted, so they sit in the dashboard permanently under correct-looking names.
+No customer impact — no IDs ever reached an env var and there are no paying customers.
+
+Abandoned, never to be used: `plan_TUmNQH4lRDgWOG` `plan_TUmOMrcSdP0lWI` `plan_TUmPHqng8bmvny`
+`plan_TUmPi2nOAo6DfH` `plan_TUmQF64vtupOBR` `plan_TUmQhWOOVtJfMa` `plan_TUmRGiU4hLVokq`
+`plan_TUmRjGCF2e7nJl`. Both scripts hard-refuse these IDs.
+
+**These are LIVE-mode objects** — confirmed 2026-08-27 by querying them with test-mode keys, which
+returns HTTP 400 (not found). That is why the test-mode set could safely reuse the plain `2026-08`
+token: in test mode the names were never taken.
+
+**The consequence for production:** in live mode `BG-<TIER>-<INTERVAL>-2026-08` **is** taken, by
+eight plans whose names look correct and whose prices are 100× wrong. The live set therefore needs
+a distinct generation token — the month you actually create them, or a `-v2` suffix — and after
+creating them, run the verify script rather than trusting the dashboard name.
+
+**The tooling that now backs this task** (added 2026-08-27):
+- `secrets/plan-ids.template` — copy out of the repo, one per environment, fill in the 8 IDs
+- `node scripts/verify-razorpay-plan-prices.mjs <file>` — queries each Plan and compares its real
+  amount against `PLAN_CONFIG`. This is the check that catches a rupee/paise mix-up **before** an
+  ID reaches an env var. Run it before the push, not after.
+- `bash scripts/set-razorpay-plan-ids.sh <file> <staging|production>` — pushes only the 8
+  `RAZORPAY_PLAN_*` keys to one Railway environment (`DRY_RUN=1` to preview)
+
+### 7. ~~US-PAY-108 — Razorpay Offer objects (Founding-100)~~ — ❌ RETIRED 2026-08-27
+
+**Do not create these objects.** The task is void, not deferred.
+
+The pricing module was simplified on 2026-08-27 to the model most SaaS billing systems use:
+**a promotion is a price, not a discount.** A promo is its own price-immutable Razorpay Plan
+object, and checkout selects it instead of the list-price Plan. Nothing multiplies a percentage
+into a price any more.
+
+If a promo is a separate Plan, **there is nothing left for a Razorpay Offer to discount.** Creating
+4 Offer objects would produce 4 permanent dashboard objects that no code path can reach — the same
+category of dead object as the 100×-price Plans in §6.
+
+What replaced it, and what is actually needed when Founding-100 runs:
+
+| Was | Now |
+|---|---|
+| 4 Razorpay **Offer** objects | 4 Razorpay **Plan** objects (annual-only), named `BG-<TIER>-ANNUAL-<YYYY-MM>-FOUNDING100` |
+| `RAZORPAY_OFFER_FOUNDING_*` env vars — **removed from `.env.example`** | `RAZORPAY_PLAN_<TIER>_ANNUAL_FOUNDING100` |
+| Discount percentages in `PricingCampaign.tierDiscounts` | Authored prices in `PLAN_CONFIG[tier].promoPrices.FOUNDING100` |
+
+That new plan-creation task is **not listed here yet on purpose** — the founding price itself is
+still an open product decision, and per the PRD's own Prerequisites the first real ₹ transaction
+(§4 / `US-LAUNCH-005` AC6) should land before any promo work at all.
 
 ### 8. US-LAUNCH-001 — legal review
 **Source:** [`EPIC-LAUNCH-01/stories/US-LAUNCH-001/STORY.md`](epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-001/STORY.md)
@@ -122,3 +204,12 @@ un-tracked indefinitely now that real customers can reach these pages.
   `US-PAY-102`, re-opened same day) needs new Razorpay Plans, same as PRO/AGENCY — folded into
   `US-PAY-109`'s existing T0 task (now 8 Plan objects total) rather than a new story or a
   fragmented #6b entry.
+- **2026-08-27** — Task #6's annual amounts corrected: they were ×10-derived figures predating
+  PR #42's authored-price model, and no longer matched `PLAN_CONFIG`. Exact per-plan table and the
+  `BG-<TIER>-<INTERVAL>-<YYYY>-<MM>` naming convention added. First creation attempt the same day
+  produced 8 unusable 100×-price Plans (rupees/paise mix-up); recorded in §6 with the abandoned IDs,
+  and `scripts/verify-razorpay-plan-prices.mjs` added so the amount is machine-checked from now on.
+  Later the same day the **test-mode** set was created correctly and verified 8/8 against the API;
+  `.env`, `.env.development.example` and `.env.production.example` updated. The abandoned plans were
+  confirmed to be **live-mode**, so the test set kept the plain `2026-08` token — but the live set
+  still needs a distinct one. Task #6 is now half-done: test ✅, live 🔲.
