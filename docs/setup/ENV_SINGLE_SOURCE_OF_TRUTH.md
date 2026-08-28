@@ -51,8 +51,10 @@ secrets/production.env     gitignored — the production master copy. Handle wit
 # 2. Push it
 bash scripts/railway-env-sync.sh secrets/staging.env staging
 
-# 3. Redeploy so the running process picks it up (the script reminds you)
-railway redeploy --environment staging
+# 3. Railway redeploys AUTOMATICALLY on a variable change — usually nothing to do here.
+#    `railway redeploy` will in fact fail while that automatic deploy is still in flight
+#    ("The latest deployment ... cannot be redeployed"). Confirm it settled instead:
+railway deployment list --environment staging
 
 # 4. Verify what actually landed — don't trust the dashboard, pull it back
 railway variables --service Buildographic --environment staging --kv | grep GOOGLE
@@ -61,6 +63,32 @@ railway variables --service Buildographic --environment staging --kv | grep GOOG
 Step 4 is not optional. It's the step that was skipped today and is exactly what caught the
 still-stale values after the first "I updated it" — a 10-second habit that eliminates the entire
 class of "did that actually save" uncertainty.
+
+> ⚠️ **One `railway variables --set` call per variable = one deployment per variable.**
+> Railway triggers a redeploy on every variable mutation. `railway-env-sync.sh` sets variables in a
+> loop, one per line, so syncing a whole master file queues **as many stacked deployments as there
+> are variables**. Observed 2026-08-27: 8 plan-ID sets produced 8 concurrent deployments of the
+> staging service.
+>
+> The CLI accepts repeated `--set` flags, so all of them can go in a single invocation and produce a
+> single deployment:
+>
+> ```bash
+> railway variables --set "A=1" --set "B=2" --set "C=3" --environment staging
+> ```
+>
+> Both `scripts/set-razorpay-plan-ids.sh` and `scripts/railway-env-sync.sh` were fixed to batch this
+> way on 2026-08-27.
+
+> ⚠️ **`railway-env-sync.sh` was also silently broken until 2026-08-27**, in a way that matters for
+> reading this doc's history: it used `((count++))` to tally variables, and under `set -e` that
+> construct returns the *pre-increment* value as its exit status — so the very first increment (0)
+> read as a failure and aborted the script. **It set exactly one variable, then exited 1.**
+>
+> This is worth knowing because this doc calls the script "the only supported path" for changing
+> Railway variables. That path did not work end-to-end for a multi-variable file. If you ever ran it
+> and concluded the sync had happened, only the first variable in the file actually landed — worth a
+> `railway variables --kv` audit against your master files before trusting any past sync.
 
 **Why this collapses the "3 different files" overwhelm:** you don't manage 3 environments by hand —
 you manage 1 template (`.env.example`) and edit each environment's *one* master file only when a value
