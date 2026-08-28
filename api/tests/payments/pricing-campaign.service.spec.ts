@@ -14,6 +14,9 @@ const { mockPrisma } = vi.hoisted(() => {
       findUnique: vi.fn(),
       update: vi.fn(),
       updateMany: vi.fn(),
+      // Prisma field references — tryConsumeRedemption compares one column against
+      // another (redemptionsUsed < maxRedemptions) inside the WHERE clause.
+      fields: { maxRedemptions: 'maxRedemptions' },
     },
     $transaction: vi.fn(),
   };
@@ -37,13 +40,11 @@ describe('PricingCampaignService (US-PAY-105)', () => {
     mockPrisma.$transaction.mockImplementation((cb: any) => cb(mockPrisma));
   });
 
+  // A campaign carries no prices — it records WHICH promo is live. The prices live in
+  // PLAN_CONFIG.promoPrices, keyed by this `code`.
   const validInput = () => ({
     code: 'FOUNDING100',
     name: 'Founding Customer 100',
-    tierDiscounts: {
-      SOLO: { type: 'PERCENT' as const, value: 27.3 },
-      TEAM: { type: 'PERCENT' as const, value: 31.8 },
-    },
     startsAt: new Date('2026-08-22'),
   });
 
@@ -125,55 +126,75 @@ describe('PricingCampaignService (US-PAY-105)', () => {
   });
 
   // ---------------------------------------------------------------------------
-  // AC4 / TC-PAY-105-04 — tierDiscounts validation
+  // A campaign carries no discount numbers to validate
   // ---------------------------------------------------------------------------
-  describe('createCampaign — AC4 tierDiscounts validation (TC-PAY-105-04)', () => {
-    it('rejects a PERCENT value >= 100', async () => {
-      await expect(
-        service.createCampaign({
-          ...validInput(),
-          tierDiscounts: { SOLO: { type: 'PERCENT', value: 100 } },
-        }),
-      ).rejects.toBeInstanceOf(BadRequestException);
-      expect(mockPrisma.pricingCampaign.create).not.toHaveBeenCalled();
-    });
-
-    it('rejects a PERCENT value <= 0', async () => {
-      await expect(
-        service.createCampaign({
-          ...validInput(),
-          tierDiscounts: { SOLO: { type: 'PERCENT', value: 0 } },
-        }),
-      ).rejects.toBeInstanceOf(BadRequestException);
-    });
-
-    it('rejects a negative FLAT value', async () => {
-      await expect(
-        service.createCampaign({
-          ...validInput(),
-          tierDiscounts: { SOLO: { type: 'FLAT', value: -500 } },
-        }),
-      ).rejects.toBeInstanceOf(BadRequestException);
-    });
-
-    it('accepts a valid FLAT value (including zero)', async () => {
+  describe('campaigns hold no prices (authored-price model)', () => {
+    it('writes an empty tierDiscounts — the column is vestigial, never read', async () => {
       mockPrisma.pricingCampaign.create.mockResolvedValue({ id: 'camp_1' });
 
-      await service.createCampaign({
-        ...validInput(),
-        tierDiscounts: { SOLO: { type: 'FLAT', value: 0 } },
-      });
+      await service.createCampaign(validInput());
 
-      expect(mockPrisma.pricingCampaign.create).toHaveBeenCalled();
+      expect(mockPrisma.pricingCampaign.create).toHaveBeenCalledWith(
+        expect.objectContaining({ data: expect.objectContaining({ tierDiscounts: {} }) }),
+      );
     });
 
-    it('rejects an unrecognized discount type', async () => {
-      await expect(
-        service.createCampaign({
-          ...validInput(),
-          tierDiscounts: { SOLO: { type: 'BOGUS' as any, value: 10 } },
-        }),
-      ).rejects.toBeInstanceOf(BadRequestException);
+    it('accepts no discount input at all — there is no percentage to get wrong', () => {
+      // The old model took tierDiscounts: { TIER: { type, value } } and needed range
+      // validation (0 < PERCENT < 100, FLAT >= 0) plus a FLAT-vs-PERCENT discriminator.
+      // Authored promo prices removed the entire input, and with it the whole class of
+      // "a percentage produced a price nobody reviewed".
+      const input = validInput() as Record<string, unknown>;
+      expect(input.tierDiscounts).toBeUndefined();
+      expect(Object.getOwnPropertyNames(PricingCampaignService.prototype)).not.toContain(
+        'validateTierDiscounts',
+      );
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // The redemption cap's WRITE side — this had no implementation at all
+  // ---------------------------------------------------------------------------
+  describe('tryConsumeRedemption — the cap actually closes', () => {
+    it('increments redemptionsUsed and returns true when under the cap', async () => {
+      mockPrisma.pricingCampaign.updateMany.mockResolvedValue({ count: 1 });
+
+      const consumed = await service.tryConsumeRedemption('FOUNDING100');
+
+      expect(consumed).toBe(true);
+      expect(mockPrisma.pricingCampaign.updateMany).toHaveBeenCalledWith(
+        expect.objectContaining({ data: { redemptionsUsed: { increment: 1 } } }),
+      );
+    });
+
+    it('enforces the cap in the WHERE clause, not in application code', async () => {
+      mockPrisma.pricingCampaign.updateMany.mockResolvedValue({ count: 1 });
+
+      await service.tryConsumeRedemption('FOUNDING100');
+
+      const { where } = mockPrisma.pricingCampaign.updateMany.mock.calls[0][0];
+      // Conditional update = Postgres serialises it. Two concurrent checkouts at the
+      // boundary cannot both win; the loser matches zero rows.
+      expect(where.code).toBe('FOUNDING100');
+      expect(where.isActive).toBe(true);
+      expect(where.OR).toEqual([
+        { maxRedemptions: null },
+        { redemptionsUsed: { lt: 'maxRedemptions' } },
+      ]);
+    });
+
+    it('returns false when the campaign is already at its cap (zero rows matched)', async () => {
+      mockPrisma.pricingCampaign.updateMany.mockResolvedValue({ count: 0 });
+
+      const consumed = await service.tryConsumeRedemption('FOUNDING100');
+
+      expect(consumed).toBe(false);
+    });
+
+    it('returns false for an inactive campaign', async () => {
+      mockPrisma.pricingCampaign.updateMany.mockResolvedValue({ count: 0 });
+
+      expect(await service.tryConsumeRedemption('RETIRED2025')).toBe(false);
     });
   });
 

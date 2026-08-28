@@ -211,9 +211,12 @@ describe('PaymentsService', () => {
       expect(written.amount).toBe(PLAN_CONFIG.SOLO.annualPrice * 100);
     });
 
-    it('refuses rather than charging list price for an advertised campaign discount', async () => {
-      // Razorpay bills the plan's list amount because nothing passes offer_id yet
-      // (US-PAY-110). Proceeding would charge MORE than the page showed.
+    it('refuses rather than charging list price when a promo has no Plan object behind it', async () => {
+      // The guard inverted 2026-08-27. It used to fire because a campaign discount could
+      // never be applied (nothing passed offer_id). Under the authored-price model the
+      // discount IS applicable — checkout selects the promo's own Razorpay Plan — so the
+      // danger is now a promo price with no Plan configured for it. Falling back to the
+      // list-price plan would charge MORE than the page advertised, so: refuse.
       const resolver = makeResolver({
         regularPrice: PLAN_CONFIG.SOLO.price,
         effectivePrice: 3999,
@@ -223,8 +226,52 @@ describe('PaymentsService', () => {
       const svc = new PaymentsService(mockStorage as any, undefined, resolver);
 
       await expect(svc.createSubscription(TEST_USER.id, 'SOLO' as any)).rejects.toMatchObject({
-        response: { code: 'CAMPAIGN_NOT_APPLICABLE_AT_CHECKOUT' },
+        response: { code: 'PROMO_PLAN_NOT_CONFIGURED' },
       });
+    });
+
+    it('uses the promo Plan object when one IS configured, never the list-price plan', async () => {
+      process.env.RAZORPAY_PLAN_SOLO_MONTHLY_FOUNDING100 = 'plan_promo_solo_monthly';
+      try {
+        const resolver = makeResolver({
+          regularPrice: PLAN_CONFIG.SOLO.price,
+          effectivePrice: 3999,
+          campaignId: 'FOUNDING100',
+          badge: 'FOUNDING MEMBER PRICE',
+        });
+        const campaigns = { tryConsumeRedemption: vi.fn().mockResolvedValue(true) };
+        const svc = new PaymentsService(
+          mockStorage as any,
+          undefined,
+          resolver,
+          campaigns as any,
+        );
+
+        await svc.createSubscription(TEST_USER.id, 'SOLO' as any);
+
+        const written = mockStorage.createSubscription.mock.calls.at(-1)![0];
+        expect(written.externalPlanId).toBe('plan_promo_solo_monthly');
+        expect(written.amount).toBe(3999 * 100);
+        // The cap's write side — without this a "Founding 100" never stops at 100.
+        expect(campaigns.tryConsumeRedemption).toHaveBeenCalledWith('FOUNDING100');
+      } finally {
+        delete process.env.RAZORPAY_PLAN_SOLO_MONTHLY_FOUNDING100;
+      }
+    });
+
+    it('does not consume a redemption for an ordinary list-price checkout', async () => {
+      const resolver = makeResolver({
+        regularPrice: PLAN_CONFIG.SOLO.price,
+        effectivePrice: PLAN_CONFIG.SOLO.price,
+        campaignId: null,
+        badge: undefined,
+      });
+      const campaigns = { tryConsumeRedemption: vi.fn() };
+      const svc = new PaymentsService(mockStorage as any, undefined, resolver, campaigns as any);
+
+      await svc.createSubscription(TEST_USER.id, 'SOLO' as any);
+
+      expect(campaigns.tryConsumeRedemption).not.toHaveBeenCalled();
     });
 
     it('writes no subscription row when a campaign blocks checkout', async () => {

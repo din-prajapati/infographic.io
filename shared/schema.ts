@@ -172,6 +172,22 @@ export const PLAN_CONFIG: Record<PlanTier, {
   features: string[];
   popular?: boolean;
   editableLimit?: number; // per-cycle credit-charged editable-compose cap; -1 = unlimited
+  /**
+   * Promotional prices, AUTHORED per campaign code — never computed from a percentage.
+   *
+   * **A promotion is a price, not a discount.** A campaign does not multiply anything;
+   * it selects a different authored number, and (at the provider) a different Plan
+   * object. That makes "promotions never stack" structurally impossible to violate:
+   * a customer is on exactly one plan, so there is no second discount to compose with.
+   *
+   * Keyed by `PricingCampaign.code`. A tier with no entry for the active campaign is
+   * simply not on promotion and bills at list price — absence is the "not covered"
+   * signal, no flag required.
+   *
+   * `monthly` is optional on purpose: a promo may be annual-only (the usual shape for
+   * founding-member programs, which are cash instruments rather than pricing tiers).
+   */
+  promoPrices?: Record<string, { monthly?: number; annual?: number }>;
 }> = {
   FREE: {
     name: 'Free',
@@ -287,6 +303,31 @@ export const PLAN_CONFIG: Record<PlanTier, {
 /** The authored annual price for a tier, integer rupees. */
 export function getAnnualPrice(tier: PlanTier): number {
   return PLAN_CONFIG[tier].annualPrice;
+}
+
+/** The authored list price for a tier at one interval, integer rupees. */
+export function getListPrice(tier: PlanTier, interval: 'monthly' | 'annual'): number {
+  return interval === 'annual' ? PLAN_CONFIG[tier].annualPrice : PLAN_CONFIG[tier].price;
+}
+
+/**
+ * The authored promotional price for a tier under one campaign, or `undefined` when
+ * that tier/interval is not on promotion.
+ *
+ * This is a LOOKUP, deliberately. The percentage arithmetic that used to live in the
+ * resolver — `Math.round(price * (1 - discount / 100))` — is gone: a percentage that
+ * reaches a price is a number nobody authored and nobody reviewed, and it produced
+ * two independent roundings (monthly and annual) that could disagree with the Plan
+ * object a customer is actually billed against.
+ *
+ * `undefined` is a real answer, not a failure: it means "bills at list".
+ */
+export function getPromoPrice(
+  tier: PlanTier,
+  campaignCode: string,
+  interval: 'monthly' | 'annual',
+): number | undefined {
+  return PLAN_CONFIG[tier].promoPrices?.[campaignCode]?.[interval];
 }
 
 /** What 12 months at the monthly rate would cost -- the anchor a saving is measured against. */

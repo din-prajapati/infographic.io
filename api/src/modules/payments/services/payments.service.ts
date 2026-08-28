@@ -18,6 +18,7 @@ import { PLAN_CONFIG } from '@shared/schema';
 import { paymentProviderFactory } from '../../../../../server/payments/providers/payment-provider.factory';
 import type { PaymentProviderType } from '../../../../../server/payments/interfaces/payment-provider.interface';
 import { PricingResolutionService } from './pricing-resolution.service';
+import { PricingCampaignService } from './pricing-campaign.service';
 
 /** Shape of plan env var names per tier: monthly, annual, and default (optional fallback) */
 type PlanKeysByTier = Record<PlanTier, { monthly: string; annual: string; default: string }>;
@@ -177,7 +178,22 @@ export class PaymentsService {
     planTier: PlanTier,
     providerName: PaymentProviderType,
     billingPeriod: 'monthly' | 'annual',
+    promoCode?: string,
   ): string {
+    // A promotional price is a SEPARATE provider Plan object, because Plans are price-immutable —
+    // there is no way to discount an existing one. So a live promo resolves to its own plan ID,
+    // by convention: RAZORPAY_PLAN_<TIER>_<INTERVAL>_<CAMPAIGN_CODE>, e.g.
+    // RAZORPAY_PLAN_SOLO_ANNUAL_FOUNDING100.
+    //
+    // Returning '' when it is unset is deliberate — the caller blocks checkout rather than
+    // silently falling back to the list-price plan, which would charge a customer more than the
+    // price they were shown.
+    if (promoCode && providerName === 'RAZORPAY') {
+      const suffix = billingPeriod === 'annual' ? 'ANNUAL' : 'MONTHLY';
+      const code = promoCode.toUpperCase().replace(/[^A-Z0-9]/g, '_');
+      return process.env[`RAZORPAY_PLAN_${planTier}_${suffix}_${code}`] || '';
+    }
+
     if (providerName === 'RAZORPAY') {
       return this.getPlanIdFromKeys(RAZORPAY_PLAN_KEYS, planTier, billingPeriod, 'RAZORPAY');
     }
@@ -215,6 +231,12 @@ export class PaymentsService {
      * precisely the case the guard exists to catch.
      */
     private readonly pricingResolution?: PricingResolutionService,
+    /**
+     * Optional for the same reason as pricingResolution. Only used to consume a campaign
+     * redemption after a promo-priced subscription is created; when absent, no promo can be
+     * resolved either, so there is nothing to count.
+     */
+    private readonly campaignService?: PricingCampaignService,
   ) {}
 
   /**
@@ -305,20 +327,21 @@ export class PaymentsService {
       ? await this.pricingResolution.getEffectivePrice(planTier, interval)
       : null;
 
-    // A campaign discount cannot be honoured at checkout yet: nothing passes
-    // `offer_id` to Razorpay (US-PAY-110 is unwritten), so the provider bills the
-    // plan's list amount regardless of what the page advertised. Proceeding would
-    // charge a customer MORE than the price they were shown -- refuse instead.
-    // Reachable only when someone activates a campaign before US-PAY-110 lands.
-    if (resolved && resolved.campaignId != null && resolved.effectivePrice !== resolved.regularPrice) {
-      throw new BadRequestException({
-        code: 'CAMPAIGN_NOT_APPLICABLE_AT_CHECKOUT',
-        message:
-          `Campaign "${resolved.campaignId}" advertises a discounted price that checkout cannot ` +
-          `apply yet, so this subscription would be charged the full amount. Blocking rather ` +
-          `than overcharging.`,
-      });
-    }
+    // The guard that used to live here blocked ANY campaign price at checkout, because nothing
+    // could pass `offer_id` to Razorpay and the provider would have billed list while the page
+    // advertised a discount.
+    //
+    // Under the authored-price model the discount IS applicable — checkout selects a different
+    // Razorpay Plan object, priced at the promo amount. So the guard inverts: the danger is no
+    // longer "a discount we cannot apply", it is "a promo price with no Plan object behind it".
+    // Same protection (never charge more than we advertised), different trigger.
+    //
+    // The Plan-ID check itself is below, once the provider is known — a promo price is only
+    // meaningful relative to a specific provider's Plan objects.
+    const promoApplies =
+      resolved != null &&
+      resolved.campaignId != null &&
+      resolved.effectivePrice !== resolved.regularPrice;
 
     const finalPrice = resolved
       ? resolved.effectivePrice
@@ -330,8 +353,25 @@ export class PaymentsService {
     const provider = paymentProviderFactory.getProviderByCurrency(currency) || paymentProviderFactory.getProvider(region);
     const providerName = provider.getProviderName() as PaymentProviderType;
 
-    // Get provider-specific plan ID (for Razorpay: use _MONTHLY/_ANNUAL when set, else default)
-    const externalPlanId = this.getExternalPlanId(planTier, providerName, billingPeriod);
+    // Get provider-specific plan ID. Under a live promo this resolves to the promo's own Plan
+    // object, never the list-price one.
+    const promoCode = promoApplies ? (resolved!.campaignId as string) : undefined;
+    const externalPlanId = this.getExternalPlanId(planTier, providerName, billingPeriod, promoCode);
+
+    if (!externalPlanId && promoCode) {
+      // The inverted guard: we advertised a promo price but no Plan object exists to charge it.
+      // Falling back to the list-price plan here would bill the customer MORE than the page
+      // showed them, which is the exact failure the old guard existed to prevent.
+      throw new BadRequestException({
+        code: 'PROMO_PLAN_NOT_CONFIGURED',
+        message:
+          `Campaign "${promoCode}" advertises a promotional price for ${planTier} ${billingPeriod}, ` +
+          `but no ${providerName} Plan is configured for it ` +
+          `(expected RAZORPAY_PLAN_${planTier}_${billingPeriod === 'annual' ? 'ANNUAL' : 'MONTHLY'}_${promoCode.toUpperCase()}). ` +
+          `Blocking rather than charging the list price.`,
+      });
+    }
+
     if (!externalPlanId) {
       throw new BadRequestException({
         code: 'PLAN_NOT_AVAILABLE',
@@ -491,6 +531,30 @@ export class PaymentsService {
     // PT-04 fix: Do NOT upgrade org plan here.
     // Org plan is upgraded in handleSubscriptionCharged() on the first successful invoice
     // (subscription.charged). Authenticated-only subs (e.g. UPI mandate, 0 invoices) stay PENDING.
+
+    // Consume one campaign redemption now that the subscription exists at the promo price.
+    // Before this, `redemptionsUsed` was read to enforce the cap but incremented nowhere, so a
+    // "Founding 100" would never have stopped at 100.
+    //
+    // Counted at creation rather than on the webhook because the promo Plan is already locked in
+    // at this point — the customer is on it whether or not the first charge later succeeds. That
+    // can slightly over-count against abandoned checkouts; the alternative (counting on
+    // `subscription.charged`) lets an unbounded number of people hold promo-plan subscriptions
+    // while the counter reads zero, which is the worse failure for a capped campaign.
+    //
+    // Never fatal: the subscription is already created, and failing the request here would tell a
+    // customer their checkout failed when it did not.
+    if (promoCode && this.pricingResolution) {
+      try {
+        await this.campaignService?.tryConsumeRedemption(promoCode);
+      } catch (err) {
+        this.logger.error(
+          `Failed to consume a redemption for campaign "${promoCode}" after creating ` +
+            `subscription ${subscriptionId} — the cap may now under-count: ` +
+            `${err instanceof Error ? err.message : err}`,
+        );
+      }
+    }
 
     return {
       subscription,
