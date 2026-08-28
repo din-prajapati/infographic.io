@@ -5,14 +5,20 @@
  * generic campaign system (US-PAY-105) actually works end-to-end before a second campaign ever
  * exists, per this codebase's own "do not special-case Founding-100" design decision.
  *
- * Per-tier founding prices (feasibility-checked, from the PRD) and the regular prices they're a
- * discount off of (US-PAY-102) determine the exact tierDiscounts percentage — computed, not
- * hardcoded to an approximate "27.3%"/"31.8%", so getEffectivePrice()'s Math.round() reproduces
- * the founding price exactly.
+ * ## Rewritten 2026-08-27 for the authored-price model
  *
- * AC3: razorpayOfferId values come from RAZORPAY_OFFER_FOUNDING_* env vars (a human dashboard
- * task, tracked in HUMAN_TASKS.md) — this script refuses to run with any of them unset rather than
- * seeding a placeholder that would silently fail at checkout.
+ * This script used to compute a per-tier PERCENT discount from a founding price and store it,
+ * along with a Razorpay Offer id, in `tierDiscounts`. None of that exists any more:
+ *
+ * - **Prices are authored**, in `PLAN_CONFIG.promoPrices.FOUNDING100`, not computed here. A price
+ *   that only exists as the output of `regular * (1 - pct/100)` is a number nobody reviewed.
+ * - **Razorpay Offers are not used.** A promo is a separate, price-immutable Plan object, so
+ *   there is nothing for an Offer to discount. The Plan IDs live in
+ *   `RAZORPAY_PLAN_<TIER>_<INTERVAL>_FOUNDING100`.
+ * - **The row records only which promo is live** — code, badge, dates, cap.
+ *
+ * So this script's whole job is now: create one row, and refuse to activate it if the prices and
+ * Plan objects it depends on do not actually exist yet.
  *
  * Idempotent: exits cleanly (no duplicate) if a PricingCampaign with code "FOUNDING100" already
  * exists. Safe to run multiple times.
@@ -20,7 +26,8 @@
  * Run from repo root:
  *   npx tsx api/scripts/seed-founding-campaign.ts
  *
- * Requires: DATABASE_URL and the 4 RAZORPAY_OFFER_FOUNDING_* vars in environment (or root .env).
+ * Requires: DATABASE_URL, at least one authored promo price under FOUNDING100, and a configured
+ * Razorpay Plan for every tier/interval that has one.
  */
 
 import path from 'path';
@@ -30,7 +37,7 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // ---------------------------------------------------------------------------
-// Load root .env so DATABASE_URL / RAZORPAY_OFFER_* are available locally
+// Load root .env so DATABASE_URL / RAZORPAY_PLAN_*_FOUNDING100 are available locally
 // (same pattern as api/scripts/seed-premium-templates.ts)
 // ---------------------------------------------------------------------------
 const rootEnv = path.resolve(__dirname, '../../.env');
@@ -47,32 +54,19 @@ if (fs.existsSync(rootEnv)) {
   }
 }
 
-import { PrismaClient } from '@prisma/client';
-import { PLAN_CONFIG } from '@shared/schema';
+import { PrismaClient, type PlanTier } from '@prisma/client';
+import { getListPrice, getPromoPrice } from '@shared/schema';
 import { PricingCampaignService } from '../src/modules/payments/services/pricing-campaign.service';
 
 const prisma = new PrismaClient();
 
 const CAMPAIGN_CODE = 'FOUNDING100';
+const TIERS: PlanTier[] = ['SOLO', 'PRO', 'TEAM', 'AGENCY'];
+const INTERVALS = ['monthly', 'annual'] as const;
 
-/** Feasibility-checked founding prices from the PRD (docs/agile/PRD/2026-08-21-pricing-relaunch.md). */
-const FOUNDING_PRICES = {
-  SOLO: 3999,
-  PRO: 7999,
-  TEAM: 14999,
-  AGENCY: 29999,
-} as const;
-
-const OFFER_ENV_VARS = {
-  SOLO: 'RAZORPAY_OFFER_FOUNDING_SOLO',
-  PRO: 'RAZORPAY_OFFER_FOUNDING_PRO',
-  TEAM: 'RAZORPAY_OFFER_FOUNDING_TEAM',
-  AGENCY: 'RAZORPAY_OFFER_FOUNDING_AGENCY',
-} as const;
-
-/** Exact percentage off, computed from real regular/founding prices — not an approximation. */
-function percentOff(regular: number, founding: number): number {
-  return ((regular - founding) / regular) * 100;
+/** The Razorpay Plan env var backing one promo price — see PaymentsService.getExternalPlanId. */
+function promoPlanEnvVar(tier: PlanTier, interval: 'monthly' | 'annual'): string {
+  return `RAZORPAY_PLAN_${tier}_${interval === 'annual' ? 'ANNUAL' : 'MONTHLY'}_${CAMPAIGN_CODE}`;
 }
 
 async function main() {
@@ -82,28 +76,45 @@ async function main() {
     return;
   }
 
-  // AC3: refuse to seed with a placeholder — every Offer id must be real (human dashboard task).
-  const missing = Object.entries(OFFER_ENV_VARS).filter(([, envVar]) => !process.env[envVar]);
-  if (missing.length > 0) {
+  // 1. There must be at least one authored promo price. Activating a campaign that prices
+  //    nothing would show a badge and change no price — worse than not running at all.
+  const covered: Array<{ tier: PlanTier; interval: 'monthly' | 'annual'; price: number }> = [];
+  for (const tier of TIERS) {
+    for (const interval of INTERVALS) {
+      const price = getPromoPrice(tier, CAMPAIGN_CODE, interval);
+      if (price !== undefined) covered.push({ tier, interval, price });
+    }
+  }
+
+  if (covered.length === 0) {
     console.error(
-      `❌ Cannot seed ${CAMPAIGN_CODE}: missing env var(s) ${missing.map(([, v]) => v).join(', ')}.\n` +
-        `   Create the 4 Razorpay Offer objects first (see HUMAN_TASKS.md), then set these vars.`,
+      `❌ Cannot seed ${CAMPAIGN_CODE}: no promo price is authored for it.\n` +
+        `   Add PLAN_CONFIG[tier].promoPrices.${CAMPAIGN_CODE} in shared/schema.ts first —\n` +
+        `   prices belong in code (reviewed in a PR), not in this script or the database.`,
     );
     process.exit(1);
   }
 
-  const tierDiscounts: Record<string, { type: 'PERCENT'; value: number; razorpayOfferId: string }> = {};
-  for (const tier of Object.keys(FOUNDING_PRICES) as Array<keyof typeof FOUNDING_PRICES>) {
-    const regular = PLAN_CONFIG[tier].price;
-    const founding = FOUNDING_PRICES[tier];
-    tierDiscounts[tier] = {
-      type: 'PERCENT',
-      value: percentOff(regular, founding),
-      razorpayOfferId: process.env[OFFER_ENV_VARS[tier]] as string,
-    };
-    console.log(
-      `   ${tier}: ₹${regular} → ₹${founding} (${tierDiscounts[tier].value.toFixed(2)}% off)`,
+  // 2. Every authored price needs a Razorpay Plan object to charge it against. Checkout blocks
+  //    with PROMO_PLAN_NOT_CONFIGURED otherwise, so catch it here rather than at a customer's
+  //    checkout.
+  const missing = covered.filter(({ tier, interval }) => !process.env[promoPlanEnvVar(tier, interval)]);
+  if (missing.length > 0) {
+    console.error(
+      `❌ Cannot seed ${CAMPAIGN_CODE}: ${missing.length} authored promo price(s) have no Razorpay Plan:\n` +
+        missing.map(({ tier, interval }) => `   - ${promoPlanEnvVar(tier, interval)}`).join('\n') +
+        `\n   Create those Plan objects in the dashboard, then set the env vars.`,
     );
+    process.exit(1);
+  }
+
+  console.log(`Founding-100 covers ${covered.length} tier/interval combination(s):`);
+  for (const { tier, interval, price } of covered) {
+    console.log(`   ${tier} ${interval}: ₹${getListPrice(tier, interval)} → ₹${price}`);
+  }
+  const uncovered = TIERS.filter((t) => !covered.some((c) => c.tier === t));
+  if (uncovered.length > 0) {
+    console.log(`   (not on promotion, bills at list: ${uncovered.join(', ')})`);
   }
 
   const campaignService = new PricingCampaignService();
@@ -111,13 +122,13 @@ async function main() {
     code: CAMPAIGN_CODE,
     name: 'Buildographic Founding 100',
     displayBadge: 'FOUNDING MEMBER PRICE',
-    tierDiscounts,
     startsAt: new Date(),
     maxRedemptions: 100,
     isActive: true,
   });
 
   console.log(`\n✅ Seeded "${CAMPAIGN_CODE}" (id ${campaign.id}), isActive: true, maxRedemptions: 100`);
+  console.log(`   The cap now closes: PaymentsService consumes a redemption per promo checkout.`);
   console.log(`   Verify via: npx prisma studio --schema=api/prisma/schema.prisma`);
 }
 

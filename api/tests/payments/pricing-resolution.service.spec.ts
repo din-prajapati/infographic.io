@@ -3,19 +3,40 @@ import { PLAN_CONFIG } from '@shared/schema';
 import { PricingResolutionService } from '../../src/modules/payments/services/pricing-resolution.service';
 import type { PricingCampaignService } from '../../src/modules/payments/services/pricing-campaign.service';
 
+// `getPromoPrice` reads PLAN_CONFIG.promoPrices, and no promo price is authored today (the
+// founding price is still an open product decision). Mocking just that one lookup lets these
+// tests describe the resolver's behaviour under a promo without inventing a real price in
+// production config. getListPrice and PLAN_CONFIG stay real — the list prices under test are
+// the actual shipped ones.
+vi.mock('@shared/schema', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@shared/schema')>()),
+  getPromoPrice: vi.fn(),
+}));
+const { getPromoPrice } = await import('@shared/schema');
+const mockGetPromoPrice = vi.mocked(getPromoPrice);
+
+const ACTIVE_CAMPAIGN = {
+  code: 'FOUNDING100',
+  displayBadge: 'FOUNDING MEMBER PRICE',
+  maxRedemptions: 100,
+  redemptionsUsed: 0,
+};
+
 describe('PricingResolutionService.getEffectivePrice (US-PAY-106)', () => {
   let mockCampaignService: { getActiveCampaign: ReturnType<typeof vi.fn> };
   let service: PricingResolutionService;
 
   beforeEach(() => {
+    vi.clearAllMocks();
+    mockGetPromoPrice.mockReturnValue(undefined); // default: nothing on promotion
     mockCampaignService = { getActiveCampaign: vi.fn() };
     service = new PricingResolutionService(mockCampaignService as unknown as PricingCampaignService);
   });
 
   // ---------------------------------------------------------------------------
-  // AC1 / TC-PAY-106-01
+  // AC1 — no campaign
   // ---------------------------------------------------------------------------
-  describe('AC1 (TC-PAY-106-01): no active campaign', () => {
+  describe('AC1: no active campaign', () => {
     it('returns regularPrice === effectivePrice, campaignId null', async () => {
       mockCampaignService.getActiveCampaign.mockResolvedValue(null);
 
@@ -28,151 +49,148 @@ describe('PricingResolutionService.getEffectivePrice (US-PAY-106)', () => {
         badge: undefined,
       });
     });
-  });
 
-  describe('AC1 (TC-PAY-106-01): Founding campaign active', () => {
-    it('returns the discounted effectivePrice, campaignId, and badge', async () => {
-      // 5499 * (1 - 0.272777...) = 3999 exactly, matching the PRD's stated Solo founding price
-      mockCampaignService.getActiveCampaign.mockResolvedValue({
-        code: 'FOUNDING100',
-        displayBadge: 'FOUNDING MEMBER PRICE',
-        tierDiscounts: { SOLO: { type: 'PERCENT', value: 27.278 } },
-      });
-
-      const result = await service.getEffectivePrice('SOLO', 'monthly');
-
-      expect(result.regularPrice).toBe(5499);
-      expect(result.effectivePrice).toBe(3999);
-      expect(result.campaignId).toBe('FOUNDING100');
-      expect(result.badge).toBe('FOUNDING MEMBER PRICE');
-    });
-
-    it('a tier the active campaign does not cover falls back to its regular price', async () => {
-      mockCampaignService.getActiveCampaign.mockResolvedValue({
-        code: 'FOUNDING100',
-        displayBadge: 'FOUNDING MEMBER PRICE',
-        tierDiscounts: { SOLO: { type: 'PERCENT', value: 27.278 } }, // no TEAM entry
-      });
-
-      const result = await service.getEffectivePrice('TEAM', 'monthly');
-
-      expect(result.effectivePrice).toBe(result.regularPrice);
-      expect(result.campaignId).toBeNull();
-    });
-  });
-
-  // ---------------------------------------------------------------------------
-  // AC2 / TC-PAY-106-02
-  // ---------------------------------------------------------------------------
-  describe('AC2 (TC-PAY-106-02): annual interval + FLAT rejection', () => {
-    // Rewritten 2026-08-27: annual prices are AUTHORED per tier, not derived from a
-    // multiplier. The campaign discount now applies to the authored annual price
-    // instead of being layered over a discounted monthly figure -- same composition,
-    // one fewer computed value that could drift from what checkout charges.
-    it('applies the campaign discount to the authored annual price', async () => {
-      mockCampaignService.getActiveCampaign.mockResolvedValue({
-        code: 'FOUNDING100',
-        displayBadge: 'FOUNDING MEMBER PRICE',
-        tierDiscounts: { SOLO: { type: 'PERCENT', value: 27.278 } },
-      });
-
-      const result = await service.getEffectivePrice('SOLO', 'annual');
-
-      expect(result.regularPrice).toBe(PLAN_CONFIG.SOLO.annualPrice);
-      expect(result.effectivePrice).toBe(
-        Math.round(PLAN_CONFIG.SOLO.annualPrice * (1 - 27.278 / 100)),
-      );
-      expect(result.campaignId).toBe('FOUNDING100');
-    });
-
-    it('returns the authored annual price untouched when no campaign is active', async () => {
+    it('returns the AUTHORED annual price, never a computed one', async () => {
       mockCampaignService.getActiveCampaign.mockResolvedValue(null);
 
       const result = await service.getEffectivePrice('SOLO', 'annual');
 
       expect(result.regularPrice).toBe(PLAN_CONFIG.SOLO.annualPrice);
       expect(result.effectivePrice).toBe(PLAN_CONFIG.SOLO.annualPrice);
-      expect(result.campaignId).toBeNull();
-    });
-
-    it('rejects a FLAT-type tierDiscounts entry rather than silently computing a wrong number', async () => {
-      mockCampaignService.getActiveCampaign.mockResolvedValue({
-        code: 'HYPOTHETICAL_FLAT',
-        tierDiscounts: { SOLO: { type: 'FLAT', value: 500 } },
-      });
-
-      await expect(service.getEffectivePrice('SOLO', 'monthly')).rejects.toThrow(/FLAT/);
-      await expect(service.getEffectivePrice('SOLO', 'annual')).rejects.toThrow(/FLAT/);
+      // Guards the regression this model exists to prevent: annual must not be
+      // monthly x 12 x <any multiplier>.
+      expect(result.effectivePrice).not.toBe(PLAN_CONFIG.SOLO.price * 12);
     });
   });
 
   // ---------------------------------------------------------------------------
-  // US-PAY-108 AC2 (TC-PAY-108-02) — redemption cap
+  // AC1 — campaign active, price is LOOKED UP not computed
   // ---------------------------------------------------------------------------
-  describe('US-PAY-108 AC2 (TC-PAY-108-02): redemption-cap fallback', () => {
-    it('falls back to the regular price once redemptionsUsed reaches maxRedemptions', async () => {
-      mockCampaignService.getActiveCampaign.mockResolvedValue({
-        code: 'FOUNDING100',
-        displayBadge: 'FOUNDING MEMBER PRICE',
-        maxRedemptions: 100,
-        redemptionsUsed: 100,
-        tierDiscounts: { SOLO: { type: 'PERCENT', value: 27.278 } },
-      });
+  describe('AC1: campaign active with an authored promo price', () => {
+    it('returns the authored promo price verbatim, with campaign id and badge', async () => {
+      mockCampaignService.getActiveCampaign.mockResolvedValue(ACTIVE_CAMPAIGN);
+      mockGetPromoPrice.mockReturnValue(38999);
 
-      const result = await service.getEffectivePrice('SOLO', 'monthly');
+      const result = await service.getEffectivePrice('SOLO', 'annual');
 
-      expect(result.effectivePrice).toBe(PLAN_CONFIG.SOLO.price);
+      expect(result.regularPrice).toBe(PLAN_CONFIG.SOLO.annualPrice);
+      expect(result.effectivePrice).toBe(38999);
+      expect(result.campaignId).toBe('FOUNDING100');
+      expect(result.badge).toBe('FOUNDING MEMBER PRICE');
+    });
+
+    it('passes the campaign code and interval through to the price lookup', async () => {
+      mockCampaignService.getActiveCampaign.mockResolvedValue(ACTIVE_CAMPAIGN);
+      mockGetPromoPrice.mockReturnValue(38999);
+
+      await service.getEffectivePrice('TEAM', 'annual');
+
+      expect(mockGetPromoPrice).toHaveBeenCalledWith('TEAM', 'FOUNDING100', 'annual');
+    });
+
+    it('returns the promo price EXACTLY — no rounding is applied to it', async () => {
+      mockCampaignService.getActiveCampaign.mockResolvedValue(ACTIVE_CAMPAIGN);
+      // A deliberately un-round number: if any arithmetic survived in the resolver,
+      // this would come back changed.
+      mockGetPromoPrice.mockReturnValue(38997);
+
+      const result = await service.getEffectivePrice('SOLO', 'annual');
+
+      expect(result.effectivePrice).toBe(38997);
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // Not-covered cases — absence means "bills at list", not an error
+  // ---------------------------------------------------------------------------
+  describe('a tier/interval not covered by the live campaign', () => {
+    it('falls back to list price with campaignId null', async () => {
+      mockCampaignService.getActiveCampaign.mockResolvedValue(ACTIVE_CAMPAIGN);
+      mockGetPromoPrice.mockReturnValue(undefined); // TEAM not in this promo
+
+      const result = await service.getEffectivePrice('TEAM', 'monthly');
+
+      expect(result.effectivePrice).toBe(result.regularPrice);
       expect(result.campaignId).toBeNull();
       expect(result.badge).toBeUndefined();
     });
 
-    it('still applies the discount when redemptionsUsed is below the cap', async () => {
+    it('an annual-only promo leaves the monthly interval at list price', async () => {
+      mockCampaignService.getActiveCampaign.mockResolvedValue(ACTIVE_CAMPAIGN);
+      // Annual-only promo: a price for 'annual', nothing for 'monthly'.
+      mockGetPromoPrice.mockImplementation((_tier, _code, interval) =>
+        interval === 'annual' ? 38999 : undefined,
+      );
+
+      const monthly = await service.getEffectivePrice('SOLO', 'monthly');
+      const annual = await service.getEffectivePrice('SOLO', 'annual');
+
+      expect(monthly.effectivePrice).toBe(PLAN_CONFIG.SOLO.price);
+      expect(monthly.campaignId).toBeNull();
+      expect(annual.effectivePrice).toBe(38999);
+      expect(annual.campaignId).toBe('FOUNDING100');
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // Redemption cap (read side)
+  // ---------------------------------------------------------------------------
+  describe('redemption-cap fallback', () => {
+    it('falls back to list price once redemptionsUsed reaches maxRedemptions', async () => {
       mockCampaignService.getActiveCampaign.mockResolvedValue({
-        code: 'FOUNDING100',
-        displayBadge: 'FOUNDING MEMBER PRICE',
-        maxRedemptions: 100,
-        redemptionsUsed: 99,
-        tierDiscounts: { SOLO: { type: 'PERCENT', value: 27.278 } },
+        ...ACTIVE_CAMPAIGN,
+        redemptionsUsed: 100,
       });
+      mockGetPromoPrice.mockReturnValue(38999);
 
-      const result = await service.getEffectivePrice('SOLO', 'monthly');
+      const result = await service.getEffectivePrice('SOLO', 'annual');
 
-      expect(result.effectivePrice).toBe(3999);
+      expect(result.effectivePrice).toBe(PLAN_CONFIG.SOLO.annualPrice);
+      expect(result.campaignId).toBeNull();
+      expect(result.badge).toBeUndefined();
+    });
+
+    it('still applies the promo price when redemptionsUsed is below the cap', async () => {
+      mockCampaignService.getActiveCampaign.mockResolvedValue({
+        ...ACTIVE_CAMPAIGN,
+        redemptionsUsed: 99,
+      });
+      mockGetPromoPrice.mockReturnValue(38999);
+
+      const result = await service.getEffectivePrice('SOLO', 'annual');
+
+      expect(result.effectivePrice).toBe(38999);
       expect(result.campaignId).toBe('FOUNDING100');
     });
 
-    it('a campaign with no maxRedemptions (uncapped) is never affected by this check', async () => {
+    it('an uncapped campaign is never affected by the cap check', async () => {
       mockCampaignService.getActiveCampaign.mockResolvedValue({
-        code: 'FOUNDING100',
+        ...ACTIVE_CAMPAIGN,
         maxRedemptions: null,
         redemptionsUsed: 5000,
-        tierDiscounts: { SOLO: { type: 'PERCENT', value: 27.278 } },
       });
+      mockGetPromoPrice.mockReturnValue(38999);
 
-      const result = await service.getEffectivePrice('SOLO', 'monthly');
+      const result = await service.getEffectivePrice('SOLO', 'annual');
 
       expect(result.campaignId).toBe('FOUNDING100');
     });
   });
 
   // ---------------------------------------------------------------------------
-  // AC3 (TC-PAY-106-03) — server-only, no client-mutable input
+  // AC3 — server-only, no client-mutable input
   // ---------------------------------------------------------------------------
-  describe('AC3 (TC-PAY-106-03): server-only, satisfied by construction', () => {
+  describe('AC3: server-only, satisfied by construction', () => {
     it('takes no price/discount input from the caller — only tier and interval', () => {
-      // getEffectivePrice's only parameters are `tier` (an enum) and `interval` (a fixed union) —
-      // there is no way for a caller to pass in a client-computed effectivePrice, discount value,
-      // or campaign id. No HTTP controller exposes this service directly (Out of Scope) — checkout
-      // (US-PAY-110) and the pricing page (US-PAY-112) call it server-side, never the reverse.
       expect(service.getEffectivePrice.length).toBe(2);
     });
   });
 
   // ---------------------------------------------------------------------------
-  // AC4 / TC-PAY-106-04
+  // AC4 — identity + integers
   // ---------------------------------------------------------------------------
-  describe('AC4 (TC-PAY-106-04): currency-edge — identity case', () => {
-    it('no campaign + monthly returns exactly PLAN_CONFIG[tier].price unchanged', async () => {
+  describe('AC4: identity case and integer output', () => {
+    it('no campaign + monthly returns exactly PLAN_CONFIG[tier].price for every paid tier', async () => {
       mockCampaignService.getActiveCampaign.mockResolvedValue(null);
 
       for (const tier of ['SOLO', 'PRO', 'TEAM', 'AGENCY'] as const) {
@@ -182,13 +200,11 @@ describe('PricingResolutionService.getEffectivePrice (US-PAY-106)', () => {
       }
     });
 
-    it('every returned price is an integer, never a float', async () => {
-      mockCampaignService.getActiveCampaign.mockResolvedValue({
-        code: 'FOUNDING100',
-        tierDiscounts: { SOLO: { type: 'PERCENT', value: 27.278 } },
-      });
+    it('every returned price is an integer', async () => {
+      mockCampaignService.getActiveCampaign.mockResolvedValue(ACTIVE_CAMPAIGN);
+      mockGetPromoPrice.mockReturnValue(38999);
 
-      const result = await service.getEffectivePrice('SOLO', 'monthly');
+      const result = await service.getEffectivePrice('SOLO', 'annual');
 
       expect(Number.isInteger(result.effectivePrice)).toBe(true);
       expect(Number.isInteger(result.regularPrice)).toBe(true);

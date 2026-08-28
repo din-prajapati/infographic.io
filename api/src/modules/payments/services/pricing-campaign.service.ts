@@ -1,22 +1,10 @@
-import { Injectable, Logger, BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
-import { PlanTier } from '@prisma/client';
+import { Injectable, Logger, ConflictException, NotFoundException } from '@nestjs/common';
 import { prisma } from '../../../database/prisma.client';
-
-/** One tier's discount within a campaign's tierDiscounts JSON blob (US-PAY-105 AC1/AC4). */
-export interface TierDiscount {
-  type: 'PERCENT' | 'FLAT';
-  value: number;
-  /** Razorpay Offer object id for this tier, once created (US-PAY-108, a human dashboard task). */
-  razorpayOfferId?: string;
-}
-
-export type TierDiscounts = Partial<Record<PlanTier, TierDiscount>>;
 
 export interface CreatePricingCampaignInput {
   code: string;
   name: string;
   displayBadge?: string;
-  tierDiscounts: TierDiscounts;
   startsAt: Date;
   endsAt?: Date;
   maxRedemptions?: number;
@@ -26,51 +14,45 @@ export interface CreatePricingCampaignInput {
 }
 
 /**
- * US-PAY-105 — generic, reusable promotional-discount campaign CRUD + guards.
+ * US-PAY-105 — generic, reusable promotional campaign CRUD + guards.
  *
- * Founding Customer 100 (US-PAY-108) is simply the first row in this table, not special-cased in
- * code. Reading which campaign is active (for price resolution) is US-PAY-106's job, not this
- * service's — this file only owns write-side integrity (AC2/AC3/AC4).
+ * ## What a campaign row is, and is not
+ *
+ * Simplified 2026-08-27. A campaign row records **which promotion is live**, never **what it
+ * costs**. Prices are authored in `PLAN_CONFIG.promoPrices`, keyed by this row's `code`.
+ *
+ * The split is deliberate and is the same one most SaaS billing systems land on:
+ *
+ * | Lives in the DB | Lives in code |
+ * |---|---|
+ * | is it running, since when, until when | the price |
+ * | how many redemptions, and the cap | which tiers/intervals are covered |
+ * | the badge to display | |
+ *
+ * So a promo can be started and stopped without a deploy, while a promo *price* cannot change
+ * without a reviewed PR. The `tierDiscounts` column still exists on the model but is no longer
+ * read by anything — it held `{ type: "PERCENT" | "FLAT", value, razorpayOfferId }`, all three
+ * of which the authored-price model makes meaningless. It is written as `{}` and left in place
+ * rather than migrated away in the same change that alters pricing behaviour.
+ *
+ * Reading which campaign is active (for price resolution) is US-PAY-106's job — this file owns
+ * write-side integrity only.
  */
 @Injectable()
 export class PricingCampaignService {
   private readonly logger = new Logger(PricingCampaignService.name);
 
   /**
-   * AC4: validates tierDiscounts shape and value ranges before persisting. Throws
-   * BadRequestException on the first invalid entry found (400, not a silent clamp/skip).
-   */
-  private validateTierDiscounts(tierDiscounts: TierDiscounts): void {
-    for (const [tier, discount] of Object.entries(tierDiscounts)) {
-      if (!discount) continue;
-      if (discount.type !== 'PERCENT' && discount.type !== 'FLAT') {
-        throw new BadRequestException(
-          `tierDiscounts.${tier}.type must be "PERCENT" or "FLAT", got "${discount.type}"`,
-        );
-      }
-      if (discount.type === 'PERCENT' && !(discount.value > 0 && discount.value < 100)) {
-        throw new BadRequestException(
-          `tierDiscounts.${tier}: PERCENT value must be strictly between 0 and 100, got ${discount.value}`,
-        );
-      }
-      if (discount.type === 'FLAT' && discount.value < 0) {
-        throw new BadRequestException(
-          `tierDiscounts.${tier}: FLAT value cannot be negative, got ${discount.value}`,
-        );
-      }
-    }
-  }
-
-  /**
    * AC1: creates a PricingCampaign row.
    * AC2: if `isActive: true` is requested and a different campaign is already active, rejected —
    * never silently deactivates the existing one. Use activateCampaign() to switch safely.
    * AC3: `code` has no update path anywhere in this service — immutable from creation.
-   * AC4: tierDiscounts validated before write.
+   *
+   * There is no discount validation left to do: a campaign carries no numbers to validate. The
+   * equivalent check now happens at checkout, which refuses to proceed when a live campaign has
+   * no authored price for the tier being bought.
    */
   async createCampaign(input: CreatePricingCampaignInput) {
-    this.validateTierDiscounts(input.tierDiscounts);
-
     if (input.isActive) {
       const existingActive = await prisma.pricingCampaign.findFirst({ where: { isActive: true } });
       if (existingActive && existingActive.code !== input.code) {
@@ -86,13 +68,53 @@ export class PricingCampaignService {
         code: input.code,
         name: input.name,
         displayBadge: input.displayBadge,
-        tierDiscounts: input.tierDiscounts as any,
+        // Vestigial: the column is non-nullable and no longer read. See the class doc.
+        tierDiscounts: {},
         startsAt: input.startsAt,
         endsAt: input.endsAt,
         maxRedemptions: input.maxRedemptions,
         isActive: input.isActive ?? false,
       },
     });
+  }
+
+  /**
+   * Atomically consume one redemption, returning true if it was consumed and false if the
+   * campaign is already at its cap.
+   *
+   * **This is the write side that was missing entirely.** `redemptionsUsed` was read in
+   * `PricingResolutionService` to decide whether a capped campaign was exhausted, and written
+   * nowhere in the codebase — so a "Founding 100" campaign would never have stopped at 100. It
+   * would have run until somebody noticed and deactivated it by hand.
+   *
+   * The cap is enforced in the `WHERE` clause, not in application code, so two concurrent
+   * checkouts near the boundary cannot both succeed: Postgres serialises the conditional update
+   * and the loser matches zero rows. A read-then-write in a transaction would also work, but
+   * this needs no transaction and no row lock held across the provider call.
+   *
+   * An uncapped campaign (`maxRedemptions: null`) always succeeds and still counts, because the
+   * count is useful for reporting even when nothing is being enforced.
+   */
+  async tryConsumeRedemption(code: string): Promise<boolean> {
+    const { count } = await prisma.pricingCampaign.updateMany({
+      where: {
+        code,
+        isActive: true,
+        OR: [
+          { maxRedemptions: null },
+          { redemptionsUsed: { lt: prisma.pricingCampaign.fields.maxRedemptions } },
+        ],
+      },
+      data: { redemptionsUsed: { increment: 1 } },
+    });
+
+    if (count === 0) {
+      this.logger.warn(
+        `Campaign "${code}" redemption not consumed — it is inactive or already at its cap.`,
+      );
+      return false;
+    }
+    return true;
   }
 
   /**
