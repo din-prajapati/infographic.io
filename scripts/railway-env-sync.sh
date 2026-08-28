@@ -52,9 +52,17 @@ fi
 count=0
 skipped=0
 
+# All --set flags are collected here and applied in ONE railway invocation.
+#
+# Railway triggers a redeploy on every variable mutation, so setting variables one
+# at a time queues one stacked deployment PER VARIABLE — a 50-line env file would
+# start 50 concurrent deployments of the same service. Observed 2026-08-27 when a
+# sibling script set 8 variables in a loop and produced 8 deployments.
+set_args=()
+
 while IFS= read -r line || [[ -n "$line" ]]; do
   # Skip comments and blank lines
-  [[ "$line" =~ ^[[:space:]]*# ]] && { ((skipped++)); continue; }
+  [[ "$line" =~ ^[[:space:]]*# ]] && { skipped=$((skipped + 1)); continue; }
   [[ -z "${line// }" ]] && continue
 
   # Expect KEY=VALUE format
@@ -62,21 +70,41 @@ while IFS= read -r line || [[ -n "$line" ]]; do
     key="${BASH_REMATCH[1]}"
     value="${BASH_REMATCH[2]}"
 
+    set_args+=(--set "${key}=${value}")
     if [[ "$DRY_RUN" == "1" ]]; then
       echo "  [dry-run] would set: $key"
     else
-      railway variables --set "${key}=${value}" --environment "$RAILWAY_ENV" --silent 2>/dev/null \
-        || railway variables --set "${key}=${value}" --environment "$RAILWAY_ENV"
+      echo "  queued: $key"
     fi
-    ((count++))
+    # NOTE: count=$((count+1)), never ((count++)). Under `set -e`, ((count++))
+    # returns the pre-increment value as its exit status, so the very first
+    # increment (0) is a "failure" and aborts the script after one variable.
+    count=$((count + 1))
   else
     echo "  [warn] skipping malformed line: ${line:0:40}..." >&2
   fi
 done < "$ENV_FILE"
 
+if ((count == 0)); then
+  echo "" >&2
+  echo "No valid KEY=VALUE lines found in $ENV_FILE — nothing to sync." >&2
+  exit 1
+fi
+
+if [[ "$DRY_RUN" != "1" ]]; then
+  echo ""
+  echo "  Applying all $count variables in a single call (one deployment)..."
+  railway variables "${set_args[@]}" --environment "$RAILWAY_ENV" ${RAILWAY_SERVICE:+--service "$RAILWAY_SERVICE"}
+fi
+
 echo ""
 echo "Done. Variables processed: $count (comments/blanks skipped: $skipped)"
 if [[ "$DRY_RUN" != "1" ]]; then
-  echo "Redeploy the Railway service to pick up the new values:"
-  echo "  railway redeploy --environment $RAILWAY_ENV"
+  echo ""
+  echo "Railway redeploys automatically on a variable change — no manual redeploy needed."
+  echo '(`railway redeploy` will in fact fail while that automatic deploy is in flight.)'
+  echo ""
+  echo "Confirm it landed — do not skip (ENV_SINGLE_SOURCE_OF_TRUTH.md step 4):"
+  echo "  railway variables --environment $RAILWAY_ENV --kv | grep <A_KEY_YOU_CHANGED>"
+  echo "  railway deployment list --environment $RAILWAY_ENV"
 fi
