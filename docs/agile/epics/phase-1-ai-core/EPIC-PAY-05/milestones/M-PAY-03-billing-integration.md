@@ -9,9 +9,10 @@ updated: 2026-08-25
 
 > **Epic:** [EPIC-PAY-05](../EPIC.md)
 > **Feature:** F-PAY-03
-> **Status:** 🟡 In Progress — US-PAY-109 code-complete but blocked on T0 HUMAN task (real
-> Razorpay Plan objects); US-PAY-111 code-complete (manual/PR still open); US-PAY-110 correctly
-> not started (V2, depends on M-PAY-02's US-PAY-108 + this milestone's own US-PAY-109)
+> **Status:** 🟡 In Progress — US-PAY-109 blocked on T0 HUMAN task (**live-mode** Razorpay Plan
+> objects; test-mode set created + verified 2026-08-27); US-PAY-111 code-complete (manual/PR still
+> open); US-PAY-110 **rescoped 2026-08-27 and code-complete** — its `offer_id` dependency on
+> US-PAY-108 is gone, since a promo is now its own Plan object
 > **Target date:** TBD
 > **Branch:** `feat/pay/m-01-pricing-relaunch`
 > **Version:** **Mixed** — US-PAY-109 and US-PAY-111 are V1 (PRO/AGENCY sellable at launch);
@@ -33,7 +34,7 @@ activation recognizes the new tiers.
 |:-----:|-------|-------|:----:|------------|:------:|:--:|:---:|
 | 1 | [US-PAY-109](../stories/US-PAY-109/STORY.md) | New Razorpay Plan IDs for PRO/AGENCY tiers | S | US-PAY-102 (M-PAY-01) | 🟡 (blocked) | — | **V1** |
 | 2 | [US-PAY-111](../stories/US-PAY-111/STORY.md) | Webhook/entitlement mapping for new tiers | S | US-PAY-109 | ✅ (code) | — | **V1** |
-| 2 | [US-PAY-110](../stories/US-PAY-110/STORY.md) | Checkout passes `offer_id` server-side | M | US-PAY-106, US-PAY-108, US-PAY-109 | 🔲 | — | V2 |
+| 2 | [US-PAY-110](../stories/US-PAY-110/STORY.md) | Checkout selects the promo Plan server-side | M | US-PAY-106, US-PAY-109 | 🟡 (rescoped, code done) | — | V2 |
 
 ---
 

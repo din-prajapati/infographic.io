@@ -149,8 +149,8 @@ existing `PricingPage.tsx` UI (no redesign, no campaign, no founding discount ye
 |---|---|---|
 | US-PAY-105 | New `PricingCampaign` Prisma model — generalized campaign engine | — |
 | US-PAY-106 | `getEffectivePrice()` — resolves base × campaign × annual | US-PAY-105 |
-| US-PAY-108 | Founding Customer 100 seed + Razorpay Offer linkage | US-PAY-105, US-PAY-106 |
-| US-PAY-110 | Checkout passes `offer_id` server-side (security-critical) | US-PAY-106, 108, 109 |
+| ~~US-PAY-108~~ | ~~Founding Customer 100 seed + Razorpay Offer linkage~~ — ⏭️ superseded 2026-08-27 | US-PAY-105, US-PAY-106 |
+| US-PAY-110 | Checkout selects the **promo Plan** server-side (security-critical) | US-PAY-106, 109 |
 | US-PAY-112 | Pricing page redesign — new cards, founding badge, toggle | US-PAY-106 |
 | US-PAY-113 | Responsive layout + comparison table (pure follow-on to 112) | US-PAY-112 |
 
@@ -197,9 +197,9 @@ be hardened.
 | 1 | [US-PAY-107](stories/US-PAY-107/STORY.md) | Standing annual-discount formula (×10) | F-PAY-02 | M-PAY-02 | S | US-PAY-102 | ✅ (code) | — | **V1** |
 | 2 | [US-PAY-106](stories/US-PAY-106/STORY.md) | `getEffectivePrice()` resolution service | F-PAY-02 | M-PAY-02 | M | US-PAY-102, US-PAY-105 | ✅ (code) | — | V2 |
 | 1 | [US-PAY-109](stories/US-PAY-109/STORY.md) | New Razorpay Plan IDs for PRO/AGENCY tiers | F-PAY-03 | M-PAY-03 | S | US-PAY-102 | 🟡 (T0 human) | — | **V1** |
-| 3 | [US-PAY-108](stories/US-PAY-108/STORY.md) | Founding Customer 100 campaign seed + Offer linkage | F-PAY-02 | M-PAY-02 | M | US-PAY-105, US-PAY-106 | 🟡 (T0 human) | — | V2 |
+| 3 | [US-PAY-108](stories/US-PAY-108/STORY.md) | ~~Founding Customer 100 campaign seed + Offer linkage~~ | F-PAY-02 | M-PAY-02 | M | US-PAY-105, US-PAY-106 | ⏭️ **Superseded** | — | V2 |
 | 2 | [US-PAY-111](stories/US-PAY-111/STORY.md) | Webhook/entitlement mapping for new tiers | F-PAY-03 | M-PAY-03 | S | US-PAY-109 | ✅ (code) | — | **V1** |
-| 2 | [US-PAY-110](stories/US-PAY-110/STORY.md) | Checkout passes `offer_id` server-side | F-PAY-03 | M-PAY-03 | M | US-PAY-106, US-PAY-108, US-PAY-109 | 🔲 | — | V2 |
+| 2 | [US-PAY-110](stories/US-PAY-110/STORY.md) | Checkout selects the promo Plan server-side | F-PAY-03 | M-PAY-03 | M | US-PAY-106, US-PAY-109 | 🟡 (rescoped, code done) | — | V2 |
 | 1 | [US-PAY-112](stories/US-PAY-112/STORY.md) | Pricing page redesign — cards, founding badge, toggle | F-PAY-04 | M-PAY-04 | L | US-PAY-102, US-PAY-106 | ✅ (code) | — | V2 |
 | 2 | [US-PAY-113](stories/US-PAY-113/STORY.md) | Responsive layout + comparison section + messaging | F-PAY-04 | M-PAY-04 | S | US-PAY-112 | ✅ (code) | — | V2 |
 
@@ -222,13 +222,13 @@ flowchart LR
     US105["US-PAY-105\nPricingCampaign model"]:::ready
     US107["US-PAY-107\nAnnual formula ×10"]:::blocked
     US106["US-PAY-106\ngetEffectivePrice()"]:::blocked
-    US108["US-PAY-108\nFounding 100 seed"]:::blocked
+    US108["US-PAY-108\nFounding 100 seed\n(superseded)"]:::done
   end
 
   subgraph M3["M-PAY-03 — Billing Integration"]
     US109["US-PAY-109\nRazorpay Plan IDs"]:::blocked
     US111["US-PAY-111\nWebhook/entitlement map"]:::blocked
-    US110["US-PAY-110\nCheckout offer_id"]:::blocked
+    US110["US-PAY-110\nCheckout promo Plan"]:::ready
   end
 
   subgraph M4["M-PAY-04 — Pricing Page Relaunch"]
@@ -244,7 +244,7 @@ flowchart LR
   US102 --> US109
   US109 --> US111
   US106 --> US110
-  US108 --> US110
+  US109 --> US110
   US109 --> US110
   US102 --> US112
   US106 --> US112
@@ -285,7 +285,8 @@ flowchart LR
   |-------|----------|-------|
   | `RAZORPAY_PLAN_PRO_MONTHLY` / `_ANNUAL` | new env vars, human-created in Razorpay dashboard | `.env`, `payments.service.ts:25-53` |
   | `RAZORPAY_PLAN_AGENCY_MONTHLY` / `_ANNUAL` | new env vars, human-created in Razorpay dashboard | `.env`, `payments.service.ts:25-53` |
-  | `RAZORPAY_OFFER_FOUNDING_<TIER>` | new Razorpay Offer IDs, human-created for the Founding campaign | `PricingCampaign.tierDiscounts` JSON |
+  | ~~`RAZORPAY_OFFER_FOUNDING_<TIER>`~~ | ❌ **retired 2026-08-27** — Offers unused; removed from `.env.example` | — |
+  | `RAZORPAY_PLAN_<TIER>_<INTERVAL>_<CAMPAIGN_CODE>` | promo Plan IDs — a promo is its own price-immutable Plan | `.env`, `payments.service.ts` `getExternalPlanId()` |
 
 For the visual diagram see [ARCHITECTURE.mmd](./ARCHITECTURE.mmd).
 For environment variables see [ENV.yaml](./ENV.yaml).
@@ -403,6 +404,48 @@ For environment variables see [ENV.yaml](./ENV.yaml).
   `US-PAY-109`'s human task (Razorpay Plan objects) — this story is about correct price *display*.
 - **Next in the V2 chain**: `US-PAY-113` (responsive layout + comparison table, depends on 112 —
   done) can now proceed; `US-PAY-110` stays blocked on `US-PAY-109`'s human task.
+
+### 2026-08-27 — Pricing module simplified; US-PAY-108 closed as superseded
+
+**A promotion is a price, not a discount.** The percentage arithmetic in `getEffectivePrice()`
+(`Math.round(regular * (1 - pct/100))`, applied independently to monthly and annual) was deleted
+and replaced with a lookup against authored prices in `PLAN_CONFIG[tier].promoPrices`. A promo is
+its own price-immutable Razorpay Plan object, which checkout selects instead of the list-price one.
+
+The split this lands on — the one most SaaS billing systems use — is **prices in code** (reviewed
+in a PR, diffable, versioned) and **activation state in the DB** (start/stop without a deploy). It
+also makes "promotions never stack" structurally impossible to violate: a customer is on exactly
+one Plan, so there is no second discount to compose with.
+
+What that removed:
+- `tierDiscounts` percentages, the `PERCENT`/`FLAT` discriminator, its range validation, and the
+  throwing branch for the composition case nobody had decided. The column remains on the model,
+  written as `{}` and read by nothing — dropping it needs a migration, deliberately not done in
+  the same change that alters pricing behaviour.
+- **Razorpay Offers entirely.** `HUMAN_TASKS.md` §7 retired, `RAZORPAY_OFFER_FOUNDING_*` removed
+  from `.env.example`. Do not create those objects.
+
+**A real bug closed on the way:** `PricingCampaign.redemptionsUsed` was read to enforce the
+redemption cap and written **nowhere** in the codebase — a "Founding 100" campaign would have run
+past 100 indefinitely. Now `tryConsumeRedemption()`, atomic, with the cap in the `WHERE` clause of
+a conditional `updateMany` so concurrent checkouts at the boundary cannot both win. Landed under
+`US-PAY-110` AC4, which owns the increment by `US-PAY-108`'s own Out of Scope.
+
+Story outcomes:
+- **`US-PAY-108` ⏭️ superseded, closed.** AC2 shipped and stands; AC1 partly survives in the
+  authored-price shape; AC3 (Offer objects) and AC4 (percentages) are void — their subjects no
+  longer exist. It was blocked on AC3, which can now never be satisfied.
+- **`US-PAY-110` rescoped, code-complete.** AC1 (`offer_id`) void, replaced by promo Plan
+  selection; AC2/AC3/AC4 implemented. Its dependency on `US-PAY-108` is gone.
+- The checkout guard inverted: `CAMPAIGN_NOT_APPLICABLE_AT_CHECKOUT` →
+  `PROMO_PLAN_NOT_CONFIGURED`. Same protection (never charge more than advertised), new trigger.
+
+Gate 1: `npm run check` 0 errors; `npm run test:unit` 426/426 backend + 14/14 frontend suites.
+
+**Still a product decision, not engineering:** the founding price itself, and whether Founding-100
+runs at all. The machinery is in place and inert until a price is authored. Per the
+promotional-pricing PRD, it should wait for the first real ₹ transaction (`US-LAUNCH-005` AC6),
+and founding should be annual-only (R1).
 
 ### 2026-08-23 — US-PAY-108 code done, blocked on T0 (human Offer objects)
 - Extended `US-PAY-106`'s `getEffectivePrice()` with the redemption-cap check (AC2) — that

@@ -9,8 +9,9 @@ updated: 2026-08-25
 
 > **Epic:** [EPIC-PAY-05](../EPIC.md)
 > **Feature:** F-PAY-02
-> **Status:** 🟡 In Progress — US-PAY-105/106/107 code-complete (manual/PR still open);
-> US-PAY-108 code-complete but blocked on T0 HUMAN task (real Razorpay Offer objects)
+> **Status:** 🟡 In Progress — **no story is blocked.** US-PAY-105/106/107 code-complete
+> (manual/PR still open); US-PAY-108 ⏭️ **closed as superseded 2026-08-27**. Remaining work is
+> manual verification + the milestone PR.
 > **Target date:** TBD
 > **Branch:** `feat/pay/m-01-pricing-relaunch`
 > **Version:** **Mixed** — US-PAY-107 is V1 (ships before the first real ₹ transaction); US-PAY-105,
@@ -35,7 +36,7 @@ frontend and checkout never compute price independently.
 | 1 | [US-PAY-105](../stories/US-PAY-105/STORY.md) | PricingCampaign Prisma model + migration | S | — | ✅ (code) | — | V2 |
 | 1 | [US-PAY-107](../stories/US-PAY-107/STORY.md) | Standing annual-discount formula (×10) | S | US-PAY-102 (M-PAY-01) | ✅ (code) | — | **V1** |
 | 2 | [US-PAY-106](../stories/US-PAY-106/STORY.md) | `getEffectivePrice()` resolution service | M | US-PAY-102, US-PAY-105 | ✅ (code) | — | V2 |
-| 3 | [US-PAY-108](../stories/US-PAY-108/STORY.md) | Founding Customer 100 campaign seed + Offer linkage | M | US-PAY-105, US-PAY-106 | 🟡 (blocked) | — | V2 |
+| 3 | [US-PAY-108](../stories/US-PAY-108/STORY.md) | ~~Founding Customer 100 campaign seed + Offer linkage~~ | M | US-PAY-105, US-PAY-106 | ⏭️ **Superseded** | — | V2 |
 
 ---
 
@@ -59,10 +60,16 @@ frontend and checkout never compute price independently.
 
 ## Notes / Blockers
 
-- Requires `RAZORPAY_OFFER_FOUNDING_*` Offer objects created in the Razorpay dashboard before
-  US-PAY-108 can complete — human task, see [ENV.yaml](../ENV.yaml).
-- The campaign/annual composition rule is a real product decision, not an implementation detail —
-  don't let `US-PAY-106` silently pick a direction without confirming it first.
+- ~~Requires `RAZORPAY_OFFER_FOUNDING_*` Offer objects created in the Razorpay dashboard before
+  US-PAY-108 can complete~~ — **void 2026-08-27.** Razorpay Offers are not used at all; a promo is
+  its own price-immutable Plan object. The env vars were removed from `.env.example` and
+  `HUMAN_TASKS.md` §7 is retired. **Do not create those Offer objects.**
+- ~~The campaign/annual composition rule is a real product decision~~ — **settled 2026-08-27, by
+  removing the composition.** Promo prices are authored per tier/interval, so there is no
+  percentage to compose with the annual price and no ordering question left to get wrong.
+- **Still open, and it is a product decision, not engineering:** the founding price itself, and
+  whether Founding-100 runs at all. The PRD argues it should wait for the first real ₹ transaction
+  (`US-LAUNCH-005` AC6). When decided, write a new story against the authored-price model.
 
 ---
 

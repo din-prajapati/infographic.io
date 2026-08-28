@@ -113,7 +113,11 @@ cd api && npx vitest run tests/payments/pricing-resolution.service.spec.ts --rep
 
 ## Task Checklist
 
-- [ ] T0 — **HUMAN, still open**: 4 Razorpay Offer objects created (IDs recorded) — folded into
+- [x] ~~T0 — HUMAN: 4 Razorpay Offer objects~~ — ❌ **RETIRED 2026-08-27, do not create them.**
+      Razorpay Offers are no longer used anywhere: a promo is its own price-immutable Plan object,
+      so there is nothing left for an Offer to discount. `HUMAN_TASKS.md` §7 is struck out and the
+      4 `RAZORPAY_OFFER_FOUNDING_*` vars are removed from `.env.example`. Ticked as resolved
+      because the task is void, not because it was performed — folded into
       `US-PAY-109`'s consolidated dashboard task, see `HUMAN_TASKS.md` #6/#7
 - [x] T1 — seed script (file: `api/scripts/seed-founding-campaign.ts`, type: `feat`) — commit
       `40076f7`. **Deviation:** `api/scripts/`, not `api/prisma/` as originally listed
@@ -121,10 +125,14 @@ cd api && npx vitest run tests/payments/pricing-resolution.service.spec.ts --rep
 - [x] T3 — redemption-cap test — commit `47ebff8` (`pricing-resolution.service.spec.ts` +
       new `founding-campaign-pricing.spec.ts` for AC4's exact percentages)
 - [x] Gate 1 passes ✅ — `npm run test:unit:backend` (410/410)
-- [ ] Gate 4 passes — not separately run this pass
-- [ ] Manual test verified — blocked on T0
+- [x] Gate 4 — **N/A**, story closed as superseded 2026-08-27 (not shipped as written)
+- [x] EPIC.md "Implementation Update" log appended for the supersede decision ✅
+- [ ] Manual test verified — **cannot run**: needs an authored founding price + its promo Plan
+      objects, neither of which exists. Blocked on a product decision, not on engineering
 - [ ] PR opened with story card as description — pending (milestone PR)
-- [ ] STORY.md ACs ticked off — AC1/2/4 done, AC3 blocked on T0
+- [x] STORY.md ACs reconciled 2026-08-27 — AC2 shipped and stands; AC1 partly survives in the
+      authored-price shape; **AC3 and AC4 are void** (Offers gone, percentages gone). See STORY.md
+      "What 2026-08-27 changed" for the AC-by-AC table
 - [x] EPIC.md "Implementation Update" log appended ✅
 
 ---

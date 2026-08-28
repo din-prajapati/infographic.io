@@ -14,62 +14,62 @@ updated: 2026-08-21
 
 ---
 
+> ⚠️ **Rescoped 2026-08-27.** The `offer_id` mechanism below was replaced by promo Plan selection
+> when the pricing module was simplified. T1 is rewritten, T2/T3 are done. See STORY.md
+> "What 2026-08-27 changed".
+
 ## Four Pillars Pre-flight
 
-- [ ] **Brain** — STORY.md filled
-- [ ] **Muscle** — T1-T3 with exact test commands
+- [x] **Brain** — STORY.md filled, ACs rewritten to the implemented mechanism
+- [x] **Muscle** — T1-T3 below with exact test commands
 - [ ] **Map** — [ARCHITECTURE.mmd](../../ARCHITECTURE.mmd) exists
-- [ ] **Env** — [ENV.yaml](../../ENV.yaml) loaded
+- [ ] **Env** — [ENV.yaml](../../ENV.yaml) — needs the `RAZORPAY_PLAN_<TIER>_<INTERVAL>_<CODE>` pattern added
 
 ---
 
 ## PR Scope Summary
 
-**One-liner:** Checkout resolves price server-side and passes offer_id to Razorpay — never trusts a client-computed discount.
+**One-liner:** Checkout resolves price server-side and selects the promo's own Razorpay Plan — never trusts a client-computed discount, never falls back to list price under a promo.
 
 ```
-feat(pay): resolve price server-side, pass offer_id at checkout — US-PAY-110
+feat(pay): select the promo Plan at checkout + close the redemption cap — US-PAY-110
 ```
 
 ---
 
 ## Task Breakdown
 
-### T1 — createSubscription() uses getEffectivePrice() + offer_id
+### ~~T1 — createSubscription() uses getEffectivePrice() + offer_id~~ → **T1′ (done)**
 - **File:** `api/src/modules/payments/services/payments.service.ts`
 - **Type:** `feat`
-- **AC(s) covered:** AC1, AC2, AC3
-- **Changes:**
-  - `createSubscription()` calls `getEffectivePrice(tier, interval)` server-side, ignoring any
-    client-supplied price field entirely
-  - If a campaign is active and covers the requested tier, pass `offer_id` in the Razorpay
-    subscription-creation payload
-  - If the active campaign does not cover the requested tier, do not pass an `offer_id` (regular
-    price applies) — reject only if the *client* explicitly requested a specific offer_id not valid
-    for that tier
-
-**Commit:**
-```bash
-git add api/src/modules/payments/services/payments.service.ts
-git commit -m "feat(pay): resolve price server-side, pass offer_id at checkout — US-PAY-110"
-```
+- **AC(s) covered:** AC1′, AC2, AC3
+- **Superseded:** Razorpay Offers are not used. A promo is a separate price-immutable Plan object,
+  so there is nothing to pass an `offer_id` for.
+- **Changes as implemented:**
+  - [x] `createSubscription()` calls `getEffectivePrice(tier, interval)` server-side, ignoring any
+        client-supplied price field entirely
+  - [x] `getExternalPlanId()` gained a promo dimension — resolves
+        `RAZORPAY_PLAN_<TIER>_<INTERVAL>_<CAMPAIGN_CODE>` when a promo applies
+  - [x] The old `CAMPAIGN_NOT_APPLICABLE_AT_CHECKOUT` guard inverted into
+        `PROMO_PLAN_NOT_CONFIGURED` — blocks when a promo price is advertised with no Plan behind
+        it, rather than silently charging list
 
 ---
 
-### T2 — Atomic redemption increment
+### T2 — Atomic redemption increment ✅ **done**
 - **File:** `api/src/modules/payments/services/pricing-campaign.service.ts`
 - **Type:** `feat`
 - **AC(s) covered:** AC4
-- **Changes:**
-  - `incrementRedemption(campaignId)` — atomic `UPDATE ... SET redemptionsUsed = redemptionsUsed + 1
-    WHERE id = ? AND redemptionsUsed < maxRedemptions RETURNING *` (or Prisma transaction
-    equivalent), called on successful subscription creation only
-
-**Commit:**
-```bash
-git add api/src/modules/payments/services/pricing-campaign.service.ts
-git commit -m "feat(pay): atomic redemption-count increment — US-PAY-110"
-```
+- **Changes as implemented:**
+  - [x] `tryConsumeRedemption(code)` — conditional `updateMany` with the cap in the `WHERE` clause
+        (`redemptionsUsed < maxRedemptions`, or `maxRedemptions IS NULL`), returning whether it was
+        consumed. Postgres serialises the conditional update, so no transaction or row lock is
+        needed and none is held across the provider call.
+  - [x] Called from `PaymentsService` after a promo-priced subscription is created. Non-fatal on
+        failure — the subscription already exists, and failing the request would tell a customer
+        their checkout failed when it did not.
+  - **Why this mattered:** `redemptionsUsed` was read to enforce the cap and written **nowhere** in
+    the codebase. A "Founding 100" campaign would never have stopped at 100.
 
 ---
 
@@ -110,15 +110,20 @@ cd api && npx vitest run tests/payments/payments.service.spec.ts --reporter=verb
 
 ## Task Checklist
 
-- [ ] T1 — server-side price resolution + offer_id (file: `payments.service.ts`, type: `feat`)
-- [ ] T2 — atomic redemption increment (file: `pricing-campaign.service.ts`, type: `feat`)
-- [ ] T3 — unit tests (file: `payments.service.spec.ts`, type: `test`)
-- [ ] Gate 1 passes ✅
-- [ ] Gate 4 passes ✅
-- [ ] Manual test verified ✅ (real staging checkout under active campaign)
-- [ ] PR opened with story card as description ✅
-- [ ] STORY.md ACs ticked off ✅
-- [ ] EPIC.md "Implementation Update" log appended ✅
+- [x] T1′ — server-side price resolution + **promo Plan selection** (file: `payments.service.ts`,
+      type: `feat`) — `offer_id` half superseded 2026-08-27, see the task breakdown above
+- [x] T2 — atomic redemption increment (file: `pricing-campaign.service.ts`, type: `feat`)
+- [x] T3 — unit tests (files: `payments.service.spec.ts`, `pricing-campaign.service.spec.ts`,
+      `pricing-resolution.service.spec.ts`, type: `test`)
+- [x] Gate 1 passes ✅ — `npm run check` (0 errors) + `npm run test:unit` (426/426 backend,
+      14/14 frontend suites), 2026-08-27
+- [ ] Gate 4 passes — not separately run this pass
+- [ ] Manual test verified — **cannot run yet**: requires an active campaign, which requires an
+      authored founding price and its 4 annual promo Plan objects. None exist. Blocked on a product
+      decision, not on engineering
+- [ ] PR opened with story card as description — pending (milestone PR)
+- [x] STORY.md ACs ticked off ✅ — AC1 void/replaced by AC1′; AC1′/AC2/AC3/AC4 all implemented
+- [ ] EPIC.md "Implementation Update" log appended
 
 ---
 
