@@ -82,6 +82,9 @@ A **prerequisite**, not a follow-up — the story (durable asset storage, moving
 expiring CDN and the container's ephemeral tmp dir) can't start implementation until real R2
 buckets + API tokens exist. No AI agent can self-provision third-party cloud credentials.
 
+📋 **Step-by-step runbook: [`docs/setup/CLOUDFLARE_R2_SETUP.md`](../setup/CLOUDFLARE_R2_SETUP.md)**
+— dashboard paths, a values worksheet, and the verification commands. ~20 minutes.
+
 **Two buckets and two tokens, not one of each** (scoped 2026-08-30):
 
 | Step | Detail |

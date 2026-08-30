@@ -87,8 +87,10 @@
 ## 5a. Object Storage — Cloudflare R2 (EPIC-INFRA-02, not yet provisioned)
 
 > **Not configured anywhere yet.** Listed here so the contract exists before anyone
-> provisions the buckets. Human prerequisite is `HUMAN_TASKS` #5; the full setup steps live
-> in [`EPIC-INFRA-02/ENV.yaml`](../agile/epics/phase-1-ai-core/EPIC-INFRA-02/ENV.yaml).
+> provisions the buckets. Human prerequisite is `HUMAN_TASKS` #5.
+>
+> 📋 **Step-by-step: [`CLOUDFLARE_R2_SETUP.md`](./CLOUDFLARE_R2_SETUP.md)** ·
+> machine-readable: [`EPIC-INFRA-02/ENV.yaml`](../agile/epics/phase-1-ai-core/EPIC-INFRA-02/ENV.yaml)
 
 | Variable | Local | Staging | Production | Per-env / Shared | Source | Notes |
 |----------|-------|---------|------------|-----------------|--------|-------|
