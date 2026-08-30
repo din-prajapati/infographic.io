@@ -595,6 +595,9 @@ export default function PricingPage() {
       features: config.features,
       designLimit: config.limit,
       editableLimit: config.editableLimit,
+      // -1 = unlimited seats. Drives the shared-pool line below: it only needs saying on a
+      // tier that can actually have more than one person in it.
+      userLimit: config.userLimit,
       monthly: pricing?.monthly,
       annual: pricing?.annual,
     };
@@ -981,6 +984,15 @@ export default function PricingPage() {
                           {plan.designLimit === -1 ? "Unlimited" : plan.designLimit} AI Marketing Designs / mo
                         </div>
                         <div className="text-[11px] text-[#68645e] mt-0.5">{bulletsData.firstLineDetail}</div>
+                        {/* The design allowance is ONE pool per organisation, counted against
+                            Organization.monthlyLimit — not per seat. On a multi-seat tier a buyer
+                            can reasonably read "5 users, 200 designs" as 200 EACH, so say which
+                            it is on the card rather than leaving it to be discovered at the cap. */}
+                        {plan.userLimit !== 1 && (
+                          <div className="text-[11px] text-[#68645e]">
+                            Shared across your whole team — one pool, not {plan.designLimit} per person.
+                          </div>
+                        )}
                         <div className="text-[11px] text-[#68645e]">Generated designs remain in your library.</div>
                       </div>
                       {bulletsData.bullets.map((bullet) => (
@@ -1088,7 +1100,14 @@ export default function PricingPage() {
                         </td>
                       </tr>
                       <tr>
-                        <td className="p-4 px-5 font-semibold text-[#1e1c1a]">AI Marketing Designs / mo</td>
+                        <td className="p-4 px-5 font-semibold text-[#1e1c1a]">
+                          AI Marketing Designs / mo
+                          {/* Stated once, on the row the number actually lives on — the allowance
+                              is org-wide (Organization.monthlyLimit), never per seat. */}
+                          <div className="font-normal text-[11px] text-[#68645e] mt-0.5">
+                            Shared across everyone on the plan
+                          </div>
+                        </td>
                         {realPlans.map((plan) => (
                           <td
                             key={plan.tier}

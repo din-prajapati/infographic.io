@@ -1,5 +1,6 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { PlanTier, SubscriptionStatus } from '@prisma/client';
+import { PLAN_CONFIG, type PlanTier as SharedPlanTier } from '@shared/schema';
 import { prisma } from '../../database/prisma.client';
 
 export interface UserLimitConfig {
@@ -7,15 +8,32 @@ export interface UserLimitConfig {
   monthlyLimit: number;
 }
 
-export const PLAN_USER_LIMITS: Record<string, UserLimitConfig> = {
-  free: { userLimit: 1, monthlyLimit: 3 },
-  solo: { userLimit: 1, monthlyLimit: 50 },
-  team: { userLimit: 5, monthlyLimit: 200 },
-  brokerage: { userLimit: -1, monthlyLimit: 1000 }, // -1 = unlimited
-  api_starter: { userLimit: 1, monthlyLimit: 5000 },
-  api_growth: { userLimit: 3, monthlyLimit: 20000 },
-  api_enterprise: { userLimit: -1, monthlyLimit: -1 }, // unlimited
-};
+/**
+ * Per-tier seat and volume limits, DERIVED from PLAN_CONFIG — never hand-maintained.
+ *
+ * This was a hardcoded table listing only free/solo/team/brokerage/api_*. It was missing
+ * **PRO and AGENCY**, and `getUserLimit()` falls back to `?? 1` for an unknown tier, so:
+ *
+ *   AGENCY advertises "Unlimited users" and enforcement allowed exactly ONE.
+ *
+ * A customer paying ₹43,999/mo would have been blocked adding their second seat. PRO was
+ * wrong too, but harmlessly — its real limit is 1, which is what the fallback happened to
+ * return. A silent fallback is what turned a missing row into wrong behaviour instead of a
+ * crash; deriving the table removes the possibility rather than fixing the two symptoms.
+ *
+ * This is the second duplicate of PLAN_CONFIG found in this codebase. The first,
+ * `EDITABLE_LIMITS_BY_TIER`, had the identical defect — missing PRO and AGENCY, silent
+ * fallback — and was retired under US-PAY-103 for the same reason. This one was left behind.
+ *
+ * Keys are lowercased tier names (`api_starter`, not `API_STARTER`) because every caller
+ * looks up with `planTier.toLowerCase()`.
+ */
+export const PLAN_USER_LIMITS: Record<string, UserLimitConfig> = Object.fromEntries(
+  (Object.keys(PLAN_CONFIG) as SharedPlanTier[]).map((tier) => [
+    tier.toLowerCase(),
+    { userLimit: PLAN_CONFIG[tier].userLimit, monthlyLimit: PLAN_CONFIG[tier].limit },
+  ]),
+);
 
 @Injectable()
 export class UsersService {
