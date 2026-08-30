@@ -12,7 +12,7 @@ updated: 2026-08-19
 > **Epic:** [EPIC-INFRA-02](../../EPIC.md)
 > **Milestone:** [M-INFRA-01-durable-asset-storage](../../milestones/M-INFRA-01-durable-asset-storage.md)
 > **Linear:** LIN-XXX
-> **Size:** S
+> **Size:** S → **M** (AC6 + T5/T6 added 2026-08-30 — the bucket/environment boot guard)
 > **Created:** 2026-08-19 | **Closed:** —
 
 ---
@@ -38,6 +38,25 @@ updated: 2026-08-19
 - [ ] **AC4 [happy-path]:** `api/src/modules/storage/storage.module.ts` is decorated with `@Global()`, lists `StorageService` in both `providers` and `exports`, and `api/src/app.module.ts` imports `StorageModule` in its `imports` array — verified by reading each file (static inspection; no runtime call needed). Any NestJS service in any other module can declare `StorageService` in its constructor without re-providing it in that module's `providers`.
 
 - [ ] **AC5 [edge-case]:** All five env vars — `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`, `R2_PUBLIC_URL` — appear as placeholder (non-secret, example) entries in `.env.example`. Provisioning the actual Cloudflare R2 bucket and generating the API token are documented as a human prerequisite in `docs/agile/epics/phase-1-ai-core/EPIC-INFRA-02/ENV.yaml` (file already exists and already contains all five vars as of story creation; Claude must not add real credential values to any committed file).
+
+- [ ] **AC6 [security]:** `api/src/config/env.validation.ts` aborts boot when `R2_BUCKET_NAME` is set, `APP_ENV` is not `production`, and `R2_BUCKET_NAME` does not contain the substring `staging` — with an error naming the offending variable and its value. When `APP_ENV` **is** `production`, no such check applies. When `R2_BUCKET_NAME` is **absent**, boot proceeds unaffected (R2 is unconfigured until the human prerequisite is done, and this story must not brick an environment that has not been provisioned yet). Verified by unit tests in `api/tests/config/env.validation.spec.ts` covering all four cases: staging + non-staging bucket → throws; staging + staging bucket → passes; production + non-staging bucket → passes; bucket absent → passes.
+
+  > **Why this AC exists.** Every other guard in this codebase leans on the provider separating
+  > environments for us. RazorPay has test and live modes as distinct namespaces, so
+  > `env.validation.ts` only has to check a key *prefix*. **R2 has no equivalent.** One bucket can
+  > serve every environment, staging and production credentials are structurally identical, and
+  > `R2_ACCOUNT_ID` is the same value in both — so nothing about a production token makes it fail
+  > when used from staging.
+  >
+  > The failure this prevents is not a crash. It is staging silently writing into the bucket that
+  > serves real customers' assets, discovered only when something is overwritten. Fail-closed at
+  > boot is the cheapest place to catch it, and it is the same fail-closed pattern US-LAUNCH-010
+  > already established for the RazorPay key-mode guard.
+  >
+  > The substring match is deliberately dumb. A stricter rule (an allow-list of bucket names, or
+  > requiring an exact name per environment) is one more thing to keep in sync with Cloudflare, and
+  > the naming convention in `ENV.yaml` already requires `staging` in every non-production bucket
+  > name.
 
 ---
 
@@ -155,6 +174,10 @@ Rules:
 | TC-INFRA-001-03 | Unit (Vitest) | P1 | Given `R2_PUBLIC_URL='https://assets.buildographic.com'`, when `getPublicUrl('composed/abc123.png')` is called, then it synchronously returns `'https://assets.buildographic.com/composed/abc123.png'` and `S3Client.send` is never invoked | 🔲 | |
 | TC-INFRA-001-04 | Unit (Vitest) | P1 | Given `upload()` is called without a `contentType` argument (third param omitted), when the `PutObjectCommand` is constructed inside the service, then `ContentType` defaults to `'application/octet-stream'` — verified by inspecting the captured `PutObjectCommand` argument in the mock | 🔲 | |
 | TC-INFRA-001-05 | Manual | P1 | Given the Cloudflare R2 bucket has been provisioned and all five `R2_*` vars are set in `.env`, when `npm run dev` is started and `GET /api/v1/health` is called, then the server starts without any `StorageService` constructor error and returns HTTP 200 | 🔲 | |
+| TC-INFRA-001-06 | Unit (Vitest) | **P0** | Given `APP_ENV='staging'` and `R2_BUCKET_NAME='buildographic-assets'` (the production bucket), when `validate()` runs, then it throws and the message names `R2_BUCKET_NAME` and the offending value — this is the misconfiguration that silently writes staging data into production assets | 🔲 | |
+| TC-INFRA-001-07 | Unit (Vitest) | P0 | Given `APP_ENV='staging'` and `R2_BUCKET_NAME='buildographic-assets-staging'`, when `validate()` runs, then it returns normally | 🔲 | |
+| TC-INFRA-001-08 | Unit (Vitest) | P0 | Given `APP_ENV='production'` and `R2_BUCKET_NAME='buildographic-assets'`, when `validate()` runs, then it returns normally — the guard must not fire in the one environment allowed to use the production bucket | 🔲 | |
+| TC-INFRA-001-09 | Unit (Vitest) | P0 | Given `APP_ENV='staging'` and `R2_BUCKET_NAME` **unset**, when `validate()` runs, then it returns normally — R2 is unprovisioned until the human prerequisite is done, and this story must not brick an environment that has not been configured yet | 🔲 | |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 

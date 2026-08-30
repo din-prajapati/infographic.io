@@ -35,7 +35,7 @@ within a phase, in the order they unblock downstream work.
 | 2 | Phase 0 | EPIC-INFRA-01 | Phase 0 Task 3, rows P-15/16/17 | Full production smoke test (3D) — unrun since the domain/keys work landed | 🔲 |
 | 3 | Phase 1 | EPIC-LAUNCH-01 | US-LAUNCH-005 AC5 | Run `npm run verify:payment-prereqs` against production config | 🔲 |
 | 4 | Phase 1 | EPIC-LAUNCH-01 | US-LAUNCH-005 AC6 | One real ₹ subscription on production (smallest plan) → verify webhook activates it → refund/cancel from dashboard | 🔲 — **deliberately held**, needs your explicit go-ahead |
-| 5 | Phase 1 | EPIC-INFRA-02 | US-INFRA-001 | Provision a Cloudflare R2 bucket + S3-compatible API token | 🔲 — **blocks the story starting**, not just finishing |
+| 5 | Phase 1 | EPIC-INFRA-02 | US-INFRA-001 | Provision **two** Cloudflare R2 buckets (staging + production) and **two** API tokens, each scoped to its own bucket. R2 has no test/live mode, so the token scope is the only isolation — see §5 | 🔲 — **blocks the story starting**, not just finishing |
 | 6 | Phase 1 | EPIC-PAY-05 (V1) | US-PAY-109 T0 | Create **8** Razorpay Plan objects per tier×interval — see §6 for the exact amounts (annual figures corrected 2026-08-27: they were stale ×10-derived values, superseded by `PLAN_CONFIG`'s authored prices). Naming: `BG-<TIER>-<INTERVAL>-<YYYY>-<MM>`. **Amount field takes rupees, not paise.** | ◐ — **Test mode ✅ done** (2026-08-27, all 8 verified); **Live mode 🔲 pending** for production |
 | ~~7~~ | ~~Phase 1~~ | ~~EPIC-PAY-05 (V2)~~ | ~~US-PAY-108 T0~~ | ~~Create 4 Razorpay Offer objects (Founding-100 discount)~~ | ❌ **RETIRED 2026-08-27** — Razorpay Offers are no longer used at all. See §7 |
 | 8 | Phase 0 | EPIC-LAUNCH-01 | US-LAUNCH-001 | Final legal review of Terms/Privacy/Refund wording — drafted content is a starting point, not legal advice, and these pages are already live in production | 🔲 — standing item, no deadline set |
@@ -79,8 +79,34 @@ code shipped and verified). AC5/6 remain:
 ### 5. US-INFRA-001 — Cloudflare R2
 **Source:** [`EPIC-INFRA-02/stories/US-INFRA-001/TASKS.md`](epics/phase-1-ai-core/EPIC-INFRA-02/stories/US-INFRA-001/TASKS.md)
 A **prerequisite**, not a follow-up — the story (durable asset storage, moving off Ideogram's
-expiring CDN and the container's ephemeral tmp dir) can't start implementation until a real R2
-bucket + API token exist. No AI agent can self-provision third-party cloud credentials.
+expiring CDN and the container's ephemeral tmp dir) can't start implementation until real R2
+buckets + API tokens exist. No AI agent can self-provision third-party cloud credentials.
+
+**Two buckets and two tokens, not one of each** (scoped 2026-08-30):
+
+| Step | Detail |
+|---|---|
+| 1 | Enable R2 on the Cloudflare account — needs a payment method even within the free allowance |
+| 2 | Create `buildographic-assets` (production) and `buildographic-assets-staging` |
+| 3 | Create **two** API tokens, each **scoped to one bucket**, Object Read & Write |
+| 4 | Note the Account ID — one per account, **shared** by both environments |
+| 5 | Public access — **production**: attach custom domain `assets.buildographic.com`. **Staging**: enable the managed `r2.dev` subdomain, **no custom domain** (decided 2026-08-30) |
+| 6 | DNS: nothing to do by hand. `buildographic.com` is already on Cloudflare nameservers (verified 2026-08-30), so attaching the custom domain in step 5 creates the record automatically |
+
+⚠️ **Why two, when RazorPay needed only one set per mode.** RazorPay separates environments at
+the provider — test and live are distinct namespaces, and a live key outside production aborts
+boot. **R2 has no test/live mode.** One bucket can serve every environment, staging and
+production credentials are structurally identical, and `R2_ACCOUNT_ID` is the *same value* in
+both — so nothing about a production token makes it fail when used from staging.
+
+The failure that guards against is not a crash: it is staging silently writing into the bucket
+serving real customers' assets, noticed only when something is overwritten. Two things prevent
+it, and both are needed — **per-bucket token scoping** (step 3) and **US-INFRA-001 AC6's boot
+guard**, which refuses to start a non-production environment pointed at a bucket whose name
+lacks a `staging` marker.
+
+Full variable matrix: [`EPIC-INFRA-02/ENV.yaml`](epics/phase-1-ai-core/EPIC-INFRA-02/ENV.yaml)
+and [`docs/setup/ENVIRONMENTS.md`](../setup/ENVIRONMENTS.md) §5a.
 
 ### 6. US-PAY-109 — Razorpay Plan objects (new tiers + repriced tiers)
 **Source:** [`EPIC-PAY-05/stories/US-PAY-109/TASKS.md`](epics/phase-1-ai-core/EPIC-PAY-05/stories/US-PAY-109/TASKS.md)

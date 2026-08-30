@@ -114,6 +114,53 @@ git commit -m "test(infra): cover StorageService upload/getPublicUrl — US-INFR
 
 ---
 
+### T5 — Bucket-environment boot guard
+- **File:** `api/src/config/env.validation.ts`
+- **Type:** `feat`
+- **AC(s) covered:** AC6
+- **Changes:**
+  - Add the five `R2_*` vars to `envSchema` as `z.string().optional()` — **optional, not
+    required.** R2 is unprovisioned until `HUMAN_TASKS` #5 is done, and a required-set entry
+    would crash-loop every environment the moment this merges. Same failure mode
+    `US-LAUNCH-010/Pre-requisite-story.md` documents for the RazorPay block.
+  - After the existing RazorPay key-mode guard, add: when `R2_BUCKET_NAME` is set **and**
+    `appEnv !== 'production'` **and** the name has no `staging` substring, push a mismatch and
+    throw with the same aggregated-error shape the RazorPay guard uses.
+  - Extend the existing boot log line so a successful check is visible, matching
+    `razorpayNote`'s precedent (`'R2 bucket/env verified'` / `'R2 unconfigured, guard skipped'`).
+- **Why not a separate module:** this guard belongs beside the RazorPay one. Both answer
+  "is this environment pointed at the right external resources", both fail closed at boot, and
+  splitting them means two places to look when a deploy will not start.
+
+**Commit:**
+```bash
+git add api/src/config/env.validation.ts
+git commit -m "feat(infra): refuse to boot a non-prod env pointed at the prod R2 bucket — US-INFRA-001"
+```
+
+---
+
+### T6 — Boot-guard tests
+- **File:** `api/tests/config/env.validation.spec.ts`
+- **Type:** `test`
+- **AC(s) covered:** AC6
+- **Changes:**
+  - TC-INFRA-001-06 — staging + production bucket → throws, message names `R2_BUCKET_NAME`
+  - TC-INFRA-001-07 — staging + staging bucket → passes
+  - TC-INFRA-001-08 — production + production bucket → passes
+  - TC-INFRA-001-09 — bucket unset → passes
+  - Assert the **specific** thrown message contains the variable name and offending value, not
+    merely that it throws — a guard that fires for the wrong reason still passes a bare
+    `toThrow()`.
+
+**Commit:**
+```bash
+git add api/tests/config/env.validation.spec.ts
+git commit -m "test(infra): cover the R2 bucket/environment boot guard — US-INFRA-001"
+```
+
+---
+
 ## File-to-Task Mapping
 
 | File | Task(s) | AC(s) | Notes |
@@ -150,6 +197,8 @@ curl http://localhost:5000/api/health
 - [ ] T2 — Register StorageModule + add dependency (file: `api/src/app.module.ts`, type: `feat`)
 - [ ] T3 — Document R2 env vars (file: `.env.example`, type: `docs`)
 - [ ] T4 — Unit tests (file: `api/tests/storage/storage.service.spec.ts`, type: `test`)
+- [ ] T5 — Bucket-environment boot guard (file: `api/src/config/env.validation.ts`, type: `feat`)
+- [ ] T6 — Boot-guard tests (file: `api/tests/config/env.validation.spec.ts`, type: `test`)
 - [ ] Gate 1 passes ✅
 - [ ] Manual test verified ✅ (TC-INFRA-001-05, once real R2 credentials exist)
 - [ ] PR opened with story card as description ✅
