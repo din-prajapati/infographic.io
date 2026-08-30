@@ -48,8 +48,14 @@ interface FeatureBullet {
  * Per-tier card feature-bullet copy, matching design-preview-pricing.html's actual bespoke
  * wording per tier (not the generic PLAN_CONFIG.features strings — those stay the entitlement
  * source of truth for the comparison table below; this is presentational-only card copy, local
- * to this page). `firstLineDetail` is the second line under the dynamic "{limit} AI Marketing
- * Designs / mo" title (always present, never omitted or invented per tier).
+ * to this page). `firstLineDetail` is the second line under the dynamic "{limit} design
+ * credits / mo" title (always present, never omitted or invented per tier).
+ *
+ * `editor` is lifted OUT of `bullets` deliberately. It used to be the first bullet in every
+ * tier's list, which buried the one capability that has its own separate allowance — opening a
+ * design in the editor spends an editable credit, not a design credit. Rendering it as its own
+ * highlighted row directly under the design-credit count puts the two meters side by side, in
+ * the order a customer actually uses them: generate, then edit.
  *
  * One deliberate change from the mockup: the mockup's SOLO card claims "PDF, JPG & PNG Export" —
  * that contradicts this same page's own FAQ ("PDF export is coming soon"). Kept the FAQ's real
@@ -58,27 +64,30 @@ interface FeatureBullet {
  */
 type PublicTier = "FREE" | "SOLO" | "PRO" | "TEAM" | "AGENCY";
 
-const planFeatureBullets: Record<PublicTier, { firstLineDetail: string; bullets: FeatureBullet[] }> = {
+const planFeatureBullets: Record<
+  PublicTier,
+  { firstLineDetail: string; editor: FeatureBullet; bullets: FeatureBullet[] }
+> = {
   FREE: {
     firstLineDetail: "Real-estate template catalog.",
+    editor: { title: "Multi-layer Canvas Editor Trial", linkText: "Explore editor →", linkHref: "#what-is-design" },
     bullets: [
       { title: "Instagram & WhatsApp formats", description: "1:1 Square & 9:16 Story sizes." },
       { title: "JPG / PNG high-res export", description: "Clean downloads with no watermarks." },
-      { title: "Multi-layer Canvas Editor Trial", linkText: "Explore editor →", linkHref: "#what-is-design" },
     ],
   },
   SOLO: {
     firstLineDetail: "All real-estate templates & styles.",
+    editor: { title: "Multi-layer Canvas Editor Included", linkText: "Edit text, colors, shapes & photos →", linkHref: "#capabilities" },
     bullets: [
-      { title: "Multi-layer Canvas Editor Included", linkText: "Edit text, colors, shapes & photos →", linkHref: "#capabilities" },
       { title: "Custom Brand Setup", description: "Agency logo, brand colors & agent headshot." },
       { title: "JPG & PNG Export", description: "High-resolution, social-ready downloads." },
     ],
   },
   PRO: {
     firstLineDetail: "Priority generation render queue.",
+    editor: { title: "Multi-layer Canvas Editor Included", linkText: "Full multi-layer customization →", linkHref: "#capabilities" },
     bullets: [
-      { title: "Multi-layer Canvas Editor Included", linkText: "Full multi-layer customization →", linkHref: "#capabilities" },
       { title: "Custom Brand Setup & Presets", description: "Logos, color palettes & agent branding." },
       { title: "All Real Estate Templates & Sizes", description: "Listings, open house, price drops & flyers." },
       { title: "Usage Dashboard & Priority Support", linkText: "Compare all features →", linkHref: "#comparison" },
@@ -86,16 +95,16 @@ const planFeatureBullets: Record<PublicTier, { firstLineDetail: string; bullets:
   },
   TEAM: {
     firstLineDetail: "High volume creative pipeline.",
+    editor: { title: "Multi-layer Canvas Editor Included", linkText: "Full multi-layer customization →", linkHref: "#capabilities" },
     bullets: [
-      { title: "Multi-layer Canvas Editor Included", linkText: "Full multi-layer customization →", linkHref: "#capabilities" },
       { title: "Organization Asset Storage", description: "Centralized logo, photos & design library." },
       { title: "Priority Support & Fast Renders", description: "Expedited generation processing." },
     ],
   },
   AGENCY: {
     firstLineDetail: "Agency-scale generation capacity.",
+    editor: { title: "Multi-layer Canvas Editor Included", linkText: "Full multi-layer customization →", linkHref: "#capabilities" },
     bullets: [
-      { title: "Multi-layer Canvas Editor Included", linkText: "Full multi-layer customization →", linkHref: "#capabilities" },
       { title: "Multi-Property Asset Organization", description: "Organize designs by property listing and style." },
       { title: "Dedicated Account Assistance", description: "Priority customer support & onboarding." },
     ],
@@ -984,16 +993,6 @@ export default function PricingPage() {
                           {plan.designLimit === -1 ? "Unlimited" : plan.designLimit} design credits / mo
                         </div>
                         <div className="text-[11px] text-[#68645e] mt-0.5">{bulletsData.firstLineDetail}</div>
-                        {/* Editable is a SECOND, separate allowance. Naming it on the card stops
-                            "Editable designs" in the feature list below reading as a capability
-                            flag when it is actually a metered quota with its own number. */}
-                        {plan.editableLimit != null && plan.editableLimit !== 0 && (
-                          <div className="text-[11px] text-[#68645e]">
-                            Plus {plan.editableLimit === -1 ? "unlimited" : plan.editableLimit} editable
-                            credit{plan.editableLimit === 1 ? "" : "s"} — a separate allowance, spent
-                            when you open a design in the editor.
-                          </div>
-                        )}
                         {/* The design allowance is ONE pool per organisation, counted against
                             Organization.monthlyLimit — not per seat. On a multi-seat tier a buyer
                             can reasonably read "5 users, 200 designs" as 200 EACH, so say which
@@ -1004,6 +1003,35 @@ export default function PricingPage() {
                           </div>
                         )}
                         <div className="text-[11px] text-[#68645e]">Generated designs remain in your library.</div>
+                      </div>
+
+                      {/* The editor and its allowance, as their OWN row — the second of the two
+                          meters. Editing is metered separately from generating, so it gets equal
+                          billing on the card instead of being the first item in a flat bullet
+                          list where it read as one capability among several. */}
+                      <div className="rounded-lg border border-[#eb5e28]/25 bg-[#fff5ee]/50 p-3 -mx-1">
+                        <div className="font-bold">{bulletsData.editor.title}</div>
+                        {plan.editableLimit != null && plan.editableLimit !== 0 ? (
+                          <div className="text-[11px] text-[#68645e] mt-0.5">
+                            {plan.editableLimit === -1 ? "Unlimited" : plan.editableLimit} editable
+                            credit{plan.editableLimit === 1 ? "" : "s"} / mo — a separate allowance,
+                            spent when you open a design in the editor.
+                          </div>
+                        ) : (
+                          /* FREE has no editableLimit in PLAN_CONFIG — its editable access is a
+                             one-off lifetime trial, not a monthly allowance, so do not print "0". */
+                          <div className="text-[11px] text-[#68645e] mt-0.5">
+                            One free trial edit — no monthly editable allowance.
+                          </div>
+                        )}
+                        {bulletsData.editor.linkText && (
+                          <a
+                            href={bulletsData.editor.linkHref}
+                            className="text-[#0066cc] text-[11px] hover:underline font-medium block mt-0.5"
+                          >
+                            {bulletsData.editor.linkText}
+                          </a>
+                        )}
                       </div>
                       {bulletsData.bullets.map((bullet) => (
                         <div key={bullet.title}>
