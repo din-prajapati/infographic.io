@@ -981,9 +981,19 @@ export default function PricingPage() {
                     <div className="space-y-4 text-xs text-[#1e1c1a]">
                       <div>
                         <div className="font-bold">
-                          {plan.designLimit === -1 ? "Unlimited" : plan.designLimit} AI Marketing Designs / mo
+                          {plan.designLimit === -1 ? "Unlimited" : plan.designLimit} design credits / mo
                         </div>
                         <div className="text-[11px] text-[#68645e] mt-0.5">{bulletsData.firstLineDetail}</div>
+                        {/* Editable is a SECOND, separate allowance. Naming it on the card stops
+                            "Editable designs" in the feature list below reading as a capability
+                            flag when it is actually a metered quota with its own number. */}
+                        {plan.editableLimit != null && plan.editableLimit !== 0 && (
+                          <div className="text-[11px] text-[#68645e]">
+                            Plus {plan.editableLimit === -1 ? "unlimited" : plan.editableLimit} editable
+                            credit{plan.editableLimit === 1 ? "" : "s"} — a separate allowance, spent
+                            when you open a design in the editor.
+                          </div>
+                        )}
                         {/* The design allowance is ONE pool per organisation, counted against
                             Organization.monthlyLimit — not per seat. On a multi-seat tier a buyer
                             can reasonably read "5 users, 200 designs" as 200 EACH, so say which
@@ -1101,11 +1111,14 @@ export default function PricingPage() {
                       </tr>
                       <tr>
                         <td className="p-4 px-5 font-semibold text-[#1e1c1a]">
-                          AI Marketing Designs / mo
-                          {/* Stated once, on the row the number actually lives on — the allowance
-                              is org-wide (Organization.monthlyLimit), never per seat. */}
+                          Design credits / mo
+                          {/* Two allowances are metered separately and are not interchangeable, so
+                              name each one on its own row rather than leaving "designs" and
+                              "editable designs" to read as one pool measured two ways. The
+                              shared-pool note is stated here, on the row the number lives on —
+                              the allowance is org-wide (Organization.monthlyLimit), never per seat. */}
                           <div className="font-normal text-[11px] text-[#68645e] mt-0.5">
-                            Shared across everyone on the plan
+                            One per AI design you generate · shared across everyone on the plan
                           </div>
                         </td>
                         {realPlans.map((plan) => (
@@ -1120,7 +1133,13 @@ export default function PricingPage() {
                         ))}
                       </tr>
                       <tr>
-                        <td className="p-4 px-5 font-semibold text-[#1e1c1a]">Editable designs / mo</td>
+                        <td className="p-4 px-5 font-semibold text-[#1e1c1a]">
+                          Editable credits / mo
+                          <div className="font-normal text-[11px] text-[#68645e] mt-0.5">
+                            One the first time you open a design in the editor · a separate
+                            allowance, not taken from your design credits
+                          </div>
+                        </td>
                         {realPlans.map((plan) => (
                           <td
                             key={plan.tier}

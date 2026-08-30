@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { AppHeader } from '../components/navigation/AppHeader';
-import { usageAnalyticsApi, paymentsApi } from '../lib/api';
+import { usageAnalyticsApi, paymentsApi, generationsApi } from '../lib/api';
 import { modelDisplayLabel } from '../lib/modelLabels';
 
 interface MonthlyUsageData {
@@ -59,6 +59,24 @@ export default function UsageDashboardPage() {
     queryKey: ['/api/v1/payments/subscription'],
     queryFn: () => paymentsApi.getSubscription(),
   });
+
+  // The two allowances are metered separately and are NOT interchangeable: generating a
+  // design spends a design credit, opening one for editing spends an editable credit.
+  // They come from two endpoints because they are two different counts server-side
+  // (UsageRecord.creditsUsed vs composed-design count), so show them as two things.
+  const { data: designQuota } = useQuery({
+    queryKey: ['/api/v1/infographics/generations/usage/quota'],
+    queryFn: () => generationsApi.getUsageQuota(),
+  });
+
+  const { data: editableQuota } = useQuery({
+    queryKey: ['/api/v1/infographics/generations/usage/quota/editable'],
+    queryFn: () => generationsApi.getEditableUsageQuota(),
+  });
+
+  /** -1 means unlimited on both quota shapes. */
+  const fmtQuota = (used: number, limit: number) =>
+    limit === -1 ? `${used} / Unlimited` : `${used} / ${limit}`;
 
   const currentPlan = subscriptionData?.subscription?.planTier || 'FREE';
   const monthlyUsage = monthlyData?.data || [];
@@ -116,6 +134,54 @@ export default function UsageDashboardPage() {
       </div>
 
       <main className="container px-6 py-8 max-w-6xl mx-auto">
+        {/* Two separate allowances, shown as two separate meters.
+            Previously this page showed neither, so "how many do I have left" was
+            unanswerable here — and the two are easy to conflate because both are
+            counted per month and both are called credits. They are not
+            interchangeable: an unused editable credit cannot generate a design. */}
+        <section className="mb-8">
+          <h2 className="text-sm font-semibold text-foreground mb-1">This month&apos;s allowances</h2>
+          <p className="text-xs text-muted-foreground mb-4">
+            Two separate credits. Generating uses a design credit; opening a design in the
+            editor uses an editable credit. One does not draw from the other.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="glass rounded-xl border border-border p-6">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-foreground">Design credits</p>
+                  <p className="text-2xl font-bold text-foreground mt-1">
+                    {designQuota ? fmtQuota(designQuota.current, designQuota.limit) : '—'}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Spent each time you generate a new design.
+                  </p>
+                  <p className="text-xs text-muted-foreground">Shared across everyone on the plan.</p>
+                </div>
+                <Zap className="h-8 w-8 text-primary shrink-0" />
+              </div>
+            </div>
+
+            <div className="glass rounded-xl border border-border p-6">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-foreground">Editable credits</p>
+                  <p className="text-2xl font-bold text-foreground mt-1">
+                    {editableQuota
+                      ? fmtQuota(editableQuota.editableUsed, editableQuota.editableLimit)
+                      : '—'}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Spent the first time you open a given design in the editor.
+                  </p>
+                  <p className="text-xs text-muted-foreground">Shared across everyone on the plan.</p>
+                </div>
+                <Users className="h-8 w-8 text-success shrink-0" />
+              </div>
+            </div>
+          </div>
+        </section>
+
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div className="glass rounded-xl border border-border p-6">
             <div className="flex items-center justify-between">
