@@ -84,6 +84,33 @@
 
 ---
 
+## 5a. Object Storage — Cloudflare R2 (EPIC-INFRA-02, not yet provisioned)
+
+> **Not configured anywhere yet.** Listed here so the contract exists before anyone
+> provisions the buckets. Human prerequisite is `HUMAN_TASKS` #5; the full setup steps live
+> in [`EPIC-INFRA-02/ENV.yaml`](../agile/epics/phase-1-ai-core/EPIC-INFRA-02/ENV.yaml).
+
+| Variable | Local | Staging | Production | Per-env / Shared | Source | Notes |
+|----------|-------|---------|------------|-----------------|--------|-------|
+| `R2_ACCOUNT_ID` | `<account-id>` | same | same | **shared** | Cloudflare dashboard → R2 | One Cloudflare account. Also forms the S3 endpoint `https://<id>.r2.cloudflarestorage.com`. Because it is shared it provides **no** isolation on its own — see the warning below. |
+| `R2_ACCESS_KEY_ID` | staging token | staging-scoped token | production-scoped token | per-env | R2 → Manage API Tokens | Scope each token to **one bucket**. This is the isolation mechanism. |
+| `R2_SECRET_ACCESS_KEY` | staging token secret | staging token secret | production token secret | per-env | R2 → Manage API Tokens | Shown once at creation. Never log, never commit. |
+| `R2_BUCKET_NAME` | `buildographic-assets-staging` | `buildographic-assets-staging` | `buildographic-assets` | per-env | R2 → bucket name | Non-production names **must** contain the literal substring `staging` — US-INFRA-001 AC6's boot guard matches on it. |
+| `R2_PUBLIC_URL` | staging bucket's `r2.dev` URL | staging bucket's `r2.dev` URL | `https://assets.buildographic.com` | per-env | R2 → bucket → public access | No trailing slash; `getPublicUrl()` joins with `/`. A wrong value produces URLs that 404 rather than failing at write time. **Only production gets a custom domain** (decided 2026-08-30) — staging uses the managed `r2.dev` subdomain, which Cloudflare rate-limits and does not recommend for production traffic. |
+
+> ⚠️ **R2 has no test/live mode.** RazorPay separates environments at the provider — a
+> `plan_...` from test mode is invisible to live, and the boot guard aborts if a live key
+> appears outside production. R2 has none of that: one bucket can serve every environment and
+> the credentials look identical. A staging deploy pointed at the production bucket would
+> write into assets real customers are being served, silently.
+>
+> Two things prevent it, and both must be done:
+> 1. **Per-bucket API token scoping** — a staging token that physically cannot reach production.
+> 2. **US-INFRA-001 AC6's boot guard** — refuses to start when `APP_ENV !== 'production'` and
+>    `R2_BUCKET_NAME` has no staging marker.
+
+---
+
 ## 6. Observability — Sentry
 
 | Variable | Local | Staging | Production | Per-env / Shared | Source | Notes |
