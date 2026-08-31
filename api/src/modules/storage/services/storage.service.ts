@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 
 /**
  * US-INFRA-001 — the single place this codebase talks to object storage.
@@ -92,6 +92,41 @@ export class StorageService {
     );
 
     return this.getPublicUrl(key);
+  }
+
+  /**
+   * Read an object back out of R2.
+   *
+   * Added by US-INFRA-003, which needs the source photo back on the server to attach to the
+   * Ideogram request. `US-INFRA-001` deliberately shipped only `upload()`/`getPublicUrl()`, and
+   * `delete()`/`list()` are still out of scope — this is the one addition an actual consumer
+   * demanded, rather than a capability added speculatively.
+   *
+   * Goes through the authenticated S3 API rather than fetching `getPublicUrl(key)`. Both would
+   * work today because the bucket is public-read, but a source photo is a customer's own upload
+   * rather than a marketing asset they intend to publish — reading it should not depend on it
+   * being world-readable. If the bucket is ever split or made private, this keeps working.
+   *
+   * Re-throws on failure, like `upload()`: the caller decides what a miss means.
+   */
+  async download(key: string): Promise<Buffer> {
+    const bucket = process.env.R2_BUCKET_NAME;
+    if (!bucket) {
+      throw new Error(
+        'StorageService cannot download: R2_BUCKET_NAME is not set. See docs/setup/CLOUDFLARE_R2_SETUP.md.',
+      );
+    }
+
+    const res = await this.getClient().send(
+      new GetObjectCommand({ Bucket: bucket, Key: key }),
+    );
+    if (!res.Body) throw new Error(`R2 returned no body for key "${key}"`);
+
+    // transformToByteArray() is the SDK's own stream collector — avoids hand-rolling stream
+    // buffering, which differs between Node streams and web streams across SDK versions.
+    const bytes = await (res.Body as { transformToByteArray: () => Promise<Uint8Array> })
+      .transformToByteArray();
+    return Buffer.from(bytes);
   }
 
   /**
