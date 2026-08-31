@@ -67,7 +67,7 @@ Two things prevent it, and you need both:
 on the R2 overview page.
 
 ```
-R2_ACCOUNT_ID = ________________________________
+R2_ACCOUNT_ID = d84f6c3d301dbd8fb220248c5784a6e7
 ```
 
 This is **shared by every environment** — the same value locally, on staging, and on production.
@@ -108,7 +108,7 @@ publicly readable to anyone with the URL.
 **Record the `r2.dev` URL it gives you:**
 
 ```
-R2_PUBLIC_URL (staging) = https://______________________________
+R2_PUBLIC_URL (staging) = https://pub-c4533d683e4e45c68ab89280d537e997.r2.dev
 ```
 
 > **Decided 2026-08-30: staging gets no custom domain.** `r2.dev` is rate-limited and Cloudflare
@@ -127,12 +127,31 @@ R2_PUBLIC_URL (staging) = https://______________________________
 1. Enter `assets.buildographic.com` → **Continue**
 2. Cloudflare shows the DNS record it will add — review it → **Connect Domain**
 
-Because the zone is already on this account, the record is created for you. Certificate issuance
-usually takes a minute or two.
+Because the zone is already on this account, the record is created for you — a `CNAME` from
+`assets` to the bucket. Certificate issuance usually takes a minute or two; the domain shows
+**Active / Enabled** when it is ready.
 
 ```
 R2_PUBLIC_URL (production) = https://assets.buildographic.com
 ```
+
+> ⚠️ **Leave "Public Development URL" DISABLED on this bucket.** The custom domain already
+> exposes it. Enabling `r2.dev` as well would add a *second* public entrance to the same objects
+> — and WAF rules, cache rules, bot management and access controls are **custom-domain-only
+> features**, so that second hostname is an unprotected route around every protection you
+> configure on the first one. It is also rate-limited, and once such a URL escapes into stored
+> content or a shared link it is awkward to retire without breaking those links.
+>
+> **One public route per bucket** is what makes `R2_PUBLIC_URL` meaningful — one bucket, one
+> hostname, no ambiguity about which URL an asset "really" has:
+>
+> | Bucket | Custom domain | Public Development URL |
+> |---|---|---|
+> | `buildographic-assets` | ✅ `assets.buildographic.com` | ❌ disabled |
+> | `buildographic-assets-staging` | ❌ none | ✅ enabled (§3) |
+>
+> The one legitimate reason to turn it on temporarily is comparing cached-through-CDN against
+> straight-from-bucket while debugging a caching problem. Turn it off again afterwards.
 
 > **No trailing slash**, here or in any env var. `StorageService.getPublicUrl()` joins with `/`,
 > so a trailing slash produces `//` in every asset URL — which mostly works, looks broken, and
@@ -142,16 +161,47 @@ R2_PUBLIC_URL (production) = https://assets.buildographic.com
 
 ## 5. Create the two scoped API tokens
 
-**R2 overview → Account details → Manage R2 API tokens → Create API token.** Do this twice.
+**R2 overview → Account details → Manage R2 API tokens.** Do this twice.
+
+### 5a. Account token, not User token
+
+The page offers two buttons. **Use "Create Account API token"** — the top one — both times.
+
+| | Account API token ✅ | User API token ❌ |
+|---|---|---|
+| Tied to | the account | **your personal login** |
+| If you leave / lose the account | keeps working | **stops working** |
+| Cloudflare's own label | "ideal for production systems (recommended)" | "ideal for personal access or development work" |
+
+A User token would make production's ability to write assets depend on one human's account
+surviving. When it broke there would be no code change and no obvious cause.
+
+### 5b. Type and scope are different choices
+
+Easy to conflate, so to be explicit — you are making **two** independent selections:
+
+| Axis | Where | Choose |
+|---|---|---|
+| **Type** | the two buttons on the tokens page | **Account** |
+| **Scope** | inside the creation form | **one specific bucket** |
+
+"Account API token" refers to *ownership*, not reach. An Account token scoped to a single bucket
+is exactly right; the account/user distinction has nothing to do with how many buckets it can
+touch.
+
+### 5c. The two tokens
 
 | | Token 1 | Token 2 |
 |---|---|---|
+| Type | **Account API token** | **Account API token** |
 | Name | `buildographic-prod` | `buildographic-staging` |
 | Permission | **Object Read & Write** | **Object Read & Write** |
 | Scope | **Apply to specific buckets** → `buildographic-assets` | **Apply to specific buckets** → `buildographic-assets-staging` |
 
-> ⚠️ **The scope is the entire point.** An account-wide token works fine from staging against
-> the production bucket, and nothing will tell you it happened. Do not accept the default scope.
+> ⚠️ **The scope is the entire point.** A token left at the default *all buckets* scope works
+> fine from staging against the production bucket, and nothing will tell you it happened. This
+> is about the **scope** selector, not the Account/User choice above — an Account token is
+> correct, an *unscoped* token is not.
 
 > **Permission, not more:** Object Read & Write is sufficient. `StorageService` only implements
 > `upload()` and `getPublicUrl()` — no delete, no list (explicitly out of scope in
@@ -167,6 +217,12 @@ and creating a replacement.
 ## 6. Values worksheet
 
 Nine distinct values. Fill this in as you go, then delete it — do not commit it anywhere.
+
+> ⚠️ **This repository is PUBLIC.** Do not paste real values into this file, or into any other
+> committed document — including `R2_ACCOUNT_ID` and the `r2.dev` hostname, which are not
+> credentials but still do not belong on the open internet. Keep them in your local `.env` and
+> `secrets/*.env`, both gitignored. Only the token secrets require rotation if exposed; the
+> others are simply nobody else's business.
 
 ```
 SHARED
