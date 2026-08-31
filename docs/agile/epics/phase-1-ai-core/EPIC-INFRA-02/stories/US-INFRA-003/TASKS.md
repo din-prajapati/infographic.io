@@ -141,11 +141,11 @@ npm run dev
 
 ## Task Checklist
 
-- [ ] T1 — StorageService.download() (file: `api/src/modules/storage/services/storage.service.ts`, type: `feat`)
-- [ ] T2 — Upload source photo to R2 (file: `infographics.controller.ts`, type: `feat`)
-- [ ] T3 — R2-first read with tmp fallback (file: `ideogram.service.ts`, type: `fix`)
-- [ ] T4 — Unit tests (file: `api/tests/infra/us-infra-003.spec.ts`, type: `test`)
-- [ ] Gate 1 passes ✅
+- [x] T1 — StorageService.download() (file: `api/src/modules/storage/services/storage.service.ts`, type: `feat`)
+- [x] T2 — Upload source photo to R2 (file: `infographics.controller.ts`, type: `feat`)
+- [x] T3 — R2-first read with tmp fallback (file: `ideogram.service.ts`, type: `fix`)
+- [x] T4 — Unit tests (file: `api/tests/infra/us-infra-003.spec.ts`, type: `test`)
+- [x] Gate 1 passes ✅
 - [ ] Manual test verified ✅ (TC-INFRA-003-05, TC-INFRA-003-06)
 - [ ] PR opened with story card as description ✅
 - [ ] STORY.md ACs ticked off ✅
