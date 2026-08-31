@@ -31,7 +31,7 @@ within a phase, in the order they unblock downstream work.
 
 | # | Phase | Epic | Story/Milestone | Task | Status |
 |:-:|-------|------|------------------|------|:------:|
-| 1 | Phase 0 | EPIC-INFRA-01 (legacy MVP deploy) | Phase 0 Task 3 | Push `v1.0.0` tag → production auto-deploy (currently running several commits behind `main`, off a pre-tag deploy) | 🔲 |
+| 1 | Phase 0 | EPIC-INFRA-01 (legacy MVP deploy) | Phase 0 Task 3 | Push `v1.0.0` tag → production auto-deploy | ✅ **Done 2026-08-30** — first `v*` tag in the repo; production deployed `15a904b`, health `200`/`db connected` |
 | 2 | Phase 0 | EPIC-INFRA-01 | Phase 0 Task 3, rows P-15/16/17 | Full production smoke test (3D) — unrun since the domain/keys work landed | 🔲 |
 | 3 | Phase 1 | EPIC-LAUNCH-01 | US-LAUNCH-005 AC5 | Run `npm run verify:payment-prereqs` against production config | 🔲 |
 | 4 | Phase 1 | EPIC-LAUNCH-01 | US-LAUNCH-005 AC6 | One real ₹ subscription on production (smallest plan) → verify webhook activates it → refund/cancel from dashboard | 🔲 — **deliberately held**, needs your explicit go-ahead |
@@ -62,10 +62,14 @@ within a phase, in the order they unblock downstream work.
 **Status:** 🟡 In Progress — most of Task 3 is done (domain live, RazorPay live-mode activated
 2026-07-28, Google OAuth verified live 2026-07-30, Sentry's 4 checks all ✅ as of 2026-07-26). Two
 things remain:
-- **Tag `v1.0.0`** (§3C, row P-09/P-10 area) — production is still running off a pre-tag deploy,
-  currently several commits behind `main` (confirmed no `v1.0.0` tag exists in this repo as of
-  2026-08-22).
-- **Full smoke test** (§3D, rows P-15/16/17) — unrun since the domain/keys/OAuth work landed.
+- ~~**Tag `v1.0.0`**~~ (§3C, row P-09/P-10 area) — ✅ **done 2026-08-30.** The repo's first `v*`
+  tag. Production moved off its pre-tag deploy to `15a904b`; health `200`, `db connected`. Note
+  the deploy trigger for future reference: **production deploys on a `v*` tag push only**, while
+  staging auto-deploys on every push to `main` (`.github/workflows/deploy.yml`) — so merging to
+  `main` does **not** reach production until a tag is cut.
+- **Full smoke test** (§3D, rows P-15/16/17) — still unrun. Now more relevant, not less: the
+  `v1.0.0` deploy shipped the pricing-module rewrite and the AGENCY seat fix, and production has
+  since had its Razorpay plan IDs repointed to the live 2026-09 set.
 
 ### 3–4. US-LAUNCH-005 — real payment verification
 **Source:** [`EPIC-LAUNCH-01/stories/US-LAUNCH-005/STORY.md`](epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-005/STORY.md)
@@ -280,3 +284,9 @@ un-tracked indefinitely now that real customers can reach these pages.
   (no `StorageService`, `@aws-sdk/client-s3` not a dependency), so setting them would trigger a
   production redeploy for no gain and leave an unused token able to write to the customer-facing
   bucket. Moved into `US-INFRA-001`'s deploy step. `US-INFRA-001` is unblocked.
+- **2026-08-31** — **Task #1 closed retroactively.** `v1.0.0` was tagged and deployed 2026-08-30
+  but this tracker still listed it outstanding. Recorded the deploy-trigger asymmetry while
+  correcting it: production deploys on a `v*` tag push only; staging auto-deploys on every push to
+  `main`. Merging to `main` does not reach production. Task #2 (full production smoke test) is
+  unaffected and still open — arguably more relevant now, since `v1.0.0` shipped the pricing
+  rewrite and the AGENCY seat fix.
