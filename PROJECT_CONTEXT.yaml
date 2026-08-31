@@ -222,6 +222,18 @@ ac_coverage:
     #  - currency-edge: paise/rupee rounding, negative/zero amounts, discount stacking
     # Set 2026-08-21 during EPIC-PAY-05 (Pricing Relaunch) roadmap generation.
     PAY: [security, currency-edge]
+    # INFRA stories move bytes to a third party and then write a URL to the DB. The
+    # defaults miss the two failure modes that produces:
+    #  - rollback: the two writes are not atomic. Upload succeeds, DB write fails ->
+    #    an orphaned object. DB write succeeds, upload failed -> a persisted URL
+    #    pointing at nothing. "The provider call failed" (error-path) is a different,
+    #    easier case and is the only one the defaults force you to think about.
+    #  - concurrent: the chat flow sends variations: 3, so uploads run in parallel.
+    #    All-succeed is happy-path and all-fail is error-path; PARTIAL failure is
+    #    neither, and it is the case that decides what the customer actually gets.
+    # Set 2026-08-31 while hardening EPIC-INFRA-02 — per_domain.INFRA was absent until
+    # then, so all three storage stories certified against only [happy-path, error-path].
+    INFRA: [rollback, concurrent]
   # per_domain:
   #   DESIGN: []    # add: security, session-expiry, idempotency, currency-edge, rate-limit, null-input, concurrent, rollback, offline, edge-case
   #   PAY: []    # add: security, session-expiry, idempotency, currency-edge, rate-limit, null-input, concurrent, rollback, offline, edge-case

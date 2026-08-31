@@ -41,6 +41,18 @@ updated: 2026-08-19
 
 - [ ] **AC5 [error-path]:** Given `AiOrchestrator.composeDesignForEdit()` receives a non-null extraction result from `LayerExtractionService.extractTextGeometry()` but `StorageService.upload()` throws during the `backgroundUrl` upload step, the method still returns a `ComposedDesign` whose `backgroundUrl` field equals the original Ideogram layerize-text URL (the value in `extractionResult.backgroundUrl`) and does NOT propagate the storage error to its caller.
 
+- [ ] **AC6 [rollback]:** Given `StorageService.upload()` **resolves** in `AiOrchestrator.generateInfographic()` but the subsequent `prisma.infographic.update()` then fails (including after the existing retry), a `logGen()` call at level `'error'` with `event: 'storage:orphan'` is emitted carrying the R2 **object key** and the `infographicId`, before the error propagates as it does today. The upload is not retried, reversed, or deleted.
+
+  > **Why this AC exists.** The upload and the DB write are two writes with no transaction between them, and only one direction is currently specified: AC4 covers *upload fails, DB write proceeds with the Ideogram URL*. The reverse — **upload succeeded, DB write did not** — leaves an object in R2 that no row references and nothing will ever look for again.
+  >
+  > It deliberately does **not** require deleting the object: `StorageService` has no `delete()`, and adding one is explicitly out of scope in `US-INFRA-001`. So the requirement is that the orphan is **recoverable** — the key is in the logs — rather than silently lost. That is the cheapest thing that keeps a future reclaim job possible. Storage is $0.015/GB-month; the cost of an orphan is negligible, the cost of an *unfindable* orphan is that you can never safely reclaim any of them.
+
+- [ ] **AC7 [concurrent]:** Given `AiOrchestrator.generateInfographic()` is called with `variations: 3` and `StorageService.upload()` resolves for some variations and rejects for others, **every** variation resolves independently: the persisted image URL list contains the owned R2 URL for each variation whose upload succeeded and the original Ideogram URL for each whose upload failed, the list length still equals `variations`, order is preserved, and the method does not throw. A single upload rejection must not discard a sibling variation's successful upload.
+
+  > **Why this AC exists.** AC2 covers `variations > 1` where **every** upload resolves; AC4 covers a single upload failing. Neither covers the mixed case, which is the likely one — three independent network calls to a third party.
+  >
+  > This is a real fork in the implementation, not a formality. The natural way to write it is `Promise.all(...)`, which **rejects on the first failure and throws away the two successful uploads** — the customer then gets three rotting Ideogram URLs instead of two durable ones and one rotting. `Promise.allSettled` with per-variation fallback is the behaviour this AC pins down. Without it, either implementation would look like it satisfied the story.
+
 ---
 
 ## Out of Scope
@@ -236,6 +248,9 @@ Rules:
 | TC-INFRA-002-02 | Unit (Vitest) | P0 | Given AiOrchestrator with `StorageService.upload()` mocked to reject, when `composeDesignForEdit()` receives a non-null extraction result, then the method resolves and the returned `ComposedDesign.backgroundUrl` equals the original Ideogram layerize-text URL — not null, not empty, not an error | 🔲 | |
 | TC-INFRA-002-03 | Unit (Vitest) | P1 | Given AiOrchestrator with `StorageService.upload()` mocked to resolve to `'https://assets.buildographic.com/infographics/inf-1/image-v0.jpg'`, when `generateInfographic()` completes (single variation), then `prisma.infographic.update`'s `imageUrl` argument contains `'assets.buildographic.com'` and does not contain `'ideogram.ai'` | 🔲 | |
 | TC-INFRA-002-04 | Unit (Vitest) | P1 | Given AiOrchestrator with `StorageService.upload()` mocked to resolve to an owned URL, when `composeDesignForEdit()` receives a non-null extraction result, then the `ComposedDesign.backgroundUrl` in the `composedDesigns` cache-write payload contains the owned domain and does not contain `'ideogram.ai'` | 🔲 | |
+| TC-INFRA-002-05 | Unit (Vitest) | **P0** | rollback: Given `StorageService.upload()` resolves but `prisma.infographic.update` is mocked to reject on every attempt, when `generateInfographic()` runs, then a `logGen()` at level `'error'` with `event: 'storage:orphan'` is emitted containing the uploaded object key and the `infographicId` — asserted on the captured log payload, not merely that *some* error was logged | 🔲 | |
+| TC-INFRA-002-06 | Unit (Vitest) | **P0** | concurrent: Given `variations: 3` and `StorageService.upload()` mocked to resolve for calls 1 and 3 and reject for call 2, when `generateInfographic()` completes, then the persisted URL list has length 3, entries 1 and 3 contain the owned domain, entry 2 equals the original Ideogram URL, and the method does not throw — this is the `Promise.all` vs `allSettled` fork | 🔲 | |
+| TC-INFRA-002-07 | Unit (Vitest) | P1 | concurrent: Given `variations: 3` and **every** upload rejecting, when `generateInfographic()` completes, then all 3 persisted URLs equal their original Ideogram URLs, length is still 3, and the method does not throw — the all-fail boundary of TC-06 | 🔲 | |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 
