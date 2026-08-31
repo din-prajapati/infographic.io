@@ -170,9 +170,17 @@ For environment variables see [ENV.yaml](./ENV.yaml).
 - **User avatar** (`User.avatarUrl`) — Google OAuth-provided URL, not an app upload.
 - **Organization logo** (`Organization.logoUrl`) — schema field exists but no upload endpoint was
   found; out of scope until an upload flow exists.
-- **Backfilling existing `Infographic` rows** whose `imageUrl` already points at Ideogram — those
-  URLs may already be stale by the time this epic ships. A backfill/migration story can follow if
-  historical data turns out to matter; not blocking the go-forward fix.
+- **Backfilling existing `Infographic` rows** whose `imageUrl` already points at Ideogram.
+  **DECIDED 2026-08-31: those rows are accepted as lost. No backfill story will be written.**
+  The product is pre-launch and unmarketed, so every affected row belongs to internal testing
+  rather than a paying customer — there is nobody to lose a deliverable. Those URLs will rot on
+  Ideogram's own schedule and the rows will render broken images; that is the accepted outcome.
+  This closes what was previously an open silence ("a backfill story can follow if historical data
+  turns out to matter") — it turned out not to matter, and saying so is cheaper than leaving the
+  question open for someone to rediscover.
+  **If this decision is ever revisited** — say a beta cohort's work becomes worth preserving —
+  the reopening condition is real customer data existing before `US-INFRA-002` shipped, which is a
+  fixed, checkable set: `SELECT count(*) FROM "Infographic" WHERE "imageUrl" LIKE '%ideogram.ai%'`.
 - **Provider swap tooling / multi-provider abstraction** — one provider (R2), done cleanly, not a
   pluggable-storage-backend framework.
 
