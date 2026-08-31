@@ -11,6 +11,7 @@ import * as path from 'path';
 import * as os from 'os';
 import { randomUUID } from 'crypto';
 import { InfographicsService } from '../services/infographics.service';
+import { StorageService } from '../../storage/services/storage.service';
 import { GenerateInfographicDto } from '../dto/generate-infographic.dto';
 
 const PHOTO_UPLOADS_DIR = path.join(os.tmpdir(), 'ai-infographic-uploads');
@@ -21,7 +22,9 @@ export class InfographicsController {
   private readonly logger = new Logger(InfographicsController.name);
 
   constructor(
-    @Inject(InfographicsService) private readonly infographicsService: InfographicsService
+    @Inject(InfographicsService) private readonly infographicsService: InfographicsService,
+    /** Optional for the same reason as elsewhere — existing specs construct with one argument. */
+    @Inject(StorageService) private readonly storageService?: StorageService,
   ) {}
 
   @Post('upload-photo')
@@ -55,9 +58,35 @@ export class InfographicsController {
     const photoId = `${randomUUID()}${ext}`;
     const filePath = path.join(PHOTO_UPLOADS_DIR, photoId);
 
+    // Local write stays. It is the fast path — upload and generation normally happen seconds
+    // apart in the same container — and the fallback in readSourcePhoto() if R2 is unreachable.
     fs.writeFileSync(filePath, file.buffer);
 
-    this.logger.log(`{ "event": "photo:uploaded", "photoId": "${photoId}", "sizeBytes": ${file.size} }`);
+    // US-INFRA-003 AC1 — the durable copy. The tmp dir does not survive a container restart, and
+    // Railway restarts on every deploy AND every variable change. Without this, a generation
+    // starting after such a restart fails with a 422 the customer can only fix by re-uploading.
+    let durable = false;
+    if (this.storageService) {
+      try {
+        await this.storageService.upload(
+          file.buffer,
+          `source-photos/${photoId}`,
+          file.mimetype === 'image/png' ? 'image/png' : 'image/jpeg',
+        );
+        durable = true;
+      } catch (err: any) {
+        // Non-fatal: the local copy above already makes this photo usable for the common case.
+        // Failing the upload request would be a worse outcome than a photo that is merely not
+        // restart-proof.
+        this.logger.warn(
+          `{ "event": "photo:r2-upload-failed", "photoId": "${photoId}", "error": ${JSON.stringify(err?.message ?? 'unknown')} }`,
+        );
+      }
+    }
+
+    this.logger.log(
+      `{ "event": "photo:uploaded", "photoId": "${photoId}", "sizeBytes": ${file.size}, "durable": ${durable} }`,
+    );
 
     return { photoId, photoUrl: `/api/v1/infographics/photos/${photoId}` };
   }
