@@ -1,4 +1,4 @@
-import { Injectable, HttpException } from '@nestjs/common';
+import { Injectable, Inject, HttpException } from '@nestjs/common';
 import axios from 'axios';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -10,6 +10,7 @@ import {
   orientationToIdeogramAspectV3,
 } from '../../../config/image-generation.config';
 import { logGen, elapsed } from '../../../common/utils/ai-gen-logger';
+import { StorageService } from '../../storage/services/storage.service';
 
 // PHOTO_UPLOADS_DIR is also declared in infographics.controller.ts — update
 // both if the upload path ever changes (US-AI-031 AC4 cross-reference).
@@ -71,7 +72,12 @@ const V2_MODEL_MAP: Record<string, string> = {
 export class IdeogramService {
   private readonly apiKey: string;
 
-  constructor() {
+  /**
+   * StorageService is optional for the same reason as in AiOrchestrator — several existing specs
+   * construct IdeogramService with no arguments. Absent, readSourcePhoto() falls straight through
+   * to the tmp directory, which is exactly the pre-US-INFRA-003 behaviour.
+   */
+  constructor(@Inject(StorageService) private storageService?: StorageService) {
     this.apiKey = process.env.IDEOGRAM_API_KEY || '';
     if (!this.apiKey) {
       console.warn('⚠️ IDEOGRAM_API_KEY not configured. Image generation will fail with 401. Set IDEOGRAM_API_KEY environment variable to enable real generation.');
@@ -134,7 +140,7 @@ export class IdeogramService {
         // Attach property photo as Ideogram style reference if provided.
         // readSourcePhoto throws HttpException(422) if the file is unreadable (AC4).
         if (photoReferencePath) {
-          const photoBuffer = this.readSourcePhoto(photoReferencePath, generationId);
+          const photoBuffer = await this.readSourcePhoto(photoReferencePath, generationId);
           const mimeType = photoReferencePath.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg';
           const photoBlob = new Blob([photoBuffer], { type: mimeType });
           form.append('style_reference_images', photoBlob, photoReferencePath);
@@ -314,7 +320,7 @@ export class IdeogramService {
     // Throws HttpException(422) if file is unreadable (AC4) — deliberate hard-fail.
     // See STORY.md "Behaviour change": the previous warn-and-continue produced a
     // fabricated house and reported success. That is a trust and liability defect.
-    const photoBuffer = this.readSourcePhoto(photoPath, generationId);
+    const photoBuffer = await this.readSourcePhoto(photoPath, generationId);
     const mimeType = photoPath.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg';
     const photoBlob = new Blob([photoBuffer], { type: mimeType });
 
@@ -378,17 +384,71 @@ export class IdeogramService {
    *   image:reference:attached  — file read successfully
    *   image:reference:unreadable — new error event replacing the old 'missing' warn
    */
-  private readSourcePhoto(photoPath: string, generationId?: string): Buffer {
+  private async readSourcePhoto(photoPath: string, generationId?: string): Promise<Buffer> {
+    // ── AC4: validate BEFORE constructing any R2 key or filesystem path ──
+    //
+    // Defence in depth, not the only guard: `generate-from-chat.dto.ts` already rejects anything
+    // that is not a UUID basename at the HTTP boundary. This is the check at the SINK, because
+    // readSourcePhoto has two call sites and nothing stops a third arriving from a path with no
+    // DTO validation. `path.join(PHOTO_UPLOADS_DIR, '../../../etc/passwd')` escapes the upload
+    // directory, and the result would be attached to an outbound Ideogram request.
+    if (!/^[\w-]+\.(jpg|jpeg|png)$/i.test(photoPath)) {
+      logGen(
+        { generationId: generationId ?? 'unknown', event: 'image:reference:rejected', photoPath },
+        'error',
+      );
+      throw new HttpException(`Invalid photo reference (${photoPath}).`, 400);
+    }
+
+    // ── AC2: R2 first — it is the durable copy ──
+    //
+    // The tmp directory does not survive a container restart, and Railway restarts on every
+    // variable change and every deploy. A generation that begins after such a restart would
+    // otherwise fail with a 422 the customer can only resolve by re-uploading.
+    if (this.storageService) {
+      try {
+        const buffer = await this.storageService.download(`source-photos/${photoPath}`);
+        logGen({
+          generationId: generationId ?? 'unknown',
+          event: 'image:reference:attached',
+          photoPath,
+          source: 'r2',
+        });
+        return buffer;
+      } catch (r2Err: any) {
+        // Not fatal on its own — the local copy may still be there (it usually is, since upload
+        // and generation normally happen seconds apart in the same container).
+        logGen(
+          {
+            generationId: generationId ?? 'unknown',
+            event: 'image:reference:r2-miss',
+            photoPath,
+            error: r2Err?.message,
+          },
+          'warn',
+        );
+      }
+    }
+
+    // ── Fallback: the container's tmp dir, the pre-US-INFRA-003 behaviour ──
     const fullPath = path.join(PHOTO_UPLOADS_DIR, photoPath);
     try {
       const buffer = fs.readFileSync(fullPath);
-      logGen({ generationId: generationId ?? 'unknown', event: 'image:reference:attached', photoPath });
+      logGen({
+        generationId: generationId ?? 'unknown',
+        event: 'image:reference:attached',
+        photoPath,
+        source: 'tmp',
+      });
       return buffer;
     } catch (err: any) {
       logGen(
         { generationId: generationId ?? 'unknown', event: 'image:reference:unreadable', photoPath, error: err?.message },
         'error',
       );
+      // AC3: hard-fail, preserving US-AI-031 AC4. Never continue with a fabricated image — the
+      // customer asked for a design featuring THEIR property, and silently substituting one
+      // would be worse than an error they can act on.
       throw new HttpException(
         `Property photo could not be read (${photoPath}). ` +
           'The file may have expired — please re-upload and try again.',
