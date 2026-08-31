@@ -54,6 +54,14 @@ const envSchema = z.object({
   RAZORPAY_PLAN_API_STARTER: z.string().optional(),
   RAZORPAY_PLAN_API_GROWTH: z.string().optional(),
 
+  // Cloudflare R2 (US-INFRA-001) — all optional. R2 is unprovisioned in most environments and a
+  // required entry here would crash-loop them on merge. R2_BUCKET_NAME drives the AC6 guard below.
+  R2_ACCOUNT_ID: z.string().optional(),
+  R2_ACCESS_KEY_ID: z.string().optional(),
+  R2_SECRET_ACCESS_KEY: z.string().optional(),
+  R2_BUCKET_NAME: z.string().optional(),
+  R2_PUBLIC_URL: z.string().optional(),
+
   // Stripe — disabled by default, optional regardless.
   STRIPE_ENABLED: z.string().optional(),
   STRIPE_SECRET_KEY: z.string().optional(),
@@ -119,9 +127,36 @@ export function validate(config: Record<string, unknown>): ValidatedEnv {
     }
   }
 
+  // US-INFRA-001 AC6 — R2 bucket/environment guard.
+  //
+  // The RazorPay guard above can lean on the provider separating environments for us: test and
+  // live are distinct namespaces, so checking a key PREFIX is enough. R2 has no equivalent. One
+  // bucket can serve every environment, staging and production credentials are structurally
+  // identical, and R2_ACCOUNT_ID is the SAME VALUE in both — so nothing about a production token
+  // makes it fail when used from staging.
+  //
+  // The failure this prevents is not a crash. It is a non-production deploy silently writing into
+  // the bucket that serves real customers' assets, noticed only when something is overwritten.
+  //
+  // Absent R2_BUCKET_NAME is explicitly fine: R2 is unprovisioned in most environments, and a
+  // required-set entry here would crash-loop every one of them the moment this merges — the exact
+  // failure mode US-LAUNCH-010/Pre-requisite-story.md documents for the RazorPay block.
+  const r2Bucket = validated.R2_BUCKET_NAME;
+  if (r2Bucket && appEnv !== 'production' && !r2Bucket.includes('staging')) {
+    const message =
+      `R2 bucket/environment guard failed — boot aborted:\n` +
+      `  - R2_BUCKET_NAME is "${r2Bucket}" but APP_ENV is "${appEnv}".\n` +
+      `    A non-production environment must point at a bucket whose name contains "staging".\n` +
+      `    Writing here would put ${appEnv} data into the bucket serving production assets.\n` +
+      `    See docs/setup/CLOUDFLARE_R2_SETUP.md.`;
+    logger.error(message);
+    throw new Error(message);
+  }
+
   const razorpayNote = razorpayKeyId || viteRazorpayKeyId ? 'RazorPay key present, mode verified' : 'RazorPay key absent, guard skipped';
+  const r2Note = r2Bucket ? `R2 bucket "${r2Bucket}" verified for ${appEnv}` : 'R2 unconfigured, guard skipped';
   logger.log(
-    `✅ Environment validated — ${REQUIRED_KEYS.length} required keys checked, running in "${appEnv}" (${razorpayNote})`,
+    `✅ Environment validated — ${REQUIRED_KEYS.length} required keys checked, running in "${appEnv}" (${razorpayNote}; ${r2Note})`,
   );
 
   return validated;
