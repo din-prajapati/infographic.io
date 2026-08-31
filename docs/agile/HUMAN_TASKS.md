@@ -35,7 +35,7 @@ within a phase, in the order they unblock downstream work.
 | 2 | Phase 0 | EPIC-INFRA-01 | Phase 0 Task 3, rows P-15/16/17 | Full production smoke test (3D) — unrun since the domain/keys work landed | 🔲 |
 | 3 | Phase 1 | EPIC-LAUNCH-01 | US-LAUNCH-005 AC5 | Run `npm run verify:payment-prereqs` against production config | 🔲 |
 | 4 | Phase 1 | EPIC-LAUNCH-01 | US-LAUNCH-005 AC6 | One real ₹ subscription on production (smallest plan) → verify webhook activates it → refund/cancel from dashboard | 🔲 — **deliberately held**, needs your explicit go-ahead |
-| 5 | Phase 1 | EPIC-INFRA-02 | US-INFRA-001 | Provision **two** Cloudflare R2 buckets (staging + production) and **two** API tokens, each scoped to its own bucket. R2 has no test/live mode, so the token scope is the only isolation — see §5 | 🔲 — **blocks the story starting**, not just finishing |
+| 5 | Phase 1 | EPIC-INFRA-02 | US-INFRA-001 | Provision **two** Cloudflare R2 buckets (staging + production) and **two** API tokens, each scoped to its own bucket. R2 has no test/live mode, so the token scope is the only isolation — see §5 | ✅ **Done 2026-08-31** — buckets, tokens, custom domain, local `.env` and staging all live. **US-INFRA-001 is unblocked.** Production env vars deliberately deferred to the story's deploy step, see §5 |
 | 6 | Phase 1 | EPIC-PAY-05 (V1) | US-PAY-109 T0 | Create **8** Razorpay Plan objects per tier×interval — see §6 for the exact amounts (annual figures corrected 2026-08-27: they were stale ×10-derived values, superseded by `PLAN_CONFIG`'s authored prices). Naming: `BG-<TIER>-<INTERVAL>-<YYYY>-<MM>`. **Amount field takes rupees, not paise.** | ◐ — **Test mode ✅ done** (2026-08-27, all 8 verified); **Live mode 🔲 pending** for production |
 | ~~7~~ | ~~Phase 1~~ | ~~EPIC-PAY-05 (V2)~~ | ~~US-PAY-108 T0~~ | ~~Create 4 Razorpay Offer objects (Founding-100 discount)~~ | ❌ **RETIRED 2026-08-27** — Razorpay Offers are no longer used at all. See §7 |
 | 8 | Phase 0 | EPIC-LAUNCH-01 | US-LAUNCH-001 | Final legal review of Terms/Privacy/Refund wording — drafted content is a starting point, not legal advice, and these pages are already live in production | 🔲 — standing item, no deadline set |
@@ -76,14 +76,45 @@ code shipped and verified). AC5/6 remain:
   ("DO NOT Start Checkout Flow" during the Task 3 smoke test). This is the last box before
   `BETA_MODE=false` (revenue-on) can flip.
 
-### 5. US-INFRA-001 — Cloudflare R2
-**Source:** [`EPIC-INFRA-02/stories/US-INFRA-001/TASKS.md`](epics/phase-1-ai-core/EPIC-INFRA-02/stories/US-INFRA-001/TASKS.md)
-A **prerequisite**, not a follow-up — the story (durable asset storage, moving off Ideogram's
-expiring CDN and the container's ephemeral tmp dir) can't start implementation until real R2
-buckets + API tokens exist. No AI agent can self-provision third-party cloud credentials.
+### 5. US-INFRA-001 — Cloudflare R2 — ✅ DONE 2026-08-31
 
-📋 **Step-by-step runbook: [`docs/setup/CLOUDFLARE_R2_SETUP.md`](../setup/CLOUDFLARE_R2_SETUP.md)**
-— dashboard paths, a values worksheet, and the verification commands. ~20 minutes.
+**`US-INFRA-001` is unblocked and can be implemented now.**
+
+| Needed to **start** the story | Status |
+|---|---|
+| Both buckets exist (`buildographic-assets`, `buildographic-assets-staging`, APAC) | ✅ |
+| Two Account API tokens, each scoped to one bucket | ✅ |
+| Production custom domain `assets.buildographic.com` — Active | ✅ |
+| Staging public access via `r2.dev`; production dev-URL **off** | ✅ |
+| Local `.env` — **staging** values | ✅ |
+| Railway **staging** — 5 vars, read-back verified 5/5 | ✅ |
+| Railway **production** | 🔲 **deliberately deferred** — see below |
+
+**Why production env vars are not set, and why that is not an open task.**
+Nothing reads `R2_*` yet: there is no `StorageService` and `@aws-sdk/client-s3` is not a
+dependency. Setting them now would trigger a production redeploy for zero functional gain, and
+leave a token that can write to the customer-facing bucket sitting unused for however long the
+story takes. The values may also change if implementation settles on a path-prefix convention or
+splits photos from generated designs.
+
+Production wiring belongs to the story's **deploy step**, where `StorageService` can actually
+round-trip an upload and the check means something. The file is ready:
+
+```bash
+bash scripts/railway-env-sync.sh ~/secrets/infographicai/r2.production.env production
+```
+
+Verified safe whenever it happens: `env.validation.ts:74` ends in `.passthrough()`, so unknown
+variables cannot fail boot validation.
+
+**Source:** [`EPIC-INFRA-02/stories/US-INFRA-001/TASKS.md`](epics/phase-1-ai-core/EPIC-INFRA-02/stories/US-INFRA-001/TASKS.md)
+Was a **prerequisite**, not a follow-up — the story (durable asset storage, moving off Ideogram's
+expiring CDN and the container's ephemeral tmp dir) could not start until real R2 buckets and API
+tokens existed, and no AI agent can self-provision third-party cloud credentials. **That
+provisioning is complete**, so the constraint is lifted.
+
+📋 **Runbook used: [`docs/setup/CLOUDFLARE_R2_SETUP.md`](../setup/CLOUDFLARE_R2_SETUP.md)** —
+kept for the next environment, a token rotation, or a rebuild.
 
 **Two buckets and two tokens, not one of each** (scoped 2026-08-30):
 
@@ -242,3 +273,10 @@ un-tracked indefinitely now that real customers can reach these pages.
   `.env`, `.env.development.example` and `.env.production.example` updated. The abandoned plans were
   confirmed to be **live-mode**, so the test set kept the plain `2026-08` token — but the live set
   still needs a distinct one. Task #6 is now half-done: test ✅, live 🔲.
+- **2026-08-31** — **Task #5 (Cloudflare R2) closed.** Two buckets (APAC), two Account API tokens
+  each scoped to one bucket, `assets.buildographic.com` connected to the production bucket, and
+  `r2.dev` enabled on staging only. Local `.env` and Railway staging carry the five `R2_*` vars,
+  read-back verified 5/5. **Production env vars deliberately NOT set** — nothing reads `R2_*` yet
+  (no `StorageService`, `@aws-sdk/client-s3` not a dependency), so setting them would trigger a
+  production redeploy for no gain and leave an unused token able to write to the customer-facing
+  bucket. Moved into `US-INFRA-001`'s deploy step. `US-INFRA-001` is unblocked.
