@@ -4,6 +4,7 @@ import { Job } from 'bull';
 import { prisma } from '../../../database/prisma.client';
 import { OpenAiService } from './openai.service';
 import { IdeogramService } from './ideogram.service';
+import { StorageService } from '../../storage/services/storage.service';
 import { getTotalCost } from '../../../config/ai-models.config';
 import { normalizeImageModel } from '../../../config/image-generation.config';
 import { buildImagePrompt } from './infographic-prompt.builder';
@@ -14,7 +15,36 @@ export class InfographicProcessor {
   constructor(
     @Inject(OpenAiService) private openAiService: OpenAiService,
     @Inject(IdeogramService) private ideogramService: IdeogramService,
+    /** Optional for the same reason as in AiOrchestrator — existing specs construct with 2 args. */
+    @Inject(StorageService) private storageService?: StorageService,
   ) {}
+
+  /**
+   * US-INFRA-002 — same upload-then-fall-back contract as `AiOrchestrator.uploadAndFallback()`.
+   *
+   * This legacy Bull-queue path writes `Infographic.imageUrl` exactly like the orchestrator does,
+   * so leaving it out would mean rows created through this route keep rotting after the story
+   * ships — a durability hole that would look fixed everywhere it was tested.
+   *
+   * Kept as a local copy rather than shared: the two live in different classes with different
+   * logging conventions (this one uses console, the orchestrator uses logGen), and a shared
+   * helper would have to abstract over both for eight lines of body.
+   */
+  private async uploadAndFallback(sourceUrl: string, storageKey: string): Promise<string> {
+    if (!this.storageService || !sourceUrl) return sourceUrl;
+    try {
+      const res = await fetch(sourceUrl);
+      if (!res.ok) throw new Error(`fetch ${res.status} from provider CDN`);
+      const buffer = Buffer.from(await res.arrayBuffer());
+      const contentType = /\.png(\?|$)/i.test(sourceUrl) ? 'image/png' : 'image/jpeg';
+      return await this.storageService.upload(buffer, storageKey, contentType);
+    } catch (err: any) {
+      // Non-fatal, exactly as in the orchestrator: the Ideogram fee is already spent, so failing
+      // here would bill for a deliverable and then discard it.
+      console.warn(`⚠️ [Processor] R2 upload failed for ${storageKey}, keeping provider URL: ${err?.message}`);
+      return sourceUrl;
+    }
+  }
 
   @Process()
   async handleInfographicGeneration(job: Job<{ infographicId: string; propertyData: any }>): Promise<void> {
@@ -63,6 +93,10 @@ export class InfographicProcessor {
         // 💰 AI CALL — Ideogram image generation (text-prompt path)
         imageUrl = await this.ideogramService.generateImage(imagePrompt, aiModel, orientation);
         console.log(`🖼️ [Processor] Got image URL: ${imageUrl.substring(0, 80)}...`);
+
+        // US-INFRA-002 — re-host in R2 before the DB write, so the row never holds a URL we
+        // intended to replace. Key matches the orchestrator's single-variation convention.
+        imageUrl = await this.uploadAndFallback(imageUrl, `infographics/${infographicId}/image-v0.jpg`);
       }
 
       console.log(`💾 [Processor] Updating DB for ${infographicId}...`);
