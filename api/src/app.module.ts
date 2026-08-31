@@ -14,6 +14,7 @@ import { ConversationsModule } from './modules/conversations/conversations.modul
 import { PaymentsModule } from './modules/payments/payments.module';
 import { UsersModule } from './modules/users/users.module';
 import { DatabaseModule } from './database/database.module';
+import { StorageModule } from './modules/storage/storage.module';
 import { HealthModule } from './modules/health/health.module';
 import { EmailModule } from './modules/email/email.module';
 import { validate } from './config/env.validation';
@@ -41,6 +42,8 @@ import { validate } from './config/env.validation';
     }),
     ScheduleModule.forRoot(),
     DatabaseModule,
+    // @Global() like DatabaseModule — US-INFRA-002/003 consume it from other modules.
+    StorageModule,
     AuthModule,
     InfographicsModule,
     TemplatesModule,
