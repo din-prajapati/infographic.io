@@ -156,12 +156,12 @@ npm run dev
 
 ## Task Checklist
 
-- [ ] T1 — `uploadAndFallback` + wire into `generateInfographic()` (file: `ai-orchestrator.service.ts`, type: `feat`)
-- [ ] T2 — Wire into `composeDesignForEdit()` (file: `ai-orchestrator.service.ts`, type: `feat`)
-- [ ] T3 — Legacy Bull queue path (file: `infographic.processor.ts`, type: `fix`)
-- [ ] T4 — Module wiring if needed (file: `ai-generation.module.ts`, type: `chore`)
-- [ ] T5 — Unit tests (file: `api/tests/ai-generation/image-persistence.spec.ts`, type: `test`)
-- [ ] Gate 1 passes ✅
+- [x] T1 — `uploadAndFallback` + wire into `generateInfographic()` (file: `ai-orchestrator.service.ts`, type: `feat`)
+- [x] T2 — Wire into `composeDesignForEdit()` (file: `ai-orchestrator.service.ts`, type: `feat`)
+- [x] T3 — Legacy Bull queue path (file: `infographic.processor.ts`, type: `fix`)
+- [x] T4 — Module wiring if needed (file: `ai-generation.module.ts`, type: `chore`)
+- [x] T5 — Unit tests (file: `api/tests/ai-generation/image-persistence.spec.ts`, type: `test`)
+- [x] Gate 1 passes ✅
 - [ ] Manual test verified ✅
 - [ ] PR opened with story card as description ✅
 - [ ] STORY.md ACs ticked off ✅
