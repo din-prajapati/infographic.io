@@ -7,7 +7,7 @@ updated: 2026-08-19
 
 # Story Card — US-INFRA-003
 
-> **Status:** 🔲 Not Started
+> **Status:** ✅ **Done 2026-08-31** — all 5 ACs verified, 18 tests, Gate 1 green (489/489 backend).
 > **Feature:** F-INFRA-02 — Durable source-photo uploads
 > **Epic:** [EPIC-INFRA-02](../../EPIC.md)
 > **Milestone:** [M-INFRA-01-durable-asset-storage](../../milestones/M-INFRA-01-durable-asset-storage.md)
@@ -31,15 +31,15 @@ updated: 2026-08-19
 
 > **Rule:** ACs are binary pass/fail. Each references a specific file, method, or status code.
 
-- [ ] **AC1 [happy-path]:** When `POST /api/v1/infographics/upload-photo` receives a valid JPEG or PNG file (≤ 10 MB), `InfographicsController.uploadPhoto()` in `api/src/modules/infographics/controllers/infographics.controller.ts` calls `StorageService.upload(buffer, 'source-photos/{photoId}')` and receives a confirmed upload result **before** the `{ photoId, photoUrl }` response is returned to the caller — meaning the file exists in R2 by the time the HTTP response reaches the client.
+- [x] **AC1 [happy-path]:** When `POST /api/v1/infographics/upload-photo` receives a valid JPEG or PNG file (≤ 10 MB), `InfographicsController.uploadPhoto()` in `api/src/modules/infographics/controllers/infographics.controller.ts` calls `StorageService.upload(buffer, 'source-photos/{photoId}')` and receives a confirmed upload result **before** the `{ photoId, photoUrl }` response is returned to the caller — meaning the file exists in R2 by the time the HTTP response reaches the client.
 
-- [ ] **AC2 [happy-path]:** When `IdeogramService.readSourcePhoto(photoPath, generationId)` is called in `api/src/modules/ai-generation/services/ideogram.service.ts` and the file exists in R2 at key `source-photos/{photoPath}`, the method returns the file `Buffer` fetched from R2 **even when** the corresponding file at `path.join(os.tmpdir(), 'ai-infographic-uploads', photoPath)` has been deleted (simulating a container restart between upload and generation).
+- [x] **AC2 [happy-path]:** When `IdeogramService.readSourcePhoto(photoPath, generationId)` is called in `api/src/modules/ai-generation/services/ideogram.service.ts` and the file exists in R2 at key `source-photos/{photoPath}`, the method returns the file `Buffer` fetched from R2 **even when** the corresponding file at `path.join(os.tmpdir(), 'ai-infographic-uploads', photoPath)` has been deleted (simulating a container restart between upload and generation).
 
-- [ ] **AC3 [error-path]:** When `IdeogramService.readSourcePhoto(photoPath, generationId)` is called and the photo cannot be retrieved from R2 (key does not exist or download fails) **and** the local tmp fallback also fails, the method throws `HttpException` with HTTP status `422` and a message string containing the substring `"re-upload"` — preserving the hard-fail behaviour established by US-AI-031 AC4. The method must **not** fall through silently and allow generation to continue with a fabricated image.
+- [x] **AC3 [error-path]:** When `IdeogramService.readSourcePhoto(photoPath, generationId)` is called and the photo cannot be retrieved from R2 (key does not exist or download fails) **and** the local tmp fallback also fails, the method throws `HttpException` with HTTP status `422` and a message string containing the substring `"re-upload"` — preserving the hard-fail behaviour established by US-AI-031 AC4. The method must **not** fall through silently and allow generation to continue with a fabricated image.
 
-- [ ] **AC4 [security]:** When `IdeogramService.readSourcePhoto()` is called with a `photoPath` argument that does not match the pattern `^[\w-]+\.(jpg|jpeg|png)$` (i.e. contains `..`, `/`, `\`, or any character outside word characters, hyphens, and a single dot before the extension — e.g. `../../../etc/passwd`), the method throws `HttpException` with HTTP status `400` **before** constructing any R2 key or filesystem path — preserving the path-traversal guard from US-AI-031 T6 and not weakening it.
+- [x] **AC4 [security]:** When `IdeogramService.readSourcePhoto()` is called with a `photoPath` argument that does not match the pattern `^[\w-]+\.(jpg|jpeg|png)$` (i.e. contains `..`, `/`, `\`, or any character outside word characters, hyphens, and a single dot before the extension — e.g. `../../../etc/passwd`), the method throws `HttpException` with HTTP status `400` **before** constructing any R2 key or filesystem path — preserving the path-traversal guard from US-AI-031 T6 and not weakening it.
 
-- [ ] **AC5 [happy-path]:** When the unit test suite runs (`npm run test:unit`), the test file `api/tests/infra/us-infra-003.spec.ts` (new) passes with 0 failures and covers: (a) mocked-`StorageService` upload happy path; (b) `readSourcePhoto()` returning an R2-sourced `Buffer` when the local tmp file is absent; (c) `readSourcePhoto()` throwing `HttpException(422)` when both R2 and tmp are unavailable; (d) `readSourcePhoto()` throwing `HttpException(400)` on a path-traversal `photoPath`.
+- [x] **AC5 [happy-path]:** When the unit test suite runs (`npm run test:unit`), the test file `api/tests/infra/us-infra-003.spec.ts` (new) passes with 0 failures and covers: (a) mocked-`StorageService` upload happy path; (b) `readSourcePhoto()` returning an R2-sourced `Buffer` when the local tmp file is absent; (c) `readSourcePhoto()` throwing `HttpException(422)` when both R2 and tmp are unavailable; (d) `readSourcePhoto()` throwing `HttpException(400)` on a path-traversal `photoPath`.
 
 ---
 
@@ -171,12 +171,12 @@ AC5 [happy-path]: npm run test:unit passes with 0 failures. api/tests/infra/us-i
 
 | TC ID | Type | Priority | Scenario | Status | Finding |
 |-------|------|:--------:|----------|:------:|---------|
-| TC-INFRA-003-01 | Unit (Vitest) | P0 | Given a valid JPEG buffer in `file.buffer`, when `uploadPhoto()` is called, then `StorageService.upload` is called with key `source-photos/{photoId}` before the method returns — verified by asserting the mock was called before the return value is resolved | 🔲 | |
-| TC-INFRA-003-02 | Unit (Vitest) | P0 | Given a `photoPath` of `"../../../etc/passwd"`, when `readSourcePhoto()` is called, then it throws `HttpException` with status 400 and never calls `StorageService.download` or `fs.readFileSync` — the path-traversal guard fires first | 🔲 | |
-| TC-INFRA-003-03 | Unit (Vitest) | P1 | Given R2 returns a valid `Buffer` for key `source-photos/abc-123.jpg` and the local tmp file does not exist, when `readSourcePhoto("abc-123.jpg", "gen-1")` is called, then the method returns the R2 `Buffer` without throwing | 🔲 | |
-| TC-INFRA-003-04 | Unit (Vitest) | P1 | Given `StorageService.download` throws and `fs.readFileSync` also throws (both unavailable), when `readSourcePhoto("abc-123.jpg", "gen-1")` is called, then it throws `HttpException` with status 422 and message containing `"re-upload"` | 🔲 | |
-| TC-INFRA-003-05 | Manual | P0 | Given a running dev server: call `uploadPhoto`, manually delete the local tmp file, then call `generate` with the returned `photoId` — the generation succeeds by reading the photo from R2 rather than failing with 422 | 🔲 | |
-| TC-INFRA-003-06 | Manual | P1 | Given a direct API call to `POST /api/v1/infographics/generate` with a crafted `photoReference: "../etc/passwd"`, the server responds with HTTP 400 and the generation does not proceed | 🔲 | |
+| TC-INFRA-003-01 | Unit (Vitest) | P0 | Given a valid JPEG buffer in `file.buffer`, when `uploadPhoto()` is called, then `StorageService.upload` is called with key `source-photos/{photoId}` before the method returns — verified by asserting the mock was called before the return value is resolved | ✅ | |
+| TC-INFRA-003-02 | Unit (Vitest) | P0 | Given a `photoPath` of `"../../../etc/passwd"`, when `readSourcePhoto()` is called, then it throws `HttpException` with status 400 and never calls `StorageService.download` or `fs.readFileSync` — the path-traversal guard fires first | ✅ | |
+| TC-INFRA-003-03 | Unit (Vitest) | P1 | Given R2 returns a valid `Buffer` for key `source-photos/abc-123.jpg` and the local tmp file does not exist, when `readSourcePhoto("abc-123.jpg", "gen-1")` is called, then the method returns the R2 `Buffer` without throwing | ✅ | |
+| TC-INFRA-003-04 | Unit (Vitest) | P1 | Given `StorageService.download` throws and `fs.readFileSync` also throws (both unavailable), when `readSourcePhoto("abc-123.jpg", "gen-1")` is called, then it throws `HttpException` with status 422 and message containing `"re-upload"` | ✅ | |
+| TC-INFRA-003-05 | Manual | P0 | Given a running dev server: call `uploadPhoto`, manually delete the local tmp file, then call `generate` with the returned `photoId` — the generation succeeds by reading the photo from R2 rather than failing with 422 | ✅ | |
+| TC-INFRA-003-06 | Manual | P1 | Given a direct API call to `POST /api/v1/infographics/generate` with a crafted `photoReference: "../etc/passwd"`, the server responds with HTTP 400 and the generation does not proceed | ✅ | |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 
