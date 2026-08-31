@@ -145,4 +145,75 @@ describe('validate()', () => {
     });
     expect(() => validate(config)).not.toThrow();
   });
+
+  // ---------------------------------------------------------------------------
+  // US-INFRA-001 AC6 — R2 bucket/environment guard
+  //
+  // Unlike RazorPay, R2 has no test/live mode: one bucket can serve every environment and the
+  // credentials are structurally identical. This guard is the only thing standing between a
+  // staging deploy and the bucket serving real customers' assets.
+  // ---------------------------------------------------------------------------
+  describe('R2 bucket/environment guard (US-INFRA-001 AC6)', () => {
+    it('TC-INFRA-001-06: staging pointed at the PRODUCTION bucket aborts boot', () => {
+      const config = baseConfig({
+        APP_ENV: 'staging',
+        R2_BUCKET_NAME: 'buildographic-assets',
+      });
+
+      // Assert on the specific message, not merely that it throws — a guard firing for the
+      // wrong reason still satisfies a bare toThrow().
+      expect(() => validate(config)).toThrow(/R2_BUCKET_NAME/);
+      expect(() => validate(config)).toThrow(/buildographic-assets/);
+      expect(() => validate(config)).toThrow(/staging/);
+    });
+
+    it('TC-INFRA-001-07: staging pointed at the staging bucket passes', () => {
+      const config = baseConfig({
+        APP_ENV: 'staging',
+        R2_BUCKET_NAME: 'buildographic-assets-staging',
+      });
+      expect(() => validate(config)).not.toThrow();
+    });
+
+    it('TC-INFRA-001-08: production pointed at the production bucket passes', () => {
+      // The guard must not fire in the one environment allowed to use that bucket.
+      const config = baseConfig({
+        APP_ENV: 'production',
+        R2_BUCKET_NAME: 'buildographic-assets',
+      });
+      expect(() => validate(config)).not.toThrow();
+    });
+
+    it('TC-INFRA-001-09: an ABSENT R2_BUCKET_NAME boots normally', () => {
+      // The most important case. R2 is unprovisioned in most environments; if this threw, the
+      // guard would crash-loop every one of them the moment US-INFRA-001 merges.
+      const config = baseConfig({ APP_ENV: 'staging' });
+      expect(config.R2_BUCKET_NAME).toBeUndefined();
+      expect(() => validate(config)).not.toThrow();
+    });
+
+    it('local development is treated as non-production and held to the same rule', () => {
+      // Local .env points at the staging bucket by decision (CLOUDFLARE_R2_SETUP.md §7) — a
+      // developer machine writing into the customer-facing bucket is the same failure as
+      // staging doing it, and likelier, because .env files get copied between people.
+      expect(() =>
+        validate(baseConfig({ APP_ENV: 'local', R2_BUCKET_NAME: 'buildographic-assets' })),
+      ).toThrow(/R2_BUCKET_NAME/);
+
+      expect(() =>
+        validate(baseConfig({ APP_ENV: 'local', R2_BUCKET_NAME: 'buildographic-assets-staging' })),
+      ).not.toThrow();
+    });
+
+    it('the other four R2 vars are optional and never block boot on their own', () => {
+      const config = baseConfig({
+        APP_ENV: 'production',
+        R2_ACCOUNT_ID: 'acct',
+        R2_ACCESS_KEY_ID: 'key',
+        R2_SECRET_ACCESS_KEY: 'secret',
+        R2_PUBLIC_URL: 'https://assets.buildographic.com',
+      });
+      expect(() => validate(config)).not.toThrow();
+    });
+  });
 });
