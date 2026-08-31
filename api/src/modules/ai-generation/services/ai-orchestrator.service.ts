@@ -3,6 +3,7 @@ import { PrismaService } from '../../../common/services/prisma.service';
 import { OpenAiService } from './openai.service';
 import { IdeogramService } from './ideogram.service';
 import { LayerExtractionService } from './layer-extraction.service';
+import { StorageService } from '../../storage/services/storage.service';
 import { getTotalCost, LAYERIZE_COST_PER_IMAGE } from '../../../config/ai-models.config';
 import { normalizeImageModel } from '../../../config/image-generation.config';
 import { logGen, elapsed } from '../../../common/utils/ai-gen-logger';
@@ -48,7 +49,83 @@ export class AiOrchestrator {
     @Inject(IdeogramService) private ideogramService: IdeogramService,
     @Inject(PrismaService) private prisma: PrismaService,
     @Inject(LayerExtractionService) private layerExtractionService: LayerExtractionService,
+    /**
+     * Optional so the existing unit tests can construct this orchestrator with 3-4 positional
+     * mocks, as six spec files already do. In the Nest container `StorageModule` is `@Global()`
+     * so it is always injected in production.
+     *
+     * When absent, `uploadAndFallback()` returns the provider URL untouched — exactly the
+     * pre-US-INFRA-002 behaviour. That is the honest degradation: no storage service means no
+     * durable storage, not a crash.
+     */
+    @Inject(StorageService) private storageService?: StorageService,
   ) {}
+
+  /**
+   * US-INFRA-002 — download a provider image and re-upload it into R2, returning a URL we own.
+   *
+   * **Never throws.** A storage failure must not fail a generation: the Ideogram fee is already
+   * spent by the time this runs, so failing here would charge the customer for a deliverable and
+   * then throw it away. The fallback is the provider's own URL — the asset degrades in durability
+   * (it will eventually rot) but not in immediate availability (AC4/AC5).
+   *
+   * That no-throw property is also what makes the `Promise.all` over variations safe (AC7): every
+   * promise resolves, so one variation's failed upload cannot discard a sibling's successful one.
+   * If this method is ever changed to throw, that call site must move to `allSettled` — and
+   * TC-INFRA-002-06 will fail if it isn't.
+   *
+   * Returns the key on success so the caller can report an orphan if its own DB write then fails
+   * (AC6) — an object nothing references is only reclaimable if its key was written down.
+   */
+  /**
+   * US-INFRA-002 AC6 — record R2 objects whose referencing DB row never landed.
+   *
+   * The upload and the DB write are two writes with no transaction between them. When the second
+   * fails, the first has already happened: the object exists and nothing points at it. This does
+   * not delete it (`StorageService` has no `delete()`, and the API tokens are scoped Object Read
+   * & Write) — it makes the orphan *findable*, which is the difference between a reclaim job
+   * being possible later and never being safe to run.
+   */
+  private reportOrphans(uploadedKeys: string[], generationId: string): void {
+    for (const storageKey of uploadedKeys) {
+      logGen({ generationId, event: 'storage:orphan', storageKey, infographicId: generationId }, 'error');
+    }
+  }
+
+  private async uploadAndFallback(
+    sourceUrl: string,
+    storageKey: string,
+    generationId: string,
+  ): Promise<{ url: string; uploadedKey: string | null }> {
+    if (!this.storageService || !sourceUrl) {
+      return { url: sourceUrl, uploadedKey: null };
+    }
+
+    try {
+      const res = await fetch(sourceUrl);
+      if (!res.ok) throw new Error(`fetch ${res.status} from provider CDN`);
+      const buffer = Buffer.from(await res.arrayBuffer());
+
+      // Ideogram serves JPEG by default; only trust an explicit .png in the URL path.
+      const contentType = /\.png(\?|$)/i.test(sourceUrl) ? 'image/png' : 'image/jpeg';
+
+      const url = await this.storageService.upload(buffer, storageKey, contentType);
+      return { url, uploadedKey: storageKey };
+    } catch (err: any) {
+      // AC4: emitted BEFORE the caller's DB write, so the warning and the row it explains are
+      // adjacent in the log rather than separated by whatever the write does.
+      logGen(
+        {
+          generationId,
+          event: 'storage:upload:warn',
+          storageKey,
+          error: err?.message,
+        },
+        'warn',
+      );
+      return { url: sourceUrl, uploadedKey: null };
+    }
+  }
 
   async generateInfographic(
     infographicId: string,
@@ -315,6 +392,22 @@ export class AiOrchestrator {
         }
       }
 
+      // ── US-INFRA-002 — re-host every provider image in R2 before anything is persisted ──
+      //
+      // Runs after the provider calls return and BEFORE the DB write, so the row never contains a
+      // provider URL we intended to replace. `Promise.all` is safe here only because
+      // uploadAndFallback never rejects — see its doc comment. Each variation resolves
+      // independently to either an owned URL or its original provider URL (AC7).
+      const uploaded = await Promise.all(
+        imageUrls.map((url, i) =>
+          this.uploadAndFallback(url, `infographics/${infographicId}/image-v${i}.jpg`, infographicId),
+        ),
+      );
+      imageUrls = uploaded.map((u) => u.url);
+      // Keys that made it into R2. Only needed if the DB write below fails — an object no row
+      // references is only reclaimable if its key was recorded somewhere (AC6).
+      const uploadedKeys = uploaded.map((u) => u.uploadedKey).filter((k): k is string => k !== null);
+
       const imageUrl = imageUrls[0] || '';
       // costUsd applies to both photo-remix and no-photo paths: remix is priced at
       // generate tier (SPIKE-031 §5, https://ideogram.ai/api-pricing/), so the same
@@ -342,9 +435,17 @@ export class AiOrchestrator {
             logGen({ generationId: infographicId, event: 'gen:db:retry:ok' });
           } catch (retryErr: any) {
             logGen({ generationId: infographicId, event: 'gen:db:retry:error', error: retryErr?.message }, 'error');
+            // AC6 — the upload succeeded and the row that would have referenced it never landed.
+            // Nothing else will ever look for these objects, so record the keys: an orphan costs
+            // $0.015/GB-month, an *unfindable* orphan means no reclaim job can ever run safely.
+            // Deliberately not deleted here — StorageService has no delete(), by design.
+            this.reportOrphans(uploadedKeys, infographicId);
             throw new Error(`Database update failed after retry: ${retryErr?.message}`);
           }
         } else {
+          // Same orphan case as the retry branch above — a non-connection failure loses the row
+          // just as completely, so AC6 applies to both exits, not only the retried one.
+          this.reportOrphans(uploadedKeys, infographicId);
           throw new Error(`Database update failed: ${updateErr?.message}`);
         }
       }
@@ -490,7 +591,20 @@ export class AiOrchestrator {
       };
     }
 
-    const { backgroundUrl, blocks } = extractionResult;
+    const { backgroundUrl: providerBackgroundUrl, blocks } = extractionResult;
+
+    // US-INFRA-002 AC3/AC5 — the erased-text background is a provider URL like any other, and it
+    // is the asset the editor renders on every open. Re-host it before the cache write, so the
+    // cached ComposedDesign never stores a URL that will rot.
+    //
+    // The key is derived from composeCacheKey(imageUrl), not from the background URL itself:
+    // provider URLs carry rotating signatures, so keying off one would upload the same image
+    // again under a new key every time the signature changed.
+    const { url: backgroundUrl } = await this.uploadAndFallback(
+      providerBackgroundUrl,
+      `infographics/${infographicId}/bg-${composeCacheKey(imageUrl).replace(/[^a-z0-9]/gi, '-').slice(-24)}.jpg`,
+      infographicId,
+    );
 
     // ── Bind blocks to canonical fields (pure mapper — AC3, AC4, AC5, AC8) ──
     const elements = mapBlocksToFields(blocks, canonical);
