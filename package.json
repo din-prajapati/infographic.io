@@ -11,7 +11,7 @@
     "dev": "cross-env NODE_ENV=development tsx server/index.ts",
     "build": "vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
     "start": "cross-env NODE_ENV=production node dist/index.js",
-    "check": "tsc",
+    "check": "tsc && npm run check:api",
     "smoke:boot": "node scripts/smoke-boot.mjs",
     "db:push": "drizzle-kit push",
     "prisma:generate": "prisma generate --schema=api/prisma/schema.prisma",
@@ -32,9 +32,11 @@
     "test:e2e": "playwright test",
     "test:e2e:editor": "playwright test e2e/editor-ai-chatbox.spec.ts",
     "pr:story": "node scripts/pr-story.mjs",
-    "pr:open:us-design-002": "gh pr create --base main --title \"[US-DESIGN-002] Editor + AI chat design tokens & dark-mode polish\" --body-file docs/agile/epics/EPIC-DESIGN-01/stories/US-DESIGN-002/PR_BODY.md"
+    "pr:open:us-design-002": "gh pr create --base main --title \"[US-DESIGN-002] Editor + AI chat design tokens & dark-mode polish\" --body-file docs/agile/epics/EPIC-DESIGN-01/stories/US-DESIGN-002/PR_BODY.md",
+    "check:api": "tsc --noEmit -p api/tsconfig.json"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1121.0",
     "@google/generative-ai": "^0.24.0",
     "@hookform/resolvers": "^3.10.0",
     "@jridgewell/trace-mapping": "^0.3.25",
