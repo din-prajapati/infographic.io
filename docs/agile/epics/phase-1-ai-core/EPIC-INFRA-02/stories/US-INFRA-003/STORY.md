@@ -43,6 +43,28 @@ updated: 2026-08-19
 
 ---
 
+## Decision — source photos are stored in a public-read bucket (2026-08-31)
+
+Uploaded property photos go into `buildographic-assets*`, which is public-read. Anyone who knows
+or guesses `{R2_PUBLIC_URL}/source-photos/{uuid}.jpg` can fetch a customer's uploaded photo. The
+UUID makes it unguessable in practice, but it is not access control.
+
+**Decided: acceptable for now, not revisited in this story.** The photos are listing photographs
+an agent uploads specifically so they can appear in marketing material they intend to publish —
+the same asset class as the generated designs that share the bucket. The privacy exposure is
+therefore small and aligned with the customer's own intent.
+
+**What would change the answer:** any upload that is *not* meant to be published — a floor plan
+marked private, an identity document for KYC, a client's interior photo used only for reference.
+The moment such a flow exists, source photos need a private bucket (or a second bucket) with
+signed URLs, and `StorageService.download()` already reads through the authenticated S3 API rather
+than the public URL, so that migration would not require touching the read path.
+
+Recorded here rather than left implicit, because "the bucket is public" is invisible at every call
+site and would otherwise have to be rediscovered by whoever adds the first private upload.
+
+---
+
 ## Out of Scope
 
 - Does not provision the R2 bucket or implement `StorageService` itself — that is US-INFRA-001, which must ship first.
