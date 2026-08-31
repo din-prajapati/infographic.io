@@ -193,16 +193,16 @@ curl http://localhost:5000/api/health
 
 ## Task Checklist
 
-- [ ] T1 — StorageService + StorageModule (file: `api/src/modules/storage/`, type: `feat`)
-- [ ] T2 — Register StorageModule + add dependency (file: `api/src/app.module.ts`, type: `feat`)
-- [ ] T3 — Document R2 env vars (file: `.env.example`, type: `docs`)
-- [ ] T4 — Unit tests (file: `api/tests/storage/storage.service.spec.ts`, type: `test`)
-- [ ] T5 — Bucket-environment boot guard (file: `api/src/config/env.validation.ts`, type: `feat`)
-- [ ] T6 — Boot-guard tests (file: `api/tests/config/env.validation.spec.ts`, type: `test`)
-- [ ] Gate 1 passes ✅
-- [ ] Manual test verified ✅ (TC-INFRA-001-05, once real R2 credentials exist)
+- [x] T1 — StorageService + StorageModule (file: `api/src/modules/storage/`, type: `feat`)
+- [x] T2 — Register StorageModule + add dependency (file: `api/src/app.module.ts`, type: `feat`)
+- [x] T3 — Document R2 env vars (file: `.env.example`, type: `docs`)
+- [x] T4 — Unit tests (file: `api/tests/storage/storage.service.spec.ts`, type: `test`)
+- [x] T5 — Bucket-environment boot guard (file: `api/src/config/env.validation.ts`, type: `feat`)
+- [x] T6 — Boot-guard tests (file: `api/tests/config/env.validation.spec.ts`, type: `test`)
+- [x] Gate 1 passes ✅
+- [x] Manual test verified ✅ — exceeded TC-INFRA-001-05: live round-trip through StorageService against the staging bucket (upload → public fetch 200 → byte-identical → cleaned up), not just a boot check
 - [ ] PR opened with story card as description ✅
-- [ ] STORY.md ACs ticked off ✅
+- [x] STORY.md ACs ticked off ✅ — all 6
 - [ ] EPIC.md "Implementation Update" log appended ✅ (by code-agent)
 
 ---
