@@ -62,7 +62,7 @@ counters:
   AI: { epic: 9, feature: 35, story: 52 } # reconciled 2026-08-14: US-AI-044 (LLM layout planner) + US-AI-045 (pipeline integration) merged from a long-orphaned branch — both now real story cards under EPIC-AI-06. Counter already accounted for their slots (043-051 all reserved 2026-08-12/13); no change needed. EPIC-AI-08 created 2026-07-30 (quality tiers + Campaign Mode UI, deferred from EPIC-AI-02 to Phase 4 Backlog, revenue-gated); US-AI-036/037/038 added 2026-07-29, replacing superseded US-AI-011; US-AI-039 added 2026-07-31 (Format Picker Canva-style reorg, F-AI-02-07); US-AI-040/041 added 2026-07-31 (Templates UX gaps split into two stories: US-AI-040 preview modal + tag filters, new F-AI-02-08; US-AI-041 device-mockup format previews, extends F-AI-02-07, depends on US-AI-039 merging first — US-AI-042 added 2026-08-02 (real canvas thumbnails on save, new F-AI-02-09); feature counter unchanged, both use EPIC-AI-02's epic-scoped F-AI-02-NN sub-numbering, not the global F-AI-NN sequence)
   USAGE: { epic: 2, feature: 1, story: 1 }
   INFRA: { epic: 4, feature: 1, story: 3 }
-  ORG: { epic: 3, feature: 1, story: 1 }
+  ORG: { epic: 2, feature: 2, story: 2 } # EPIC-ORG-01 created 2026-08-31 (organization access control) consuming epic 1, feature 1, story 1 — the RBAC gap found while AGENCY shipped with unlimited seats
   API: { epic: 3, feature: 1, story: 1 }
   TEST: { epic: 2, feature: 1, story: 1 }
   MOBILE: { epic: 2, feature: 1, story: 1 }
@@ -234,6 +234,11 @@ ac_coverage:
     # Set 2026-08-31 while hardening EPIC-INFRA-02 — per_domain.INFRA was absent until
     # then, so all three storage stories certified against only [happy-path, error-path].
     INFRA: [rollback, concurrent]
+    # ORG stories decide who may act on whose data. The defaults would certify a
+    # permission change against happy-path and error-path alone, which is exactly how
+    # US-ORG-001's defect shipped: removeUserFromOrganization validates the TARGET and
+    # never the CALLER, and both of those types pass.
+    ORG: [security, rollback]
   # per_domain:
   #   DESIGN: []    # add: security, session-expiry, idempotency, currency-edge, rate-limit, null-input, concurrent, rollback, offline, edge-case
   #   PAY: []    # add: security, session-expiry, idempotency, currency-edge, rate-limit, null-input, concurrent, rollback, offline, edge-case
