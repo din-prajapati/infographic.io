@@ -51,10 +51,8 @@ import { resolveLocale } from "@shared/locale";
 import { useAgentStore } from "../../hooks/useAgentStore";
 import { generationsApi, ResultVariation } from "../../lib/api";
 import { useGenerationWebSocket, GenerationProgress } from "../../hooks/useGenerationWebSocket";
-import { loadAiVariationToCanvas, loadComposedDesignToCanvas, deriveOrientationFromCanvas } from "../../lib/canvasState";
-import { planVariationLoad, EDITABLE_REQUIRES_UPGRADE_REASON } from "@/lib/layout/loadVariation";
+import { loadAiVariationToCanvas, deriveOrientationFromCanvas } from "../../lib/canvasState";
 import { useGenerationPrefs } from "@/hooks/useGenerationPrefs";
-import { useComposeProgress } from "@/hooks/useComposeProgress";
 
 type TabType = "design" | "property-details" | "agent-info";
 
@@ -300,17 +298,12 @@ export function RightSidebar() {
   const [loadingVariationId, setLoadingVariationId] = useState<string | null>(null);
   const [lightboxVariation, setLightboxVariation] = useState<ResultVariation | null>(null);
 
-  // US-AI-047 — shared with the AI chat panel so both surfaces honour one setting.
-  // Previously renderMode was useState local to AIChatBox, which is why the
-  // editable feature was unreachable from this (far more prominent) button.
-  const renderMode = useGenerationPrefs((s) => s.renderMode);
+  // US-EDIT-009 — the render-mode preference and its compose-progress
+  // affordance are gone from
+  // this panel. Quick Generate always loads flat; extracting text is an action
+  // taken on the canvas afterwards, where CanvasEditToolbar owns the progress
+  // affordance for the compose it actually runs.
 
-  // US-AI-050 — elapsed-time affordance while POST /:id/compose is in flight.
-  // Active only during editable mode loads; flat loads are instant and unaffected.
-  const composeProgress = useComposeProgress(
-    !!loadingVariationId && renderMode === "editable",
-  );
-  const setRenderMode = useGenerationPrefs((s) => s.setRenderMode);
   // US-EDIT-005 — mirrors resultsGenerationId into the shared store so the
   // floating CanvasEditToolbar (mounted in CenterCanvas, a sibling with no
   // other access to this id) can call POST /:id/compose with the real id.
@@ -463,46 +456,12 @@ export function RightSidebar() {
   const handleUseDesign = async (variation: ResultVariation) => {
     setLoadingVariationId(variation.id);
     try {
-      // US-AI-047 — Quick Generate now honours renderMode. It previously called
-      // loadAiVariationToCanvas unconditionally, so the editable feature was
-      // unreachable from the most prominent generate button in the product.
-      const plan = await planVariationLoad({
-        generationId: resultsGenerationId,
-        variation: { id: variation.id, imageUrl: variation.imageUrl, title: variation.title },
-        renderMode,
-        orientation: deriveOrientationFromCanvas(canvasWidth, canvasHeight),
-      });
-
-      if (plan.mode === "editable" && plan.composedDesign) {
-        const ok = await loadComposedDesignToCanvas(plan.composedDesign);
-        if (ok) {
-          setSelectedVariationId(variation.id);
-          toast.success("Editable design loaded", {
-            description: "Text elements are ready to edit in the Design tab.",
-          });
-          return;
-        }
-        // Loader refused the payload — fall through to flat rather than
-        // leaving the user with nothing.
-        console.warn("[RightSidebar] composed load failed — falling back to flat");
-      } else if (plan.reason === EDITABLE_REQUIRES_UPGRADE_REASON) {
-        // US-LAUNCH-015 AC5 — FREE trial used. Design still loads flat below;
-        // this is purely the upgrade nudge, never a dead end.
-        toast.error("Editable designs are a paid feature", {
-          description: "Your free trial has been used. Upgrade to keep editing designs.",
-          action: { label: "View plans", onClick: () => { window.location.href = "/pricing"; } },
-        });
-      } else if (plan.reason?.toLowerCase().includes("monthly limit")) {
-        // US-LAUNCH-015 AC4 — extra compose would exceed the plan's monthly
-        // credit limit. Same toast shape the generate path already uses.
-        toast.error("Monthly limit reached", {
-          description: plan.reason,
-          action: { label: "View plans", onClick: () => { window.location.href = "/pricing"; } },
-        });
-      } else if (plan.reason) {
-        console.warn("[RightSidebar] editable degraded:", plan.reason);
-      }
-
+      // US-EDIT-009 — "Use This Design" always places the flat raster. The
+      // planVariationLoad call that used to sit here decided flat-vs-editable
+      // from the session preference; with the preference gone it could only
+      // ever have returned flat. Extracting text is a separate, explicit act
+      // on the canvas (CanvasEditToolbar), which owns the upgrade and
+      // monthly-limit handling that lived in this block.
       await loadAiVariationToCanvas(variation.imageUrl, variation.title ?? "AI Design");
       setSelectedVariationId(variation.id);
       toast.success("Design loaded", {
@@ -870,9 +829,7 @@ export function RightSidebar() {
                 ) : (
                   <CheckCircle2 className="w-4 h-4 mr-2" />
                 )}
-                {loadingVariationId === lightboxVariation.id && renderMode === "editable"
-                  ? composeProgress.label
-                  : "Use This Design"}
+                Use This Design
               </Button>
             </motion.div>
           </motion.div>
@@ -958,11 +915,7 @@ export function RightSidebar() {
                         {loadingVariationId === variation.id ? (
                           <>
                             <Loader2 className="w-3 h-3 animate-spin shrink-0" />
-                            <span className="truncate">
-                              {renderMode === "editable"
-                                ? composeProgress.label
-                                : "Loading…"}
-                            </span>
+                            <span className="truncate">Loading…</span>
                           </>
                         ) : isSelected ? (
                           <>

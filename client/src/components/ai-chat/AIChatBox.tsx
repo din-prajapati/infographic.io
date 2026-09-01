@@ -138,7 +138,7 @@ export function AIChatBox({
   // US-EDIT-009 AC9 — the surviving editable path (CanvasEditToolbar) resolves
   // the generation to compose from this store, so every surface that produces
   // results must publish its id here. Note this is `activeGenerationId`, not
-  // the removed `renderMode`: an identity, not a preference.
+  // the removed render-mode preference: an identity, not a preference.
   const setActiveGenerationId = useGenerationPrefs((s) => s.setActiveGenerationId);
 
   // US-AI-050's compose-progress tracker lived here. US-EDIT-009 removed it:
@@ -1118,7 +1118,8 @@ export function AIChatBox({
   /**
    * Load the chosen variation onto the canvas as a flat raster.
    *
-   * US-EDIT-009: this used to branch on renderMode and, in editable mode, call
+   * US-EDIT-009: this used to branch on the render-mode preference and, in
+   * editable mode, call
    * POST /compose here — before the user had seen the design on the canvas.
    * Extraction is now always a post-placement action taken from
    * CanvasEditToolbar, so there is one path and it is this one.
