@@ -111,14 +111,8 @@ export interface GenerateFromChatInput {
   locale?: 'en-US' | 'en-IN';
   /** The currency token the user typed, echoed verbatim when `locale` is unresolved. */
   currencyToken?: string;
-  /**
-   * How the client intends to render the result (US-AI-032 T2).
-   * 'flat' (default) loads as a single raster layer — existing behaviour.
-   * 'editable' triggers lazy layer extraction on the Edit action and loads canonical
-   * text as slot-tagged, independently selectable canvas elements.
-   * Provider-agnostic: describes output shape, never the vendor.
-   */
-  renderMode?: 'flat' | 'editable';
+  // US-EDIT-009 removed `renderMode` from this request. Generation is always
+  // flat; whether text becomes editable is decided later, on the canvas.
 }
 
 // ── ComposedDesign contract (mirrors api/src/modules/ai-generation/types/composed-design.types.ts) ──

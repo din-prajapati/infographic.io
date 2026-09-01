@@ -50,9 +50,15 @@ export interface Template {
   isPopular?: boolean;
   emoji: string;
   /**
-   * Present when renderMode='editable' — the structured payload from US-AI-031b.
-   * When set, CenterCanvas routes to loadComposedDesignToCanvas instead of loadAiVariationToCanvas.
-   * Absent on flat-mode templates (all existing code paths unaffected).
+   * The structured payload from US-AI-031b. When set, CenterCanvas routes to
+   * loadComposedDesignToCanvas instead of loadAiVariationToCanvas.
+   *
+   * DORMANT since US-EDIT-009: nothing populates this any more. It was set by
+   * AI Chat's editable branch, which composed before placement; composing is
+   * now done by CanvasEditToolbar, which loads the result onto the canvas
+   * directly rather than routing it through a Template. Left in place with its
+   * consumer (CenterCanvas) intact rather than removed in the same change that
+   * removed its producer — see US-EDIT-009's follow-ups.
    */
   composedDesign?: ComposedDesign;
 }
