@@ -11,27 +11,25 @@
 
 ---
 
-> ## ⚠️ Reachability at risk — [US-EDIT-009](../../../EPIC-EDIT-03/stories/US-EDIT-009/STORY.md)
+> ## 🔁 Trigger changes in [US-EDIT-009](../../../EPIC-EDIT-03/stories/US-EDIT-009/STORY.md) — behaviour preserved
 >
-> **Flagged 2026-09-01.** This story's text-free generate-time path
-> (`buildTextFreeImagePrompt`, `infographic-prompt.builder.ts`) fires **only** when
-> `renderMode === 'editable'` **and** a photo reference is present.
+> **Resolved 2026-09-01 (Option A).** This story's text-free path (`buildTextFreeImagePrompt`)
+> currently fires only when `renderMode === 'editable'` **and** a photo reference is present.
+> `US-EDIT-009` removes `renderMode` product-wide — generation is always flat, extraction is
+> always a post-placement canvas action.
 >
-> The product decision on 2026-09-01 is that generation is **always flat** and extraction is a
-> post-placement canvas action, so `US-EDIT-009` removes `renderMode` entirely. `renderMode` is
-> the only thing that currently reaches this path.
+> The decision was **not** to let this path go with it. `US-EDIT-009` AC8 drops only the
+> `renderMode === 'editable' &&` clause from `useTextFree` (`ai-orchestrator.service.ts:269–272`)
+> and keeps the rest verbatim, including **this story's own AC7 empty-string guard**
+> (`typeof photoReference === 'string' && photoReference.length > 0`).
 >
-> **This story is marked ✅ All ACs Verified, and that remains true of the code.** What changes is
-> whether anything can still call it. `US-EDIT-009`'s first task is the decision:
+> **This story stays ✅ and is not superseded.** Its behaviour is unchanged; only the condition
+> that reaches it is. AC2/AC3 still hold — synthetic no-photo generations keep the composed
+> text-baked prompt.
 >
-> - **Option A** — re-trigger from `photoReference != null`. This story survives with a new
->   condition; the quality reason it exists (not baking a headline onto a customer's own listing
->   photograph) is preserved without a user-facing toggle. **Recommended.**
-> - **Option B** — accept the loss. This story becomes dead code and should be re-marked
->   ⏭️ Superseded rather than left claiming ✅, since a passing AC on unreachable code is worse
->   than no AC.
->
-> Do not close or supersede this card until `US-EDIT-009` T0 is decided.
+> Two edits are pending on this card until `US-EDIT-009` lands, so do not treat them as drift:
+> AC1's wording still names `renderMode`, and `infographic-prompt.builder.ts:284`'s doc comment
+> still states the old condition. Remove this banner when `US-EDIT-009` closes.
 
 ---
 
