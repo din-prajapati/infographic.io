@@ -279,16 +279,20 @@ export function applyStylePreset(prompt: string, style?: string): string {
 }
 
 /**
- * Build a text-free background prompt for the real-photo + editable combination.
+ * Build a text-free background prompt for the real-photo path.
  *
- * Used ONLY when renderMode='editable' AND a photo reference is present (the
- * composeWithSourceImage path, US-AI-031). Baking headline/price/address onto
- * the user's actual listing photo is undesirable when Editable mode is active —
- * the layout engine (US-AI-043) will overlay those values as live canvas elements.
+ * Used ONLY when a photo reference is present (the composeWithSourceImage
+ * path, US-AI-031). Baking headline/price/address onto the user's actual
+ * listing photograph is undesirable regardless of what they intend to do next:
+ * it is their asset, and text burned into a photo is the hardest case for
+ * layer extraction to lift back off. The layout engine (US-AI-043) overlays
+ * those values as live canvas elements instead.
  *
- * Every other combination (flat mode; editable + no photo) MUST use
- * buildImagePrompt — this function is NOT a replacement, only a narrow variant
- * for one specific path (AC2, AC3 from US-AI-051).
+ * US-EDIT-009 changed the trigger, not the behaviour. This used to additionally
+ * require renderMode='editable' — a pre-generation toggle that no longer
+ * exists. Synthetic (no-photo) generations MUST still use buildImagePrompt:
+ * this is not a replacement, only a narrow variant for one path
+ * (US-AI-051 AC2/AC3).
  *
  * Keeps color scheme hints because those are visual composition choices,
  * not text the user will re-overlay as canvas elements.

@@ -134,9 +134,8 @@ export class AiOrchestrator {
       variations?: number;
       style?: string;
       orientation?: string;
+      /** US-AI-051: a real photo → text-free background prompt (see below). */
       photoReference?: string;
-      /** US-AI-051: 'editable' + real photo → text-free background prompt. */
-      renderMode?: 'flat' | 'editable';
     },
     progressGateway?: any,
   ): Promise<void> {
@@ -145,7 +144,6 @@ export class AiOrchestrator {
     const style = options?.style;
     const orientation = options?.orientation || propertyData.orientation || 'landscape';
     const photoReference = options?.photoReference;
-    const renderMode = options?.renderMode;
     const isDemoMode = process.env.DEMO_MODE === 'true';
     const imageModel = normalizeImageModel(propertyData.aiModel || 'ideogram-turbo');
 
@@ -261,15 +259,20 @@ export class AiOrchestrator {
             // REMIX_COST comment) — this branch is cost-neutral vs. today.
             // ────────────────────────────────────────────────────────────────
 
-            // ── US-AI-051: text-free variant for editable + real-photo path ─
-            // Guard (AC7): renderMode must be exactly 'editable' AND photoReference
-            // must be a non-empty string. Any other combination (flat, absent,
-            // malformed, or empty-string photo) falls through to imagePrompt.
+            // ── US-AI-051: text-free variant for the real-photo path ────────
+            // US-EDIT-009 dropped the `renderMode === 'editable'` conjunct that
+            // used to gate this. The toggle was never the reason for the
+            // text-free prompt — it was only the signal that happened to carry
+            // it. The real condition is that this is the user's own listing
+            // photograph, which we should not bake a headline and price onto
+            // whether or not they once picked "Editable" from a menu.
+            //
+            // US-AI-051's own guard is kept verbatim: photoReference must be a
+            // non-empty string. An empty-string photo falls through to the
+            // composed imagePrompt, as it always has.
             let photoBasePrompt = imagePrompt;
             const useTextFree =
-              renderMode === 'editable' &&
-              typeof photoReference === 'string' &&
-              photoReference.length > 0;
+              typeof photoReference === 'string' && photoReference.length > 0;
             if (useTextFree) {
               try {
                 photoBasePrompt = applyStylePreset(
