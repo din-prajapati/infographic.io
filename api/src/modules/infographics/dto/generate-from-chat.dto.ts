@@ -148,19 +148,25 @@ export class GenerateFromChatDto {
   @IsOptional()
   agent?: AgentDto;
 
-  @ApiProperty({
-    example: 'flat',
-    description:
-      'How the client intends to render the result. ' +
-      '"flat" (default) loads as a raster layer. ' +
-      '"editable" triggers lazy layer extraction on Edit and loads slot-tagged text elements.',
-    required: false,
-    enum: ['flat', 'editable'],
-    default: 'flat',
-  })
-  @IsEnum(['flat', 'editable'])
+  /**
+   * DEPRECATED — US-EDIT-009. Accepted and ignored; nothing reads it.
+   *
+   * Generation is always flat now, so this carries no meaning. It stays
+   * declared purely so a browser running yesterday's bundle keeps working:
+   * main.ts sets `forbidNonWhitelisted: true`, which turns any undeclared
+   * property into a 400. Deleting this outright would fail every generate
+   * from a stale tab — a user mid-session would see their next generation
+   * break for no reason they could act on.
+   *
+   * Deliberately untyped and unvalidated: a compatibility shim should accept
+   * whatever the old client sends, including values an older build might have
+   * produced, and discard them. It is omitted from Swagger so it cannot read
+   * as a supported option.
+   *
+   * Remove once no deployed client sends it.
+   */
   @IsOptional()
-  renderMode?: 'flat' | 'editable';
+  renderMode?: unknown;
 }
 
 export class RegenerateDto {

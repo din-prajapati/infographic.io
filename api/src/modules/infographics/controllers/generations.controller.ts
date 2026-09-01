@@ -102,7 +102,9 @@ export class GenerationsController {
   /**
    * POST /:id/compose
    *
-   * Lazy layer extraction — called only when the user clicks "Edit" in renderMode='editable'.
+   * Lazy layer extraction — called when the user presses "Edit elements" on a
+   * design already placed on the canvas (US-EDIT-009; previously this was
+   * reached from AI Chat's pre-generation Flat/Editable toggle).
    * Runs Ideogram Layerize-Text on the chosen variation, binds text blocks to canonical
    * listing fields, and returns a ComposedDesign for the client canvas loader (US-AI-032 T4).
    *
