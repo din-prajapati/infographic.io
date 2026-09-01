@@ -1,0 +1,21 @@
+{
+  "story_id": "US-EDIT-009",
+  "title": "Remove the pre-placement Flat/Editable toggle",
+  "domain": "EDIT",
+  "rules_loaded": [
+    ".orion/rules/PROJECT.md",
+    ".orion/rules/AGILE.md",
+    ".orion/rules/BUSINESS_DOMAIN.md",
+    ".orion/rules/SECURITY.md",
+    ".orion/rules/OBSERVABILITY.md"
+  ],
+  "touches": {
+    "layers": ["frontend", "backend", "testing"],
+    "modules": ["ai-chat", "editor", "infographics", "ai-generation"]
+  },
+  "ac_coverage": {
+    "required": ["happy-path", "error-path"],
+    "present": ["happy-path", "regression", "error-path"],
+    "verified": false
+  }
+}
