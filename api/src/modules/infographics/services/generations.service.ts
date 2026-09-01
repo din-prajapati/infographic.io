@@ -194,10 +194,10 @@ export class GenerationsService {
               variations: dto.variations || 3,
               style: dto.style,
               orientation: dto.orientation || 'landscape',
+              // US-EDIT-009: renderMode is no longer threaded. The orchestrator
+              // selects the US-AI-051 text-free prompt from photoReference
+              // alone — a fact about the request, not a user preference.
               photoReference: dto.photoReference,
-              // US-AI-051: thread renderMode so the orchestrator can select the
-              // text-free prompt variant when editable + real-photo are combined.
-              renderMode: dto.renderMode,
             },
             this.progressGateway, // Pass gateway for progress updates
           );
