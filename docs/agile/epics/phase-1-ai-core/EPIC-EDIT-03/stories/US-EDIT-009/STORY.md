@@ -80,37 +80,49 @@ offered twice, at two moments, with the earlier one requiring a prediction.
       client, a cached bundle) is accepted and ignored rather than rejected. Removing a field must
       not 400 a user mid-session on a stale tab.
 
+- [ ] **AC8 [happy-path]:** *(the Option A decision, in code)* The text-free branch in
+      `api/src/modules/ai-generation/services/ai-orchestrator.service.ts` (`useTextFree`, currently
+      lines 269–272) drops its `renderMode === 'editable' &&` clause and keeps the rest verbatim:
+      `typeof photoReference === 'string' && photoReference.length > 0`. That empty-string guard is
+      US-AI-051's own AC7 and must survive untouched. A real-photo generation therefore takes the
+      text-free prompt with no mode involved; a synthetic (no-photo) generation still takes the
+      composed text-baked prompt, exactly as `88db72d` established. The `buildTextFreeImagePrompt`
+      doc comment in `infographic-prompt.builder.ts:284` is updated — it currently states the
+      `renderMode` condition that is being removed.
+
 ---
 
-## Open Questions — decide before implementing
+## Decisions — settled 2026-09-01
 
-- [ ] **What happens to the real-photo text-free path?** ⚠️ **This is the one that changes scope.**
+- [x] **The real-photo text-free path survives. → Option A.**
 
   `api/src/modules/ai-generation/services/infographic-prompt.builder.ts` has
-  `buildTextFreeImagePrompt`, used **only** when `renderMode === 'editable'` **and** a photo
+  `buildTextFreeImagePrompt`, used today **only** when `renderMode === 'editable'` **and** a photo
   reference is present. Its doc says why:
 
   > *"Baking headline/price/address onto the user's actual listing photo is undesirable when
   > Editable mode is active — the layout engine (US-AI-043) will overlay those values as live
   > canvas elements."*
 
-  Remove `renderMode` naively and that path becomes unreachable. On real-photo generations the
-  headline and price get **baked into the customer's own listing photograph**, and `layerize-text`
-  has to lift them off afterwards — an endpoint `EPIC-INFRA-02`'s own notes describe as working
-  *"best with clear, straight text in standard typography."*
+  **Decision: re-trigger it from `photoReference != null` alone.** The toggle was never the
+  *reason* for the text-free variant — it was only the signal that happened to carry it. The real
+  condition is a fact about the request, not a user preference, so it belongs in the code rather
+  than in a question put to the user.
 
-  | Option | Trade |
-  |---|---|
-  | **A — Drive it from "photo present" instead of `renderMode`** ← recommended | Keeps the quality reason the path was built for, still removes the toggle. The condition becomes a fact about the request rather than a user preference. Slightly larger diff in the prompt builder. |
-  | **B — Accept the loss** | One prompt path, simplest product. Real-photo designs depend entirely on extraction quality to become editable, on photographs where text is hardest to lift. |
+  Rejected alternative — accept the loss (one prompt path, simplest product): on real-photo
+  generations the headline and price would get baked into the customer's own listing photograph,
+  leaving `layerize-text` to lift them back off. `EPIC-INFRA-02`'s notes describe that endpoint as
+  working *"best with clear, straight text in standard typography"* — a photograph is its hardest
+  case, and it is the customer's own asset being marked up.
 
-  Option A is recommended because the toggle was never the *reason* for the text-free variant — it
-  was only the signal that happened to carry it. `photoReference != null` is the real condition.
+  **Implementation consequence:** the condition inverts cleanly — where the builder reads
+  `renderMode === 'editable' && photoReference`, it reads `photoReference != null`. Synthetic
+  (no-photo) generations are unaffected and keep producing text-baked images for extraction to
+  detect, exactly as `88db72d` established. See AC8 and TC-EDIT-009-06.
 
-- [ ] **Does `US-AI-051` need reopening?** Its text-free generate-time path is currently reachable
-      only through the toggle this story removes. Under Option A it survives with a new trigger;
-      under Option B it is dead code and the story should be marked superseded rather than left
-      claiming ✅.
+- [x] **`US-AI-051` is not reopened and not superseded.** Under Option A its behaviour survives
+      with a new trigger, so its ACs stay truthfully ✅. AC8 below is the one that keeps that true;
+      the flag on that card is cleared when this story closes.
 
 ---
 
@@ -129,23 +141,38 @@ offered twice, at two moments, with the earlier one requiring a prediction.
 
 | TC ID | Type | Priority | Scenario | Status | Finding |
 |-------|------|:--------:|----------|:------:|---------|
-| TC-EDIT-009-01 | Unit | P0 | `AIChatBox` renders no flat/editable control; `grep -c renderMode` is 0 in that file and `RightSidebar` | 🔲 | |
-| TC-EDIT-009-02 | Unit | P0 | The generate request body contains no `renderMode` key | 🔲 | |
-| TC-EDIT-009-03 | Unit | **P0** | regression: `CanvasEditToolbar` still reports editable state from the canvas alone — a freshly opened template with no AI content does **not** claim to be editable after an unrelated compose | 🔲 | |
-| TC-EDIT-009-04 | Unit | P0 | `planVariationLoad` still returns `EDITABLE_REQUIRES_UPGRADE_REASON` for an unentitled plan | 🔲 | |
-| TC-EDIT-009-05 | Unit | P1 | error-path: a request body still carrying `renderMode` is accepted and ignored, not 400'd | 🔲 | |
-| TC-EDIT-009-06 | Unit | P1 | *(Option A only)* `buildTextFreeImagePrompt` is selected when a photo reference is present, with no `renderMode` involved | 🔲 | |
+> Row IDs and AC mapping are generated by `orion tc-rows`. Scenario text is hand-written —
+> the generator truncates the AC's first line, which is not a testable scenario. **If you re-run
+> `harden`, this column is regenerated and these scenarios are lost** (the CLI preserves Status
+> and Finding by TC ID, but not Scenario). Restore from git if that happens.
+
+| TC ID | AC | Type | Priority | Scenario | Status | Finding |
+|-------|:--:|------|:--------:|----------|:------:|---------|
+| TC-EDIT-009-01 | AC1 | Unit | P0 | `AIChatBox` renders no flat/editable control — the toggle at line 1461 is gone and no mode choice appears anywhere pre-generation | 🔲 | |
+| TC-EDIT-009-02 | AC2 | Unit | P0 | `grep -c renderMode` returns 0 for both `AIChatBox.tsx` and `RightSidebar.tsx` | 🔲 | |
+| TC-EDIT-009-03 | AC3 | Unit | P0 | the generate request body built in `api.ts` contains no `renderMode` key, and `GenerateFromChatInput` has no such field | 🔲 | |
+| TC-EDIT-009-04 | AC4 | Unit | P0 | the DTO, controller, service and orchestrator options type no longer declare `renderMode` | 🔲 | |
+| TC-EDIT-009-05 | AC5 | Unit | **P0** | regression — **the one that matters:** `CanvasEditToolbar` still reports editable state from the canvas alone; a freshly opened template with no AI content does **not** claim to be editable after an unrelated compose succeeds | 🔲 | |
+| TC-EDIT-009-06 | AC6 | Unit | P0 | regression: `planVariationLoad` still returns `EDITABLE_REQUIRES_UPGRADE_REASON` for an unentitled plan — plan gating is independent of how the mode was chosen | 🔲 | |
+| TC-EDIT-009-07 | AC7 | Unit | P1 | error-path: a request body still carrying `renderMode` (stale tab, cached bundle) is accepted and ignored, not 400'd | 🔲 | |
+| TC-EDIT-009-08 | AC8 | Unit | P0 | `buildTextFreeImagePrompt` is selected when a photo reference is present, with no `renderMode` involved | 🔲 | |
+| TC-EDIT-009-09 | AC8 | Unit | P0 | regression: a synthetic (no-photo) generation still takes the composed text-baked prompt — the `88db72d` extraction path is unchanged | 🔲 | |
+| TC-EDIT-009-10 | AC8 | Unit | P1 | edge-case: `photoReference` present but empty-string still falls through to the composed prompt — US-AI-051's AC7 guard survives | 🔲 | |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
+
+> **TC-09 and TC-10 are hand-added** beyond the generator's one-row-per-AC output. AC8 changes a
+> three-conjunct branch condition; one row cannot cover entering it, not entering it, and the
+> empty-string guard that must survive. `tc-rows --write` will drop them on a re-run.
 
 ---
 
 ## Definition of Done
 
 - [ ] All ACs checked
-- [ ] The Open Question above is **decided and recorded in this card**, not left open
+- [x] The scope question is **decided and recorded in this card** — Option A, 2026-09-01
 - [ ] Gate 1 passes (`npm run check` + `npm run test:unit`)
 - [ ] Gate 2 — visual check on staging: generate from AI Chat, confirm no mode choice appears, then
       press "Edit elements" on the placed image and confirm text extracts
-- [ ] `US-AI-051` status reconciled per the second open question
+- [ ] `US-AI-051` stays ✅ and its "Reachability at risk" banner is removed (Option A preserved it)
 - [ ] PR opened with story card as description

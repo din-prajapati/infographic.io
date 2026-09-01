@@ -33,12 +33,10 @@ feat(edit): T{n} {summary} — US-EDIT-009
 
 ## Task Breakdown
 
-### T0 — Decide the real-photo text-free question ⚠️ **do this first**
-- **Type:** decision, no code
-- Answer the Open Question in STORY.md and write the choice into the card. Option A (drive
-  `buildTextFreeImagePrompt` from `photoReference != null`) changes T4's shape; Option B deletes
-  that path entirely and reopens `US-AI-051`.
-- Implementing before deciding means writing T4 twice.
+### T0 — ✅ Decided 2026-09-01: **Option A**
+- **Type:** decision, no code — recorded in STORY.md §Decisions
+- The text-free real-photo path survives, re-triggered from `photoReference` alone.
+  `US-AI-051` is neither reopened nor superseded. T4 and T4a below are shaped by this.
 
 ### T1 — Remove the toggle from AI Chat
 - **File:** `client/src/components/ai-chat/AIChatBox.tsx`
@@ -63,7 +61,17 @@ feat(edit): T{n} {summary} — US-EDIT-009
 - **Type:** `feat` · **AC(s):** AC4, AC7
 - The DTO field is removed but an incoming `renderMode` must be **ignored, not rejected** — a
   stale browser tab should not start 400ing mid-session.
-- `infographic-prompt.builder.ts` is T0's outcome, not a mechanical edit.
+
+### T4a — Re-trigger the text-free path from the photo (Option A)
+- **File:** `api/src/modules/ai-generation/services/ai-orchestrator.service.ts` (`useTextFree`,
+  lines 269–272), `infographic-prompt.builder.ts` (doc comment, line 284)
+- **Type:** `feat` · **AC(s):** AC8
+- Delete **only** the `renderMode === 'editable' &&` clause. The two remaining conjuncts
+  (`typeof photoReference === 'string' && photoReference.length > 0`) are US-AI-051's AC7 guard —
+  leave them exactly as written. The AC6 try/catch fallback around `buildTextFreeImagePrompt` also
+  stays; it is unrelated to how the branch is entered.
+- Split from T4 so the diff that *removes* a parameter is separable from the diff that *changes
+  behaviour*. If the text-free trigger turns out wrong on staging, this reverts alone.
 
 ### T5 — Tests
 - **File:** `client/src/lib/layout/__tests__/loadVariation.spec.ts` (9 existing assertions),
@@ -77,14 +85,17 @@ feat(edit): T{n} {summary} — US-EDIT-009
 
 ## Task Checklist
 
-- [ ] T0 — Decide the text-free question (blocks T4)
+- [x] T0 — Decide the text-free question → **Option A**, 2026-09-01
 - [ ] T1 — Remove the toggle from AIChatBox
 - [ ] T2 — Remove renderMode from RightSidebar
 - [ ] T3 — Drop it from the client contract
 - [ ] T4 — Retire the server parameter
+- [ ] T4a — Re-trigger the text-free path from the photo
 - [ ] T5 — Tests
 - [ ] Gate 1 passes
 - [ ] Gate 2 — staging visual check (generate → no mode choice → Edit elements works)
-- [ ] US-AI-051 status reconciled
+- [ ] Gate 2 — staging real-photo check: generate from an uploaded listing photo, confirm the
+      background comes back **unmarked** (T4a's whole point)
+- [ ] US-AI-051 banner removed, status stays ✅
 - [ ] PR opened with story card as description
 - [ ] STORY.md ACs ticked off
