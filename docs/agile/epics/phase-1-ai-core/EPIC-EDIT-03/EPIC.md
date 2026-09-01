@@ -163,6 +163,36 @@ against a dependency nobody owned.
 
 ## Implementation Update (log)
 
+### 2026-09-01 — US-EDIT-009 implemented (M-EDIT-03): one editable path
+
+The pre-generation "Edit as: Flat / Editable" toggle is gone from both of the places it rendered
+in AI Chat, and from Quick Generate. Generation is always flat; text becomes editable only via
+`CanvasEditToolbar`, after the design is on the canvas. Gate 1 green (types clean, 497 backend +
+262 client tests). Gate 2 (staging) outstanding.
+
+Three findings worth carrying forward, because two of them were defects in the story card itself:
+
+- **AC9, a regression the original ACs would have shipped.** `setActiveGenerationId` was called in
+  exactly one place — RightSidebar's *panel-triggered* WebSocket handler. Removing AI Chat's own
+  editable branch would therefore have stranded every AI Chat design at *"Design isn't linked to a
+  generation"* on Edit elements — the toast that already claimed the feature works "right after a
+  Quick Generate or AI Chat result". Worse was the stale case: a leftover id from an earlier Quick
+  Generate would have composed the text of a design the user was no longer looking at. AI Chat now
+  publishes its id like the sidebar does. Found by tracing the surviving path, not by review.
+- **AC4 and AC7 could not both hold literally.** `main.ts` sets `forbidNonWhitelisted: true`, so
+  deleting `renderMode` from the DTO would 400 every generate from a stale browser tab. The field
+  stays as an ignored, unvalidated, Swagger-hidden compatibility shim; everything else stops
+  reading it. Delete the shim once no deployed client sends it.
+- **AC6 was wrong and was not followed.** `loadVariation.ts`'s `renderMode` is a *function
+  parameter*, not the session preference — `CanvasEditToolbar` passes it hardcoded as `'editable'`,
+  and that is the path the story exists to preserve. Changing it to a "flat-only contract" would
+  have broken exactly that. The file is unchanged and its 9 assertions pass as-is.
+
+Also: `US-AI-051`'s text-free prompt now triggers on `photoReference` alone (Option A). A
+real-photo generation gets an unmarked background whether or not the user would once have chosen
+Editable — headline and price are no longer baked into the customer's own listing photograph.
+Verified by a mutation-checked test; the two sibling cases are documented as guards, not proofs.
+
 ### 2026-08-22 — Verification + correction pass (US-EDIT-005)
 - Implementation was checked against the actual code (not just its own TASKS.md claims) before any
   manual testing had occurred; STORY.md had marked itself ✅ Done while its own DoD checklist and
