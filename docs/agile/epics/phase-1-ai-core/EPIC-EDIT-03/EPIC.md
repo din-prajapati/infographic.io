@@ -11,7 +11,7 @@ updated: 2026-08-26
 > **Status:** 🟡 In Progress — **M-EDIT-01 closed 2026-08-26.** US-EDIT-005 shipped and was
 > live-verified; its AC4 was descoped to US-EDIT-008, which now owns the quota badge and the
 > backend response-shape change it depends on. M-EDIT-02 (brand layers) scaffolded, not started.
-> Open: US-EDIT-006, US-EDIT-007, US-EDIT-008.
+> Open: US-EDIT-006, US-EDIT-007, US-EDIT-008, US-EDIT-009.
 > **Linear Project:** LIN-EPIC-XXX
 > **Target date:** ships alongside EPIC-INFRA-02 / EPIC-PAY-05, before the revenue-on flip
 > **Owner:** Dinesh
@@ -70,6 +70,7 @@ gated behind having already generated something.
 |-----------|-------|--------|:------:|
 | [M-EDIT-01-editable-menu-surfacing](milestones/M-EDIT-01-editable-menu-surfacing.md) | Promote the existing renderMode toggle to a persistent, labeled entry point | 2026-08-26 | ✅ |
 | [M-EDIT-02-brand-layers](milestones/M-EDIT-02-brand-layers.md) | Agent brand furniture (logo, licence, headshot, QR) as real canvas layers | TBD | 🔲 |
+| [M-EDIT-03-single-editable-path](milestones/M-EDIT-03-single-editable-path.md) | Remove the pre-placement Flat/Editable toggle — one way to get editable text, on the canvas | TBD | 🔲 |
 
 ---
 
@@ -81,6 +82,7 @@ gated behind having already generated something.
 | 2 | [US-EDIT-006](stories/US-EDIT-006/STORY.md) | Brand layers from existing data — logo + licence | M-EDIT-02 | M | — | 🔲 | — |
 | 3 | [US-EDIT-007](stories/US-EDIT-007/STORY.md) | Agent headshot + QR code | M-EDIT-02 | M | US-EDIT-006 | 🔲 | — |
 | 4 | [US-EDIT-008](stories/US-EDIT-008/STORY.md) | Editable quota badge + charge confirmation | M-EDIT-01 | M | — (deferred from US-EDIT-005 AC4) | 🔲 | — |
+| 5 | [US-EDIT-009](stories/US-EDIT-009/STORY.md) | Remove the pre-placement Flat/Editable toggle | M-EDIT-03 | M | — | 🔲 | — |
 
 > **Revised 2026-08-21** — original scope was an in-place relabel of the existing `RightSidebar`
 > toggle (S-size). Revised after reviewing `design-preview-canvas-menu.html`: a floating
