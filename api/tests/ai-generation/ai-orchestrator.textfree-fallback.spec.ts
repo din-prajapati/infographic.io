@@ -12,9 +12,10 @@
  *
  * Location: AiOrchestrator.generateInfographic() → the prompt handed to
  *   IdeogramService.composeWithSourceImage() (the photo-remix branch).
- * Condition: options.renderMode = 'editable' AND options.photoReference is a
- *   non-empty string (the only branch that ever calls buildTextFreeImagePrompt),
- *   with buildTextFreeImagePrompt mocked to throw.
+ * Condition: options.photoReference is a non-empty string — the only branch
+ *   that ever calls buildTextFreeImagePrompt — with buildTextFreeImagePrompt
+ *   mocked to throw. US-EDIT-009 removed the additional renderMode='editable'
+ *   requirement; the fallback behaviour under test is unchanged.
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -104,8 +105,9 @@ describe('AiOrchestrator.generateInfographic — TC-AI-051-06 (AC6, error-path)'
     await expect(
       orch.generateInfographic('inf-051-06', PROP, {
         variations: 1,
+        // US-EDIT-009: the photo alone now selects the text-free prompt —
+        // renderMode: 'editable' used to be required here and no longer exists.
         photoReference: PHOTO_URL,
-        renderMode: 'editable',
       }),
     ).resolves.toBeUndefined();
 
