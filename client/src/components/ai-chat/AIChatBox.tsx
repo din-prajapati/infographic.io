@@ -37,9 +37,7 @@ import {
   loadTestConversations,
   clearConversations,
 } from "./testConversationsData";
-import { planVariationLoad, EDITABLE_REQUIRES_UPGRADE_REASON } from "@/lib/layout/loadVariation";
 import { useGenerationPrefs } from "@/hooks/useGenerationPrefs";
-import { useComposeProgress } from "@/hooks/useComposeProgress";
 import {
   generationsApi,
   extractionsApi,
@@ -137,35 +135,16 @@ export function AIChatBox({
   const [generationQualityModel, setGenerationQualityModel] =
     useState<ImageQualityModel>("ideogram-turbo");
 
-  /**
-   * Render mode: 'flat' loads AI generations as a single raster layer (existing behaviour).
-   * 'editable' triggers lazy layer extraction on the Edit action and loads canonical text
-   * as slot-tagged, individually selectable canvas elements (US-AI-032 T2).
-   * Provider-agnostic — describes the output shape, never the vendor.
-   */
-  const renderMode = useGenerationPrefs((s) => s.renderMode);
-  const setRenderMode = useGenerationPrefs((s) => s.setRenderMode);
+  // US-EDIT-009 AC9 — the surviving editable path (CanvasEditToolbar) resolves
+  // the generation to compose from this store, so every surface that produces
+  // results must publish its id here. Note this is `activeGenerationId`, not
+  // the removed `renderMode`: an identity, not a preference.
+  const setActiveGenerationId = useGenerationPrefs((s) => s.setActiveGenerationId);
 
-  // US-AI-050 — tracks whether POST /:id/compose is in flight for the Edit action.
-  // Active only in editable mode while the compose call is running.
-  const [composeInFlight, setComposeInFlight] = useState(false);
-  const composeProgress = useComposeProgress(
-    composeInFlight && renderMode === "editable",
-  );
-
-  // US-AI-050 — update the compose-progress toast as the label changes (AC1/AC2).
-  // Sonner updates the existing toast when the same id is passed again.
-  // The toast is dismissed when compose finishes (setComposeInFlight(false)).
-  useEffect(() => {
-    if (!composeInFlight) {
-      toast.dismiss("compose-progress");
-      return;
-    }
-    toast.info(composeProgress.label, {
-      id: "compose-progress",
-      duration: Infinity,
-    });
-  }, [composeInFlight, composeProgress.label]);
+  // US-AI-050's compose-progress tracker lived here. US-EDIT-009 removed it:
+  // this panel no longer calls POST /:id/compose at all, so the flag could
+  // never become true. The elapsed-time affordance still exists on the surface
+  // that does compose — CanvasEditToolbar, via useComposeProgress.
 
   // Conversation history with previews
   const [conversationHistory, setConversationHistory] = useState<
@@ -391,6 +370,13 @@ export function AIChatBox({
       // Pair the results with their generation for the editable Edit path —
       // genId is captured here because currentGenerationId is nulled below.
       setResultsGenerationId(genId);
+      // US-EDIT-009 AC9 — mirror it into the shared store as well, the way
+      // RightSidebar's own handler does. CanvasEditToolbar is now the only way
+      // to reach editable text, and it reads the id from here; without this,
+      // every AI Chat design answers "isn't linked to a generation", and a
+      // leftover id from an earlier Quick Generate would be worse still —
+      // composing the text of a design the user is no longer looking at.
+      setActiveGenerationId(genId);
       if (uiVariations.length > 0) {
         setSelectedVariationId(uiVariations[0].id);
       }
@@ -847,9 +833,6 @@ export function AIChatBox({
         headline: propertyHeadline.trim() || undefined,
         // Pass uploaded property photo ID as style reference (AC3)
         photoReference: photoId ?? undefined,
-        // US-AI-032 T2: signal intended render mode. 'editable' is only meaningful when
-        // a photoReference is present (the Layerize step requires a composition).
-        renderMode,
         agent: {
           name: agentInfo.name || undefined,
           brokerage: agentInfo.brokerage || undefined,
@@ -1133,15 +1116,12 @@ export function AIChatBox({
   };
 
   /**
-   * US-AI-032 T4 — route Edit action to the right canvas loader.
+   * Load the chosen variation onto the canvas as a flat raster.
    *
-   * renderMode='flat'     → flat raster (existing path, unchanged).
-   * renderMode='editable' → call POST /compose (lazy Layerize extraction),
-   *                         carry ComposedDesign through onTemplateLoad so
-   *                         CenterCanvas can call loadComposedDesignToCanvas.
-   *
-   * 'Use' variation (handleUseVariation) always stays on the flat path —
-   * it is a quick insertion without extraction cost.
+   * US-EDIT-009: this used to branch on renderMode and, in editable mode, call
+   * POST /compose here — before the user had seen the design on the canvas.
+   * Extraction is now always a post-placement action taken from
+   * CanvasEditToolbar, so there is one path and it is this one.
    */
   const handleEditVariation = async (id: string) => {
     const variation = resultVariations.find((v) => v.id === id);
@@ -1150,90 +1130,17 @@ export function AIChatBox({
       return;
     }
 
-    if (renderMode === 'editable' && resultsGenerationId) {
-      // Editable path: fetch ComposedDesign (lazy extraction) then hand off.
-      try {
-        // US-AI-050: start the elapsed-time progress tracker before the compose call.
-        setComposeInFlight(true);
-        toast.info("Preparing editable design…", {
-          description: "Extracting text layers — this takes a moment.",
-          id: "compose-progress",
-        });
-
-        // Shared with Quick Generate (US-AI-047) — one implementation of the
-        // flat-vs-editable decision so the two surfaces cannot drift.
-        const plan = await planVariationLoad({
-          generationId: resultsGenerationId,
-          variation: { id: variation.id, imageUrl: variation.previewUrl, title: variation.title },
-          renderMode,
-          orientation: generationOrientation,
-        });
-
-        if (plan.reason === EDITABLE_REQUIRES_UPGRADE_REASON) {
-          // US-LAUNCH-015 AC5 — FREE trial used. Design still loads flat
-          // below; this is purely the upgrade nudge, never a dead end.
-          toast.error("Editable designs are a paid feature", {
-            description: "Your free trial has been used. Upgrade to keep editing designs.",
-            action: { label: "View plans", onClick: () => { window.location.href = "/pricing"; } },
-          });
-        } else if (plan.reason?.toLowerCase().includes("monthly limit")) {
-          // US-LAUNCH-015 AC4 — extra compose would exceed the plan's
-          // monthly credit limit. Same toast shape the generate path uses.
-          toast.error("Monthly limit reached", {
-            description: plan.reason,
-            action: { label: "View plans", onClick: () => { window.location.href = "/pricing"; } },
-          });
-        } else if (plan.reason) {
-          console.warn('[AIChatBox] editable degraded:', plan.reason);
-        }
-
-        const template: Template = {
-          id: variation.id,
-          name: variation.title || "AI Generated Design",
-          category: "listing-announcements",
-          description: variation.description || "AI-generated marketing design",
-          previewImage: variation.previewUrl,
-          isAiVariation: true,
-          aiOrientation: generationOrientation,
-          emoji: "🎨",
-          composedDesign: plan.composedDesign,
-        };
-        // Stop the progress tracker before handing off to the canvas loader.
-        setComposeInFlight(false);
-        onTemplateLoad(template);
-      } catch (err: any) {
-        setComposeInFlight(false);
-        console.error("[AIChatBox] Compose failed — falling back to flat", err);
-        toast.error("Layer extraction failed", {
-          description: "Loading as flat design instead.",
-        });
-        // Degrade gracefully: fall through to flat path below.
-        const template: Template = {
-          id: variation.id,
-          name: variation.title || "AI Generated Design",
-          category: "listing-announcements",
-          description: variation.description || "AI-generated marketing design",
-          previewImage: variation.previewUrl,
-          isAiVariation: true,
-          aiOrientation: generationOrientation,
-          emoji: "🎨",
-        };
-        onTemplateLoad(template);
-      }
-    } else {
-      // Flat path (default / AC4).
-      const template: Template = {
-        id: variation.id,
-        name: variation.title || "AI Generated Design",
-        category: "listing-announcements",
-        description: variation.description || "AI-generated marketing design",
-        previewImage: variation.previewUrl,
-        isAiVariation: true,
-        aiOrientation: generationOrientation,
-        emoji: "🎨",
-      };
-      onTemplateLoad(template);
-    }
+    const template: Template = {
+      id: variation.id,
+      name: variation.title || "AI Generated Design",
+      category: "listing-announcements",
+      description: variation.description || "AI-generated marketing design",
+      previewImage: variation.previewUrl,
+      isAiVariation: true,
+      aiOrientation: generationOrientation,
+      emoji: "🎨",
+    };
+    onTemplateLoad(template);
 
     // Close the panel but keep resultVariations in state so the user can
     // reopen the chat and pick a different variation without re-generating.
@@ -1445,38 +1352,12 @@ export function AIChatBox({
                 onEditVariation={handleEditVariation}
               />
 
-              {/* Render-mode toggle — conversation view.
-                  This is the ONLY render path once any message has been sent
-                  (see MessageBubble.tsx's onEditVariation comment for why the
-                  sibling "Default View" toggle below can never actually show
-                  with results). Placed above the input so it's reachable
-                  whether or not results exist yet — it sets the preference
-                  the NEXT generate() call reads, matching RightSidebar's
-                  same-store pattern (US-AI-047). */}
-              {!state.isGenerating && (
-                <div className="px-4 pb-2 flex items-center gap-2 shrink-0">
-                  <span className="text-xs text-muted-foreground shrink-0">Edit as:</span>
-                  <div className="flex rounded-md border border-border overflow-hidden text-xs">
-                    <button
-                      className={`px-2.5 py-1 transition-colors ${renderMode === 'flat' ? 'bg-primary text-primary-foreground' : 'bg-background text-muted-foreground hover:text-foreground'}`}
-                      onClick={() => setRenderMode('flat')}
-                      title="Load as a single raster layer"
-                    >
-                      Flat
-                    </button>
-                    <button
-                      className={`px-2.5 py-1 transition-colors ${renderMode === 'editable' ? 'bg-primary text-primary-foreground' : 'bg-background text-muted-foreground hover:text-foreground'}`}
-                      onClick={() => setRenderMode('editable')}
-                      title="Extract text layers — editable slots in the sidebar"
-                    >
-                      Editable
-                    </button>
-                  </div>
-                  {renderMode === 'editable' && !photoId && (
-                    <span className="text-[10px] text-amber-500">Upload a photo for best results</span>
-                  )}
-                </div>
-              )}
+              {/* US-EDIT-009 removed the "Edit as: Flat / Editable" toggle that
+                  stood here. It asked the user to predict, before any design
+                  existed, whether they would later want to edit the text — and
+                  the answer could not be revised without regenerating. Text is
+                  now extracted on demand from CanvasEditToolbar, once the
+                  design is on the canvas and there is something to judge. */}
 
               {/* Progress Bar (Sticky during generation) */}
               <AnimatePresence>
@@ -1596,34 +1477,8 @@ export function AIChatBox({
                     />
                   )}
 
-                {/* Render-mode toggle — shown when results are present (US-AI-032 T2).
-                    'flat' = raster layer (existing behavior, default).
-                    'editable' = lazy layer extraction → slot-tagged text elements.
-                    Only meaningful when a property photo was uploaded (photoReference). */}
-                {!state.isGenerating && resultVariations.length > 0 && (
-                  <div className="px-4 pb-2 flex items-center gap-2">
-                    <span className="text-xs text-muted-foreground shrink-0">Edit as:</span>
-                    <div className="flex rounded-md border border-border overflow-hidden text-xs">
-                      <button
-                        className={`px-2.5 py-1 transition-colors ${renderMode === 'flat' ? 'bg-primary text-primary-foreground' : 'bg-background text-muted-foreground hover:text-foreground'}`}
-                        onClick={() => setRenderMode('flat')}
-                        title="Load as a single raster layer"
-                      >
-                        Flat
-                      </button>
-                      <button
-                        className={`px-2.5 py-1 transition-colors ${renderMode === 'editable' ? 'bg-primary text-primary-foreground' : 'bg-background text-muted-foreground hover:text-foreground'}`}
-                        onClick={() => setRenderMode('editable')}
-                        title="Extract text layers — editable slots in the sidebar"
-                      >
-                        Editable
-                      </button>
-                    </div>
-                    {renderMode === 'editable' && !photoId && (
-                      <span className="text-[10px] text-amber-500">Upload a photo for best results</span>
-                    )}
-                  </div>
-                )}
+                {/* The second copy of the render-mode toggle stood here — see the
+                    US-EDIT-009 note above the progress bar. Both are gone. */}
 
                 {/* Result Variations */}
                 {!state.isGenerating && resultVariations.length > 0 && (
