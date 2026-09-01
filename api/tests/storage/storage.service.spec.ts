@@ -128,6 +128,35 @@ describe('StorageService (US-INFRA-001)', () => {
   // ---------------------------------------------------------------------------
   // TC-INFRA-001-04
   // ---------------------------------------------------------------------------
+  // ---------------------------------------------------------------------------
+  // AC7 [rollback] — exactly one provider write, so no partial state exists
+  // ---------------------------------------------------------------------------
+  describe('AC7: upload() is a single write', () => {
+    it('invokes S3Client.send exactly once per upload', async () => {
+      mockSend.mockResolvedValue({});
+
+      await service.upload(Buffer.from('x'), 'infographics/img.jpg', 'image/jpeg');
+
+      // The count is the contract. INFRA requires rollback coverage because storage work
+      // normally pairs a provider write with a DB write and those are not atomic — see
+      // US-INFRA-002 AC6. This service is the one place the property holds by construction.
+      // If a second write is ever added here (a manifest, an index entry, a DB row), this
+      // fails and forces the atomicity question at the point it becomes real.
+      expect(mockSend).toHaveBeenCalledTimes(1);
+      expect(MockPutObjectCommand).toHaveBeenCalledTimes(1);
+    });
+
+    it('a failed upload leaves nothing behind to undo — one attempted write, no retry', async () => {
+      mockSend.mockRejectedValue(new Error('R2 network failure'));
+
+      await expect(service.upload(Buffer.from('x'), 'k.jpg')).rejects.toThrow();
+
+      // No internal retry either: a silent retry would be a second write the caller
+      // never asked for and cannot reason about.
+      expect(mockSend).toHaveBeenCalledTimes(1);
+    });
+  });
+
   describe('contentType defaulting', () => {
     it('defaults to application/octet-stream when omitted', async () => {
       mockSend.mockResolvedValue({});

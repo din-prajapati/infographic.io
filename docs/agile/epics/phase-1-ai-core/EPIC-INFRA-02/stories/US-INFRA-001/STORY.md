@@ -39,6 +39,12 @@ updated: 2026-08-19
 
 - [x] **AC5 [edge-case]:** All five env vars — `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`, `R2_PUBLIC_URL` — appear as placeholder (non-secret, example) entries in `.env.example`. Provisioning the actual Cloudflare R2 bucket and generating the API token are documented as a human prerequisite in `docs/agile/epics/phase-1-ai-core/EPIC-INFRA-02/ENV.yaml` (file already exists and already contains all five vars as of story creation; Claude must not add real credential values to any committed file).
 
+- [x] **AC7 [rollback]:** A single `StorageService.upload()` call performs **exactly one** provider write — `S3Client.send()` is invoked once, with one `PutObjectCommand` — so no partially-written state is representable inside the service and there is nothing to roll back. Verified in `api/tests/storage/storage.service.spec.ts` by asserting the call count, not merely that the upload resolved.
+
+  > **Why an AC for an absence.** `INFRA` requires `rollback` coverage because storage work usually pairs a provider write with a database write, and those two are not atomic — that is exactly what `US-INFRA-002` AC6 and `US-INFRA-003` AC6 address. This service is the one place in the domain where the property holds *by construction*: it does one thing.
+  >
+  > Pinning it is not box-ticking. The moment someone adds a second write here — a manifest object, an index entry, a DB row recording the upload — this AC fails and forces the atomicity question at the point it becomes real, instead of it being discovered later as an orphan. Multi-write atomicity stays the caller's problem, which is why `upload()` re-throws (AC3) rather than deciding for them.
+
 - [x] **AC6 [security]:** `api/src/config/env.validation.ts` aborts boot when `R2_BUCKET_NAME` is set, `APP_ENV` is not `production`, and `R2_BUCKET_NAME` does not contain the substring `staging` — with an error naming the offending variable and its value. When `APP_ENV` **is** `production`, no such check applies. When `R2_BUCKET_NAME` is **absent**, boot proceeds unaffected (R2 is unconfigured until the human prerequisite is done, and this story must not brick an environment that has not been provisioned yet). Verified by unit tests in `api/tests/config/env.validation.spec.ts` covering all four cases: staging + non-staging bucket → throws; staging + staging bucket → passes; production + non-staging bucket → passes; bucket absent → passes.
 
   > **Why this AC exists.** Every other guard in this codebase leans on the provider separating
