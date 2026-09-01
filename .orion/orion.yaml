@@ -8,7 +8,7 @@
 # Docs:    https://github.com/din-prajapati/orion-ai-sdlc
 
 version: 1
-orion: "0.7.0"
+orion: "0.7.1"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # PROJECT — identity of the host project.

@@ -1,6 +1,6 @@
 ---
 name: next
-version: 1.0.0
+version: 1.1.0
 description: >
   Show what to implement next in a milestone: reads lock state, file-overlap
   graph, and AC coverage gaps to classify stories into four actionable buckets —
@@ -16,6 +16,10 @@ triggers:
 domains:
   - all
 agents: []
+requires_cli:
+  - lock-status
+  - ac-audit
+  - run
 ---
 
 # Skill: next  (`orion next`)
@@ -49,8 +53,8 @@ Optional:
 | `PROJECT_CONTEXT.yaml` | `paths.epics`, `ac_coverage.default`, `ac_coverage.per_domain` |
 | `MILESTONE.md` | Story list, Order, Blocked By, Status columns |
 | `STORY.md` (per story) | Status field, Primary files touched |
-| `.orion/state/locks/<id>.json` | Lock state (locked? SHA match?) |
-| `STORY.md` AC lines | Coverage gap when not locked (via `parseAcTypes` + `checkCoverage`) |
+| `orion lock-status <id> --format=json` | Lock state (locked? SHA match?) |
+| `orion ac-audit <id> --format=json` | Coverage gap when not locked (required/present/missing/untyped) |
 
 > **Note on file overlap:** reads the `**Primary files touched:**` list under the
 > `## Engineering / PR` section of each story's STORY.md. If absent, falls back
@@ -102,29 +106,43 @@ Separate stories into two sets:
 
 For each story in `active`, load the following in parallel (no LLM):
 
+> **Use the CLI, never a module path.** Both 3a and 3b are `orion` calls. Do
+> not import `story-lock.js` or `ac-coverage.js`: `.orion/bin/` is not
+> installed into host projects (`orion init` copies only `skills/`, `agents/`,
+> `hooks/`), and reaching into `node_modules/@orion-ai/orion/` is worse still —
+> under `npm link` or a workspace hoist that path resolves back into the
+> framework's own checkout, not this project. Run the commands from the host
+> project directory; the CLI finds the project root itself.
+
 #### 3a — Lock State
+```bash
+orion lock-status {storyId} --format=json
 ```
-lock = readLock(storyId, hostRoot)          ← from story-lock.js
-result = checkLock(storyId, storyMdContent, hostRoot)
-locked  = result.locked && result.shaMatch  ← true only when lock exists AND SHA matches
+```
+locked = result.locked && result.sha_match   ← true only when lock exists AND SHA matches
 ```
 
 If `locked === false` and a lock file does exist (`result.locked === true` but
-`result.shaMatch === false`), record this as a stale lock:
+`result.sha_match === false`), record this as a stale lock:
 ```
 [stale lock — story edited after harden; re-run harden]
 ```
 
 #### 3b — Coverage Gap (only when not locked)
 If `locked === false`:
-1. Read STORY.md, call `parseAcTypes(storyMdContent)` → `parsedAcs`
-2. Determine required types:
-   ```
-   domain   = storyId.split('-')[1]          // "AUTH" from "US-AUTH-031"
-   required = ac_coverage.default + (ac_coverage.per_domain[domain] ?? [])
-   ```
-3. Call `checkCoverage(parsedAcs, required)` → `{ present, missing, complete }`
-4. Record `coverage.missing` for the NEEDS HARDENING bucket message
+```bash
+orion ac-audit {storyId} --format=json
+```
+1. Record `missing` for the NEEDS HARDENING bucket message
+2. Record `untyped[]` — untyped ACs are a hardening gap even when `missing` is empty
+3. Relay any `warnings[]` (a `per-domain-gap` warning means the story's domain has
+   no `ac_coverage.per_domain` entry, so it is being measured against defaults alone)
+
+`ac-audit` resolves `required = ac_coverage.default + ac_coverage.per_domain[DOMAIN]`
+from the host project's `PROJECT_CONTEXT.yaml` — do not re-derive it here.
+
+If the command exits non-zero (no STORY.md, or zero ACs), classify the story as
+NEEDS HARDENING with the CLI's own message as the reason.
 
 #### 3c — File Set (for overlap detection)
 From each story's STORY.md, extract all paths from:
@@ -142,7 +160,7 @@ For each storyId listed in `blockedBy[]`:
 - Check that story's status in the milestone table
 - If status is NOT `✅ Done` → this story is genuinely blocked
 
-> **Doc-debt note (Phase 6 / v0.6.0):** `.orion/bin/lib/concurrency.js`
+> **Doc-debt note (Phase 6 / v0.6.0):** the framework's own `concurrency.js`
 > (US-FLEET-001) now implements a **generalized, full-graph** version of this
 > same file-overlap idea for multi-story fleet dispatch — full N-vs-N
 > transitive-overlap graph analysis over every candidate story, versus this
@@ -227,11 +245,16 @@ Omit any action that has no applicable story.
      3. orion run harden {needs-hardening-id}
 ```
 
-**Backend annotation (Phase 6 / v0.6.0):** `{backendId}` is whatever
-`resolveBackend('implement-story', manifest)` (from `.orion/bin/lib/backend-router.js`)
-returns for `.backendId` — this is what `orion fleet` will actually dispatch that
-story to. When `resolveBackend()` returns an error instead (e.g.
-`no-backend-available`), show the fallback wording instead of the raw error code:
+**Backend annotation (Phase 6 / v0.6.0):** `{backendId}` is the `resolved backend:`
+line printed by:
+```bash
+orion run implement-story {storyId} --dry-run
+```
+That is a pure, read-only resolution — it makes no LLM call and dispatches
+nothing. (Same rule as 3a/3b: shell out, never import `backend-router.js`.)
+This is what `orion fleet` will actually dispatch that story to. When the line
+reports an error instead (e.g. `no-backend-available`), show the fallback
+wording rather than the raw error code:
 ```
 [locked ✅, backend: unavailable — see 'orion doctor', no file conflicts]
 ```
