@@ -11,6 +11,30 @@
 
 ---
 
+> ## ⚠️ Reachability at risk — [US-EDIT-009](../../../EPIC-EDIT-03/stories/US-EDIT-009/STORY.md)
+>
+> **Flagged 2026-09-01.** This story's text-free generate-time path
+> (`buildTextFreeImagePrompt`, `infographic-prompt.builder.ts`) fires **only** when
+> `renderMode === 'editable'` **and** a photo reference is present.
+>
+> The product decision on 2026-09-01 is that generation is **always flat** and extraction is a
+> post-placement canvas action, so `US-EDIT-009` removes `renderMode` entirely. `renderMode` is
+> the only thing that currently reaches this path.
+>
+> **This story is marked ✅ All ACs Verified, and that remains true of the code.** What changes is
+> whether anything can still call it. `US-EDIT-009`'s first task is the decision:
+>
+> - **Option A** — re-trigger from `photoReference != null`. This story survives with a new
+>   condition; the quality reason it exists (not baking a headline onto a customer's own listing
+>   photograph) is preserved without a user-facing toggle. **Recommended.**
+> - **Option B** — accept the loss. This story becomes dead code and should be re-marked
+>   ⏭️ Superseded rather than left claiming ✅, since a passing AC on unreachable code is worse
+>   than no AC.
+>
+> Do not close or supersede this card until `US-EDIT-009` T0 is decided.
+
+---
+
 ## Why this story exists
 
 `renderMode` reaches the backend in `generate-from-chat.dto.ts` (`renderMode?: 'flat' | 'editable'`) but nothing on the server reads it — every generation, regardless of mode, produces the same fully-composed image with text baked in. This was fine once extraction started working (2026-08-13 fix): a composed image *with* text is exactly what layerize needs to detect blocks. It only becomes a problem for **EPIC-AI-06's real-photo flow (M-AI-17/US-AI-031)** — a listing photo used as the background. There, baking marketing text onto the user's actual photo is undesirable regardless of whether it's later editable; the original M-AI-18 intent (text-free background + overlay) still applies specifically to that path.
