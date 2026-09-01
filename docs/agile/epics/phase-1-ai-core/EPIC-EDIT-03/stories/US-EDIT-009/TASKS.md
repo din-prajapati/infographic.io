@@ -16,7 +16,7 @@ updated: 2026-09-01
 
 - [x] **Brain** — STORY.md filled, 7 ACs, all file-specific
 - [x] **Muscle** — T0-T5 below
-- [ ] **Map** — [ARCHITECTURE.mmd](../../ARCHITECTURE.mmd)
+- [x] **Map** — [ARCHITECTURE.mmd](../../ARCHITECTURE.mmd)
 - [x] **Env** — no environment changes
 
 ---
@@ -86,16 +86,19 @@ feat(edit): T{n} {summary} — US-EDIT-009
 ## Task Checklist
 
 - [x] T0 — Decide the text-free question → **Option A**, 2026-09-01
-- [ ] T1 — Remove the toggle from AIChatBox
-- [ ] T2 — Remove renderMode from RightSidebar
-- [ ] T3 — Drop it from the client contract
-- [ ] T4 — Retire the server parameter
-- [ ] T4a — Re-trigger the text-free path from the photo
-- [ ] T5 — Tests
-- [ ] Gate 1 passes
+- [x] T1 — Remove the toggle from AIChatBox
+- [x] T2 — Remove renderMode from RightSidebar
+- [x] T3 — Drop it from the client contract
+- [x] T4 — Retire the server parameter
+- [x] T4a — Re-trigger the text-free path from the photo
+- [x] T5 — Tests
+- [x] Gate 1 passes
 - [ ] Gate 2 — staging visual check (generate → no mode choice → Edit elements works)
 - [ ] Gate 2 — staging real-photo check: generate from an uploaded listing photo, confirm the
       background comes back **unmarked** (T4a's whole point)
 - [ ] US-AI-051 banner removed, status stays ✅
 - [ ] PR opened with story card as description
-- [ ] STORY.md ACs ticked off
+- [x] STORY.md ACs ticked off — AC1–AC9, with AC4/AC5/AC6 annotated where the AC as written was
+      wrong or unachievable; see the story's Follow-ups for what was deliberately left undone
+- [ ] **AC9 added during implementation.** Re-run `orion harden US-EDIT-009` before closing: the
+      lock is stale (STORY.md changed after locking) and `implement-story`'s gate checks the SHA.
