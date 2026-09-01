@@ -2,7 +2,16 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 // fs is an ESM namespace here, so vi.spyOn('readFileSync') throws 'Cannot redefine property'.
 // Mock the module instead, keeping everything except readFileSync real.
-const { mockReadFileSync } = vi.hoisted(() => ({ mockReadFileSync: vi.fn() }));
+const { mockReadFileSync, mockUnlinkSync } = vi.hoisted(() => ({
+  mockReadFileSync: vi.fn(),
+  mockUnlinkSync: vi.fn(),
+}));
+// Cut the controller's import graph. InfographicsService pulls the whole generation
+// pipeline (orchestrator -> prisma -> DB), which makes a plain import hang for seconds.
+// Nothing under test here touches it — uploadPhoto only uses fs, crypto and StorageService.
+vi.mock('../../src/modules/infographics/services/infographics.service', () => ({
+  InfographicsService: class {},
+}));
 vi.mock('fs', async (importOriginal) => ({
   ...(await importOriginal<typeof import('fs')>()),
   readFileSync: mockReadFileSync,
@@ -11,6 +20,11 @@ import * as os from 'os';
 import * as path from 'path';
 import { HttpException } from '@nestjs/common';
 import { IdeogramService } from '../../src/modules/ai-generation/services/ideogram.service';
+// Imported statically, not via `await import()` inside a test. The controller pulls
+// @nestjs/swagger, platform-express and passport; loading that graph cold takes longer than
+// the 5s per-test timeout, so a dynamic import passed when this file ran alone and timed out
+// in the full suite. Collection-time import is not subject to that limit.
+import { InfographicsController } from '../../src/modules/infographics/controllers/infographics.controller';
 
 /**
  * US-INFRA-003 — source photos live in R2, not the container's tmp dir.
@@ -41,6 +55,7 @@ describe('US-INFRA-003 — durable source photos', () => {
   beforeEach(() => {
     process.env.IDEOGRAM_API_KEY = 'test-key';
     mockReadFileSync.mockReset();
+    mockUnlinkSync.mockReset();
     vi.restoreAllMocks();
   });
 
@@ -195,6 +210,62 @@ describe('US-INFRA-003 — durable source photos', () => {
       await readSourcePhoto(svc, VALID_PHOTO);
 
       expect(storage.download).toHaveBeenCalledWith(writtenKey);
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // AC6 [rollback] — uploadPhoto does two writes; the partial state is recorded
+  // ---------------------------------------------------------------------------
+  describe('AC6: tmp write succeeded, R2 upload did not', () => {
+    /**
+     * Exercises the controller's two-write sequence directly rather than through Nest's
+     * HTTP layer — the ParseFilePipe validators need a real request pipeline, and the
+     * behaviour under test is the ordering and the logging, not the file validation.
+     */
+    async function uploadWith(storage: any) {
+      const controller = new InfographicsController({} as any, storage);
+      const logged: string[] = [];
+      (controller as any).logger = {
+        log: (m: string) => logged.push(m),
+        warn: (m: string) => logged.push(m),
+        error: (m: string) => logged.push(m),
+      };
+      const file = { buffer: Buffer.from('photo-bytes'), mimetype: 'image/jpeg', size: 11 };
+      const res = await (controller as any).uploadPhoto(file);
+      return { res, logged: logged.join('\n') };
+    }
+
+    it('still returns a usable photoId and records durable:false when R2 fails', async () => {
+      mockReadFileSync.mockReturnValue(Buffer.from('x'));
+      const storage = { upload: vi.fn().mockRejectedValue(new Error('R2 down')) };
+
+      const { res, logged } = await uploadWith(storage);
+
+      // Response succeeds — failing here would tell the customer their upload failed
+      // when the tmp copy makes it perfectly usable for the common case.
+      expect(res.photoId).toMatch(/^[0-9a-f-]{36}\.jpg$/i);
+      // The partial state is RECORDED, not hidden. Without this line an R2 outage looks
+      // identical to a healthy upload until someone hits a 422 days later.
+      expect(logged).toContain('"durable": false');
+    });
+
+    it('records durable:true when both writes succeed', async () => {
+      const storage = { upload: vi.fn().mockResolvedValue('https://assets.buildographic.com/x') };
+
+      const { logged } = await uploadWith(storage);
+
+      expect(logged).toContain('"durable": true');
+    });
+
+    it('does not roll back the tmp copy when R2 fails — it is the only copy that exists', async () => {
+      const storage = { upload: vi.fn().mockRejectedValue(new Error('R2 down')) };
+
+      await uploadWith(storage);
+
+      // Deleting it would turn a photo that works right now into one that does not — once
+      // R2 has refused the upload, the tmp copy is the ONLY copy that exists.
+      expect(mockUnlinkSync).not.toHaveBeenCalled();
+      expect(storage.upload).toHaveBeenCalledTimes(1);
     });
   });
 

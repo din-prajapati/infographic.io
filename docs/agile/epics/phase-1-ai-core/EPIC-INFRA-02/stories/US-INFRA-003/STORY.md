@@ -39,6 +39,14 @@ updated: 2026-08-19
 
 - [x] **AC4 [security]:** When `IdeogramService.readSourcePhoto()` is called with a `photoPath` argument that does not match the pattern `^[\w-]+\.(jpg|jpeg|png)$` (i.e. contains `..`, `/`, `\`, or any character outside word characters, hyphens, and a single dot before the extension — e.g. `../../../etc/passwd`), the method throws `HttpException` with HTTP status `400` **before** constructing any R2 key or filesystem path — preserving the path-traversal guard from US-AI-031 T6 and not weakening it.
 
+- [x] **AC6 [rollback]:** `InfographicsController.uploadPhoto()` performs **two** writes — `fs.writeFileSync` to the tmp directory, then `StorageService.upload()` to R2. When the second fails, the request still returns HTTP 201 with a usable `{ photoId, photoUrl }`, and the completion log records `"durable": false`. The tmp write is **not** rolled back, and the response does **not** fail.
+
+  > **Why this is the right resolution of a partial write, rather than a bug.** Rolling back the tmp copy would delete the only copy that exists, turning a photo that works right now into one that does not. Failing the request would tell the customer their upload failed when it succeeded. Both are worse than the middle state, which is genuinely useful: the photo works for the common case (upload and generation seconds apart, same container) and only degrades if a restart intervenes.
+  >
+  > What the AC actually pins is that the partial state is **recorded rather than hidden**. `"durable": false` is the difference between a photo that is quietly at risk and one you can find in the logs. Without it, an R2 outage would look identical to a healthy upload until a customer hit a 422 days later.
+  >
+  > Verified in `api/tests/infra/us-infra-003.spec.ts`.
+
 - [x] **AC5 [happy-path]:** When the unit test suite runs (`npm run test:unit`), the test file `api/tests/infra/us-infra-003.spec.ts` (new) passes with 0 failures and covers: (a) mocked-`StorageService` upload happy path; (b) `readSourcePhoto()` returning an R2-sourced `Buffer` when the local tmp file is absent; (c) `readSourcePhoto()` throwing `HttpException(422)` when both R2 and tmp are unavailable; (d) `readSourcePhoto()` throwing `HttpException(400)` on a path-traversal `photoPath`.
 
 ---

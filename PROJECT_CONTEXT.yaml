@@ -48,6 +48,12 @@ domains:
     scope: "Go-live ops: live payments, transactional email, legal pages, beta gating, metering policy"
   - prefix: "DEPLOY"
     scope: "Deployment velocity & safety: CI gate, preview environments, feature flags, migrations, progressive delivery"
+  # Registered 2026-09-01 for accuracy, not because it is a live domain. US-PANEL-01
+  # (brand-palette awareness, ✅ Done) sits inside EPIC-AI-02 and used this prefix before
+  # the domains list existed. It had a harden lock but no entry here, so the list was
+  # simply not describing what the repo contains. New work of this kind belongs under AI.
+  - prefix: "PANEL"
+    scope: "Legacy one-off prefix — US-PANEL-01 only. Do not open new stories here; use AI."
 
 # Counters = NEXT available number per domain.
 # Reconciled 2026-07-08 from PROJECT_CONTEXT.md table, pre-migration yaml, and a
@@ -222,23 +228,62 @@ ac_coverage:
     #  - currency-edge: paise/rupee rounding, negative/zero amounts, discount stacking
     # Set 2026-08-21 during EPIC-PAY-05 (Pricing Relaunch) roadmap generation.
     PAY: [security, currency-edge]
-    # INFRA stories move bytes to a third party and then write a URL to the DB. The
-    # defaults miss the two failure modes that produces:
-    #  - rollback: the two writes are not atomic. Upload succeeds, DB write fails ->
-    #    an orphaned object. DB write succeeds, upload failed -> a persisted URL
-    #    pointing at nothing. "The provider call failed" (error-path) is a different,
-    #    easier case and is the only one the defaults force you to think about.
-    #  - concurrent: the chat flow sends variations: 3, so uploads run in parallel.
-    #    All-succeed is happy-path and all-fail is error-path; PARTIAL failure is
-    #    neither, and it is the case that decides what the customer actually gets.
-    # Set 2026-08-31 while hardening EPIC-INFRA-02 — per_domain.INFRA was absent until
-    # then, so all three storage stories certified against only [happy-path, error-path].
-    INFRA: [rollback, concurrent]
+    # INFRA stories move bytes to a third party and then write a URL to the DB. The two
+    # writes are not atomic, and that is the failure the defaults miss: upload succeeds
+    # and the DB write fails -> an orphaned object; DB write succeeds and the upload
+    # failed -> a persisted URL pointing at nothing. "The provider call failed" is
+    # error-path, a different and easier case, and the only one the defaults force you
+    # to think about.
+    #
+    # NARROWED 2026-09-01. This was [rollback, concurrent] for one day. `concurrent` came
+    # from US-INFRA-002 specifically — the chat flow sends variations: 3, so a PARTIAL
+    # upload failure is neither happy-path nor error-path — and was generalised to the
+    # whole domain without checking it applied to the siblings. It does not:
+    # US-INFRA-001's upload() is a single operation with no shared state, and
+    # US-INFRA-003 keys source photos by UUID, which cannot collide. Requiring it
+    # domain-wide made two already-closed stories retroactively non-compliant and would
+    # have invited LLM gap-fill to invent ACs for risks those stories do not carry.
+    # `rollback` survives because it genuinely applies to both 002 and 003.
+    INFRA: [rollback]
     # ORG stories decide who may act on whose data. The defaults would certify a
     # permission change against happy-path and error-path alone, which is exactly how
     # US-ORG-001's defect shipped: removeUserFromOrganization validates the TARGET and
     # never the CALLER, and both of those types pass.
     ORG: [security, rollback]
+    # LAUNCH is go-live ops: live payments, transactional email, legal pages, beta
+    # gating. Every story either moves real money or exposes a public surface, and the
+    # defaults never force the "what can a hostile or careless caller do" question.
+    LAUNCH: [security]
+    # DEPLOY is deployment velocity and safety — CI gates, preview environments, feature
+    # flags, migrations, progressive delivery. Its defining risk is not that a step
+    # fails, it is whether you can get back: a half-applied migration or a flag that
+    # cannot be flipped off is the failure worth an AC.
+    DEPLOY: [rollback]
+    # ---------------------------------------------------------------------------------
+    # Explicit "default-only is deliberate" entries.
+    #
+    # An empty list is NOT the same as an absent key. Absent means nobody decided and
+    # ac-audit warns; empty means someone looked and concluded [happy-path, error-path]
+    # is genuinely sufficient. Recording that silences the warning honestly instead of
+    # leaving a question for the next person to rediscover.
+    #
+    # Added 2026-09-01: 29 of 54 locked stories sat in domains with no entry. The trap is
+    # that adding types LATER invalidates locks already refreshed against the weaker set
+    # — which is exactly what happened to US-INFRA-001/003 when INFRA was added.
+    # ---------------------------------------------------------------------------------
+    # KIT — multi-format kits, recurring content. Content generation; no money, no
+    # permissions, no multi-step writes to get half-done.
+    KIT: []
+    # GEN — image-generation pipeline quality, prompt engineering, cost control. Output
+    # quality is judged by eye and by cost assertions, not by a typed risk category.
+    GEN: []
+    # EDIT — canvas editor, drag-resize, export. Client-side manipulation of a document
+    # already fetched; the interesting failures are visual, which Gate 2 covers.
+    EDIT: []
+    # PANEL — used by US-PANEL-01 (brand-palette awareness, Done, inside EPIC-AI-02).
+    # A one-off prefix that predates the domains list rather than a live domain; see the
+    # note on `domains` above. Registered so ac-audit does not warn about a closed story.
+    PANEL: []
   # per_domain:
   #   DESIGN: []    # add: security, session-expiry, idempotency, currency-edge, rate-limit, null-input, concurrent, rollback, offline, edge-case
   #   PAY: []    # add: security, session-expiry, idempotency, currency-edge, rate-limit, null-input, concurrent, rollback, offline, edge-case
