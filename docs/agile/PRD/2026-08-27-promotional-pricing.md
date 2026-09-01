@@ -189,15 +189,50 @@ founding price automatically. *Reverting* to list at renewal is the option that 
 require building plan-migration logic. The customer-friendly choice is also the
 cheapest to ship.
 
-**Margin is not the constraint here — earlier caution about per-generation COGS was
-overstated.** Checked 2026-08-27:
+**Margin is comfortable, but it is not as wide as this section first claimed.**
 
-> SOLO is ₹5,499/mo for 50 designs ≈ **₹110 revenue per design**. Ideogram Turbo is
-> $0.025 (~₹2) plus GPT-4o at $0.004. Even at full quota with all 10 editable composes
-> at $0.09 (~₹7.50), annual COGS is roughly **₹4,000 against ~₹39,000** revenue.
+> ⚠️ **Corrected 2026-08-30.** The original figures below were wrong in two ways and are
+> kept struck through, because the ~90% number they produced was being used to argue the
+> founding discount could go arbitrarily deep.
+>
+> ~~Ideogram Turbo is $0.025 (~₹2) plus GPT-4o at $0.004. Annual COGS is roughly **₹4,000
+> against ~₹39,000** revenue. ~90% gross margin.~~
+>
+> 1. **Wrong per-image price.** `'ideogram-turbo'` is an alias — `normalizeImageModel()`
+>    maps it to `ideogram-4` at **$0.06/image**, not $0.025. (`image-generation.config.ts:35`)
+> 2. **Ignored variations.** Every chat generation produces **3 images**, not 1.
+>    `AIChatBox.tsx` sends `variations: 3` and `generations.service.ts` defaults to 3.
+>    `getTotalCost()` multiplies per-image cost by that count.
 
-~90% gross margin at a founding price. COGS does not meaningfully constrain how deep
-the founding discount can go.
+Real cost per generated design: **3 × $0.06 + $0.004 = $0.184**. Editable composes add
+$0.09 each.
+
+SOLO at full annual quota (600 designs, 120 editable composes), at ₹85/USD:
+
+| | Cost |
+|---|---:|
+| 600 designs × $0.184 | $110.40 |
+| 120 editable × $0.09 | $10.80 |
+| **Annual COGS** | **$121.20 ≈ ₹10,300** |
+
+| Against | Revenue | COGS | Margin |
+|---|---:|---:|---:|
+| List annual | ₹52,999 | 19% | **81%** |
+| Illustrative founding annual (₹38,999) | ₹38,999 | 26% | **74%** |
+
+**So the conclusion changes in degree, not direction.** 74% at a founding price is still a
+healthy business, and COGS is still not the binding constraint on a ~30% discount. But
+"COGS does not meaningfully constrain how deep the founding discount can go" is too strong:
+at a 50%+ discount (₹26,500) COGS reaches ~39%, which is a real margin conversation rather
+than a rounding error. Pick the founding price for signalling — but check it against this
+table, not against the ~90% figure this section used to assert.
+
+Two costs excluded above, both of which narrow it further: Razorpay's fee (~2% + GST — on a
+₹5,499 charge that is larger than the LLM line item) and infrastructure (Railway, Neon, R2,
+Resend). This is provider COGS, not contribution margin.
+
+Also note `getTotalCost()` adds `gpt4oPerRequest` unconditionally, even on SOLO/TEAM where
+the LLM step routes to Gemini. The figures above are therefore very slightly conservative.
 
 The three patterns in use, for reference:
 

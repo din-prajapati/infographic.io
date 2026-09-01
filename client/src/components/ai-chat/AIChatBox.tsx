@@ -824,6 +824,20 @@ export function AIChatBox({
       const generationResult = await generationsApi.generate({
         prompt: promptText,
         conversationId: conversationId,
+        // DELIBERATE, AND A PRICING DECISION — not a UI constant.
+        //
+        // The customer is billed one design credit per prompt (UsageRecord.creditsUsed = 1)
+        // no matter how many images come back, but WE pay Ideogram per image. So this number
+        // multiplies provider spend directly: getTotalCost(model, variations) in
+        // ai-models.config.ts. At 3, a design costs 3 x $0.06 + $0.004 = $0.184.
+        //
+        // Changing it changes COGS proportionally with zero change in revenue. Raising it to
+        // 4 (the Canva / Adobe Firefly norm) is defensible, but it is a ~33% COGS increase
+        // and should be decided as such, not shipped as "we now show more options".
+        //
+        // Per-prompt metering with variations absorbed is the category standard: Canva's
+        // Magic Media returns 4 images for 1 credit, and Adobe states credits are "defined
+        // per generation or per action, and not multiplied by the number of images shown".
         variations: 3,
         model: generationQualityModel,
         orientation: generationOrientation,
