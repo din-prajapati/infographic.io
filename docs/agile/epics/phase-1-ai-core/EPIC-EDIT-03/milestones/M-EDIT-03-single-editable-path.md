@@ -30,7 +30,7 @@ action**. This milestone makes the code match that.
 
 | Order | Story | Title | Size | Blocked By | Status | PR |
 |:-----:|-------|-------|:----:|------------|:------:|:--:|
-| 1 | [US-EDIT-009](../stories/US-EDIT-009/STORY.md) | Remove the pre-placement Flat/Editable toggle | M | — | 🔲 | — |
+| 1 | [US-EDIT-009](../stories/US-EDIT-009/STORY.md) | Remove the pre-placement Flat/Editable toggle | M | — | 🟡 | [#49](https://github.com/din-prajapati/infographic.io/pull/49) |
 
 ---
 

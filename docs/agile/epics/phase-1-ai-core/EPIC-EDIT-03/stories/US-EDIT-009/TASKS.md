@@ -8,7 +8,7 @@ updated: 2026-09-01
 
 > **Story:** [STORY.md](./STORY.md)
 > **Milestone branch:** `feat/edit/m-03-single-editable-path`
-> **PR:** #_____
+> **PR:** #49
 
 ---
 
@@ -96,9 +96,9 @@ feat(edit): T{n} {summary} — US-EDIT-009
 - [ ] Gate 2 — staging visual check (generate → no mode choice → Edit elements works)
 - [ ] Gate 2 — staging real-photo check: generate from an uploaded listing photo, confirm the
       background comes back **unmarked** (T4a's whole point)
-- [ ] US-AI-051 banner removed, status stays ✅
-- [ ] PR opened with story card as description
+- [x] US-AI-051 banner updated to record the resolution; status stays ✅
+- [x] PR opened — #49
 - [x] STORY.md ACs ticked off — AC1–AC9, with AC4/AC5/AC6 annotated where the AC as written was
       wrong or unachievable; see the story's Follow-ups for what was deliberately left undone
-- [ ] **AC9 added during implementation.** Re-run `orion harden US-EDIT-009` before closing: the
-      lock is stale (STORY.md changed after locking) and `implement-story`'s gate checks the SHA.
+- [x] **Re-hardened 2026-09-02** — lock b0587df27888, 9 ACs. Fixed AC9's label first: the colon
+      sat outside the bold span, which made ac-audit skip it silently (filed BL-16).
