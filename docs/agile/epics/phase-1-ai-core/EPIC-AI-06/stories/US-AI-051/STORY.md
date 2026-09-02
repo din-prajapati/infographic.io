@@ -11,25 +11,27 @@
 
 ---
 
-> ## 🔁 Trigger changes in [US-EDIT-009](../../../EPIC-EDIT-03/stories/US-EDIT-009/STORY.md) — behaviour preserved
+> ## 🔁 Trigger changed by [US-EDIT-009](../../../EPIC-EDIT-03/stories/US-EDIT-009/STORY.md) — behaviour preserved
 >
-> **Resolved 2026-09-01 (Option A).** This story's text-free path (`buildTextFreeImagePrompt`)
-> currently fires only when `renderMode === 'editable'` **and** a photo reference is present.
-> `US-EDIT-009` removes `renderMode` product-wide — generation is always flat, extraction is
-> always a post-placement canvas action.
+> **Implemented 2026-09-01 (Option A).** The text-free path now fires on `photoReference` alone.
+> `US-EDIT-009` AC8 dropped only the `renderMode === 'editable' &&` clause from `useTextFree`
+> (`ai-orchestrator.service.ts`) and kept the rest verbatim, including **this story's own AC7
+> empty-string guard**. `renderMode` no longer exists anywhere in the product.
 >
-> The decision was **not** to let this path go with it. `US-EDIT-009` AC8 drops only the
-> `renderMode === 'editable' &&` clause from `useTextFree` (`ai-orchestrator.service.ts:269–272`)
-> and keeps the rest verbatim, including **this story's own AC7 empty-string guard**
-> (`typeof photoReference === 'string' && photoReference.length > 0`).
+> **This story stays ✅ and is not superseded** — its behaviour is unchanged; only the condition
+> that reaches it moved. AC2/AC3 still hold: synthetic no-photo generations keep the composed
+> text-baked prompt, verified by `TC-EDIT-009-09`.
 >
-> **This story stays ✅ and is not superseded.** Its behaviour is unchanged; only the condition
-> that reaches it is. AC2/AC3 still hold — synthetic no-photo generations keep the composed
-> text-baked prompt.
+> **What is now broader than this card describes:** the text-free prompt applies to *every*
+> real-photo generation, not only ones where the user had chosen Editable. That is the intended
+> effect — a headline baked onto the customer's own listing photograph was never desirable — but
+> it means AC1 and AC5 below describe a narrower trigger than what ships. Read
+> "renderMode='editable' AND a photo" as "a photo" throughout this card.
 >
-> Two edits are pending on this card until `US-EDIT-009` lands, so do not treat them as drift:
-> AC1's wording still names `renderMode`, and `infographic-prompt.builder.ts:284`'s doc comment
-> still states the old condition. Remove this banner when `US-EDIT-009` closes.
+> `infographic-prompt.builder.ts`'s doc comment has been updated to match. The branch itself is
+> covered by `ai-orchestrator.textfree-trigger.spec.ts` (TC-EDIT-009-08, mutation-checked), which
+> did not exist when this story closed — its own specs test the two builders in isolation, not the
+> branch that chooses between them.
 
 ---
 
