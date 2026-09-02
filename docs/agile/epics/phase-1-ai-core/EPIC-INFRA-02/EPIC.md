@@ -1,7 +1,7 @@
 # EPIC-INFRA-02 — Durable Asset Storage
 
 > **Phase:** Phase 1 — Revenue Strategy
-> **Status:** 🔲 Not Started
+> **Status:** 🟡 In Progress — all three stories ✅ Done and merged ([PR #46](https://github.com/din-prajapati/infographic.io/pull/46), 2026-09-01), Gate 1 green. **Not closed:** M-INFRA-01’s acceptance is four live checks, none run, and production still has no `R2_*` variables — so production continues serving expiring Ideogram URLs, the exact problem this epic exists to fix.
 > **Linear Project:** LIN-EPIC-XXX
 > **Target date:** before US-LAUNCH-005 AC6 (real ₹ transaction)
 > **Owner:** Dinesh
@@ -79,8 +79,8 @@ $0), automatic Cloudflare CDN on a custom domain, and direct operational precede
 
 | Feature ID | Scope | Stories | Status |
 |------------|-------|---------|:------:|
-| F-INFRA-01 | R2-backed storage service + persistence of generated images | US-INFRA-001, US-INFRA-002 | 🔲 |
-| F-INFRA-02 | Durable source-photo uploads | US-INFRA-003 | 🔲 |
+| F-INFRA-01 | R2-backed storage service + persistence of generated images | US-INFRA-001, US-INFRA-002 | ✅ |
+| F-INFRA-02 | Durable source-photo uploads | US-INFRA-003 | ✅ |
 
 ---
 
@@ -88,7 +88,7 @@ $0), automatic Cloudflare CDN on a custom domain, and direct operational precede
 
 | Milestone | Scope | Target | Status |
 |-----------|-------|--------|:------:|
-| [M-INFRA-01-durable-asset-storage](milestones/M-INFRA-01-durable-asset-storage.md) | R2 bucket + StorageService, generated-image persistence, source-photo durability | before US-LAUNCH-005 AC6 | 🔲 |
+| [M-INFRA-01-durable-asset-storage](milestones/M-INFRA-01-durable-asset-storage.md) | R2 bucket + StorageService, generated-image persistence, source-photo durability | before US-LAUNCH-005 AC6 | 🟡 code merged, live checks pending |
 
 ---
 
@@ -96,9 +96,9 @@ $0), automatic Cloudflare CDN on a custom domain, and direct operational precede
 
 | Order | Story ID | Title | Feature | Milestone | Size | Blocked By | Status | PR |
 |:-----:|----------|-------|---------|-----------|:----:|------------|:------:|:--:|
-| 1 | [US-INFRA-001](stories/US-INFRA-001/STORY.md) | R2 bucket + StorageService | F-INFRA-01 | M-INFRA-01 | S | — | 🔲 | — |
-| 2 | [US-INFRA-002](stories/US-INFRA-002/STORY.md) | Persist generated images to owned storage | F-INFRA-01 | M-INFRA-01 | M | US-INFRA-001 | 🔲 | — |
-| 3 | [US-INFRA-003](stories/US-INFRA-003/STORY.md) | Move source-photo uploads off the ephemeral tmp dir | F-INFRA-02 | M-INFRA-01 | S | US-INFRA-001 | 🔲 | — |
+| 1 | [US-INFRA-001](stories/US-INFRA-001/STORY.md) | R2 bucket + StorageService | F-INFRA-01 | M-INFRA-01 | S | — | ✅ Done | [#46](https://github.com/din-prajapati/infographic.io/pull/46) |
+| 2 | [US-INFRA-002](stories/US-INFRA-002/STORY.md) | Persist generated images to owned storage | F-INFRA-01 | M-INFRA-01 | M | US-INFRA-001 | ✅ Done | [#46](https://github.com/din-prajapati/infographic.io/pull/46) |
+| 3 | [US-INFRA-003](stories/US-INFRA-003/STORY.md) | Move source-photo uploads off the ephemeral tmp dir | F-INFRA-02 | M-INFRA-01 | S | US-INFRA-001 | ✅ Done | [#46](https://github.com/din-prajapati/infographic.io/pull/46) |
 
 ---
 
@@ -126,12 +126,12 @@ flowchart LR
 
 | File / Module | Owner Story | Layer | Status |
 |---------------|-------------|-------|:------:|
-| `api/src/modules/storage/` (new module: `storage.service.ts`, `storage.module.ts`) | US-INFRA-001 | backend | 🔲 |
-| `api/prisma/schema.prisma` (`Infographic.imageUrl` semantics; no column shape change) | US-INFRA-002 | backend | 🔲 |
-| `api/src/modules/ai-generation/services/ideogram.service.ts` | US-INFRA-002 | backend | 🔲 |
-| `api/src/modules/ai-generation/services/layer-extraction.service.ts` | US-INFRA-002 | backend | 🔲 |
-| `api/src/modules/infographics/controllers/infographics.controller.ts` | US-INFRA-003 | backend | 🔲 |
-| `.env.example`, Railway env vars (`R2_*`) | US-INFRA-001 | infra | 🔲 |
+| `api/src/modules/storage/` (new module: `storage.service.ts`, `storage.module.ts`) | US-INFRA-001 | backend | ✅ |
+| `api/prisma/schema.prisma` (`Infographic.imageUrl` semantics; no column shape change) | US-INFRA-002 | backend | ✅ |
+| `api/src/modules/ai-generation/services/ideogram.service.ts` | US-INFRA-002 | backend | ✅ |
+| `api/src/modules/ai-generation/services/layer-extraction.service.ts` | US-INFRA-002 | backend | ✅ |
+| `api/src/modules/infographics/controllers/infographics.controller.ts` | US-INFRA-003 | backend | ✅ |
+| `.env.example`, Railway env vars (`R2_*`) | US-INFRA-001 | infra | ◐ local + staging set; **production not set** — see M-INFRA-01 |
 
 ---
 

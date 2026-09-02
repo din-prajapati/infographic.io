@@ -8,9 +8,12 @@ created: 2026-09-01
 # M-EDIT-03-single-editable-path — Single Editable Path
 
 > **Epic:** [EPIC-EDIT-03](../EPIC.md)
-> **Status:** 🔲 Not Started
+> **Status:** 🟡 **Code merged, milestone not closed** — US-EDIT-009 merged via
+> [PR #49](https://github.com/din-prajapati/infographic.io/pull/49) (2026-09-02, rebase), Gate 1
+> green. Gate 2 is a human visual check and has **not** been run; two of its five steps cover
+> behaviour no unit test reached. See the story's Gate 2 checklist.
 > **Target date:** TBD
-> **Branch:** `feat/edit/m-03-single-editable-path`
+> **Branch:** `feat/edit/m-03-single-editable-path` (merged, deleted)
 
 ---
 
@@ -36,11 +39,31 @@ action**. This milestone makes the code match that.
 
 ## Acceptance (Milestone Done When…)
 
-- [ ] No UI anywhere lets a user choose flat vs editable *before* generating
-- [ ] `renderMode` no longer exists in the client→server contract
-- [ ] `CanvasEditToolbar`'s behaviour is unchanged, verified by its existing tests
-- [ ] The real-photo text-free question (§Open Questions in the story) is decided and recorded,
-      not left implicit
+- [x] No UI anywhere lets a user choose flat vs editable *before* generating — both toggle blocks
+      removed from AI Chat, and Quick Generate's mode-dependent load path with them. Verified by
+      diff; the rendered result is Gate 2 step 1.
+- [x] `renderMode` no longer exists in the client→server contract — with one deliberate exception:
+      the generate DTO keeps an ignored, unvalidated, Swagger-hidden shim, because `main.ts` sets
+      `forbidNonWhitelisted: true` and deleting the field outright would 400 every generate from a
+      stale browser tab. Nothing reads it. Tracked for removal as BL-19.
+- [x] `CanvasEditToolbar`'s behaviour is unchanged — **zero lines changed**, verified by diff.
+      ⚠️ Not "verified by its existing tests": it has none, because the project has no React test
+      harness (BL-20). Covered structurally instead — the session-global `renderMode` its warning
+      comment depends on no longer exists to be misused.
+- [x] The real-photo text-free question is decided and recorded — **Option A**: the text-free
+      prompt now triggers on `photoReference` alone. Recorded in the story's §Decisions and in
+      US-AI-051's banner.
+
+**Still open — this is why the milestone is 🟡 and not ✅:**
+
+- [ ] **Gate 2, step 3** — an *AI Chat* generation (not Quick Generate) placed on the canvas must
+      extract text on "Edit elements", not report *"Design isn't linked to a generation"*. This is
+      the AC9 regression found mid-implementation; the unit test proves the setter works, not that
+      AI Chat calls it on the real completion path.
+- [ ] **Gate 2, step 5** — a real listing photo must generate an **unmarked** background. This is
+      the one behaviour change that reaches users who never touched the old toggle.
+- [ ] `orion close-story US-EDIT-009` once both pass, to cascade STORY → milestone → epic →
+      TEAM_STATUS.
 
 ---
 

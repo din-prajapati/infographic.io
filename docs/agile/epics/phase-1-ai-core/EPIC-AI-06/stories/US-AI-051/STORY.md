@@ -1,6 +1,7 @@
 # Story Card — US-AI-051
 
-> **Status:** ✅ All ACs Verified — Gate 1 Green (pre-PR)
+> **Status:** ✅ Done — all ACs verified, Gate 1 green, **merged to `main`**. (Card read
+> "pre-PR" until 2026-09-02; it had been merged for some time — closeout drift, corrected.)
 > **Feature:** F-AI-06-10 — Text-free background generation (M-AI-18's original design intent)
 > **Epic:** [EPIC-AI-06](../../EPIC.md)
 > **Milestone:** [M-AI-18-editable-text-overlay](../../milestones/M-AI-18-editable-text-overlay.md)

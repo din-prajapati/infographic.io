@@ -7,7 +7,7 @@ updated: 2026-08-21
 
 # Story Card — US-PAY-104
 
-> **Status:** ✅ Done (code) — manual/PR still open, see TASKS.md
+> **Status:** ✅ Done (code) — **merged to `main`**; manual verification still open, see TASKS.md. *(Card said "manual/PR still open" until 2026-09-02 — the PR half was stale.)*
 > **Feature:** F-PAY-01 — Pricing Configuration & Entitlements
 > **Epic:** [EPIC-PAY-05](../../EPIC.md)
 > **Milestone:** [M-PAY-01-pricing-foundation](../../milestones/M-PAY-01-pricing-foundation.md)

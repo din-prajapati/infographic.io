@@ -2,9 +2,12 @@
 
 > **Epic:** [EPIC-INFRA-02](../EPIC.md)
 > **Feature:** F-INFRA-01, F-INFRA-02
-> **Status:** 🔲 Not Started
+> **Status:** 🟡 **Code merged, milestone not closed** — all three stories ✅ Done and merged via
+> [PR #46](https://github.com/din-prajapati/infographic.io/pull/46) (2026-09-01), Gate 1 green.
+> The four Acceptance items below are *runtime* checks and **none has been run**, so the milestone
+> is not Done. Card said "🔲 Not Started" until 2026-09-02 — closeout drift, corrected.
 > **Target date:** before US-LAUNCH-005 AC6 (real ₹ transaction)
-> **Branch:** `feat/infra/m-01-durable-asset-storage`
+> **Branch:** `feat/infra/m-01-durable-asset-storage` (merged, deleted)
 
 ---
 
@@ -20,9 +23,9 @@ NestJS container's ephemeral tmp dir — verified end-to-end on staging.
 
 | Order | Story | Title | Size | Blocked By | Status | PR |
 |:-----:|-------|-------|:----:|------------|:------:|:--:|
-| 1 | [US-INFRA-001](../stories/US-INFRA-001/STORY.md) | R2 bucket + StorageService | S | — | 🔲 | — |
-| 2 | [US-INFRA-002](../stories/US-INFRA-002/STORY.md) | Persist generated images to owned storage | M | US-INFRA-001 | 🔲 | — |
-| 2 | [US-INFRA-003](../stories/US-INFRA-003/STORY.md) | Move source-photo uploads off the ephemeral tmp dir | S | US-INFRA-001 | 🔲 | — |
+| 1 | [US-INFRA-001](../stories/US-INFRA-001/STORY.md) | R2 bucket + StorageService | S | — | ✅ Done | [#46](https://github.com/din-prajapati/infographic.io/pull/46) |
+| 2 | [US-INFRA-002](../stories/US-INFRA-002/STORY.md) | Persist generated images to owned storage | M | US-INFRA-001 | ✅ Done | [#46](https://github.com/din-prajapati/infographic.io/pull/46) |
+| 2 | [US-INFRA-003](../stories/US-INFRA-003/STORY.md) | Move source-photo uploads off the ephemeral tmp dir | S | US-INFRA-001 | ✅ Done | [#46](https://github.com/din-prajapati/infographic.io/pull/46) |
 
 ---
 
@@ -35,8 +38,20 @@ NestJS container's ephemeral tmp dir — verified end-to-end on staging.
 - [ ] Verified live: an infographic generated through this pipeline still renders after its
       original Ideogram URL would have expired (simulate by revoking/ignoring the Ideogram URL and
       confirming the app serves the R2 copy)
-- [ ] All stories above have status ✅ Done
-- [ ] Verification gates pass (Gate 1 mandatory; Gate 4 API smoke for the backend changes)
+- [x] All stories above have status ✅ Done
+- [x] Verification gates pass (Gate 1 mandatory; Gate 4 API smoke for the backend changes)
+
+> **What is actually blocking closure (2026-09-02).** The four unchecked items above are all live
+> checks, and staging can answer three of them today — it has the R2 vars and the merged code.
+> The quickest is the first: generate one design on staging and read the stored `imageUrl`. If it
+> starts `assets.buildographic.com` the pipeline works end-to-end; if it still starts `ideogram.ai`
+> the upload is silently falling back, which is by design (`uploadAndFallback` never throws, so a
+> broken R2 degrades instead of failing generations — and therefore fails *quietly*).
+>
+> **Production has no `R2_*` variables set** — deliberately held back until this code shipped,
+> which it now has. Until they are pushed, production still serves expiring Ideogram URLs, which
+> is the exact problem this milestone exists to fix. Command in `HUMAN_TASKS.md` §5; it redeploys
+> production, so it is a human call.
 
 ---
 
