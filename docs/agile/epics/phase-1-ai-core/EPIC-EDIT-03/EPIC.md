@@ -70,7 +70,7 @@ gated behind having already generated something.
 |-----------|-------|--------|:------:|
 | [M-EDIT-01-editable-menu-surfacing](milestones/M-EDIT-01-editable-menu-surfacing.md) | Promote the existing renderMode toggle to a persistent, labeled entry point | 2026-08-26 | ✅ |
 | [M-EDIT-02-brand-layers](milestones/M-EDIT-02-brand-layers.md) | Agent brand furniture (logo, licence, headshot, QR) as real canvas layers | TBD | 🔲 |
-| [M-EDIT-03-single-editable-path](milestones/M-EDIT-03-single-editable-path.md) | Remove the pre-placement Flat/Editable toggle — one way to get editable text, on the canvas | TBD | 🔲 |
+| [M-EDIT-03-single-editable-path](milestones/M-EDIT-03-single-editable-path.md) | Remove the pre-placement Flat/Editable toggle — one way to get editable text, on the canvas | TBD | 🟡 PR #49 |
 
 ---
 
@@ -82,7 +82,7 @@ gated behind having already generated something.
 | 2 | [US-EDIT-006](stories/US-EDIT-006/STORY.md) | Brand layers from existing data — logo + licence | M-EDIT-02 | M | — | 🔲 | — |
 | 3 | [US-EDIT-007](stories/US-EDIT-007/STORY.md) | Agent headshot + QR code | M-EDIT-02 | M | US-EDIT-006 | 🔲 | — |
 | 4 | [US-EDIT-008](stories/US-EDIT-008/STORY.md) | Editable quota badge + charge confirmation | M-EDIT-01 | M | — (deferred from US-EDIT-005 AC4) | 🔲 | — |
-| 5 | [US-EDIT-009](stories/US-EDIT-009/STORY.md) | Remove the pre-placement Flat/Editable toggle | M-EDIT-03 | M | — | 🔲 | — |
+| 5 | [US-EDIT-009](stories/US-EDIT-009/STORY.md) | Remove the pre-placement Flat/Editable toggle | M-EDIT-03 | M | — | 🟡 | [#49](https://github.com/din-prajapati/infographic.io/pull/49) |
 
 > **Revised 2026-08-21** — original scope was an in-place relabel of the existing `RightSidebar`
 > toggle (S-size). Revised after reviewing `design-preview-canvas-menu.html`: a floating
@@ -108,10 +108,15 @@ gated behind having already generated something.
 ## Architecture Notes (inline)
 
 - **Entry points:** new `CanvasEditToolbar.tsx`, mounted in `CenterCanvas.tsx`; replaces
-  `RightSidebar.tsx:903-932`'s in-panel toggle (removed, not duplicated). `useGenerationPrefs.ts`
-  (shared `renderMode` state between editor and AI chat panels) stays the single source of truth.
-- **Key abstractions:** `renderMode: 'flat' | 'editable'` — do not change its values or the
-  compose pipeline that reads it; only change where/how it's triggered and displayed.
+  `RightSidebar.tsx:903-932`'s in-panel toggle (removed, not duplicated).
+- **Key abstraction — superseded 2026-09-01 by US-EDIT-009 (M-EDIT-03).** This section used to
+  read: *"`useGenerationPrefs.ts` (shared `renderMode` state) stays the single source of truth"*
+  and *"`renderMode: 'flat' | 'editable'` — do not change its values."* **`renderMode` no longer
+  exists.** Generation is always flat and extraction is always a post-placement canvas action, so
+  there is no mode to hold: a session-global preference was the wrong shape for a per-design
+  question, and holding one is what let a single compose make every other canvas in the session
+  claim to be editable. What `useGenerationPrefs` keeps is `activeGenerationId` — an identity, not
+  a preference. The compose pipeline itself is unchanged.
 - **Design reference:** `design-preview-canvas-menu.html` (repo root) — canvas-adjacent floating
   toolbar. Only its "Edit elements" button is in scope for this epic.
 - **Real latency to design for, not hide:** first-time extraction is 15–90s (`US-AI-048`, measured)
