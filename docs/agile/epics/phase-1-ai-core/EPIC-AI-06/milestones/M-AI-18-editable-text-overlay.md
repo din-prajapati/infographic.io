@@ -1,6 +1,13 @@
 # M-AI-18 — Editable Text Overlay (Hybrid Render)
 
-> **Epic:** [EPIC-AI-06](../EPIC.md) · **Status:** ✅ Done — all 10 stories Done or resolved-superseded, and US-LAUNCH-015 (pricing/gating, EPIC-LAUNCH-01) closed 2026-08-15 · **Target:** TBD
+> **Epic:** [EPIC-AI-06](../EPIC.md)
+> **Status:** ✅ Done — all 10 stories Done or resolved-superseded, and US-LAUNCH-015
+> (pricing/gating, EPIC-LAUNCH-01) closed 2026-08-15
+> **Target date:** TBD
+>
+> *(Header split onto its own lines 2026-09-02 — Status was inline on the Epic line and invisible
+> to a status sweep. Content unchanged. See the 2026-09-02 note below for what US-EDIT-009
+> changed about this milestone's mechanism.)*
 
 ## Scope
 Editable canvas output: generated designs can be loaded as independently editable text elements over the background, not just a flat raster. Originally scoped as AI-first (text-free background + layout-engine overlay); **live verification on 2026-08-13 proved extraction-led composition (Ideogram layerize-text detecting the design's own baked-in text) is the higher-fidelity default** — see [EPIC.md's 2026-08-13 log entry](../EPIC.md). The text-free AI-first path remains in scope specifically for the real-photo flow (US-AI-051), where baking marketing text onto the user's own listing photo is undesirable regardless of extraction.
@@ -13,11 +20,31 @@ Editable canvas output: generated designs can be loaded as independently editabl
 | US-AI-044 | LLM layout planner | ✅ Done — all 8 ACs, 49 tests, re-verified 2026-08-15. Unwired by design (see its Notes) — narrower remaining job is [BL-07](../../../../BACKLOG.md) |
 | US-AI-045 | Pipeline integration (planner → engine → canvas) | ⛔ Closed 2026-08-14 — superseded by extraction-led composition; planner's narrower remaining job deferred to [BL-07](../../../../BACKLOG.md) |
 | US-AI-046 | Connect the layout engine to the editable canvas | ✅ Done |
-| US-AI-047 | Shared render-mode across generation surfaces | ✅ Done |
+| US-AI-047 | Shared render-mode across generation surfaces | ✅ Done — **mechanism since removed**, see 2026-09-02 note |
 | US-AI-048 | Cache ComposedDesign per (generation, variation) | ✅ Done — 7/7 ACs, live-verified 2026-08-15 (2.97s cached round trip vs. 15-90s real) |
 | US-AI-049 | Map extracted fonts to real editor typography | ✅ Done — 6/6 ACs; AC5 failed live 2026-08-14 (found [BL-08](../../../../BACKLOG.md)), fixed + re-verified 2026-08-15 |
 | US-AI-050 | Progress affordance for the editable compose wait | ✅ Done — 6/6 ACs, AC3 live-verified 2026-08-14 |
-| US-AI-051 | Text-free background for real-photo + editable | ✅ All 7 ACs verified, live on staging |
+| US-AI-051 | Text-free background for real-photo + editable | ✅ All 7 ACs verified, live on staging — **trigger widened**, see 2026-09-02 note |
+
+> ### 2026-09-02 — how US-EDIT-009 (M-EDIT-03) changed this milestone
+>
+> This milestone stays ✅ Done: everything below shipped and was verified. Two entries now
+> describe a mechanism the product no longer has, so read them as history rather than as the
+> current design.
+>
+> **`renderMode` no longer exists.** US-EDIT-009 removed the pre-generation "Flat / Editable"
+> toggle and the session-global preference behind it. Generation is always flat; text becomes
+> editable through `CanvasEditToolbar` after the design is on the canvas. That makes **US-AI-047**
+> — whose whole subject was sharing that preference between AI Chat and Quick Generate —
+> superseded in mechanism. It was not wasted work: it fixed a real bug (editable was unreachable
+> from the more prominent button), and the reason it existed is the reason the toggle was
+> eventually removed rather than duplicated a third time.
+>
+> **US-AI-051's trigger widened.** Its text-free prompt used to require `renderMode === 'editable'`
+> **and** a photo; it now fires on the photo alone. The quality argument in the Scope paragraph
+> above — *"baking marketing text onto the user's own listing photo is undesirable regardless of
+> extraction"* — is what survived, and it now applies to every real-photo generation rather than
+> only to users who had opted in. Read "real-photo + editable" as "real-photo" throughout this card.
 
 > US-AI-046 and US-AI-047 previously shipped without dedicated story cards (2026-08-13). Backfilled 2026-08-14 — see their STORY.md/TASKS.md for the retroactive AC record and the "written after the fact" Notes sections.
 

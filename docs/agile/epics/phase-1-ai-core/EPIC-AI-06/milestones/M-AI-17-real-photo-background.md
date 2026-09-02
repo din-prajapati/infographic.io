@@ -1,6 +1,12 @@
 # M-AI-17 — Real Photo Background
 
-> **Epic:** [EPIC-AI-06](../EPIC.md) · **Status:** ✅ Done — closed 2026-08-15, live-verified · **Target:** TBD
+> **Epic:** [EPIC-AI-06](../EPIC.md)
+> **Status:** ✅ Done — closed 2026-08-15, live-verified
+> **Target date:** TBD
+>
+> *(Header split onto its own lines 2026-09-02. Status was previously inline on the Epic line,
+> which reads fine to a human but is invisible to anything scanning for a `**Status:**` line —
+> this card and M-AI-18 both came back blank in a status sweep. Content unchanged.)*
 
 ## Scope
 The agent's uploaded listing photo becomes the **source image** for the composition, so the design is built around the real property. The composition's own text is then discarded: layer extraction recovers its measured geometry, and the application re-renders canonical listing values at those positions.
