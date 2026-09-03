@@ -339,6 +339,21 @@ test.describe("US-EDIT-009 — Gate 2 (automated portion)", () => {
     // Recorded rather than asserted: a slow extraction is a product fact, not
     // a test failure, and pinning a threshold here would make this test fail
     // for reasons that have nothing to do with US-EDIT-009.
+    // BL-21 — the wait must say how long it has been waiting. Sample the
+    // button twice and require the text to change: a static "Separating
+    // layers…" is exactly the regression this fixes, and it would satisfy any
+    // assertion that only checked the label was present.
+    const labelSamples: string[] = [];
+    for (const at of [2_500, 9_000]) {
+      await page.waitForTimeout(at === 2_500 ? 2_500 : 6_500);
+      labelSamples.push((await toolbar.textContent())?.trim() ?? "");
+    }
+    expect(
+      labelSamples[0],
+      `progress label never ticked — still "${labelSamples[0]}" after 9s`,
+    ).not.toBe(labelSamples[1]);
+    expect(labelSamples[1]).toMatch(/\d+s/);
+
     let activeMs: number | null = null;
     let terminalState = "none — still spinning at timeout";
     try {
@@ -368,6 +383,8 @@ test.describe("US-EDIT-009 — Gate 2 (automated portion)", () => {
       `compose HTTP round trip      : ${tResponse - tRequest} ms`,
       `click → terminal state       : ${activeMs === null ? ">180000 (timed out)" : activeMs + " ms"}`,
       `terminal state               : ${terminalState}`,
+      `progress label @~2.5s        : ${labelSamples[0]}`,
+      `progress label @~9s          : ${labelSamples[1]}`,
       `compose HTTP status          : ${response?.status() ?? "n/a"}`,
       "",
       "Console lines mentioning compose/extract/layer:",

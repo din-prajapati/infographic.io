@@ -10,6 +10,7 @@ import {
   DialogTitle,
 } from '../ui/dialog';
 import { useGenerationPrefs } from '../../hooks/useGenerationPrefs';
+import { useComposeProgress } from '../../hooks/useComposeProgress';
 import { useCanvasStore } from '../../hooks/useCanvasStore';
 import { loadComposedDesignToCanvas, deriveOrientationFromCanvas } from '../../lib/canvasState';
 import { planVariationLoad, EDITABLE_REQUIRES_UPGRADE_REASON } from '../../lib/layout/loadVariation';
@@ -39,6 +40,28 @@ export function CanvasEditToolbar({ generationId }: CanvasEditToolbarProps) {
   // compose leak "editable" onto every other canvas in the session.
   const activeGenerationId = useGenerationPrefs((s) => s.activeGenerationId);
   const [isExtracting, setIsExtracting] = useState(false);
+
+  /**
+   * BL-21 — the compose wait is long enough to need saying so.
+   *
+   * Measured on staging 2026-09-03: click → "Editable layers active" was
+   * 31.6s (a second run, 27.8s), of which 29.5s was the POST /:id/compose
+   * round trip. US-AI-050 built `useComposeProgress` for exactly this wait,
+   * but US-EDIT-009 removed its last two call sites along with the render-mode
+   * toggle, leaving the hook with zero consumers and this control showing a
+   * static "Separating layers…" for half a minute.
+   *
+   * Two separate flags, deliberately:
+   *   composeInFlight — true the instant the request starts, so elapsed time
+   *                     is counted from the click, not from when the spinner
+   *                     appears.
+   *   isExtracting    — the delayed flag that decides whether to *render* a
+   *                     loading state at all (LOADING_INDICATOR_DELAY_MS), so
+   *                     a cache hit still never flashes one. US-AI-048 makes
+   *                     repeat composes ~3s; this wait hurts first-time users.
+   */
+  const [composeInFlight, setComposeInFlight] = useState(false);
+  const composeProgress = useComposeProgress(composeInFlight);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const elements = useCanvasStore((state) => state.elements);
   const canvasWidth = useCanvasStore((state) => state.canvasWidth);
@@ -94,6 +117,11 @@ export function CanvasEditToolbar({ generationId }: CanvasEditToolbarProps) {
       });
       return;
     }
+
+    // Start the elapsed-time clock now, at the click — not when the spinner
+    // appears — so the number the user reads is the wait they have actually
+    // had, not the wait minus LOADING_INDICATOR_DELAY_MS.
+    setComposeInFlight(true);
 
     // Delay the spinner (see LOADING_INDICATOR_DELAY_MS) so a cache hit never
     // flashes a loading state — only a genuinely slow first-time extraction does.
@@ -153,6 +181,10 @@ export function CanvasEditToolbar({ generationId }: CanvasEditToolbarProps) {
         loadingTimerRef.current = null;
       }
       setIsExtracting(false);
+      // Resets the hook's counter to 0 for the next compose (see its `active`
+      // contract) — must happen on every exit path, including the rejects and
+      // the upgrade modal, or the next run would resume from a stale count.
+      setComposeInFlight(false);
     }
   };
 
@@ -177,12 +209,29 @@ export function CanvasEditToolbar({ generationId }: CanvasEditToolbarProps) {
               ? "bg-secondary text-secondary-foreground hover:bg-secondary/80 border border-border"
               : "bg-primary text-primary-foreground hover:bg-primary/90"
           }`}
-          title={isEditableMode ? "Layers are active on canvas" : "Separate text and graphics into editable layers"}
+          title={
+            isExtracting
+              ? composeProgress.label
+              : isEditableMode
+                ? "Layers are active on canvas"
+                : "Separate text and graphics into editable layers"
+          }
         >
           {isExtracting ? (
             <>
               <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              <span>Separating layers…</span>
+              {/* BL-21: was a static "Separating layers…" for a ~30s wait.
+                  Built from elapsedSeconds + phase rather than using the hook's
+                  own `label`, which the hook explicitly permits: that label is
+                  a full sentence written for a toast ("Still working — this can
+                  take up to a minute for detailed designs") and would stretch
+                  this pill across the canvas. The sentence still gets said, in
+                  the button's title. */}
+              <span>
+                {composeProgress.phase === 'still-working'
+                  ? `Still working… ${composeProgress.elapsedSeconds}s`
+                  : `Separating layers… ${composeProgress.elapsedSeconds}s`}
+              </span>
             </>
           ) : isEditableMode ? (
             <>
