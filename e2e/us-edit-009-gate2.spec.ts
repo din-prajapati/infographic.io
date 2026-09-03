@@ -189,6 +189,19 @@ test.describe("US-EDIT-009 — Gate 2 (automated portion)", () => {
     // reading the canvas <img src>: that src is the /api/proxy-image URL (CORS
     // bypass), so it would report the proxy's host no matter where the bytes
     // actually live, and pass against a broken R2.
+    let tComposeFired: number | null = null;
+    page.on("request", (r) => {
+      if (
+        tComposeFired === null &&
+        /\/infographics\/generations\/[^/]+\/compose/.test(r.url())
+      ) {
+        tComposeFired = Date.now();
+      }
+    });
+
+    const consoleLines: string[] = [];
+    page.on("console", (m) => consoleLines.push(`[${m.type()}] ${m.text()}`));
+
     const variationUrls: string[] = [];
     page.on("response", async (res) => {
       if (!/\/infographics\/generations\/[^/]+\/variations/.test(res.url())) return;
@@ -283,6 +296,7 @@ test.describe("US-EDIT-009 — Gate 2 (automated portion)", () => {
       .or(page.getByText(/Monthly limit reached/i))
       .first();
 
+    const tClick = Date.now();
     await toolbar.getByRole("button").click();
 
     const guardText = await guardToast
@@ -297,6 +311,12 @@ test.describe("US-EDIT-009 — Gate 2 (automated portion)", () => {
     }
 
     const request = await composeCall;
+    // NOT Date.now() here: this line runs only after the 8s guard-toast wait
+    // above, so it would report the request as ~8s later than it fired and
+    // make the server look 8s faster than it is. tComposeFired is stamped by
+    // the page.on("request") listener at the moment the request leaves the
+    // browser, which is the only honest reading.
+    const tRequest = tComposeFired ?? Date.now();
 
     // The id in the URL must be a real generation id, not a placeholder — the
     // exact bug US-EDIT-005 fixed once already ('current-gen' was being sent).
@@ -311,6 +331,56 @@ test.describe("US-EDIT-009 — Gate 2 (automated portion)", () => {
     // it got far enough to be told no — so only server faults fail here.
     const response = await request.response();
     expect(response?.status() ?? 599).toBeLessThan(500);
+    const tResponse = Date.now();
+
+    // ── How long does "Separating layers…" actually last? ──────────────────
+    // US-AI-048 measured 15-90s for a real extraction and 2.97s for a cache
+    // hit, but nothing measures it on the surface the user actually presses.
+    // Recorded rather than asserted: a slow extraction is a product fact, not
+    // a test failure, and pinning a threshold here would make this test fail
+    // for reasons that have nothing to do with US-EDIT-009.
+    let activeMs: number | null = null;
+    let terminalState = "none — still spinning at timeout";
+    try {
+      await expect(toolbar.getByText(/editable layers active/i)).toBeVisible({
+        timeout: 180_000,
+      });
+      activeMs = Date.now() - tClick;
+      terminalState = "Editable layers active";
+    } catch {
+      // Not every generation yields extractable text. These are legitimate
+      // endings too, and worth distinguishing from a hang.
+      for (const [re, label] of [
+        [/no separate text layers detected/i, "No separate text layers detected"],
+        [/could not load separated layers/i, "Could not load separated layers"],
+        [/monthly limit reached/i, "Monthly limit reached"],
+      ] as const) {
+        if (await page.getByText(re).isVisible().catch(() => false)) {
+          terminalState = label;
+          activeMs = Date.now() - tClick;
+          break;
+        }
+      }
+    }
+
+    const timing = [
+      `click → compose request sent : ${tRequest - tClick} ms`,
+      `compose HTTP round trip      : ${tResponse - tRequest} ms`,
+      `click → terminal state       : ${activeMs === null ? ">180000 (timed out)" : activeMs + " ms"}`,
+      `terminal state               : ${terminalState}`,
+      `compose HTTP status          : ${response?.status() ?? "n/a"}`,
+      "",
+      "Console lines mentioning compose/extract/layer:",
+      ...consoleLines
+        .filter((l) => /compose|extract|layer|editable/i.test(l))
+        .slice(0, 40),
+    ].join("\n");
+
+    await testInfo.attach("separating-layers-timing", {
+      body: timing,
+      contentType: "text/plain",
+    });
+    console.log("\n===== SEPARATING LAYERS TIMING =====\n" + timing + "\n");
 
     // ── Step 4 / TC-05 — the regression CanvasEditToolbar's comment warns
     // about: a compose succeeding must not make every later canvas in the
