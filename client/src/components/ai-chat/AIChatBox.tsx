@@ -143,8 +143,13 @@ export function AIChatBox({
 
   // US-AI-050's compose-progress tracker lived here. US-EDIT-009 removed it:
   // this panel no longer calls POST /:id/compose at all, so the flag could
-  // never become true. The elapsed-time affordance still exists on the surface
-  // that does compose — CanvasEditToolbar, via useComposeProgress.
+  // never become true.
+  //
+  // Correction (2026-09-03): an earlier version of this comment claimed the
+  // affordance "still exists on CanvasEditToolbar, via useComposeProgress".
+  // It does not — `useComposeProgress` now has zero consumers. CanvasEditToolbar
+  // shows a static "Separating layers…" for a wait measured at ~30s on staging
+  // (29.5s of it the compose round trip). See BL-21.
 
   // Conversation history with previews
   const [conversationHistory, setConversationHistory] = useState<
