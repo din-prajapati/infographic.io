@@ -93,7 +93,7 @@ feat(edit): T{n} {summary} — US-EDIT-009
 - [x] T4a — Re-trigger the text-free path from the photo
 - [x] T5 — Tests
 - [x] Gate 1 passes
-- [ ] Gate 2 — staging visual check (generate → no mode choice → Edit elements works)
+- [x] Gate 2 steps 1–4 — automated in `e2e/us-edit-009-gate2.spec.ts`, passing on staging 2026-09-03
 - [ ] Gate 2 — staging real-photo check: generate from an uploaded listing photo, confirm the
       background comes back **unmarked** (T4a's whole point)
 - [x] US-AI-051 banner updated to record the resolution; status stays ✅
