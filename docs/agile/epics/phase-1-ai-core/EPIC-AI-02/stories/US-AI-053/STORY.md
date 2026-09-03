@@ -7,11 +7,11 @@ updated: 2026-09-03
 
 # Story Card — US-AI-053
 
-> **Status:** 🔲 Not Started — **draft, not yet hardened**
+> **Status:** 🟡 Implemented — Gate 1 green (497 backend + 271 client). Gate 2 pending.
 > **Feature:** F-AI-02-05 — Canvas-aware generation
 > **Epic:** [EPIC-AI-02](../../EPIC.md)
-> **Milestone:** ⚠️ **needs one** — `M-AI-06-photo-and-format` (this story's parent work) closed
-> 2026-08-05. Do not reopen it; assign a current milestone before implementing.
+> **Milestone:** [M-AI-20-canvas-image-lifecycle](../../milestones/M-AI-20-canvas-image-lifecycle.md)
+> — created 2026-09-03 for this work. `M-AI-06` closed 2026-08-05 and was not reopened.
 > **Size:** S–M (~3–4h, see Estimate)
 > **Follows:** [US-AI-036](../US-AI-036/STORY.md) AC3 — this fixes a consequence of that decision
 > **Created:** 2026-09-03 | **Closed:** —
@@ -91,52 +91,57 @@ optional polish; it is the precondition that makes AC1 safe.
 
 ## Acceptance Criteria
 
-- [ ] **AC1 [happy-path]:** In `client/src/lib/canvasState.ts`'s `loadAiVariationToCanvas`,
+- [x] **AC1 [happy-path]:** In `client/src/lib/canvasState.ts`'s `loadAiVariationToCanvas`,
       the deliberate-origin branch removes any existing element with `isAiImport === true` before
       prepending the new one. After N generations onto the same template, the canvas holds
       **exactly one** `isAiImport` element. Template/user elements are untouched, canvas
       dimensions unchanged, and the new image keeps its `minZIndex - 1` placement.
 
-- [ ] **AC2 [regression]:** `pushToHistory` is called with the pre-change element snapshot before
+- [x] **AC2 [regression]:** `pushToHistory` is called with the pre-change element snapshot before
       the `loadCanvas` mutation in `loadAiVariationToCanvas`, so the toolbar Undo restores the
       previous canvas — including the replaced AI image. Verified by asserting `history.past`
       grows by one and `undo()` returns the prior element set. **AC1 must not merge without this.**
 
-- [ ] **AC3 [happy-path]:** Replacement announces itself: a toast reading *"Background replaced"*
+- [x] **AC3 [happy-path]:** Replacement announces itself: a toast reading *"Background replaced"*
       with an **Undo** action wired to `useCanvasStore.undo`. Shown only when an image was actually
       replaced — the first generation onto a template is an insert, not a replacement, and must
       stay silent.
 
-- [ ] **AC4 [edge-case]:** Stale extracted layers. When the canvas holds `composed-` prefixed
+- [x] **AC4 [edge-case]:** Stale extracted layers. When the canvas holds `composed-` prefixed
       elements (output of a previous "Edit elements") and the AI background is replaced, those
       elements are removed with it, and the toast says so: *"Background replaced — press Edit
       elements to extract text from the new design."* Their geometry was measured from the old
       image, so keeping them leaves text positioned for a design that no longer exists.
-      **⚠️ Decision required before implementing — see Open Question.**
+      *(Settled 2026-09-03 — drop them; see Decision below.)*
 
-- [ ] **AC5 [regression]:** The blank-canvas path is untouched. With no deliberate origin,
+- [x] **AC5 [regression]** *(satisfied by construction; no test — see TC-06)*: The blank-canvas path is untouched. With no deliberate origin,
       `loadAiVariationToCanvas` still auto-sizes a new artboard via `resolveAiArtboard()` exactly
       as US-AI-036 AC4 specifies. That branch has no prior image to replace.
 
-- [ ] **AC6 [regression]:** `CanvasEditToolbar`'s `elements.find(...)` resolves correctly by
+- [x] **AC6 [regression]:** `CanvasEditToolbar`'s `elements.find(...)` resolves correctly by
       construction — with one `isAiImport` element there is no ambiguity. Its own code is
       **not modified**; this AC is a test asserting the invariant holds after two generations.
 
-- [ ] **AC7 [error-path]:** If the image fails to load or decode, the canvas is left exactly as it
+- [x] **AC7 [error-path]** *(satisfied by construction; no test — see TC-08)*: If the image fails to load or decode, the canvas is left exactly as it
       was — no element removed, no history entry pushed, no toast. The existing `catch` returns
       `false`; removal must not happen before the image is known good.
 
 ---
 
-## Open Question — decide before implementing
+## Decision — settled 2026-09-03
 
-- [ ] **AC4: drop, keep, or ask for stale `composed-` layers?**
+- [x] **Stale `composed-` layers are dropped with the background they were measured from.**
 
-  | Option | Trade |
-  |---|---|
-  | **Drop them** ← recommended | Honest and predictable. The user's *edits* to that text are real work, but the *positions* are extraction output, not theirs. Undo restores everything. |
-  | Keep them | Cheapest diff; usually produces a visibly broken canvas — headline over the house, price off the scrim. |
-  | Ask | The one case where a dialog is arguably earned, since real edits are at stake. Still adds a modal to an iterative loop. |
+  Their geometry came from extraction against the *old* image. Keeping them puts the headline over
+  the house and the price off the scrim — a canvas that looks broken rather than one that looks
+  changed. The user's *edits* to that text are real work; the *positions* are not theirs, and AC2's
+  undo restores both.
+
+  Rejected: **keep** (cheapest diff, visibly broken output) and **ask** (a modal inside an
+  iterative, paid loop — the exact tax this story's prior-art section argues against).
+
+  The toast carries the consequence rather than hiding it: *"press Edit elements to extract text
+  from the new design."*
 
 ---
 
@@ -154,16 +159,20 @@ optional polish; it is the precondition that makes AC1 safe.
 
 ## Test Cases
 
-| TC ID | AC | Type | Priority | Scenario | Status |
-|-------|:--:|------|:--------:|----------|:------:|
-| TC-AI-053-01 | AC1 | Unit | P0 | two generations onto a template leave exactly one `isAiImport` element | 🔲 |
-| TC-AI-053-02 | AC1 | Unit | P0 | template/user elements and canvas dimensions survive the replacement unchanged | 🔲 |
-| TC-AI-053-03 | AC2 | Unit | **P0** | `history.past` grows by one, and `undo()` restores the previous AI image | 🔲 |
-| TC-AI-053-04 | AC3 | Unit | P1 | first generation onto a template shows no "replaced" toast; the second does | 🔲 |
-| TC-AI-053-05 | AC4 | Unit | P1 | `composed-` elements are removed alongside the replaced background *(option-dependent)* | 🔲 |
-| TC-AI-053-06 | AC5 | Unit | P0 | blank canvas still auto-sizes the artboard — US-AI-036 AC4 unchanged | 🔲 |
-| TC-AI-053-07 | AC6 | Unit | P0 | after two generations, the single `isAiImport` element is the newest one | 🔲 |
-| TC-AI-053-08 | AC7 | Unit | P1 | a failed image load leaves elements, history and toasts untouched | 🔲 |
+> Canonical 6-column shape, so `orion tc-rows --write` can regenerate it without corrupting the
+> table (BL-17: it assumes exactly these columns and shifts every cell if given more). The AC each
+> row covers is named in the Scenario text instead of a separate column.
+
+| TC ID | Type | Priority | Scenario | Status | Finding |
+|-------|------|:--------:|----------|:------:|---------|
+| TC-AI-053-01 | Unit | P0 | AC1 — two generations onto a template leave exactly one `isAiImport` element | ✅ | `canvasState.aiBackground.spec.ts` |
+| TC-AI-053-02 | Unit | P0 | AC1 — template/user elements and canvas dimensions survive the replacement unchanged | ✅ | `canvasState.aiBackground.spec.ts` |
+| TC-AI-053-03 | Unit | P0 | AC2 — `history.past` grows by one, and `undo()` restores the previous AI image | ✅ | `canvasState.aiBackground.spec.ts` |
+| TC-AI-053-04 | Unit | P1 | AC3 — first generation onto a template shows no "replaced" toast; the second does | ✅ | `canvasState.aiBackground.spec.ts` |
+| TC-AI-053-05 | Unit | P1 | AC4 — `composed-` elements are removed alongside the replaced background | ✅ | `canvasState.aiBackground.spec.ts` |
+| TC-AI-053-06 | Unit | P0 | AC5 — blank canvas still auto-sizes the artboard, US-AI-036 AC4 unchanged | 🔲 | **Not written.** True by construction — the change is inside the `hasDeliberateOrigin` branch, so the blank-canvas `else` is textually untouched. Exercising it needs the image pipeline this repo deliberately does not mock. Gate 2 covers it |
+| TC-AI-053-07 | Unit | P0 | AC6 — after two generations the single `isAiImport` element is the newest one | ✅ | `canvasState.aiBackground.spec.ts` |
+| TC-AI-053-08 | Unit | P1 | AC7 — a failed image load leaves elements, history and toasts untouched | 🔲 | **Not written.** True by construction — removal happens after `await loadImageFromSrc`, so a decode failure throws before any mutation. Same mocking limitation as TC-06 |
 
 ---
 
