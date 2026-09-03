@@ -42,6 +42,29 @@ const baseURL = (process.env.PLAYWRIGHT_BASE_URL || "http://localhost:5000").rep
 /** The exact toast AC9 must never produce. CanvasEditToolbar.tsx:92. */
 const NOT_LINKED_TOAST = /Design isn't linked to a generation/i;
 
+/**
+ * M-INFRA-01 check 1 — is a generated image stored on storage we own?
+ *
+ * Deliberately not a single hardcoded domain: the two environments publish R2
+ * differently, and asserting production's domain would fail on staging for a
+ * correct system.
+ *   production  assets.buildographic.com   (custom domain)
+ *   staging     pub-<id>.r2.dev            (managed subdomain, no custom domain)
+ *
+ * Override with R2_PUBLIC_URL_EXPECTED when pointing at an environment whose
+ * public URL is neither of those.
+ *
+ * The failure this catches is quiet by design: uploadAndFallback() never
+ * throws, so a misconfigured R2 degrades to the original Ideogram URL instead
+ * of failing the generation. Nothing errors, nothing looks wrong — the stored
+ * URL simply expires weeks later, taking the customer's design with it. That
+ * is why this asserts on the *stored* URL rather than on whether the image
+ * renders: a fallback URL renders perfectly today.
+ */
+const OWNED_URL = process.env.R2_PUBLIC_URL_EXPECTED
+  ? new RegExp(process.env.R2_PUBLIC_URL_EXPECTED.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i")
+  : /(assets\.buildographic\.com|\.r2\.dev)/i;
+
 async function registerFreshAccount(): Promise<{ token: string; user: unknown }> {
   const email = `e2e-edit009-${Date.now()}@test.local`;
   const res = await fetch(`${baseURL}/api/v1/auth/register`, {
@@ -160,9 +183,24 @@ test.describe("US-EDIT-009 — Gate 2 (automated portion)", () => {
   // ── Steps 3 + 4 — one real generation, both assertions ──────────────────
   test("steps 3+4 (TC-12, TC-05): an AI Chat design extracts, and a fresh template does not inherit it", async ({
     page,
-  }) => {
-    const toasts: string[] = [];
-    page.on("console", (m) => toasts.push(m.text()));
+  }, testInfo) => {
+    // M-INFRA-01 check 1 rides along on the generation this test already pays
+    // for. Capture the variations payload the app itself fetches, rather than
+    // reading the canvas <img src>: that src is the /api/proxy-image URL (CORS
+    // bypass), so it would report the proxy's host no matter where the bytes
+    // actually live, and pass against a broken R2.
+    const variationUrls: string[] = [];
+    page.on("response", async (res) => {
+      if (!/\/infographics\/generations\/[^/]+\/variations/.test(res.url())) return;
+      try {
+        const body = await res.json();
+        for (const v of Array.isArray(body) ? body : []) {
+          if (typeof v?.imageUrl === "string") variationUrls.push(v.imageUrl);
+        }
+      } catch {
+        /* non-JSON or already consumed — the assertion below reports the gap */
+      }
+    });
 
     await openTemplateInEditor(page);
     await openAiChat(page);
@@ -176,6 +214,29 @@ test.describe("US-EDIT-009 — Gate 2 (automated portion)", () => {
     // Place the result on the canvas via the chat's Edit action. Under
     // US-EDIT-009 this is a plain flat load — no mode was ever chosen.
     await page.locator("#ai-chat-panel").getByTitle("Customize in editor").first().click();
+
+    // ── M-INFRA-01 check 1 — the generated image is on storage we own ──────
+    // Free: this generation was already bought by the AC9 check above.
+    expect(
+      variationUrls.length,
+      "no /variations response was captured — the check below would pass vacuously",
+    ).toBeGreaterThan(0);
+
+    // Record the hosts. A green assertion says "it matched"; a milestone
+    // acceptance wants "here is what it was", and this is the artifact that
+    // closes M-INFRA-01 check 1 rather than merely reporting it closed.
+    const hosts = [...new Set(variationUrls.map((u) => new URL(u).host))];
+    await testInfo.attach("stored-image-hosts", {
+      body: `${hosts.join("\n")}\n\n(${variationUrls.length} variation URL(s) captured)`,
+      contentType: "text/plain",
+    });
+
+    for (const url of variationUrls) {
+      expect(url, `variation still served from the provider CDN: ${url}`).not.toMatch(
+        /ideogram\.ai/i,
+      );
+      expect(url, `variation is not on an owned domain: ${url}`).toMatch(OWNED_URL);
+    }
 
     // Wait for the image to actually land on the canvas before touching the
     // toolbar. This matters more than it looks: the toolbar is already on
