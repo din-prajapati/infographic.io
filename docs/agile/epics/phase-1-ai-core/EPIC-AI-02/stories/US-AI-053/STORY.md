@@ -202,11 +202,11 @@ if it bites, it is a separate story, not scope creep into this one.
 
 ## Definition of Done
 
-- [ ] All ACs checked
-- [ ] The Open Question is decided and recorded in this card
-- [ ] A milestone is assigned (M-AI-06 is closed — do not reopen)
-- [ ] `orion harden US-AI-053` run and locked
-- [ ] Gate 1 green
+- [x] All ACs checked — AC5 and AC7 by construction, untested; see TC-06/TC-08
+- [x] The Open Question is decided and recorded in this card
+- [x] A milestone is assigned (M-AI-06 is closed — do not reopen)
+- [x] `orion harden US-AI-053` run and locked
+- [x] Gate 1 green
 - [ ] Gate 2 — generate twice onto one template via Quick Generate; confirm one background,
       confirm toolbar Undo restores the previous one
 - [ ] PR opened with story card as description
