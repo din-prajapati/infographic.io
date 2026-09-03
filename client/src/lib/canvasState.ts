@@ -5,8 +5,14 @@
 
 import { exportCanvasToImage } from './canvasExport';
 import { useCanvasStore } from '../hooks/useCanvasStore';
-import type { ImageElement, TextElement, TextAlign } from './canvasTypes';
+import type { CanvasElement, ImageElement, TextElement, TextAlign } from './canvasTypes';
 import type { ComposedDesign, ComposedTextElementGeometry } from './api';
+// US-AI-053 AC3. This module is otherwise UI-free, and the toast could instead
+// be raised by the two callers (CenterCanvas, RightSidebar). It lives here
+// because this is the only place that knows a replacement actually happened —
+// pushing that knowledge out to both callers would duplicate the condition in
+// two files, which is precisely the drift US-AI-047 was written to undo.
+import { toast } from 'sonner';
 import { mapExtractedFont } from './fontMap';
 import { createMeasureText } from './layout/connectLayout';
 
@@ -312,6 +318,41 @@ function loadImageFromSrc(src: string): Promise<HTMLImageElement> {
  *   auto-resize the canvas to the AI image's orientation via resolveAiArtboard
  *   (today's behavior — unchanged).
  */
+/**
+ * US-AI-053 — split a canvas into "what a new AI background replaces" and
+ * "what survives it".
+ *
+ * Exported and pure so it can be unit-tested directly, per this repo's canvas
+ * testing decision (see `client/vitest.config.ts`): test the helper, don't mock
+ * the image-fetch pipeline around it.
+ *
+ * @returns priorAiImage        the background being replaced, if any. Its
+ *                              presence is what makes this a *replacement*
+ *                              rather than a first insert (AC3 — the first
+ *                              generation onto a template stays silent).
+ *          hadExtractedLayers  whether `composed-` elements were dropped, which
+ *                              changes what the toast needs to say (AC4).
+ *          retained            everything that survives: the template's and the
+ *                              user's own elements, untouched.
+ */
+export function splitElementsForAiBackground(elements: CanvasElement[]): {
+  priorAiImage?: ImageElement;
+  hadExtractedLayers: boolean;
+  retained: CanvasElement[];
+} {
+  const isAiBackground = (el: CanvasElement): el is ImageElement =>
+    el.type === 'image' && Boolean((el as ImageElement).isAiImport);
+  // Only compose output carries this prefix — see CanvasEditToolbar's own note
+  // on why a `type === 'text'` check would wrongly match a template's layers.
+  const isExtractedLayer = (el: CanvasElement) => el.id.startsWith('composed-');
+
+  return {
+    priorAiImage: elements.find(isAiBackground),
+    hadExtractedLayers: elements.some(isExtractedLayer),
+    retained: elements.filter((el) => !isAiBackground(el) && !isExtractedLayer(el)),
+  };
+}
+
 export async function loadAiVariationToCanvas(
   imageUrl: string,
   name: string,
@@ -347,7 +388,20 @@ export async function loadAiVariationToCanvas(
 
     if (hasDeliberateOrigin) {
       // AC3 — insert as a new background layer; leave the canvas dimensions untouched.
-      const { canvasWidth: activeW, canvasHeight: activeH, elements: existingElements } = snapshot;
+      const { canvasWidth: activeW, canvasHeight: activeH } = snapshot;
+
+      // ── US-AI-053 AC1/AC4 — one AI background per canvas ──────────────────
+      // US-AI-036 made this branch *insert* rather than replace the canvas,
+      // which fixed a destructive bug but left the second generation to stack
+      // a second background behind the first. Treat it as a singleton slot,
+      // the way a Canva page background or a Figma frame fill behaves.
+      //
+      // `composed-` elements go with it (AC4): their geometry was measured by
+      // extraction against the image being replaced, so keeping them leaves the
+      // headline over the house and the price off the scrim. AC2's history push
+      // below is what makes dropping them recoverable.
+      const { priorAiImage, hadExtractedLayers, retained: existingElements } =
+        splitElementsForAiBackground(snapshot.elements);
       const imageOrientation = preferredOrientation
         ?? resolveAiArtboard(img.naturalWidth, img.naturalHeight).orientation;
 
@@ -381,11 +435,33 @@ export async function loadAiVariationToCanvas(
         filters: { brightness: 100, contrast: 100, saturation: 100 },
       };
 
+      // US-AI-053 AC2 — record the pre-change canvas so the toolbar Undo can
+      // restore it. loadCanvas() sets state directly and never touches history,
+      // so before this every AI placement was silently unundoable — and with
+      // AC1 now *removing* the previous background, shipping without this would
+      // turn a clutter bug into data loss. Push the real pre-change snapshot,
+      // not `existingElements`, which already has the removals applied.
+      snapshot.pushToHistory(snapshot.elements);
+
       // Prepend to preserve existing elements; canvas dimensions / background unchanged.
       snapshot.loadCanvas({
         elements: [imageElement, ...existingElements],
         selectedElementIds: [],
       });
+
+      // AC3 — say so, but only on an actual replacement. The first generation
+      // onto a template is an insert and stays silent.
+      if (priorAiImage) {
+        toast.success('Background replaced', {
+          description: hadExtractedLayers
+            ? 'Press Edit elements to extract text from the new design.'
+            : undefined,
+          action: {
+            label: 'Undo',
+            onClick: () => useCanvasStore.getState().undo(),
+          },
+        });
+      }
     } else {
       // AC4 — blank canvas: auto-resize to the AI image's native orientation (unchanged behavior).
       const artboard = preferredOrientation
