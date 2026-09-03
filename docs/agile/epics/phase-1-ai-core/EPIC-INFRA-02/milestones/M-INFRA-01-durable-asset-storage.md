@@ -31,8 +31,23 @@ NestJS container's ephemeral tmp dir — verified end-to-end on staging.
 
 ## Acceptance (Milestone Done When…)
 
-- [ ] `Infographic.imageUrl` for a newly-created generation points at the owned R2 domain
-      (`assets.buildographic.com`), not `ideogram.ai`
+- [x] `Infographic.imageUrl` for a newly-created generation points at the owned R2 domain,
+      not `ideogram.ai` — ✅ **verified on staging 2026-09-03.** All 3 variation URLs from a real
+      AI Chat generation came back on `pub-c4533d683e4e45c68ab89280d537e997.r2.dev`, which is
+      staging's own `R2_PUBLIC_URL`; none matched `ideogram.ai`.
+
+      Automated in `e2e/us-edit-009-gate2.spec.ts`, riding along on a generation that story
+      already pays for — the check itself is free. It reads the `/variations` API response rather
+      than the canvas `<img src>`, because that src is the `/api/proxy-image` URL and would report
+      the proxy's host no matter where the bytes actually live. The domain is matched per
+      environment (production `assets.buildographic.com`, staging `*.r2.dev`), overridable with
+      `R2_PUBLIC_URL_EXPECTED`, and the test refuses to pass vacuously if no `/variations`
+      response was captured.
+
+      **Production is not yet verified** — the `R2_*` vars were pushed 2026-09-03 and the
+      deployment succeeded, but no generation has been run there. Same spec, pointed at
+      `https://app.buildographic.com`, would answer it at the cost of one real generation and one
+      real infographic record in production data.
 - [ ] The `composedDesigns` cache (US-AI-048) keys off and serves the owned URL for new writes
 - [ ] A source-photo upload survives a mid-generation Railway container restart
 - [ ] Verified live: an infographic generated through this pipeline still renders after its
@@ -41,17 +56,23 @@ NestJS container's ephemeral tmp dir — verified end-to-end on staging.
 - [x] All stories above have status ✅ Done
 - [x] Verification gates pass (Gate 1 mandatory; Gate 4 API smoke for the backend changes)
 
-> **What is actually blocking closure (2026-09-02).** The four unchecked items above are all live
-> checks, and staging can answer three of them today — it has the R2 vars and the merged code.
-> The quickest is the first: generate one design on staging and read the stored `imageUrl`. If it
-> starts `assets.buildographic.com` the pipeline works end-to-end; if it still starts `ideogram.ai`
-> the upload is silently falling back, which is by design (`uploadAndFallback` never throws, so a
-> broken R2 degrades instead of failing generations — and therefore fails *quietly*).
+> **Updated 2026-09-03 — two of the four blockers cleared.**
 >
-> **Production has no `R2_*` variables set** — deliberately held back until this code shipped,
-> which it now has. Until they are pushed, production still serves expiring Ideogram URLs, which
-> is the exact problem this milestone exists to fix. Command in `HUMAN_TASKS.md` §5; it redeploys
-> production, so it is a human call.
+> **Production now has all 5 `R2_*` variables.** Pushed 2026-09-03 in a single batched call,
+> deployment SUCCESS, new instance serving (uptime 27s, DB connected), bucket
+> `buildographic-assets` → `assets.buildographic.com`. Production is no longer storing new images
+> on an expiring provider CDN by configuration — though that has not yet been *observed* there.
+>
+> **Check 1 is verified on staging** — see the evidence on the item above.
+>
+> Still open: check 3 (survives a container restart) and check 4 (renders after the provider URL
+> would have expired). Both need real infrastructure events rather than assertions, and check 4
+> needs elapsed time or a deliberate URL revocation. Neither is automatable as written.
+>
+> The failure mode to keep in mind for all of these: `uploadAndFallback` never throws, so a broken
+> R2 degrades to the provider URL instead of failing the generation. Nothing errors and nothing
+> looks wrong — the stored URL simply expires later, taking the customer's design with it. Every
+> check here therefore asserts on the *stored URL*, never on whether the image renders.
 
 ---
 
