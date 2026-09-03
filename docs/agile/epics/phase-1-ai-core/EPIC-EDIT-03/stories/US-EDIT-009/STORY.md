@@ -7,7 +7,9 @@ updated: 2026-09-01
 
 # Story Card — US-EDIT-009
 
-> **Status:** 🟡 Implemented — Gate 1 green, Gate 2 (staging) pending
+> **Status:** 🟡 Implemented — Gate 1 green; Gate 2 steps 1–4 ✅ automated and passing on
+> staging (2026-09-03). **Only step 5 (real-photo background) is outstanding**, and it is a human
+> visual check by design — see the Gate 2 section for why it was not turned into a proxy.
 > **Feature:** F-EDIT-01 — Editable design discoverability
 > **Epic:** [EPIC-EDIT-03](../../EPIC.md)
 > **Milestone:** [M-EDIT-03-single-editable-path](../../milestones/M-EDIT-03-single-editable-path.md)
@@ -178,18 +180,18 @@ offered twice, at two moments, with the earlier one requiring a prediction.
 
 | TC ID | AC | Type | Priority | Scenario | Status | Finding |
 |-------|:--:|------|:--------:|----------|:------:|---------|
-| TC-EDIT-009-01 | AC1 | Static | P0 | `AIChatBox` renders no flat/editable control — both toggle blocks removed, no mode choice appears anywhere pre-generation | ⚠️ | Verified by diff + Gate 2, not by a test: no React test harness exists |
+| TC-EDIT-009-01 | AC1 | E2E | P0 | `AIChatBox` renders no flat/editable control — both toggle blocks removed, no mode choice appears anywhere pre-generation | ✅ | `e2e/us-edit-009-gate2.spec.ts` step 1, staging 2026-09-03. Carries a positive control (textarea + Generate visible) so the absence assertions cannot pass against an unrendered panel |
 | TC-EDIT-009-02 | AC2 | Static | P0 | `grep -c renderMode` returns 0 for both `AIChatBox.tsx` and `RightSidebar.tsx` | ✅ | 0 and 0 |
 | TC-EDIT-009-03 | AC3 | Static | P0 | the generate request body built in `api.ts` contains no `renderMode` key | ✅ | `GenerateFromChatInput` lives in `api.ts`, not `types.ts` as the AC said |
 | TC-EDIT-009-04 | AC4 | Static | P0 | controller, service and orchestrator options type no longer declare `renderMode` | ⚠️ | Passes except the DTO shim, kept deliberately — see AC4 |
-| TC-EDIT-009-05 | AC5 | Unit | **P0** | regression: a freshly opened template with no AI content does **not** claim to be editable after an unrelated compose succeeds | ⚠️ | `useGenerationPrefs.spec.ts` proves the *ingredient* is gone (no session-global renderMode to OR in). The rendered behaviour is **not** covered — needs Gate 2 |
+| TC-EDIT-009-05 | AC5 | E2E | **P0** | regression: a freshly opened template with no AI content does **not** claim to be editable after an unrelated compose succeeds | ✅ | Now covered for real — `gate2.spec.ts` step 4, staging 2026-09-03, in the same session as a successful compose. `useGenerationPrefs.spec.ts` still guards the ingredient |
 | TC-EDIT-009-06 | AC6 | Unit | P0 | regression: `planVariationLoad` still returns `EDITABLE_REQUIRES_UPGRADE_REASON` for an unentitled plan | ✅ | All 9 pre-existing `loadVariation.spec.ts` assertions pass unchanged |
 | TC-EDIT-009-07 | AC7 | Unit | P1 | error-path: a request body still carrying `renderMode` is accepted and ignored, not 400'd | ⚠️ | Implemented via the DTO shim; **no test asserts it** — see Follow-ups |
 | TC-EDIT-009-08 | AC8 | Unit | P0 | `buildTextFreeImagePrompt` is selected when a photo reference is present, with no `renderMode` involved | ✅ | `ai-orchestrator.textfree-trigger.spec.ts`. **Mutation-checked:** disabling the condition makes it fail |
 | TC-EDIT-009-09 | AC8 | Unit | P0 | regression: a synthetic (no-photo) generation still takes the composed text-baked prompt | ✅ | Passes. Does not discriminate under mutation — the branch is nested inside `if (photoReference)`, so a synthetic generation cannot reach it. A guard, not a proof |
 | TC-EDIT-009-10 | AC8 | Unit | P1 | edge-case: `photoReference` present but empty-string still falls through to the composed prompt | ✅ | Passes, also non-discriminating: `if (photoReference)` at line 243 already excludes `''`, making US-AI-051's inner `length > 0` conjunct redundant. Kept — it fails if a refactor lifts the branch out of that nesting |
 | TC-EDIT-009-11 | AC9 | Unit | P0 | the store still exposes `activeGenerationId` and round-trips it through its setter | ✅ | `useGenerationPrefs.spec.ts` |
-| TC-EDIT-009-12 | AC9 | E2E | **P0** | an AI Chat generation (not Quick Generate) placed on the canvas → "Edit elements" extracts text rather than reporting *"Design isn't linked to a generation"* | 🔲 | **Gate 2.** The store test above proves the setter works, not that AI Chat calls it on the real completion path. This is the check that would have caught the AC9 regression |
+| TC-EDIT-009-12 | AC9 | E2E | **P0** | an AI Chat generation (not Quick Generate) placed on the canvas → "Edit elements" fires `POST /generations/:id/compose` with a real id | ✅ | `gate2.spec.ts` step 3, staging 2026-09-03. Asserts the request, not the toast; also asserts the id is not the `current-gen` placeholder |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 
@@ -201,16 +203,31 @@ Both need a real generation, so neither can be faked from a unit test.
 Run on staging after merge (`main` auto-deploys), or locally with `npm run dev` — the local run
 costs one real Ideogram generation.
 
-| # | Step | Pass condition | Closes |
-|:-:|------|----------------|--------|
-| 1 | Open the editor, open AI Chat, and look before generating | **No "Edit as: Flat / Editable" control anywhere** — not above the input, not beside the results | TC-01 |
-| 2 | Generate from AI Chat (no photo). Place a result with "Edit" | Design lands flat, no mode was ever asked for | AC1 |
-| 3 | With that AI Chat design on the canvas, press **"Edit elements"** | Text extracts into editable layers. It must **not** say *"Design isn't linked to a generation"* | **TC-12 / AC9** — the regression found during implementation; the unit test proves the setter works, not that AI Chat calls it |
-| 4 | Open a fresh template (no AI content) in the same session, after step 3 succeeded | "Edit elements" does **not** claim the canvas is editable | **TC-05** — the bug `CanvasEditToolbar`'s comment warns about |
-| 5 | Upload a real listing photo and generate | Background comes back **unmarked** — no headline/price/address burned into the photo | **AC8 / T4a** — the one behaviour change that reaches existing users |
+**Steps 1–4 are now automated** — `e2e/us-edit-009-gate2.spec.ts`, ✅ **passing against staging
+2026-09-03** (2 passed, 1 skipped). Step 5 remains a human check; see below for why it was not
+faked into an assertion.
 
-Step 5 is the one to look at hardest: it changes output for every real-photo generation, including
-for users who never touched the old toggle.
+| # | Step | Pass condition | Closes | Status |
+|:-:|------|----------------|--------|:------:|
+| 1 | Open the editor, open AI Chat, and look before generating | **No "Edit as: Flat / Editable" control anywhere** — not above the input, not beside the results | TC-01 | ✅ automated |
+| 2 | Generate from AI Chat (no photo). Place a result with "Edit" | Design lands flat, no mode was ever asked for | AC1 | ✅ covered by step 3's setup |
+| 3 | With that AI Chat design on the canvas, press **"Edit elements"** | `POST /generations/:id/compose` fires with a real generation id | **TC-12 / AC9** | ✅ automated |
+| 4 | Open a fresh template (no AI content) in the same session, after step 3 succeeded | "Edit elements" does **not** claim the canvas is editable | **TC-05** | ✅ automated |
+| 5 | Upload a real listing photo and generate | Background comes back **unmarked** — no headline/price/address burned into the photo | **AC8 / T4a** | 🔲 **human** |
+
+**Step 3 asserts the network call, not the toast.** The toast is the symptom; the compose request
+is the thing. If the id never reaches the store, `CanvasEditToolbar` returns early and the request
+is never sent — so it either happens or it does not, with nothing that auto-dismisses while the
+test looks at it. The test also asserts the id is not the literal `current-gen` placeholder, the
+bug US-EDIT-005 fixed once already.
+
+**Step 5 has no automated assertion, deliberately.** The obvious proxy —
+`extraction.blocksDetected === 0` — does not hold: US-AI-031b's AC1 was live-verified on
+2026-08-15 with `blocksDetected: 0` on a run that went through the *text-baked* path. Asserting on
+it would pass whether or not AC8 works, which is worse than no test. The opt-in test
+(`RUN_PHOTO_CHECK=1`) attaches a screenshot of the generated background for review and decides
+nothing. Closing it properly needs OCR over the background or an assertion on the prompt the
+orchestrator sent — its own story, not a proxy here.
 
 ### Follow-ups this story deliberately did not do
 
