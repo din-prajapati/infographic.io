@@ -250,3 +250,35 @@ button at "Starting…" after five minutes with no error toast.
 `address` and `price` (lines 381-391), both of which the spec fills, and both raise a visible toast
 when missing. "Property Type *" is marked required in the panel but is not enforced before
 generating. So this is latency or a stall, not a rejected submission.
+
+### Gate 2 run — local dev, 2026-09-05
+
+**AC1 verified.** Measured on `localhost:5000` against the real image pipeline:
+
+```
+template only        : 13 layers
+after generation 1   : 14      ← AI background inserted
+after generation 2   : 14      ← replaced, not stacked
+```
+
+Before this story the last figure would be **15**. That is the story's whole claim, and it now has
+a live number behind it rather than a unit test on a helper.
+
+The run **failed at AC3**, and the cause is the story's own documented 4-second toast: the
+assertion ran after `readLayerCount`, which opens and closes a panel and takes longer than the
+toast lives. Reordered to check the toast immediately after placement. **AC2's end-to-end undo was
+not reached**, so it remains verified only at the store level.
+
+### Correction to the earlier "generation is slow" reading
+
+That was wrong, and the database says so. Every generation in the last 72h completed in
+**19–102s** (16 of them, median ~25s), including four that completed while a staging run sat
+waiting five minutes for results.
+
+The server is fast; on staging the **client never heard about it**. `RightSidebar` sets
+`showResults(true)` only inside the WebSocket completion handler and has **zero** poll/`getStatus`
+references, where `AIChatBox` has 16 — an always-on REST status poll. A missed socket event is
+recoverable in AI Chat and terminal in Quick Generate. Filed as **BL-24**.
+
+Local did **not** reproduce the hang, which is why BL-24 is scoped to staging rather than claimed
+as a universal client bug.
