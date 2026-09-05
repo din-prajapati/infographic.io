@@ -5,7 +5,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Check, RefreshCw, Edit, ZoomIn, X, Maximize2 } from 'lucide-react';
+import { Check, RefreshCw, ZoomIn, X, Maximize2 } from 'lucide-react';
 import { Button } from '../ui/button';
 import {
   InfographicOrientation,
@@ -25,7 +25,11 @@ interface ResultsVariationsProps {
   orientation?: InfographicOrientation;
   onSelectVariation: (id: string) => void;
   onRegenerateAll: () => void;
-  onEditVariation: (id: string) => void;
+  // One action places a variation on the canvas. There used to be two — "Use"
+  // and "Edit"/"Customize" — whose handlers built the same Template, called the
+  // same onTemplateLoad, and closed the panel the same way. They were
+  // functionally identical, so the second button promised a distinction the
+  // product never made. Collapsed to this one.
   onUseVariation: (id: string) => void;
 }
 
@@ -35,7 +39,6 @@ export function ResultsVariations({
   orientation = 'landscape',
   onSelectVariation,
   onRegenerateAll,
-  onEditVariation,
   onUseVariation,
 }: ResultsVariationsProps) {
   const [lightboxVariation, setLightboxVariation] = useState<ResultVariation | null>(null);
@@ -91,14 +94,6 @@ export function ResultsVariations({
                   onClick={() => { onUseVariation(lightboxVariation.id); closeLightbox(); }}
                 >
                   Use This Design
-                </Button>
-                <Button
-                  variant="outline"
-                  className="border-white/40 text-white hover:bg-white/10"
-                  onClick={() => { onEditVariation(lightboxVariation.id); closeLightbox(); }}
-                >
-                  <Edit className="w-4 h-4 mr-2" />
-                  Customize
                 </Button>
               </div>
             </motion.div>
@@ -178,16 +173,7 @@ export function ResultsVariations({
                     className="flex-1 h-7 text-[11px] bg-primary hover:bg-primary/90 text-primary-foreground"
                     onClick={(e) => { e.stopPropagation(); onUseVariation(variation.id); }}
                   >
-                    Use This
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="h-7 w-7 p-0 shrink-0"
-                    onClick={(e) => { e.stopPropagation(); onEditVariation(variation.id); }}
-                    title="Customize in editor"
-                  >
-                    <Edit className="w-3 h-3" />
+                    Use This Design
                   </Button>
                   <Button
                     size="sm"

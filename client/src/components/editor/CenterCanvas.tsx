@@ -839,7 +839,7 @@ export function CenterCanvas({ isPreviewMode = false }: CenterCanvasProps) {
                                 : '#6B7280',
                             }}
                           >
-                            Add elements or use AI to generate
+                            Fill in Property Details, then Quick Generate
                           </p>
                         </div>
                       </div>
@@ -866,9 +866,16 @@ export function CenterCanvas({ isPreviewMode = false }: CenterCanvasProps) {
           >
             <Sparkles className="w-10 h-10 animate-pulse" />
           </Button>
-          {/* Active indicator dot */}
-          {isAIChatExpanded && (
+          {/* The button's only name used to live in its aria-label, so a sighted user
+              had no way to know what the bubble opened. The caption says it out loud;
+              the aria-label stays as-is because the e2e suite and screen readers both
+              rely on it. Hidden while the panel is open — the panel names itself. */}
+          {isAIChatExpanded ? (
             <div className="w-1.5 h-1.5 rounded-full bg-ai-accent" />
+          ) : (
+            <span className="text-[10px] font-medium text-muted-foreground leading-none pointer-events-none select-none">
+              Describe listing
+            </span>
           )}
         </div>
       )}

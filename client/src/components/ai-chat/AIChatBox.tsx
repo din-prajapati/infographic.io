@@ -1124,35 +1124,16 @@ export function AIChatBox({
    * Load the chosen variation onto the canvas as a flat raster.
    *
    * US-EDIT-009: this used to branch on the render-mode preference and, in
-   * editable mode, call
-   * POST /compose here — before the user had seen the design on the canvas.
-   * Extraction is now always a post-placement action taken from
-   * CanvasEditToolbar, so there is one path and it is this one.
+   * editable mode, call POST /compose here — before the user had seen the
+   * design on the canvas. Extraction is now always a post-placement action
+   * taken from CanvasEditToolbar, so there is one path and it is this one.
+   *
+   * There was also a second handler, `handleEditVariation`, behind a
+   * "Customize" button sitting next to "Use". It built the same Template from
+   * the same variation, called the same onTemplateLoad, and closed the panel
+   * the same way — the two were functionally identical, so the UI was offering
+   * a choice that did not exist. Removed; this is the single placement path.
    */
-  const handleEditVariation = async (id: string) => {
-    const variation = resultVariations.find((v) => v.id === id);
-    if (!variation) {
-      onClose();
-      return;
-    }
-
-    const template: Template = {
-      id: variation.id,
-      name: variation.title || "AI Generated Design",
-      category: "listing-announcements",
-      description: variation.description || "AI-generated marketing design",
-      previewImage: variation.previewUrl,
-      isAiVariation: true,
-      aiOrientation: generationOrientation,
-      emoji: "🎨",
-    };
-    onTemplateLoad(template);
-
-    // Close the panel but keep resultVariations in state so the user can
-    // reopen the chat and pick a different variation without re-generating.
-    onClose();
-  };
-
   const handleUseVariation = (id: string) => {
     const variation = resultVariations.find((v) => v.id === id);
     if (variation) {
@@ -1291,12 +1272,17 @@ export function AIChatBox({
           {/* Header */}
           <div className="px-4 pt-3 pb-2 shrink-0 border-b border-border">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-foreground">
-                  Real Estate Templates
+              {/* The panel used to call itself "Real Estate Templates" — the name of a
+                  different feature, and one that collides with the /templates route.
+                  It names its own job now, and the subtitle states the two inputs
+                  Quick Generate does not accept, so a user can tell the two surfaces
+                  apart on arrival instead of guessing. */}
+              <div className="flex items-baseline gap-2 min-w-0">
+                <span className="text-sm font-medium text-foreground shrink-0">
+                  Describe Your Listing
                 </span>
-                <span className="text-xs px-2 py-0.5 bg-purple-500/15 text-purple-500 rounded-full">
-                  Powered by AI ✨
+                <span className="text-xs text-muted-foreground truncate">
+                  Type it out, or add a photo
                 </span>
               </div>
               <div className="flex items-center gap-1">
@@ -1355,7 +1341,6 @@ export function AIChatBox({
                 selectedPreviewId={selectedVariationId}
                 onSelectPreview={setSelectedVariationId}
                 onUseVariation={handleUseVariation}
-                onEditVariation={handleEditVariation}
               />
 
               {/* US-EDIT-009 removed the "Edit as: Flat / Editable" toggle that
@@ -1494,7 +1479,6 @@ export function AIChatBox({
                     orientation={generationOrientation}
                     onSelectVariation={setSelectedVariationId}
                     onRegenerateAll={handleRegenerateAll}
-                    onEditVariation={handleEditVariation}
                     onUseVariation={handleUseVariation}
                   />
                 )}
