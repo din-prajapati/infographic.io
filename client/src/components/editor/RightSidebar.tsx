@@ -285,6 +285,7 @@ export function RightSidebar() {
   const [generationId, setGenerationId] = useState<string | null>(null);
   const [generationProgress, setGenerationProgress] = useState(0);
   const [generationStep, setGenerationStep] = useState("");
+  const [generationNotice, setGenerationNotice] = useState<string | null>(null);
   const [variations, setVariations] = useState<ResultVariation[] | null>(null);
   // The generation the displayed variations belong to. Distinct from
   // `generationId`, which drives the WebSocket subscription and is correctly
@@ -297,6 +298,11 @@ export function RightSidebar() {
   const [selectedVariationId, setSelectedVariationId] = useState<string | null>(null);
   const [loadingVariationId, setLoadingVariationId] = useState<string | null>(null);
   const [lightboxVariation, setLightboxVariation] = useState<ResultVariation | null>(null);
+  // Socket and REST polling can observe the same terminal state. Keep the
+  // completion path idempotent so they cannot race into duplicate result loads.
+  const terminalStateHandledRef = useRef(false);
+  const generationIdRef = useRef<string | null>(null);
+  generationIdRef.current = generationId;
 
   // US-EDIT-009 — the render-mode preference and its compose-progress
   // affordance are gone from
@@ -339,40 +345,131 @@ export function RightSidebar() {
     setCustomPalettes(loadCustomPalettes());
   }, []);
 
-  // WebSocket progress updates for panel-triggered generation
+  const handleGenerationCompleted = useCallback(async (completedGenerationId: string) => {
+    if (terminalStateHandledRef.current) return;
+    terminalStateHandledRef.current = true;
+
+    try {
+      const vars = await generationsApi.getVariations(completedGenerationId);
+      setVariations(vars);
+      // Pair the results with their generation so the editable path can
+      // call POST /:id/compose after the in-flight id below is torn down.
+      setResultsGenerationId(completedGenerationId);
+      setActiveGenerationId(completedGenerationId);
+      setShowResults(true);
+      setGenerationNotice(null);
+    } catch {
+      // The paid work completed; never present this as a reason to regenerate.
+      setGenerationNotice(
+        "Your design finished but could not be loaded. Check My Designs before generating again.",
+      );
+      toast.error("Failed to load completed design");
+    } finally {
+      setGenerating(false);
+      setGenerationId(null);
+    }
+  }, [setActiveGenerationId]);
+
+  const handleGenerationFailed = useCallback((errorMessage: string) => {
+    if (terminalStateHandledRef.current) return;
+    terminalStateHandledRef.current = true;
+    toast.error(errorMessage);
+    setGenerating(false);
+    setGenerationId(null);
+  }, []);
+
+  // WebSocket progress is immediate when delivered, but terminal-state
+  // delivery must not depend on it: Railway/staging has dropped this event.
   const handleWebSocketProgress = useCallback(
-    async (progress: GenerationProgress) => {
+    (progress: GenerationProgress) => {
       setGenerationProgress(progress.progress ?? 0);
       setGenerationStep(progress.stepLabel ?? "");
 
       if (progress.status === "completed" && progress.generationId) {
-        try {
-          const vars = await generationsApi.getVariations(progress.generationId);
-          setVariations(vars);
-          // Pair the results with their generation so the editable path can
-          // call POST /:id/compose after the WS id below is torn down.
-          setResultsGenerationId(progress.generationId);
-          setActiveGenerationId(progress.generationId);
-          setShowResults(true);
-        } catch {
-          toast.error("Failed to load results");
-        } finally {
-          setGenerating(false);
-          setGenerationId(null);
-        }
+        void handleGenerationCompleted(progress.generationId);
       } else if (progress.status === "failed") {
-        toast.error(progress.errorMessage ?? "Generation failed");
-        setGenerating(false);
-        setGenerationId(null);
+        handleGenerationFailed(progress.errorMessage ?? "Generation failed");
       }
     },
-    [],
+    [handleGenerationCompleted, handleGenerationFailed],
   );
 
   useGenerationWebSocket({
     generationId,
     onProgress: handleWebSocketProgress,
   });
+
+  // BL-24: The socket is best-effort progress transport, not a reliable
+  // terminal-state transport. Poll the canonical generation record while the
+  // request is in flight so a completed paid design always reaches its results.
+  useEffect(() => {
+    if (!generationId) return;
+
+    let cancelled = false;
+    let polls = 0;
+    let pollInFlight = false;
+    const POLL_INTERVAL_MS = 2_500;
+    const MAX_POLLS = 80; // ~3.3 minutes; generations normally finish in seconds.
+
+    const checkStatus = async () => {
+      const currentId = generationIdRef.current;
+      if (!currentId || cancelled || terminalStateHandledRef.current) return;
+
+      try {
+        const status = await generationsApi.getStatus(currentId);
+        if (status.status === "completed") {
+          await handleGenerationCompleted(currentId);
+        } else if (status.status === "failed") {
+          handleGenerationFailed(status.errorMessage ?? "Generation failed");
+        }
+        // Deliberately no `else`. This poll is the terminal-state transport;
+        // the socket is the progress transport, and they must not both write
+        // the progress bar. GET /:id/status returns only { id, status,
+        // errorMessage } — it has never carried progress or currentStep — so
+        // reading them here resolved to `?? 0` / "Generating…" on every tick
+        // and dragged the bar backwards every 2.5s on the path where the
+        // socket is working. Optional fields on GenerationStatus mean tsc
+        // cannot flag it; only the server contract can. AIChatBox's
+        // checkStatusOnce is the reference and behaves the same way.
+      } catch (error) {
+        console.warn("[RightSidebar] Generation status poll failed (will retry):", error);
+      }
+    };
+
+    const poll = async () => {
+      if (pollInFlight || cancelled || terminalStateHandledRef.current) return;
+      pollInFlight = true;
+      polls += 1;
+      await checkStatus();
+      pollInFlight = false;
+      if (polls >= MAX_POLLS) {
+        window.clearInterval(intervalId);
+        if (!terminalStateHandledRef.current) {
+          terminalStateHandledRef.current = true;
+          setGenerating(false);
+          setGenerationId(null);
+          setGenerationNotice(
+            "We could not confirm this design's status. Check My Designs before generating again.",
+          );
+        }
+      }
+    };
+
+    const intervalId = window.setInterval(() => {
+      void poll();
+    }, POLL_INTERVAL_MS);
+
+    const onVisible = () => {
+      if (document.visibilityState === "visible") void checkStatus();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(intervalId);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [generationId, handleGenerationCompleted, handleGenerationFailed]);
 
   const handleGenerate = async () => {
     const property = usePropertyStore.getState().property;
@@ -408,6 +505,8 @@ export function RightSidebar() {
           ? agent.brandColors
           : undefined;
 
+    terminalStateHandledRef.current = false;
+    setGenerationNotice(null);
     setGenerating(true);
     setVariations(null);
     setSelectedVariationId(null);
@@ -436,8 +535,9 @@ export function RightSidebar() {
           brandColors,
         },
       });
+      generationIdRef.current = result.id;
       setGenerationId(result.id);
-      // WebSocket hook takes over from here
+      // WebSocket provides progress; the REST status poll guarantees a terminal state.
     } catch (err: any) {
       const msg = err?.message ?? "Generation failed. Please try again.";
       if (msg.toLowerCase().includes("monthly limit")) {
@@ -449,6 +549,7 @@ export function RightSidebar() {
         toast.error("Generation failed", { description: msg });
       }
       setGenerating(false);
+      generationIdRef.current = null;
       setGenerationId(null);
     }
   };
@@ -734,6 +835,11 @@ export function RightSidebar() {
         {!generating && (
           <p className="text-[10px] text-muted-foreground text-center mt-1.5">
             From your Property &amp; Agent details
+          </p>
+        )}
+        {generationNotice && (
+          <p className="text-[10px] text-amber-700 dark:text-amber-300 text-center mt-1.5" role="status">
+            {generationNotice} <a href="/my-designs" className="underline font-medium">My Designs</a>
           </p>
         )}
         {/* Active brand indicator — answers "what colors will this generation use?"
