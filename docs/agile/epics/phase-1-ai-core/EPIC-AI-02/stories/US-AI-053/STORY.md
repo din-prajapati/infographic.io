@@ -210,3 +210,40 @@ if it bites, it is a separate story, not scope creep into this one.
 - [ ] Gate 2 — generate twice onto one template via Quick Generate; confirm one background,
       confirm toolbar Undo restores the previous one
 - [ ] PR opened with story card as description
+
+---
+
+## Gate 2 — attempted 2026-09-05, not yet passing
+
+`e2e/us-ai-053-gate2.spec.ts` is written and type-clean. It drives **Quick Generate** rather than
+AI Chat, because AI Chat's backend validation intermittently refuses valid prompts (BL-22).
+
+**It has not produced a verdict.** Three runs, three different obstacles — the first two were the
+spec's fault and are fixed; the third is not:
+
+| Run | Stopped at | Cause | Fixed |
+|:--:|---|---|:--:|
+| 1 | template layer count read `0` | The template's elements arrive *after* the canvas element is visible. A premature `0` would have made every later comparison meaningless — and in the direction that passes | ✅ poll added |
+| 2 | "Property" tab click timed out | `readLayerCount` left the Layers panel open; it is `fixed left-0 w-80 z-[9998]` and covers the editor chrome | ✅ panel now closes after each read |
+| 3 | generation 1 never produced results in 300s | The sidebar still read **"Starting…"** at timeout — the generation was *in flight*, not failed. Raised to 600s; the retry was interrupted before finishing | 🔲 **open** |
+
+**Cost so far: no completed generations**, so nothing has been spent verifying and nothing proven.
+
+### How it asserts, and why that shape
+
+It reads the Layers panel's own **"N Layers"** badge rather than reaching into the store.
+`window.__canvasStore` is not exposed, and exposing it would mean adding a test hook to production
+code in order to verify production behaviour. The badge renders straight from
+`useCanvasStore.elements`, so it counts the same thing this story changes — and it is what a human
+running Gate 2 by hand would look at.
+
+AC1 holds when the layer count after generation 2 **equals** the count after generation 1. Before
+this story it would be one higher. That is the entire test, and it is why the premature-zero bug in
+run 1 mattered.
+
+### Open question for the next attempt
+
+Whether Quick Generate on staging is simply slow, or stalls. The screenshot from run 3 shows the
+button at "Starting…" after five minutes with no error toast, on a template whose Property panel
+shows **"Property Type \*"** as a required field the spec never fills. Worth checking whether
+`RightSidebar.handleGenerate` gates on it silently before assuming latency.
