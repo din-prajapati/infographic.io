@@ -114,7 +114,7 @@ optional polish; it is the precondition that makes AC1 safe.
       image, so keeping them leaves text positioned for a design that no longer exists.
       *(Settled 2026-09-03 — drop them; see Decision below.)*
 
-- [x] **AC5 [regression]** *(satisfied by construction; no test — see TC-06)*: The blank-canvas path is untouched. With no deliberate origin,
+- [x] **AC5 [regression]:** *(satisfied by construction; no test — see TC-06)* The blank-canvas path is untouched. With no deliberate origin,
       `loadAiVariationToCanvas` still auto-sizes a new artboard via `resolveAiArtboard()` exactly
       as US-AI-036 AC4 specifies. That branch has no prior image to replace.
 
@@ -122,7 +122,7 @@ optional polish; it is the precondition that makes AC1 safe.
       construction — with one `isAiImport` element there is no ambiguity. Its own code is
       **not modified**; this AC is a test asserting the invariant holds after two generations.
 
-- [x] **AC7 [error-path]** *(satisfied by construction; no test — see TC-08)*: If the image fails to load or decode, the canvas is left exactly as it
+- [x] **AC7 [error-path]:** *(satisfied by construction; no test — see TC-08)* If the image fails to load or decode, the canvas is left exactly as it
       was — no element removed, no history entry pushed, no toast. The existing `catch` returns
       `false`; removal must not happen before the image is known good.
 
