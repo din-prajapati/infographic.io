@@ -27,7 +27,7 @@
 |-----------|-------|--------|--------|
 | [M-AI-06-photo-and-format](milestones/M-AI-06-photo-and-format.md) | Property photo upload + output format selector | 2026-06-30 | ✅ Done (2026-08-05) |
 | ~~M-AI-07-quality-campaign~~ | Moved to [EPIC-AI-08](../../phase-4-backlog/EPIC-AI-08/EPIC.md) (Phase 4 Backlog, revenue-gated) | — | ⏸ Moved |
-| [M-AI-20-canvas-image-lifecycle](milestones/M-AI-20-canvas-image-lifecycle.md) | How many AI backgrounds a canvas holds, what replaces what, and whether it can be undone — the follow-on M-AI-06 left open | TBD | 🟡 US-AI-053 implemented, Gate 2 pending |
+| [M-AI-20-canvas-image-lifecycle](milestones/M-AI-20-canvas-image-lifecycle.md) | How many AI backgrounds a canvas holds, what replaces what, and whether it can be undone — the follow-on M-AI-06 left open | 2026-09-05 | ✅ Done |
 
 ---
 

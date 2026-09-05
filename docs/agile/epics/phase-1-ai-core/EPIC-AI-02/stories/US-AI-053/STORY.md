@@ -7,14 +7,14 @@ updated: 2026-09-03
 
 # Story Card — US-AI-053
 
-> **Status:** 🟡 Implemented — Gate 1 green (497 backend + 271 client). Gate 2 pending.
+> **Status:** ✅ **Done** — merged (PR #51), Gate 1 green, **Gate 2 passed on local dev 2026-09-05**.
 > **Feature:** F-AI-02-05 — Canvas-aware generation
 > **Epic:** [EPIC-AI-02](../../EPIC.md)
 > **Milestone:** [M-AI-20-canvas-image-lifecycle](../../milestones/M-AI-20-canvas-image-lifecycle.md)
 > — created 2026-09-03 for this work. `M-AI-06` closed 2026-08-05 and was not reopened.
 > **Size:** S–M (~3–4h, see Estimate)
 > **Follows:** [US-AI-036](../US-AI-036/STORY.md) AC3 — this fixes a consequence of that decision
-> **Created:** 2026-09-03 | **Closed:** —
+> **Created:** 2026-09-03 | **Closed:** 2026-09-05
 
 ---
 
@@ -209,7 +209,7 @@ if it bites, it is a separate story, not scope creep into this one.
 - [x] Gate 1 green
 - [ ] Gate 2 — generate twice onto one template via Quick Generate; confirm one background,
       confirm toolbar Undo restores the previous one
-- [ ] PR opened with story card as description
+- [x] PR opened with story card as description — #51, merged
 
 ---
 
@@ -282,3 +282,21 @@ recoverable in AI Chat and terminal in Quick Generate. Filed as **BL-24**.
 
 Local did **not** reproduce the hang, which is why BL-24 is scoped to staging rather than claimed
 as a universal client bug.
+
+### Gate 2 — PASSED, local dev, 2026-09-05
+
+Re-run after fixing the assertion order: **1 passed (1.7m)**, two real generations completing in
+26.3s and 25.7s.
+
+All three live checks now hold together, which is what no unit test could show:
+
+- **AC1** — two generations onto one template leave one background (13 → 14 → 14 layers).
+- **AC3** — the replacement announced itself. This only passed once the toast was asserted
+  *before* `readLayerCount`; the panel open/close outlives the ~4s sonner default, which is the
+  same 4-second window recorded at the top of this card.
+- **AC2** — Ctrl+Z restored the pre-replacement layer count, end to end. Previously verified only
+  at the store level, because `loadCanvas` never touched history before this story.
+
+Not run on staging: **BL-24** — Quick Generate there depends solely on a WebSocket completion
+event and has no poll fallback, so results never render even though the server finishes in ~25s.
+That is a staging/delivery problem, not this story's.

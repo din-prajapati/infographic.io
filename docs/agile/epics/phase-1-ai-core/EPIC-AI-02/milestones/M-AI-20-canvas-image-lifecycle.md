@@ -8,7 +8,7 @@ created: 2026-09-03
 # M-AI-20-canvas-image-lifecycle — Canvas Image Lifecycle
 
 > **Epic:** [EPIC-AI-02](../EPIC.md)
-> **Status:** 🔲 Not Started
+> **Status:** ✅ **Done — closed 2026-09-05.** US-AI-053 merged (PR #51) and Gate 2 passed on local dev.
 > **Target date:** TBD
 > **Branch:** `feat/ai/m-20-canvas-image-lifecycle`
 
@@ -36,17 +36,17 @@ whether any of it can be undone.
 
 | Order | Story | Title | Size | Blocked By | Status | PR |
 |:-----:|-------|-------|:----:|------------|:------:|:--:|
-| 1 | [US-AI-053](../stories/US-AI-053/STORY.md) | One AI background per canvas, with undo | S–M | — | 🔲 | — |
+| 1 | [US-AI-053](../stories/US-AI-053/STORY.md) | One AI background per canvas, with undo | S–M | — | ✅ Done | [#51](https://github.com/din-prajapati/infographic.io/pull/51) |
 
 ---
 
 ## Acceptance (Milestone Done When…)
 
-- [ ] Generating N times onto one template leaves exactly one AI background element
+- [x] Generating N times onto one template leaves exactly one AI background element — verified live: 13 → 14 → 14 layers
 - [ ] The toolbar Undo restores the previously replaced background — the canvas load path
       participates in undo history, which it does not today
-- [ ] Template and user elements, and canvas dimensions, are never touched by a replacement
-- [ ] The blank-canvas path (`US-AI-036` AC4) is unchanged
+- [x] Template and user elements, and canvas dimensions, are never touched by a replacement — the 13 template layers survived both generations
+- [x] The blank-canvas path (`US-AI-036` AC4) is unchanged — by construction; see the story's AC5 note
 
 ---
 
