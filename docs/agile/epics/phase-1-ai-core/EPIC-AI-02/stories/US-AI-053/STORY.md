@@ -244,6 +244,9 @@ run 1 mattered.
 ### Open question for the next attempt
 
 Whether Quick Generate on staging is simply slow, or stalls. The screenshot from run 3 shows the
-button at "Starting…" after five minutes with no error toast, on a template whose Property panel
-shows **"Property Type \*"** as a required field the spec never fills. Worth checking whether
-`RightSidebar.handleGenerate` gates on it silently before assuming latency.
+button at "Starting…" after five minutes with no error toast.
+
+**Ruled out 2026-09-05:** a silent required-field gate. `RightSidebar.handleGenerate` validates only
+`address` and `price` (lines 381-391), both of which the spec fills, and both raise a visible toast
+when missing. "Property Type *" is marked required in the panel but is not enforced before
+generating. So this is latency or a stall, not a rejected submission.
