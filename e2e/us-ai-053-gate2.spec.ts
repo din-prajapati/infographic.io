@@ -158,6 +158,16 @@ test.describe("US-AI-053 — Gate 2", () => {
 
     // ── Generation 2 — the replacement under test.
     await quickGenerateAndUse(page, 2);
+
+    // AC3 — check the toast FIRST. It lasts ~4s (sonner default, no duration
+    // configured) and readLayerCount opens and closes a panel, which takes
+    // longer than that. The 2026-09-05 local run failed here for exactly this
+    // reason: the toast had fired and expired before the assertion ran.
+    await expect(
+      page.getByText(/background replaced/i).first(),
+      "the second generation is a replacement and should say so",
+    ).toBeVisible({ timeout: 10_000 });
+
     const afterSecond = await readLayerCount(page);
 
     await testInfo.attach("layer-counts", {
@@ -177,9 +187,6 @@ test.describe("US-AI-053 — Gate 2", () => {
       afterSecond,
       `background stacked instead of replacing: ${afterFirst} → ${afterSecond} layers`,
     ).toBe(afterFirst);
-
-    // AC3 — and it said so this time.
-    await expect(page.getByText(/background replaced/i).first()).toBeVisible();
 
     // ── AC2 — undo is wired. Before this story loadCanvas never touched
     // history, so Ctrl+Z did nothing at all here.
