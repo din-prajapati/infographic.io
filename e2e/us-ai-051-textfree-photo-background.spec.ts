@@ -174,11 +174,13 @@ test.describe("US-AI-051 — TC-AI-051-05: real photo + editable → text-free b
     await expect(panel.getByText(/generated.*variation/i).last()).toBeVisible({ timeout: 180_000 });
 
     // Step 5 — trigger the real editable load path on the new result, which
-    // fires POST /compose (real layerize-text call, $0.09). The per-card Edit
-    // button is icon-only — its accessible name comes from `title="Customize
-    // in editor"` (MessageBubble.tsx), not visible "Edit" text. `.last()`
-    // targets the most recent message's variations, not the first generation's.
-    const editButton = panel.getByRole("button", { name: "Customize in editor" }).last();
+    // fires POST /compose (real layerize-text call, $0.09). This used to target
+    // an icon-only "Customize in editor" button beside "Use This Design"; the
+    // pair was collapsed after both handlers proved functionally identical
+    // (same Template, same onTemplateLoad, same panel close), so the surviving
+    // label is the placement action. `.last()` targets the most recent
+    // message's variations, not the first generation's.
+    const editButton = panel.getByRole("button", { name: /use this design/i }).last();
     await expect(editButton).toBeVisible({ timeout: 10_000 });
     await editButton.click();
 
