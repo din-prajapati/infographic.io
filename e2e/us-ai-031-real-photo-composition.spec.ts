@@ -156,8 +156,9 @@ test.describe("US-AI-031/031b — real photo composition + extraction, live (no 
     await expect(editableToggle).toBeVisible({ timeout: 10_000 });
     await editableToggle.click();
 
-    // Icon-only button, accessible name from `title`.
-    const editButton = panel.getByRole("button", { name: "Customize in editor" }).last();
+    // The per-variation placement action. Was an icon-only "Customize in
+    // editor" button beside this one until the identical pair was collapsed.
+    const editButton = panel.getByRole("button", { name: /use this design/i }).last();
     await expect(editButton).toBeVisible({ timeout: 10_000 });
     await editButton.click();
 

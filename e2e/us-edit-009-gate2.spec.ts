@@ -115,6 +115,14 @@ async function openAiChat(page: Page) {
   await expect(page.locator("#ai-chat-panel")).toBeVisible();
 }
 
+/** The per-variation action that places a design on the canvas. */
+function placementButton(page: Page) {
+  return page
+    .locator("#ai-chat-panel")
+    .getByRole("button", { name: /use this design/i })
+    .first();
+}
+
 /**
  * Drive AI Chat to a completed generation. Deliberately NOT Quick Generate —
  * see the AC9 note in the file header.
@@ -132,16 +140,21 @@ async function generateFromAiChat(page: Page, prompt: string) {
   // rejected prompt is free, but it also means results will never arrive and
   // waiting 5 minutes for them tells you nothing about why.
   const missingInfo = page.locator("#ai-chat-panel").getByText(/missing information/i);
-  const editButton = page.locator("#ai-chat-panel").getByTitle("Customize in editor").first();
+  // "Use This Design" is the single per-variation placement action. It used to
+  // sit beside an icon-only "Customize in editor" button that this spec keyed
+  // off; the pair was collapsed because both handlers built the same Template,
+  // called the same onTemplateLoad and closed the panel identically. This label
+  // predates that change, so the selector works against old and new builds.
+  const useButton = placementButton(page);
 
-  await expect(missingInfo.or(editButton).first()).toBeVisible({ timeout: 300_000 });
+  await expect(missingInfo.or(useButton).first()).toBeVisible({ timeout: 300_000 });
   if (await missingInfo.isVisible()) {
     throw new Error(
       "AI Chat rejected the prompt as incomplete — no generation started. " +
         "It needs a street-style address; see the prompt used in this spec.",
     );
   }
-  await expect(editButton).toBeVisible({ timeout: 300_000 });
+  await expect(useButton).toBeVisible({ timeout: 300_000 });
 }
 
 test.describe("US-EDIT-009 — Gate 2 (automated portion)", () => {
@@ -226,7 +239,7 @@ test.describe("US-EDIT-009 — Gate 2 (automated portion)", () => {
 
     // Place the result on the canvas via the chat's Edit action. Under
     // US-EDIT-009 this is a plain flat load — no mode was ever chosen.
-    await page.locator("#ai-chat-panel").getByTitle("Customize in editor").first().click();
+    await placementButton(page).click();
 
     // ── M-INFRA-01 check 1 — the generated image is on storage we own ──────
     // Free: this generation was already bought by the AC9 check above.
@@ -427,7 +440,7 @@ test.describe("US-EDIT-009 — Gate 2 (automated portion)", () => {
       "3 BHK villa at 12 Oak Road, Ahmedabad priced 18500000 with pool",
     );
 
-    await page.locator("#ai-chat-panel").getByTitle("Customize in editor").first().click();
+    await placementButton(page).click();
     await expect(page.locator('[data-testid="design-canvas"]')).toBeVisible();
 
     // Capture the background for human review. This test does NOT decide
