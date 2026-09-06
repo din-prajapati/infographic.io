@@ -1,10 +1,14 @@
 # EPIC-INFRA-02 — Durable Asset Storage
 
 > **Phase:** Phase 1 — Revenue Strategy
-> **Status:** 🟡 In Progress — all three stories ✅ Done and merged ([PR #46](https://github.com/din-prajapati/infographic.io/pull/46), 2026-09-01), Gate 1 green. **Not closed:** M-INFRA-01’s acceptance is four live checks, none run, and production still has no `R2_*` variables — so production continues serving expiring Ideogram URLs, the exact problem this epic exists to fix.
+> **Status:** 🟡 In Progress — all three stories ✅ Done and merged ([PR #46](https://github.com/din-prajapati/infographic.io/pull/46), 2026-09-01), Gate 1 green. **Configuration is complete:** production has all five `R2_*` variables (pushed 2026-09-03, deployment SUCCESS, bucket `buildographic-assets` → `assets.buildographic.com`). **Not closed:** M-INFRA-01’s acceptance is four *runtime* checks and only one has been met, on staging — check 1 verified 2026-09-03 that a real generation’s variation URLs came back on staging’s own `R2_PUBLIC_URL` with none on `ideogram.ai`. **Production has never been observed**, and checks 2–4 are open. See [M-INFRA-01](./milestones/M-INFRA-01-durable-asset-storage.md) for the per-check evidence.
 > **Linear Project:** LIN-EPIC-XXX
 > **Target date:** before US-LAUNCH-005 AC6 (real ₹ transaction)
 > **Owner:** Dinesh
+>
+> *Header corrected 2026-09-06 — it previously read “four live checks, none run, and production still
+> has no `R2_*` variables”, which [M-INFRA-01](./milestones/M-INFRA-01-durable-asset-storage.md) had
+> already superseded on 2026-09-03. Config is not the open item; verification is.*
 >
 > ## 🚦 This epic is a revenue-on gate blocker
 > `BETA_MODE=false` should not flip while paying customers' deliverables (generated infographics,
@@ -12,6 +16,16 @@
 > the source photos they upload for the real-photo pipeline survive only until the next Railway
 > restart. This epic closes that gap. Unlike [EPIC-DEPLOY-01](../EPIC-DEPLOY-01/EPIC.md), it is
 > **not** parallel/non-blocking — it ships before the revenue-on flip.
+>
+> **The gate is verification, not configuration (2026-09-06).** Production is configured for R2, but
+> that is not evidence it is *using* R2. `uploadAndFallback` catches every storage failure and
+> returns the provider URL — a wrong token, account ID, or bucket name on production produces no
+> error, no failed generation, and no visible symptom. The image renders, the customer is happy, and
+> the stored `imageUrl` is quietly an Ideogram URL that expires weeks later, taking a paid
+> deliverable with it. A successful deployment therefore proves nothing here; only a production
+> generation whose *stored URL* is inspected does. Run
+> `PLAYWRIGHT_BASE_URL=https://app.buildographic.com npx playwright test e2e/us-edit-009-gate2.spec.ts`
+> — cost is one real generation and one production `Infographic` row.
 
 ---
 
