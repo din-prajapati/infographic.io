@@ -99,27 +99,32 @@ export class GenerationsService {
         }
       }
 
-      // Validate extracted data has minimum required fields
+      // Validate extracted data has minimum required fields.
+      //
+      // BL-22 step 0 — the response carries `missingFields` as data.
+      //
+      // The previous message ended "Please provide at least address and price
+      // in your prompt", and the client decided which fields to ask for by
+      // testing `errorMessage.includes('address')` / `.includes('price')`.
+      // That guidance sentence names BOTH fields unconditionally, so both
+      // substrings always matched: a user who supplied a perfectly good address
+      // and omitted only the price was told both were missing. The parse could
+      // never have been right, for any prompt.
+      //
+      // The fix is to stop making the client infer structure from prose. The
+      // message now names only what is actually absent, and the real answer
+      // travels beside it in a field the client can read directly.
       if (!extractedData.address || !extractedData.price) {
-        const missing = [];
+        const missing: string[] = [];
         if (!extractedData.address) missing.push('address');
         if (!extractedData.price) missing.push('price');
-        throw new BadRequestException(
-          `Missing required fields: ${missing.join(', ')}. Please provide at least address and price in your prompt.`
-        );
+        throw new BadRequestException({
+          statusCode: 400,
+          error: 'Bad Request',
+          message: `Missing required fields: ${missing.join(', ')}.`,
+          missingFields: missing,
+        });
       }
-
-      /* 
-      // Original strict validation disabled for testing
-      if (!extractedData.address || !extractedData.price) {
-        const missing = [];
-        if (!extractedData.address) missing.push('address');
-        if (!extractedData.price) missing.push('price');
-        throw new BadRequestException(
-          `Missing required fields: ${missing.join(', ')}. Please provide at least address and price in your prompt.`
-        );
-      }
-      */
 
     // Convert extracted data to GenerateInfographicDto format
     // dto.agent overrides extractor results — enables AgentInfoForm values to reach generation

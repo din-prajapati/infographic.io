@@ -529,38 +529,31 @@ export function AIChatBox({
     setState((prev) => ({ ...prev, inputValue: value }));
   };
 
-  /**
-   * Validates prompt contains required property fields (address and price)
-   * before making any AI API call.
+  /*
+   * BL-22 step 1 — the client-side prompt gate has been removed.
+   *
+   * `validatePromptFields()` used to run a pair of regexes over the prompt and
+   * refuse to call the API at all if they did not match. Measured against real
+   * listings, it rejected 7 of 9 — every Indian, UK, UAE and Singapore address,
+   * and a plain US one ("123 Martin Luther King Blvd, Atlanta GA for $525,000",
+   * rejected because the street pattern allowed exactly one word between the
+   * number and the suffix). It knew `$`, `k`/`M` and 5-digit ZIPs; it did not
+   * know `₹`, `Cr`, `Lakh`, 6-digit PINs, or a locality without a street number.
+   * This product sells to Indian agents in ₹, so a correctly written local
+   * listing was turned away at the door.
+   *
+   * It is deleted rather than localised. Widening the regexes would only
+   * enumerate the markets someone happened to remember, and the same bug
+   * returns with the next country. It was also half of BL-22's second defect:
+   * two gates — this one and the backend's LLM extraction — disagreed, so the
+   * same prompt was accepted on one attempt and refused on the next.
+   *
+   * The backend is now the single authority. Extraction is already an LLM call
+   * and reads "₹85 Lakh" and "Shela, Ahmedabad" without help; when a field is
+   * genuinely absent it says which one, as data (see the `missingFields`
+   * handling in the catch block below). Empty input is still short-circuited by
+   * the guard at the top of handleGenerate.
    */
-  const validatePromptFields = (
-    prompt: string,
-  ): { valid: boolean; missing: string[] } => {
-    const lower = prompt.toLowerCase();
-    const missing: string[] = [];
-
-    // Address detection: street numbers, road types, city/state patterns, or location keywords
-    const hasAddress = /\d+\s+\w+\s+(st|street|ave|avenue|rd|road|dr|drive|ln|lane|blvd|boulevard|way|ct|court|pl|place|cir|circle)\b/i.test(prompt)
-      || /\b(in|at|near|located)\s+[\w\s]+,\s*[A-Z]{2}\b/.test(prompt)
-      || /\b\d{5}\b/.test(prompt) // ZIP code
-      || /\b[A-Z][a-z]+\s*(,\s*[A-Z]{2})\b/.test(prompt); // City, ST
-
-    if (!hasAddress) {
-      missing.push('address');
-    }
-
-    // Price detection: dollar signs, numbers with k/K/m/M, or "price" keyword with a number
-    const hasPrice = /\$[\d,]+/.test(prompt)
-      || /\b\d+\s*[kKmM]\b/.test(prompt)
-      || /\bpric(e|ed)\s*(at|for|of|:)?\s*\$?[\d,]+/i.test(prompt)
-      || /\b(for|at|asking|listed)\s+\$?[\d,]+\s*[kKmM]?\b/i.test(prompt);
-
-    if (!hasPrice) {
-      missing.push('price');
-    }
-
-    return { valid: missing.length === 0, missing };
-  };
 
   const showMonthlyLimitReached = (
     current: number,
@@ -661,38 +654,8 @@ export function AIChatBox({
     const promptText =
       state.inputValue || state.selectedChips.map((c) => c.name).join(", ");
 
-    // --- PRE-VALIDATION: check for required fields before any AI call ---
-    const validation = validatePromptFields(promptText);
-    if (!validation.valid) {
-      // Show user message + friendly validation guidance (no API call)
-      const userMessage: Message = {
-        id: `msg-user-${Date.now()}`,
-        type: "user",
-        content: promptText,
-        timestamp: new Date(),
-      };
-
-      const hintMessage: Message = {
-        id: `msg-hint-${Date.now()}`,
-        type: "ai",
-        content: "I need a bit more detail to generate your design.",
-        timestamp: new Date(),
-        isValidationHint: true,
-        missingFields: validation.missing,
-      };
-
-      if (currentConversation) {
-        setConversationMessages((prev) => [...prev, userMessage, hintMessage]);
-      } else {
-        setConversationMessages([userMessage, hintMessage]);
-      }
-
-      // Clear input and error state since this is a guidance, not an error
-      setState((prev) => ({ ...prev, error: null, inputValue: "" }));
-      return;
-    }
-
-    // --- VALIDATION PASSED: show UI immediately, then check quota ---
+    // BL-22 step 1 — no client-side gate. The prompt goes to the backend,
+    // which is the only thing here that can actually read it.
 
     // CREATE USER MESSAGE + AI placeholder now so the UI responds instantly
     const userMessage: Message = {
@@ -908,12 +871,25 @@ export function AIChatBox({
       setGenerationSteps([]);
 
       if (isValidationError) {
-        // Show as friendly guidance message, not error
-        const missingFromBackend: string[] = [];
-        if (errorMessage.toLowerCase().includes("address"))
-          missingFromBackend.push("address");
-        if (errorMessage.toLowerCase().includes("price"))
-          missingFromBackend.push("price");
+        // BL-22 step 0 — read the field list, never guess it from the prose.
+        //
+        // This used to be two `errorMessage.includes(...)` tests. The backend's
+        // guidance sentence named both fields unconditionally, so both always
+        // matched and every rejection claimed both were missing — including
+        // rejections for a prompt that carried an unambiguous address.
+        //
+        // The backend now sends `missingFields`. When it is absent (an older
+        // deployment, or a differently-worded refusal) we parse only the
+        // "Missing required fields: ..." list, and if that yields nothing we
+        // say so plainly rather than inventing a pair of fields.
+        const missingFromBackend: string[] =
+          (Array.isArray(error?.response?.data?.missingFields)
+            ? error.response.data.missingFields
+            : null) ??
+          (errorMessage.match(/missing required fields:\s*([^.]+)/i)?.[1] ?? "")
+            .split(",")
+            .map((f: string) => f.trim().toLowerCase())
+            .filter((f: string) => f === "address" || f === "price");
 
         setConversationMessages((prev) =>
           prev.map((msg) =>
@@ -924,10 +900,10 @@ export function AIChatBox({
                   content:
                     "I need a bit more detail to generate your design.",
                   isValidationHint: true,
-                  missingFields:
-                    missingFromBackend.length > 0
-                      ? missingFromBackend
-                      : ["address", "price"],
+                  // Empty means "we could not tell" — the bubble then asks for
+                  // more detail without naming fields. Naming both was the
+                  // BL-22 defect; guessing is worse than admitting the gap.
+                  missingFields: missingFromBackend,
                 }
               : msg,
           ),
