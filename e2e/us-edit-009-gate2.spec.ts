@@ -36,6 +36,8 @@
  */
 import { test, expect, type Page } from "@playwright/test";
 import process from "node:process";
+import fs from "node:fs";
+import path from "node:path";
 
 const baseURL = (process.env.PLAYWRIGHT_BASE_URL || "http://localhost:5000").replace(/\/$/, "");
 
@@ -361,11 +363,53 @@ test.describe("US-EDIT-009 — Gate 2 (automated portion)", () => {
       await page.waitForTimeout(at === 2_500 ? 2_500 : 6_500);
       labelSamples.push((await toolbar.textContent())?.trim() ?? "");
     }
-    expect(
-      labelSamples[0],
-      `progress label never ticked — still "${labelSamples[0]}" after 9s`,
-    ).not.toBe(labelSamples[1]);
-    expect(labelSamples[1]).toMatch(/\d+s/);
+
+    // The BL-21 contract is "if the user is made to wait, the wait must say how
+    // long" — not "there must be a wait". This block used to assert the second
+    // one unconditionally, and failed a run in which everything US-EDIT-009
+    // cares about had just succeeded.
+    //
+    // ⚠ WHERE THIS SAMPLING ACTUALLY SITS. It runs *after*
+    // `await request.response()` above, so the 9s window opens only once the
+    // compose round trip has already returned. On the 2026-09-07 run that round
+    // trip took 37.4s, so both samples were taken well after extraction
+    // finished and both read "Editable layers active" — correctly.
+    //
+    // Which means this check only observes a ticking label when the server
+    // answers 201 quickly and the client then keeps polling. When the server
+    // holds the connection instead, the in-flight label is never sampled at
+    // all. **BL-21's real behaviour — does the wait narrate itself while the
+    // user is waiting? — is therefore not covered here, and was not covered
+    // before this change either.** Closing that properly means sampling
+    // concurrently with the request rather than after it; left alone because
+    // restructuring the timing harness is outside US-EDIT-009.
+    //
+    // So: still separating ⇒ the label must tick and carry elapsed seconds
+    // (the BL-21 regression assertion, unchanged). Already finished ⇒ assert it
+    // finished in a state we recognise, rather than passing on silence.
+    // Both in-flight labels, per CanvasEditToolbar.tsx:232-233 — the toolbar
+    // switches from "Separating layers… Ns" to "Still working… Ns" once the
+    // wait runs long. An earlier version of this branch matched only the first,
+    // so a run that reached "Still working… 43s" — a label that satisfies BL-21
+    // perfectly well — fell through to the terminal-state check and failed.
+    const inFlight = /separating layers|still working/i.test(labelSamples[0]);
+    if (inFlight) {
+      expect(
+        labelSamples[0],
+        `progress label never ticked — still "${labelSamples[0]}" after 9s`,
+      ).not.toBe(labelSamples[1]);
+      // Whichever of the two is showing, it must say how long it has been
+      // waiting. That is the whole of BL-21.
+      expect(labelSamples[0]).toMatch(/\d+s/);
+      expect(labelSamples[1]).toMatch(/\d+s/);
+    } else {
+      expect(
+        labelSamples[0],
+        `toolbar was neither separating nor in a known terminal state: "${labelSamples[0]}"`,
+      ).toMatch(
+        /editable layers active|no separate text layers detected|could not load separated layers|monthly limit reached/i,
+      );
+    }
 
     let activeMs: number | null = null;
     let terminalState = "none — still spinning at timeout";
@@ -445,10 +489,25 @@ test.describe("US-EDIT-009 — Gate 2 (automated portion)", () => {
 
     // Capture the background for human review. This test does NOT decide
     // whether the photo came back unmarked — see the note below.
-    await testInfo.attach("generated-background", {
-      body: await page.locator('[data-testid="design-canvas"]').screenshot(),
-      contentType: "image/png",
-    });
+    const shot = await page.locator('[data-testid="design-canvas"]').screenshot();
+    await testInfo.attach("generated-background", { body: shot, contentType: "image/png" });
+
+    // Also write it somewhere it survives.
+    //
+    // `testInfo.attach` alone puts the image in the report, and with the
+    // default `list` reporter a *passing* run leaves nothing on disk — so the
+    // one artifact this test exists to produce was being discarded precisely
+    // when the test succeeded. Evidence for human review that only exists on
+    // failure is not evidence. Costs a generation to regenerate, so it is
+    // written to a stable, predictable path.
+    const evidenceDir = path.resolve(process.cwd(), "test-results", "gate2-evidence");
+    fs.mkdirSync(evidenceDir, { recursive: true });
+    const evidencePath = path.join(
+      evidenceDir,
+      `us-edit-009-step5-background-${new Date().toISOString().replace(/[:.]/g, "-")}.png`,
+    );
+    fs.writeFileSync(evidencePath, shot);
+    console.log(`\n===== STEP 5 EVIDENCE =====\n  ${evidencePath}\n`);
 
     /**
      * Deliberately no pass/fail assertion on "is the background text-free".
