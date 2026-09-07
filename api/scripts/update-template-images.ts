@@ -1,10 +1,24 @@
 /**
  * update-template-images.ts — one-off content fix (2026-08-20)
  *
- * The 5 admin_curated sample templates (seeded by seed-premium-templates.ts,
- * source deleted in US-AI-037) shipped every image slot — hero photos, agent
- * headshots, and brand-logo placeholders — as inline SVG data-URL stand-ins.
- * Nothing in the gallery ever showed a real image.
+ * The 5 admin_curated sample templates (seeded by seed-premium-templates.ts)
+ * ship every image slot — hero photos, agent headshots, and brand-logo
+ * placeholders — as inline SVG data-URL stand-ins. Nothing in the gallery ever
+ * showed a real image until this script ran.
+ *
+ * ⚠ THIS SCRIPT IS THE SECOND HALF OF A TWO-STEP PROCEDURE.
+ *   It only `update()`s rows that already exist. Against an environment with no
+ *   admin_curated templates it is a **no-op** and the gallery stays empty. Run
+ *   the seed first, always:
+ *
+ *     npx tsx api/scripts/seed-premium-templates.ts     # creates the 5 rows
+ *     npx tsx api/scripts/update-template-images.ts     # then swaps in photos
+ *
+ *   (An earlier version of this header said the seed's "source [was] deleted in
+ *   US-AI-037". That was true of its *data* module, not the script — and because
+ *   the seed imported that module optionally, its absence made the seed a silent
+ *   no-op too. Both scripts were therefore no-ops on production for 17 days:
+ *   BL-25. The data now ships inside the seed script and is imported statically.)
  *
  * This script points every image element's `src`, plus each row's top-level
  * `imageUrl` (the gallery-card thumbnail), at real static assets:
