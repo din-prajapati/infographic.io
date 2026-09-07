@@ -19,8 +19,19 @@
  * Idempotent: skips any template whose name already exists in the system user's
  * canvas-template rows. Safe to run multiple times.
  *
+ * Seed data lives in `./data/premium-templates.data.ts` and is imported
+ * statically. It was previously an *optional* dynamic import of
+ * `client/src/lib/premiumTemplates.ts`; that file was deleted in 216c3ef and
+ * the optional import turned this script into a silent no-op — see BL-25 and
+ * the header of the data module for the full account.
+ *
  * Run from repo root:
- *   npx tsx api/scripts/seed-premium-templates.ts
+ *   npx tsx api/scripts/seed-premium-templates.ts             # write
+ *   npx tsx api/scripts/seed-premium-templates.ts --dry-run   # report only
+ *
+ * `--dry-run` performs every read and reports exactly what a real run would
+ * create, skip and tag, without issuing a single write. Use it to inspect an
+ * environment you are not ready to touch.
  *
  * Requires: DATABASE_URL in environment (or root .env file).
  */
@@ -50,6 +61,7 @@ if (fs.existsSync(rootEnv)) {
 }
 
 import { PrismaClient } from '@prisma/client';
+import { PREMIUM_CANVAS_TEMPLATES } from './data/premium-templates.data';
 
 // ---------------------------------------------------------------------------
 // System account constants (owning account for admin_curated rows)
@@ -59,6 +71,15 @@ const SYSTEM_USER_EMAIL = 'templates-system@buildographic.internal';
 const SYSTEM_USER_NAME = 'Buildographic System (Curated Templates)';
 
 const prisma = new PrismaClient();
+
+/**
+ * --dry-run: perform every read, report every intended write, issue none.
+ *
+ * Exists because the only way to learn what this script would do to an
+ * environment used to be to run it against that environment. BL-25 turned on
+ * exactly that blind spot.
+ */
+const DRY_RUN = process.argv.includes('--dry-run');
 
 /** Build ≥2 tags from badge (style) + category (content) — US-AI-040 AC4. */
 /**
@@ -166,6 +187,10 @@ async function upsertSystemOrg() {
     console.log(`  ⏭  System org already exists: ${SYSTEM_ORG_NAME}`);
     return existing;
   }
+  if (DRY_RUN) {
+    console.log(`  ○  WOULD create system org: ${SYSTEM_ORG_NAME}`);
+    return { id: '(dry-run-org)' } as { id: string };
+  }
   const org = await prisma.organization.create({
     data: {
       name: SYSTEM_ORG_NAME,
@@ -184,6 +209,10 @@ async function upsertSystemUser(orgId: string) {
   if (existing) {
     console.log(`  ⏭  System user already exists: ${SYSTEM_USER_EMAIL}`);
     return existing;
+  }
+  if (DRY_RUN) {
+    console.log(`  ○  WOULD create system user: ${SYSTEM_USER_EMAIL}`);
+    return { id: '(dry-run-user)' } as { id: string };
   }
   // A bcrypt-hashed impossible password — this account should never be used
   // for login. The hash is of a fixed, unpublished internal string.
@@ -222,6 +251,10 @@ async function getDefaultTemplateId() {
 
 async function main() {
   console.log('\n🌱 seed-premium-templates — migrating premium gallery to DB...\n');
+  if (DRY_RUN) {
+    console.log('   🔍 DRY RUN — reads only. Nothing below is written.\n');
+  }
+  console.log(`   Seed data: ${PREMIUM_CANVAS_TEMPLATES.length} templates bundled with this script.`);
 
   if (!process.env.DATABASE_URL) {
     console.error('❌ DATABASE_URL is not set. Aborting.');
@@ -246,28 +279,16 @@ async function main() {
     existing.map((e) => (e.propertyData as any)?.canvasDesign?.name as string | undefined),
   );
 
-  // 4. Migrate each premium template (source file deleted in US-AI-037 — optional create)
-  //    premiumTemplates.ts was removed after the initial migration; create is a no-op
-  //    when the module is absent. Tag backfill (step 5) covers already-migrated rows.
-  type PremiumTpl = {
-    name: string;
-    category: string;
-    badge: string;
-    description: string;
-    image: string;
-    canvasData: Record<string, unknown>;
-  };
-  let premiumTemplates: PremiumTpl[] = [];
-  try {
-    // Dynamic path so TypeScript does not require the deleted US-AI-037 module.
-    const premiumPath = '../../client/src/lib/premiumTemplates.js';
-    const mod = await import(/* @vite-ignore */ premiumPath);
-    premiumTemplates = (mod as { PREMIUM_CANVAS_TEMPLATES?: PremiumTpl[] }).PREMIUM_CANVAS_TEMPLATES ?? [];
-  } catch {
-    console.log(
-      '\n⏭  client/src/lib/premiumTemplates.ts not found (deleted US-AI-037) — skip create, run tag backfill.',
-    );
-  }
+  // 4. Create each premium template from the bundled seed data.
+  //
+  //    This used to be an *optional* dynamic import of
+  //    `client/src/lib/premiumTemplates.ts`. That file was deleted in 216c3ef
+  //    (US-AI-037) and the optional import swallowed its absence, so the script
+  //    degraded to a silent tag-backfill no-op — which is how production and
+  //    staging both ended up with an empty gallery (BL-25, found 2026-09-07).
+  //    The data now ships with the script and is imported statically at the top
+  //    of this file: if it goes missing the script cannot start at all.
+  const premiumTemplates = PREMIUM_CANVAS_TEMPLATES;
 
   console.log(`\n📝 Migrating ${premiumTemplates.length} premium templates...\n`);
   let created = 0;
@@ -277,6 +298,14 @@ async function main() {
     if (existingNames.has(tpl.name)) {
       console.log(`  ⏭  Already migrated: "${tpl.name}"`);
       skipped++;
+      continue;
+    }
+
+    if (DRY_RUN) {
+      console.log(
+        `  ○  WOULD create: "${tpl.name}" [${tpl.badge}] tags [${buildTags(tpl.badge, tpl.category).join(', ')}]`,
+      );
+      created++;
       continue;
     }
 
@@ -351,6 +380,12 @@ async function main() {
       description === canvasDesign.description;
     if (unchanged) continue;
 
+    if (DRY_RUN) {
+      console.log(`  ○  WOULD retag "${name}" → badge "${badge}", tags [${tags.join(', ')}]`);
+      tagged++;
+      continue;
+    }
+
     await prisma.infographic.update({
       where: { id: row.id },
       data: {
@@ -364,11 +399,30 @@ async function main() {
     tagged++;
   }
 
-  console.log(`\n📊 Summary:`);
-  console.log(`   Created: ${created}`);
-  console.log(`   Skipped: ${skipped}`);
-  console.log(`   Tags backfilled: ${tagged}`);
-  console.log(`\n✅ Done. Verify via:\n   GET /api/v1/canvas-templates?visibility=admin_curated\n`);
+  console.log(`\n📊 Summary${DRY_RUN ? ' (DRY RUN — nothing was written)' : ''}:`);
+  console.log(`   ${DRY_RUN ? 'Would create' : 'Created'}: ${created}`);
+  console.log(`   Skipped (already present): ${skipped}`);
+  console.log(`   ${DRY_RUN ? 'Would retag' : 'Tags backfilled'}: ${tagged}`);
+
+  if (DRY_RUN) {
+    console.log(`\n🔍 Dry run complete. Re-run without --dry-run to apply.\n`);
+    return;
+  }
+
+  // A run that creates nothing against an empty gallery is the BL-25 failure
+  // mode, not a success. Say so rather than printing "Done".
+  if (created === 0 && skipped === 0) {
+    console.log(
+      `\n⚠  Created 0 and skipped 0 — the gallery is still empty and this run changed nothing.\n` +
+        `   That is the BL-25 signature. Check that the seed data module loaded.\n`,
+    );
+    return;
+  }
+
+  console.log(
+    `\n✅ Done. Next: npx tsx api/scripts/update-template-images.ts (swaps SVG stubs for real photos).\n` +
+      `   Verify via: GET /api/v1/canvas-templates?visibility=admin_curated\n`,
+  );
 }
 
 main()
