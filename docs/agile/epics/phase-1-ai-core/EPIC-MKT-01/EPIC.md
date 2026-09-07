@@ -2,13 +2,13 @@
 title: EPIC-MKT-01 — Market-Aware Generation
 type: epic
 tags: [mkt, locale, i18n, generation, compliance]
-updated: 2026-09-08
+updated: 2026-09-07
 ---
 
 # EPIC-MKT-01 — Market-Aware Generation
 
 > **Phase:** Phase 1 — Revenue Strategy
-> **Status:** 🔲 Not Started — drafted 2026-09-08
+> **Status:** 🔲 Not Started — drafted 2026-09-07
 > **Source:** [BL-22](../../../BACKLOG.md) steps 2–5. Steps 0–1 shipped separately in `cd6f8e5`.
 > **Depends on:** [BL-05](../../../BACKLOG.md) (persisted `Organization.defaultLocale`) — required by US-MKT-002
 > **Related:** [US-KIT-006](../EPIC-KIT-01/stories/US-KIT-006/STORY.md) (compliance layer) consumes this epic's compliance data — see Boundary below
@@ -32,7 +32,7 @@ updated: 2026-09-08
 
 ## Evidence
 
-Measured 2026-09-08 against the then-current client validator, using real listing phrasing:
+Measured 2026-09-07 against the then-current client validator, using real listing phrasing:
 
 | Market | Prompt | Pre-fix result |
 |---|---|---|

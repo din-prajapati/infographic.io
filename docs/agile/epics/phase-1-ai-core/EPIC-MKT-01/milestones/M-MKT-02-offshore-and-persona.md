@@ -2,12 +2,12 @@
 title: M-MKT-02 — Offshore Authoring & Persona
 type: milestone
 tags: [mkt, offshore, persona, extraction]
-updated: 2026-09-08
+updated: 2026-09-07
 ---
 
 # M-MKT-02 — Offshore Authoring & Persona
 
-> **Status:** 🔲 Not Started — drafted 2026-09-08, parked (see epic Sequencing)
+> **Status:** 🔲 Not Started — drafted 2026-09-07, parked (see epic Sequencing)
 > **Epic:** [EPIC-MKT-01](../EPIC.md)
 > **Target date:** TBD
 > **Depends on:** M-MKT-01 (a market must exist before it can be overridden)
