@@ -288,6 +288,7 @@ export function TemplatesPage({ onOpenEditor }: TemplatesPageProps) {
                   filteredMyTemplates.map((template) => (
                     <div
                       key={template.id}
+                      data-testid="template-card"
                       className="glass rounded-2xl border border-border overflow-hidden hover:shadow-lg transition-shadow flex flex-col"
                     >
                       <div
@@ -361,6 +362,7 @@ export function TemplatesPage({ onOpenEditor }: TemplatesPageProps) {
             filteredTemplates.map((template) => (
               <div
                 key={template.id}
+                data-testid="template-card"
                 className="glass rounded-2xl border border-border overflow-hidden hover:shadow-lg transition-shadow flex flex-col"
               >
                 {/* Template Image — uniform 4/3 frame for every card; thumbnails
