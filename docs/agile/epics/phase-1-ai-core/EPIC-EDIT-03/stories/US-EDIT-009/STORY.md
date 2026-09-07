@@ -7,7 +7,7 @@ updated: 2026-09-01
 
 # Story Card — US-EDIT-009
 
-> **Status:** 🟡 Implemented — Gate 1 green; Gate 2 steps 1–4 ✅ automated and passing on
+> **Status:** 🟡 Implemented — Gate 1 green; **Gate 2 steps 1, 3 and 4 ✅ PASSED 2026-09-07** on local dev via `e2e/us-edit-009-gate2.spec.ts` (AC9 verified on the real AI Chat path: real generation id, 201, "Editable layers active" in 52s, no "isn't linked" toast; M-INFRA-01 check 1 cleared — variations stored on R2). **Step 5 still unverified** — the test never uploads a photo, so `photoReference` is never set and the path it names is not exercised (BL-26). Story stays open on step 5.
 > staging (2026-09-03). **Only step 5 (real-photo background) is outstanding**, and it is a human
 > visual check by design — see the Gate 2 section for why it was not turned into a proxy.
 > **Feature:** F-EDIT-01 — Editable design discoverability

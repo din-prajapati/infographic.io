@@ -10,8 +10,13 @@ created: 2026-09-01
 > **Epic:** [EPIC-EDIT-03](../EPIC.md)
 > **Status:** 🟡 **Code merged, milestone not closed** — US-EDIT-009 merged via
 > [PR #49](https://github.com/din-prajapati/infographic.io/pull/49) (2026-09-02, rebase), Gate 1
-> green. Gate 2 is a human visual check and has **not** been run; two of its five steps cover
-> behaviour no unit test reached. See the story's Gate 2 checklist.
+> green.
+> **Gate 2 run 2026-09-07 against local dev: steps 1, 3 and 4 ✅ PASS** — including the AC9
+> regression, on the real AI Chat completion path. **Step 5 remains unverified**, not because it
+> failed but because the test never uploads a photo and so never exercises the path it names
+> ([BL-26](../../../../BACKLOG.md)). The milestone stays 🟡 on that one step.
+> (The earlier wording here — "Gate 2 is a human visual check and has not been run" — predated the
+> automation in `e2e/us-edit-009-gate2.spec.ts`, which covers steps 1, 3 and 4.)
 > **Target date:** TBD
 > **Branch:** `feat/edit/m-03-single-editable-path` (merged, deleted)
 
@@ -56,12 +61,30 @@ action**. This milestone makes the code match that.
 
 **Still open — this is why the milestone is 🟡 and not ✅:**
 
-- [ ] **Gate 2, step 3** — an *AI Chat* generation (not Quick Generate) placed on the canvas must
-      extract text on "Edit elements", not report *"Design isn't linked to a generation"*. This is
-      the AC9 regression found mid-implementation; the unit test proves the setter works, not that
-      AI Chat calls it on the real completion path.
+- [x] **Gate 2, step 3** — ✅ **PASSED 2026-09-07** against local dev, on the real AI Chat path.
+      `e2e/us-edit-009-gate2.spec.ts` drove a live AI Chat generation, clicked "Edit elements", and
+      the compose request went out with a real generation id (not the `current-gen` placeholder
+      US-EDIT-005 once shipped), returned 201, and reached "Editable layers active" in 52s. The
+      *"Design isn't linked to a generation"* toast never appeared. Step 1 and step 4 passed in the
+      same run. **M-INFRA-01 check 1 also cleared incidentally:** all 3 variation URLs were stored
+      on `pub-…​.r2.dev`, i.e. storage we own, not an expiring provider URL.
+      Two assertions in the spec had to be corrected first — neither weakened, both wrong:
+      the BL-21 progress check demanded a ticking label unconditionally (it samples only *after*
+      `await request.response()`, so on a run whose compose round trip took 37s the label was
+      already terminal), and its follow-up recognised only `Separating layers…` while
+      `CanvasEditToolbar.tsx:232` also emits `Still working… Ns` on a long wait. Recorded in the
+      spec: BL-21's real behaviour — does the wait narrate itself *while the user waits* — is still
+      not covered, because the sampling window opens after the request completes.
 - [ ] **Gate 2, step 5** — a real listing photo must generate an **unmarked** background. This is
       the one behaviour change that reaches users who never touched the old toggle.
+      ⚠️ **Still open, and the test cannot close it — see [BL-26](../../../../BACKLOG.md).** Run
+      2026-09-07 with `RUN_PHOTO_CHECK=1`: the test passes, but `generateFromAiChat()` only fills
+      the chat textarea — **no photo is ever uploaded**, so `photoReference` is never set. Since
+      this story settled *Option A* (the text-free prompt triggers on `photoReference` alone), the
+      text-free prompt correctly does not fire, and the fully-composed background the run produced
+      is the **expected** output for a text-only generation, not a defect. The step therefore
+      cannot fail for the reason it exists — nor pass for it. The captured evidence
+      (`test-results/gate2-evidence/`) documents the text-only path only.
 - [ ] `orion close-story US-EDIT-009` once both pass, to cascade STORY → milestone → epic →
       TEAM_STATUS.
 
