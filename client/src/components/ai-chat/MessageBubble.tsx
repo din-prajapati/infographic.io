@@ -6,7 +6,7 @@
 import { motion, AnimatePresence } from 'motion/react';
 import { useState } from 'react';
 import { Message } from './types';
-import { Sparkles, Check, Loader2, RefreshCw, Image as ImageIcon, AlertCircle, MapPin, DollarSign, ZoomIn, X, Maximize2 } from 'lucide-react';
+import { Sparkles, Check, Loader2, RefreshCw, Image as ImageIcon, AlertCircle, MapPin, Tag, ZoomIn, X, Maximize2 } from 'lucide-react';
 import { Button } from '../ui/button';
 import {
   Tooltip,
@@ -169,6 +169,20 @@ export function MessageBubble({ message, index, onRegenerateAll, selectedPreview
                 <p className="text-sm font-medium text-amber-800">{message.content}</p>
               </div>
               
+              {/*
+                BL-22 — this guidance is market-neutral on purpose.
+
+                It used to teach a single market: a US street address, a US
+                dollar price, and a dollar-sign icon, under an example reading
+                "3BR house at 123 Oak St, Austin TX for $450k". Shown to an
+                agent in Ahmedabad whose listing had just been refused, it did
+                not merely fail to help — it pointed them further from the
+                format their own market uses.
+
+                Naming the field without prescribing its shape works in every
+                market. Per-market examples arrive with MarketProfile; until
+                then, no example beats a misleading one.
+              */}
               {message.missingFields && message.missingFields.length > 0 && (
                 <div className="space-y-2 pl-1">
                   <p className="text-xs text-amber-700 font-medium">Please include:</p>
@@ -177,21 +191,17 @@ export function MessageBubble({ message, index, onRegenerateAll, selectedPreview
                       {field === 'address' ? (
                         <MapPin className="w-3.5 h-3.5 text-amber-600 shrink-0" />
                       ) : (
-                        <DollarSign className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                        <Tag className="w-3.5 h-3.5 text-amber-600 shrink-0" />
                       )}
                       <span>
-                        {field === 'address' 
-                          ? 'Property address (e.g., "123 Oak Street, Austin TX")'
-                          : 'Price (e.g., "$450,000" or "450k")'}
+                        {field === 'address'
+                          ? 'Where the property is — locality and city is enough'
+                          : 'The asking price, in your own currency'}
                       </span>
                     </div>
                   ))}
                 </div>
               )}
-
-              <p className="text-xs text-amber-600 italic">
-                Example: "3BR house at 123 Oak St, Austin TX for $450k with pool"
-              </p>
             </div>
           ) : isGenerating && message.generationSteps ? (
             // Generation Progress inside AI bubble
