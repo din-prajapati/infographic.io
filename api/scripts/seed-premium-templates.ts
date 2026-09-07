@@ -254,6 +254,17 @@ async function main() {
   if (DRY_RUN) {
     console.log('   🔍 DRY RUN — reads only. Nothing below is written.\n');
   }
+
+  // Name the target database. This script falls back to the root .env when
+  // DATABASE_URL is unset, so a run intended for production that quietly hit
+  // dev would otherwise be indistinguishable from one that worked. Host only —
+  // never the credentials.
+  try {
+    const dbHost = new URL(process.env.DATABASE_URL ?? '').host;
+    console.log(`   Target database: ${dbHost}`);
+  } catch {
+    console.log('   Target database: (DATABASE_URL unparseable)');
+  }
   console.log(`   Seed data: ${PREMIUM_CANVAS_TEMPLATES.length} templates bundled with this script.`);
 
   if (!process.env.DATABASE_URL) {
