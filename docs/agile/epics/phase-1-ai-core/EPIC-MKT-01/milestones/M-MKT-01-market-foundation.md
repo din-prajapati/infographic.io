@@ -2,12 +2,12 @@
 title: M-MKT-01 — Market Foundation
 type: milestone
 tags: [mkt, locale, generation]
-updated: 2026-09-08
+updated: 2026-09-07
 ---
 
 # M-MKT-01 — Market Foundation
 
-> **Status:** 🔲 Not Started — drafted 2026-09-08, parked (see epic Sequencing)
+> **Status:** 🔲 Not Started — drafted 2026-09-07, parked (see epic Sequencing)
 > **Epic:** [EPIC-MKT-01](../EPIC.md)
 > **Target date:** TBD — trigger is beta evidence, not a date
 > **Depends on:** BL-05 (persisted `Organization.defaultLocale`) for US-MKT-002
