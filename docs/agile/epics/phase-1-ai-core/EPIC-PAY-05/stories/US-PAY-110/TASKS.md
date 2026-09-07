@@ -22,8 +22,8 @@ updated: 2026-08-21
 
 - [x] **Brain** — STORY.md filled, ACs rewritten to the implemented mechanism
 - [x] **Muscle** — T1-T3 below with exact test commands
-- [ ] **Map** — [ARCHITECTURE.mmd](../../ARCHITECTURE.mmd) exists
-- [ ] **Env** — [ENV.yaml](../../ENV.yaml) — needs the `RAZORPAY_PLAN_<TIER>_<INTERVAL>_<CODE>` pattern added
+- [x] **Map** — [ARCHITECTURE.mmd](../../ARCHITECTURE.mmd) exists (verified 2026-09-07)
+- [x] **Env** — [ENV.yaml](../../ENV.yaml) — promo-Plan pattern `RAZORPAY_PLAN_<TIER>_<INTERVAL>_<CAMPAIGN_CODE>` documented 2026-09-07, with the refusal behaviour (`PROMO_PLAN_NOT_CONFIGURED`) spelled out. The four `RAZORPAY_OFFER_*` entries are marked **superseded** rather than deleted — they describe the Offers mechanism dropped on 2026-08-27 and are read by no code path (grep-confirmed)
 
 ---
 
