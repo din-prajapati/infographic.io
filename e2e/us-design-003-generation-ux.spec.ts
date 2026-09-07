@@ -204,7 +204,13 @@ test.describe("US-DESIGN-003 — AI generation flow UX", () => {
 
     const panel = page.locator("#ai-chat-panel");
     // Generation progress state is shown first (warm AI-accent bubble, not raw text).
-    await expect(panel.getByText(/generating your infographic/i)).toBeVisible();
+    //
+    // Copy is "Generating your design…" — it was "Generating your
+    // infographic" until d11ac58 renamed Infographic → AI Marketing Design
+    // across the app. This selector was never updated, so the test has been
+    // asserting on text that has not existed for some time; it only surfaced
+    // now because the auth-gated portion of this suite had not been run.
+    await expect(panel.getByText(/generating your design/i)).toBeVisible();
 
     // Polling fallback completes (first poll after ~2s) → results render.
     await expect(panel.getByText(/generated 3 variations/i)).toBeVisible({ timeout: 30_000 });
@@ -241,8 +247,20 @@ test.describe("US-DESIGN-003 — AI generation flow UX", () => {
     await expect(useBtn).toHaveClass(/bg-primary/);
   });
 
-  test("AC4-adjacent: invalid prompt shows styled guidance state, not a raw error", async ({ page }) => {
-    // No generation should fire for an invalid prompt — assert no POST is made.
+  test("AC4-adjacent: incomplete prompt shows styled guidance state, not a raw error", async ({ page }) => {
+    // BL-22 step 1 changed what this test is allowed to assert.
+    //
+    // It used to require that NO POST was made — the client-side regex gate
+    // refused the prompt without calling the API. That gate is gone: measured
+    // against real listings it rejected 7 of 9, every Indian, UK, UAE and
+    // Singapore address plus a plain US one, because it only knew US street
+    // suffixes, `$` and 5-digit ZIPs. Only the backend can actually read a
+    // prompt, so it is now the single authority.
+    //
+    // So the request SHOULD fire, and the guidance bubble must come back from
+    // the server round trip instead of being fabricated locally. What AC4
+    // cares about — a styled guidance state rather than a raw error or JSON —
+    // is unchanged and still asserted below.
     let generationRequested = false;
     await page.route("**/api/v1/infographics/generations", (route) => {
       if (route.request().method() === "POST") generationRequested = true;
@@ -251,13 +269,17 @@ test.describe("US-DESIGN-003 — AI generation flow UX", () => {
 
     await openEditorWithChat(page);
 
-    // Address present (city, state), price missing — avoid "at/for 123" price-regex false positives
-    await submitPrompt(page, "Create an infographic for a property in Austin, TX");
+    await submitPrompt(page, "Create a design for a property in Austin, TX");
 
     const panel = page.locator("#ai-chat-panel");
     await expect(panel.getByText(/missing information/i)).toBeVisible();
     await expect(panel.getByText(/i need a bit more detail/i)).toBeVisible();
     await expect(panel.getByText(/please include/i)).toBeVisible();
-    expect(generationRequested).toBe(false);
+
+    // The prompt now reaches the only thing that can judge it.
+    expect(
+      generationRequested,
+      "the backend is the single authority on prompt completeness (BL-22) — the request must be made",
+    ).toBe(true);
   });
 });

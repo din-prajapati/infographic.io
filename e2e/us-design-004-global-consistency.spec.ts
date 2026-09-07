@@ -136,7 +136,16 @@ test.describe("US-DESIGN-004 — AC3: Card borders consistent (border-border tok
     await page.goto("/templates", { waitUntil: "load" });
     await expect(page.getByRole("heading", { name: /template gallery/i })).toBeVisible();
 
-    const firstCard = page.locator(".rounded-lg, [class*='rounded']").first();
+    // AC3 is about TEMPLATE CARDS, so target one.
+    //
+    // This used to be `.rounded-lg, [class*='rounded']` .first(), which matched
+    // the first element on the page carrying "rounded" in any class — in DOM
+    // order that is chrome in the header, not a card. Cards are `rounded-2xl`,
+    // so the `.rounded-lg` half never matched them at all. The assertion was
+    // therefore measuring a borderless header element and reporting it as
+    // "template cards have no border": a false failure against markup that has
+    // carried `border border-border` the whole time.
+    const firstCard = page.getByTestId("template-card").first();
     await expect(firstCard).toBeVisible();
 
     const borderWidth = await firstCard.evaluate((el) =>
@@ -145,7 +154,7 @@ test.describe("US-DESIGN-004 — AC3: Card borders consistent (border-border tok
 
     expect(
       borderWidth,
-      `Template cards should have a CSS border — computed borderWidth was ${borderWidth}px. Ensure cards use 'border border-border rounded-lg'.`,
+      `Template cards should have a CSS border — computed borderWidth was ${borderWidth}px. Ensure cards use 'border border-border'.`,
     ).toBeGreaterThan(0);
   });
 
@@ -157,7 +166,7 @@ test.describe("US-DESIGN-004 — AC3: Card borders consistent (border-border tok
     await page.goto("/templates", { waitUntil: "load" });
     await expect(page.getByRole("heading", { name: /template gallery/i })).toBeVisible();
 
-    const firstCard = page.locator(".rounded-lg, [class*='rounded']").first();
+    const firstCard = page.getByTestId("template-card").first();
     await expect(firstCard).toBeVisible();
 
     const borderWidth = await firstCard.evaluate((el) =>
