@@ -17,11 +17,44 @@
  * importing it: the defect lived in how it reads `process.env`, and only a real
  * process has a real `process.env`.
  */
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { execFileSync } from 'child_process';
+import fs from 'fs';
+import os from 'os';
 import path from 'path';
 
 const SCRIPT = path.resolve(__dirname, '../../../scripts/verify-payment-prerequisites.js');
+
+/**
+ * These tests must never read the repository's own `.env`. It is untracked, so
+ * depending on it means the suite passes on a developer machine and fails in CI
+ * for a reason unrelated to the behaviour under test — which is what it did on
+ * PR #54: the fallback assertion below expected `source: .env`, and CI, having
+ * no `.env`, got `source: —`.
+ *
+ * Every run is therefore pointed at a fixture via `PAYMENT_PREREQS_ENV_FILE`,
+ * empty unless a test deliberately supplies one. Hermetic by construction
+ * rather than by convention.
+ */
+let fixtureDir: string;
+/** An existing but empty file: the `.env` tier is present and supplies nothing. */
+let EMPTY_ENV_FILE: string;
+/** Supplies exactly one variable, so fallback and absence are separable. */
+let FALLBACK_ENV_FILE: string;
+
+const FALLBACK_WEBHOOK_SECRET = 'rzp_live_hook_from_file';
+
+beforeAll(() => {
+  fixtureDir = fs.mkdtempSync(path.join(os.tmpdir(), 'prereq-env-'));
+  EMPTY_ENV_FILE = path.join(fixtureDir, 'empty.env');
+  FALLBACK_ENV_FILE = path.join(fixtureDir, 'fallback.env');
+  fs.writeFileSync(EMPTY_ENV_FILE, '# intentionally empty\n');
+  fs.writeFileSync(FALLBACK_ENV_FILE, `RAZORPAY_WEBHOOK_SECRET=${FALLBACK_WEBHOOK_SECRET}\n`);
+});
+
+afterAll(() => {
+  fs.rmSync(fixtureDir, { recursive: true, force: true });
+});
 
 /** A complete, live-shaped configuration supplied entirely via the environment. */
 const LIVE_ENV: Record<string, string> = {
@@ -37,12 +70,17 @@ const LIVE_ENV: Record<string, string> = {
   VITE_RAZORPAY_KEY_ID: 'rzp_live_FAKEFORTEST',
 };
 
-function run(env: Record<string, string>, args: string[] = []) {
+function run(env: Record<string, string>, args: string[] = [], envFile?: string) {
   try {
     const stdout = execFileSync('node', [SCRIPT, ...args], {
       // Deliberately NOT inheriting the developer's environment: these tests
-      // are about what the script does with what it is handed.
-      env: { PATH: process.env.PATH ?? '', ...env },
+      // are about what the script does with what it is handed. The env-file
+      // fixture is part of that — see the note above.
+      env: {
+        PATH: process.env.PATH ?? '',
+        PAYMENT_PREREQS_ENV_FILE: envFile ?? EMPTY_ENV_FILE,
+        ...env,
+      },
       encoding: 'utf8',
     });
     return { code: 0, out: stdout };
@@ -118,21 +156,42 @@ describe('verify:payment-prereqs — other guards', () => {
     // its *precedence*, not its existence. Dropping a variable from the
     // injected environment should hand resolution to the file and say so, so
     // that a partially-configured deployment is legible rather than silent.
-    //
-    // (This is why "missing or empty" cannot be exercised here: every required
-    // variable is present in the repo's own .env. Absence is covered by the
-    // live-mode guard below, which fails a run where nothing came from the
-    // real environment at all.)
     const { RAZORPAY_WEBHOOK_SECRET: _drop, ...withoutWebhook } = LIVE_ENV;
-    const { out } = run(withoutWebhook, ['--live']);
+    const { out } = run(withoutWebhook, ['--live'], FALLBACK_ENV_FILE);
     const line = out.split('\n').find((l) => l.includes('RAZORPAY_WEBHOOK_SECRET')) ?? '';
     expect(line).toContain('source: .env');
   });
 
+  it('reports a variable absent from BOTH the environment and the file as missing', () => {
+    // Now separable from the case above, because the fixture is controlled.
+    // Previously this could not be exercised at all: every required variable
+    // happened to be present in the repo's own .env, so absence was
+    // unreachable. CI proved the point by hitting this path accidentally.
+    const { RAZORPAY_WEBHOOK_SECRET: _drop, ...withoutWebhook } = LIVE_ENV;
+    const { code, out } = run(withoutWebhook, ['--live'], EMPTY_ENV_FILE);
+    const line = out.split('\n').find((l) => l.includes('RAZORPAY_WEBHOOK_SECRET')) ?? '';
+    expect(line).toContain('missing or empty');
+    expect(line).toContain('source: —');
+    expect(code).toBe(1);
+  });
+
+  it('never lets the .env fallback outrank the real environment', () => {
+    // The precedence guarantee itself, now that the file can hold a *different*
+    // value from the injected one. This is the BL-25 defect in miniature: if the
+    // file won, a production audit would quietly report the file's value.
+    const { out } = run(LIVE_ENV, ['--live'], FALLBACK_ENV_FILE);
+    const line = out.split('\n').find((l) => l.includes('RAZORPAY_WEBHOOK_SECRET')) ?? '';
+    expect(line).toContain('source: env');
+    expect(line).not.toContain('source: .env');
+    expect(out).not.toContain(FALLBACK_WEBHOOK_SECRET);
+  });
+
   it('fails a live run in which nothing came from the real environment', () => {
     // The BL-25 failure shape: a run that looks like a production audit but
-    // read only the developer's local file.
-    const { code, out } = run({}, ['--live']);
+    // read only the local file. The fixture supplies a value so the run has
+    // something to read — otherwise this would pass for the wrong reason
+    // (everything missing) rather than for the reason it exists.
+    const { code, out } = run({}, ['--live'], FALLBACK_ENV_FILE);
     expect(out).toContain('not one variable came from the real environment');
     expect(code).toBe(1);
   });
