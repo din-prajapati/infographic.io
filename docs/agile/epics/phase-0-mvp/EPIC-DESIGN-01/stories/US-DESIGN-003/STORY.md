@@ -1,6 +1,6 @@
 # Story Card — US-DESIGN-003
 
-> **Status:** 🟡 In Progress — AC1 ✅ AC2 ✅ AC4 ✅ AC5 ✅ AC6 ✅ auto/static · AC3 🟡 UI-contract automated (mock) · live-API fidelity 🔲 HUMAN  
+> **Status:** 🟡 In Progress — AC1 ✅ AC2 ✅ AC4 ✅ AC5 ✅ AC6 ✅ · AC3 🟡 UI-contract automated. **3/3 mock-backed TCs re-run and PASS 2026-09-07** on local dev. Two stale selectors fixed first: `/generating your infographic/i` had not matched since `d11ac58` renamed the copy to "Generating your design…" (the suite had not been run since), and the AC4-adjacent guidance test asserted **no** POST was made — that contract was inverted by BL-22 step 1, which deleted the client-side prompt gate and made the backend the single authority. The guidance bubble is unchanged; it now arrives from the server. 🔲 HUMAN remaining: real image fidelity + live usage-counter increment on staging.
 > **Feature:** F-DESIGN-03 — AI Generation Flow Design  
 > **Epic:** [EPIC-DESIGN-01](../../EPIC.md)  
 > **Milestone:** [M-DESIGN-02 — Editor Token Fix](../../milestones/M-DESIGN-02-editor-tokens.md)  

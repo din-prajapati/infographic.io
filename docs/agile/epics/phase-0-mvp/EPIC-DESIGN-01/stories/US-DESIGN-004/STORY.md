@@ -1,6 +1,6 @@
 # Story Card — US-DESIGN-004
 
-> **Status:** 🟡 In Progress — AC1,2,3,4,5,6 ✅ automated (auth-gated tests require DB online) · visual spot-check on staging remains HUMAN  
+> **Status:** 🟢 **All 6 ACs verified — 10/10 automated TCs PASS 2026-09-07** against local dev (`e2e/us-design-004-global-consistency.spec.ts`). The seven TCs previously recorded as "SKIPS when DB offline" were never DB-gated — they skip on **login failure**, and `TEST_USER_EMAIL`/`TEST_USER_PASSWORD` were already set in `.env`. They had simply never been run. Remaining: human visual spot-check on staging (see DoD).
 > **Feature:** F-DESIGN-04 — Global Page Consistency  
 > **Epic:** [EPIC-DESIGN-01](../../EPIC.md)  
 > **Milestone:** [M-DESIGN-01 — Theme & Global QA](../../milestones/M-DESIGN-01-theme-QA.md)  

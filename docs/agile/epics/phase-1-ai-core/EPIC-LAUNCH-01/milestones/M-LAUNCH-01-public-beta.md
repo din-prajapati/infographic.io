@@ -1,7 +1,7 @@
 # M-LAUNCH-01-public-beta — Public Free Beta Live
 
 > **Epic:** [EPIC-LAUNCH-01](../EPIC.md)
-> **Status:** 🟡 In Progress — **7/7 stories ✅ Done** (US-LAUNCH-001, 002, 003, 004, 009, 010, 011, closed 2026-08-04). The milestone itself stays open on **Phase 0 Task 3 (production go-live)**, a HUMAN deploy task tracked at milestone level — it is not an acceptance criterion of any remaining story.
+> **Status:** 🟡 In Progress — **7/7 stories ✅ Done** (US-LAUNCH-001, 002, 003, 004, 009, 010, 011, closed 2026-08-04), but **the milestone is not a status flip away from closing.** Two of the four Acceptance checks were verified 2026-09-08 (see below); one needs a real inbox, and one can no longer be verified as written because production has moved past beta. Production go-live itself is done — `app.buildographic.com` serves the deployed build.
 > **Target date:** 2026-07-21 (slipping — Task 3 still open; see [PHASE_0_HUMAN_QA_CHECKLIST.md](../../../../testing/PHASE_0_HUMAN_QA_CHECKLIST.md) for live Task 3 status)
 
 ---
@@ -33,10 +33,31 @@ A real estate agent who is a total stranger can sign up on production, generate 
 
 ## Acceptance (Milestone Done When…)
 
-- [ ] `/terms`, `/privacy`, `/refund-policy` are live on production and linked from the footer
-- [ ] A password-reset email arrives in a real inbox from production and the reset link works
-- [ ] With `BETA_MODE=true`, no paid checkout can be initiated from UI **or** API
-- [ ] AI-content disclaimer visible on generation results/export
+- [x] `/terms`, `/privacy`, `/refund-policy` are live on production and linked from the footer —
+      ✅ **verified 2026-09-08** against the deployed bundle (`/assets/index-IzdFBQQr.js`) on
+      `app.buildographic.com`. All three are real Wouter routes bound to components
+      (`{path:"/terms",component:…}`, same for `/privacy` and `/refund-policy`), and the bundle
+      carries four footer link sites pointing at them ("Privacy Policy", "Refund & Cancellation
+      Policy"). Note an HTTP check alone cannot answer this: the SPA catch-all returns 200 for any
+      path, including nonsense ones — the first pass at this check did exactly that and proved
+      nothing.
+- [ ] A password-reset email arrives in a real inbox from production and the reset link works —
+      **HUMAN.** Needs a real inbox; nothing else blocks it.
+- [ ] ⚠️ With `BETA_MODE=true`, no paid checkout can be initiated from UI **or** API —
+      **cannot be verified as written, and the premise has changed.** `BETA_MODE` is **not set at
+      all** on production (checked 2026-09-08 via `railway variables --environment production`).
+      `payments.controller.ts:62` gates on `process.env.BETA_MODE === 'true'`, so the guard is
+      inactive and **paid checkout is live on production** against the live Razorpay plans — which
+      is what M-LAUNCH-02 wants, not what this item asserts. Needs a decision, not a test run:
+      either drop this item as superseded by revenue-on, or re-verify it on staging where the flag
+      is meaningful. Filed as [BL-29](../../../../BACKLOG.md) because the *ordering* is the real
+      risk — checkout is reachable by strangers and no transaction has ever been run through it
+      (US-LAUNCH-005 AC6).
+- [x] AI-content disclaimer visible on generation results/export — ✅ **verified 2026-09-08** in the
+      deployed bundle: "Imagery may include AI-generated visuals. Verify all details before
+      publishing to represent a real listing." renders at two result surfaces
+      (`ResultsVariations`, `MessageBubble`). The export path was **not** separately proven — if
+      this item means the disclaimer must also survive onto the exported file, that is still open.
 - [ ] All stories above have status ✅ Done, **except US-LAUNCH-014** (Backlog — non-blocking, may close after this milestone)
 
 ---
