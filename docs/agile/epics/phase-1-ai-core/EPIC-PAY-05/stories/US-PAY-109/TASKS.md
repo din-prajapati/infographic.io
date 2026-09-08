@@ -19,7 +19,7 @@ updated: 2026-08-21
 - [ ] **Brain** — STORY.md filled
 - [ ] **Muscle** — T1-T3 with exact test commands
 - [ ] **Map** — [ARCHITECTURE.mmd](../../ARCHITECTURE.mmd) exists
-- [ ] **Env** — [ENV.yaml](../../ENV.yaml) loaded — **HUMAN TASK first**: create 4 Razorpay Plan
+- [x] **Env** — [ENV.yaml](../../ENV.yaml) loaded — **HUMAN TASK COMPLETE** (verified 2026-09-08, 8/8 live): create 4 Razorpay Plan
       objects (dashboard) for PRO/AGENCY × monthly/annual
 
 ---
@@ -120,7 +120,7 @@ cd api && npx vitest run tests/payments/payments.service.spec.ts --reporter=verb
 
 ## Task Checklist
 
-- [ ] T0 — **HUMAN, still open**: 8 Razorpay Plan objects created and IDs recorded (4 PRO/AGENCY +
+- [x] T0 — **DONE, verified 2026-09-08**: all 8 Razorpay Plan objects exist in LIVE mode on production with the exact `PLAN_CONFIG` amounts and correct cadences (`npm run audit:razorpay-plans` → 8 match, 0 wrong, 0 unconfigured; staging 8/8 in TEST mode). The work had been done in the dashboard and never closed out here. (4 PRO/AGENCY +
       4 SOLO/TEAM, added 2026-08-23 per `US-PAY-102`'s repricing) — nothing else in this story can
       fully close until this happens
 - [x] T1 — extend RAZORPAY_PLAN_KEYS (file: `payments.service.ts`, type: `feat`) — landed as a
@@ -132,9 +132,9 @@ cd api && npx vitest run tests/payments/payments.service.spec.ts --reporter=verb
       generic extend.
 - [x] Gate 1 passes ✅ — `npm run check` (0 errors), 377/377 backend tests pass
 - [ ] Gate 4 passes — not separately run this pass
-- [ ] Manual test verified — blocked on T0
+- [ ] Manual test verified — **HUMAN**, no longer blocked on T0; needs one real checkout (same transaction as US-LAUNCH-005 AC6)
 - [ ] PR opened with story card as description — pending
-- [ ] STORY.md ACs ticked off — AC1-3 done, AC4 blocked on T0
+- [x] STORY.md ACs ticked off — AC1-3 by test; AC4/AC5 verified against the live Razorpay API 2026-09-08
 - [x] EPIC.md "Implementation Update" log appended ✅
 
 ---
