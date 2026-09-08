@@ -51,7 +51,20 @@ import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const rootEnvPath = path.join(__dirname, '..', '.env');
+/**
+ * The `.env` fallback file. Overridable via `PAYMENT_PREREQS_ENV_FILE` so that
+ * a test can hand this script a fixture it controls.
+ *
+ * Without the override the only way to exercise the fallback is to rely on the
+ * developer's own `.env` — which is untracked, so the assertion passes locally
+ * and fails in CI for a reason that has nothing to do with the behaviour under
+ * test. That is exactly what happened on PR #54. The label printed in the
+ * source column stays `.env` regardless of the path: it names the *precedence
+ * tier*, not the file.
+ */
+const rootEnvPath = process.env.PAYMENT_PREREQS_ENV_FILE
+  ? path.resolve(process.env.PAYMENT_PREREQS_ENV_FILE)
+  : path.join(__dirname, '..', '.env');
 const clientEnvPath = path.join(__dirname, '..', 'client', '.env.development');
 
 /**
