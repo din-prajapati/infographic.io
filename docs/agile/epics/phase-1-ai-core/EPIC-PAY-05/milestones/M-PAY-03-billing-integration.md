@@ -9,10 +9,13 @@ updated: 2026-08-25
 
 > **Epic:** [EPIC-PAY-05](../EPIC.md)
 > **Feature:** F-PAY-03
-> **Status:** 🟡 In Progress — US-PAY-109 blocked on T0 HUMAN task (**live-mode** Razorpay Plan
-> objects; test-mode set created + verified 2026-08-27); US-PAY-111 code-complete (manual/PR still
-> open); US-PAY-110 **rescoped 2026-08-27 and code-complete** — its `offer_id` dependency on
-> US-PAY-108 is gone, since a promo is now its own Plan object
+> **Status:** 🟡 In Progress — **no story is blocked.** US-PAY-109's T0 was never actually open:
+> all 8 live-mode Razorpay Plan objects exist and charge exactly what `PLAN_CONFIG` says, re-verified
+> against production 2026-09-08 by `npm run audit:razorpay-plans` (8 match · 0 wrong, LIVE mode).
+> The card carried "blocked on T0" for 16 days while the work sat finished in the dashboard.
+> US-PAY-111 code-complete (manual/PR still open); US-PAY-110 **rescoped 2026-08-27 and
+> code-complete** — its `offer_id` dependency on US-PAY-108 is gone, since a promo is now its own
+> Plan object. All three now wait on the same two things: a PR, and one real checkout.
 > **Target date:** TBD
 > **Branch:** `feat/pay/m-01-pricing-relaunch`
 > **Version:** **Mixed** — US-PAY-109 and US-PAY-111 are V1 (PRO/AGENCY sellable at launch);
@@ -32,7 +35,7 @@ activation recognizes the new tiers.
 
 | Order | Story | Title | Size | Blocked By | Status | PR | Version |
 |:-----:|-------|-------|:----:|------------|:------:|:--:|:---:|
-| 1 | [US-PAY-109](../stories/US-PAY-109/STORY.md) | New Razorpay Plan IDs for PRO/AGENCY tiers | S | US-PAY-102 (M-PAY-01) | 🟡 (blocked) | — | **V1** |
+| 1 | [US-PAY-109](../stories/US-PAY-109/STORY.md) | New Razorpay Plan IDs for PRO/AGENCY tiers | S | US-PAY-102 (M-PAY-01) | 🟢 (all ACs verified) | — | **V1** |
 | 2 | [US-PAY-111](../stories/US-PAY-111/STORY.md) | Webhook/entitlement mapping for new tiers | S | US-PAY-109 | ✅ (code) | — | **V1** |
 | 2 | [US-PAY-110](../stories/US-PAY-110/STORY.md) | Checkout selects the promo Plan server-side | M | US-PAY-106, US-PAY-109 | 🟡 (rescoped, code done) | — | V2 |
 
