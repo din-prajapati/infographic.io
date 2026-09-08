@@ -3,7 +3,15 @@
 > **Audience:** Engineering leads and domain teams  
 > **Purpose:** Per-domain view of what's in progress, what's next, and what's blocked — mapped to epics and stories.  
 > **Update cadence:** When a story status changes (start / block / complete).  
-> **Last updated:** 2026-08-15 (M-AI-18 milestone fully closed — 10/10 stories; US-LAUNCH-015 editable-design monetization shipped and live-verified; US-DEPLOY-007, US-AI-043, US-AI-044 all closed after re-verification found their earlier checkmarks weren't independently backed by evidence — see Session log for the full arc)
+> **Last updated:** 2026-09-08 — board had gone 24 days stale and was materially wrong in two
+> places: it called EPIC-PAY-05 "scaffolded, not started" when 11 of its 12 stories are
+> code-complete, and it showed INFRA at "Task 3 next" when M-INFRA-01's three stories shipped
+> 2026-08-31. Refreshed against the actual story cards, not against this board's own history.
+>
+> **The pattern worth naming:** almost every 🟡 on this board is code-complete and open on a
+> *manual* check — a real checkout, a real inbox, a staging spot-check. The queue is not
+> engineering-bound; it is bound on a handful of human verifications, several of which have been
+> outstanding for weeks. See BL-29 for the one place that has become a live risk.
 
 ---
 
@@ -11,13 +19,13 @@
 
 | Domain | Active Epic | Status | Blocked | Upcoming |
 |--------|-------------|--------|---------|----------|
-| [Payments (PAY)](#-payments-pay) | EPIC-PAY-01 ✅ · EPIC-PAY-05 🔲 | 🔲 PAY-05 scaffolded, not started | PT-06 BROKERAGE | EPIC-PAY-05 (Pricing Relaunch) — revenue-on gate, added 2026-08-21 |
-| [Design (DESIGN)](#-design--frontend-design) | EPIC-DESIGN-01 + EPIC-DESIGN-02 | 🟡 US-003/004 staging | Live Ideogram API | Staging deploy unblocks both |
+| [Payments (PAY)](#-payments-pay) | EPIC-PAY-01 ✅ · EPIC-PAY-05 🟡 | 🟡 **11/12 stories code-complete**, all 4 milestones 🟡 open on manual verification + PRs | Nothing code-blocked. PT-06 BROKERAGE deferred | One real ₹ checkout closes several stories at once (US-PAY-109/110/111 + US-LAUNCH-005 AC6) |
+| [Design (DESIGN)](#-design--frontend-design) | EPIC-DESIGN-01 + EPIC-DESIGN-02 | 🟡 US-DESIGN-004 all 10 TCs pass (2026-09-07); US-DESIGN-003 5/6 ACs | Human visual spot-check on staging | Both close on that one spot-check |
 | [Auth (AUTH)](#-auth-auth) | EPIC-AUTH-01 | ✅ Done | — | Full invite flow post-MVP |
 | [Canvas Editor (EDIT)](#-canvas-editor-edit) | EPIC-EDIT-01 | ✅ Done | — | Batch upload Phase 3 |
-| [AI Generation (AI)](#-ai-generation-ai) | EPIC-AI-06 | ✅ **Fully closed 2026-08-15** — both milestones (M-AI-18: 10 stories; M-AI-17: US-AI-031/031b, credit topped up same day) | none | EPIC-KIT-01 (listing kits) — next AI-domain epic with open stories |
-| [Infrastructure (INFRA)](#-infrastructure-infra) | EPIC-INFRA-01 · EPIC-DEPLOY-01 | 🟡 INFRA-01: Task 1 ✅ · Task 2 ✅ (2026-07-11) · Task 3 (prod) next. DEPLOY-01: 1/7 Done (US-DEPLOY-007, 2026-08-15) | Human task (INFRA-01 Task 3) | Admin dashboard Phase 5 · US-DEPLOY-001–006 (rolling, non-blocking) |
-| [Launch Readiness (LAUNCH)](#-launch-readiness-launch) | EPIC-LAUNCH-01 | 🟡 13/15 stories ✅ Done (001–004, 006–013, 015); US-LAUNCH-005 open, 014 not started | Phase 0 HUMAN Task 3 · real ₹ txn go-ahead | M-LAUNCH-02 revenue-on gate — **one story away** (US-LAUNCH-005 AC5/6) |
+| [AI Generation (AI)](#-ai-generation-ai) | EPIC-AI-06 ✅ · EPIC-AI-02 ✅ | ✅ EPIC-AI-06 closed 2026-08-15; M-AI-20 closed 2026-09-05 (US-AI-053). BL-25 (empty production gallery) closed 2026-09-07 — gallery seeded and verified | none | EPIC-KIT-01 (listing kits), or EPIC-MKT-01 (drafted 2026-09-07, parked) |
+| [Infrastructure (INFRA)](#-infrastructure-infra) | EPIC-INFRA-02 · EPIC-DEPLOY-01 | 🟡 M-INFRA-01: all 3 stories ✅ Done + merged (PR #46, 2026-08-31); **3 of 4 runtime Acceptance checks never run**. DEPLOY-01: 1/7 Done | Gate 4 unrunnable repo-wide — integration DB unreachable (BL-28) | M-INFRA-01 check 2 is ordinary code, not an infra event — cheapest of the three |
+| [Launch Readiness (LAUNCH)](#-launch-readiness-launch) | EPIC-LAUNCH-01 | 🟡 13/15 stories ✅ Done; US-LAUNCH-005 open at **AC6 only** (AC5 passed against production 2026-09-07), 014 backlog | Real ₹ txn go-ahead — the single remaining gate | ⚠️ **BL-29**: checkout is already live to strangers and AC6 has never run. M-LAUNCH-01 also still has 2 open Acceptance checks |
 | [Organization (ORG)](#-organization--team-org) | — | Post-MVP | No email provider (US-LAUNCH-002 will fix) | EPIC-ORG-01 post-launch |
 
 ---
@@ -31,6 +39,13 @@
 **Phase:** 1 (Revenue Strategy)
 
 ### Now (In Progress)
+> **Correction 2026-09-08 — EPIC-PAY-05 is not "not started".** 11 of its 12 stories are
+> code-complete and merged to `main`; US-PAY-108 was superseded and closed 2026-08-27. All four
+> milestones sit 🟡 for the same reason: manual verification and PRs, not code. US-PAY-109's live
+> Razorpay Plans were re-audited against production 2026-09-08 — 8/8 exist in LIVE mode at the
+> correct amounts and cadences (`npm run audit:razorpay-plans`). The paragraph below is the
+> original 2026-08-21 scaffolding note, kept for the decisions it records.
+>
 > **EPIC-PAY-05 scaffolded 2026-08-21, not started.** Full feasibility analysis done first (real
 > production cost data + real Railway metrics, not assumptions) before roadmap generation — see the
 > epic's own "Feasibility" section. 4 milestones, 12 stories (US-PAY-102 to US-PAY-113). Two

@@ -20,7 +20,7 @@ updated: 2026-08-21
 > **Milestone:** [M-PAY-03-billing-integration](../../milestones/M-PAY-03-billing-integration.md)
 > **Linear:** LIN-XXX
 > **Size:** S
-> **Created:** 2026-08-21 | **Closed:** — (AC4 needs T0 first)
+> **Created:** 2026-08-21 | **Closed:** — (all ACs verified 2026-09-08; open on the PR and one real checkout)
 
 ---
 

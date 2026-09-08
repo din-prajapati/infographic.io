@@ -65,9 +65,18 @@ NestJS container's ephemeral tmp dir — verified end-to-end on staging.
 >
 > **Check 1 is verified on staging** — see the evidence on the item above.
 >
-> Still open: check 3 (survives a container restart) and check 4 (renders after the provider URL
-> would have expired). Both need real infrastructure events rather than assertions, and check 4
-> needs elapsed time or a deliberate URL revocation. Neither is automatable as written.
+> Still open: check **2** (the `composedDesigns` cache keys off and serves the owned URL for new
+> writes), check 3 (survives a container restart) and check 4 (renders after the provider URL would
+> have expired) — **three, not two.** The earlier note said "check 3 and 4" and skipped check 2,
+> which has never been ticked either; corrected 2026-09-08.
+>
+> Checks 3 and 4 need real infrastructure events rather than assertions, and check 4 needs elapsed
+> time or a deliberate URL revocation. Neither is automatable as written. Check 2, by contrast, is
+> ordinary code — it is open because nobody has looked at it, not because it is hard.
+>
+> **This milestone is not close to a status flip.** Its stories are all ✅ Done and merged, which is
+> what makes the card look nearly closed; three of its four runtime Acceptance checks have never
+> been run, and check 1 is verified on staging only.
 >
 > The failure mode to keep in mind for all of these: `uploadAndFallback` never throws, so a broken
 > R2 degrades to the provider URL instead of failing the generation. Nothing errors and nothing
