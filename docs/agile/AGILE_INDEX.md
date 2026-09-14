@@ -8,6 +8,7 @@
 |----------------|-------|
 | **How to use this whole system** | [HOW_TO_USE.md](HOW_TO_USE.md) ← start here |
 | **Phase progress (executive view)** | [PHASE_TRACKER.md](PHASE_TRACKER.md) |
+| **What is left to build, by phase (hours + confidence)** | [ESTIMATES.md](ESTIMATES.md) |
 | **Every task only a human can do (dashboard/DNS/legal/real-money)** | [HUMAN_TASKS.md](HUMAN_TASKS.md) |
 | **Domain team board (what's now / next / blocked)** | [TEAM_STATUS.md](TEAM_STATUS.md) |
 | **Active story to implement next** | [TEAM_STATUS.md → Design → Ready to Start](TEAM_STATUS.md) |
@@ -105,6 +106,7 @@ Every PR is traceable from `git log` → Story → Milestone → Epic.
 docs/agile/
   AGILE_INDEX.md            ← you are here
   PHASE_TRACKER.md          ← executive phase progress view
+  ESTIMATES.md              ← phase-wise remaining effort + readiness audit
   TEAM_STATUS.md            ← per-domain board (now / next / blocked)
   GIT_STRATEGY.md           ← branch / commit / PR / label conventions
   LINEAR_GITHUB.md          ← Linear + GitHub integration setup
