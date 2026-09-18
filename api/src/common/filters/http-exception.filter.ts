@@ -32,11 +32,18 @@ export class AllExceptionsFilter implements ExceptionFilter {
       : HttpStatus.INTERNAL_SERVER_ERROR;
 
     let message: string;
+    // US-LAUNCH-014 T5b — a thrower-supplied typed code (e.g. EMAIL_NOT_VERIFIED,
+    // BETA_MODE_ACTIVE) used to be discarded here, so clients could only match on
+    // the status + message text. Passed through when present; never invented.
+    let code: string | undefined;
     if (isHttpException) {
       const res = (exception as HttpException).getResponse();
       message = typeof res === 'object' && res !== null && 'message' in res
         ? (Array.isArray((res as any).message) ? (res as any).message[0] : (res as any).message)
         : String(res);
+      if (typeof res === 'object' && res !== null && typeof (res as any).code === 'string') {
+        code = (res as any).code;
+      }
     } else {
       message = exception instanceof Error
         ? exception.message
@@ -50,6 +57,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     response.status(status).json({
       statusCode: status,
       message: message || 'Internal server error',
+      ...(code ? { code } : {}),
     });
   }
 

@@ -26,6 +26,7 @@ One-liner: unverified new accounts can sign in and explore but cannot spend AI c
 - [x] **T3** — `auth.service.ts` + `auth.controller.ts` + `auth.dto.ts` + `api/tests/auth/email-verification.spec.ts` (new): register checks, verification send, verify / resend, googleLogin normalized link
 - [x] **T4** — `api/src/common/guards/email-verified.guard.ts` (new) + spec + apply to `infographics.controller.ts`, `generations.controller.ts`, `extractions.controller.ts`
 - [x] **T5** — `api/src/common/guards/proxy-aware-throttler.guard.ts` (new) + spec + `app.module.ts` + `server/index.ts` (`xfwd`) + `.env.example` + `@Throttle` on register / resend / forgot-password
+- [x] **T5b** — `api/src/common/filters/http-exception.filter.ts` + `api/tests/common/http-exception-filter.spec.ts` (new): pass a thrower-supplied `code` through to the response body. **Added 2026-09-18 during implementation, approved by the product owner.** The backend pass proved the filter rebuilds every error as `{ statusCode, message }` and drops `code`, so AC9 could not work as written and `BETA_MODE_ACTIVE` has the same latent bug. Additive only: `code` appears when the thrower set one, nothing else changes.
 - [ ] **T6** — `shared/schema.ts`, `client/src/lib/queryClient.ts`, `EmailVerificationRequiredDialog.tsx` (new), `EmailVerificationBanner.tsx` (new), `VerifyEmailPage.tsx` (new), `client/src/App.tsx`
 
 ## File-to-Task Mapping
@@ -50,6 +51,8 @@ One-liner: unverified new accounts can sign in and explore but cannot spend AI c
 | `api/src/app.module.ts` | T5 |
 | `server/index.ts` | T5 |
 | `.env.example` | T5 |
+| `api/src/common/filters/http-exception.filter.ts` | T5b |
+| `api/tests/common/http-exception-filter.spec.ts` | T5b |
 | `shared/schema.ts` | T6 |
 | `client/src/lib/queryClient.ts` | T6 |
 | `client/src/components/auth/EmailVerificationRequiredDialog.tsx` | T6 |
@@ -75,5 +78,6 @@ npm run dev   # manual TC-13..TC-17, TC-19 — api/ edits need a full dev-server
 - Do not ship the `@Throttle` limits without the proxy-aware tracker — behind the Express proxy every user shares one IP and 5 registrations/hour would apply to the whole product.
 - Do not take the leftmost `X-Forwarded-For` entry — it is client-controlled.
 - Do not use `normalizeEmail()` output as the login or send address — duplicate detection only.
+- Do not key the verify dialog off a bare 403 — `usage-limit.service.ts` throws 403 for the monthly cap, so a hit free-tier limit would wrongly prompt for verification. Match on `code === 'EMAIL_NOT_VERIFIED'` (hence T5b).
 
 *Tasks created: 2026-07-25 · Re-scoped: 2026-09-14*
