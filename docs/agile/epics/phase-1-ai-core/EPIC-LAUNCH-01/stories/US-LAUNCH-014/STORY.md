@@ -39,7 +39,7 @@ This story therefore combines: verification **gating AI spend** (not login), a d
 
 ### A. Schema
 
-- [ ] **AC1 [happy-path]:** `User` gains `emailVerified Boolean @default(true)`, `emailVerifiedAt DateTime?`, `emailNormalized String? @unique`, and relation `emailVerificationTokens EmailVerificationToken[]`. New model `EmailVerificationToken` mirrors `PasswordResetToken` (`id`, `userId` → `User` `onDelete: Cascade`, `tokenHash @unique`, `expiresAt`, `usedAt?`, `createdAt`, `@@index([userId])`).
+- [x] **AC1 [happy-path]:** `User` gains `emailVerified Boolean @default(true)`, `emailVerifiedAt DateTime?`, `emailNormalized String? @unique`, and relation `emailVerificationTokens EmailVerificationToken[]`. New model `EmailVerificationToken` mirrors `PasswordResetToken` (`id`, `userId` → `User` `onDelete: Cascade`, `tokenHash @unique`, `expiresAt`, `usedAt?`, `createdAt`, `@@index([userId])`).
   **`@default(true)` is deliberate and must carry a schema comment:** `prisma db push` fills existing rows with `true`, so **all pre-existing users are grandfathered** and never blocked; only `register()` writes `false` explicitly (AC5). Google sign-ups inherit `true`.
 
 ### B. Sign-up controls

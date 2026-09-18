@@ -10,10 +10,10 @@ Backlog item — not launch-blocking. Re-scoped 2026-09-14 (M → L). Email veri
 
 ## Four Pillars Pre-flight
 
-- [ ] **Brain** — STORY.md ACs read, including "Why this was re-scoped"
-- [ ] **Muscle** — File list + ordered tasks confirmed below
-- [ ] **Map** — ARCHITECTURE.mmd (EPIC-LAUNCH-01) reviewed; `disposable-email-domains-js` export API inspected
-- [ ] **Env** — `RESEND_API_KEY`/`EMAIL_FROM` present locally (or dev-email logging confirmed); `TRUSTED_PROXY_HOPS` planned for staging
+- [x] **Brain** — STORY.md ACs read, including "Why this was re-scoped"
+- [x] **Muscle** — File list + ordered tasks confirmed below
+- [x] **Map** — ARCHITECTURE.mmd (EPIC-LAUNCH-01) reviewed; `disposable-email-domains-js` export API inspected
+- [x] **Env** — `RESEND_API_KEY`/`EMAIL_FROM` absent locally → EmailService dev-fallback logs `[DEV EMAIL]` (confirmed in `email.service.ts`); `TRUSTED_PROXY_HOPS` documented in `.env.example`, value to be confirmed on staging (MV-014-06)
 
 ## PR Scope
 
@@ -21,12 +21,12 @@ One-liner: unverified new accounts can sign in and explore but cannot spend AI c
 
 ## Task Breakdown
 
-- **T1** — `api/prisma/schema.prisma`: `emailVerified @default(true)` (grandfathering comment), `emailVerifiedAt`, `emailNormalized @unique`, `EmailVerificationToken`; `npx prisma generate`
-- **T2** — `package.json` + `api/src/modules/auth/utils/email-policy.ts` (new) + `api/tests/auth/email-policy.spec.ts` (new): `normalizeEmail`, `isDisposableEmail`
-- **T3** — `auth.service.ts` + `auth.controller.ts` + `auth.dto.ts` + `api/tests/auth/email-verification.spec.ts` (new): register checks, verification send, verify / resend, googleLogin normalized link
-- **T4** — `api/src/common/guards/email-verified.guard.ts` (new) + spec + apply to `infographics.controller.ts`, `generations.controller.ts`, `extractions.controller.ts`
-- **T5** — `api/src/common/guards/proxy-aware-throttler.guard.ts` (new) + spec + `app.module.ts` + `server/index.ts` (`xfwd`) + `.env.example` + `@Throttle` on register / resend / forgot-password
-- **T6** — `shared/schema.ts`, `client/src/lib/queryClient.ts`, `EmailVerificationRequiredDialog.tsx` (new), `EmailVerificationBanner.tsx` (new), `VerifyEmailPage.tsx` (new), `client/src/App.tsx`
+- [x] **T1** — `api/prisma/schema.prisma`: `emailVerified @default(true)` (grandfathering comment), `emailVerifiedAt`, `emailNormalized @unique`, `EmailVerificationToken`; `npx prisma generate`
+- [ ] **T2** — `package.json` + `api/src/modules/auth/utils/email-policy.ts` (new) + `api/tests/auth/email-policy.spec.ts` (new): `normalizeEmail`, `isDisposableEmail`
+- [ ] **T3** — `auth.service.ts` + `auth.controller.ts` + `auth.dto.ts` + `api/tests/auth/email-verification.spec.ts` (new): register checks, verification send, verify / resend, googleLogin normalized link
+- [ ] **T4** — `api/src/common/guards/email-verified.guard.ts` (new) + spec + apply to `infographics.controller.ts`, `generations.controller.ts`, `extractions.controller.ts`
+- [ ] **T5** — `api/src/common/guards/proxy-aware-throttler.guard.ts` (new) + spec + `app.module.ts` + `server/index.ts` (`xfwd`) + `.env.example` + `@Throttle` on register / resend / forgot-password
+- [ ] **T6** — `shared/schema.ts`, `client/src/lib/queryClient.ts`, `EmailVerificationRequiredDialog.tsx` (new), `EmailVerificationBanner.tsx` (new), `VerifyEmailPage.tsx` (new), `client/src/App.tsx`
 
 ## File-to-Task Mapping
 
