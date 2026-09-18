@@ -3,6 +3,7 @@ import { ApiTags, ApiOperation, ApiBearerAuth, ApiSecurity } from '@nestjs/swagg
 import { AuthGuard } from '@nestjs/passport';
 import { PromptExtractorService } from '../services/prompt-extractor.service';
 import { ExtractPropertyDataDto } from '../dto/extract-property-data.dto';
+import { EmailVerifiedGuard } from '../../../common/guards/email-verified.guard';
 
 @ApiTags('infographics-extractions')
 @Controller('infographics/generations/extractions')
@@ -11,8 +12,9 @@ export class ExtractionsController {
     @Inject(PromptExtractorService) private readonly extractorService: PromptExtractorService,
   ) {}
 
+  // US-LAUNCH-014 AC8 — cost-bearing route (LLM call): EmailVerifiedGuard runs after the JWT guard.
   @Post()
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'), EmailVerifiedGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Extract property data from natural language prompt' })
   async extract(@Body() dto: ExtractPropertyDataDto, @Req() req: any) {

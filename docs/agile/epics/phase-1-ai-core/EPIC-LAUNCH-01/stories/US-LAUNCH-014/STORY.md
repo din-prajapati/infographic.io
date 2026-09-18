@@ -62,7 +62,7 @@ This story therefore combines: verification **gating AI spend** (not login), a d
 
 ### D. The gate — verification protects AI spend, not login
 
-- [ ] **AC8 [security]:** `EmailVerifiedGuard`. `api/src/common/guards/email-verified.guard.ts` reads `req.user.id`, loads `emailVerified` **fresh from the DB** (never from the JWT or client), and throws HTTP 403 `{ code: 'EMAIL_NOT_VERIFIED', message: 'Please verify your email address to generate designs.' }` when it is `false`. It is applied **after** `AuthGuard('jwt')` on exactly these cost-bearing routes:
+- [x] **AC8 [security]:** `EmailVerifiedGuard`. `api/src/common/guards/email-verified.guard.ts` reads `req.user.id`, loads `emailVerified` **fresh from the DB** (never from the JWT or client), and throws HTTP 403 `{ code: 'EMAIL_NOT_VERIFIED', message: 'Please verify your email address to generate designs.' }` when it is `false`. It is applied **after** `AuthGuard('jwt')` on exactly these cost-bearing routes:
   - `POST /infographics/generate` (`infographics.controller.ts`)
   - `POST /infographics/generations` (`generations.controller.ts` → `generateFromChat`)
   - `POST /infographics/generations/:id/regenerate`
