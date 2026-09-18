@@ -27,7 +27,7 @@ One-liner: unverified new accounts can sign in and explore but cannot spend AI c
 - [x] **T4** — `api/src/common/guards/email-verified.guard.ts` (new) + spec + apply to `infographics.controller.ts`, `generations.controller.ts`, `extractions.controller.ts`
 - [x] **T5** — `api/src/common/guards/proxy-aware-throttler.guard.ts` (new) + spec + `app.module.ts` + `server/index.ts` (`xfwd`) + `.env.example` + `@Throttle` on register / resend / forgot-password
 - [x] **T5b** — `api/src/common/filters/http-exception.filter.ts` + `api/tests/common/http-exception-filter.spec.ts` (new): pass a thrower-supplied `code` through to the response body. **Added 2026-09-18 during implementation, approved by the product owner.** The backend pass proved the filter rebuilds every error as `{ statusCode, message }` and drops `code`, so AC9 could not work as written and `BETA_MODE_ACTIVE` has the same latent bug. Additive only: `code` appears when the thrower set one, nothing else changes.
-- [ ] **T6** — `shared/schema.ts`, `client/src/lib/queryClient.ts`, `EmailVerificationRequiredDialog.tsx` (new), `EmailVerificationBanner.tsx` (new), `VerifyEmailPage.tsx` (new), `client/src/App.tsx`
+- [x] **T6** — `shared/schema.ts`, `client/src/lib/queryClient.ts`, `EmailVerificationRequiredDialog.tsx` (new), `EmailVerificationBanner.tsx` (new), `VerifyEmailPage.tsx` (new), `client/src/App.tsx`
 
 ## File-to-Task Mapping
 

@@ -18,6 +18,9 @@ import UsageDashboardPage from "./pages/UsageDashboardPage";
 import AuthCallbackPage from "./pages/AuthCallbackPage";
 import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/auth/ResetPasswordPage";
+import VerifyEmailPage from "./pages/auth/VerifyEmailPage";
+import { EmailVerificationBanner } from "./components/ui/EmailVerificationBanner";
+import { EmailVerificationRequiredDialog } from "./components/auth/EmailVerificationRequiredDialog";
 import TermsPage from "./pages/legal/TermsPage";
 import PrivacyPage from "./pages/legal/PrivacyPage";
 import RefundPolicyPage from "./pages/legal/RefundPolicyPage";
@@ -148,6 +151,7 @@ function AppLayoutWithHeader({ component: Component }: { component: () => JSX.El
   return (
     <>
       <AppHeader />
+      <EmailVerificationBanner />
       <main className="flex-1">
         <Component />
       </main>
@@ -169,6 +173,8 @@ function Router() {
       <Route path="/auth/callback" component={() => <AppOnlyRoute component={AuthCallbackPage} />} />
       <Route path="/auth/forgot" component={() => <AppOnlyRoute component={ForgotPasswordPage} />} />
       <Route path="/auth/reset" component={() => <AppOnlyRoute component={ResetPasswordPage} />} />
+      {/* Must stay above "/auth": Switch renders the first match, and the emailed link is app-only. */}
+      <Route path="/auth/verify-email" component={() => <AppOnlyRoute component={VerifyEmailPage} />} />
       <Route path="/auth" component={() => <AppOnlyRoute component={AuthPage} />} />
       <Route path="/pricing" component={PricingPage} />
       <Route path="/templates" component={() => <AppOnlyRoute component={() => <ProtectedRoute component={() => <AppLayoutWithHeader component={TemplatesPageWrapper} />} />} />} />
@@ -206,6 +212,8 @@ export default function App() {
               <div className="min-h-screen bg-background flex flex-col">
                 <Router />
               </div>
+              {/* Mounted once, app-wide: opens on the EMAIL_NOT_VERIFIED event (US-LAUNCH-014 AC9). */}
+              <EmailVerificationRequiredDialog />
               <VersionBadge />
               <Toaster />
             </TooltipProvider>
