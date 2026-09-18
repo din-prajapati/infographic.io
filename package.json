@@ -100,6 +100,7 @@
     "connect-pg-simple": "^10.0.0",
     "cross-env": "^10.1.0",
     "date-fns": "^3.6.0",
+    "disposable-email-domains-js": "^1.25.0",
     "drizzle-orm": "^0.39.1",
     "drizzle-zod": "^0.7.0",
     "embla-carousel-react": "^8.6.0",

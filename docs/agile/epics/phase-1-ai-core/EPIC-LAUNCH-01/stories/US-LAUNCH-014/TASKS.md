@@ -22,7 +22,7 @@ One-liner: unverified new accounts can sign in and explore but cannot spend AI c
 ## Task Breakdown
 
 - [x] **T1** — `api/prisma/schema.prisma`: `emailVerified @default(true)` (grandfathering comment), `emailVerifiedAt`, `emailNormalized @unique`, `EmailVerificationToken`; `npx prisma generate`
-- [ ] **T2** — `package.json` + `api/src/modules/auth/utils/email-policy.ts` (new) + `api/tests/auth/email-policy.spec.ts` (new): `normalizeEmail`, `isDisposableEmail`
+- [x] **T2** — `package.json` + `api/src/modules/auth/utils/email-policy.ts` (new) + `api/tests/auth/email-policy.spec.ts` (new): `normalizeEmail`, `isDisposableEmail`
 - [ ] **T3** — `auth.service.ts` + `auth.controller.ts` + `auth.dto.ts` + `api/tests/auth/email-verification.spec.ts` (new): register checks, verification send, verify / resend, googleLogin normalized link
 - [ ] **T4** — `api/src/common/guards/email-verified.guard.ts` (new) + spec + apply to `infographics.controller.ts`, `generations.controller.ts`, `extractions.controller.ts`
 - [ ] **T5** — `api/src/common/guards/proxy-aware-throttler.guard.ts` (new) + spec + `app.module.ts` + `server/index.ts` (`xfwd`) + `.env.example` + `@Throttle` on register / resend / forgot-password
