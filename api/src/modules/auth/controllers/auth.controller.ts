@@ -2,6 +2,7 @@ import { Controller, Post, Body, HttpCode, HttpStatus, Inject, Get, UseGuards, R
 import { ExecutionContext } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
+import { Throttle } from '@nestjs/throttler';
 import { AuthService } from '../services/auth.service';
 import { RegisterDto, LoginDto, ForgotPasswordDto, ResetPasswordDto, VerifyEmailDto } from '../dto/auth.dto';
 import { Request, Response } from 'express';
@@ -25,6 +26,13 @@ class GoogleAuthGuard extends AuthGuard('google') {
   }
 }
 
+/**
+ * US-LAUNCH-014 AC12 — per-IP hourly limits for the endpoints that send email or mint
+ * accounts. They only mean anything because ProxyAwareThrottlerGuard resolves the real
+ * client IP (AC11); behind the bare Express proxy these would throttle everyone at once.
+ */
+const ONE_HOUR_MS = 3600000;
+
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
@@ -33,6 +41,7 @@ export class AuthController {
   ) {}
 
   @Post('register')
+  @Throttle({ default: { limit: 5, ttl: ONE_HOUR_MS } })
   @ApiOperation({ summary: 'Register new user' })
   async register(@Body() registerDto: RegisterDto) {
     return this.authService.register(registerDto);
@@ -74,6 +83,7 @@ export class AuthController {
 
   @Post('forgot-password')
   @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 5, ttl: ONE_HOUR_MS } })
   @ApiOperation({ summary: 'Request a password reset link' })
   async forgotPassword(@Body() dto: ForgotPasswordDto) {
     return this.authService.forgotPassword(dto);
@@ -97,6 +107,7 @@ export class AuthController {
   /** US-LAUNCH-014 AC7 — the user id comes from the JWT, never from the request body. */
   @Post('resend-verification')
   @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 3, ttl: ONE_HOUR_MS } })
   @UseGuards(AuthGuard('jwt'))
   @ApiOperation({ summary: 'Re-send the verification email for the signed-in user' })
   async resendVerification(@Req() req: Request) {
