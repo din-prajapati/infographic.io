@@ -3,7 +3,7 @@ import { ExecutionContext } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from '../services/auth.service';
-import { RegisterDto, LoginDto, ForgotPasswordDto, ResetPasswordDto } from '../dto/auth.dto';
+import { RegisterDto, LoginDto, ForgotPasswordDto, ResetPasswordDto, VerifyEmailDto } from '../dto/auth.dto';
 import { Request, Response } from 'express';
 
 /**
@@ -84,5 +84,22 @@ export class AuthController {
   @ApiOperation({ summary: 'Reset password using an emailed token' })
   async resetPassword(@Body() dto: ResetPasswordDto) {
     return this.authService.resetPassword(dto);
+  }
+
+  /** US-LAUNCH-014 AC6 — public: the token in the link is the only credential needed. */
+  @Post('verify-email')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Verify an email address using an emailed token' })
+  async verifyEmail(@Body() dto: VerifyEmailDto) {
+    return this.authService.verifyEmail(dto);
+  }
+
+  /** US-LAUNCH-014 AC7 — the user id comes from the JWT, never from the request body. */
+  @Post('resend-verification')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(AuthGuard('jwt'))
+  @ApiOperation({ summary: 'Re-send the verification email for the signed-in user' })
+  async resendVerification(@Req() req: Request) {
+    return this.authService.resendVerification((req.user as { id: string }).id);
   }
 }

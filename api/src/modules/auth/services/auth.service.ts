@@ -1,20 +1,30 @@
-import { Injectable, UnauthorizedException, ConflictException, Inject, BadRequestException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, ConflictException, Inject, BadRequestException, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import { prisma } from '../../../database/prisma.client';
-import { RegisterDto, LoginDto, ForgotPasswordDto, ResetPasswordDto } from '../dto/auth.dto';
+import { RegisterDto, LoginDto, ForgotPasswordDto, ResetPasswordDto, VerifyEmailDto } from '../dto/auth.dto';
 import { PLAN_USER_LIMITS } from '../../users/users.service';
 import { EmailService } from '../../email/email.service';
 import { googleSigninNoticeTemplate } from '../../email/templates/google-signin-notice.template';
 import { passwordResetTemplate } from '../../email/templates/password-reset.template';
+import { isDisposableEmail, normalizeEmail } from '../utils/email-policy';
 
 /** Identical response for every forgot-password request — prevents user enumeration (AC1). */
 const GENERIC_FORGOT_MESSAGE =
   'If an account exists for that email, a password reset link has been sent.';
 
+/** US-LAUNCH-014 AC5 — verification links live for 24h. */
+const VERIFICATION_TOKEN_TTL_MS = 24 * 60 * 60 * 1000;
+
+/** US-LAUNCH-014 AC6 — same message for unknown, expired and already-used tokens. */
+const INVALID_VERIFICATION_MESSAGE =
+  'This verification link is invalid or has expired. Please sign in and request a new one.';
+
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     @Inject(JwtService) private readonly jwtService: JwtService,
     @Inject(EmailService) private readonly emailService: EmailService,
@@ -48,9 +58,55 @@ export class AuthService {
     return currentCount < userLimit;
   }
 
+  /**
+   * US-LAUNCH-014 AC5 — mint a 24h verification token and email the raw-token link.
+   * Only the sha256 hash is persisted; the raw token exists solely inside the link.
+   * Callers decide whether a failure here is fatal (it is not, for register()).
+   */
+  private async sendVerificationEmail(user: { id: string; email: string }): Promise<void> {
+    const rawToken = crypto.randomBytes(32).toString('hex');
+
+    await prisma.emailVerificationToken.create({
+      data: {
+        userId: user.id,
+        tokenHash: this.hashToken(rawToken),
+        expiresAt: new Date(Date.now() + VERIFICATION_TOKEN_TTL_MS),
+      },
+    });
+
+    const link = `${this.frontendUrl()}/auth/verify-email?token=${rawToken}`;
+
+    await this.emailService.send({
+      to: user.email,
+      subject: 'Verify your email address',
+      text:
+        `Welcome to Buildographic.\n\n` +
+        `Confirm this is your address so you can start generating designs:\n${link}\n\n` +
+        `This link expires in 24 hours. If you did not create an account, you can ignore this email.`,
+      html:
+        `<p>Welcome to Buildographic.</p>` +
+        `<p>Confirm this is your address so you can start generating designs:</p>` +
+        `<p><a href="${link}">Verify my email address</a></p>` +
+        `<p>This link expires in 24 hours. If you did not create an account, you can ignore this email.</p>`,
+    });
+  }
+
   async register(registerDto: RegisterDto) {
-    const existingUser = await prisma.user.findUnique({
-      where: { email: registerDto.email },
+    // AC2 — refuse throwaway inboxes BEFORE any write, so a blocked sign-up leaves
+    // no Organization, User or token behind.
+    if (isDisposableEmail(registerDto.email)) {
+      throw new BadRequestException({
+        code: 'DISPOSABLE_EMAIL_NOT_ALLOWED',
+        message: "Please use a permanent email address — temporary inboxes aren't supported.",
+      });
+    }
+
+    // AC4 — one account per real inbox: the address as typed OR its alias-normalized form.
+    const emailNormalized = normalizeEmail(registerDto.email);
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        OR: [{ email: registerDto.email }, { emailNormalized }],
+      },
     });
 
     if (existingUser) {
@@ -91,20 +147,36 @@ export class AuthService {
 
     const user = await prisma.user.create({
       data: {
+        // AC4 — `email` is always the address as typed; `emailNormalized` is the
+        // duplicate-detection key only and is never used to log in or to send to.
         email: registerDto.email,
+        emailNormalized,
         password: hashedPassword,
         name: registerDto.name,
         organizationId,
+        // AC5 — the only place that writes `false`. The schema default is `true`
+        // so every pre-existing account stays grandfathered.
+        emailVerified: false,
       },
       select: {
         id: true,
         email: true,
         name: true,
         organizationId: true,
+        emailVerified: true,
       },
     });
 
     const token = this.jwtService.sign({ sub: user.id, email: user.email });
+
+    // AC5 — a failure to mint or deliver the verification email must not fail the
+    // sign-up; the user can always ask for a new link from the banner (AC7).
+    try {
+      await this.sendVerificationEmail(user);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Verification email failed for userId=${user.id}: ${message}`);
+    }
 
     return {
       user,
@@ -135,6 +207,8 @@ export class AuthService {
         email: user.email,
         name: user.name,
         organizationId: user.organizationId,
+        // AC5 — the client needs this to decide whether to show the verification banner.
+        emailVerified: user.emailVerified,
       },
       token,
     };
@@ -151,9 +225,16 @@ export class AuthService {
       where: { googleId: googleUser.googleId },
     });
 
+    const googleEmailNormalized = normalizeEmail(googleUser.email);
+
     if (!user) {
-      user = await prisma.user.findUnique({
-        where: { email: googleUser.email },
+      // AC4 — match the address as typed OR its normalized form, so signing in with
+      // Google as johndoe@gmail.com LINKS to an existing local john.doe@gmail.com
+      // account instead of creating a second user (and hitting the unique index).
+      user = await prisma.user.findFirst({
+        where: {
+          OR: [{ email: googleUser.email }, { emailNormalized: googleEmailNormalized }],
+        },
       });
 
       if (user) {
@@ -177,12 +258,15 @@ export class AuthService {
         user = await prisma.user.create({
           data: {
             email: googleUser.email,
+            emailNormalized: googleEmailNormalized,
             password: '',
             name: googleUser.name,
             googleId: googleUser.googleId,
             avatarUrl: googleUser.avatarUrl,
             provider: 'google',
             organizationId: organization.id,
+            // Google has already proven the inbox — inherit the schema default (true)
+            // rather than sending our own verification email.
           },
         });
       }
@@ -308,5 +392,61 @@ export class AuthService {
     });
 
     return { message: 'Your password has been updated. You can now log in.' };
+  }
+
+  /**
+   * AC6 — Consume a verification token: must exist, be unused and be unexpired.
+   * Unknown / expired / used all produce the same 400 and mutate nothing.
+   */
+  async verifyEmail(dto: VerifyEmailDto) {
+    const record = await prisma.emailVerificationToken.findUnique({
+      where: { tokenHash: this.hashToken(dto.token) },
+    });
+
+    if (!record || record.usedAt || record.expiresAt < new Date()) {
+      throw new BadRequestException(INVALID_VERIFICATION_MESSAGE);
+    }
+
+    const now = new Date();
+    await prisma.user.update({
+      where: { id: record.userId },
+      data: { emailVerified: true, emailVerifiedAt: now },
+    });
+    await prisma.emailVerificationToken.update({
+      where: { id: record.id },
+      data: { usedAt: now },
+    });
+
+    return { verified: true, userId: record.userId };
+  }
+
+  /**
+   * AC7 — Re-send the verification link for the *authenticated* user (the id comes from
+   * the JWT, never from the request body). Already-verified is a no-op, not an error.
+   */
+  async resendVerification(userId: string) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, email: true, emailVerified: true },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    if (user.emailVerified) {
+      return { alreadyVerified: true };
+    }
+
+    // Invalidate any link already in flight, so only the newest one works.
+    await prisma.emailVerificationToken.deleteMany({
+      where: { userId: user.id, usedAt: null },
+    });
+
+    // EmailService.send() resolves { sent: false } rather than throwing, so the
+    // response is { sent: true } regardless of delivery outcome (AC7).
+    await this.sendVerificationEmail(user);
+
+    return { sent: true };
   }
 }
