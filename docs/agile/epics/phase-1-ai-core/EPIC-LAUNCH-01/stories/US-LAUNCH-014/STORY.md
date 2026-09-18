@@ -80,13 +80,60 @@ This story therefore combines: verification **gating AI spend** (not login), a d
 
 - [x] **AC12 [rate-limit]:** Email-endpoint limits. Using `@Throttle` on `auth.controller.ts`: `POST /auth/register` **5 per hour** per tracked IP; `POST /auth/resend-verification` **3 per hour**; `POST /auth/forgot-password` **5 per hour** (sends email — same abuse class; decorator only, no service change). Exceeding returns HTTP 429. Other routes keep the global default.
 
-### F. Tests
+### F. Internal test accounts (added 2026-09-18 — T7)
+
+> **Why this exists.** The gate in AC8 and the limits in AC12 broke this repo's own test suite: 12 E2E specs
+> register `e2e-*-${Date.now()}@test.local` and then call a gated route (they now get 403), and a full run
+> registers 12+ accounts from one CI IP (429 after the 5th). `npx playwright test` defaults to **staging**,
+> so this hits a deployed environment. Unit and integration tests are unaffected (mock-based / direct Prisma).
+
+- [x] **AC14 [security]:** `email-policy.ts` exports `isInternalTestEmail(email): boolean`, true only when the
+  address's domain **exactly equals** one entry of `process.env.INTERNAL_TEST_EMAIL_DOMAINS` (comma-separated,
+  trimmed, lower-cased). When the variable is unset or empty the function is always false — **production
+  behaves exactly as it does without this feature**. The decision is made server-side from the submitted email
+  alone: no request header, query parameter or body flag can select it, and no parent-domain or suffix matching
+  is performed (`evil-test.local` must not match an allowlisted `test.local`). Every bypass logs once at `warn`
+  with the address and the reason, so any use in a real environment is visible in logs.
+
+- [x] **AC15 [security]:** An allowlisted address changes exactly three behaviours in `register()`, and nothing
+  else: (a) the AC2 disposable check is skipped; (b) the user is created with `emailVerified: true` and
+  `emailVerifiedAt = now`, so no `EmailVerificationToken` is created and `EmailService.send()` is not called;
+  (c) the AC4 duplicate check still runs unchanged. It does **not** bypass authentication, `EmailVerifiedGuard`,
+  credit metering, `assertCanGenerate`, the monthly plan limit, or the global 100/min throttle. `login()`,
+  `verifyEmail()`, `resendVerification()` and `googleLogin()` are untouched by the allowlist.
+
+- [x] **AC16 [rate-limit]:** `ProxyAwareThrottlerGuard` overrides `shouldSkip(context)` to return true only when
+  the request is a `POST` to `/auth/register`, `/auth/resend-verification` or `/auth/forgot-password` **and**
+  `isInternalTestEmail(request.body?.email)` is true. A malformed or absent body, a non-allowlisted address, or
+  any other route falls through to normal throttling. With `INTERNAL_TEST_EMAIL_DOMAINS` unset, `shouldSkip`
+  never returns true on this path.
+
+- [ ] **AC17 [happy-path]:** `.env.example` and the epic's `ENV.yaml` document `INTERNAL_TEST_EMAIL_DOMAINS`
+  with the per-environment policy: local/CI `test.local`; staging `test.local` plus a domain you control;
+  **production empty**. `scripts/seed-test-users.mjs` (new, mirroring `scripts/ensure-payment-test-user.mjs`)
+  creates or updates the fixed `TEST_USER_EMAIL` account directly against the database with
+  `emailVerified: true`, so production smoke tests **log in** as a deliberately seeded account and never
+  register. Wired as `npm run seed:test-users`. A full `npx playwright test` run against a target whose API has
+  `INTERNAL_TEST_EMAIL_DOMAINS=test.local` completes without a 403 from the gate or a 429 from the sign-up limit.
+  *Implementation note (2026-09-18):* documentation and the script are written and the script loads, resolves
+  `normalizeEmail` and reaches the database; it runs as `npm run seed:test-users` (`npx tsx scripts/seed-test-users.mjs`
+  — tsx is needed so the `.mjs` entry point can import the TypeScript `normalizeEmail` rather than re-implement it).
+  **Unchecked deliberately:** the seed write (MV-014-13) and the full Playwright run (MV-014-10) have not been executed —
+  the T1 schema has not been `prisma db push`-ed to the dev database, so `User.emailNormalized` does not exist yet
+  and the script currently fails with `P2022` against it. Re-run both after the push.
+
+### G. Tests
 
 - [x] **AC13 [null-input]:** Unit tests (mock-based) — including the empty/absent-input branches (missing `token`, absent `x-forwarded-for`, unknown token):
   - `api/tests/auth/email-policy.spec.ts`: all four AC3 examples; `isDisposableEmail('a@mailinator.com')` and `('a@x.mailinator.com')` → true; `('a@gmail.com')` → false.
   - `api/tests/auth/email-verification.spec.ts`: (a) register with a disposable domain → 400 `DISPOSABLE_EMAIL_NOT_ALLOWED`, `organization.create` and `user.create` never called; (b) register where `findFirst` matches on `emailNormalized` → 409; (c) register success → `user.create` data has `emailVerified: false` and `emailNormalized`, `emailVerificationToken.create` gets a 64-char hex `tokenHash` and ~24h `expiresAt`, `EmailService.send` called once; (d) token create throws → register still returns user + token; (e) verifyEmail valid → user + token updated, returns `{ verified: true, userId }`; (f) expired / used / unknown → `BadRequestException`, no update; (g) resend when verified → `{ alreadyVerified: true }`, no send; (h) resend when unverified → `deleteMany`, `create`, send once; (i) googleLogin where only `emailNormalized` matches → `user.update` (link), `user.create` not called.
   - `api/tests/common/email-verified.guard.spec.ts`: `emailVerified: false` → `ForbiddenException` with `code: 'EMAIL_NOT_VERIFIED'`; `true` → `true`; the guard reads Prisma, not `req.user`.
   - `api/tests/common/proxy-aware-throttler.spec.ts`: XFF `'6.6.6.6, 1.2.3.4, 10.0.0.1'` with hops 2 → `'1.2.3.4'`; hops 1 → `'10.0.0.1'`; no header → `req.ip`.
+
+- [x] **AC18 [null-input]:** Unit tests for the allowlist (mock-based), extending the existing specs:
+  - `email-policy.spec.ts`: `INTERNAL_TEST_EMAIL_DOMAINS` unset/empty → `isInternalTestEmail()` false for every input including `a@test.local`; set to `test.local` → `a@test.local` true, `a@evil-test.local` false, `a@sub.test.local` false, `a@TEST.LOCAL` true (case-insensitive), `''`/`undefined`/`'not-an-email'` false.
+  - `email-verification.spec.ts`: allowlisted register → `user.create` data has `emailVerified: true`, `emailVerificationToken.create` NOT called, `EmailService.send` NOT called, and a duplicate allowlisted address still throws 409.
+  - `proxy-aware-throttler.spec.ts`: `shouldSkip` true for `POST /auth/register` with an allowlisted body email; false for the same route with a normal address, false for an allowlisted address on a non-auth route, false when the body is absent, and false for every case when the env var is unset.
 
 ---
 
@@ -102,6 +149,9 @@ This story therefore combines: verification **gating AI spend** (not login), a d
 - Any change to `PasswordResetToken`, `forgotPassword()`/`resetPassword()` logic or their DTOs (AC12 adds a controller decorator only).
 - Email-change re-verification; showing the banner on `/editor` or `/usage`; a "check your inbox" interstitial after registration.
 - Suppressing a call site's own error toast when the AC9 dialog opens (possible duplicate message is accepted).
+- **Any allowlist bypass beyond the three behaviours in AC15** — no "test mode" flag, no header- or param-driven bypass, no exemption from credits, plan limits or the guard itself.
+- **Rewriting the 12 E2E specs' registration helpers** — with `INTERNAL_TEST_EMAIL_DOMAINS=test.local` set on the target API they pass unchanged; only add assertions if a spec actively contradicts the new behaviour.
+- **Deleting or rotating seeded test accounts**, and any CI pipeline change to run `seed:test-users` automatically — the script is provided; wiring it into CI is ops work.
 
 ---
 
@@ -206,7 +256,12 @@ report files changed, ACs ✅, test output. api/ edits need a full dev-server re
 | TC-LAUNCH-014-10 | Unit | P0 | happy-path: Banner + verify page. `EmailVerificationBanner` renders b… | 🔲 | |
 | TC-LAUNCH-014-11 | Unit | P1 | security: Proxy-aware tracker. 's proxy sets `xfwd: true`. extends … | 🔲 | |
 | TC-LAUNCH-014-12 | Unit | P1 | rate-limit: Email-endpoint limits. Using `@Throttle` on `auth.control… | 🔲 | |
-| TC-LAUNCH-014-13 | Unit | P1 | null-input: Unit tests (mock-based) — including the empty/absent-inpu… | 🔲 | |
+| TC-LAUNCH-014-13 | Unit | P1 | security: `email-policy.ts` exports `isInternalTestEmail(email): bo… | 🔲 | |
+| TC-LAUNCH-014-14 | Unit | P1 | security: An allowlisted address changes exactly three behaviours i… | 🔲 | |
+| TC-LAUNCH-014-15 | Unit | P1 | rate-limit: `ProxyAwareThrottlerGuard` overrides `shouldSkip(context)… | 🔲 | |
+| TC-LAUNCH-014-16 | Unit | P0 | happy-path: `.env.example` and the epic's `ENV.yaml` document `INTERN… | 🔲 | |
+| TC-LAUNCH-014-17 | Unit | P1 | null-input: Unit tests (mock-based) — including the empty/absent-inpu… | 🔲 | |
+| TC-LAUNCH-014-18 | Unit | P1 | null-input: Unit tests for the allowlist (mock-based), extending the … | 🔲 | |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 
@@ -230,6 +285,11 @@ report files changed, ACs ✅, test output. api/ edits need a full dev-server re
 | MV-014-07 | Manual | P1 | Compose ("Make Editable") and Regenerate as an unverified user → 403 dialog, no credit charged (AC8) | 🔲 | |
 | MV-014-08 | Manual | P2 | `RESEND_API_KEY` set + real inbox → verification email arrives, link verifies, generation unlocks (AC5) | 🔲 | |
 | MV-014-09 | Manual | P2 | Banner at 375px and VerifyEmailPage at 375/1440px — no horizontal overflow (AC10) | 🔲 | |
+| MV-014-10 | Manual | P0 | With `INTERNAL_TEST_EMAIL_DOMAINS=test.local` on the local API, a full `npx playwright test` against localhost completes with no 403 from the gate and no 429 from the sign-up limit (AC17) | 🔲 | |
+| MV-014-11 | Manual | P0 | **Security:** with the variable UNSET, registering `a@test.local` behaves like any other address — unverified, token created, email sent, throttled after 5/h (AC14) | 🔲 | |
+| MV-014-12 | Manual | P0 | **Security:** with `INTERNAL_TEST_EMAIL_DOMAINS=test.local`, registering `a@evil-test.local` and `a@sub.test.local` gets NO bypass (unverified + throttled), and a `warn` log line appears only for genuine allowlist hits (AC14) | 🔲 | |
+| MV-014-13 | Manual | P1 | `npm run seed:test-users` creates the `TEST_USER_EMAIL` account with `emailVerified: true`; that account can log in and generate without ever registering through the API (AC17) | 🔲 | |
+| MV-014-14 | Manual | P0 | **Production policy:** confirm `INTERNAL_TEST_EMAIL_DOMAINS` is absent from the Railway production environment before/after deploy (`railway variables --environment production`) (AC14) | 🔲 | |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 

@@ -8,7 +8,7 @@ import { PLAN_USER_LIMITS } from '../../users/users.service';
 import { EmailService } from '../../email/email.service';
 import { googleSigninNoticeTemplate } from '../../email/templates/google-signin-notice.template';
 import { passwordResetTemplate } from '../../email/templates/password-reset.template';
-import { isDisposableEmail, normalizeEmail } from '../utils/email-policy';
+import { isDisposableEmail, isInternalTestEmail, normalizeEmail } from '../utils/email-policy';
 
 /** Identical response for every forgot-password request — prevents user enumeration (AC1). */
 const GENERIC_FORGOT_MESSAGE =
@@ -92,9 +92,24 @@ export class AuthService {
   }
 
   async register(registerDto: RegisterDto) {
+    // AC14/AC15 — internal test accounts (opt-in per environment, unset in production).
+    // Changes exactly three things below: the disposable check is skipped, the user is
+    // created pre-verified, and no verification token/email is produced. It grants no
+    // authentication, no credits and no exemption from the guard, the plan limit or the
+    // global throttle. Logged at warn so any use in a real environment is visible.
+    const isInternalTest = isInternalTestEmail(registerDto.email);
+    if (isInternalTest) {
+      this.logger.warn(
+        `Internal-test bypass applied for ${registerDto.email}: domain matches ` +
+          `INTERNAL_TEST_EMAIL_DOMAINS, so the disposable check is skipped and the ` +
+          `account is created pre-verified with no verification email. ` +
+          `This variable must NOT be set in production.`,
+      );
+    }
+
     // AC2 — refuse throwaway inboxes BEFORE any write, so a blocked sign-up leaves
     // no Organization, User or token behind.
-    if (isDisposableEmail(registerDto.email)) {
+    if (!isInternalTest && isDisposableEmail(registerDto.email)) {
       throw new BadRequestException({
         code: 'DISPOSABLE_EMAIL_NOT_ALLOWED',
         message: "Please use a permanent email address — temporary inboxes aren't supported.",
@@ -156,7 +171,10 @@ export class AuthService {
         organizationId,
         // AC5 — the only place that writes `false`. The schema default is `true`
         // so every pre-existing account stays grandfathered.
-        emailVerified: false,
+        // AC15 — an allowlisted internal test address is created already verified,
+        // because automated suites cannot open a link in an inbox.
+        emailVerified: isInternalTest,
+        emailVerifiedAt: isInternalTest ? new Date() : null,
       },
       select: {
         id: true,
@@ -171,11 +189,14 @@ export class AuthService {
 
     // AC5 — a failure to mint or deliver the verification email must not fail the
     // sign-up; the user can always ask for a new link from the banner (AC7).
-    try {
-      await this.sendVerificationEmail(user);
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : String(error);
-      this.logger.error(`Verification email failed for userId=${user.id}: ${message}`);
+    // AC15 — nothing to verify for an internal test account: no token, no send.
+    if (!isInternalTest) {
+      try {
+        await this.sendVerificationEmail(user);
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
+        this.logger.error(`Verification email failed for userId=${user.id}: ${message}`);
+      }
     }
 
     return {

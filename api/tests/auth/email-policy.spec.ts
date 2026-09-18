@@ -1,6 +1,7 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import {
   isDisposableEmail,
+  isInternalTestEmail,
   normalizeEmail,
   EXTRA_BLOCKED_DOMAINS,
 } from '../../src/modules/auth/utils/email-policy';
@@ -87,5 +88,96 @@ describe('isDisposableEmail — AC2', () => {
     expect(isDisposableEmail('')).toBe(false);
     expect(isDisposableEmail('no-at-sign')).toBe(false);
     expect(isDisposableEmail('jane@')).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// AC14/AC18 — internal test-account allowlist.
+// The env var is saved and restored around every case so no test leaks state.
+// ---------------------------------------------------------------------------
+describe('isInternalTestEmail — AC14', () => {
+  const original = process.env.INTERNAL_TEST_EMAIL_DOMAINS;
+
+  beforeEach(() => {
+    delete process.env.INTERNAL_TEST_EMAIL_DOMAINS;
+  });
+
+  afterEach(() => {
+    if (original === undefined) delete process.env.INTERNAL_TEST_EMAIL_DOMAINS;
+    else process.env.INTERNAL_TEST_EMAIL_DOMAINS = original;
+  });
+
+  describe('when the variable is unset or empty (the production posture)', () => {
+    it('is false for every input, including an address on the usual test domain', () => {
+      for (const value of [undefined, '', '   ', ',', ' , ']) {
+        if (value === undefined) delete process.env.INTERNAL_TEST_EMAIL_DOMAINS;
+        else process.env.INTERNAL_TEST_EMAIL_DOMAINS = value;
+
+        expect(isInternalTestEmail('a@test.local')).toBe(false);
+        expect(isInternalTestEmail('a@gmail.com')).toBe(false);
+        expect(isInternalTestEmail('e2e-1@test.local')).toBe(false);
+      }
+    });
+  });
+
+  describe('when set to test.local', () => {
+    beforeEach(() => {
+      process.env.INTERNAL_TEST_EMAIL_DOMAINS = 'test.local';
+    });
+
+    it('matches an address on exactly that domain', () => {
+      expect(isInternalTestEmail('a@test.local')).toBe(true);
+      expect(isInternalTestEmail('e2e-1758000000000@test.local')).toBe(true);
+    });
+
+    it('is case-insensitive on the address', () => {
+      expect(isInternalTestEmail('a@TEST.LOCAL')).toBe(true);
+      expect(isInternalTestEmail('  A@Test.Local  ')).toBe(true);
+    });
+
+    // The security property: allow lists must never widen the way block lists do.
+    it('does NOT match a look-alike domain that merely ends with the allowlisted one', () => {
+      expect(isInternalTestEmail('a@evil-test.local')).toBe(false);
+    });
+
+    it('does NOT match a subdomain of the allowlisted domain', () => {
+      expect(isInternalTestEmail('a@sub.test.local')).toBe(false);
+    });
+
+    it('does NOT match a parent of the allowlisted domain', () => {
+      expect(isInternalTestEmail('a@local')).toBe(false);
+    });
+
+    it('does not match an unrelated domain', () => {
+      expect(isInternalTestEmail('a@gmail.com')).toBe(false);
+    });
+
+    // null-input branches (AC18)
+    it('returns false for empty, malformed or non-string-ish input instead of throwing', () => {
+      expect(isInternalTestEmail('')).toBe(false);
+      expect(isInternalTestEmail(undefined as unknown as string)).toBe(false);
+      expect(isInternalTestEmail(null as unknown as string)).toBe(false);
+      expect(isInternalTestEmail('not-an-email')).toBe(false);
+      expect(isInternalTestEmail('@test.local')).toBe(false);
+      expect(isInternalTestEmail('a@')).toBe(false);
+    });
+  });
+
+  it('accepts a comma-separated list with padding and mixed case', () => {
+    process.env.INTERNAL_TEST_EMAIL_DOMAINS = ' Test.Local ,  qa.buildographic.com ';
+
+    expect(isInternalTestEmail('a@test.local')).toBe(true);
+    expect(isInternalTestEmail('a@qa.buildographic.com')).toBe(true);
+    expect(isInternalTestEmail('a@buildographic.com')).toBe(false);
+  });
+
+  it('re-reads the variable on every call rather than caching it at import time', () => {
+    expect(isInternalTestEmail('a@test.local')).toBe(false);
+
+    process.env.INTERNAL_TEST_EMAIL_DOMAINS = 'test.local';
+    expect(isInternalTestEmail('a@test.local')).toBe(true);
+
+    delete process.env.INTERNAL_TEST_EMAIL_DOMAINS;
+    expect(isInternalTestEmail('a@test.local')).toBe(false);
   });
 });

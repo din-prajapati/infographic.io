@@ -23,6 +23,7 @@
     "verify:payment-prereqs": "node scripts/verify-payment-prerequisites.js",
     "test:payment": "node scripts/run-payment-automated-tests.js",
     "test:payment:ensure-user": "node scripts/ensure-payment-test-user.mjs",
+    "seed:test-users": "npx tsx scripts/seed-test-users.mjs",
     "test:payments:unit": "cd api && npx vitest run tests/payments/payments.service.spec.ts --reporter=verbose",
     "test": "npm run test:unit && npm run test:integration",
     "test:unit": "npm run test:unit:backend && npm run test:unit:client",

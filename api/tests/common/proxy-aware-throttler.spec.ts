@@ -126,3 +126,130 @@ describe('ProxyAwareThrottlerGuard.getTracker (AC11)', () => {
     }
   });
 });
+
+// ---------------------------------------------------------------------------
+// US-LAUNCH-014 AC16/AC18 — the allowlist exemption. The exemption must be
+// reachable ONLY from the submitted email on the three email-sending routes;
+// everything else keeps its normal limit.
+// ---------------------------------------------------------------------------
+
+/** shouldSkip is `protected`; the cast is the whole point of the test. */
+function shouldSkipOf(guard: ProxyAwareThrottlerGuard, context: unknown): Promise<boolean> {
+  return (guard as any).shouldSkip(context);
+}
+
+function makeContext(
+  overrides: { method?: string; url?: string; body?: unknown; headers?: Record<string, unknown> } = {},
+) {
+  const request: Record<string, any> = {
+    method: overrides.method ?? 'POST',
+    url: overrides.url ?? '/api/v1/auth/register',
+    headers: overrides.headers ?? {},
+    ip: '127.0.0.1',
+  };
+  if ('body' in overrides) request.body = overrides.body;
+  else request.body = { email: 'e2e-1@test.local', password: 'password123' };
+
+  return {
+    getType: () => 'http',
+    switchToHttp: () => ({ getRequest: () => request }),
+  };
+}
+
+describe('ProxyAwareThrottlerGuard.shouldSkip (AC16)', () => {
+  const originalDomains = process.env.INTERNAL_TEST_EMAIL_DOMAINS;
+  let guard: ProxyAwareThrottlerGuard;
+
+  beforeEach(() => {
+    guard = makeGuard();
+    process.env.INTERNAL_TEST_EMAIL_DOMAINS = 'test.local';
+  });
+
+  afterEach(() => {
+    if (originalDomains === undefined) delete process.env.INTERNAL_TEST_EMAIL_DOMAINS;
+    else process.env.INTERNAL_TEST_EMAIL_DOMAINS = originalDomains;
+  });
+
+  it('skips the limit for an allowlisted address on the three email-sending routes', async () => {
+    for (const path of ['/auth/register', '/auth/resend-verification', '/auth/forgot-password']) {
+      await expect(shouldSkipOf(guard, makeContext({ url: `/api/v1${path}` }))).resolves.toBe(true);
+      // also when the guard sees the pre-global-prefix path
+      await expect(shouldSkipOf(guard, makeContext({ url: path }))).resolves.toBe(true);
+    }
+  });
+
+  it('ignores a query string on the path', async () => {
+    await expect(
+      shouldSkipOf(guard, makeContext({ url: '/api/v1/auth/register?next=/templates' })),
+    ).resolves.toBe(true);
+  });
+
+  it('does NOT skip for a normal address on the same route', async () => {
+    await expect(
+      shouldSkipOf(guard, makeContext({ body: { email: 'jane@company.com' } })),
+    ).resolves.toBe(false);
+  });
+
+  it('does NOT skip for a look-alike or subdomain of the allowlisted domain', async () => {
+    for (const email of ['a@evil-test.local', 'a@sub.test.local']) {
+      await expect(shouldSkipOf(guard, makeContext({ body: { email } }))).resolves.toBe(false);
+    }
+  });
+
+  it('does NOT skip an allowlisted address on any other route', async () => {
+    for (const url of [
+      '/api/v1/auth/login',
+      '/api/v1/auth/reset-password',
+      '/api/v1/infographics/generate',
+      '/api/v1/anything/auth/register',
+    ]) {
+      await expect(shouldSkipOf(guard, makeContext({ url }))).resolves.toBe(false);
+    }
+  });
+
+  it('does NOT skip a non-POST request to an exemptible route', async () => {
+    for (const method of ['GET', 'PUT', 'DELETE']) {
+      await expect(shouldSkipOf(guard, makeContext({ method }))).resolves.toBe(false);
+    }
+  });
+
+  // The security property this guard exists to preserve: nothing request-supplied
+  // other than the email itself can select the exemption.
+  it('ignores a header, query parameter or body flag claiming test-account status', async () => {
+    await expect(
+      shouldSkipOf(
+        guard,
+        makeContext({
+          body: { email: 'attacker@gmail.com', isTestAccount: true, internalTest: '1' },
+          headers: { 'x-internal-test': 'true', 'x-test-account': 'test.local' },
+          url: '/api/v1/auth/register?internalTest=true',
+        }),
+      ),
+    ).resolves.toBe(false);
+  });
+
+  // null-input branches (AC18)
+  it('does NOT skip when the body is absent, empty or malformed', async () => {
+    for (const body of [undefined, null, {}, { email: null }, { email: 123 }, { email: ['a@test.local'] }, 'raw-string']) {
+      await expect(shouldSkipOf(guard, makeContext({ body }))).resolves.toBe(false);
+    }
+  });
+
+  it('does NOT skip when the request or context cannot be read', async () => {
+    await expect(shouldSkipOf(guard, { getType: () => 'ws' })).resolves.toBe(false);
+    await expect(
+      shouldSkipOf(guard, { getType: () => 'http', switchToHttp: () => ({ getRequest: () => undefined }) }),
+    ).resolves.toBe(false);
+    await expect(shouldSkipOf(guard, {})).resolves.toBe(false);
+  });
+
+  it('never skips when INTERNAL_TEST_EMAIL_DOMAINS is unset — the production posture', async () => {
+    delete process.env.INTERNAL_TEST_EMAIL_DOMAINS;
+
+    for (const path of ['/auth/register', '/auth/resend-verification', '/auth/forgot-password']) {
+      await expect(shouldSkipOf(guard, makeContext({ url: `/api/v1${path}` }))).resolves.toBe(
+        false,
+      );
+    }
+  });
+});

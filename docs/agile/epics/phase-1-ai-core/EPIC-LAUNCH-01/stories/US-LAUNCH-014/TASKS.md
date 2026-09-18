@@ -29,6 +29,8 @@ One-liner: unverified new accounts can sign in and explore but cannot spend AI c
 - [x] **T5b** — `api/src/common/filters/http-exception.filter.ts` + `api/tests/common/http-exception-filter.spec.ts` (new): pass a thrower-supplied `code` through to the response body. **Added 2026-09-18 during implementation, approved by the product owner.** The backend pass proved the filter rebuilds every error as `{ statusCode, message }` and drops `code`, so AC9 could not work as written and `BETA_MODE_ACTIVE` has the same latent bug. Additive only: `code` appears when the thrower set one, nothing else changes.
 - [x] **T6** — `shared/schema.ts`, `client/src/lib/queryClient.ts`, `EmailVerificationRequiredDialog.tsx` (new), `EmailVerificationBanner.tsx` (new), `VerifyEmailPage.tsx` (new), `client/src/App.tsx`
 
+- [x] **T7** — internal test-account allowlist: `email-policy.ts` (`isInternalTestEmail`), `auth.service.ts` (register bypass), `proxy-aware-throttler.guard.ts` (`shouldSkip`), `.env.example` + epic `ENV.yaml`, `scripts/seed-test-users.mjs` (new) + `package.json` script, and the three specs extended. **Added 2026-09-18, approved by the product owner.** Without it AC8/AC12 break this repo's own E2E suite: 12 specs register `@test.local` then hit a gated route (403), and one run exceeds 5 sign-ups/hour from a single CI IP (429).
+
 ## File-to-Task Mapping
 
 | File | Task |
@@ -59,6 +61,16 @@ One-liner: unverified new accounts can sign in and explore but cannot spend AI c
 | `client/src/components/ui/EmailVerificationBanner.tsx` | T6 |
 | `client/src/pages/auth/VerifyEmailPage.tsx` | T6 |
 | `client/src/App.tsx` | T6 |
+| `api/src/modules/auth/utils/email-policy.ts` | T2, T7 |
+| `api/src/modules/auth/services/auth.service.ts` | T3, T7 |
+| `api/src/common/guards/proxy-aware-throttler.guard.ts` | T5, T7 |
+| `.env.example` | T5, T7 |
+| `docs/agile/epics/phase-1-ai-core/EPIC-LAUNCH-01/ENV.yaml` | T7 |
+| `scripts/seed-test-users.mjs` | T7 |
+| `package.json` | T2, T7 |
+| `api/tests/auth/email-policy.spec.ts` | T2, T7 |
+| `api/tests/auth/email-verification.spec.ts` | T3, T7 |
+| `api/tests/common/proxy-aware-throttler.spec.ts` | T5, T7 |
 
 ## Exact Test Commands
 
@@ -78,6 +90,9 @@ npm run dev   # manual TC-13..TC-17, TC-19 — api/ edits need a full dev-server
 - Do not ship the `@Throttle` limits without the proxy-aware tracker — behind the Express proxy every user shares one IP and 5 registrations/hour would apply to the whole product.
 - Do not take the leftmost `X-Forwarded-For` entry — it is client-controlled.
 - Do not use `normalizeEmail()` output as the login or send address — duplicate detection only.
+- Do not let any request-supplied value (header, query param, body flag) select the test-account bypass — only the email domain matched against a server-side env var. A client-selectable bypass would hand anyone a verified account.
+- Do not use suffix or parent-domain matching for the allowlist — `evil-test.local` must not match `test.local`. (This is the opposite of the disposable check, which deliberately walks parents.)
+- Do not set `INTERNAL_TEST_EMAIL_DOMAINS` in production, and do not make the seed script depend on it — production test accounts are seeded directly, never registered through the bypass.
 - Do not key the verify dialog off a bare 403 — `usage-limit.service.ts` throws 403 for the monthly cap, so a hit free-tier limit would wrongly prompt for verification. Match on `code === 'EMAIL_NOT_VERIFIED'` (hence T5b).
 
 *Tasks created: 2026-07-25 · Re-scoped: 2026-09-14*

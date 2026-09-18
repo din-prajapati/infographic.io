@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { BadRequestException, ConflictException } from '@nestjs/common';
 import { AuthService } from '../../src/modules/auth/services/auth.service';
 
@@ -204,6 +204,114 @@ describe('AuthService — sign-up verification gate (US-LAUNCH-014)', () => {
 
       expect(result.user.emailVerified).toBe(false);
       expect(result.token).toBe('signed.jwt.token');
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // AC14/AC15/AC18 — internal test-account allowlist.
+  // The env var is saved and restored per case so nothing leaks into the suites
+  // above (which all assume the production posture: allowlist off).
+  // -------------------------------------------------------------------------
+  describe('register() — internal test allowlist (AC15)', () => {
+    const originalDomains = process.env.INTERNAL_TEST_EMAIL_DOMAINS;
+
+    beforeEach(() => {
+      process.env.INTERNAL_TEST_EMAIL_DOMAINS = 'test.local';
+      mockPrisma.user.create.mockResolvedValue({
+        id: 'user_e2e',
+        email: 'e2e-1@test.local',
+        name: null,
+        organizationId: 'org_new',
+        emailVerified: true,
+      });
+    });
+
+    afterEach(() => {
+      if (originalDomains === undefined) delete process.env.INTERNAL_TEST_EMAIL_DOMAINS;
+      else process.env.INTERNAL_TEST_EMAIL_DOMAINS = originalDomains;
+    });
+
+    it('creates the account pre-verified, mints no token and sends no email', async () => {
+      const result = await service.register({
+        email: 'e2e-1@test.local',
+        password: 'password123',
+      } as any);
+
+      const data = mockPrisma.user.create.mock.calls[0][0].data;
+      expect(data.emailVerified).toBe(true);
+      expect(data.emailVerifiedAt).toBeInstanceOf(Date);
+      expect(mockPrisma.emailVerificationToken.create).not.toHaveBeenCalled();
+      expect(emailService.send).not.toHaveBeenCalled();
+      expect(result.user.emailVerified).toBe(true);
+    });
+
+    it('skips the disposable-domain check for an allowlisted address', async () => {
+      process.env.INTERNAL_TEST_EMAIL_DOMAINS = 'mailinator.com';
+
+      await expect(
+        service.register({ email: 'e2e-2@mailinator.com', password: 'password123' } as any),
+      ).resolves.toMatchObject({ token: 'signed.jwt.token' });
+
+      expect(mockPrisma.user.create).toHaveBeenCalledTimes(1);
+    });
+
+    it('still enforces the AC4 duplicate check — a repeat address is a 409', async () => {
+      mockPrisma.user.findFirst.mockResolvedValue({
+        id: 'user_existing',
+        email: 'e2e-1@test.local',
+        emailNormalized: 'e2e-1@test.local',
+      });
+
+      await expect(
+        service.register({ email: 'e2e-1@test.local', password: 'password123' } as any),
+      ).rejects.toBeInstanceOf(ConflictException);
+
+      expect(mockPrisma.user.create).not.toHaveBeenCalled();
+    });
+
+    it('grants nothing extra — the organization is still a free, 3-generation org', async () => {
+      await service.register({ email: 'e2e-1@test.local', password: 'password123' } as any);
+
+      expect(mockPrisma.organization.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({ planTier: 'free', monthlyLimit: 3 }),
+      });
+    });
+
+    it('does NOT apply to a look-alike or subdomain of the allowlisted domain', async () => {
+      for (const email of ['e2e@evil-test.local', 'e2e@sub.test.local']) {
+        vi.clearAllMocks();
+        mockPrisma.user.findFirst.mockResolvedValue(null);
+        mockPrisma.organization.create.mockResolvedValue({ id: 'org_new' });
+        mockPrisma.user.create.mockResolvedValue({
+          id: 'user_x',
+          email,
+          organizationId: 'org_new',
+          emailVerified: false,
+        });
+        mockPrisma.emailVerificationToken.create.mockResolvedValue({ id: 'evt_x' });
+
+        await service.register({ email, password: 'password123' } as any);
+
+        expect(mockPrisma.user.create.mock.calls[0][0].data.emailVerified).toBe(false);
+        expect(mockPrisma.emailVerificationToken.create).toHaveBeenCalledTimes(1);
+        expect(emailService.send).toHaveBeenCalledTimes(1);
+      }
+    });
+
+    it('is inert when the variable is unset — the same address registers unverified', async () => {
+      delete process.env.INTERNAL_TEST_EMAIL_DOMAINS;
+      mockPrisma.user.create.mockResolvedValue({
+        id: 'user_e2e',
+        email: 'e2e-1@test.local',
+        organizationId: 'org_new',
+        emailVerified: false,
+      });
+
+      await service.register({ email: 'e2e-1@test.local', password: 'password123' } as any);
+
+      expect(mockPrisma.user.create.mock.calls[0][0].data.emailVerified).toBe(false);
+      expect(mockPrisma.emailVerificationToken.create).toHaveBeenCalledTimes(1);
+      expect(emailService.send).toHaveBeenCalledTimes(1);
     });
   });
 
