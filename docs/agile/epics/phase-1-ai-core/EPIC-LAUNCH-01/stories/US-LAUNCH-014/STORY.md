@@ -82,7 +82,7 @@ This story therefore combines: verification **gating AI spend** (not login), a d
 
 ### F. Tests
 
-- [ ] **AC13 [null-input]:** Unit tests (mock-based) — including the empty/absent-input branches (missing `token`, absent `x-forwarded-for`, unknown token):
+- [x] **AC13 [null-input]:** Unit tests (mock-based) — including the empty/absent-input branches (missing `token`, absent `x-forwarded-for`, unknown token):
   - `api/tests/auth/email-policy.spec.ts`: all four AC3 examples; `isDisposableEmail('a@mailinator.com')` and `('a@x.mailinator.com')` → true; `('a@gmail.com')` → false.
   - `api/tests/auth/email-verification.spec.ts`: (a) register with a disposable domain → 400 `DISPOSABLE_EMAIL_NOT_ALLOWED`, `organization.create` and `user.create` never called; (b) register where `findFirst` matches on `emailNormalized` → 409; (c) register success → `user.create` data has `emailVerified: false` and `emailNormalized`, `emailVerificationToken.create` gets a 64-char hex `tokenHash` and ~24h `expiresAt`, `EmailService.send` called once; (d) token create throws → register still returns user + token; (e) verifyEmail valid → user + token updated, returns `{ verified: true, userId }`; (f) expired / used / unknown → `BadRequestException`, no update; (g) resend when verified → `{ alreadyVerified: true }`, no send; (h) resend when unverified → `deleteMany`, `create`, send once; (i) googleLogin where only `emailNormalized` matches → `user.update` (link), `user.create` not called.
   - `api/tests/common/email-verified.guard.spec.ts`: `emailVerified: false` → `ForbiddenException` with `code: 'EMAIL_NOT_VERIFIED'`; `true` → `true`; the guard reads Prisma, not `req.user`.
