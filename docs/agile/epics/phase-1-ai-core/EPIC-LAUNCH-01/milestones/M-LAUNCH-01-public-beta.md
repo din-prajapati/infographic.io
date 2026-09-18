@@ -23,7 +23,9 @@ A real estate agent who is a total stranger can sign up on production, generate 
 | 1 | [US-LAUNCH-009](../stories/US-LAUNCH-009/STORY.md) | Environment & secrets management convention (docs/config) | — | ✅ Done | ec166fb (direct, no PR) |
 | 2 | [US-LAUNCH-010](../stories/US-LAUNCH-010/STORY.md) | Config hardening — APP_ENV + boot validation + RazorPay guard | US-LAUNCH-009 | ✅ Done | [#17](https://github.com/din-prajapati/infographic.io/pull/17) |
 | 3 | [US-LAUNCH-011](../stories/US-LAUNCH-011/STORY.md) | Rebrand user-facing surfaces to Buildographic | — | ✅ Done | [#16](https://github.com/din-prajapati/infographic.io/pull/16) |
-| Backlog | [US-LAUNCH-014](../stories/US-LAUNCH-014/STORY.md) | Email verification for new local accounts | — | 🔲 | — |
+| Backlog | [US-LAUNCH-014](../stories/US-LAUNCH-014/STORY.md) | Sign-up verification gate + abuse controls | — | 🔲 | — |
+| Backlog | [US-LAUNCH-016](../stories/US-LAUNCH-016/STORY.md) | Post-signup onboarding — Screen 1 required profile | — (file overlap with 014: sequence, don't parallelize) | 🔲 | — |
+| Backlog | [US-LAUNCH-017](../stories/US-LAUNCH-017/STORY.md) | Onboarding brand kit — Screen 2 | US-LAUNCH-016 | 🔲 | — |
 
 > **Order** = wave. Same order = no known file overlap, safe to run in parallel worktrees. **Blocked By** = genuine logical dependency (must be ✅ Done, not just merged-and-mergeable). File-overlap safety within an order is verified automatically by `orion run next M-LAUNCH-01`, not by this column.
 >
@@ -58,7 +60,7 @@ A real estate agent who is a total stranger can sign up on production, generate 
       publishing to represent a real listing." renders at two result surfaces
       (`ResultsVariations`, `MessageBubble`). The export path was **not** separately proven — if
       this item means the disclaimer must also survive onto the exported file, that is still open.
-- [ ] All stories above have status ✅ Done, **except US-LAUNCH-014** (Backlog — non-blocking, may close after this milestone)
+- [ ] All stories above have status ✅ Done, **except US-LAUNCH-014, US-LAUNCH-016 and US-LAUNCH-017** (Backlog — non-blocking, may close after this milestone)
 
 ---
 

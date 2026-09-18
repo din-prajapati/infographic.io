@@ -1,7 +1,7 @@
 # EPIC-LAUNCH-01 — Go-Live & Revenue Readiness
 
 > **Phase:** Phase 1 — Revenue Strategy (v1.1)
-> **Status:** 🟡 In Progress — 13/15 stories Done, 1 In Progress (US-LAUNCH-005), 1 Not Started (US-LAUNCH-014). US-LAUNCH-015 (editable-design monetization) added 2026-08-13, closed 2026-08-15, live-verified. Only US-LAUNCH-005 AC5/6 (real ₹ transaction) stands between this epic and fully Done.
+> **Status:** 🟡 In Progress — 13/17 stories Done, 1 In Progress (US-LAUNCH-005), 3 Not Started — all backlog/non-blocking (US-LAUNCH-014; US-LAUNCH-016/017 signup onboarding, added 2026-09-14). US-LAUNCH-015 (editable-design monetization) added 2026-08-13, closed 2026-08-15, live-verified. Only US-LAUNCH-005 AC5/6 (real ₹ transaction) stands between this epic and fully Done.
 > **Depends on:** EPIC-INFRA-01 (Phase 0 production deploy) for all stories · EPIC-AI-06 gates the **revenue-on switch** (M-LAUNCH-02 DoD), not M-LAUNCH-02 prep work
 > **Linear Project:** LIN-EPIC-XXX
 > **Target date:** 2026-08-15
@@ -47,8 +47,10 @@
 | [US-LAUNCH-011](stories/US-LAUNCH-011/STORY.md) | Rebrand user-facing surfaces to Buildographic | M-LAUNCH-01 | S | ✅ Done | [#16](https://github.com/din-prajapati/infographic.io/pull/16) |
 | [US-LAUNCH-012](stories/US-LAUNCH-012/STORY.md) | Payment-failed (dunning) email notification | M-LAUNCH-02 | S | ✅ Done | `fa1d345` |
 | [US-LAUNCH-013](stories/US-LAUNCH-013/STORY.md) | Subscription renewal reminder email (3-day notice) | M-LAUNCH-02 | S | ✅ Done | `fa1d345`+`5c52dc0` |
-| [US-LAUNCH-014](stories/US-LAUNCH-014/STORY.md) | Email verification for new local accounts (backlog, non-blocking) | M-LAUNCH-01 | M | 🔲 | — |
+| [US-LAUNCH-014](stories/US-LAUNCH-014/STORY.md) | Sign-up verification gate + abuse controls (backlog, non-blocking; re-scoped 2026-09-14 from soft verification) | M-LAUNCH-01 | L | 🔲 | — |
 | [US-LAUNCH-015](stories/US-LAUNCH-015/STORY.md) | Editable-design monetization (FREE gate + extra-compose credits) | M-LAUNCH-02 | M | ✅ Done 2026-08-15 — live-verified `[201, 402]` | — |
+| [US-LAUNCH-016](stories/US-LAUNCH-016/STORY.md) | Post-signup onboarding — Screen 1 required profile (backlog, non-blocking) | M-LAUNCH-01 | M | 🔲 | — |
+| [US-LAUNCH-017](stories/US-LAUNCH-017/STORY.md) | Onboarding brand kit — Screen 2, persisted + fed to generation (backlog, depends on 016) | M-LAUNCH-01 | M | 🔲 | — |
 
 ---
 
@@ -63,6 +65,7 @@
 | F-LAUNCH-05 | Metering Policy | US-LAUNCH-008 |
 | F-LAUNCH-06 | Environment & Secrets Management | US-LAUNCH-009, US-LAUNCH-010 |
 | F-LAUNCH-07 | Brand Identity (Buildographic) | US-LAUNCH-011 |
+| F-LAUNCH-08 | Signup Onboarding | US-LAUNCH-016, US-LAUNCH-017 |
 
 ---
 
