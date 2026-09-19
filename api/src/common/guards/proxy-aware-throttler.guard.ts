@@ -1,5 +1,6 @@
-import { ExecutionContext, Injectable } from '@nestjs/common';
+import { ExecutionContext, Injectable, Logger } from '@nestjs/common';
 import { ThrottlerGuard } from '@nestjs/throttler';
+import * as jwt from 'jsonwebtoken';
 import { isInternalTestEmail } from '../../modules/auth/utils/email-policy';
 
 /**
@@ -8,10 +9,16 @@ import { isInternalTestEmail } from '../../modules/auth/utils/email-policy';
  * hypothetical `/anything/auth/register` could not inherit the exemption.
  */
 const EXEMPTIBLE_EMAIL_PATHS: ReadonlySet<string> = new Set(
-  ['/auth/register', '/auth/resend-verification', '/auth/forgot-password'].flatMap((path) => [
-    path,
-    `/api/v1${path}`,
-  ]),
+  [
+    '/auth/register',
+    '/auth/resend-verification',
+    '/auth/forgot-password',
+    // AC19: `/auth/login` joined the list after measurement. An E2E run makes hundreds of
+    // requests from one IP, exhausts the global 100/min bucket, and the *login* call is then
+    // refused with 429 — which looks exactly like a broken login and made `us-ai-040` fail
+    // ~half the time. See BL-31.
+    '/auth/login',
+  ].flatMap((path) => [path, `/api/v1${path}`]),
 );
 
 /**
@@ -82,6 +89,12 @@ export class ProxyAwareThrottlerGuard extends ThrottlerGuard {
     const request = context.switchToHttp?.()?.getRequest?.();
     if (!request) return false;
 
+    // AC19 — an authenticated internal-test session skips the limit on ANY route.
+    // Checked first because it is the case that makes a suite run survive: the
+    // sign-up exemption below covers 4 endpoints, while a browser test spends its
+    // budget on the dozens of authenticated GETs behind each page load.
+    if (this.isInternalTestSession(request)) return true;
+
     if (String(request.method ?? '').toUpperCase() !== 'POST') return false;
 
     const path = String(request.originalUrl ?? request.url ?? '')
@@ -93,6 +106,36 @@ export class ProxyAwareThrottlerGuard extends ThrottlerGuard {
     if (typeof email !== 'string') return false;
 
     return isInternalTestEmail(email);
+  }
+
+  /**
+   * AC19 — true when the caller presents a **cryptographically valid** JWT belonging to an
+   * internal-test address.
+   *
+   * The signature check is the point. Reading the email from an unverified payload would be
+   * simpler and would be a rate-limit bypass for anyone: base64 is not a secret, so a forged
+   * `{"email":"x@test.local"}` token would opt the sender out of throttling on every route.
+   * `jwt.verify` against `JWT_SECRET` means only a token this server actually issued counts.
+   *
+   * Still gated on `INTERNAL_TEST_EMAIL_DOMAINS`: unset (production) → `isInternalTestEmail`
+   * is always false → this returns false for every request, verified token or not.
+   */
+  private isInternalTestSession(request: Record<string, any>): boolean {
+    const header = request?.headers?.authorization;
+    if (typeof header !== 'string' || !header.toLowerCase().startsWith('bearer ')) return false;
+
+    const secret = process.env.JWT_SECRET;
+    if (!secret) return false;
+
+    try {
+      const payload = jwt.verify(header.slice(7).trim(), secret);
+      const email = typeof payload === 'object' && payload ? (payload as any).email : undefined;
+      return typeof email === 'string' && isInternalTestEmail(email);
+    } catch {
+      // Expired, tampered with, or signed by someone else — no exemption, and no noise:
+      // an invalid token is the JWT guard's business to report, not the rate limiter's.
+      return false;
+    }
   }
 
   /** Read per request so the value can be changed without a rebuild; 1 is the safe default. */
