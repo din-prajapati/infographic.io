@@ -31,6 +31,8 @@ One-liner: unverified new accounts can sign in and explore but cannot spend AI c
 
 - [x] **T7** — internal test-account allowlist: `email-policy.ts` (`isInternalTestEmail`), `auth.service.ts` (register bypass), `proxy-aware-throttler.guard.ts` (`shouldSkip`), `.env.example` + epic `ENV.yaml`, `scripts/seed-test-users.mjs` (new) + `package.json` script, and the three specs extended. **Added 2026-09-18, approved by the product owner.** Without it AC8/AC12 break this repo's own E2E suite: 12 specs register `@test.local` then hit a gated route (403), and one run exceeds 5 sign-ups/hour from a single CI IP (429).
 
+- [x] **T7b** — exempt internal-test traffic from the **global** `100/min` cap: `proxy-aware-throttler.guard.ts` (add `/auth/login` to the exemptible paths; new `isInternalTestSession()` verifying the Bearer JWT against `JWT_SECRET`) + `proxy-aware-throttler.spec.ts`. **Added 2026-09-19, approved by the product owner.** Measured cause of the E2E flakiness: a suite run exhausts the shared bucket (120 rapid requests → 100×200 then 20×429) and `POST /auth/login` is then refused, which reads as a broken login. T7's sign-up exemption could not fix it — the budget goes on authenticated GETs, not the four auth endpoints. Result: `us-ai-040` + `us-launch-003` went from 19 passed / 8 failed to **27 passed / 0 failed**.
+
 ## File-to-Task Mapping
 
 | File | Task |
@@ -70,7 +72,8 @@ One-liner: unverified new accounts can sign in and explore but cannot spend AI c
 | `package.json` | T2, T7 |
 | `api/tests/auth/email-policy.spec.ts` | T2, T7 |
 | `api/tests/auth/email-verification.spec.ts` | T3, T7 |
-| `api/tests/common/proxy-aware-throttler.spec.ts` | T5, T7 |
+| `api/tests/common/proxy-aware-throttler.spec.ts` | T5, T7, T7b |
+| `api/src/common/guards/proxy-aware-throttler.guard.ts` (2nd pass) | T7b |
 
 ## Exact Test Commands
 
@@ -93,6 +96,8 @@ npm run dev   # manual TC-13..TC-17, TC-19 — api/ edits need a full dev-server
 - Do not let any request-supplied value (header, query param, body flag) select the test-account bypass — only the email domain matched against a server-side env var. A client-selectable bypass would hand anyone a verified account.
 - Do not use suffix or parent-domain matching for the allowlist — `evil-test.local` must not match `test.local`. (This is the opposite of the disposable check, which deliberately walks parents.)
 - Do not set `INTERNAL_TEST_EMAIL_DOMAINS` in production, and do not make the seed script depend on it — production test accounts are seeded directly, never registered through the bypass.
+- Do not read the email from an **unverified** JWT payload when deciding the T7b exemption — base64 is not a secret, and a forged `{"email":"x@test.local"}` would opt any sender out of rate limiting on every route. `jwt.verify` against `JWT_SECRET`, or no exemption.
+- When an E2E spec fails, **run it alone before theorising**. This story burned two wrong diagnoses (memory pressure, then the `redirect_to_auth` race) on a failure whose cause was visible in one command: the test passes 3/3 in isolation and fails 3/3 inside its file, which points at accumulated state, not at the test.
 - Do not key the verify dialog off a bare 403 — `usage-limit.service.ts` throws 403 for the monthly cap, so a hit free-tier limit would wrongly prompt for verification. Match on `code === 'EMAIL_NOT_VERIFIED'` (hence T5b).
 
 *Tasks created: 2026-07-25 · Re-scoped: 2026-09-14*

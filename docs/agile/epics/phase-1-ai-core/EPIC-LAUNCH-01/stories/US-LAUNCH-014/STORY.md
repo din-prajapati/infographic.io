@@ -118,9 +118,24 @@ This story therefore combines: verification **gating AI spend** (not login), a d
   *Implementation note (2026-09-18):* documentation and the script are written and the script loads, resolves
   `normalizeEmail` and reaches the database; it runs as `npm run seed:test-users` (`npx tsx scripts/seed-test-users.mjs`
   — tsx is needed so the `.mjs` entry point can import the TypeScript `normalizeEmail` rather than re-implement it).
-  **Unchecked deliberately:** the seed write (MV-014-13) and the full Playwright run (MV-014-10) have not been executed —
-  the T1 schema has not been `prisma db push`-ed to the dev database, so `User.emailNormalized` does not exist yet
-  and the script currently fails with `P2022` against it. Re-run both after the push.
+  *Resolved 2026-09-19:* `prisma db push` was applied to the dev database (112/112 existing users read back
+  `emailVerified = true` — grandfathering confirmed against real rows), and `npm run seed:test-users` then ran
+  twice with the same `id`/`org` and no duplicate. Both MV-014-13 and the targeted Playwright run are now green.
+
+- [ ] **AC19 [rate-limit]:** Internal-test traffic is exempt from the **global** `100/min` cap, not only from the
+  AC12 sign-up limits. Two arms, both gated on `INTERNAL_TEST_EMAIL_DOMAINS` (unset in production → neither can
+  ever fire):
+  (a) `POST /auth/login` joins `EXEMPTIBLE_EMAIL_PATHS`, matched on `body.email` exactly as AC16 does;
+  (b) **any** route is exempt when the request carries a `Bearer` token that **`jwt.verify`s against `JWT_SECRET`**
+  and whose payload `email` satisfies `isInternalTestEmail`. The signature check is the security boundary: reading
+  the address from an unverified payload would let anyone forge `{"email":"x@test.local"}` and opt out of rate
+  limiting on every route. An expired token, a token signed with another secret, a non-`Bearer` header, or an
+  absent `JWT_SECRET` all yield no exemption.
+  **Why this exists:** a browser suite spends its request budget on the authenticated GETs behind each page load,
+  not on the four auth endpoints — so the AC16 exemption alone could not stop the suite from exhausting the bucket
+  and having its own `POST /auth/login` answered `429`. Unit tests live in `api/tests/common/proxy-aware-throttler.spec.ts`
+  and must cover: allowlisted session skips on a GET; ordinary user does not; wrong-secret and expired tokens do not;
+  `INTERNAL_TEST_EMAIL_DOMAINS` unset defeats it; `/auth/login` exempt for an allowlisted address and not for a normal one.
 
 ### G. Tests
 
@@ -149,6 +164,12 @@ This story therefore combines: verification **gating AI spend** (not login), a d
 - Any change to `PasswordResetToken`, `forgotPassword()`/`resetPassword()` logic or their DTOs (AC12 adds a controller decorator only).
 - Email-change re-verification; showing the banner on `/editor` or `/usage`; a "check your inbox" interstitial after registration.
 - Suppressing a call site's own error toast when the AC9 dialog opens (possible duplicate message is accepted).
+- **Changing the global `100/min` limit itself, or how it is bucketed.** AC19 exempts internal-test traffic; it does
+  not revisit whether 100/min per IP is right for real users, who share an IP behind corporate NAT and can spend 10+
+  of the budget on a single page load. That is a product decision, recorded as the open question in [[BL-31]].
+- **Fixing the `redirect_to_auth` race** — a real defect found while diagnosing this story's E2E failures, fixed
+  separately on `hotfix/plat/redirect-to-auth-race` (`bf38e5c`). It is not this story's code and, measurably, was
+  not the cause of the flakiness.
 - **Any allowlist bypass beyond the three behaviours in AC15** — no "test mode" flag, no header- or param-driven bypass, no exemption from credits, plan limits or the guard itself.
 - **Rewriting the 12 E2E specs' registration helpers** — with `INTERNAL_TEST_EMAIL_DOMAINS=test.local` set on the target API they pass unchanged; only add assertions if a spec actively contradicts the new behaviour.
 - **Deleting or rotating seeded test accounts**, and any CI pipeline change to run `seed:test-users` automatically — the script is provided; wiring it into CI is ops work.
@@ -260,8 +281,9 @@ report files changed, ACs ✅, test output. api/ edits need a full dev-server re
 | TC-LAUNCH-014-14 | Unit | P1 | security: An allowlisted address changes exactly three behaviours i… | 🔲 | |
 | TC-LAUNCH-014-15 | Unit | P1 | rate-limit: `ProxyAwareThrottlerGuard` overrides `shouldSkip(context)… | 🔲 | |
 | TC-LAUNCH-014-16 | Unit | P0 | happy-path: `.env.example` and the epic's `ENV.yaml` document `INTERN… | 🔲 | |
-| TC-LAUNCH-014-17 | Unit | P1 | null-input: Unit tests (mock-based) — including the empty/absent-inpu… | 🔲 | |
-| TC-LAUNCH-014-18 | Unit | P1 | null-input: Unit tests for the allowlist (mock-based), extending the … | 🔲 | |
+| TC-LAUNCH-014-17 | Unit | P1 | rate-limit: Internal-test traffic is exempt from the **global** cap, … | 🔲 | |
+| TC-LAUNCH-014-18 | Unit | P1 | null-input: Unit tests (mock-based) — including the empty/absent-inpu… | 🔲 | |
+| TC-LAUNCH-014-19 | Unit | P1 | null-input: Unit tests for the allowlist (mock-based), extending the … | 🔲 | |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 
@@ -285,13 +307,14 @@ report files changed, ACs ✅, test output. api/ edits need a full dev-server re
 | MV-014-07 | Manual | P1 | Compose ("Make Editable") and Regenerate as an unverified user → 403 dialog, no credit charged (AC8) | 🔲 | |
 | MV-014-08 | Manual | P2 | `RESEND_API_KEY` set + real inbox → verification email arrives, link verifies, generation unlocks (AC5) | 🔲 | |
 | MV-014-09 | Manual | P2 | Banner at 375px and VerifyEmailPage at 375/1440px — no horizontal overflow (AC10) | 🔲 | |
-| MV-014-10 | Manual | P0 | With `INTERNAL_TEST_EMAIL_DOMAINS=test.local` on the local API, a full `npx playwright test` against localhost completes with no 403 from the gate and no 429 from the sign-up limit (AC17) | 🔲 | |
+| MV-014-10 | Manual | P0 | With `INTERNAL_TEST_EMAIL_DOMAINS=test.local` on the local API, a full `npx playwright test` against localhost completes with no 403 from the gate and no 429 from the sign-up limit (AC17) | ⚠️ | **Targeted run green 2026-09-19** — `us-ai-040` + `us-launch-003` at `--repeat-each=3`: **27 passed, 0 failed** (3 source-skipped), 1.2 min. The **whole** 35-spec suite has NOT been run: 12 specs register then generate, spending real GPT-4o/Ideogram credit. Run those deliberately before merge if the allowlist needs end-to-end proof. |
+| MV-014-17 | Manual | P0 | **AC19:** an allowlisted session is exempt from the global `100/min` cap while an ordinary session is not | ✅ | **Verified 2026-09-19** by A/B on one route, back to back on the same server: allowlisted `@test.local` session → **120/120 × 200**; ordinary `@example.com` session → **100 × 200 then 20 × 429**; unauthenticated baseline → same `100/20` split in 37s. Forgery is covered by unit test, not by this probe. |
 | MV-014-11 | Manual | P0 | **Security:** with the variable UNSET, registering `a@test.local` behaves like any other address — unverified, token created, email sent, throttled after 5/h (AC14) | 🔲 | Not run — needs a second dev-server boot with the variable unset. |
 | MV-014-12 | Manual | P0 | **Security:** with `INTERNAL_TEST_EMAIL_DOMAINS=test.local`, registering `a@evil-test.local` and `a@sub.test.local` gets NO bypass (unverified + throttled), and a `warn` log line appears only for genuine allowlist hits (AC14) | ✅ | **Verified 2026-09-19.** Registered the same local-part at four domains: `evil-test.local` → `emailVerified=false`; `sub.test.local` → `false`; `example.com` → `false`; `test.local` → `true`. Exactly one `WARN [AuthService] Internal-test bypass applied…` line, for the `test.local` hit only. Exact-match holds; no suffix/parent widening. |
 | MV-014-13 | Manual | P1 | `npm run seed:test-users` creates the `TEST_USER_EMAIL` account with `emailVerified: true`; that account can log in and generate without ever registering through the API (AC17) | ✅ | **Verified 2026-09-19.** Seed run twice → same `id`/`org`, `emailVerified=true`, no duplicate (idempotent); it adopted the pre-existing `payment.automation@local.test`. Login proven two ways: `POST /auth/login` → 200 with `emailVerified: true`, and `e2e/us-ai-040` (5 passed, 24.3s) logs in as that account through the UI and browses `/templates` normally. Generation itself deliberately not run (real provider spend). |
 | MV-014-14 | Manual | P0 | **Production policy:** confirm `INTERNAL_TEST_EMAIL_DOMAINS` is absent from the Railway production environment before/after deploy (`railway variables --environment production`) (AC14) | 🔲 | |
 | MV-014-15 | Auto (E2E) | P1 | Targeted Playwright run against localhost shows no regression on the auth surface this story touched | ✅ | **Verified 2026-09-19** with `PLAYWRIGHT_BASE_URL=http://localhost:5000` (the default points at staging — must be overridden). Run three times (`--repeat-each=3`) at 4.31 GB free: **`us-launch-003-password-reset` 12/12 passed** (4 tests × 3; a 5th is `test.skip` in source, `[BLOCKED-UNTIL-DEPLOY]`), including the forgot-password form submitted 3× without tripping the new 5/h cap. That is the surface this story changed, and it is stable. The 12 register-then-generate specs were excluded on purpose: each spends real GPT-4o/Ideogram credit. **Correction:** an earlier single re-run led me to record these failures as "memory starvation, not a defect" — the 3× repeat disproved that (see MV-014-16). |
-| MV-014-16 | Auto (E2E) | P2 | `us-ai-040-template-preview-tags` stability — **not** part of this story's surface, tracked here because it was run alongside | ⚠️ | **Flaky: 7/15 passed across 3 repeats (2026-09-19), at 4.31 GB free — memory is not the cause.** Every failure is in the `beforeEach` `ensureLoggedIn` hook, and every failure snapshot shows `/auth` with empty fields: a full reload dropped the session. This is the `redirect_to_auth` race the spec's own comment documents ("made these tests fail intermittently while the app worked fine by hand") — a pre-login 401 sets the flag, `useRedirectToAuthOnLoad` consumes it on the next full load and bounces back to `/auth`. The hook clears the flag once, but a second late 401 re-arms it. **Not attributable to US-LAUNCH-014 on the evidence available:** our only change on that path (`queryClient.ts`) is additive and fires solely on `EMAIL_NOT_VERIFIED`; the 401 branch is byte-identical to `main`. **Unproven either way** — the decisive test is running this spec against `main` in a separate worktree + second dev server. Filed as [[BL-31]]. |
+| MV-014-16 | Auto (E2E) | P2 | `us-ai-040-template-preview-tags` stability — not this story's surface, tracked here because it was run alongside | ✅ | **Resolved 2026-09-19 by AC19.** Was 7/15 across 3 repeats; after the exemption, **27/27 passed** (both specs, 3 repeats, 1.2 min vs 8 min). **Cause was neither of my first two diagnoses.** Not memory (failed identically at 4.31 GB free) and not the `redirect_to_auth` race (the flake persisted unchanged after that fix landed on `hotfix/plat/redirect-to-auth-race`). The real cause: the suite exhausts the global `100/min` cap, after which `POST /auth/login` is refused `429` and every test looks like a broken login. Decisive evidence was the cheapest experiment available — `TC-AI-040-02` passes 3/3 in 3–4s **alone** and failed 3/3 **inside the full file**. See [[BL-31]]. |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 
