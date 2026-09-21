@@ -26,6 +26,13 @@ export default function VerifyEmailPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   // StrictMode double-invokes effects in dev; a single-use token must be spent once.
   const startedRef = useRef(false);
+  // `login` is re-created on every AuthProvider render, so depending on it re-ran this effect
+  // mid-request: the cleanup set `cancelled = true`, the re-run returned early on `startedRef`,
+  // and the in-flight response was then discarded by the `cancelled` check — leaving the page
+  // on "Verifying your email…" forever even though the token HAD been spent and the account
+  // verified server-side. Held in a ref so the effect depends only on the token.
+  const loginRef = useRef(login);
+  loginRef.current = login;
 
   useEffect(() => {
     if (!token || startedRef.current) return;
@@ -49,7 +56,7 @@ export default function VerifyEmailPage() {
           try {
             const parsed = JSON.parse(storedUser) as LegacyUser;
             if (parsed?.id === result.userId) {
-              login({ ...parsed, emailVerified: true }, authToken);
+              loginRef.current({ ...parsed, emailVerified: true }, authToken);
             }
             setIsLoggedIn(true);
           } catch {
@@ -67,7 +74,7 @@ export default function VerifyEmailPage() {
     return () => {
       cancelled = true;
     };
-  }, [token, login]);
+  }, [token]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
