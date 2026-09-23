@@ -330,7 +330,7 @@ report files changed, ACs ✅, test output. api/ edits need a full dev-server re
 - [ ] All test cases run and recorded (generated TC table **and** the Manual Verification Plan)
 - [x] `npm run check` passes (0 new TypeScript errors)
 - [x] `npm run test:unit` passes (no regressions) — 623 API + client suites green
-- [x] `npx prisma generate` run; `prisma db push` applied to **staging** (= the local dev DB; same Neon instance `ep-billowing-cell`) — 112/112 existing users read `emailVerified = true`. **Production push still outstanding** (blocked: harness refuses production deploys; pre-checked safe, 8 users, additive).
+- [x] `npx prisma generate` run; `prisma db push` applied to **staging** (= the local dev DB; same Neon instance `ep-billowing-cell`) — 112/112 existing users read `emailVerified = true` — **and to production** (`ep-aged-king`) on 2026-09-23: all three columns + `EmailVerificationToken` + `User_emailNormalized_key` present, **8/8 production users grandfathered** (`emailVerified=true`, 0 unverified). `emailNormalized` is NULL on every row, so the unique index built despite the known `din.prajapati+…` collision — that collision would still break any future backfill of the column. Schema is deployed ahead of the code, which is the safe order.
 - [ ] `TRUSTED_PROXY_HOPS` set on Railway staging + production after MV-014-06 confirms the value
 - [x] Manual flow verified — MV-014-01, -03, -04, -05 ✅ (MV-014-06 needs a staging deploy first)
 - [ ] PR merged (PR #_____)
