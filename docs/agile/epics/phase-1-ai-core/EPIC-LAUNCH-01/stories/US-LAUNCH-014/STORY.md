@@ -1,6 +1,6 @@
 # Story Card — US-LAUNCH-014
 
-> **Status:** 🔲 Not Started
+> **Status:** 🟡 In Progress - implemented, Gates 1/3/4 green, PR #55 open
 > **Priority:** **Should-have — re-rated 2026-09-21 (was "Backlog").** The Backlog label was written when this story
 > was soft verification; it now blocks disposable sign-ups from spending real AI credit, carries a schema migration,
 > and is the only thing standing between an open beta and free-credit abuse. Still does NOT gate the M-LAUNCH-01
@@ -183,7 +183,7 @@ This story therefore combines: verification **gating AI spend** (not login), a d
 ## Engineering / PR
 
 - **Branch:** `feat/launch/us-launch-014-signup-verification-gate`
-- **PR:** #_____ (fill when opened)
+- **PR:** [#55](https://github.com/din-prajapati/infographic.io/pull/55)
 - **Primary files touched:**
   - `api/prisma/schema.prisma` — User fields + `EmailVerificationToken`
   - `package.json` / `package-lock.json` — add `disposable-email-domains-js`
@@ -333,7 +333,7 @@ report files changed, ACs ✅, test output. api/ edits need a full dev-server re
 - [x] `npx prisma generate` run; `prisma db push` applied to **staging** (= the local dev DB; same Neon instance `ep-billowing-cell`) — 112/112 existing users read `emailVerified = true` — **and to production** (`ep-aged-king`) on 2026-09-23: all three columns + `EmailVerificationToken` + `User_emailNormalized_key` present, **8/8 production users grandfathered** (`emailVerified=true`, 0 unverified). `emailNormalized` is NULL on every row, so the unique index built despite the known `din.prajapati+…` collision — that collision would still break any future backfill of the column. Schema is deployed ahead of the code, which is the safe order.
 - [ ] `TRUSTED_PROXY_HOPS` set on Railway staging + production after MV-014-06 confirms the value
 - [x] Manual flow verified — MV-014-01, -03, -04, -05 ✅ (MV-014-06 needs a staging deploy first)
-- [ ] PR merged (PR #_____)
+- [ ] PR merged ([#55](https://github.com/din-prajapati/infographic.io/pull/55) - opened 2026-09-25, awaiting review)
 - [ ] [TASKS.md](./TASKS.md) task list fully checked
 
 ---

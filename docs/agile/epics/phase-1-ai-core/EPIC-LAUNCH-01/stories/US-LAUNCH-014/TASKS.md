@@ -1,6 +1,6 @@
 # PR Task List — US-LAUNCH-014
 
-> **Story:** [STORY.md](./STORY.md) | **Branch:** `feat/launch/us-launch-014-signup-verification-gate` | **Type:** feat
+> **Story:** [STORY.md](./STORY.md) | **Branch:** `feat/launch/us-launch-014-signup-verification-gate` | **Type:** feat | **PR:** [#55](https://github.com/din-prajapati/infographic.io/pull/55)
 
 ```
 feat(launch): sign-up verification gate + abuse controls — US-LAUNCH-014
