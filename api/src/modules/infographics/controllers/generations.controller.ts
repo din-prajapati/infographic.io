@@ -4,6 +4,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { GenerationsService } from '../services/generations.service';
 import { UsageLimitService } from '../services/usage-limit.service';
 import { GenerateFromChatDto, RegenerateDto } from '../dto/generate-from-chat.dto';
+import { EmailVerifiedGuard } from '../../../common/guards/email-verified.guard';
 
 @ApiTags('infographics-generations')
 @Controller('infographics/generations')
@@ -34,8 +35,9 @@ export class GenerationsController {
     return this.usageLimitService.getEditableUsageQuotaForUser(req.user.id);
   }
 
+  // US-LAUNCH-014 AC8 — cost-bearing route: EmailVerifiedGuard runs after the JWT guard.
   @Post()
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'), EmailVerifiedGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Generate infographic from AI chat prompt' })
   async generateFromChat(@Body() dto: GenerateFromChatDto, @Req() req: any) {
@@ -86,8 +88,9 @@ export class GenerationsController {
     }
   }
 
+  // US-LAUNCH-014 AC8 — cost-bearing route: EmailVerifiedGuard runs after the JWT guard.
   @Post(':id/regenerate')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'), EmailVerifiedGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Regenerate infographic with modifications' })
   async regenerate(@Param('id') id: string, @Body() dto: RegenerateDto) {
@@ -112,8 +115,10 @@ export class GenerationsController {
    * AC8 of US-AI-032: verifyAndRepairV4JsonPrompt is NOT called on this path —
    * composeDesignForEdit() goes straight to layerize-text + mapBlocksToFields.
    */
+  // US-LAUNCH-014 AC8 — cost-bearing route (Ideogram layerize-text): EmailVerifiedGuard
+  // runs after the JWT guard.
   @Post(':id/compose')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'), EmailVerifiedGuard)
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Compose an editable design — runs lazy layer extraction on the chosen variation',

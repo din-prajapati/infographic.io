@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD, Reflector } from '@nestjs/core';
 import { SentryModule, SentryGlobalFilter } from '@sentry/nestjs/setup';
-import { ThrottlerModule, ThrottlerGuard, ThrottlerStorage } from '@nestjs/throttler';
+import { ThrottlerModule, ThrottlerStorage } from '@nestjs/throttler';
 import { ScheduleModule } from '@nestjs/schedule';
 import { resolve } from 'path';
 import { AuthModule } from './modules/auth/auth.module';
@@ -17,6 +17,7 @@ import { DatabaseModule } from './database/database.module';
 import { StorageModule } from './modules/storage/storage.module';
 import { HealthModule } from './modules/health/health.module';
 import { EmailModule } from './modules/email/email.module';
+import { ProxyAwareThrottlerGuard } from './common/guards/proxy-aware-throttler.guard';
 import { validate } from './config/env.validation';
 
 
@@ -62,9 +63,12 @@ import { validate } from './config/env.validation';
       useClass: SentryGlobalFilter,
     },
     {
+      // US-LAUNCH-014 AC11 — the proxy-aware subclass replaces the stock ThrottlerGuard so
+      // the tracker is the real client rather than the Express proxy's localhost address.
+      // Without it the per-IP limits in auth.controller.ts would apply to all users at once.
       provide: APP_GUARD,
       useFactory: (options, storage, reflector) => {
-        return new ThrottlerGuard(options, storage, reflector);
+        return new ProxyAwareThrottlerGuard(options, storage, reflector);
       },
       inject: ['THROTTLER:MODULE_OPTIONS', ThrottlerStorage, Reflector],
     },

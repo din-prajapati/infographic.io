@@ -3,6 +3,15 @@ import { QueryClient, QueryFunction, MutationCache } from "@tanstack/react-query
 /** Storage key for reload-then-redirect flow (checked in App.tsx on load). */
 export const REDIRECT_TO_AUTH_KEY = "redirect_to_auth";
 
+/**
+ * US-LAUNCH-014 AC9 — dispatched on `window` when the API refuses a call with the
+ * typed code `EMAIL_NOT_VERIFIED`. `EmailVerificationRequiredDialog` (mounted once
+ * in App.tsx) listens for it. A plain 403 is deliberately NOT enough: the monthly
+ * usage cap also answers 403, and prompting those users to "verify your email"
+ * would be wrong.
+ */
+export const EMAIL_VERIFICATION_REQUIRED_EVENT = "buildographic:email-verification-required";
+
 /** On 401, clear auth and redirect to login. Uses reload + flag so redirect runs on next load (avoids being blocked by React/error flow). */
 export function redirectToLogin(): void {
   if (typeof window === "undefined") return;
@@ -67,6 +76,11 @@ async function throwIfResNotOk(res: Response) {
     if (isUnauthorized) {
       handleUnauthorized();
       throw new ApiError("Unauthorized", res.status);
+    }
+    // Notify the app before throwing — the caller still receives the ApiError
+    // unchanged and keeps whatever error handling it already had (AC9).
+    if (code === "EMAIL_NOT_VERIFIED" && typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent(EMAIL_VERIFICATION_REQUIRED_EVENT));
     }
     throw new ApiError(errorMessage, res.status, code);
   }

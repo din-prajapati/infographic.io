@@ -43,6 +43,14 @@ export class ForgotPasswordDto {
   email: string;
 }
 
+/** US-LAUNCH-014 AC6 — a missing/empty token is rejected by the global ValidationPipe (400). */
+export class VerifyEmailDto {
+  @ApiProperty({ example: 'a1b2c3d4e5f6...', description: 'Raw verification token from the email link' })
+  @IsString()
+  @MinLength(1)
+  token: string;
+}
+
 export class ResetPasswordDto {
   @ApiProperty({ example: 'a1b2c3d4e5f6...', description: 'Raw reset token from the email link' })
   @IsString()
