@@ -17,6 +17,16 @@ model User {
   googleId           String?        @unique
   avatarUrl          String?
   provider           String         @default("local")
+  /// US-LAUNCH-014 — @default(true) is DELIBERATE grandfathering, not an oversight.
+  /// `prisma db push` backfills every existing row with `true`, so no account created
+  /// before this story is ever blocked from generating. Only AuthService.register()
+  /// writes `false` explicitly; Google sign-ups inherit `true`.
+  /// Never flip this default to `false` — it would lock out the entire existing user base.
+  emailVerified      Boolean        @default(true)
+  emailVerifiedAt    DateTime?
+  /// Duplicate-detection key only (lower-cased, +tag stripped, gmail dots removed).
+  /// NEVER use this to log in or to send mail — `email` is the address as typed.
+  emailNormalized    String?        @unique
   organizationId     String?
   organization       Organization?  @relation(fields: [organizationId], references: [id])
   razorpayCustomerId String?        @unique
@@ -32,6 +42,7 @@ model User {
   payments            Payment[]
   invoices            Invoice[]
   passwordResetTokens PasswordResetToken[]
+  emailVerificationTokens EmailVerificationToken[]
 
   @@index([email])
   @@index([organizationId])
@@ -333,6 +344,21 @@ model Invoice {
 }
 
 model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@index([tokenHash])
+}
+
+/// US-LAUNCH-014 — mirrors PasswordResetToken. Only the sha256 hash of the raw token is
+/// stored; the raw token travels solely in the verification email link. 24h expiry.
+model EmailVerificationToken {
   id        String    @id @default(cuid())
   userId    String
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)

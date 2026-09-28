@@ -172,6 +172,10 @@ app.get('/api/health', async (req: Request, res: Response) => {
 app.use('/api/v1', createProxyMiddleware({
   target: 'http://localhost:3001/api/v1',
   changeOrigin: true,
+  // US-LAUNCH-014 AC11 — forward x-forwarded-for/-host/-proto. Without this NestJS sees
+  // every caller as localhost and per-IP rate limits become one shared global bucket.
+  // Consumed by ProxyAwareThrottlerGuard (api/src/common/guards).
+  xfwd: true,
   pathRewrite: { '^/api/v1': '' },
   on: {
     proxyReq: (_proxyReq: any, req: any) => {

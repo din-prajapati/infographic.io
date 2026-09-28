@@ -433,6 +433,12 @@ export interface LegacyUser {
   email: string;
   name?: string;
   organizationId?: string;
+  /**
+   * US-LAUNCH-014 — present on register/login responses. Optional because sessions
+   * stored before this story (and Google sign-ins) have no value cached; `undefined`
+   * must therefore be treated as "verified" by the UI, never as "unverified".
+   */
+  emailVerified?: boolean;
 }
 
 export interface AuthResponse {

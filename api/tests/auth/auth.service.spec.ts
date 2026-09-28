@@ -9,6 +9,9 @@ const { mockPrisma, mockBcrypt, mockJwtService } = vi.hoisted(() => {
   const mockPrisma = {
     user: {
       findUnique: vi.fn(),
+      // US-LAUNCH-014: register() and googleLogin() now look an address up with
+      // findFirst({ OR: [{ email }, { emailNormalized }] }) instead of findUnique({ email }).
+      findFirst: vi.fn(),
       create: vi.fn(),
       count: vi.fn(),
       update: vi.fn(),
@@ -16,6 +19,12 @@ const { mockPrisma, mockBcrypt, mockJwtService } = vi.hoisted(() => {
     organization: {
       findUnique: vi.fn(),
       create: vi.fn(),
+    },
+    // US-LAUNCH-014: register() mints a verification token; these specs construct
+    // AuthService without an EmailService, so the send is swallowed by design.
+    emailVerificationToken: {
+      create: vi.fn(),
+      deleteMany: vi.fn(),
     },
   };
 
@@ -69,6 +78,9 @@ describe('AuthService', () => {
     service = new AuthService(mockJwtService as any);
     mockBcrypt.hash.mockResolvedValue('hashed_password');
     mockBcrypt.compare.mockResolvedValue(true);
+    // Default: no existing account matches the address or its normalized alias.
+    mockPrisma.user.findFirst.mockResolvedValue(null);
+    mockPrisma.emailVerificationToken.create.mockResolvedValue({ id: 'evt_test' });
   });
 
   // -------------------------------------------------------------------------
@@ -101,7 +113,7 @@ describe('AuthService', () => {
     });
 
     it('throws ConflictException (409) when email already exists', async () => {
-      mockPrisma.user.findUnique.mockResolvedValue(TEST_USER);
+      mockPrisma.user.findFirst.mockResolvedValue(TEST_USER);
 
       await expect(
         service.register({
@@ -259,8 +271,9 @@ describe('AuthService', () => {
   // -------------------------------------------------------------------------
   describe('googleLogin()', () => {
     it('creates user and org with planTier=free on first Google login', async () => {
-      // findUnique by googleId → null; findUnique by email → null (new user)
+      // findUnique by googleId → null; findFirst by email/alias → null (new user)
       mockPrisma.user.findUnique.mockResolvedValue(null);
+      mockPrisma.user.findFirst.mockResolvedValue(null);
       mockPrisma.organization.create.mockResolvedValue(TEST_ORG);
       mockPrisma.user.create.mockResolvedValue({ ...TEST_USER, googleId: 'gid_001' });
 
@@ -279,10 +292,9 @@ describe('AuthService', () => {
     });
 
     it('links googleId to existing account when email matches but googleId not yet set', async () => {
-      // First call: findUnique by googleId → null; second call: findUnique by email → existing
-      mockPrisma.user.findUnique
-        .mockResolvedValueOnce(null)       // by googleId
-        .mockResolvedValueOnce(TEST_USER); // by email
+      // findUnique by googleId → null; findFirst by email/alias → existing
+      mockPrisma.user.findUnique.mockResolvedValue(null);
+      mockPrisma.user.findFirst.mockResolvedValue(TEST_USER);
       mockPrisma.user.update.mockResolvedValue({ ...TEST_USER, googleId: 'gid_new' });
 
       const result = await service.googleLogin({

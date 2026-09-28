@@ -13,6 +13,7 @@ import { randomUUID } from 'crypto';
 import { InfographicsService } from '../services/infographics.service';
 import { StorageService } from '../../storage/services/storage.service';
 import { GenerateInfographicDto } from '../dto/generate-infographic.dto';
+import { EmailVerifiedGuard } from '../../../common/guards/email-verified.guard';
 
 const PHOTO_UPLOADS_DIR = path.join(os.tmpdir(), 'ai-infographic-uploads');
 
@@ -91,8 +92,9 @@ export class InfographicsController {
     return { photoId, photoUrl: `/api/v1/infographics/photos/${photoId}` };
   }
 
+  // US-LAUNCH-014 AC8 — cost-bearing route: EmailVerifiedGuard runs after the JWT guard.
   @Post('generate')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'), EmailVerifiedGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Generate infographic from property data' })
   async generate(@Body() dto: GenerateInfographicDto, @Req() req: any) {

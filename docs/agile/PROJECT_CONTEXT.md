@@ -111,7 +111,7 @@ npm run dev starts:
 | Mobile | MOBILE | React Native / PWA mobile app | 01 | 01 | 001 |
 | Listing Kits | KIT | Multi-format kits, lifecycle, recurring content, compliance | 02 | 05 | 007 |
 | Generation Quality | GEN | Image-generation pipeline quality, prompt engineering, cost control | 02 | 03 | 003 |
-| Launch Readiness | LAUNCH | Go-live ops: live payments, transactional email, legal pages, beta gating, metering policy, env/secrets management | 02 | 07 | 016 |
+| Launch Readiness | LAUNCH | Go-live ops: live payments, transactional email, legal pages, beta gating, metering policy, env/secrets management, signup onboarding | 02 | 09 | 018 |
 | Deployment | DEPLOY | Deployment velocity & safety: CI gate, preview envs, feature flags, migrations, progressive delivery | 02 | 01 | 008 |
 
 > **DEPLOY row added 2026-08-15** — the domain has been in use since EPIC-DEPLOY-01 (2026-07-13, 7 stories) but was never registered in this table or `PROJECT_CONTEXT.yaml`. Real gap, not a routine reconciliation.

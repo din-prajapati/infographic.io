@@ -1,7 +1,7 @@
 # EPIC-LAUNCH-01 — Go-Live & Revenue Readiness
 
 > **Phase:** Phase 1 — Revenue Strategy (v1.1)
-> **Status:** 🟡 In Progress — 13/15 stories Done, 1 In Progress (US-LAUNCH-005), 1 Not Started (US-LAUNCH-014). US-LAUNCH-015 (editable-design monetization) added 2026-08-13, closed 2026-08-15, live-verified. Only US-LAUNCH-005 AC5/6 (real ₹ transaction) stands between this epic and fully Done.
+> **Status:** 🟡 In Progress — 13/17 stories Done, 1 In Progress (US-LAUNCH-005), 3 Not Started — all backlog/non-blocking (US-LAUNCH-014; US-LAUNCH-016/017 signup onboarding, added 2026-09-14). US-LAUNCH-015 (editable-design monetization) added 2026-08-13, closed 2026-08-15, live-verified. Only US-LAUNCH-005 AC5/6 (real ₹ transaction) stands between this epic and fully Done.
 > **Depends on:** EPIC-INFRA-01 (Phase 0 production deploy) for all stories · EPIC-AI-06 gates the **revenue-on switch** (M-LAUNCH-02 DoD), not M-LAUNCH-02 prep work
 > **Linear Project:** LIN-EPIC-XXX
 > **Target date:** 2026-08-15
@@ -47,8 +47,10 @@
 | [US-LAUNCH-011](stories/US-LAUNCH-011/STORY.md) | Rebrand user-facing surfaces to Buildographic | M-LAUNCH-01 | S | ✅ Done | [#16](https://github.com/din-prajapati/infographic.io/pull/16) |
 | [US-LAUNCH-012](stories/US-LAUNCH-012/STORY.md) | Payment-failed (dunning) email notification | M-LAUNCH-02 | S | ✅ Done | `fa1d345` |
 | [US-LAUNCH-013](stories/US-LAUNCH-013/STORY.md) | Subscription renewal reminder email (3-day notice) | M-LAUNCH-02 | S | ✅ Done | `fa1d345`+`5c52dc0` |
-| [US-LAUNCH-014](stories/US-LAUNCH-014/STORY.md) | Email verification for new local accounts (backlog, non-blocking) | M-LAUNCH-01 | M | 🔲 | — |
+| [US-LAUNCH-014](stories/US-LAUNCH-014/STORY.md) | Sign-up verification gate + abuse controls (re-scoped 2026-09-14 from soft verification; re-rated should-have 2026-09-21) | M-LAUNCH-01 | L | 🟡 In Progress | [#55](https://github.com/din-prajapati/infographic.io/pull/55) |
 | [US-LAUNCH-015](stories/US-LAUNCH-015/STORY.md) | Editable-design monetization (FREE gate + extra-compose credits) | M-LAUNCH-02 | M | ✅ Done 2026-08-15 — live-verified `[201, 402]` | — |
+| [US-LAUNCH-016](stories/US-LAUNCH-016/STORY.md) | Post-signup onboarding — Screen 1 required profile (backlog, non-blocking) | M-LAUNCH-01 | M | 🔲 | — |
+| [US-LAUNCH-017](stories/US-LAUNCH-017/STORY.md) | Onboarding brand kit — Screen 2, persisted + fed to generation (backlog, depends on 016) | M-LAUNCH-01 | M | 🔲 | — |
 
 ---
 
@@ -63,6 +65,7 @@
 | F-LAUNCH-05 | Metering Policy | US-LAUNCH-008 |
 | F-LAUNCH-06 | Environment & Secrets Management | US-LAUNCH-009, US-LAUNCH-010 |
 | F-LAUNCH-07 | Brand Identity (Buildographic) | US-LAUNCH-011 |
+| F-LAUNCH-08 | Signup Onboarding | US-LAUNCH-016, US-LAUNCH-017 |
 
 ---
 
@@ -108,6 +111,18 @@ Key files relevant to this epic:
 ---
 
 ## Implementation Update (log)
+
+### 2026-09-18 — US-LAUNCH-014 follow-up: T7 internal test-account allowlist
+- **Files touched:** `api/src/modules/auth/utils/email-policy.ts`, `api/src/modules/auth/services/auth.service.ts`, `api/src/common/guards/proxy-aware-throttler.guard.ts`, `.env.example`, `docs/agile/epics/phase-1-ai-core/EPIC-LAUNCH-01/ENV.yaml`, `scripts/seed-test-users.mjs` (new), `package.json`, `api/tests/auth/{email-policy,email-verification}.spec.ts`, `api/tests/common/proxy-aware-throttler.spec.ts`
+- **ACs covered:** AC14, AC15, AC16, AC18 (AC17 partially — docs + script written, but the seed write and the full Playwright run are deferred to MV-014-13 / MV-014-10, see below)
+- **Commits:** 1 on branch `feat/launch/us-launch-014-signup-verification-gate`
+- **Notes:** **Why T7 exists:** AC8's gate and AC12's limits broke this repo's own E2E suite — 12 specs register `e2e-*@test.local` and then call a gated route (403), and one full run exceeds 5 sign-ups/hour from a single CI IP (429); `npx playwright test` defaults to **staging**, so this hits a deployed environment. `isInternalTestEmail()` reads `INTERNAL_TEST_EMAIL_DOMAINS` at **call** time (not module load) and matches the domain by **exact equality** — deliberately the opposite of `isDisposableEmail`'s parent-domain walk, because widening a block list is safe while widening an allow list hands out verified accounts (`evil-test.local` / `sub.test.local` must not match `test.local`). `register()` changes exactly three things for a match — skip the disposable check, create with `emailVerified: true` + `emailVerifiedAt`, skip token + send — and logs once at `warn`; the AC4 duplicate check, credits, plan limits, the guard and the global 100/min throttle are untouched. `shouldSkip()` consults the body email alone on `POST` to the three email-sending routes (paths compared by equality against both the prefixed and unprefixed forms, so `/anything/auth/register` gains nothing); no header, query parameter or body flag can select it. **Deviation:** `npm run seed:test-users` runs `npx tsx scripts/seed-test-users.mjs` rather than plain `node`, so the `.mjs` entry point can import the TypeScript `normalizeEmail` instead of re-implementing the duplicate key; the script writes through Prisma, bcrypt cost 10 (same as `register()`), and never reads `INTERNAL_TEST_EMAIL_DOMAINS` — production seeds without any bypass. **Outstanding:** the script reaches the DB but currently fails `P2022 User.emailNormalized does not exist` because T1's `prisma db push` has not been applied to the dev database — re-run MV-014-13 and MV-014-10 after the push, and confirm MV-014-14 (`INTERNAL_TEST_EMAIL_DOMAINS` absent in Railway production).
+
+### 2026-09-18 — US-LAUNCH-014 implementation complete (pre-PR)
+- **Files touched:** `api/prisma/schema.prisma`, `api/src/modules/auth/utils/email-policy.ts`, `api/src/modules/auth/services/auth.service.ts`, `api/src/modules/auth/controllers/auth.controller.ts`, `api/src/modules/auth/dto/auth.dto.ts`, `api/src/common/guards/email-verified.guard.ts`, `api/src/common/guards/proxy-aware-throttler.guard.ts`, `api/src/common/filters/http-exception.filter.ts`, `api/src/app.module.ts`, `api/src/modules/infographics/controllers/{infographics,generations,extractions}.controller.ts`, `server/index.ts`, `.env.example`, `package.json`, `shared/schema.ts`, `client/src/lib/queryClient.ts`, `client/src/components/auth/EmailVerificationRequiredDialog.tsx`, `client/src/components/ui/EmailVerificationBanner.tsx`, `client/src/pages/auth/VerifyEmailPage.tsx`, `client/src/App.tsx`, `api/tests/auth/{email-policy,email-verification}.spec.ts`, `api/tests/common/{email-verified.guard,proxy-aware-throttler,http-exception-filter}.spec.ts`
+- **ACs covered:** AC1–AC13 (AC9/AC10 implemented this pass; the 375px/1440px no-overflow check is MV-014-09 and stays manual, as do MV-014-01..-08)
+- **Commits:** 8 on branch `feat/launch/us-launch-014-signup-verification-gate` — f189005 (T1 schema), 91cd852 (T2 email-policy), ebf0953 (T3 auth service/controller/dto), e55af8f (T4 EmailVerifiedGuard + 5 gated routes), d7069c9 (T5 proxy-aware throttler + @Throttle), 11fb6ae (AC13 tick), b8ed6ac (T5b exception filter), fbf997f (T6 client)
+- **Notes:** **T5b was added mid-story (product-owner approved).** `AllExceptionsFilter` rebuilt every error as `{ statusCode, message }` and silently dropped a thrower-supplied `code`, so AC9's `code === 'EMAIL_NOT_VERIFIED'` match could never have fired — and `BETA_MODE_ACTIVE` (US-LAUNCH-004) had the same latent bug. The fix is additive: `code` is emitted only when the thrower set a string one; non-HttpException errors are untouched. Keying the dialog off a bare 403 was rejected deliberately — `usage-limit.service.ts` also answers 403 for the monthly cap. Client side: `queryClient` dispatches `buildographic:email-verification-required` before re-throwing the unchanged `ApiError`, so each call site keeps its own toast; the dialog is mounted once inside `AuthProvider` (single `open` boolean, so repeat events re-open rather than stack). `LegacyUser.emailVerified` is optional and the banner treats `undefined` as verified, so grandfathered and Google sessions are never nagged. `/auth/verify-email` is registered above `/auth` because Wouter's `Switch` renders the first match. **Outstanding:** MV-014-06 — confirm `TRUSTED_PROXY_HOPS` on Railway staging (likely `2`) before the register limit is trusted in production; and `npx prisma db push` has not been applied to staging/production yet (run it, then confirm existing rows read `emailVerified = true`).
 
 ### 2026-07-27 — US-LAUNCH-007 implementation complete (pre-PR)
 - **Files touched:** `client/src/pages/PricingPage.tsx`, `api/src/modules/payments/services/payments.service.ts`, `api/tests/payments/plan-availability.spec.ts`, `docs/agile/PROJECT_CONTEXT.md`

@@ -74,7 +74,7 @@ counters:
   MOBILE: { epic: 2, feature: 1, story: 1 }
   KIT: { epic: 2, feature: 5, story: 7 }
   GEN: { epic: 2, feature: 3, story: 3 }
-  LAUNCH: { epic: 2, feature: 8, story: 16 } # reconciled 2026-08-13: US-LAUNCH-015 added (editable-design monetization, M-LAUNCH-02) — counter was stale at 12 while 012/013/014/015 already existed. Previously reconciled 2026-07-17: F-LAUNCH-07 + US-LAUNCH-011 created; counters were stale (009/010 + F-06 already existed)
+  LAUNCH: { epic: 2, feature: 9, story: 18 } # 2026-09-14: F-LAUNCH-08 + US-LAUNCH-016/017 (signup onboarding, split from one L request). reconciled 2026-08-13: US-LAUNCH-015 added (editable-design monetization, M-LAUNCH-02) — counter was stale at 12 while 012/013/014/015 already existed. Previously reconciled 2026-07-17: F-LAUNCH-07 + US-LAUNCH-011 created; counters were stale (009/010 + F-06 already existed)
   DEPLOY: { epic: 2, feature: 1, story: 8 } # added 2026-08-15: DEPLOY domain existed in docs/agile/ (EPIC-DEPLOY-01, US-DEPLOY-001-007, added 2026-07-13) but was never registered here — real gap, not a reconciliation. story:8 = next after US-DEPLOY-007 (closed 2026-08-15).
 
 phases:
