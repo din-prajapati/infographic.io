@@ -356,3 +356,70 @@ describe('ProxyAwareThrottlerGuard.shouldSkip — authenticated test session (AC
     await expect(shouldSkipOf(guard, ctx)).resolves.toBe(false);
   });
 });
+
+/**
+ * Cloudflare-fronted deployments — measured 2026-09-29.
+ *
+ * Production's `x-forwarded-for` begins at a Cloudflare edge address (172.71.x.x) that
+ * rotates per request, so the real client is absent from that header entirely and every
+ * request opened its own throttle bucket: 140 parallel requests, zero 429s. `x-real-ip`
+ * and `cf-connecting-ip` carry the true client in both environments, so they win.
+ */
+describe('ProxyAwareThrottlerGuard.getTracker — edge-set client headers (BL-35)', () => {
+  const originalHops = process.env.TRUSTED_PROXY_HOPS;
+  let guard: ProxyAwareThrottlerGuard;
+
+  beforeEach(() => {
+    guard = makeGuard();
+    process.env.TRUSTED_PROXY_HOPS = '3';
+  });
+  afterEach(() => {
+    if (originalHops === undefined) delete process.env.TRUSTED_PROXY_HOPS;
+    else process.env.TRUSTED_PROXY_HOPS = originalHops;
+  });
+
+  it('prefers cf-connecting-ip over a Cloudflare-prefixed XFF chain', async () => {
+    await expect(
+      trackerOf(guard, { ip: '::1', headers: {
+        'cf-connecting-ip': '103.254.55.66',
+        'x-forwarded-for': '172.71.198.126, 79.127.178.82,100.64.0.2',
+      } }),
+    ).resolves.toBe('103.254.55.66');
+  });
+
+  it('falls back to x-real-ip when cf-connecting-ip is absent', async () => {
+    await expect(
+      trackerOf(guard, { ip: '::1', headers: {
+        'x-real-ip': '103.254.55.66',
+        'x-forwarded-for': '172.71.198.126, 79.127.178.82,100.64.0.2',
+      } }),
+    ).resolves.toBe('103.254.55.66');
+  });
+
+  it('is stable across requests where the Cloudflare edge address rotates', async () => {
+    const a = await trackerOf(guard, { ip: '::1', headers: {
+      'x-real-ip': '103.254.55.66',
+      'x-forwarded-for': '172.71.198.126, 79.127.178.82,100.64.0.2',
+    } });
+    const b = await trackerOf(guard, { ip: '::1', headers: {
+      'x-real-ip': '103.254.55.66',
+      'x-forwarded-for': '172.71.44.9, 79.127.178.90,100.64.0.7',
+    } });
+    expect(a).toBe(b);
+  });
+
+  it('still walks the XFF chain when no edge header is present (staging shape)', async () => {
+    await expect(
+      trackerOf(guard, { ip: '::1', headers: { 'x-forwarded-for': '103.254.55.66, 152.233.15.121,100.64.0.2' } }),
+    ).resolves.toBe('103.254.55.66');
+  });
+
+  it('ignores an empty edge header rather than keying on blank', async () => {
+    await expect(
+      trackerOf(guard, { ip: '::1', headers: {
+        'x-real-ip': '   ',
+        'x-forwarded-for': '103.254.55.66, 152.233.15.121,100.64.0.2',
+      } }),
+    ).resolves.toBe('103.254.55.66');
+  });
+});
