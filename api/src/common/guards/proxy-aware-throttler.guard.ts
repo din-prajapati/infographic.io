@@ -74,6 +74,24 @@ export class ProxyAwareThrottlerGuard extends ThrottlerGuard {
   }
 
   private resolveTracker(req: Record<string, any>): string {
+    // Measured 2026-09-29 on both deployed environments. Production sits behind
+    // Cloudflare, so `x-forwarded-for` there begins at a **Cloudflare edge address**
+    // (172.71.x.x) — the real client never appears in that header at all, and those
+    // edge IPs rotate per request, which silently gave every caller its own bucket
+    // and made rate limiting inert. No `TRUSTED_PROXY_HOPS` value can fix that:
+    // walking further right only reaches Railway's own infrastructure.
+    //
+    // These headers carry the true client in BOTH environments (verified: staging and
+    // production both reported 103.254.55.66 while their XFF chains differed), so they
+    // are preferred over the chain walk. They are set by the edge and overwrite anything
+    // a caller sends — trustworthy exactly as long as traffic reaches the app through
+    // that edge, which is the same assumption `x-forwarded-for` already relies on.
+    for (const name of ['cf-connecting-ip', 'x-real-ip']) {
+      const value = req?.headers?.[name];
+      const ip = Array.isArray(value) ? value[0] : value;
+      if (typeof ip === 'string' && ip.trim().length > 0) return ip.trim();
+    }
+
     const header = req?.headers?.['x-forwarded-for'];
     const raw = Array.isArray(header) ? header.join(',') : header;
 
