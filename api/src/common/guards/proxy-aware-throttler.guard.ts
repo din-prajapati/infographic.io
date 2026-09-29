@@ -45,7 +45,35 @@ const EXEMPTIBLE_EMAIL_PATHS: ReadonlySet<string> = new Set(
  */
 @Injectable()
 export class ProxyAwareThrottlerGuard extends ThrottlerGuard {
+  private readonly logger = new Logger(ProxyAwareThrottlerGuard.name);
+  /** Static so the cap survives per-request guard instances. */
+  private static debugCount = 0;
+
   protected async getTracker(req: Record<string, any>): Promise<string> {
+    const tracker = this.resolveTracker(req);
+
+    // Set THROTTLE_DEBUG=1 on a single environment to print what the limiter actually
+    // keys on. Rate limiting was observed inert on Railway while working locally
+    // (150 parallel requests, zero 429s, numReplicas=1), and the proxy chain reaching
+    // Nest is the only thing that differs between the two. Logs the first few requests
+    // only, so it can never become a per-request firehose in a live environment.
+    if (process.env.THROTTLE_DEBUG === '1' && ProxyAwareThrottlerGuard.debugCount < 5) {
+      ProxyAwareThrottlerGuard.debugCount += 1;
+      this.logger.warn(
+        `[throttle-debug ${ProxyAwareThrottlerGuard.debugCount}/5] ` +
+          `xff=${JSON.stringify(req?.headers?.['x-forwarded-for'])} ` +
+          `xri=${JSON.stringify(req?.headers?.['x-real-ip'])} ` +
+          `req.ip=${JSON.stringify(req?.ip)} ` +
+          `ips=${JSON.stringify(req?.ips)} ` +
+          `hops=${this.trustedProxyHops()} ` +
+          `=> tracker=${JSON.stringify(tracker)} (${typeof tracker})`,
+      );
+    }
+
+    return tracker;
+  }
+
+  private resolveTracker(req: Record<string, any>): string {
     const header = req?.headers?.['x-forwarded-for'];
     const raw = Array.isArray(header) ? header.join(',') : header;
 
