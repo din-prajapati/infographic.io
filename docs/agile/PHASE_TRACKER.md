@@ -12,14 +12,14 @@
 | Phase | Release | Business Outcome | Status | Complete | Target |
 |-------|---------|-----------------|--------|----------|--------|
 | [Phase 0](#phase-0--mvp-launch) | v1.0 | Working product in production | 🟡 In Progress | **98%** | Week 1 of launch |
-| [Phase 1](#phase-1--release-11-revenue-strategy) | v1.1 | **Revenue strategy** — go-live/revenue readiness (EPIC-LAUNCH-01), real-photo hybrid, listing kits | 🟡 In Progress | **61%** (33/54 stories) | Beta: live · Revenue: one story from the gate (US-LAUNCH-005 AC5/6) |
+| [Phase 1](#phase-1--release-11-revenue-strategy) | v1.1 | **Revenue strategy** — go-live/revenue readiness (EPIC-LAUNCH-01), real-photo hybrid, listing kits | 🟡 In Progress | **63%** (34/54 stories) | Beta: live again on `7044a44` after a 15-day outage ([[BL-34]]) · Revenue: one story from the gate (US-LAUNCH-005 AC5/6) |
 | [Phase 2](#phase-2--release-12-polish--self-serve) | v1.2 | Conversational polish, refine loop, usage/billing self-serve | 🔲 Not Started | 0% | After Phase 1 gate |
 | [Phase 3](#phase-3--release-13-speed--batch) | v1.3 | Fast generation, batch uploads, volume pricing | 🔲 Not Started | 0% | Month 3 |
 | [Phase 4](#phase-4--release-20-b2b-api) | v2.0 | Developers can build on InfographicAI via API | 🔲 Not Started | 0% | Month 3–4 |
 | [Phase 5](#phase-5--release-21-analytics--optimization) | v2.1 | Admin visibility, AI cost optimization, performance | 🔲 Not Started | 0% | Month 5–6 |
 | [Phase 6](#phase-6--release-22-production-hardening) | v2.2 | Enterprise-grade reliability, test coverage, mobile | 🔲 Not Started | 0% | Month 7+ |
 
-**Current Focus (2026-08-15):** M-LAUNCH-01 (public beta gate) is fully Done. EPIC-AI-06 is content-complete (M-AI-18 closed) and M-LAUNCH-02 (revenue-on gate) is 6/7 Done — **the Revenue-on gate is now one story away**: US-LAUNCH-005 AC5/6, a real ₹ transaction, intentionally not yet run. Full path: [ROADMAP.md](ROADMAP.md)
+**Current Focus (2026-09-29):** US-LAUNCH-014 (sign-up verification gate + abuse controls) closed and deployed to both environments — it also uncovered that **rate limiting was inert in deployment** (fixed in `7044a44`) and that **both environments had been down for 15 days** after a Railway trial lapse ([[BL-34]]). M-LAUNCH-01 is **not** fully Done as the 2026-08-15 note claimed: US-LAUNCH-016/017 (signup onboarding) are open backlog, and two Acceptance items need re-verification against the restored deployment. M-LAUNCH-02 remains 6/7 — **the Revenue-on gate is still one story away**: US-LAUNCH-005 AC5/6, a real ₹ transaction. Full path: [ROADMAP.md](ROADMAP.md)
 
 **Every task in this whole tree that only a human can do — dashboard clicks, DNS, legal review, real-money go-aheads — is tracked in one place: [HUMAN_TASKS.md](HUMAN_TASKS.md).** (2026-08-22: the "Phase 0 3 HUMAN deploy tasks" staleness flagged in the note this replaces has been checked directly against `docs/testing/PHASE_0_HUMAN_QA_CHECKLIST.md` — Tasks 1 and 2 are in fact ✅ signed off (2026-06-20, 2026-07-11); Task 3 is mostly done, with 2 rows genuinely still open. See that file for the full breakdown.)
 
