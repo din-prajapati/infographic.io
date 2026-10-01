@@ -73,6 +73,26 @@ data exists** (can drop columns without a migration trail). Strategy §6/§10 pr
 - `npx vitest run --config vitest.config.ts` in `api/` → **45 files, 628/628 passed**
 - No application code changed in this story — config (`railway.json`, `package.json`), migrations and docs only.
 
+### Post-deploy verification — PR #56 (2026-10-01)
+
+Squash-merged as `0efcb79` at 14:20:20Z. Both environments redeploy from `main`, so both swapped:
+production at **t+173 s**, staging at **t+194 s** (detected by `commitSha` advancing *and* `uptime` resetting —
+not by elapsed time, per the handoff's warning about measuring a container that hasn't swapped).
+
+| Check | Production | Staging |
+|---|---|---|
+| `commitSha` | `0efcb79` | `0efcb79` |
+| `preDeployCommand` actually ran | ✅ `> prisma migrate deploy --schema=api/prisma/schema.prisma` | ✅ same |
+| Migration outcome | `1 migration found` → `No pending migrations to apply.` | same |
+| `prisma db push` in boot log | **absent** (was the whole point) | **absent** |
+| `/api/v1/health` | `ok`, db connected | `ok`, db connected |
+| `/api/v1/pricing` · `/` | 200 · 200 | 200 · 200 |
+| Data | 8 users | 129 users, `0_init` intact |
+
+The one genuinely unknown was whether Railway honours `preDeployCommand` from `railway.json` at all — a silent
+no-op would have left migrations unrun with nothing complaining until the next schema change. It was checked
+against Railway's config schema beforehand and confirmed in the boot logs afterwards.
+
 ### Carried forward (not blockers for this story)
 1. **TC-03's app-boot half is unproven.** The old-code guarantee was shown at the SQL level, not by booting an
    older build against the migrated DB. A real rehearsal belongs with the next actual schema change.

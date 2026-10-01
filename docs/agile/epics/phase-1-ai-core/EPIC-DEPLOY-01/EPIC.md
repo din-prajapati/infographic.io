@@ -61,7 +61,7 @@ it to a % of users → a bad release auto-rolls-back on health check.
 | [US-DEPLOY-003](stories/US-DEPLOY-003/STORY.md) | Feature-flag mechanism (env-var first, table later) | S | 0.5 day | 🔲 | US-LAUNCH-004 (first consumer) |
 | [US-DEPLOY-002](stories/US-DEPLOY-002/STORY.md) | Preview environment per PR (Railway PR env + Neon branch) | L | 1.5 days | 🔲 | US-LAUNCH-010 (`APP_ENV`) |
 | [US-DEPLOY-006](stories/US-DEPLOY-006/STORY.md) | Approval governance — RACI, required checks, runbook (solo → team) | S | 0.5 day | 🔲 | US-DEPLOY-001/002/003 |
-| [US-DEPLOY-004](stories/US-DEPLOY-004/STORY.md) | Production migration workflow (`migrate deploy` + expand/contract) | M | 1 day | 🔲 | prod has real data |
+| [US-DEPLOY-004](stories/US-DEPLOY-004/STORY.md) | Production migration workflow (`migrate deploy` + expand/contract) | M | 1 day | ✅ | ~~prod has real data~~ — done 2026-10-01, PR #56, driven by BL-33 (rollback), not data volume |
 | [US-DEPLOY-005](stories/US-DEPLOY-005/STORY.md) | Progressive delivery + auto-rollback (canary, health-gated) | M | 1 day | 🔲 | EPIC-INFRA-01 Task 3, US-DEPLOY-004 (safe rollout needs backward-compatible migrations first) |
 | [US-DEPLOY-007](stories/US-DEPLOY-007/STORY.md) | Client-side unit test infrastructure (not originally planned — became a hard blocker for US-AI-032 AC5) | M | ~3 h | ✅ Done 2026-08-15 | US-AI-032 AC5 (was blocked on this) |
 
@@ -105,7 +105,7 @@ it to a % of users → a bad release auto-rolls-back on health check.
 - [ ] Preview URL auto-posts on every PR with prod-shaped data
 - [ ] CI gate is mandatory (no `continue-on-error`), runs check + unit + E2E + smoke:boot, <10 min
 - [ ] At least one feature shipped dark and released via a flag flip
-- [ ] `db:deploy` uses `prisma migrate deploy` with a committed baseline migration
+- [x] `db:deploy` uses `prisma migrate deploy` with a committed baseline migration — US-DEPLOY-004, 2026-10-01. Verified live on both environments after PR #56: `preDeployCommand` ran `prisma migrate deploy` → `No pending migrations to apply.`, and no `prisma db push` appears in either boot log.
 - [ ] A bad canary auto-rolled-back at least once in a drill
 - [ ] Approval governance documented (RACI, Definition of Merge vs. Release) and branch protection enforces the CI gate on GitHub itself, not just by convention
 - [ ] AGILE_INDEX.md epic row updated to ✅ Done
