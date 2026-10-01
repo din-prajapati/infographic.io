@@ -5,7 +5,8 @@
     "buildCommand": "npm install --include=dev && npm run prisma:generate && npm run build"
   },
   "deploy": {
-    "startCommand": "npm run db:deploy && npm start",
+    "preDeployCommand": "npm run db:deploy",
+    "startCommand": "npm start",
     "healthcheckPath": "/api/health",
     "healthcheckTimeout": 300,
     "restartPolicyType": "ON_FAILURE",
