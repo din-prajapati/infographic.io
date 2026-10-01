@@ -60,13 +60,13 @@ So the driver is **rollback capability**, not only data safety. AC1–AC5 are un
 |---|---|:--:|:--:|:--:|
 | T1 | Verify no drift between staging DB and `schema.prisma` | Env | 10 m | ✅ Done — `(EMPTY — no drift)` on `ep-billowing-cell`, 2026-10-01 |
 | T2 | Generate + commit baseline `0_init/migration.sql` and `migration_lock.toml` | AC1 | 20 m | ✅ Done — 552 lines, 16 tables |
-| T3 | Repoint `db:deploy` → `migrate deploy`; move it out of the container start command into `preDeployCommand` | AC2 | 30 m | 🔲 |
-| T4 | **OPERATOR:** `migrate resolve --applied 0_init` on staging + production | AC1 | 10 m | ⚠️ **Partial** — production ✅, staging ❌ (see below) |
-| T5 | Verify on staging: clean apply + idempotent re-deploy | AC4 / TC-01, TC-02 | 45 m | ⏸ Blocked on T4-staging |
-| T6 | Expand→backfill→contract documented as required pattern | AC3 | 30 m | 🔲 |
-| T7 | Rollback runbook: failed migration, Neon branch restore, revert | AC5 / TC-04 | 45 m | 🔲 |
-| T8 | Expand→contract dry-run on staging (add col → deploy → drop col → deploy) | TC-03 | 60 m | 🔲 Blocked on T5 |
-| T9 | Gate 1 (`tsc --noEmit` + unit tests), closeout, PR | DoD | 30 m | 🔲 |
+| T3 | Repoint `db:deploy` → `migrate deploy`; move it out of the container start command into `preDeployCommand` | AC2 | 30 m | ✅ Done |
+| T4 | **OPERATOR:** `migrate resolve --applied 0_init` on staging + production | AC1 | 10 m | ✅ Done — both envs, verified in `_prisma_migrations` |
+| T5 | Verify on staging: clean apply + idempotent re-deploy | AC4 / TC-01, TC-02 | 45 m | ✅ Done — TC-01 ✅, TC-02 ✅ |
+| T6 | Expand→backfill→contract documented as required pattern | AC3 | 30 m | ✅ Done |
+| T7 | Rollback runbook: failed migration, Neon branch restore, revert | AC5 / TC-04 | 45 m | ⚠️ Done — written; §C restore never rehearsed |
+| T8 | Expand→contract dry-run on staging (add col → deploy → drop col → deploy) | TC-03 | 60 m | ⚠️ Done — pass on 2nd harness; app-boot half unproven |
+| T9 | Gate 1 (`tsc --noEmit` + unit tests), closeout, PR | DoD | 30 m | ✅ Gate 1 green (tsc 0, 628/628) |
 
 ---
 
@@ -76,26 +76,66 @@ Verified by querying `_prisma_migrations` directly, not by trusting the command'
 
 | Env | Neon branch | `_prisma_migrations` | Users | State |
 |---|---|---|---|---|
-| **production** | `ep-aged-king` / `neondb` | `0_init`, `steps=0`, finished 17:01:52 IST, not rolled back | 8 | ✅ Baselined |
-| **staging** | `ep-billowing-cell` / `neondb` | **table does not exist** | 129 | ❌ **Not baselined** |
+| **production** | `ep-aged-king` / `neondb` | `0_init`, `steps=0`, 11:31:52Z | 8 | ✅ Baselined |
+| **staging** | `ep-billowing-cell` / `neondb` | `0_init`, `steps=0`, 13:39:03Z | 129 | ✅ Baselined |
 
-The staging `railway run ... db:baseline` did not take effect — it was reported run, but the table is absent, so
-it never reached the DB. Confirmed that Railway's staging `DATABASE_URL` resolves to the *same* host as local
-`.env` (`ep-billowing-cell` / `neondb`), so this is not a wrong-target problem — the command itself failed.
+`steps=0` is the signature of `resolve --applied` — recorded without executing SQL. A DB where `migrate deploy`
+actually ran the migration shows `steps=1` (the T5 scratch DB did). Useful tell when auditing an environment.
 
-**Re-run needed before T5/T8** (agent cannot: blocked as a shared-resource write):
+### Why staging missed on the first pass — and the lesson
 
-```bash
-railway run --environment staging --service Buildographic -- npm run db:baseline
-```
+The command run against staging was **`npx prisma migrate status`** (read-only), not `npm run db:baseline`.
+Nothing failed; the baseline was simply never issued there. Its output even said so — *"0_init has not yet been
+applied"* — matching the DB exactly.
 
-Watch for a non-zero exit. Likely original cause: run from a branch without `api/prisma/migrations/0_init`
-(it exists only on `feat/deploy/us-deploy-004-migrate-deploy`, not on `main`), which fails with
-`P3017 migration not found`.
+Root cause is **presentation, not operation**: the operator was handed four near-identical `railway run …` lines
+across two code blocks (two baselines, then two verifications) and the wrong line was picked. Two agent
+hypotheses — *run from `main`* and *production run twice* — were **both wrong**, and would have stayed wrong
+without the operator pasting their terminal.
 
-> **Note for AC4:** staging is the *harder* of the two to verify precisely because it carries 129 rows and is
-> shared with local dev. Production being baselined first is backwards from the intended order but harmless —
-> `resolve --applied` executes no DDL.
+> **Lesson:** hand over **one** command, wait for its output, then the next. And confirm effect at the data layer
+> (`_prisma_migrations`), never from a command's exit status — here the exit status was `0` for a command that
+> changed nothing.
+
+## T5 / T8 verification — how AC4 and TC-03 were actually proven
+
+**Where it ran.** Not on staging's `neondb` — that carries 129 rows shared with local dev. Instead a throwaway
+database (`migtest_tc01`) was created on the same Neon endpoint, used, and dropped. Staging `neondb` was
+re-verified intact afterwards (129 users, `0_init` present). A fresh Neon *branch* would have been the textbook
+target, but no Neon API credential was available in session, the Docker daemon was not running, and `psql` is not
+installed — a separate database on the same endpoint gives equivalent isolation.
+
+**T5 / TC-01** — empty DB (0 public tables) → `migrate deploy` → `Applying migration 0_init` → **16 tables,
+4 enum types**, `_prisma_migrations` 1 row with `steps=1` and `finished_at` set, exit 0.
+**T5 / TC-02** — immediate re-run → `No pending migrations to apply.`, exit 0.
+
+**T8 / TC-03** — expand → contract, each step asserting *exactly one* migration applied, in order:
+
+| Step | Visible migrations | Applied | Column present | History |
+|---|---|---|---|---|
+| 0 | `0_init` | `0_init` | no | `0_init` |
+| 1 expand | `+0001_expand_probe` | `0001_expand_probe` | **yes** | `0_init, 0001_expand_probe` |
+| 1b re-run | same | *(none)* | yes | unchanged |
+| 2 contract | `+0002_contract_probe` | `0002_contract_probe` | **no** | all three |
+| 2b re-run | same | *(none)* | no | unchanged |
+
+Between steps 1 and 1b, an insert+select using the **pre-expand column list** succeeded while the DB was one step
+ahead — the rolling-deploy guarantee, demonstrated at the SQL layer.
+
+> **Finding — the first TC-03 harness was invalid and its PASS was meaningless.** It "parked" unused migrations by
+> renaming them with a `_` prefix, but `_0001_expand_probe` is still a valid Prisma migration name, so Prisma
+> applied them anyway: the probe column was added and dropped twice, and the assertions passed only because
+> lexicographic ordering happened to line up (`'0'`=48 sorts before `'_'`=95). Caught by an unexplained row count
+> (4 applied migrations where 2 were expected) — **not** by any assertion. Re-run with parked dirs moved outside
+> `prisma/migrations` and a fresh database; the table above is from the corrected run.
+>
+> This is the handoff's lesson #1 recurring: a green result from an unverified harness is worth nothing. The row
+> count was the only thing that gave it away.
+
+**Two gaps left open deliberately** (recorded in STORY.md "Carried forward"):
+1. TC-03's *app-boot* half — an older build was never actually booted against the migrated DB. Proven at SQL
+   level only. Belongs with the next real schema change.
+2. TC-04 §C — Neon point-in-time restore has never been executed; retention window unconfirmed.
 
 ## Risk register
 
