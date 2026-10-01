@@ -1,5 +1,19 @@
 # Migration Instructions for Conversations and Extractions
 
+> ## ⚠️ Superseded for anything deployed — historical reference only
+>
+> This page documents a one-off 2026-01 schema change and recommends `prisma db push`. **That is no longer how
+> schema changes reach staging or production.** Since US-DEPLOY-004 (2026-10-01):
+>
+> - Deployments advance the schema with **`prisma migrate deploy`**, run as a pre-deploy release step
+>   (`railway.json` → `preDeployCommand`), never at container start.
+> - Every schema change follows **expand → backfill → contract** — see
+>   [DEPLOYMENT_STRATEGY.md §6](../../docs/DEPLOYMENT_STRATEGY.md).
+> - If a migration fails: [docs/runbooks/MIGRATION_ROLLBACK.md](../../docs/runbooks/MIGRATION_ROLLBACK.md).
+> - `prisma db push` survives only as `npm run db:push:unsafe-local`, for throwaway local databases.
+>
+> The `db push` advice below still applies to a **local scratch DB**. Do not apply it to a deployed environment.
+
 ## Issue Resolution
 
 The "Maximum call stack size exceeded" error was caused by running Prisma commands from the `api` directory. 

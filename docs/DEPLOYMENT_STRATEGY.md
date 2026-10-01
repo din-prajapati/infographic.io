@@ -106,17 +106,41 @@ Keep the pipeline **< ~10 min** (parallelize, cache `node_modules` + Playwright 
 > - `staging` → a long-lived Neon `staging` branch
 > - each **PR/preview** → an ephemeral Neon branch off production (instant, prod-shaped data)
 >
-> Do **not** add a Railway Postgres service. The app is a single always-on container, so use Neon's **direct (non-pooled)** connection string as `DATABASE_URL` (simplest + correct for a long-lived server). Pooled endpoint + `pgbouncer=true` is optional and only worth it at high concurrency. See `.env.production.example` for the exact format. The `db:deploy` script still runs `prisma db push` against the target Neon branch at container start, and `templates.service` auto-seeds templates on first boot.
+> Do **not** add a Railway Postgres service. The app is a single always-on container, so use Neon's **direct (non-pooled)** connection string as `DATABASE_URL` (simplest + correct for a long-lived server). Pooled endpoint + `pgbouncer=true` is optional and only worth it at high concurrency. See `.env.production.example` for the exact format. `db:deploy` (`prisma migrate deploy`) runs as a **pre-deploy release step** against the target Neon branch — not at container start, see Migrations below — and `templates.service` auto-seeds templates on first boot.
 
 ### Migrations (production-grade)
 
-The first fresh deploy uses `prisma db push` (fast, schema-only — see `package.json` `db:deploy`). Once you have real data, switch to **`prisma migrate deploy`** as a **release step that runs before new code starts**, and follow **expand → contract**:
+> **Status: in force since US-DEPLOY-004 (2026-10-01).** Migrations run as a **release step**
+> (`railway.json` → `deploy.preDeployCommand`), never from the container start command.
+> `prisma db push` is **not** a deployment tool here.
 
-1. **Expand** — add new column/table (backward compatible) → deploy.
-2. **Backfill + dual-write** → deploy.
-3. **Contract** — drop the old column once nothing reads it → deploy.
+**The rule:** the schema is advanced by a committed, versioned migration — never as a side effect of a container
+booting. `npm run db:deploy` is `prisma migrate deploy`; the container starts with `npm start` alone.
 
-This guarantees old + new app versions can run simultaneously during a rolling deploy.
+**Why this is not optional** (learned the hard way, BL-33): with `db push` on boot, the schema is a function of
+*whichever build happens to start*. Once the DB is ahead of an older build, that build **cannot boot** — it tries to
+revert the schema and Prisma refuses. Rollback becomes impossible exactly when you need it. Reaching for
+`--accept-data-loss` to unblock it destroys live data silently. A release-step migration makes the schema move
+forward once, deliberately, with a recorded history.
+
+**Expand → backfill → contract is required for every schema change.** Not a best-effort nicety — the migration is
+rejected in review without it:
+
+1. **Expand** — add the new column/table, nullable or defaulted, backward compatible → deploy.
+2. **Backfill + dual-write** — populate it; new code writes both old and new → deploy.
+3. **Contract** — drop the old column only once nothing reads it → deploy.
+
+Each step is independently deployable *and independently revertible*, which is what lets old + new app versions run
+simultaneously during a rolling deploy. A single migration that adds and removes in one step forfeits that.
+
+**Never, in a migration that touches a table with real rows:** drop or rename a column in the same release that
+stops writing it; add a `NOT NULL` column without a default; or change a column's type in place.
+
+- Baseline: `api/prisma/migrations/0_init/` captures the schema as of 2026-10-01. A new environment gets it applied
+  by `migrate deploy`; the two pre-existing DBs were baselined with `npm run db:baseline`.
+- Local throwaway DBs only: `npm run db:push:unsafe-local`. The name is deliberate — it must never appear in a
+  deploy path.
+- When a migration fails mid-deploy: **[docs/runbooks/MIGRATION_ROLLBACK.md](runbooks/MIGRATION_ROLLBACK.md)**.
 
 ---
 
@@ -132,9 +156,9 @@ This guarantees old + new app versions can run simultaneously during a rolling d
 ## 8. This repo on Railway — concrete setup
 
 Already in the repo:
-- **`railway.json`** — `build`: `npm run prisma:generate && npm run build`; `start`: `npm run db:deploy && npm start`; healthcheck `/`; restart on failure.
+- **`railway.json`** — `build`: `npm run prisma:generate && npm run build`; `preDeploy`: `npm run db:deploy` (migrations as a release step); `start`: `npm start`; healthcheck `/api/health`; restart on failure.
 - **`.nvmrc`** — pins Node 22 (also `engines` in `package.json`).
-- **`db:deploy`** — `prisma db push` against the target DB at container start.
+- **`db:deploy`** — `prisma migrate deploy` against the target DB, as a pre-deploy release step.
 - **Runtime deps** — `tsx` + `cross-env` moved to `dependencies` (the prod server spawns `npx tsx api/src/main.ts`).
 - **Cross-platform listen fix** — `server/index.ts` only sets `reusePort: true` on non-Windows (it is supported on Railway's Linux; it throws `ENOTSUP` on Windows).
 
@@ -178,7 +202,7 @@ Already in the repo:
 
 1. Add `.github/workflows/ci.yml` running the Gate 1 + E2E pipeline on PRs.
 2. ✅ **Decided: Neon (DB) + Railway (app hosting)** — see §6. Follow `docs/setup/RAILWAY_NEON_DEPLOY.md`.
-3. Switch `db:deploy` from `prisma db push` to `prisma migrate deploy` once prod has real data; commit a baseline migration.
+3. ✅ **Done (US-DEPLOY-004, 2026-10-01):** `db:deploy` is `prisma migrate deploy`, run as a pre-deploy release step; baseline `0_init` committed. See §6 Migrations.
 4. Create Railway `staging` + `production` environments with the variable matrix in §8 (each `DATABASE_URL` → its own Neon branch).
 5. Introduce a minimal feature-flag mechanism (env var first, `flags` table later).
 
