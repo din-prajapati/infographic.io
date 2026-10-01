@@ -61,14 +61,41 @@ So the driver is **rollback capability**, not only data safety. AC1–AC5 are un
 | T1 | Verify no drift between staging DB and `schema.prisma` | Env | 10 m | ✅ Done — `(EMPTY — no drift)` on `ep-billowing-cell`, 2026-10-01 |
 | T2 | Generate + commit baseline `0_init/migration.sql` and `migration_lock.toml` | AC1 | 20 m | ✅ Done — 552 lines, 16 tables |
 | T3 | Repoint `db:deploy` → `migrate deploy`; move it out of the container start command into `preDeployCommand` | AC2 | 30 m | 🔲 |
-| T4 | **OPERATOR:** `migrate resolve --applied 0_init` on staging + production | AC1 | 10 m | 🔲 Blocked on operator |
-| T5 | Verify on staging: clean apply + idempotent re-deploy | AC4 / TC-01, TC-02 | 45 m | 🔲 Blocked on T4 |
+| T4 | **OPERATOR:** `migrate resolve --applied 0_init` on staging + production | AC1 | 10 m | ⚠️ **Partial** — production ✅, staging ❌ (see below) |
+| T5 | Verify on staging: clean apply + idempotent re-deploy | AC4 / TC-01, TC-02 | 45 m | ⏸ Blocked on T4-staging |
 | T6 | Expand→backfill→contract documented as required pattern | AC3 | 30 m | 🔲 |
 | T7 | Rollback runbook: failed migration, Neon branch restore, revert | AC5 / TC-04 | 45 m | 🔲 |
 | T8 | Expand→contract dry-run on staging (add col → deploy → drop col → deploy) | TC-03 | 60 m | 🔲 Blocked on T5 |
 | T9 | Gate 1 (`tsc --noEmit` + unit tests), closeout, PR | DoD | 30 m | 🔲 |
 
 ---
+
+## T4 baseline — measured state (2026-10-01)
+
+Verified by querying `_prisma_migrations` directly, not by trusting the command's exit:
+
+| Env | Neon branch | `_prisma_migrations` | Users | State |
+|---|---|---|---|---|
+| **production** | `ep-aged-king` / `neondb` | `0_init`, `steps=0`, finished 17:01:52 IST, not rolled back | 8 | ✅ Baselined |
+| **staging** | `ep-billowing-cell` / `neondb` | **table does not exist** | 129 | ❌ **Not baselined** |
+
+The staging `railway run ... db:baseline` did not take effect — it was reported run, but the table is absent, so
+it never reached the DB. Confirmed that Railway's staging `DATABASE_URL` resolves to the *same* host as local
+`.env` (`ep-billowing-cell` / `neondb`), so this is not a wrong-target problem — the command itself failed.
+
+**Re-run needed before T5/T8** (agent cannot: blocked as a shared-resource write):
+
+```bash
+railway run --environment staging --service Buildographic -- npm run db:baseline
+```
+
+Watch for a non-zero exit. Likely original cause: run from a branch without `api/prisma/migrations/0_init`
+(it exists only on `feat/deploy/us-deploy-004-migrate-deploy`, not on `main`), which fails with
+`P3017 migration not found`.
+
+> **Note for AC4:** staging is the *harder* of the two to verify precisely because it carries 129 rows and is
+> shared with local dev. Production being baselined first is backwards from the intended order but harmless —
+> `resolve --applied` executes no DDL.
 
 ## Risk register
 
