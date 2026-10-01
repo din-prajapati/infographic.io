@@ -6,6 +6,7 @@
   },
   "deploy": {
     "preDeployCommand": "npm run db:deploy",
+    "preDeployTimeoutSeconds": 600,
     "startCommand": "npm start",
     "healthcheckPath": "/api/health",
     "healthcheckTimeout": 300,
