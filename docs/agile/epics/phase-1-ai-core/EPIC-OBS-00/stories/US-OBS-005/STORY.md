@@ -73,5 +73,19 @@ No deploy failed, no error was thrown, no log line was written. Only an external
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 
+## Post-merge verification (2026-10-02)
+
+Merged as `0792b82`. Confirmed the workflow is actually registered — a scheduled workflow GitHub does not recognise
+is a silent no-op, which is the failure class this story exists to prevent:
+
+- `gh workflow list` → **`Uptime  active  373033485`**
+- Dispatched a normal (non-simulated) run on `main` → run `37000787811`, conclusion **success**
+- Runner log: `attempt 1: http=200 body={"status":"ok",...,"commitSha":"0792b82"}` → `✅ staging healthy on attempt 1`
+- Both matrix jobs passed, so TC-01 is now verified **in GitHub's runner**, not only locally
+
+**Still outstanding — T5, operator:** the email path (AC4). Run
+**Actions → Uptime → Run workflow → `simulate_failure: true`** and confirm the email arrives. Until that is done,
+AC4 is an assumption; BL-34 stays *mitigated*, not closed.
+
 ## Definition of Done
 - [ ] ACs ✅ · a deliberately failing run proves the email path (AC4 is worthless untested) · runbook written · BL-34 closed · PR merged
