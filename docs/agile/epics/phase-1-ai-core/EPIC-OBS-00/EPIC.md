@@ -41,6 +41,7 @@
 | [US-OBS-002](stories/US-OBS-002/STORY.md) | Sentry NestJS backend integration | M-OBS-01 | M | 🔲 |
 | [US-OBS-003](stories/US-OBS-003/STORY.md) | Sentry React frontend integration | M-OBS-01 | S | 🔲 |
 | [US-OBS-004](stories/US-OBS-004/STORY.md) | AI generation metrics + alerting | M-OBS-02 | M | 🔲 |
+| [US-OBS-005](stories/US-OBS-005/STORY.md) | External availability monitoring (uptime tripwire) | M-OBS-01 | S | 🟡 |
 
 ---
 
