@@ -1,0 +1,141 @@
+name: Uptime
+
+# Availability tripwire for BL-34 — US-OBS-005.
+#
+# WHY THIS LIVES ON GITHUB, NOT RAILWAY: production and staging served nothing from 2026-09-14 to
+# 2026-09-29 because the Railway trial lapsed. No build failed, no error was thrown, no log line was
+# written — so nothing inside the system could report it. This check runs on GitHub's infrastructure
+# and therefore survives a total Railway or Neon failure. That independence is the entire point; do
+# not "simplify" it by moving it into the app or a Railway cron.
+#
+# It answers exactly one question: is each environment serving a healthy API right now?
+# Latency, error rates and cost belong to Sentry (US-OBS-004), not here.
+
+on:
+  schedule:
+    # Every 15 minutes. Free on a public repo. GitHub may run this late (sometimes 5–15 min) on
+    # shared runners — fine for this purpose, but do not read the schedule as a guarantee.
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+    inputs:
+      simulate_failure:
+        description: 'Point the check at a URL that cannot work, to rehearse the alert path (AC4/TC-02)'
+        type: boolean
+        default: false
+
+# A late run checking the same thing adds nothing; keep only the newest.
+concurrency:
+  group: uptime
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: ${{ matrix.env_name }}
+    runs-on: ubuntu-latest
+    strategy:
+      # Never let one environment's failure hide the other's — staging noise must not mask production.
+      fail-fast: false
+      matrix:
+        include:
+          - env_name: production
+            url: https://app.buildographic.com
+          - env_name: staging
+            url: https://infographic-production-staging.up.railway.app
+
+    steps:
+      - name: Probe ${{ matrix.env_name }} /api/v1/health
+        id: probe
+        env:
+          ENV_NAME: ${{ matrix.env_name }}
+          BASE_URL: ${{ matrix.url }}
+          SIMULATE: ${{ inputs.simulate_failure }}
+        run: |
+          set -uo pipefail
+
+          BASE="$BASE_URL"
+          if [ "${SIMULATE:-false}" = "true" ]; then
+            # Resolvable host, no such path -> a real non-ok response rather than a DNS error.
+            BASE="https://app.buildographic.com/__uptime_simulated_failure__"
+            echo "::warning::SIMULATED FAILURE MODE — probing $BASE to rehearse the alert path"
+          fi
+          TARGET="$BASE/api/v1/health"
+
+          # Staging scales to zero (BL-36): a cold /api/v1/health returns 502 for ~17s while the
+          # Express proxy is up but NestJS is not, and once took ~75s. The first request is also what
+          # wakes it, so these retries both tolerate AND cause the warm-up. Budget ~95s before
+          # declaring an environment down.
+          DELAYS="0 10 10 15 15 20 25"
+          ATTEMPT=0
+          LAST_CODE="none"
+          LAST_BODY=""
+
+          for D in $DELAYS; do
+            [ "$D" -gt 0 ] && sleep "$D"
+            ATTEMPT=$((ATTEMPT + 1))
+
+            BODY_FILE="$(mktemp)"
+            # --fail is deliberately NOT used: we want the body of a 5xx, and a non-2xx is not an
+            # error we abort on, it is data. 000 means curl never got an HTTP response at all
+            # (DNS failure, TLS failure, connection refused) — which is what a total Railway
+            # outage looked like in the real incident.
+            LAST_CODE="$(curl -sS -o "$BODY_FILE" -w '%{http_code}' --max-time 20 "$TARGET" 2>/dev/null || echo "000")"
+            LAST_BODY="$(head -c 400 "$BODY_FILE" | tr -d '\r\n')"
+            rm -f "$BODY_FILE"
+
+            echo "attempt $ATTEMPT: http=$LAST_CODE body=${LAST_BODY:0:120}"
+
+            # HTTP 200 alone is NOT enough. The Express proxy answers / with 200 while NestJS is
+            # dead, so a status-only check passes a half-dead app (observed 2026-10-01). Require the
+            # health payload to actually say ok.
+            if [ "$LAST_CODE" = "200" ] && printf '%s' "$LAST_BODY" | grep -q '"status":"ok"'; then
+              echo "healthy=true" >> "$GITHUB_OUTPUT"
+              echo "✅ $ENV_NAME healthy on attempt $ATTEMPT"
+              {
+                echo "### ✅ $ENV_NAME healthy"
+                echo ""
+                echo "- Attempt: $ATTEMPT"
+                echo "- Endpoint: \`$TARGET\`"
+                echo "- Body: \`${LAST_BODY:0:200}\`"
+              } >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+            fi
+          done
+
+          # Exhausted the budget — this is a real failure.
+          WHEN="$(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+          case "$LAST_CODE" in
+            000) DIAG="no HTTP response at all (DNS, TLS or connection failure) — consistent with the platform being down or the account suspended, as in the 2026-09-14 incident" ;;
+            502|503|504) DIAG="gateway/unavailable — the edge answered but the app behind it did not. If only /api/v1/* fails while / returns 200, the Express proxy is up and NestJS is not" ;;
+            404) DIAG="not found — on the apex this is what Railway serves when no deployment exists for the domain" ;;
+            200) DIAG="HTTP 200 but the body did not contain \"status\":\"ok\" — the app is answering while unhealthy (most likely the DB)" ;;
+            *)   DIAG="unexpected status" ;;
+          esac
+
+          echo "::error title=$ENV_NAME is DOWN::http=$LAST_CODE after $ATTEMPT attempts over ~95s — $DIAG"
+          {
+            echo "### ❌ $ENV_NAME is DOWN"
+            echo ""
+            echo "| | |"
+            echo "|---|---|"
+            echo "| Environment | **$ENV_NAME** |"
+            echo "| Endpoint | \`$TARGET\` |"
+            echo "| Last HTTP status | \`$LAST_CODE\` |"
+            echo "| Attempts | $ATTEMPT over ~95s |"
+            echo "| Detected at | $WHEN |"
+            echo ""
+            echo "**Likely meaning:** $DIAG"
+            echo ""
+            echo "Last response body:"
+            echo '```'
+            echo "${LAST_BODY:0:400}"
+            echo '```'
+            echo ""
+            echo "Triage: \`docs/runbooks/UPTIME_MONITORING.md\`"
+            echo ""
+            echo "First thing to rule out: **Railway billing.** The 15-day outage this check exists to"
+            echo "catch was a lapsed trial, not a bad deploy."
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit 1
