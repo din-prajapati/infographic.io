@@ -5,6 +5,7 @@ import { GenerationsService } from '../services/generations.service';
 import { UsageLimitService } from '../services/usage-limit.service';
 import { GenerateFromChatDto, RegenerateDto } from '../dto/generate-from-chat.dto';
 import { EmailVerifiedGuard } from '../../../common/guards/email-verified.guard';
+import { ValidatedBody } from '../../../common/validated-body.decorator';
 
 @ApiTags('infographics-generations')
 @Controller('infographics/generations')
@@ -40,7 +41,7 @@ export class GenerationsController {
   @UseGuards(AuthGuard('jwt'), EmailVerifiedGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Generate infographic from AI chat prompt' })
-  async generateFromChat(@Body() dto: GenerateFromChatDto, @Req() req: any) {
+  async generateFromChat(@ValidatedBody(GenerateFromChatDto) dto: GenerateFromChatDto, @Req() req: any) {
     console.log('\n🟢 ========== GENERATION REQUEST RECEIVED ==========');
     console.log(`📝 [GenerationsController] user=${req.user.id} prompt="${dto.prompt?.substring(0, 80)}" model=${dto.model} orient=${dto.orientation}`);
     console.log('===================================================\n');
@@ -93,7 +94,7 @@ export class GenerationsController {
   @UseGuards(AuthGuard('jwt'), EmailVerifiedGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Regenerate infographic with modifications' })
-  async regenerate(@Param('id') id: string, @Body() dto: RegenerateDto) {
+  async regenerate(@Param('id') id: string, @ValidatedBody(RegenerateDto) dto: RegenerateDto) {
     try {
       return await this.generationsService.regenerate(id, dto.modifications || [], dto.style);
     } catch (error: any) {

@@ -1,8 +1,9 @@
-import { Controller, Post, Put, Get, Delete, Body, Param, UseGuards, Req, Inject } from '@nestjs/common';
+import { Controller, Post, Put, Get, Delete, Param, UseGuards, Req, Inject } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiSecurity } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { DesignsService } from '../services/designs.service';
 import { CreateDesignDto } from '../dto/create-design.dto';
+import { ValidatedBody } from '../../../common/validated-body.decorator';
 
 @ApiTags('designs')
 @Controller('designs')
@@ -15,7 +16,7 @@ export class DesignsController {
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create a new design' })
-  async create(@Body() dto: CreateDesignDto, @Req() req: any) {
+  async create(@ValidatedBody(CreateDesignDto) dto: CreateDesignDto, @Req() req: any) {
     const userId = req.user.id;
     const organizationId = req.user.organizationId || req.user.id;
     return this.designsService.save(userId, organizationId, dto);
@@ -25,7 +26,7 @@ export class DesignsController {
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update an existing design' })
-  async update(@Param('id') id: string, @Body() dto: CreateDesignDto, @Req() req: any) {
+  async update(@Param('id') id: string, @ValidatedBody(CreateDesignDto) dto: CreateDesignDto, @Req() req: any) {
     const userId = req.user.id;
     const organizationId = req.user.organizationId || req.user.id;
     return this.designsService.save(userId, organizationId, dto, id);
