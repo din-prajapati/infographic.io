@@ -83,9 +83,26 @@ is a silent no-op, which is the failure class this story exists to prevent:
 - Runner log: `attempt 1: http=200 body={"status":"ok",...,"commitSha":"0792b82"}` → `✅ staging healthy on attempt 1`
 - Both matrix jobs passed, so TC-01 is now verified **in GitHub's runner**, not only locally
 
-**Still outstanding — T5, operator:** the email path (AC4). Run
-**Actions → Uptime → Run workflow → `simulate_failure: true`** and confirm the email arrives. Until that is done,
-AC4 is an assumption; BL-34 stays *mitigated*, not closed.
+### Deliberate-failure rehearsal (2026-10-02)
+
+Run **37014799995** (`workflow_dispatch`, `simulate_failure: true`) → **conclusion `failure`**, as intended:
+
+- 7 attempts over ~100 s, every one `http=200` with an HTML body
+- failed on the body assertion, not the status code — the point of AC2
+- emitted `::error title=production is DOWN::…` plus the step-summary table
+
+So detection and the GitHub-side failure signal are confirmed. **The email itself still needs
+Dinesh's inbox confirmation** — nothing in the repo can verify delivery, and GitHub only sends it if
+Settings → Notifications → Actions has email enabled.
+
+**Finding from the rehearsal (fixed):** in simulate mode both matrix jobs probed *production's* host, so the
+job labelled `staging` reported a production URL — misleading in exactly the moment someone is learning to read
+the alert. Now each job simulates against its own `BASE_URL`.
+
+**Still outstanding for AC4 / BL-34 closure:**
+1. Confirm the failure email arrived (Dinesh's inbox).
+2. Railway billing-failure notifications — dashboard only, see the runbook. This is the half that catches the
+   next lapse *before* it becomes an outage.
 
 ## Definition of Done
 - [ ] ACs ✅ · a deliberately failing run proves the email path (AC4 is worthless untested) · runbook written · BL-34 closed · PR merged

@@ -57,8 +57,11 @@ jobs:
 
           BASE="$BASE_URL"
           if [ "${SIMULATE:-false}" = "true" ]; then
-            # Resolvable host, no such path -> a real non-ok response rather than a DNS error.
-            BASE="https://app.buildographic.com/__uptime_simulated_failure__"
+            # Each job stays on its OWN host, so the rehearsal reads correctly per environment —
+            # the first run pointed both jobs at production and the "staging" job reported a
+            # production URL. Resolvable host, no such path, so this is a real non-ok response
+            # rather than a DNS error.
+            BASE="$BASE_URL/__uptime_simulated_failure__"
             echo "::warning::SIMULATED FAILURE MODE — probing $BASE to rehearse the alert path"
           fi
           TARGET="$BASE/api/v1/health"
