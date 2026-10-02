@@ -1,9 +1,10 @@
-import { Controller, Post, Get, Body, Param, UseGuards, Req, Inject } from '@nestjs/common';
+import { Controller, Post, Get, Param, UseGuards, Req, Inject } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiSecurity } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { PromptExtractorService } from '../services/prompt-extractor.service';
 import { ExtractPropertyDataDto } from '../dto/extract-property-data.dto';
 import { EmailVerifiedGuard } from '../../../common/guards/email-verified.guard';
+import { ValidatedBody } from '../../../common/validated-body.decorator';
 
 @ApiTags('infographics-extractions')
 @Controller('infographics/generations/extractions')
@@ -17,7 +18,7 @@ export class ExtractionsController {
   @UseGuards(AuthGuard('jwt'), EmailVerifiedGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Extract property data from natural language prompt' })
-  async extract(@Body() dto: ExtractPropertyDataDto, @Req() req: any) {
+  async extract(@ValidatedBody(ExtractPropertyDataDto) dto: ExtractPropertyDataDto, @Req() req: any) {
     const userId = req.user.id;
     const organizationId = req.user.organizationId || req.user.id; // Match pattern from GenerationsController
     const conversationId = dto.conversationId; // Already in DTO

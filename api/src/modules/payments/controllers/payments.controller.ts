@@ -2,7 +2,6 @@ import {
   Controller,
   Get,
   Post,
-  Body,
   Query,
   UseGuards,
   Req,
@@ -29,6 +28,7 @@ import {
   InternalWebhookDto,
 } from '../dto/payments.dto';
 import { PlanTier } from '@prisma/client';
+import { ValidatedBody } from '../../../common/validated-body.decorator';
 
 @ApiTags('payments')
 @Controller('payments')
@@ -58,7 +58,7 @@ export class PaymentsController {
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create a new subscription for authenticated user' })
-  async createSubscription(@Body() dto: CreateSubscriptionDto, @Req() req: any) {
+  async createSubscription(@ValidatedBody(CreateSubscriptionDto) dto: CreateSubscriptionDto, @Req() req: any) {
     if (process.env.BETA_MODE === 'true') {
       throw new ForbiddenException({
         code: 'BETA_MODE_ACTIVE',
@@ -171,7 +171,7 @@ export class PaymentsController {
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Upgrade/downgrade subscription plan' })
-  async updatePlan(@Body() dto: UpdatePlanDto, @Req() req: any) {
+  async updatePlan(@ValidatedBody(UpdatePlanDto) dto: UpdatePlanDto, @Req() req: any) {
     const userId = req.user.id;
     const subscription = await this.paymentsService.updateSubscriptionPlan(userId, dto.planTier);
     return { success: true, subscription };
@@ -181,7 +181,7 @@ export class PaymentsController {
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Cancel current subscription' })
-  async cancelSubscription(@Body() dto: CancelSubscriptionDto, @Req() req: any) {
+  async cancelSubscription(@ValidatedBody(CancelSubscriptionDto) dto: CancelSubscriptionDto, @Req() req: any) {
     const userId = req.user.id;
     const subscription = await this.paymentsService.cancelSubscription(userId, dto.immediate || false);
     return { success: true, subscription };
@@ -200,7 +200,7 @@ export class PaymentsController {
   @Post('verify')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Verify RazorPay payment signature' })
-  async verifyPayment(@Body() dto: VerifyPaymentDto) {
+  async verifyPayment(@ValidatedBody(VerifyPaymentDto) dto: VerifyPaymentDto) {
     const isValid = await this.paymentsService.verifyPayment(
       dto.razorpayPaymentId,
       dto.razorpaySubscriptionId,
@@ -212,7 +212,7 @@ export class PaymentsController {
   @Post('webhooks/internal')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Internal webhook endpoint (called from Express webhook routes)' })
-  async handleInternalWebhook(@Body() dto: InternalWebhookDto, @Req() req: any) {
+  async handleInternalWebhook(@ValidatedBody(InternalWebhookDto) dto: InternalWebhookDto, @Req() req: any) {
     // Verify internal request header
     const internalHeader = req.headers['x-internal-request'];
     if (internalHeader !== 'true') {

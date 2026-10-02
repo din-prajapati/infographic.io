@@ -1,5 +1,5 @@
 import {
-  Controller, Post, Get, Body, Param, UseGuards, Req, Inject,
+  Controller, Post, Get, Param, UseGuards, Req, Inject,
   UseInterceptors, UploadedFile, BadRequestException, ParseFilePipe,
   MaxFileSizeValidator, FileTypeValidator, HttpStatus, Logger,
 } from '@nestjs/common';
@@ -14,6 +14,7 @@ import { InfographicsService } from '../services/infographics.service';
 import { StorageService } from '../../storage/services/storage.service';
 import { GenerateInfographicDto } from '../dto/generate-infographic.dto';
 import { EmailVerifiedGuard } from '../../../common/guards/email-verified.guard';
+import { ValidatedBody } from '../../../common/validated-body.decorator';
 
 const PHOTO_UPLOADS_DIR = path.join(os.tmpdir(), 'ai-infographic-uploads');
 
@@ -97,7 +98,7 @@ export class InfographicsController {
   @UseGuards(AuthGuard('jwt'), EmailVerifiedGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Generate infographic from property data' })
-  async generate(@Body() dto: GenerateInfographicDto, @Req() req: any) {
+  async generate(@ValidatedBody(GenerateInfographicDto) dto: GenerateInfographicDto, @Req() req: any) {
     console.log('📝 [Controller] Received generate request');
     const userId = req.user.id;
     const organizationId = req.user.organizationId ?? null;

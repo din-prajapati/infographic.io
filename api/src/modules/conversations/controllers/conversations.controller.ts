@@ -1,8 +1,9 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, Req, Inject } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Param, UseGuards, Req, Inject } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiSecurity } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { ConversationService } from '../services/conversation.service';
 import { CreateConversationDto, UpdateConversationDto, AddMessageDto } from '../dto/create-conversation.dto';
+import { ValidatedBody } from '../../../common/validated-body.decorator';
 
 @ApiTags('conversations')
 @Controller('conversations')
@@ -24,7 +25,7 @@ export class ConversationsController {
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create a new conversation' })
-  async create(@Body() dto: CreateConversationDto, @Req() req: any) {
+  async create(@ValidatedBody(CreateConversationDto) dto: CreateConversationDto, @Req() req: any) {
     const userId = req.user.id;
     return this.conversationService.create(userId, dto);
   }
@@ -42,7 +43,7 @@ export class ConversationsController {
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update conversation' })
-  async update(@Param('id') id: string, @Body() dto: UpdateConversationDto, @Req() req: any) {
+  async update(@Param('id') id: string, @ValidatedBody(UpdateConversationDto) dto: UpdateConversationDto, @Req() req: any) {
     const userId = req.user.id;
     return this.conversationService.update(id, userId, dto);
   }
@@ -70,7 +71,7 @@ export class ConversationsController {
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Add a message to a conversation' })
-  async addMessage(@Param('id') id: string, @Body() dto: AddMessageDto, @Req() req: any) {
+  async addMessage(@Param('id') id: string, @ValidatedBody(AddMessageDto) dto: AddMessageDto, @Req() req: any) {
     const userId = req.user.id;
     return this.conversationService.addMessage(id, userId, dto);
   }

@@ -1,8 +1,9 @@
-import { Controller, Get, Post, Delete, Param, Body, Req, UseGuards, BadRequestException, Inject } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Param, Req, UseGuards, BadRequestException, Inject } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { InviteMemberDto } from './dto/invite-member.dto';
+import { ValidatedBody } from '../../common/validated-body.decorator';
 
 @ApiTags('users')
 @Controller('users')
@@ -52,7 +53,7 @@ export class UsersController {
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Add member by email (account must already exist)' })
-  async inviteMember(@Req() req: any, @Body() dto: InviteMemberDto) {
+  async inviteMember(@Req() req: any, @ValidatedBody(InviteMemberDto) dto: InviteMemberDto) {
     const organizationId = req.user.organizationId;
     if (!organizationId) {
       throw new BadRequestException('User not part of an organization');

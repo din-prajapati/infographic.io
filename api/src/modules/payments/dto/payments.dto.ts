@@ -1,4 +1,4 @@
-import { IsEnum, IsString, IsOptional, IsBoolean, IsNumber } from 'class-validator';
+import { IsEnum, IsString, IsOptional, IsBoolean, IsNumber, IsDefined } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { PlanTier } from '@prisma/client';
 
@@ -66,5 +66,10 @@ export class InternalWebhookDto {
   provider: string;
 
   @ApiProperty({ description: 'Webhook event data' })
+  // BL-30: needs a class-validator decorator, not just @ApiProperty. `whitelist` +
+  // `forbidNonWhitelisted` reject any property class-validator does not know about, so without
+  // this the route would 400 on every real webhook once validation actually runs. The payload is
+  // provider-shaped arbitrary JSON, so only presence is asserted here.
+  @IsDefined()
   event: any;
 }

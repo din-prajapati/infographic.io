@@ -6,6 +6,7 @@ import { Throttle } from '@nestjs/throttler';
 import { AuthService } from '../services/auth.service';
 import { RegisterDto, LoginDto, ForgotPasswordDto, ResetPasswordDto, VerifyEmailDto } from '../dto/auth.dto';
 import { Request, Response } from 'express';
+import { ValidatedBody } from '../../../common/validated-body.decorator';
 
 /**
  * Extends the standard Google AuthGuard to return a user-readable error
@@ -43,14 +44,14 @@ export class AuthController {
   @Post('register')
   @Throttle({ default: { limit: 5, ttl: ONE_HOUR_MS } })
   @ApiOperation({ summary: 'Register new user' })
-  async register(@Body() registerDto: RegisterDto) {
+  async register(@ValidatedBody(RegisterDto) registerDto: RegisterDto) {
     return this.authService.register(registerDto);
   }
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Login user' })
-  async login(@Body() loginDto: LoginDto) {
+  async login(@ValidatedBody(LoginDto) loginDto: LoginDto) {
     return this.authService.login(loginDto);
   }
 
@@ -85,14 +86,14 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @Throttle({ default: { limit: 5, ttl: ONE_HOUR_MS } })
   @ApiOperation({ summary: 'Request a password reset link' })
-  async forgotPassword(@Body() dto: ForgotPasswordDto) {
+  async forgotPassword(@ValidatedBody(ForgotPasswordDto) dto: ForgotPasswordDto) {
     return this.authService.forgotPassword(dto);
   }
 
   @Post('reset-password')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Reset password using an emailed token' })
-  async resetPassword(@Body() dto: ResetPasswordDto) {
+  async resetPassword(@ValidatedBody(ResetPasswordDto) dto: ResetPasswordDto) {
     return this.authService.resetPassword(dto);
   }
 
@@ -100,7 +101,7 @@ export class AuthController {
   @Post('verify-email')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Verify an email address using an emailed token' })
-  async verifyEmail(@Body() dto: VerifyEmailDto) {
+  async verifyEmail(@ValidatedBody(VerifyEmailDto) dto: VerifyEmailDto) {
     return this.authService.verifyEmail(dto);
   }
 
