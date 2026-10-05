@@ -34,8 +34,15 @@ No deploy failed, no error was thrown, no log line was written. Only an external
 
 ## Acceptance Criteria
 
-- [ ] **AC1 [happy-path]:** A scheduled check runs **outside Railway** against both environments' `/api/v1/health`
+- [⚠️] **AC1 [happy-path]:** A scheduled check runs **outside Railway** against both environments' `/api/v1/health`
       at least every 30 minutes, and keeps running when Railway is entirely down.
+      → **PARTIALLY MET — the 30-minute half fails.** The check does run outside Railway and has run unattended
+      since 2026-10-02. But measured over ~3 days, the `*/15` cron produced **16 runs, average gap 249 min
+      (4.2 h), max 355 min** — GitHub silently drops most scheduled runs on shared runners. Real worst-case
+      detection is **~6 hours, not 15 minutes**. Good enough for the billing-lapse failure mode (a ~60×
+      improvement on a 15-day outage), not good enough to learn within minutes that checkout is down.
+      Lowering the cron value will not help: runs are dropped, not delayed. Closing this properly needs the
+      third-party monitor left Out of Scope pending exactly this measurement.
 - [ ] **AC2 [correctness]:** The check asserts the **response body** contains `"status":"ok"` — not merely HTTP 200.
       *(The Express proxy answers `/` with 200 while NestJS is dead; a naive check passes a half-dead app. Observed
       live on 2026-10-01.)*

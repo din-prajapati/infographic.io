@@ -71,9 +71,23 @@ A monitor that dies quietly recreates the exact problem BL-34 was about. Known w
    does not have this failure mode and is the real fix.
 2. **Scheduled runs only execute from the default branch.** Editing `uptime.yml` on a branch changes nothing until
    it is merged to `main`.
-3. **Cron is not punctual.** GitHub may run a scheduled job 5–15 minutes late on shared runners, worse at peak.
-   Worst-case detection is roughly the interval plus the drift. Fine for this purpose; do not treat the schedule
-   as an SLA.
+3. **The 15-minute schedule is fiction. Measured reality is ~4 hours.** This is the most important thing on this
+   page. Over 2026-10-02 → 10-05, the `*/15` cron produced **16 runs in ~3 days**, not the ~288 it asks for:
+
+   | | |
+   |---|---|
+   | Configured interval | 15 min |
+   | **Average actual gap** | **249 min (4.2 h)** |
+   | Min / max gap | 143 min / 355 min |
+
+   GitHub silently drops most scheduled runs on shared runners — it is best-effort, not a guarantee, and no
+   notification is sent for a skipped run. So **real worst-case detection is ~6 hours, not 15 minutes.**
+
+   That is still a ~60× improvement on the 15-day outage this exists to catch, and it is fine for the
+   billing-lapse failure mode. It is **not** fine if you ever need to know within minutes that checkout is
+   down. If that day comes, the fix is a third-party monitor (UptimeRobot / Better Stack free tier, 1–5 min
+   checks), which was left Out of Scope in US-OBS-005 precisely pending this measurement. Lowering the cron
+   number will not help — the runs are being dropped, not delayed.
 4. **It depends on your notification settings.** GitHub must be configured to email you on failed Actions runs, or
    the check fails silently into the web UI. See below.
 5. **GitHub Actions outages.** Rare, and no check runs during one.
