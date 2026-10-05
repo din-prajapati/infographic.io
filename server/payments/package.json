@@ -1,0 +1,7 @@
+{
+  "name": "infographic-payment-providers",
+  "version": "1.0.0",
+  "private": true,
+  "//": "BL-39: type=commonjs so api/ (CommonJS, NestJS) can require the provider factory. This subtree is shared provider code — api/src/modules/payments/services/payments.service.ts is in fact its only importer; nothing in server/ outside this directory references it. server/index.ts itself must stay ESM because it uses import.meta.url, which is why the commonjs scope stops here rather than covering all of server/.",
+  "type": "commonjs"
+}
