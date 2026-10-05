@@ -103,17 +103,35 @@ describe('@ValidatedBody — validates without decorator metadata', () => {
   });
 });
 
-describe('the global ValidationPipe is inert here — this is BL-30 itself', () => {
-  // If this ever starts returning 400, decorator metadata has been restored (BL-39) and the
-  // global pipe works again. That is good news, and the right moment to reconsider whether
-  // @ValidatedBody is still needed — so this test is deliberately written to notice.
-  it('lets a wrong-typed field through a plain @Body() route with 200', async () => {
+/**
+ * ⚠️ These two characterise **vitest's loader, not production** — and since BL-39 those differ.
+ *
+ * BL-39 fixed the root cause for the running app: `server/index.ts` now starts NestJS with
+ * `ts-node`, which emits `design:paramtypes`, so in dev and production the global
+ * ValidationPipe **is live** and a plain `@Body()` route returns 400. Verified by booting the
+ * real app: `{"token":12345}` → `400 token must be longer than or equal to 1 characters`.
+ *
+ * Vitest still transforms with esbuild, which emits no metadata, so inside this suite the global
+ * pipe remains inert and these assertions still hold. That gap is the reason BL-30 survived
+ * undetected for so long — a test suite on a different loader than production cannot see this
+ * class of bug. Closing it means giving vitest a metadata-emitting transform (an SWC plugin);
+ * until then, treat any metadata-dependent behaviour proven only here as unproven in production.
+ *
+ * `@ValidatedBody` is deliberately kept even though the global pipe now works: it is explicit,
+ * independent of loader configuration, and immune to this divergence.
+ */
+describe('vitest runs without decorator metadata — so the global pipe is inert HERE only', () => {
+  it('confirms the suite is running on a metadata-less loader', () => {
+    expect(Reflect.getMetadata('design:paramtypes', ProbeController.prototype, 'plain')).toBeUndefined();
+  });
+
+  it('lets a wrong-typed field through a plain @Body() route with 200 — under esbuild', async () => {
     const { status, body } = await post('plain', { token: 12345 });
     expect(status).toBe(200);
     expect(body).toEqual({ received: 12345, type: 'number' });
   });
 
-  it('does not refuse an unknown extra property on a plain @Body() route', async () => {
+  it('does not refuse an unknown extra property on a plain @Body() route — under esbuild', async () => {
     const { status } = await post('plain', { token: 'abc', evil: 'x' });
     expect(status).toBe(200);
   });

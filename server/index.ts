@@ -68,7 +68,17 @@ const startNestJSServer = () => {
   const isWindows = process.platform === 'win32';
   const command = isWindows ? 'npx.cmd' : 'npx';
   
-  const nestProcess = spawn(command, ['tsx', 'src/main.ts'], {
+  // BL-39: ts-node, NOT tsx. tsx runs on esbuild, which does not implement
+  // `emitDecoratorMetadata`, so `design:paramtypes` was never emitted. That silently disabled
+  // every DTO validation in the app (BL-30) and left NestJS DI working only through explicit
+  // `@Inject()` tokens. ts-node transpiles via TypeScript itself, which honours the flag that
+  // `api/tsconfig.json` has always set.
+  //
+  // This requires `api/package.json` and `shared/package.json` to declare `"type": "commonjs"`
+  // (the repo root declares `"type": "module"`); without those, a CommonJS loader fails with
+  // ERR_REQUIRE_ESM on `shared/schema.ts`. `--transpile-only` skips type checking for startup
+  // speed — `npm run check` is where types are enforced — and still emits decorator metadata.
+  const nestProcess = spawn(command, ['ts-node', '--transpile-only', '-r', 'tsconfig-paths/register', 'src/main.ts'], {
     cwd: path.join(__dirname, '..', 'api'),
     env: {
       ...process.env,

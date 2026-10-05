@@ -1,0 +1,7 @@
+{
+  "name": "infographic-shared",
+  "version": "1.0.0",
+  "private": true,
+  "//": "BL-39: type=commonjs so api/ (CommonJS, NestJS) can require these files. The repo root declares type=module, which made every .ts here an ES module and meant only tsx could load api/ at all — which is why decorator metadata was being lost. client/ and server/ consume these through Vite and esbuild, which bundle from source and are unaffected by this field.",
+  "type": "commonjs"
+}
