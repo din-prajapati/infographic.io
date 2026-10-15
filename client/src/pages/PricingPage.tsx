@@ -73,7 +73,17 @@ const planFeatureBullets: Record<
     editor: { title: "Multi-layer Canvas Editor Trial", linkText: "Explore editor →", linkHref: "#what-is-design" },
     bullets: [
       { title: "Instagram & WhatsApp formats", description: "1:1 Square & 9:16 Story sizes." },
-      { title: "JPG / PNG high-res export", description: "Clean downloads with no watermarks." },
+      // Deliberately does NOT promise watermark-free output (2026-10-15). The previous copy read
+      // "Clean downloads with no watermarks", which commits the FREE tier to something no code
+      // enforces — there is no watermarking anywhere in the product — and forecloses adding a
+      // small corner attribution badge to free exports later. A badge on free output is the
+      // cheapest distribution this product has: agents publish to Instagram and WhatsApp, where
+      // the audience is other agents and brokers, i.e. exactly the buyer persona. Removed while
+      // production still has no real users, so it is a promise to nobody rather than a
+      // commitment to walk back. Paid tiers replace our mark with the customer's own brand
+      // (Custom Brand Setup, SOLO+), which is the upgrade story.
+      // See docs/thoughts/2026-10-15-template-monetisation-strategy.md
+      { title: "JPG / PNG high-res export", description: "High-resolution image files." },
     ],
   },
   SOLO: {
