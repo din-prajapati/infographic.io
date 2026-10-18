@@ -2,13 +2,19 @@ name: Build & Test
 
 # Railway deploys automatically via its GitHub integration:
 #   staging    → watches branch: main   (auto-deploy on every push)
-#   production → watches tag:   v*      (deploy on git tag push)
+#   production → watches branch: main   (auto-deploy on every push)
 # No RAILWAY_TOKEN or CLI needed here — Railway handles deploys directly.
 #
-# BEFORE PUSHING A v* TAG: production only redeploys on tag push, so config drift can sit
-# unnoticed since the last tag. Run `railway variables --environment production --kv` and
-# confirm it still satisfies api/src/config/env.validation.ts's required set (US-LAUNCH-010)
-# before tagging — a boot-validation failure there crash-loops the live production site.
+# CORRECTED 2026-10-16 (BL-35): this header previously claimed production watched `tag: v*`.
+# It does not. Both environments deploy from `main`, so every merge to `main` reaches
+# production directly — there is no tag gate. Verified against the deployed build: production
+# served the `main` tip, which carries no tag, while the only tag `v1.0.0` sat eleven commits
+# behind. The `tags: ['v*']` trigger below builds and tests a tag; it does not deploy one.
+#
+# BEFORE MERGING TO MAIN: a merge is a production deploy. Run
+# `railway variables --environment production --kv` and confirm it still satisfies
+# api/src/config/env.validation.ts's required set (US-LAUNCH-010) — a boot-validation failure
+# there crash-loops the live production site.
 
 on:
   push:
