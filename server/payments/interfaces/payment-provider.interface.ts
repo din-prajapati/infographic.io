@@ -26,6 +26,18 @@ export interface SubscriptionResponse {
   currency: string;
   provider: PaymentProviderType;
   shortUrl?: string;
+  /**
+   * How many billing cycles the provider has actually collected money for.
+   *
+   * This is the only provider-side proof that a payment was captured. A
+   * subscription's `status` is not: measured on production 2026-10-16/17,
+   * Razorpay reported `status: 'active'` with `paid_count: 0` for 32 hours
+   * between the mandate authorisation and the first capture.
+   *
+   * `undefined` means the provider did not report it — treat that as "unknown",
+   * never as "paid".
+   */
+  paidCount?: number;
 }
 
 export interface CreatePlanParams {

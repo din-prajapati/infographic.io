@@ -779,7 +779,10 @@ export class PaymentsService {
 
   /**
    * Force-sync subscription status from Razorpay.
-   * Promotes PENDING → ACTIVE when Razorpay reports active or authenticated.
+   * Promotes PENDING → ACTIVE only when Razorpay reports at least one paid
+   * billing cycle (`paid_count >= 1`). Provider status alone — including
+   * `active` — is not proof that money was collected; see the note at the
+   * promotion check below for the production measurement behind that.
    * Logs every attempt to SubscriptionEvent table.
    * Returns a user-friendly message only — raw provider status is never exposed to the frontend.
    */
@@ -830,7 +833,35 @@ export class PaymentsService {
         };
       }
 
-      const shouldPromote = rzpStatus === 'active' || rzpStatus === 'authenticated';
+      // ── Entitlement requires a captured payment ───────────────────────────
+      // This previously promoted on `rzpStatus === 'active' || 'authenticated'`.
+      // Neither is proof that money moved:
+      //
+      //   • `authenticated` means only that the mandate is registered. On a UPI
+      //     mandate that costs the customer a ₹5 authorisation which Razorpay
+      //     auto-refunds in the same minute.
+      //   • `active` is not proof either. Measured on production 2026-10-16/17:
+      //     Razorpay reported `status: 'active'` with `paid_count: 0` for 32
+      //     hours between the mandate authorisation and the first capture.
+      //
+      // The result was a paid plan granted for ₹0, with no path that took it
+      // back if the first charge later failed. Promote only on a positive
+      // paid-cycle count — the one signal that says an invoice was collected.
+      //
+      // Fail closed when the provider does not report the count: "unknown" is
+      // not "paid". Razorpay always reports it; this guards other providers.
+      const paidCount = refreshed.paidCount;
+      const hasCapturedPayment = typeof paidCount === 'number' && paidCount >= 1;
+
+      if (!hasCapturedPayment) {
+        this.logger.log(
+          `Sync declined promotion for subscription ${subscription.id}: ` +
+            `Razorpay=${rzpStatus}, paidCount=${paidCount ?? 'not reported'} — ` +
+            `entitlement requires a captured payment`,
+        );
+      }
+
+      const shouldPromote = hasCapturedPayment;
 
       if (shouldPromote) {
         const updates: any = { status: SubscriptionStatus.ACTIVE };
@@ -858,7 +889,12 @@ export class PaymentsService {
         return { localStatus: 'ACTIVE', promoted: true, message: 'Your plan has been activated successfully!' };
       }
 
-      const userMessage = this.razorpayStatusToUserMessage(rzpStatus);
+      // `active` with nothing collected must not report "Your plan is active" —
+      // that is the state the user is being told we cannot yet grant.
+      const userMessage =
+        rzpStatus === 'active' && !hasCapturedPayment
+          ? 'Your payment method is registered and your first charge is being processed. Your plan activates as soon as it is collected.'
+          : this.razorpayStatusToUserMessage(rzpStatus);
       await this.logSubscriptionEvent({
         userId,
         subscriptionId: subscription.id,
@@ -1090,6 +1126,116 @@ export class PaymentsService {
         activeSubscriptionId: null,
       });
     }
+  }
+
+  /**
+   * `subscription.pending` — a recurring charge failed and the provider is retrying.
+   *
+   * Razorpay fires this alongside `payment.failed` for the same failed cycle.
+   * `handlePaymentFailed` owns the Payment row and the customer email; this handler
+   * owns only the subscription status, so the two do not duplicate each other's work
+   * and the customer is not emailed twice about one failure.
+   *
+   * `PAST_DUE` is not an entitling status (see `UsageLimitService.ENTITLING_STATUSES`),
+   * so writing it here is what actually withdraws the paid allowance.
+   */
+  async handleSubscriptionChargeRetrying(event: any, provider: PaymentProviderType): Promise<void> {
+    const externalSubId = this.extractSubscriptionId(event, provider);
+    const subscription = await this.storage.getSubscriptionByExternalId(
+      externalSubId,
+      provider as PaymentProvider,
+    );
+
+    if (!subscription) {
+      this.logger.warn(
+        `Webhook ${provider} subscription.pending for unknown subscription ${externalSubId} — ignored`,
+      );
+      return;
+    }
+
+    if (subscription.status === SubscriptionStatus.PAST_DUE) {
+      this.logger.log(
+        `Webhook ${provider} subscription.pending for ${externalSubId}: already PAST_DUE, no change`,
+      );
+      return;
+    }
+
+    await this.storage.updateSubscription(subscription.id, {
+      status: SubscriptionStatus.PAST_DUE,
+    });
+
+    this.logger.warn(
+      `Webhook ${provider} subscription.pending for ${externalSubId}: ` +
+        `${subscription.status} → PAST_DUE (provider is retrying the charge)`,
+    );
+
+    await this.logSubscriptionEvent({
+      userId: subscription.userId,
+      subscriptionId: subscription.id,
+      eventType: 'subscription.pending',
+      provider,
+      providerStatus: 'pending',
+      localStatus: SubscriptionStatus.PAST_DUE,
+      promoted: false,
+      message: 'Recurring charge failed; provider is retrying. Paid entitlement withdrawn until it succeeds.',
+    });
+  }
+
+  /**
+   * `subscription.halted` — the provider has exhausted its retries and stopped.
+   *
+   * This is the terminal failure signal for a recurring charge, and the one that was
+   * missing entirely: before this handler, a halted subscription kept whatever status
+   * it last held.
+   *
+   * The organisation's `planTier` is deliberately **not** rewritten. Entitlement is
+   * resolved from subscription status at read time, so `HALTED` already withdraws the
+   * allowance, and leaving the tier stamped means a customer who fixes their payment
+   * method is restored by a single status change rather than a re-provisioning.
+   * `handleSubscriptionCancelled` does downgrade the org, because cancellation is the
+   * customer's own decision and is not expected to be undone.
+   */
+  async handleSubscriptionHalted(event: any, provider: PaymentProviderType): Promise<void> {
+    const externalSubId = this.extractSubscriptionId(event, provider);
+    const subscription = await this.storage.getSubscriptionByExternalId(
+      externalSubId,
+      provider as PaymentProvider,
+    );
+
+    if (!subscription) {
+      this.logger.warn(
+        `Webhook ${provider} subscription.halted for unknown subscription ${externalSubId} — ignored`,
+      );
+      return;
+    }
+
+    if (subscription.status === SubscriptionStatus.HALTED) {
+      this.logger.log(
+        `Webhook ${provider} subscription.halted for ${externalSubId}: already HALTED, no change`,
+      );
+      return;
+    }
+
+    await this.storage.updateSubscription(subscription.id, {
+      status: SubscriptionStatus.HALTED,
+    });
+
+    this.logger.warn(
+      `Webhook ${provider} subscription.halted for ${externalSubId}: ` +
+        `${subscription.status} → HALTED (retries exhausted); org ${subscription.organizationId} ` +
+        `keeps its tier stamp but loses entitlement until a charge succeeds`,
+    );
+
+    await this.logSubscriptionEvent({
+      userId: subscription.userId,
+      subscriptionId: subscription.id,
+      eventType: 'subscription.halted',
+      provider,
+      providerStatus: 'halted',
+      localStatus: SubscriptionStatus.HALTED,
+      promoted: false,
+      message: 'Provider exhausted charge retries. Paid entitlement withdrawn.',
+    });
   }
 
   /**

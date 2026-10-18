@@ -138,30 +138,103 @@ describe('UsageLimitService', () => {
   // ===========================================================================
 
   describe('getEffectiveTier — AC1 (same resolver the generate path uses)', () => {
-    it('returns the org tier directly when not FREE', async () => {
+    // -------------------------------------------------------------------
+    // The two tests below previously asserted the opposite contract: that a
+    // paid org short-circuits without reading subscription status, and that a
+    // PENDING subscription grants its paid limits to a FREE org. Both were
+    // changed because the *requirement* changed, not to make a failing test
+    // pass — the 2026-10-16 production smoke test showed they described a
+    // defect. A PAST_DUE subscription kept its full allowance forever because
+    // nothing read the status; and the "webhook lag" the PENDING grant covered
+    // was measured at 32 hours, with nothing collected for the whole window.
+    // -------------------------------------------------------------------
+
+    it('keeps the org tier when the subscription backing it is ACTIVE', async () => {
       mockPrisma.organization.findUnique.mockResolvedValue({
         id: 'org-1',
         planTier: 'team',
         monthlyLimit: 200,
       });
+      mockPrisma.subscription.findFirst.mockResolvedValue({
+        id: 'sub-1',
+        status: 'ACTIVE',
+        planTier: 'TEAM',
+      });
 
       const result = await service.getEffectiveTier('org-1');
 
       expect(result.planTier).toBe('team');
-      expect(mockPrisma.subscription.findFirst).not.toHaveBeenCalled();
     });
 
-    it('grants a PENDING subscription tier for a FREE org (webhook-lag grace window)', async () => {
+    it('falls back to FREE when the org is paid but its subscription is PAST_DUE', async () => {
+      mockPrisma.organization.findUnique.mockResolvedValue({
+        id: 'org-1',
+        planTier: 'team',
+        monthlyLimit: 200,
+      });
+      mockPrisma.subscription.findFirst.mockResolvedValue({
+        id: 'sub-1',
+        status: 'PAST_DUE',
+        planTier: 'TEAM',
+      });
+
+      const result = await service.getEffectiveTier('org-1');
+
+      expect(result.planTier).toBe('FREE');
+      expect(result.monthlyLimit).toBe(3);
+    });
+
+    it.each(['HALTED', 'PAUSED', 'CANCELLED', 'EXPIRED', 'PENDING'])(
+      'falls back to FREE when the backing subscription is %s',
+      async (status) => {
+        mockPrisma.organization.findUnique.mockResolvedValue({
+          id: 'org-1',
+          planTier: 'solo',
+          monthlyLimit: 50,
+        });
+        mockPrisma.subscription.findFirst.mockResolvedValue({
+          id: 'sub-1',
+          status,
+          planTier: 'SOLO',
+        });
+
+        const result = await service.getEffectiveTier('org-1');
+
+        expect(result.planTier).toBe('FREE');
+        expect(result.monthlyLimit).toBe(3);
+      },
+    );
+
+    it('leaves a paid org with no subscription row alone (manually provisioned)', async () => {
+      mockPrisma.organization.findUnique.mockResolvedValue({
+        id: 'org-1',
+        planTier: 'brokerage',
+        monthlyLimit: 1000,
+      });
+      mockPrisma.subscription.findFirst.mockResolvedValue(null);
+
+      const result = await service.getEffectiveTier('org-1');
+
+      expect(result.planTier).toBe('brokerage');
+      expect(result.monthlyLimit).toBe(1000);
+    });
+
+    it('does not grant a PENDING subscription tier to a FREE org', async () => {
       mockPrisma.organization.findUnique.mockResolvedValue({
         id: 'org-1',
         planTier: 'free',
         monthlyLimit: 3,
       });
-      mockPrisma.subscription.findFirst.mockResolvedValue({ planTier: 'SOLO', id: 'sub-1' });
+      mockPrisma.subscription.findFirst.mockResolvedValue({
+        id: 'sub-1',
+        status: 'PENDING',
+        planTier: 'SOLO',
+      });
 
       const result = await service.getEffectiveTier('org-1');
 
-      expect(result.planTier).toBe('SOLO');
+      expect(result.planTier).toBe('free');
+      expect(result.monthlyLimit).toBe(3);
     });
 
     it('throws NotFoundException for a missing org', async () => {
