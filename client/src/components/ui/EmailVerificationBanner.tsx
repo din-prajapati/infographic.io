@@ -4,7 +4,26 @@ import { Button } from './button';
 import { useAuth } from '@/lib/auth';
 import { resendVerificationEmail } from '../auth/EmailVerificationRequiredDialog';
 
-type ResendState = 'idle' | 'sending' | 'sent' | 'error';
+type ResendState = 'idle' | 'sending' | 'sent' | 'verified' | 'error';
+
+/**
+ * Map a resend response to what the banner should say.
+ *
+ * Extracted so the mapping can be tested without rendering the banner (auth/query
+ * mocking) — the same pattern PricingPage.spec.tsx uses.
+ *
+ * The bug this pins: `alreadyVerified` was folded in with `sent` and rendered as
+ * "Sent — check your inbox". The server returns `alreadyVerified` precisely when it
+ * has sent nothing, so the banner told the user to wait for mail that would never
+ * arrive. It is not a send — it is the answer that the banner should not be shown.
+ */
+export function resendStateFor(
+  result: { sent?: boolean; alreadyVerified?: boolean } | null | undefined,
+): Extract<ResendState, 'sent' | 'verified' | 'error'> {
+  if (result?.alreadyVerified) return 'verified';
+  if (result?.sent) return 'sent';
+  return 'error';
+}
 
 /**
  * US-LAUNCH-014 AC10 — a persistent reminder between `<AppHeader />` and `<main>`
@@ -19,13 +38,21 @@ export function EmailVerificationBanner() {
   const { user } = useAuth();
   const [resend, setResend] = useState<ResendState>('idle');
 
-  if (user?.emailVerified !== false) return null;
+  // `verified` means the server told us this address is already verified — the
+  // cached session is simply stale. Hide rather than keep nagging; the next
+  // reload (or a cross-tab storage event) refreshes `user.emailVerified`.
+  if (user?.emailVerified !== false || resend === 'verified') return null;
 
   const handleResend = async () => {
     setResend('sending');
     try {
       const result = await resendVerificationEmail();
-      setResend(result?.sent || result?.alreadyVerified ? 'sent' : 'error');
+      // `alreadyVerified` used to be folded in with `sent` and rendered as
+      // "Sent — check your inbox". The server returns it precisely when it has
+      // sent nothing, because the address is already verified — so the banner
+      // told the user to wait for a mail that would never arrive. It is not a
+      // send; it is the answer that this banner should not be on screen.
+      setResend(resendStateFor(result));
     } catch {
       setResend('error');
     }

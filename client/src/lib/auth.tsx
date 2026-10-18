@@ -36,6 +36,46 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(false);
   }, []);
 
+  // Keep this tab's cached user in step with other tabs.
+  //
+  // Clicking a verification link opens a NEW tab. `VerifyEmailPage` writes the
+  // refreshed session to localStorage there, but the tab the user came from
+  // holds `user` in React state read once at mount — so it kept showing "please
+  // verify your email" for an account that was already verified, and its Resend
+  // button went on offering to send a mail the server would refuse to send.
+  //
+  // `storage` fires only in the OTHER tabs, which is precisely the case that was
+  // broken. Logout in one tab propagates the same way.
+  //
+  // Not a full fix: verifying on a different device still leaves this tab stale
+  // until reload, because nothing re-reads the user from the server. That needs
+  // a current-user endpoint, which does not exist yet.
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key !== 'auth_user' && e.key !== 'auth_token' && e.key !== null) return;
+
+      const nextToken = localStorage.getItem('auth_token');
+      const nextUser = localStorage.getItem('auth_user');
+
+      if (!nextToken || !nextUser) {
+        setUser(null);
+        setToken(null);
+        return;
+      }
+
+      try {
+        setUser(JSON.parse(nextUser));
+        setToken(nextToken);
+      } catch {
+        // Leave the current session alone rather than signing the user out on
+        // an unparseable write from elsewhere.
+      }
+    };
+
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, []);
+
   const login = (newUser: LegacyUser, newToken: string) => {
     queryClient.clear();
     setUser(newUser);

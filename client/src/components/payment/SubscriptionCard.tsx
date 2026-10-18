@@ -13,7 +13,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { CreditCard, Calendar, TrendingUp, Loader2, Clock } from "lucide-react";
+import { CreditCard, Calendar, TrendingUp, Loader2, Clock, MailWarning } from "lucide-react";
+import { useAuth } from "@/lib/auth";
+import { resendVerificationEmail } from "@/components/auth/EmailVerificationRequiredDialog";
 import { toast } from "sonner";
 import { queryClient } from "@/lib/queryClient";
 import { paymentsApi, generationsApi, getApiUrl } from "@/lib/api";
@@ -145,6 +147,22 @@ export function SubscriptionCard({ organization }: SubscriptionCardProps) {
     },
   });
 
+  const { user } = useAuth();
+  const [verifyResend, setVerifyResend] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+
+  const handleResendVerification = async () => {
+    setVerifyResend('sending');
+    try {
+      const result = await resendVerificationEmail();
+      // `alreadyVerified` is not a send — the server refused because the address is
+      // already confirmed and our cached session is stale. Saying "Sent" there would
+      // leave the user waiting on a mail that is never coming.
+      setVerifyResend(result?.sent ? 'sent' : result?.alreadyVerified ? 'idle' : 'error');
+    } catch {
+      setVerifyResend('error');
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="glass flex h-64 animate-pulse items-center justify-center rounded-xl border border-border" data-testid="card-subscription-loading">
@@ -191,6 +209,53 @@ export function SubscriptionCard({ organization }: SubscriptionCardProps) {
         </div>
 
         <div className="space-y-6 p-6">
+          {/* US-LAUNCH-014 follow-up (F12, option B) — verify AFTER paying, not before.
+              `create-subscription` is deliberately NOT behind EmailVerifiedGuard: that guard
+              protects routes that spend OUR money (AI generation), and blocking checkout would
+              interrupt a customer at the highest-intent moment they will ever have.
+              The real risk is not that an unverified person pays us — it is that we then have no
+              way to reach them. Receipts, renewal reminders, payment-failure alerts and password
+              resets all go to this address, and their card will be charged again next cycle.
+              So the ask lands here, once money is committed, where it cannot be missed and where
+              the consequence is concrete. The global banner still handles the unpaid case. */}
+          {user?.emailVerified === false && subscription && (
+            <div
+              className="flex items-start gap-2 rounded-md border border-destructive/30 bg-destructive/10 p-3"
+              data-testid="banner-verify-email-paid"
+            >
+              <MailWarning className="h-4 w-4 shrink-0 mt-0.5 text-destructive" />
+              <div className="flex-1 space-y-1">
+                <p className="text-sm font-medium text-destructive">
+                  Confirm your email to receive receipts and billing alerts
+                </p>
+                <p className="text-xs text-destructive/80">
+                  We send your receipt, renewal reminders and any payment-failure warning to{' '}
+                  <span className="font-medium break-all">{user.email}</span>. Until it is
+                  confirmed, those will not reach you — including the notice before your next
+                  charge. Your plan is unaffected.
+                </p>
+                <button
+                  onClick={handleResendVerification}
+                  disabled={verifyResend === 'sending'}
+                  className="text-xs font-medium text-destructive underline underline-offset-2 hover:no-underline disabled:opacity-50"
+                  data-testid="button-verify-email-paid"
+                >
+                  {verifyResend === 'sending' ? 'Sending…' : 'Send the confirmation link again'}
+                </button>
+                {verifyResend === 'sent' && (
+                  <p className="text-xs text-destructive/80" data-testid="text-verify-resend-status">
+                    Sent — check your inbox.
+                  </p>
+                )}
+                {verifyResend === 'error' && (
+                  <p className="text-xs text-destructive/80" data-testid="text-verify-resend-status">
+                    Could not send — please try again.
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Plan Details */}
           <div className="flex items-center justify-between gap-2 flex-wrap">
             <div className="flex items-center gap-2 flex-wrap">
