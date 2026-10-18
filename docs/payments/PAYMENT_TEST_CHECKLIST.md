@@ -117,17 +117,21 @@ Wrong amount → fix [Razorpay Plans](https://dashboard.razorpay.com/app/plans) 
 | CVV / expiry | Any 3 digits / any future |
 | OTP | **4–10 digits** = success; **under 4 digits** = fail |
 
-> **⚠️ Corrected 2026-10-18 — card recurring may not be available on this account.**
+> **⚠️ Corrected 2026-10-18 — that card is not recurring-eligible; the account is fine.**
 > This table previously listed the Mastercard above as *the* subscriptions card. Razorpay rejected
 > it on staging with **"This card is not eligible for recurring payments. Please use a different
-> card."** Card e-mandate is gated separately from UPI mandate and needs explicit enablement.
+> card."**
 >
-> UPI is the only rail proven to work here: the first real production subscription (2026-10-17)
-> was captured through a UPI mandate (`method: upi`). **Use UPI for subscription testing.**
+> **The account is not the problem.** `GET /v1/methods` confirms card recurring is enabled on
+> **both** environments — live reports `recurring.card` for MasterCard, Visa and RuPay (credit and
+> prepaid) plus 51 debit banks, alongside `upi`, `upi_autopay`, `nach` and 301 emandate banks. The
+> specific test card above simply is not flagged recurring-eligible in test mode.
 >
-> Whether card recurring is enabled on the **live** account is unverified. If it is not, real
-> customers choosing a card hit that same error at the payment screen. Confirm in
-> Razorpay Dashboard → Settings → Configuration before relying on card subscriptions.
+> **Use UPI `success@razorpay` for subscription testing** — it works, and it matches production:
+> the first real subscription (2026-10-17) was captured through a UPI mandate (`method: upi`).
+>
+> Still untested: a card subscription end to end on the live account. Enabled is not the same as
+> proven, so treat the first real card customer as an unexercised path.
 
 Docs: [Test cards](https://razorpay.com/docs/payments/payments/test-card-details/) · [Test subscriptions](https://razorpay.com/docs/payments/subscriptions/test/).
 

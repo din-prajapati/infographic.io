@@ -263,16 +263,28 @@ export function SubscriptionCard({ organization }: SubscriptionCardProps) {
             </div>
           )}
 
-          {/* Pending Payment Banner */}
+          {/* Pending Payment Banner.
+              Every claim here was previously false. It read "Your payment was captured" and
+              "your {plan} limits are already in effect" for a subscription that is, by
+              definition of PENDING, not yet paid for. The second claim was accidentally true
+              while a PENDING subscription optimistically granted paid limits; that grant was
+              removed, because it handed out a paid plan for a mandate authorisation that is
+              refunded. So the copy now states what is actually true: the mandate is
+              registered, nothing has been collected, and FREE limits apply until it is.
+              "Usually under a minute" was wrong too — production measured 32 hours between
+              mandate authorisation and first capture. */}
           {subscriptionStatus === 'PENDING' && (
             <div className="flex items-start gap-2 rounded-md border border-yellow-500/30 bg-yellow-500/10 p-3">
               <Clock className="h-4 w-4 shrink-0 mt-0.5 text-yellow-500" />
               <div className="flex-1 space-y-1">
                 <p className="text-sm font-medium text-yellow-600 dark:text-yellow-400">
-                  Payment received — activating your plan
+                  Payment method registered — awaiting your first charge
                 </p>
                 <p className="text-xs text-yellow-600/80 dark:text-yellow-400/80">
-                  Your payment was captured. You can generate designs now — your {planConfig.name} plan limits are already in effect. This banner will disappear once activation is confirmed (usually under a minute).
+                  Your {planConfig.name} plan starts as soon as the first payment is collected. That
+                  is usually quick, but it can take up to a day. Until then you stay on the Free plan
+                  with {PLAN_CONFIG.FREE.limit} designs a month — nothing has been charged yet beyond
+                  any small refundable amount your bank used to verify the payment method.
                 </p>
                 <button
                   onClick={handleRefreshStatus}
