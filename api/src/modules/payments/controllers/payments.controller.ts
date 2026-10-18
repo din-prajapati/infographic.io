@@ -252,6 +252,15 @@ export class PaymentsController {
       case 'subscription.cancelled':
         await this.paymentsService.handleSubscriptionCancelled(event, providerType);
         break;
+      // Razorpay's two recurring-charge failure signals. Both previously fell through
+      // to `default` and were logged only, so a subscription whose renewal failed kept
+      // its last known status — and, before the entitlement fix, its full allowance.
+      case 'subscription.pending':
+        await this.paymentsService.handleSubscriptionChargeRetrying(event, providerType);
+        break;
+      case 'subscription.halted':
+        await this.paymentsService.handleSubscriptionHalted(event, providerType);
+        break;
       case 'payment.failed':
         await this.paymentsService.handlePaymentFailed(event, providerType);
         break;

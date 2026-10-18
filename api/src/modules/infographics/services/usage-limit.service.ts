@@ -204,39 +204,70 @@ export class UsageLimitService {
   }
 
   /**
-   * If org is on FREE but has a PENDING subscription, optimistically grant that
-   * subscription's plan limits. This covers the window between payment initiation
-   * and webhook arrival — particularly common in local dev where Razorpay cannot
-   * reach localhost and the webhook never fires automatically.
+   * Statuses that entitle an organisation to its paid tier.
+   *
+   * Deliberately narrow. `PENDING` is excluded: it means a subscription record
+   * exists, not that anything was collected. `PAST_DUE`, `HALTED`, `PAUSED`,
+   * `CANCELLED` and `EXPIRED` are all excluded for the same reason — whatever
+   * entitlement once existed is no longer paid for.
+   */
+  private static readonly ENTITLING_STATUSES: SubscriptionStatus[] = [SubscriptionStatus.ACTIVE];
+
+  /**
+   * Resolve the tier an organisation may actually use, as opposed to the tier
+   * stamped on its row.
+   *
+   * Two defects this closes, both found during the 2026-10-16 production smoke
+   * test:
+   *
+   *   • The paid tier used to be returned unconditionally whenever
+   *     `planTier !== 'free'`, without ever reading subscription status. So a
+   *     subscription moved to `PAST_DUE` by a failed renewal kept its full
+   *     allowance indefinitely — the status was written and then never read by
+   *     anything.
+   *
+   *   • A `PENDING` subscription on a FREE org used to be granted its paid
+   *     limits optimistically, to cover the gap before the webhook arrives.
+   *     That gap was assumed to be minutes. Production measured it at 32 hours
+   *     between mandate authorisation and first capture, during which nothing
+   *     had been collected. Entitlement is no longer granted on PENDING; the
+   *     plan activates when the payment does.
+   *
+   * An organisation on a paid tier with **no** subscription row at all is left
+   * alone. Those are provisioned by hand (internal, grandfathered, comped), and
+   * silently demoting them would be a worse bug than the one being fixed.
    */
   private async resolveEffectiveTier(
     org: { id: string; planTier: string; monthlyLimit: number },
   ): Promise<{ planTier: string; monthlyLimit: number }> {
-    if ((org.planTier || 'free').toLowerCase() !== 'free') {
-      this.logger.debug(`resolveEffectiveTier: org already on ${org.planTier} — no PENDING check needed`);
+    if ((org.planTier || 'free').toLowerCase() === 'free') {
       return org;
     }
 
-    // Org is still FREE. Check if there is a PENDING subscription that hasn't been
-    // confirmed via webhook yet (common in local dev — Razorpay can't reach localhost).
-    const pendingSub = await prisma.subscription.findFirst({
-      where: {
-        organizationId: org.id,
-        status: SubscriptionStatus.PENDING,
-      },
+    const latestSub = await prisma.subscription.findFirst({
+      where: { organizationId: org.id },
       orderBy: { createdAt: 'desc' },
-      select: { planTier: true, id: true },
+      select: { id: true, status: true, planTier: true },
     });
 
-    if (!pendingSub) {
-      this.logger.debug(`resolveEffectiveTier: org ${org.id} is FREE and no PENDING subscription found`);
+    if (!latestSub) {
+      this.logger.debug(
+        `resolveEffectiveTier: org ${org.id} is ${org.planTier} with no subscription row — ` +
+          `treated as manually provisioned, left unchanged`,
+      );
       return org;
     }
 
-    const pendingTier = (pendingSub.planTier || 'FREE').toLowerCase();
-    const pendingLimit = PLAN_TIER_MONTHLY_LIMITS[pendingTier] ?? 3;
-    this.logger.log(`resolveEffectiveTier: org ${org.id} is FREE but sub ${pendingSub.id} is PENDING ${pendingSub.planTier} — granting ${pendingLimit} limit`);
-    return { planTier: pendingSub.planTier, monthlyLimit: pendingLimit };
+    if (UsageLimitService.ENTITLING_STATUSES.includes(latestSub.status)) {
+      return org;
+    }
+
+    const freeLimit = PLAN_TIER_MONTHLY_LIMITS['free'] ?? 3;
+    this.logger.warn(
+      `resolveEffectiveTier: org ${org.id} is stamped ${org.planTier} but subscription ` +
+        `${latestSub.id} is ${latestSub.status} — falling back to FREE (${freeLimit})`,
+    );
+    return { planTier: 'FREE', monthlyLimit: freeLimit };
   }
 
   async getUsageQuota(organizationId: string): Promise<UsageQuotaSnapshot> {

@@ -172,6 +172,7 @@ export class RazorpayProvider implements IPaymentProvider {
       currency: subscription.currency || 'INR',
       provider: 'RAZORPAY',
       shortUrl: subscription.short_url,
+      paidCount: typeof subscription.paid_count === 'number' ? subscription.paid_count : undefined,
     };
   }
 
@@ -198,6 +199,7 @@ export class RazorpayProvider implements IPaymentProvider {
       currency: subscription.currency || 'INR',
       provider: 'RAZORPAY',
       shortUrl: subscription.short_url,
+      paidCount: typeof subscription.paid_count === 'number' ? subscription.paid_count : undefined,
     };
   }
 
