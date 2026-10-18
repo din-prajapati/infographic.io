@@ -111,11 +111,23 @@ Wrong amount → fix [Razorpay Plans](https://dashboard.razorpay.com/app/plans) 
 
 | Use | Value |
 |-----|--------|
-| **Subscriptions** | `5267 3181 8797 5449` (Mastercard) |
+| **Subscriptions — use this** | **UPI** `success@razorpay` (failure path: `failure@razorpay`) |
+| Subscriptions by card | `5267 3181 8797 5449` (Mastercard) — **see the warning below** |
 | One-time only | `4111 1111 1111 1111` (not for subscriptions) |
 | CVV / expiry | Any 3 digits / any future |
 | OTP | **4–10 digits** = success; **under 4 digits** = fail |
-| UPI | `success@razorpay` / `failure@razorpay` |
+
+> **⚠️ Corrected 2026-10-18 — card recurring may not be available on this account.**
+> This table previously listed the Mastercard above as *the* subscriptions card. Razorpay rejected
+> it on staging with **"This card is not eligible for recurring payments. Please use a different
+> card."** Card e-mandate is gated separately from UPI mandate and needs explicit enablement.
+>
+> UPI is the only rail proven to work here: the first real production subscription (2026-10-17)
+> was captured through a UPI mandate (`method: upi`). **Use UPI for subscription testing.**
+>
+> Whether card recurring is enabled on the **live** account is unverified. If it is not, real
+> customers choosing a card hit that same error at the payment screen. Confirm in
+> Razorpay Dashboard → Settings → Configuration before relying on card subscriptions.
 
 Docs: [Test cards](https://razorpay.com/docs/payments/payments/test-card-details/) · [Test subscriptions](https://razorpay.com/docs/payments/subscriptions/test/).
 
