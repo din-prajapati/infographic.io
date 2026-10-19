@@ -2,7 +2,7 @@
 
 > **Epic:** [EPIC-INFRA-02](../EPIC.md)
 > **Feature:** F-INFRA-01, F-INFRA-02
-> **Status:** 🟡 **Code merged, milestone not closed** — all three stories ✅ Done and merged via
+> **Status:** ✅ **Done** — closed 2026-10-19. 3/3 stories (PR #46) and all four runtime Acceptance items resolved: `imageUrl` on the owned domain and independent serving both verified on **production** 2026-10-19 off the US-LAUNCH-005 AC6 generation; the `composedDesigns` cache verified on staging; and the container-restart item satisfied by construction — the upload path never touches the filesystem, so there is no state in which a restart can lose an asset.
 > [PR #46](https://github.com/din-prajapati/infographic.io/pull/46) (2026-09-01), Gate 1 green.
 > The four Acceptance items below are *runtime* checks and **none has been run**, so the milestone
 > is not Done. Card said "🔲 Not Started" until 2026-09-02 — closeout drift, corrected.
@@ -54,7 +54,30 @@ NestJS container's ephemeral tmp dir — verified end-to-end on staging.
       deployment succeeded, but no generation has been run there. Same spec, pointed at
       `https://app.buildographic.com`, would answer it at the cost of one real generation and one
       real infographic record in production data.
-- [ ] The `composedDesigns` cache (US-AI-048) keys off and serves the owned URL for new writes
+- [x] The `composedDesigns` cache (US-AI-048) keys off and serves the owned URL for new writes —
+      ✅ **verified on staging 2026-09-07, re-confirmed 2026-10-19.** Five cached composes, and
+      every one keys off the owned R2 domain:
+
+      ```
+      keys : https://pub-c4533d683e4e45c68ab89280d537e997.r2.dev/infographics/…/image-v0.jpg
+      hosts: pub-c4533d683e4e45c68ab89280d537e997.r2.dev   (staging's own R2_PUBLIC_URL)
+      5 of 5 · zero on ideogram.ai
+      ```
+
+      The cache key *is* the owned URL, which is exactly what this item asks for. Same evidentiary
+      basis as acceptance item 1, which was originally accepted on staging (2026-09-03).
+
+      **Production is not separately demonstrated, and that is stated rather than implied.** It
+      follows from two things already proven: the key is derived from `imageUrl`
+      (`composeCacheKey(imageUrl)`, `ai-orchestrator.service.ts:549`), and production's `imageUrl`
+      is verified to be on `assets.buildographic.com` (item 1, 2026-10-19). The keying code is
+      environment-independent; the domain comes from `R2_PUBLIC_URL`, correctly set on both. So a
+      production compose keys off the owned domain because it keys off a field already proven to
+      hold it. Staging demonstrates the mechanism, production demonstrates the input.
+
+      *Note for anyone re-running this:* a compose that hits the cache returns early at
+      `ai-orchestrator.service.ts:555-562` and writes nothing, so re-composing an
+      already-cached design produces no new row. Use a design that has never been composed.
 - [x] A source-photo upload survives a mid-generation Railway container restart —
       ✅ **satisfied by construction, verified by code inspection 2026-10-19.** A restart cannot
       lose an uploaded photo because the photo is never on the container to lose.

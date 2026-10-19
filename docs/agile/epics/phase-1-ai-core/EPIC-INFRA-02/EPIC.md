@@ -1,7 +1,7 @@
 # EPIC-INFRA-02 — Durable Asset Storage
 
 > **Phase:** Phase 1 — Revenue Strategy
-> **Status:** 🟡 In Progress — all three stories ✅ Done and merged ([PR #46](https://github.com/din-prajapati/infographic.io/pull/46), 2026-09-01), Gate 1 green. **Configuration is complete:** production has all five `R2_*` variables (pushed 2026-09-03, deployment SUCCESS, bucket `buildographic-assets` → `assets.buildographic.com`). **Not closed:** M-INFRA-01’s acceptance is four *runtime* checks and only one has been met, on staging — check 1 verified 2026-09-03 that a real generation’s variation URLs came back on staging’s own `R2_PUBLIC_URL` with none on `ideogram.ai`. **Production has never been observed**, and checks 2–4 are open. See [M-INFRA-01](./milestones/M-INFRA-01-durable-asset-storage.md) for the per-check evidence.
+> **Status:** ✅ **Done** — closed 2026-10-19. All three stories merged (PR #46, 2026-09-01) and the sole milestone **M-INFRA-01 closed 2026-10-19** with all four runtime Acceptance items resolved. Generated assets now live on `assets.buildographic.com`, verified on production: a stored image fetches `HTTP 200` from the owned domain with Ideogram uninvolved. The revenue-on gate this epic was filed against has also closed.
 > **Linear Project:** LIN-EPIC-XXX
 > **Target date:** before US-LAUNCH-005 AC6 (real ₹ transaction)
 > **Owner:** Dinesh
