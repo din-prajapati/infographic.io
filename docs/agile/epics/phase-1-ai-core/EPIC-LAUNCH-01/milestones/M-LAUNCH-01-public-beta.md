@@ -43,8 +43,21 @@ A real estate agent who is a total stranger can sign up on production, generate 
       Policy"). Note an HTTP check alone cannot answer this: the SPA catch-all returns 200 for any
       path, including nonsense ones — the first pass at this check did exactly that and proved
       nothing.
-- [ ] A password-reset email arrives in a real inbox from production and the reset link works —
-      **HUMAN.** Needs a real inbox; nothing else blocks it.
+- [x] A password-reset email arrives in a real inbox from production and the reset link works —
+      ✅ **verified live against production 2026-07-21**, recorded under
+      [US-LAUNCH-003](../stories/US-LAUNCH-003/STORY.md) TC-LAUNCH-003-05. A real account was
+      registered on `app.buildographic.com`, forgot-password triggered, the genuine Resend email
+      received, and the link correctly carried `https://app.buildographic.com/auth/reset?token=…`
+      with no `localhost` fallback — the reset was then completed and the new password used to log
+      in. That run is also what caught the empty `BASE_URL` / missing `CLIENT_URL` on both
+      environments, so it exercised the thing this item exists to catch. Closed on that evidence
+      2026-10-19.
+
+      > **Provenance note:** the account used for it, `din.prajapati+prodreset@gmail.com`, was
+      > deleted on 2026-10-19 as part of the `emailNormalized` backfill — it was one of two empty
+      > legacy test accounts colliding on the unique key. The verification stands and is written up
+      > in US-LAUNCH-003; the account that produced it no longer exists. Re-running it on a current
+      > account takes about three minutes if live evidence is ever wanted instead of the citation.
 - [ ] ⚠️ With `BETA_MODE=true`, no paid checkout can be initiated from UI **or** API —
       **cannot be verified as written, and the premise has changed.** `BETA_MODE` is **not set at
       all** on production (checked 2026-09-08 via `railway variables --environment production`).
