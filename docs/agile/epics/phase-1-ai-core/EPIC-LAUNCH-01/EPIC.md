@@ -1,7 +1,7 @@
 # EPIC-LAUNCH-01 — Go-Live & Revenue Readiness
 
 > **Phase:** Phase 1 — Revenue Strategy (v1.1)
-> **Status:** 🟡 In Progress — **14/17 stories Done**, 1 In Progress (US-LAUNCH-005), 2 Not Started (US-LAUNCH-016/017 signup onboarding, backlog). US-LAUNCH-014 closed 2026-09-29: sign-up verification gate + abuse controls, live on staging and production. Only US-LAUNCH-005 AC5/6 (real ₹ transaction) stands between this epic and fully Done.
+> **Status:** 🟡 In Progress — **15/17 stories Done**, 2 Not Started (US-LAUNCH-016/017 signup onboarding, backlog). **US-LAUNCH-005 closed 2026-10-19, completing milestone M-LAUNCH-02 (revenue-on) 7/7** — the production payment path has now been exercised end to end with real money. US-LAUNCH-014 closed 2026-09-29: sign-up verif
 > **Depends on:** EPIC-INFRA-01 (Phase 0 production deploy) for all stories · EPIC-AI-06 gates the **revenue-on switch** (M-LAUNCH-02 DoD), not M-LAUNCH-02 prep work
 > **Linear Project:** LIN-EPIC-XXX
 > **Target date:** 2026-08-15
@@ -38,7 +38,7 @@
 | [US-LAUNCH-002](stories/US-LAUNCH-002/STORY.md) | Transactional email foundation (provider-agnostic EmailService) | M-LAUNCH-01 | M | ✅ Done | ec166fb |
 | [US-LAUNCH-003](stories/US-LAUNCH-003/STORY.md) | Forgot / reset password flow | M-LAUNCH-01 | M | ✅ Done | 1bc7346 |
 | [US-LAUNCH-004](stories/US-LAUNCH-004/STORY.md) | Beta launch mode (checkout off · AI-content disclaimer) | M-LAUNCH-01 | S | ✅ Done | [#18](https://github.com/din-prajapati/infographic.io/pull/18) |
-| [US-LAUNCH-005](stories/US-LAUNCH-005/STORY.md) | RazorPay live-mode activation | M-LAUNCH-02 | M | 🟡 AC1–4 done — approved, live keys deployed 2026-07-28; AC5/6 (prereqs check, real ₹ txn) open | — (ops) |
+| [US-LAUNCH-005](stories/US-LAUNCH-005/STORY.md) | RazorPay live-mode activation | M-LAUNCH-02 | M | ✅ Done 2026-10-19 — AC6 run on live production: ₹5,499 charged, webhook verified, refunded and cancelled | — (ops) |
 | [US-LAUNCH-006](stories/US-LAUNCH-006/STORY.md) | Payment receipt email on subscription charge | M-LAUNCH-02 | S | ✅ Done | `fa1d345` |
 | [US-LAUNCH-007](stories/US-LAUNCH-007/STORY.md) | BROKERAGE tier gate on pricing page (resolves PT-06) | M-LAUNCH-02 | S | ✅ Done | `fa1d345` |
 | [US-LAUNCH-008](stories/US-LAUNCH-008/STORY.md) | Metering policy guard (1 generation = 1 credit) | M-LAUNCH-02 | S | ✅ Done | `aaf3aef` |

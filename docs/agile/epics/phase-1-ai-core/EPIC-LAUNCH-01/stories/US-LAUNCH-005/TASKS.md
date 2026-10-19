@@ -2,7 +2,7 @@
 
 > **Story:** [STORY.md](./STORY.md)
 > **Branch:** `feat/launch-us-launch-005-razorpay-live`
-> **PR:** #_____ (fill when opened)
+> **PR:** none — ops-only scope; closed 2026-10-19 with a documented DoD exception in STORY.md
 > **Linear:** LIN-XXX
 > **Type:** feat (code) + ops (HUMAN checklist in STORY.md)
 
@@ -77,7 +77,7 @@ npm run verify:payment-prereqs   # against prod config (AC5)
 - [ ] T4 — HUMAN ops checklist complete (incl. real ₹ transaction + refund) — KYC/plans/webhook/Railway vars done 2026-07-28; real ₹ transaction + refund intentionally not run
 - [x] `npm run check` passes ✅
 - [x] `npm run test:unit` passes ✅
-- [ ] PR opened with story card as description — no PR; this story's remaining scope is ops-only (T3/T4)
+- [x] ~~PR opened with story card as description~~ — n/a, ops-only scope (T3/T4); see the DoD exception in STORY.md
 - [x] STORY.md ACs updated ✅
 
 ---
