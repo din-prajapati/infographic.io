@@ -285,6 +285,15 @@ model Payment {
   method            String?
   errorCode         String?
   errorDescription  String?
+
+  // Refunds. A refund is rarely for the full amount: the provider's fee is not
+  // refundable, so a "full refund" of a ₹5,499 charge returned ₹5,478 in the
+  // 2026-10-19 production test. `refundedAmount` is therefore the source of
+  // truth for money returned — never assume it equals `amount`.
+  refundedAmount    Int? // paise/cents actually returned
+  refundedAt        DateTime?
+  externalRefundId  String?
+
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
 

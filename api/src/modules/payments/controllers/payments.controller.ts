@@ -264,6 +264,14 @@ export class PaymentsController {
       case 'payment.failed':
         await this.paymentsService.handlePaymentFailed(event, providerType);
         break;
+      // F17 — refunds were invisible: a real refund left the Payment row reading
+      // CAPTURED for the full amount. `refund.created` fires first and
+      // `refund.processed` when it settles; both carry the same refund id and the
+      // handler is idempotent on it, so either can arrive first or alone.
+      case 'refund.created':
+      case 'refund.processed':
+        await this.paymentsService.handleRefund(event, providerType);
+        break;
       case 'payment.authorized':
       case 'payment.captured':
         // Razorpay sends these for mandate / token flows (e.g. ₹5 card step). Billing truth is

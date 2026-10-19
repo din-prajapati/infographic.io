@@ -1051,7 +1051,13 @@ export class PaymentsService {
       paymentProvider: provider as PaymentProvider,
       externalPaymentId: paymentData.id,
       externalOrderId: paymentData.orderId || null,
-      externalInvoiceId: null,
+      externalInvoiceId: paymentData.invoiceId || null,
+      // Deliberately null on webhook-created rows. The webhook signature is an
+      // HMAC over the raw request body; stored on its own, without those exact
+      // bytes, it can never be re-verified — it would be audit theatre. The
+      // re-verifiable one is HMAC(subscriptionId|paymentId), which we can
+      // recompute on demand from ids already on this row, so persisting it
+      // would add nothing either.
       signature: null,
       amount: paymentData.amount,
       currency: paymentData.currency,
@@ -1074,6 +1080,43 @@ export class PaymentsService {
       await this.upgradeOrganizationForActiveSubscription(subscription);
     } else {
       await this.storage.updateSubscription(subscription.id, periodUpdate);
+    }
+
+    // Invoice record. The model existed with no writer anywhere, so the table sat
+    // empty through a successful capture and there was nothing to raise a receipt
+    // from or reconcile against. Best-effort: a failure here must never cost the
+    // customer their activation, which has already happened above.
+    if (paymentData.invoiceId) {
+      try {
+        await prisma.invoice.upsert({
+          where: { externalInvoiceId: paymentData.invoiceId },
+          // Idempotent on webhook replay: Razorpay redelivers, and
+          // externalInvoiceId is unique.
+          update: { amountPaid: paymentData.amount, amountDue: 0, status: 'paid', paidAt: new Date() },
+          create: {
+            userId: subscription.userId,
+            paymentProvider: provider as PaymentProvider,
+            externalInvoiceId: paymentData.invoiceId,
+            externalSubscriptionId: externalSubId || null,
+            amount: paymentData.amount,
+            amountPaid: paymentData.amount,
+            amountDue: 0,
+            currency: paymentData.currency,
+            status: 'paid',
+            issuedAt: new Date(),
+            paidAt: new Date(),
+          },
+        });
+      } catch (invoiceErr: unknown) {
+        this.logger.warn(
+          `Could not write Invoice for ${paymentData.invoiceId}: ` +
+            (invoiceErr instanceof Error ? invoiceErr.message : String(invoiceErr)),
+        );
+      }
+    } else {
+      this.logger.warn(
+        `subscription.charged for ${externalSubId} carried no invoice_id — no Invoice row written`,
+      );
     }
 
     // AC1/AC4: Send receipt email for both initial activation and renewal charges.
@@ -1126,6 +1169,89 @@ export class PaymentsService {
         activeSubscriptionId: null,
       });
     }
+  }
+
+  /**
+   * A refund was issued against a payment — F17.
+   *
+   * Nothing handled refunds before this: no case in the webhook switch, no logic
+   * in the service. After a real ₹5,478 refund on 2026-10-19 the Payment row still
+   * read `CAPTURED ₹5,499`, so every consumer of that table — revenue reporting,
+   * reconciliation, dispute evidence — was reading a number that was wrong with no
+   * way to know.
+   *
+   * Two things worth knowing about the amounts:
+   *
+   *  • A refund is rarely for the full charge. The provider's fee is not
+   *    refundable, so a "full refund" of ₹5,499 returned ₹5,478. `refundedAmount`
+   *    is the source of truth for money returned; never derive it from `amount`.
+   *  • Refunds can be partial by intent, and there can be several against one
+   *    payment. Amounts are therefore accumulated, not overwritten.
+   *
+   * `status` moves to REFUNDED on any refund. The enum has no partial state, and
+   * for subscription lifecycle purposes a reversed charge is reversed; callers
+   * needing the exact figure read `refundedAmount`.
+   */
+  async handleRefund(event: any, provider: PaymentProviderType): Promise<void> {
+    const refund = event?.payload?.refund?.entity || {};
+    const externalPaymentId = refund.payment_id;
+
+    if (!externalPaymentId) {
+      this.logger.warn(`Webhook ${provider} refund event carried no payment_id — ignored`);
+      return;
+    }
+
+    const payment = await this.storage.getPaymentByExternalId(
+      externalPaymentId,
+      provider as PaymentProvider,
+    );
+
+    if (!payment) {
+      this.logger.warn(
+        `Webhook ${provider} refund for unknown payment ${externalPaymentId} — ignored`,
+      );
+      return;
+    }
+
+    // Idempotency: the provider redelivers, and refund.created is normally
+    // followed by refund.processed for the same refund id.
+    if (payment.externalRefundId === refund.id) {
+      this.logger.log(
+        `Webhook ${provider} refund ${refund.id} already recorded on payment ${payment.id} — no change`,
+      );
+      return;
+    }
+
+    const refundAmount = typeof refund.amount === 'number' ? refund.amount : 0;
+    const totalRefunded = (payment.refundedAmount ?? 0) + refundAmount;
+
+    await prisma.payment.update({
+      where: { id: payment.id },
+      data: {
+        status: PaymentStatus.REFUNDED,
+        refundedAmount: totalRefunded,
+        refundedAt: new Date(),
+        externalRefundId: refund.id ?? null,
+      },
+    });
+
+    const partial = totalRefunded < payment.amount;
+    this.logger.warn(
+      `Webhook ${provider} refund ${refund.id} on payment ${payment.id}: ` +
+        `${totalRefunded} of ${payment.amount} ${payment.currency} returned` +
+        `${partial ? ' (partial — provider fee is not refundable)' : ''}`,
+    );
+
+    await this.logSubscriptionEvent({
+      userId: payment.userId,
+      subscriptionId: payment.subscriptionId ?? undefined,
+      eventType: 'payment.refunded',
+      provider,
+      localStatus: PaymentStatus.REFUNDED,
+      promoted: false,
+      message: `Refund of ${totalRefunded} recorded against a charge of ${payment.amount}.`,
+      metadata: { externalPaymentId, externalRefundId: refund.id, refundAmount, totalRefunded },
+    });
   }
 
   /**
@@ -1324,6 +1450,15 @@ export class PaymentsService {
     method?: string;
     errorCode?: string;
     errorDescription?: string;
+    /**
+     * The provider's invoice id for this charge.
+     *
+     * Razorpay puts it on the payment entity of every subscription charge, and we
+     * were dropping it. `Invoice.externalInvoiceId` is required and unique, so no
+     * invoice record could be written without it — which is why that table held
+     * zero rows through a fully successful capture.
+     */
+    invoiceId?: string;
     periodStart: Date;
     periodEnd: Date;
   } {
@@ -1346,6 +1481,7 @@ export class PaymentsService {
           amount: payment.amount,
           currency: payment.currency,
           method: payment.method,
+          invoiceId: payment.invoice_id,
           errorCode: payment.error_code,
           errorDescription: payment.error_description,
           periodStart: new Date(periodStart * 1000),
