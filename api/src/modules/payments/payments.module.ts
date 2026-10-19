@@ -6,6 +6,7 @@ import { PaymentsService } from './services/payments.service';
 import { SubscriptionStorageService } from './services/subscription-storage.service';
 import { UsageAnalyticsService } from './services/usage-analytics.service';
 import { RenewalReminderService } from './services/renewal-reminder.service';
+import { SubscriptionReconciliationService } from './services/subscription-reconciliation.service';
 import { PricingCampaignService } from './services/pricing-campaign.service';
 import { PricingResolutionService } from './services/pricing-resolution.service';
 import { PrismaService } from '../../common/services/prisma.service';
@@ -35,6 +36,10 @@ import { EmailService } from '../email/email.service';
       useFactory: (emailService: EmailService) => new RenewalReminderService(emailService),
       inject: [EmailService],
     },
+    // Safety net under the webhooks: corrects drift the provider never told us about,
+    // and closes the PAST_DUE grace window if `subscription.halted` never arrives.
+    // No constructor deps — uses the prisma singleton directly, like RenewalReminderService.
+    SubscriptionReconciliationService,
     // US-PAY-105 — no constructor deps (uses the prisma singleton directly, same as
     // RenewalReminderService's own prisma access), registered so US-PAY-106's price-resolution
     // service can @Inject() it once that story is implemented.
