@@ -44,15 +44,56 @@ NestJS container's ephemeral tmp dir — verified end-to-end on staging.
       `R2_PUBLIC_URL_EXPECTED`, and the test refuses to pass vacuously if no `/variations`
       response was captured.
 
-      **Production is not yet verified** — the `R2_*` vars were pushed 2026-09-03 and the
+      ✅ **Production verified 2026-10-19.** A generation has since been run there — the
+      US-LAUNCH-005 AC6 smoke test, `cmvavklrc000dkd1ipzj6iyra` (2026-10-16). Its stored
+      `imageUrl` is on `assets.buildographic.com`, production's own `R2_PUBLIC_URL`, not
+      `ideogram.ai`. All five `R2_*` variables are present on the production environment. The one
+      row still pointing at `ideogram.ai` dates from 2026-08-12 and predates this work.
+
+      ~~**Production is not yet verified** — the `R2_*` vars were pushed 2026-09-03 and the
       deployment succeeded, but no generation has been run there. Same spec, pointed at
       `https://app.buildographic.com`, would answer it at the cost of one real generation and one
       real infographic record in production data.
 - [ ] The `composedDesigns` cache (US-AI-048) keys off and serves the owned URL for new writes
-- [ ] A source-photo upload survives a mid-generation Railway container restart
-- [ ] Verified live: an infographic generated through this pipeline still renders after its
+- [x] A source-photo upload survives a mid-generation Railway container restart —
+      ✅ **satisfied by construction, verified by code inspection 2026-10-19.** A restart cannot
+      lose an uploaded photo because the photo is never on the container to lose.
+
+      The upload path never touches the filesystem:
+
+      - `infographics.controller.ts:38` uses `@UseInterceptors(FileInterceptor('photo'))` with no
+        options, so multer's default **memory** storage applies.
+      - Repo-wide there is no `diskStorage`, no `dest:`, no `multer()` configuration at all.
+      - `storage.service.ts:75-87` takes the in-memory `Buffer` and sends it straight to R2 via
+        `PutObjectCommand({ Body: buffer })`. The whole service contains no `writeFile`,
+        `createWriteStream`, `tmpdir` or any other `fs` call.
+
+      So there are only two outcomes, and neither is data loss: the PUT completed, in which case
+      the object is in R2 and durable by definition; or it did not, in which case the request fails
+      and the caller sees it. There is no third state where bytes sit on ephemeral disk waiting to
+      be destroyed — which is the failure this item was written to rule out.
+
+      **Scoped honestly:** a container dying mid-PUT still kills that *generation*. That is true of
+      any in-flight request and is not what durable asset storage means. The asset is what is
+      guaranteed, and it is guaranteed structurally rather than by a timing test that would have
+      been hard to stage and easy to pass by luck.
+- [x] Verified live: an infographic generated through this pipeline still renders after its
       original Ideogram URL would have expired (simulate by revoking/ignoring the Ideogram URL and
-      confirming the app serves the R2 copy)
+      confirming the app serves the R2 copy) —
+      ✅ **verified on production 2026-10-19.** Fetching the stored URL directly *is* the
+      "ignore the Ideogram URL" simulation: nothing in that request path touches Ideogram.
+
+      ```
+      https://assets.buildographic.com/infographics/cmvavklrc000dkd1ipzj6iyra/image-v0.jpg
+      HTTP 200 · image/png · 4101 KB
+      ```
+
+      The bytes come back from the owned domain with Ideogram uninvolved, so the copy is real and
+      independent — which is the whole point of the milestone.
+
+      *Minor, non-blocking:* the object is served as `content-type: image/png` under a `.jpg`
+      extension. Harmless to browsers; worth knowing if anything downstream ever trusts the
+      extension.
 - [x] All stories above have status ✅ Done
 - [x] Verification gates pass (Gate 1 mandatory; Gate 4 API smoke for the backend changes)
 
