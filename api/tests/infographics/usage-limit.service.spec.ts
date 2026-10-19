@@ -166,7 +166,13 @@ describe('UsageLimitService', () => {
       expect(result.planTier).toBe('team');
     });
 
-    it('falls back to FREE when the org is paid but its subscription is PAST_DUE', async () => {
+    // Grace period. This test previously asserted the opposite — that PAST_DUE
+    // dropped straight to FREE. That was changed on a product decision, not to
+    // make a failure pass: a failed renewal is usually a card blip that succeeds
+    // on retry, and locking a paying customer out between the two costs far more
+    // than the few days of plan they get for free. The window ends when the
+    // provider sends `subscription.halted`, covered by the next test.
+    it('keeps the paid tier while a renewal is still being retried (PAST_DUE)', async () => {
       mockPrisma.organization.findUnique.mockResolvedValue({
         id: 'org-1',
         planTier: 'team',
@@ -175,6 +181,24 @@ describe('UsageLimitService', () => {
       mockPrisma.subscription.findFirst.mockResolvedValue({
         id: 'sub-1',
         status: 'PAST_DUE',
+        planTier: 'TEAM',
+      });
+
+      const result = await service.getEffectiveTier('org-1');
+
+      expect(result.planTier).toBe('team');
+      expect(result.monthlyLimit).toBe(200);
+    });
+
+    it('withdraws the paid tier once the provider gives up (HALTED ends the grace)', async () => {
+      mockPrisma.organization.findUnique.mockResolvedValue({
+        id: 'org-1',
+        planTier: 'team',
+        monthlyLimit: 200,
+      });
+      mockPrisma.subscription.findFirst.mockResolvedValue({
+        id: 'sub-1',
+        status: 'HALTED',
         planTier: 'TEAM',
       });
 

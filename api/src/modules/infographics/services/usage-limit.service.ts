@@ -206,12 +206,40 @@ export class UsageLimitService {
   /**
    * Statuses that entitle an organisation to its paid tier.
    *
-   * Deliberately narrow. `PENDING` is excluded: it means a subscription record
-   * exists, not that anything was collected. `PAST_DUE`, `HALTED`, `PAUSED`,
-   * `CANCELLED` and `EXPIRED` are all excluded for the same reason — whatever
-   * entitlement once existed is no longer paid for.
+   * `PENDING` is excluded: it means a subscription record exists, not that
+   * anything was collected. `HALTED`, `PAUSED`, `CANCELLED` and `EXPIRED` are
+   * excluded because whatever entitlement once existed is no longer paid for.
+   *
+   * `PAST_DUE` **is** included, and that is a deliberate grace period rather than
+   * an oversight.
+   *
+   * `PAST_DUE` means a renewal charge failed and the provider is still retrying.
+   * Most first failures are not people refusing to pay — a card hit its limit, a
+   * bank blipped, a card is mid-reissue — and they succeed on a later attempt.
+   * Revoking immediately would lock a paying customer out of their tool between
+   * the failed attempt and the successful retry.
+   *
+   * The two mistakes are not symmetric. Wrongly granting grace costs a few days
+   * of a plan that is around ₹765/month in AI spend at SOLO volume. Wrongly
+   * locking someone out risks a ₹5,499/month customer who, in practice, tends to
+   * leave quietly rather than complain.
+   *
+   * The window is not a number we picked. It ends when the provider gives up and
+   * sends `subscription.halted`, which moves the row to HALTED — outside this
+   * list — and withdraws entitlement. So grace lasts exactly as long as the
+   * retry schedule actually takes, and no constant here goes stale when the
+   * provider changes it.
+   *
+   * **This depends on `subscription.halted` arriving.** It was switched off at
+   * the provider until 2026-10-19; with it off, a customer who stopped paying
+   * would keep their plan indefinitely. The reconciliation job is the intended
+   * backstop: once the paid period has ended with nothing collected, entitlement
+   * should go regardless of which events did or did not arrive.
    */
-  private static readonly ENTITLING_STATUSES: SubscriptionStatus[] = [SubscriptionStatus.ACTIVE];
+  private static readonly ENTITLING_STATUSES: SubscriptionStatus[] = [
+    SubscriptionStatus.ACTIVE,
+    SubscriptionStatus.PAST_DUE,
+  ];
 
   /**
    * Resolve the tier an organisation may actually use, as opposed to the tier
