@@ -124,7 +124,7 @@ far past this point). **Full detail, all phases: [HUMAN_TASKS.md](HUMAN_TASKS.md
 
 | # | Epic | Domain | Focus | Status |
 |---|------|--------|-------|--------|
-| 1 | [EPIC-LAUNCH-01](epics/phase-1-ai-core/EPIC-LAUNCH-01/EPIC.md) · M-LAUNCH-01 | LAUNCH | **Public beta blockers** — legal pages, transactional email + password reset, beta mode | ✅ All 4 stories Done |
+| 1 | [EPIC-LAUNCH-01](epics/phase-1-ai-core/EPIC-LAUNCH-01/EPIC.md) · M-LAUNCH-01 | LAUNCH | **Public beta blockers** — legal pages, transactional email + password reset, beta mode | ✅ **7/7 Done — closed 2026-10-19** (BETA_MODE item superseded by decision) |
 | 2 | [EPIC-AI-02](epics/phase-1-ai-core/EPIC-AI-02/EPIC.md) | AI | **M-AI-06 complete 2026-08-05** — US-AI-010/036/037/038/039/040/042 Done (2026-08-03), US-PANEL-01 Done (PR #26); US-AI-011/041 superseded. Quality tiers/Campaign UI moved to EPIC-AI-08 backlog | ✅ 10/10 |
 | 3 | [EPIC-AI-06](epics/phase-1-ai-core/EPIC-AI-06/EPIC.md) | AI | Hybrid Real-Photo Pipeline — **the chargeability gate** (real photo background, editable overlay). **Both milestones fully closed 2026-08-15** — M-AI-18 (editable overlay, 10 stories) and M-AI-17 (real-photo composition, US-AI-031/031b — credit topped up same day, both ACs live-verified) | ✅ **Fully Done** |
 | 4 | [EPIC-LAUNCH-01](epics/phase-1-ai-core/EPIC-LAUNCH-01/EPIC.md) · M-LAUNCH-02 | LAUNCH | **Revenue on** — RazorPay live activation, receipt email, BROKERAGE gate (PT-06), metering guard, editable-design monetization (US-LAUNCH-015, closed 2026-08-15) | ✅ **7/7 Done — closed 2026-10-19** (US-LAUNCH-005 AC6: real ₹ txn run end to end) |

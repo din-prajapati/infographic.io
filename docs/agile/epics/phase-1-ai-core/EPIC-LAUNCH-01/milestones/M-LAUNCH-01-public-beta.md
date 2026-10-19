@@ -1,7 +1,7 @@
 # M-LAUNCH-01-public-beta — Public Free Beta Live
 
 > **Epic:** [EPIC-LAUNCH-01](../EPIC.md)
-> **Status:** 🟡 In Progress — **7/7 stories ✅ Done** (US-LAUNCH-001, 002, 003, 004, 009, 010, 011, closed 2026-08-04), but **the milestone is not a status flip away from closing.** Two of the four Acceptance checks were verified 2026-09-08 (see below); one needs a real inbox, and one can no longer be verified as written because production has moved past beta. Production go-live itself is done — `app.buildographic.com` serves the deployed build.
+> **Status:** ✅ **Done** — closed 2026-10-19. 7/7 stories, and all four Acceptance items resolved: legal pages and the AI disclaimer verified 2026-09-08, the production password-reset flow on US-LAUNCH-003's 2026-07-21 evidence, and the `BETA_MODE` item **superseded by decision** — beta-gating was dropped, and M-LAUNCH-02 closed the same day on a real ₹5,499 transaction. Public beta is live at `app.buildographic.com` and takes payment.
 > **Target date:** 2026-07-21 (slipping — Task 3 still open; see [PHASE_0_HUMAN_QA_CHECKLIST.md](../../../../testing/PHASE_0_HUMAN_QA_CHECKLIST.md) for live Task 3 status)
 
 ---
@@ -58,22 +58,31 @@ A real estate agent who is a total stranger can sign up on production, generate 
       > legacy test accounts colliding on the unique key. The verification stands and is written up
       > in US-LAUNCH-003; the account that produced it no longer exists. Re-running it on a current
       > account takes about three minutes if live evidence is ever wanted instead of the citation.
-- [ ] ⚠️ With `BETA_MODE=true`, no paid checkout can be initiated from UI **or** API —
-      **cannot be verified as written, and the premise has changed.** `BETA_MODE` is **not set at
-      all** on production (checked 2026-09-08 via `railway variables --environment production`).
-      `payments.controller.ts:62` gates on `process.env.BETA_MODE === 'true'`, so the guard is
-      inactive and **paid checkout is live on production** against the live Razorpay plans — which
-      is what M-LAUNCH-02 wants, not what this item asserts. Needs a decision, not a test run:
-      either drop this item as superseded by revenue-on, or re-verify it on staging where the flag
-      is meaningful. Filed as [BL-29](../../../../BACKLOG.md) because the *ordering* is the real
-      risk — checkout is reachable by strangers and no transaction has ever been run through it
-      (US-LAUNCH-005 AC6).
+- [~] ⚠️ ~~With `BETA_MODE=true`, no paid checkout can be initiated from UI **or** API~~ —
+      **SUPERSEDED 2026-10-19, by decision. Not a failed check; a retired requirement.**
+
+      This item asserted that checkout must be *blocked*. On 2026-10-19 the product decision was
+      taken to drop beta-gating entirely: Buildographic accepts payment whether it presents itself
+      as beta or as a commercial launch. `M-LAUNCH-02` (revenue-on) closed the same day on the
+      opposite evidence — a real ₹5,499 transaction charged, webhook-verified, refunded and
+      cancelled. The two criteria contradict each other and the newer one describes the product
+      that shipped.
+
+      Nothing is lost by retiring it: the guard's behaviour is still covered by
+      `api/tests/payments/beta-guard.spec.ts`, so if `BETA_MODE` is ever set it still blocks. What
+      is dropped is the *requirement* that it be set.
+
+      **Follow-up worth deciding separately:** `BETA_MODE` is now a flag nobody intends to use. The
+      guard at `payments.controller.ts:57` is dead code, and [[BL-29]] existed precisely because
+      people reasoned about a flag that was never set. A flag that looks protective and is not is
+      worse than no flag — see the open question at the end of this milestone.
+
 - [x] AI-content disclaimer visible on generation results/export — ✅ **verified 2026-09-08** in the
       deployed bundle: "Imagery may include AI-generated visuals. Verify all details before
       publishing to represent a real listing." renders at two result surfaces
       (`ResultsVariations`, `MessageBubble`). The export path was **not** separately proven — if
       this item means the disclaimer must also survive onto the exported file, that is still open.
-- [ ] All stories above have status ✅ Done, **except US-LAUNCH-016 and US-LAUNCH-017** (Backlog — non-blocking, may close after this milestone). US-LAUNCH-014 closed 2026-09-29.
+- [x] All stories above have status ✅ Done — 7/7 (US-LAUNCH-001, 002, 003, 004, 009, 010, 011). US-LAUNCH-016/017 sit in the Backlog and were never part of this milestone's seven. US-LAUNCH-014 closed 2026-09-29.
 
 ---
 
@@ -89,3 +98,21 @@ A real estate agent who is a total stranger can sign up on production, generate 
 ---
 
 *Milestone created: 2026-07-07*
+
+
+---
+
+## Open question left behind by this milestone (2026-10-19)
+
+Retiring the `BETA_MODE` acceptance item leaves a flag nobody intends to set. The guard at
+`payments.controller.ts:57` reads `process.env.BETA_MODE === 'true'` and is now permanently dead on
+both environments.
+
+That is not neutral. [[BL-29]] happened *because* people reasoned about this flag as though it were
+protecting checkout while it was unset — a guard that looks protective and is not is worse than no
+guard, because it stops the question being asked. The same applies to `VITE_BETA_MODE` on the
+pricing page.
+
+**Decide, rather than let it sit:** either remove both flags and their guard outright, or document
+in the code that they are an intentional emergency kill-switch kept for a reason. Doing neither
+recreates the exact condition BL-29 was filed for.

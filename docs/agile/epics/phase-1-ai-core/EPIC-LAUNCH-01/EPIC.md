@@ -1,7 +1,7 @@
 # EPIC-LAUNCH-01 — Go-Live & Revenue Readiness
 
 > **Phase:** Phase 1 — Revenue Strategy (v1.1)
-> **Status:** 🟡 In Progress — **15/17 stories Done**, 2 Not Started (US-LAUNCH-016/017 signup onboarding, backlog). **US-LAUNCH-005 closed 2026-10-19, completing milestone M-LAUNCH-02 (revenue-on) 7/7** — the production payment path has now been exercised end to end with real money. US-LAUNCH-014 closed 2026-09-29: sign-up verif
+> **Status:** 🟡 In Progress — **15/17 stories Done**, 2 Not Started (US-LAUNCH-016/017 signup onboarding, backlog). **Both milestones are now closed: M-LAUNCH-01 (public beta) and M-LAUNCH-02 (revenue-on), 2026-10-19.** Beta is live at `app.buildographic.com` and takes payment — a real ₹5,499 transaction was charged, webhook-verified, refunded and cancelled. Beta-gating was retired by decision rather than verified; see M-LAUNCH-01. US-LAUNCH-014 closed 2026-09-29: sign-up verif
 > **Depends on:** EPIC-INFRA-01 (Phase 0 production deploy) for all stories · EPIC-AI-06 gates the **revenue-on switch** (M-LAUNCH-02 DoD), not M-LAUNCH-02 prep work
 > **Linear Project:** LIN-EPIC-XXX
 > **Target date:** 2026-08-15
