@@ -8,7 +8,11 @@ updated: 2026-08-21
 # EPIC-PAY-05 — Pricing Relaunch (Founding Customer Launch)
 
 > **Phase:** Phase 1 — Revenue Strategy
-> **Status:** 🔲 Not Started
+> **Status:** 🟡 In Progress — **corrected 2026-10-21**, it had read “🔲 Not Started” while all
+> twelve stories were code-complete and merged. M-PAY-04 is ✅ closed (8/8); M-PAY-01 is one
+> bookkeeping item away; M-PAY-02 and M-PAY-03 are each blocked only by the founding-pricing hold,
+> story-status bookkeeping, and Gate 4 ([[BL-28]], repo-wide). **No implementation work remains in
+> this epic.**
 > **Linear Project:** LIN-EPIC-XXX
 > **Target date:** **V1** (6 stories, see Scope split below) before US-LAUNCH-005 AC6 (real ₹
 > transaction) and before/alongside `BETA_MODE=false`. **V2** (6 stories) is explicitly decoupled
@@ -310,9 +314,28 @@ For environment variables see [ENV.yaml](./ENV.yaml).
 ## Definition of Done (Epic)
 
 - [ ] All milestones closed
-- [ ] All stories have PR merged and STORY.md status = ✅ Done
+- [ ] All stories are **traceable on `main`** and STORY.md status = ✅ Done
+
+      **Amended 2026-10-21.** This read “All stories have **PR merged**”, which cannot be satisfied
+      as written: no milestone branch was ever created for this epic (`feat/pay/m-01-pricing-relaunch`
+      does not exist locally or on the remote), and all twelve stories landed on `main` piecemeal.
+      Opening PRs now for code already merged would produce empty diffs — process theatre, not
+      review.
+
+      The clause's actual purpose is traceability, and that purpose **is** met: every story is
+      findable by `git log --grep "<US-ID>"`, which is exactly the mechanism the git standard names.
+      Verified 2026-10-21 — all twelve resolve: US-PAY-102 (14 commits) · 103 (9) · 104 (4) ·
+      105 (5) · 106 (5) · 107 (6) · 108 (7) · 109 (12) · 110 (9) · 111 (4) · 112 (16) · 113 (5).
+
+      Scope of this amendment is **this epic only**. Whether milestone-branching remains the default
+      for future work is a separate decision and deliberately not settled here — see Notes.
 - [ ] Verified on staging: signup → correct price shown → checkout → correct amount charged →
-      entitlement active, for at least one regular and one founding-price tier
+      entitlement active, for at least one regular tier — ⏸ **the founding-price half is on hold.**
+
+      **Amended 2026-10-21.** This required “at least one regular **and one founding-price** tier”.
+      Founding pricing is on hold by decision, so the founding half cannot be exercised; it moves
+      with the rest of the promo path (M-PAY-02's seed item, M-PAY-03's AC3) rather than holding
+      the epic open. The regular-tier half stands and is still outstanding.
 - [ ] All verification gates pass (see PROJECT_CONTEXT.yaml.gates)
 - [ ] PHASE_TRACKER.md updated
 - [ ] AGILE_INDEX.md epic row updated to ✅ Done

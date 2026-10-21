@@ -114,10 +114,32 @@ frontend and checkout never compute price independently.
       have already seen them. The intent the PRD set out — *"12 months for the price of 10"*,
       replacing the old `× 12 × 0.85` — holds; the implementation rounds in the customer's favour.
       Decided 2026-10-21.
-- [ ] Campaign discount and annual discount compose correctly for `PERCENT`-type discounts (order
-      is mathematically irrelevant, both are multiplicative — verified in
-      [US-PAY-106](../stories/US-PAY-106/STORY.md)); a `FLAT`-type discount is explicitly rejected,
-      never silently mis-computed
+- [x] A campaign can never advertise a price it cannot charge — ✅ **verified 2026-10-21.**
+
+      **This criterion replaced one struck on that date.** It used to read: *“Campaign discount and
+      annual discount compose correctly for `PERCENT`-type discounts (order is mathematically
+      irrelevant, both are multiplicative); a `FLAT`-type discount is explicitly rejected, never
+      silently mis-computed.”* It was struck rather than amended because **it tested code that no
+      longer exists.** The 2026-08-27 rewrite removed the arithmetic entirely — nothing multiplies,
+      so there is no composition order to get wrong, and there is no `PERCENT`/`FLAT` discriminator
+      left to reject. `tierDiscounts` is written as `{}` (`pricing-campaign.service.ts:72`) and read
+      by nothing; `pricing-campaign.service.spec.ts:132` asserts exactly that. No test against the
+      old wording could fail, and no behaviour was being protected by it.
+
+      The protection it *wanted* — a customer is never shown one price and charged another — still
+      matters. Under the authored-price model it is structural rather than arithmetic, and rests on
+      two invariants, both verified:
+
+      1. **A live campaign with no authored price for a tier/interval resolves to list price with
+         `campaignId: null`**, so the pricing page and checkout read the same answer and cannot
+         diverge. Measured 2026-10-21 with a campaign actually live: **all 8 tier/interval
+         combinations** returned list — SOLO ₹5,499 · PRO ₹10,999 · TEAM ₹21,999 · AGENCY ₹43,999
+         and the four annuals, every one `campaignId: null`.
+      2. **Checkout refuses rather than under-delivering.** When an authored promo price has no
+         provider Plan object behind it, `createSubscription` throws `PROMO_PLAN_NOT_CONFIGURED`
+         instead of falling back to the list-price Plan (`payments.service.ts:363-376`). Falling
+         back would bill more than the page displayed — the precise failure the original wording
+         existed to prevent.
 - [ ] Founding Customer 100 campaign is seeded with **authored per-tier promo prices** and backed
       by real promotional **Plan objects** — ⏸ **ON HOLD by decision, 2026-10-21. Not open work.**
 
@@ -167,7 +189,22 @@ frontend and checkout never compute price independently.
       be staged until the hold lifts. Both milestones therefore need a **descope decision** rather
       than work: carry the promo path to V2 (US-PAY-110 is already V2) and close at V1, or hold
       both open until founding pricing resumes.
-- [ ] All stories above have status ✅ Done
+- [x] All stories above have status ✅ Done — ✅ **2026-10-21.** All five are code-complete
+      and merged to `main`.
+
+      **Traceability, verified 2026-10-21.** No milestone branch was created for this epic, so
+      there is no milestone PR; every story landed on `main` piecemeal. The git standard's intended
+      mechanism still works — each story resolves by `git log --grep "<US-ID>"`:
+
+      | Story | Commits on `main` |
+      |---|:--:|
+      | [US-PAY-102](../stories/US-PAY-102/STORY.md) | 14 |
+      | [US-PAY-105](../stories/US-PAY-105/STORY.md) | 5 |
+      | [US-PAY-106](../stories/US-PAY-106/STORY.md) | 5 |
+      | [US-PAY-107](../stories/US-PAY-107/STORY.md) | 6 |
+      | [US-PAY-108](../stories/US-PAY-108/STORY.md) | 7 |
+
+      Epic DoD amended to match (see [EPIC.md](../EPIC.md)). US-PAY-108 is ⏭️ superseded (closed 2026-08-27, not shipped as written) — counted as resolved, not outstanding.
 - [ ] Verification gates pass (Gate 1 + Gate 4 for the new service)
 
 ---

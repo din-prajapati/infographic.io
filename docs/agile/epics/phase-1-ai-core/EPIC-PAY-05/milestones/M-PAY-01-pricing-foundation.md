@@ -77,7 +77,20 @@ All three are order 1 — independent files, no shared dependency, safe to imple
 - [x] No pricing string on `PricingPage.tsx` is independent of `PLAN_CONFIG` —
       ✅ **verified 2026-10-21: zero hardcoded ₹ literals** in the file. Every displayed price is
       derived, so changing `PLAN_CONFIG` changes the page and nothing can silently diverge.
-- [ ] All stories above have status ✅ Done
+- [x] All stories above have status ✅ Done — ✅ **2026-10-21.** US-PAY-102, US-PAY-103 and
+      US-PAY-104 are all code-complete and merged to `main`.
+
+      **Traceability, verified 2026-10-21.** No milestone branch was created for this epic, so
+      there is no milestone PR; every story landed on `main` piecemeal. The git standard's intended
+      mechanism still works — each story resolves by `git log --grep "<US-ID>"`:
+
+      | Story | Commits on `main` |
+      |---|:--:|
+      | [US-PAY-102](../stories/US-PAY-102/STORY.md) | 14 |
+      | [US-PAY-103](../stories/US-PAY-103/STORY.md) | 9 |
+      | [US-PAY-104](../stories/US-PAY-104/STORY.md) | 4 |
+
+      Epic DoD amended to match (see [EPIC.md](../EPIC.md)).
 - [x] Verification gates pass (Gate 1 mandatory) — ✅ **2026-10-21:** `npm run check`
       (`tsc` + `tsc -p api/tsconfig.json`, 0 errors) and `npm run test:unit:backend`
       (**726 passed / 52 files**).

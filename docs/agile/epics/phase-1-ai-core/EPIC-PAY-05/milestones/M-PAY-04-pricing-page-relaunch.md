@@ -104,6 +104,19 @@ wall.
       not missed.
 
 - [x] All stories above have status ✅ Done
+
+      **Traceability, verified 2026-10-21.** No milestone branch was created for this epic, so
+      there is no milestone PR; every story landed on `main` piecemeal. The git standard's intended
+      mechanism still works — each story resolves by `git log --grep "<US-ID>"`:
+
+      | Story | Commits on `main` |
+      |---|:--:|
+      | [US-PAY-102](../stories/US-PAY-102/STORY.md) | 14 |
+      | [US-PAY-106](../stories/US-PAY-106/STORY.md) | 5 |
+      | [US-PAY-112](../stories/US-PAY-112/STORY.md) | 16 |
+      | [US-PAY-113](../stories/US-PAY-113/STORY.md) | 5 |
+
+      Epic DoD amended to match (see [EPIC.md](../EPIC.md)).
 - [x] Verification gates pass (Gate 1 + Gate 2 frontend + manual visual check) —
       ✅ **all three pass as of 2026-10-21.** Gate 1: `npm run check` (0 errors) and
       `npm run test:unit:backend` (**726 passed / 52 files**). Gate 2: `npm run test:unit:client`

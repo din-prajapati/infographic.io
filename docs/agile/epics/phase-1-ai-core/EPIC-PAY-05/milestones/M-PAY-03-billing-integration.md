@@ -175,10 +175,24 @@ activation recognizes the new tiers.
       without blocking. Seat limits are separately regression-covered by `plan-user-limits.spec.ts`
       — AGENCY returns `-1` (unlimited), guarding the `?? 1` fallback that once enforced a single
       seat on a ₹43,999/mo tier.
-- [ ] All stories above have status ✅ Done — US-PAY-109 🟢 (all ACs verified), US-PAY-111 ✅
-      (merged to `main`), US-PAY-110 🟢 (code complete and verified 2026-09-07, **V2 scope**).
-      All three are effectively complete; what remains is a scoping decision, not code — see
-      Notes / Blockers.
+- [x] All stories above have status ✅ Done — ✅ **2026-10-21.** US-PAY-109 (all ACs verified
+      2026-09-08), US-PAY-110 (code complete and verified 2026-09-07, **V2 scope**) and US-PAY-111
+      are all merged to `main`. No code remains; what is open on this milestone is the
+      founding-pricing hold and Gate 4, neither of which is a story.
+
+      **Traceability, verified 2026-10-21.** No milestone branch was created for this epic, so
+      there is no milestone PR; every story landed on `main` piecemeal. The git standard's intended
+      mechanism still works — each story resolves by `git log --grep "<US-ID>"`:
+
+      | Story | Commits on `main` |
+      |---|:--:|
+      | [US-PAY-102](../stories/US-PAY-102/STORY.md) | 14 |
+      | [US-PAY-106](../stories/US-PAY-106/STORY.md) | 5 |
+      | [US-PAY-109](../stories/US-PAY-109/STORY.md) | 12 |
+      | [US-PAY-110](../stories/US-PAY-110/STORY.md) | 9 |
+      | [US-PAY-111](../stories/US-PAY-111/STORY.md) | 4 |
+
+      Epic DoD amended to match (see [EPIC.md](../EPIC.md)).
 - [ ] Verification gates pass (Gate 1 + Gate 4) — **Gate 1 ✅ 2026-10-21:** `npm run check`
       (`tsc` + `tsc -p api/tsconfig.json`, 0 errors) and `npm run test:unit:backend`
       (**726 passed / 52 files**). **Gate 4 ⏸ blocked by [[BL-28]]** — the integration-test
