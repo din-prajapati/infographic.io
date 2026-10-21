@@ -2,6 +2,7 @@ import { Controller, Get, Inject } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { PlanTier } from '@prisma/client';
 import { PricingResolutionService } from '../services/pricing-resolution.service';
+import { isCheckoutDisabled } from '../checkout-kill-switch';
 
 /** Tiers shown on the public pricing page — matches US-PAY-112 AC1 exactly. Enterprise is a
  *  static "Contact Sales" card (no PLAN_CONFIG entry, per EPIC.md Out of Scope: "Fixed Enterprise
@@ -33,6 +34,14 @@ export class PricingController {
         annual: await this.pricingService.getEffectivePrice(tier, 'annual'),
       })),
     );
-    return { plans: results };
+    // D2 — the checkout kill-switch's state, delivered at runtime.
+    //
+    // The client used to read `VITE_BETA_MODE`, which Vite bakes in at build time;
+    // a cached or un-rebuilt bundle therefore kept the old value and could advertise
+    // a checkout the server was refusing. This endpoint is already public,
+    // unauthenticated and fetched by the pricing page, so it is the natural carrier
+    // and costs no extra request. The server is the authority; the build-time flag
+    // can only ever turn the gate on, never off.
+    return { plans: results, checkoutDisabled: isCheckoutDisabled() };
   }
 }

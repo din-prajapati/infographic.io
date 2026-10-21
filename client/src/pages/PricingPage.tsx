@@ -344,7 +344,12 @@ function computeAnnualSavingsPercent(): number | null {
 }
 
 export default function PricingPage() {
-  const isBetaMode = import.meta.env.VITE_BETA_MODE === 'true';
+  // D2 — the checkout kill-switch. `VITE_BETA_MODE` is replaced by Vite at BUILD
+  // time, so it only changes when the frontend is rebuilt and a cached bundle keeps
+  // the old value. It is kept as a build-time default (handy locally) but it can
+  // only ever turn the gate ON. The authority is the server's runtime state, read
+  // from the public pricing endpoint below — see `isBetaMode`.
+  const betaModeAtBuildTime = import.meta.env.VITE_BETA_MODE === 'true';
 
   const [, setLocation] = useLocation();
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
@@ -363,6 +368,12 @@ export default function PricingPage() {
     queryKey: ["/api/v1/pricing"],
     queryFn: () => pricingApi.getPricing(),
   });
+
+  // Server state wins. OR-ed rather than overridden so a locally-built beta bundle
+  // still gates itself, and so a pricing fetch that has not resolved yet (or failed)
+  // never *opens* a checkout the server would refuse — it just falls back to the
+  // build-time default.
+  const isBetaMode = (pricingData?.checkoutDisabled ?? false) || betaModeAtBuildTime;
 
   const pricingByTier = new Map<PlanTier, { monthly: EffectivePriceResult; annual: EffectivePriceResult }>(
     (pricingData?.plans ?? []).map((p) => [p.tier, { monthly: p.monthly, annual: p.annual }]),

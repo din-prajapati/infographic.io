@@ -29,6 +29,11 @@ import {
 } from '../dto/payments.dto';
 import { PlanTier } from '@prisma/client';
 import { ValidatedBody } from '../../../common/validated-body.decorator';
+import {
+  isCheckoutDisabled,
+  CHECKOUT_DISABLED_CODE,
+  CHECKOUT_DISABLED_MESSAGE,
+} from '../checkout-kill-switch';
 
 @ApiTags('payments')
 @Controller('payments')
@@ -39,6 +44,26 @@ export class PaymentsController {
     @Inject(PaymentsService) private readonly paymentsService: PaymentsService,
     @Inject(UsageAnalyticsService) private readonly usageAnalyticsService: UsageAnalyticsService,
   ) {}
+
+  /**
+   * Refuse a money-taking request while the checkout kill-switch is engaged.
+   *
+   * Logged at `warn` on every refusal: BL-29's root cause was that nobody could
+   * tell whether this gate was active, so silence here would reproduce it. The
+   * log is the per-request evidence; `GET /health` reports the standing state.
+   */
+  private refuseIfCheckoutDisabled(route: string, userId?: string): void {
+    if (!isCheckoutDisabled()) return;
+    this.logger.warn(
+      `Checkout kill-switch (BETA_MODE) refused ${route}` +
+        (userId ? ` for user ${userId}` : '') +
+        ' — set BETA_MODE=false and redeploy to re-enable.',
+    );
+    throw new ForbiddenException({
+      code: CHECKOUT_DISABLED_CODE,
+      message: CHECKOUT_DISABLED_MESSAGE,
+    });
+  }
 
   @Get('provider-info')
   @ApiOperation({ summary: 'Get payment provider configuration for frontend' })
@@ -59,12 +84,7 @@ export class PaymentsController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create a new subscription for authenticated user' })
   async createSubscription(@ValidatedBody(CreateSubscriptionDto) dto: CreateSubscriptionDto, @Req() req: any) {
-    if (process.env.BETA_MODE === 'true') {
-      throw new ForbiddenException({
-        code: 'BETA_MODE_ACTIVE',
-        message: 'Paid subscriptions are not available during beta.',
-      });
-    }
+    this.refuseIfCheckoutDisabled('create-subscription', req.user?.id);
 
     const userId = req.user.id;
     try {
@@ -172,6 +192,11 @@ export class PaymentsController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Upgrade/downgrade subscription plan' })
   async updatePlan(@ValidatedBody(UpdatePlanDto) dto: UpdatePlanDto, @Req() req: any) {
+    // Guarded for the same reason as create-subscription: updateSubscriptionPlan()
+    // cancels the existing subscription and creates a new one at the new tier, so
+    // this path takes money. It was unguarded before 2026-10-21 (D2), which left
+    // the kill-switch with a hole an existing subscriber could walk through.
+    this.refuseIfCheckoutDisabled('update-plan', req.user?.id);
     const userId = req.user.id;
     const subscription = await this.paymentsService.updateSubscriptionPlan(userId, dto.planTier);
     return { success: true, subscription };

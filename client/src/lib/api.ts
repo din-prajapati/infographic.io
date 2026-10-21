@@ -237,6 +237,7 @@ export const pricingApi = {
   getPricing: () =>
     apiRequest<{
       plans: Array<{ tier: PlanTier; monthly: EffectivePriceResult; annual: EffectivePriceResult }>;
+      checkoutDisabled?: boolean;
     }>(getApiUrl('/pricing')),
 };
 
