@@ -2,7 +2,7 @@
 title: M-PAY-02-discount-architecture — Discount Architecture
 type: milestone
 tags: [orion, pay, pricing, discounts]
-updated: 2026-08-25
+updated: 2026-10-21
 ---
 
 # M-PAY-02-discount-architecture — Discount Architecture
@@ -42,8 +42,47 @@ frontend and checkout never compute price independently.
 
 ## Acceptance (Milestone Done When…)
 
-- [ ] `PricingCampaign` model exists; a second future campaign (e.g. a festival test row) can be
-      inserted and activated with zero code changes — verify this literally, don't just assert it
+- [x] `PricingCampaign` model exists; a second future campaign (e.g. a festival test row) can be
+      **inserted and activated** with zero code changes — verify this literally, don't just assert
+      it — ✅ **verified literally 2026-10-21: 10 checks, 10 pass.**
+
+      Exercised against the dev/staging database (`ep-billowing-cell`) by driving the real
+      `PricingCampaignService` and `PricingResolutionService` with **no source edits of any kind**.
+      The script refuses to run unless the campaign table is empty, and deletes its own rows in a
+      `finally` block — it ended with 0 rows, the state it started in.
+
+      | What was proven | Result |
+      |---|---|
+      | A campaign row inserts active | `MPAY02TEST_FIRST`, `isActive: true` |
+      | A **second** campaign created directly as active is **rejected** | `ConflictException` — *“Cannot create … as active — MPAY02TEST_FIRST is already active”* |
+      | The second inserts fine when inactive | `MPAY02TEST_DIWALI2026`, `isActive: false` |
+      | `activateCampaign()` switches which one is live | active → `MPAY02TEST_DIWALI2026` |
+      | Exactly one row is active afterwards | `count = 1` |
+      | The previously-live row was deactivated | `isActive: false` |
+      | `tryConsumeRedemption()` increments the counter | `used = 1 of 50` |
+      | The cap closes instead of running past it | refused at 50, warning logged |
+      | An exhausted campaign resolves as if not active | `campaignId: null`, list price |
+
+      **The criterion was amended on that date** — “inserted and activated” replaces an implied
+      “…and discounts something”. The two halves separate under the authored-price model, and the
+      distinction is the design, not a shortfall:
+
+      - **Activation genuinely needs zero code changes.** Proven above. A promotion can be started,
+        switched and stopped from the database, with no deploy.
+      - **A second campaign that actually *moves a price* requires a reviewed PR**, by design —
+        prices live in `PLAN_CONFIG.promoPrices`, keyed by the row's `code`. Measured in the same
+        run: with `MPAY02TEST_DIWALI2026` live and no authored price for it, **all 8
+        tier/interval combinations returned list price with `campaignId: null`** (SOLO ₹5,499 ·
+        PRO ₹10,999 · TEAM ₹21,999 · AGENCY ₹43,999, and the four annuals). Nothing mischarged
+        and nothing advertised a discount it could not honour — the page and checkout read the
+        same service, so they moved together, which is exactly the property the split exists to
+        guarantee.
+
+      So a festival campaign is a two-step change (author the prices in a PR, then flip the row),
+      not a one-step database insert. Read the AC as covering the *campaign mechanism*; the price
+      authoring is deliberately not zero-code. Script kept at
+      `local-notes/mpay02-second-campaign-test.ts` (gitignored) — re-runnable, self-cleaning.
+      Note it needs `npx tsx --tsconfig api/tsconfig.json …` from outside `api/`, per [[BL-39]].
 - [x] Only one `PricingCampaign` can be `isActive` at a time (enforced, not just documented) —
       ✅ **verified 2026-10-21 in code.** `pricing-campaign.service.ts:56-57` looks for an existing
       `isActive: true` row before activating and rejects when one is found. The schema carries a
@@ -79,8 +118,55 @@ frontend and checkout never compute price independently.
       is mathematically irrelevant, both are multiplicative — verified in
       [US-PAY-106](../stories/US-PAY-106/STORY.md)); a `FLAT`-type discount is explicitly rejected,
       never silently mis-computed
-- [ ] Founding Customer 100 campaign is seeded with the real per-tier discounts (Solo/Pro ~27.3%,
-      Team/Agency ~31.8%) and linked to real Razorpay Offer IDs
+- [ ] Founding Customer 100 campaign is seeded with **authored per-tier promo prices** and backed
+      by real promotional **Plan objects** — ⏸ **ON HOLD by decision, 2026-10-21. Not open work.**
+
+      **Founding pricing is on hold** — Buildographic sells at list price for now. This item is a
+      deferral, not a gap to close, and the diagnosis below is kept only so the campaign's
+      inertness is not later mistaken for a bug.
+
+      **The criterion was amended on that date**, because as written it asked for two things that
+      the 2026-08-27 rewrite deleted. It named per-tier *percentages* (`~27.3%`, `~31.8%`), but
+      nothing multiplies any more — `PricingResolutionService` looks prices up, and a promo price
+      that only exists as the output of `regular × (1 − pct/100)` is a number nobody reviewed. And
+      it named *Razorpay Offer IDs*, which this card's own Notes already declare void — a promo is
+      a separate price-immutable Plan object, and `.env.example` no longer carries
+      `RAZORPAY_OFFER_FOUNDING_*`. Amended to ask for what the current design actually needs.
+
+      **Diagnosis.** The campaign is **inert**: three links are required and none exists.
+
+      1. **No promo price is authored.** `PLAN_CONFIG` declares `promoPrices?`
+         (`shared/schema.ts:190`) and `getPromoPrice()` reads it (`:330`), but no tier populates
+         it — `FOUNDING` appears nowhere in `shared/schema.ts`. The seed script says so itself:
+
+         ```
+         $ npx tsx api/scripts/seed-founding-campaign.ts
+         ❌ Cannot seed FOUNDING100: no promo price is authored for it.
+            Add PLAN_CONFIG[tier].promoPrices.FOUNDING100 in shared/schema.ts first —
+            prices belong in code (reviewed in a PR), not in this script or the database.
+         ```
+      2. **No campaign row exists.** `PricingCampaign` count is **0** on the dev/staging database
+         (`ep-billowing-cell`, checked 2026-10-21 — 0 rows, 0 active).
+      3. **No promo Plan object is configured.** Zero `RAZORPAY_PLAN_<TIER>_<INTERVAL>_FOUNDING100`
+         variables are set; only the eight list-price ones are.
+
+      **Nothing is mischarging, which is why this stayed invisible.** With (1) absent,
+      `getEffectivePrice()` returns list with `campaignId: null`, so checkout bills list — and the
+      pricing page, reading the same service, shows list too. The two agree. Activating the
+      campaign today would change no price anywhere.
+
+      **The seed script is already the right instrument** and needs no change: it refuses to
+      create the row unless an authored price exists, and refuses again unless every authored
+      price has a Plan object behind it (`seed-founding-campaign.ts:88-110`). So the work is, in
+      order: author the prices in `PLAN_CONFIG.promoPrices.FOUNDING100` (a reviewed PR), create
+      the matching Plan objects in the Razorpay dashboard and set their env vars, then run the
+      script.
+
+      **[M-PAY-03](M-PAY-03-billing-integration.md)'s AC3 is held by the same decision** — “a
+      subscription created under an active Founding campaign is charged the founding price” cannot
+      be staged until the hold lifts. Both milestones therefore need a **descope decision** rather
+      than work: carry the promo path to V2 (US-PAY-110 is already V2) and close at V1, or hold
+      both open until founding pricing resumes.
 - [ ] All stories above have status ✅ Done
 - [ ] Verification gates pass (Gate 1 + Gate 4 for the new service)
 

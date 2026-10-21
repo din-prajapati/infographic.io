@@ -2,7 +2,7 @@
 title: M-PAY-01-pricing-foundation — Pricing Foundation
 type: milestone
 tags: [orion, pay, pricing]
-updated: 2026-08-25
+updated: 2026-10-21
 ---
 
 # M-PAY-01-pricing-foundation — Pricing Foundation
@@ -50,13 +50,37 @@ All three are order 1 — independent files, no shared dependency, safe to imple
       ✅ **verified 2026-10-21.** Both tiers are present and distinct in `PLAN_CONFIG`:
       BROKERAGE ₹24,999 / 1,000 / 100 and AGENCY ₹43,999 / 400 / 150. Different prices, different
       allowances — neither is an alias of the other.
-- [ ] Editable-design allowance (10/25/60/150 per tier) displays correctly without changing the
-      live `US-LAUNCH-015` gating behavior
+- [x] Editable-design allowance (10/25/60/150 per tier) displays correctly without changing the
+      live `US-LAUNCH-015` gating behavior — ✅ **verified 2026-10-21 on the rendered page, both
+      widths.**
+
+      **The four numbers reach the real page.** `PricingPage.tsx:616` passes
+      `editableLimit: config.editableLimit` straight from `PLAN_CONFIG`, rendered at `:1024-1031`
+      (“N editable credits / mo — a separate allowance”) and `:1188`, with `-1` shown as
+      “Unlimited”. Confirmed in the **deployed** staging bundle (`/assets/index-C8fvAhmr.js`),
+      not just in source: it contains `editableLimit:10`, `:25`, `:60`, `:150`, plus
+      `:100` (BROKERAGE) and three `:-1` (API tiers) — an exact match for `shared/schema.ts`, and
+      the display copy (“editable credit”, “editable allowance”) ships with it.
+
+      **Gating is untouched.** `usage-limit.service.ts:437` reads the same `PLAN_CONFIG` field via
+      `editableLimitForTier()`; FREE's lifetime-trial path is separate at `:431` and unchanged.
+      Covered by the 726-test unit suite, including `tests/ai/metering-policy.spec.ts`.
+
+      **Read off the live DOM at 375px** (deployed staging, `df332cd`): Free ₹0 / 3 / trial only ·
+      Solo ₹5,499 / 50 / **10** · Pro ₹10,999 / 100 / **25** · Team ₹21,999 / 200 / **60** ·
+      Agency ₹43,999 / 400 / **150**. Rendered as *“N editable credits / mo — a separate allowance,
+      spent when you open a design in the editor”* in a “Multi-layer Canvas Editor Included” panel;
+      FREE instead reads *“One free trial edit — no monthly editable allowance.”*, which is the
+      US-LAUNCH-015 trial wording, unchanged. Full method and the desktop reading are recorded in
+      [M-PAY-04](M-PAY-04-pricing-page-relaunch.md) — one pass closed this item and both of
+      M-PAY-04's.
 - [x] No pricing string on `PricingPage.tsx` is independent of `PLAN_CONFIG` —
       ✅ **verified 2026-10-21: zero hardcoded ₹ literals** in the file. Every displayed price is
       derived, so changing `PLAN_CONFIG` changes the page and nothing can silently diverge.
 - [ ] All stories above have status ✅ Done
-- [ ] Verification gates pass (Gate 1 mandatory)
+- [x] Verification gates pass (Gate 1 mandatory) — ✅ **2026-10-21:** `npm run check`
+      (`tsc` + `tsc -p api/tsconfig.json`, 0 errors) and `npm run test:unit:backend`
+      (**726 passed / 52 files**).
 
 ---
 

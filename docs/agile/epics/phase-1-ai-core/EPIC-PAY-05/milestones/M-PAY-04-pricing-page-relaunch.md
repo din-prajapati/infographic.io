@@ -50,11 +50,66 @@ wall.
 - [x] No fake scarcity or countdown — any claimed remaining-slots count is real backend data or not
       shown at all (none added; comparison table shows only `PLAN_CONFIG`-derived facts)
 - [x] No Ideogram/GPT/API cost language anywhere on the page
-- [ ] Mobile and desktop layouts both verified, not just desktop — responsive markup done
-      (`US-PAY-113`), real-device/staging verification still needs a deployed environment
+- [x] Mobile and desktop layouts both verified, not just desktop — responsive markup done
+      (`US-PAY-113`) — ✅ **verified 2026-10-21 against deployed staging and production, at both
+      widths, by runtime measurement.**
+
+      **Method.** `resize_window` reported success but the viewport stayed at 1536px (the window
+      was maximized), so the 375px layout was measured by rendering `/pricing` in a **same-origin
+      iframe fixed at 375px** — CSS media queries evaluate against the iframe's own viewport, so
+      Tailwind's breakpoints fired at mobile width. Measurements are runtime `getBoundingClientRect`
+      /`getComputedStyle` readings, not inferences from the markup.
+
+      **Mobile — 375px (iframe viewport 370px, `clientWidth` 362px):**
+
+      - **`scrollWidth - clientWidth` = 0** — the page does not scroll sideways.
+      - **The comparison table scrolls inside its own box, confirmed at runtime:** a 720px table in
+        a **329px** wrapper with computed `overflow-x: auto`. The 178 elements extending past the
+        document width are all table descendants — correct behaviour for the contained-scroll
+        pattern, not overflow.
+      - **31 elements outside the table extend past the viewport, and all 31 are `animate-marquee`**
+        — a deliberately over-wide infinite-scroll strip. The document still reports 0 overflow, so
+        it is contained.
+      - **Grids collapse correctly:** the plan-card grid computes to a single `360.8px` column, the
+        format grid to `157.2px 157.2px`, the three-up grid to one `330.4px` column.
+      - **`document.querySelectorAll('header').length` = 0** — [[BL-32]] cannot apply to this page.
+
+      **Desktop — 1536px viewport:** `scrollWidth - clientWidth` = **0**; five plan cards render in
+      a row; Pro carries the **⭐ MOST POPULAR** badge; the Monthly/Yearly toggle shows
+      **Save 20%**, which is derived (`getAnnualSavings`: SOLO ₹65,988 list vs ₹52,999 annual =
+      19.7% → 20%), not a hardcoded claim.
+
+      **Every tier's rendered numbers, read off the live mobile DOM:**
+
+      | Tier | Price | Design credits | Editable credits |
+      |---|---|---|---|
+      | Free | ₹0 | 3 | trial only — *“One free trial edit — no monthly editable allowance.”* |
+      | Solo | ₹5,499 | 50 | **10** |
+      | Pro | ₹10,999 | 100 | **25** |
+      | Team | ₹21,999 | 200 | **60** |
+      | Agency | ₹43,999 | 400 | **150** |
+
+      Exact match to `PLAN_CONFIG` and the PRD pricing table. The editable allowance renders as
+      *“N editable credits / mo — a separate allowance, spent when you open a design in the
+      editor”* inside a **“Multi-layer Canvas Editor Included”** panel on each paid card.
+
+      **Production checked too** (`app.buildographic.com/pricing`): zero overflow, the same five
+      prices, **no test-mode banner and no test card** — the staging-only *“Test mode — Razorpay”*
+      notice is correctly gated and does not leak to the live pricing page. Production and staging
+      are both on `df332cd`, frontend and API agreeing.
+
+      **One observation, not a defect:** several micro-labels compute to a **10px** font size
+      (“WHAT YOU GET”, “⭐ MOST POPULAR”, the format chips). Legible, deliberate-looking, and
+      consistent across breakpoints — flagged only so a later reader knows it was seen and judged,
+      not missed.
+
 - [x] All stories above have status ✅ Done
-- [ ] Verification gates pass (Gate 1 + Gate 2 frontend + manual visual check) — Gate 1/2 pass;
-      manual visual check pending the same deployed-environment need as above
+- [x] Verification gates pass (Gate 1 + Gate 2 frontend + manual visual check) —
+      ✅ **all three pass as of 2026-10-21.** Gate 1: `npm run check` (0 errors) and
+      `npm run test:unit:backend` (**726 passed / 52 files**). Gate 2: `npm run test:unit:client`
+      (**278 passed, 1 skipped / 17 files**). Manual visual check: the mobile + desktop pass
+      recorded above, run against deployed staging and production rather than a local dev server.
+      All three re-run on 2026-10-21, not carried over from an earlier claim.
 
 ---
 
