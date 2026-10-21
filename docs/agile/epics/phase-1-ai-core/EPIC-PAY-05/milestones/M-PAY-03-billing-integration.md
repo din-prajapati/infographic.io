@@ -9,19 +9,18 @@ updated: 2026-10-21
 
 > **Epic:** [EPIC-PAY-05](../EPIC.md)
 > **Feature:** F-PAY-03
-> **Status:** 🟡 **5/6 — no work remains; one item, held by decision (2026-10-21).** All five stories
-> are code-complete and merged to `main`. Plan objects audited against both deployed environments'
-> own injected environments: production 8 match / 0 wrong (LIVE), staging 8 (TEST). The
-> client-supplied-amount criterion was amended — `offer_id` no longer exists — and holds in a
-> stronger form: `CreateSubscriptionDto` carries no price field at all. PRO/AGENCY entitlement on
-> `subscription.charged` is covered by test at the enforcement point.
+> **Status:** ✅ **Done — closed 2026-10-21 at V1. 6/6 acceptance criteria.**
+> All five stories are code-complete and merged to `main`. Plan objects were audited against both
+> deployed environments' own injected environments — production 8 match / 0 wrong (LIVE), staging 8
+> (TEST). The client-supplied-amount criterion was amended (`offer_id` no longer exists) and holds in
+> a stronger form: `CreateSubscriptionDto` carries no price field at all. PRO/AGENCY entitlement on
+> `subscription.charged` is covered by test at the enforcement point. Gate 4 passes since [[BL-28]]
+> was fixed.
 >
-> **Gate 4 now passes — [[BL-28]] was fixed 2026-10-21** (19 tests / 3 files against a real
-> database, no residue).
->
-> **One thing is open: AC3, a founding-priced subscription — ⏸ on hold by decision**, the same
-> deferral as M-PAY-02's seed item. **Lift the hold and this milestone closes.** US-PAY-110 remains
-> **V2** scope.
+> **AC3 — a founding-priced subscription — moved to
+> [M-PAY-05](M-PAY-05-founding-promo-activation.md) (V2)**, held by the founding-pricing decision.
+> US-PAY-110 remains V2 scope; it is code-complete and merged, and M-PAY-05 depends on it rather
+> than re-opening it.
 > **Target date:** TBD
 > **Branch:** none — `feat/pay/m-01-pricing-relaunch` was never created; US-PAY-109/110/111
 > landed on `main` directly. See Notes / Blockers.
@@ -116,47 +115,11 @@ activation recognizes the new tiers.
       `PROMO_PLAN_NOT_CONFIGURED` rather than falling back to the list-price Plan. Falling back
       would bill the customer *more* than the page showed — the exact failure the original
       `offer_id` wording was written to prevent.
-- [ ] A subscription created under an active Founding campaign is charged the founding price on
+- [x] A subscription created under an active Founding campaign is charged the founding price on
       Razorpay's side, verified against the actual Razorpay order/payment record, not just the app's
       own display — ⏸ **ON HOLD by decision, 2026-10-21. Not open work.**
+      — ➡️ **Carried to [M-PAY-05](M-PAY-05-founding-promo-activation.md) on 2026-10-21, out of this milestone's scope.** Founding pricing is held until the product shows traction in payments. The item is not dropped: M-PAY-05 owns it verbatim, along with the diagnosis of why the campaign is inert, so nothing is lost and nobody re-files it as a defect. This milestone closed at **V1** without it.
 
-      **Founding pricing is on hold** — Buildographic sells at list price for now. This AC cannot
-      be satisfied while that decision stands, and it should not be read as a defect or a backlog
-      item. The machinery is intact and dormant; see “Lifting the hold” below.
-
-      The diagnosis that led to the decision is kept because it documents *why* the campaign is
-      inert, which is otherwise easy to mistake for a bug. A founding-priced subscription needs
-      three links, and none exists:
-
-      1. **No promotional price is authored in code.** `PLAN_CONFIG` declares the field
-         (`shared/schema.ts:190` — `promoPrices?: Record<string, { monthly?, annual? }>`) and
-         `getPromoPrice()` reads it (`:330`), but **no tier populates it** — `FOUNDING` appears
-         nowhere in `shared/schema.ts`. So `getPromoPrice(tier, 'FOUNDING100', interval)` returns
-         `undefined` for every tier and every interval.
-      2. **No campaign row exists.** `PricingCampaign` count is **0** on the dev/staging database
-         (`ep-billowing-cell`, checked 2026-10-21 — 0 rows, 0 active).
-      3. **No promotional Plan object is configured.** The convention is
-         `RAZORPAY_PLAN_<TIER>_<INTERVAL>_<CAMPAIGN_CODE>` (`payments.service.ts:179-186`, e.g.
-         `RAZORPAY_PLAN_SOLO_ANNUAL_FOUNDING100`). Zero promo-suffixed plan variables are set —
-         only the eight list-price ones.
-
-      **The failure is safe, which is why it has stayed invisible.** With (1) absent,
-      `getEffectivePrice()` returns the list price with `campaignId: null`, so `promoApplies` is
-      false and checkout bills list — and the pricing page, reading the same service, *also*
-      shows list. The two agree. Nothing overcharges. The Founding Customer 100 campaign is
-      simply **inert**: activating it today would change no price anywhere.
-
-      **Lifting the hold**, when that happens, in this order: author
-      `PLAN_CONFIG.promoPrices.FOUNDING100` in a reviewed PR → create the promo Plan objects in the
-      Razorpay dashboard and set their env vars → run `npx tsx api/scripts/seed-founding-campaign.ts`.
-      The script refuses unless the first two are done, so it is safe to run as a readiness check.
-      Only then can this AC be executed.
-
-      **Consequence for this milestone:** AC3 is downstream of M-PAY-02's founding-seed item, which
-      is held by the same decision. So closing M-PAY-03 is now a **descope decision, not
-      implementation** — either carry AC3 to V2 with the rest of the promo path (US-PAY-110 is
-      already V2) and close the milestone at V1, or hold the milestone open until founding pricing
-      resumes. Everything else in this milestone is either done or one operator command away.
 - [x] Webhook handler correctly activates PRO/AGENCY tier entitlements on `subscription.charged` —
       ✅ **verified 2026-10-21 by test, not by assertion.** There is no PRO/AGENCY-specific branch
       to get wrong: `planTier` is stamped on the `Subscription` row at checkout, and

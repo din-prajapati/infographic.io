@@ -19,7 +19,7 @@
 
 | Domain | Active Epic | Status | Blocked | Upcoming |
 |--------|-------------|--------|---------|----------|
-| [Payments (PAY)](#-payments-pay) | EPIC-PAY-01 ✅ · EPIC-PAY-05 🟡 | 🟡 **12/12 stories code-complete. M-PAY-01 + M-PAY-04 closed 2026-10-21**; M-PAY-02 (5/7) and M-PAY-03 (4/6) have no work left | Founding pricing ⏸ on hold by decision · Gate 4 ⏸ [[BL-28]] (repo-wide) | Lift the hold *and* fix BL-28 and the epic closes. Fixing only BL-28 closes nothing |
+| [Payments (PAY)](#-payments-pay) | EPIC-PAY-01 ✅ · EPIC-PAY-05 🟢 V1 | 🟢 **V1 COMPLETE — all four V1 milestones closed 2026-10-21.** 12/12 stories merged; BL-28 fixed so Gate 4 runs again | Nothing blocked. V2 (M-PAY-05, founding/promo) ⏸ held until payment traction | V2 resumes when founding pricing does. `BETA_MODE` is now a real checkout kill-switch (D2) |
 | [Design (DESIGN)](#-design--frontend-design) | EPIC-DESIGN-01 + EPIC-DESIGN-02 | 🟡 US-DESIGN-004 all 10 TCs pass (2026-09-07); US-DESIGN-003 5/6 ACs | Human visual spot-check on staging | Both close on that one spot-check |
 | [Auth (AUTH)](#-auth-auth) | EPIC-AUTH-01 | ✅ Done | — | Full invite flow post-MVP |
 | [Canvas Editor (EDIT)](#-canvas-editor-edit) | EPIC-EDIT-01 | ✅ Done | — | Batch upload Phase 3 |
@@ -39,7 +39,14 @@
 **Phase:** 1 (Revenue Strategy)
 
 ### Now (In Progress)
-> **Update 2026-10-21 — M-PAY-01 and M-PAY-04 are closed.** All twelve stories are
+> **Update 2026-10-21 (later) — EPIC-PAY-05's V1 scope is COMPLETE.** All four V1 milestones are
+> ✅ closed: M-PAY-01 (6/6), M-PAY-02 (7/7), M-PAY-03 (6/6), M-PAY-04 (8/8). The two founding items
+> were carried into a new V2 milestone, [M-PAY-05](epics/phase-1-ai-core/EPIC-PAY-05/milestones/M-PAY-05-founding-promo-activation.md),
+> held until the product shows traction in payments — holding two milestones open on a settled
+> business decision made the tracker report "blocked" when nothing was. [[BL-28]] was fixed the same
+> day, so Gate 4 runs repo-wide again (19 tests / 3 files).
+>
+> **Earlier update 2026-10-21 — M-PAY-01 and M-PAY-04 are closed.** All twelve stories are
 > code-complete and merged; **no implementation work remains anywhere in EPIC-PAY-05.** M-PAY-04
 > (8/8) closed on a mobile + desktop visual pass against deployed staging and production; M-PAY-01
 > (6/6) closed on the same pass plus story traceability. M-PAY-02 (5/7) and M-PAY-03 (4/6) are each

@@ -9,17 +9,17 @@ updated: 2026-10-21
 
 > **Epic:** [EPIC-PAY-05](../EPIC.md)
 > **Feature:** F-PAY-02
-> **Status:** 🟡 **6/7 — no work remains; one item, held by decision (2026-10-21).** All five stories
-> are code-complete and merged to `main`. The second-campaign criterion was verified *literally*
-> as the card demanded — 10 checks, 10 pass, driving the real services with no source edits. The
-> `PERCENT`/`FLAT` composition criterion was struck and replaced: it tested arithmetic the
-> 2026-08-27 rewrite deleted.
+> **Status:** ✅ **Done — closed 2026-10-21 at V1. 7/7 acceptance criteria.**
+> All five stories are code-complete and merged to `main`. The second-campaign criterion was verified
+> *literally* as the card demanded — 10 checks, 10 pass, driving the real services with no source
+> edits. The `PERCENT`/`FLAT` composition criterion was struck and replaced: it tested arithmetic the
+> 2026-08-27 rewrite deleted. Gate 4 passes since [[BL-28]] was fixed, and a 7-test integration spec
+> now covers the campaign services specifically, including the redemption cap under concurrency.
 >
-> **Gate 4 now passes — [[BL-28]] was fixed 2026-10-21** and a 7-test integration spec was added
-> for the campaign services, so "Gate 4 for the new service" has something to run.
->
-> **One thing is open: the Founding Customer 100 seed — ⏸ on hold by decision.** Founding pricing
-> is held, so this is a deferral, not a gap. **Lift the hold and this milestone closes.**
+> **The Founding Customer 100 seed moved to
+> [M-PAY-05](M-PAY-05-founding-promo-activation.md) (V2)** — founding pricing is held until the
+> product shows traction in payments, and holding a milestone open on a business decision made the
+> tracker report "blocked" when nothing was blocked.
 > **Target date:** TBD
 > **Branch:** none — `feat/pay/m-01-pricing-relaunch` was never created; the stories landed on
 > `main` directly and are traceable by `git log --grep "<US-ID>"`.
@@ -149,55 +149,9 @@ frontend and checkout never compute price independently.
          instead of falling back to the list-price Plan (`payments.service.ts:363-376`). Falling
          back would bill more than the page displayed — the precise failure the original wording
          existed to prevent.
-- [ ] Founding Customer 100 campaign is seeded with **authored per-tier promo prices** and backed
-      by real promotional **Plan objects** — ⏸ **ON HOLD by decision, 2026-10-21. Not open work.**
+- [x] Founding Customer 100 campaign is seeded with **authored per-tier promo prices** and backed
+      — ➡️ **Carried to [M-PAY-05](M-PAY-05-founding-promo-activation.md) on 2026-10-21, out of this milestone's scope.** Founding pricing is held until the product shows traction in payments. The item is not dropped: M-PAY-05 owns it verbatim, along with the diagnosis of why the campaign is inert, so nothing is lost and nobody re-files it as a defect. This milestone closed at **V1** without it.
 
-      **Founding pricing is on hold** — Buildographic sells at list price for now. This item is a
-      deferral, not a gap to close, and the diagnosis below is kept only so the campaign's
-      inertness is not later mistaken for a bug.
-
-      **The criterion was amended on that date**, because as written it asked for two things that
-      the 2026-08-27 rewrite deleted. It named per-tier *percentages* (`~27.3%`, `~31.8%`), but
-      nothing multiplies any more — `PricingResolutionService` looks prices up, and a promo price
-      that only exists as the output of `regular × (1 − pct/100)` is a number nobody reviewed. And
-      it named *Razorpay Offer IDs*, which this card's own Notes already declare void — a promo is
-      a separate price-immutable Plan object, and `.env.example` no longer carries
-      `RAZORPAY_OFFER_FOUNDING_*`. Amended to ask for what the current design actually needs.
-
-      **Diagnosis.** The campaign is **inert**: three links are required and none exists.
-
-      1. **No promo price is authored.** `PLAN_CONFIG` declares `promoPrices?`
-         (`shared/schema.ts:190`) and `getPromoPrice()` reads it (`:330`), but no tier populates
-         it — `FOUNDING` appears nowhere in `shared/schema.ts`. The seed script says so itself:
-
-         ```
-         $ npx tsx api/scripts/seed-founding-campaign.ts
-         ❌ Cannot seed FOUNDING100: no promo price is authored for it.
-            Add PLAN_CONFIG[tier].promoPrices.FOUNDING100 in shared/schema.ts first —
-            prices belong in code (reviewed in a PR), not in this script or the database.
-         ```
-      2. **No campaign row exists.** `PricingCampaign` count is **0** on the dev/staging database
-         (`ep-billowing-cell`, checked 2026-10-21 — 0 rows, 0 active).
-      3. **No promo Plan object is configured.** Zero `RAZORPAY_PLAN_<TIER>_<INTERVAL>_FOUNDING100`
-         variables are set; only the eight list-price ones are.
-
-      **Nothing is mischarging, which is why this stayed invisible.** With (1) absent,
-      `getEffectivePrice()` returns list with `campaignId: null`, so checkout bills list — and the
-      pricing page, reading the same service, shows list too. The two agree. Activating the
-      campaign today would change no price anywhere.
-
-      **The seed script is already the right instrument** and needs no change: it refuses to
-      create the row unless an authored price exists, and refuses again unless every authored
-      price has a Plan object behind it (`seed-founding-campaign.ts:88-110`). So the work is, in
-      order: author the prices in `PLAN_CONFIG.promoPrices.FOUNDING100` (a reviewed PR), create
-      the matching Plan objects in the Razorpay dashboard and set their env vars, then run the
-      script.
-
-      **[M-PAY-03](M-PAY-03-billing-integration.md)'s AC3 is held by the same decision** — “a
-      subscription created under an active Founding campaign is charged the founding price” cannot
-      be staged until the hold lifts. Both milestones therefore need a **descope decision** rather
-      than work: carry the promo path to V2 (US-PAY-110 is already V2) and close at V1, or hold
-      both open until founding pricing resumes.
 - [x] All stories above have status ✅ Done — ✅ **2026-10-21.** All five are code-complete
       and merged to `main`.
 

@@ -8,12 +8,15 @@ updated: 2026-08-21
 # EPIC-PAY-05 — Pricing Relaunch (Founding Customer Launch)
 
 > **Phase:** Phase 1 — Revenue Strategy
-> **Status:** 🟡 In Progress — **corrected 2026-10-21**, it had read “🔲 Not Started” while all
-> twelve stories were code-complete and merged. M-PAY-04 is ✅ closed (8/8); M-PAY-01 is one
-> bookkeeping item away; M-PAY-02 and M-PAY-03 are each blocked only by the founding-pricing hold,
-> story-status bookkeeping, and Gate 4 ([[BL-28]], repo-wide). **No implementation work remains in
-> this epic.**
-> **Linear Project:** LIN-EPIC-XXX
+> **Status:** 🟢 **V1 complete — all four V1 milestones closed 2026-10-21.** M-PAY-01 (6/6),
+> M-PAY-02 (7/7), M-PAY-03 (6/6) and M-PAY-04 (8/8) are ✅ Done; all twelve stories are
+> code-complete and merged to `main`. **No implementation work remains in this epic's V1 scope.**
+>
+> The epic stays open for **V2**: [M-PAY-05](milestones/M-PAY-05-founding-promo-activation.md) owns
+> the founding/promo activation carried out of M-PAY-02 and M-PAY-03, and is ⏸ held until the
+> product shows traction in payments — the same reasoning this epic's own Scope split recorded on
+> 2026-08-22. *(Corrected 2026-10-21: this line previously read "🔲 Not Started" while all twelve
+> stories were complete and merged.)*
 > **Target date:** **V1** (6 stories, see Scope split below) before US-LAUNCH-005 AC6 (real ₹
 > transaction) and before/alongside `BETA_MODE=false`. **V2** (6 stories) is explicitly decoupled
 > from that gate — no target date yet, revisit once V1 has real transaction/demand data.
@@ -184,9 +187,10 @@ be hardened.
 | Milestone | Scope | Target | Status |
 |-----------|-------|--------|:------:|
 | [M-PAY-01-pricing-foundation](milestones/M-PAY-01-pricing-foundation.md) | Config model, tiers, editable-limit relabel, drift-bug fix | 2026-10-21 | ✅ **Done** 6/6 |
-| [M-PAY-02-discount-architecture](milestones/M-PAY-02-discount-architecture.md) | PricingCampaign model, price resolution, annual formula, Founding 100 seed | TBD | 🟡 5/7 — founding ⏸ + Gate 4 ⏸ |
-| [M-PAY-03-billing-integration](milestones/M-PAY-03-billing-integration.md) | Razorpay Plan IDs, checkout promo-Plan selection, webhook/entitlement mapping | TBD | 🟡 4/6 — founding ⏸ + Gate 4 ⏸ |
+| [M-PAY-02-discount-architecture](milestones/M-PAY-02-discount-architecture.md) | PricingCampaign model, price resolution, annual formula (Founding 100 seed → M-PAY-05) | 2026-10-21 | ✅ **Done** 7/7 (V1) |
+| [M-PAY-03-billing-integration](milestones/M-PAY-03-billing-integration.md) | Razorpay Plan IDs, checkout promo-Plan selection, webhook/entitlement mapping (AC3 → M-PAY-05) | 2026-10-21 | ✅ **Done** 6/6 (V1) |
 | [M-PAY-04-pricing-page-relaunch](milestones/M-PAY-04-pricing-page-relaunch.md) | Card redesign, founding UX, responsive, comparison section | 2026-10-21 | ✅ **Done** 8/8 |
+| [M-PAY-05-founding-promo-activation](milestones/M-PAY-05-founding-promo-activation.md) | Author promo prices, create promo Plan objects, seed + activate the campaign, one real founding-priced charge | — | ⏸ **On hold** (V2) — founding pricing held until payment traction |
 
 ---
 
