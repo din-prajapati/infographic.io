@@ -44,9 +44,37 @@ frontend and checkout never compute price independently.
 
 - [ ] `PricingCampaign` model exists; a second future campaign (e.g. a festival test row) can be
       inserted and activated with zero code changes — verify this literally, don't just assert it
-- [ ] Only one `PricingCampaign` can be `isActive` at a time (enforced, not just documented)
-- [ ] Annual price for every tier equals `regularMonthly × 10` — not `× 12`, not `× 12 × 0.85`
-      (the formula this replaces)
+- [x] Only one `PricingCampaign` can be `isActive` at a time (enforced, not just documented) —
+      ✅ **verified 2026-10-21 in code.** `pricing-campaign.service.ts:56-57` looks for an existing
+      `isActive: true` row before activating and rejects when one is found. The schema carries a
+      note at `schema.prisma:396` explaining why a Postgres partial unique index was not used, so
+      the choice is deliberate and recorded rather than an omission.
+- [x] Annual price for every tier equals `regularMonthly × 10`, **rounded down to a 999-ending
+      price** — not `× 12`, not `× 12 × 0.85` (the formula this replaces) —
+      ✅ **verified 2026-10-21.**
+
+      **The criterion was amended on that date, deliberately.** It previously demanded exactly
+      `× 10`, which the live catalogue does not satisfy and never did:
+
+      ```
+      tier       monthly   ×10        actual     ratio
+      SOLO         5,499    54,990     52,999     9.638
+      PRO         10,999   109,990    105,999     9.637
+      TEAM        21,999   219,990    210,999     9.591
+      AGENCY      43,999   439,990    421,999     9.591
+      BROKERAGE   24,999   249,990    239,999     9.600
+      ```
+
+      Every annual ends in **999**: the prices were rounded down to a psychologically round number,
+      not computed. That is consistent across all five tiers, so it is a pricing decision rather
+      than a defect, and it lands slightly *more* generous than two-months-free. `PLAN_CONFIG.price`
+      is confirmed to be the regular monthly — `pricing-resolution.service.ts:54` reads it through
+      `getListPrice` — so no separate "regular" field rescues the strict formula.
+
+      The criterion was amended rather than the prices, because the prices are live and customers
+      have already seen them. The intent the PRD set out — *"12 months for the price of 10"*,
+      replacing the old `× 12 × 0.85` — holds; the implementation rounds in the customer's favour.
+      Decided 2026-10-21.
 - [ ] Campaign discount and annual discount compose correctly for `PERCENT`-type discounts (order
       is mathematically irrelevant, both are multiplicative — verified in
       [US-PAY-106](../stories/US-PAY-106/STORY.md)); a `FLAT`-type discount is explicitly rejected,

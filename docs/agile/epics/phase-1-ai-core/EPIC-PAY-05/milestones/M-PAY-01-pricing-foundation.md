@@ -40,13 +40,21 @@ All three are order 1 — independent files, no shared dependency, safe to imple
 
 ## Acceptance (Milestone Done When…)
 
-- [ ] `PLAN_CONFIG` has FREE/SOLO/PRO/TEAM/AGENCY entries with the exact prices and limits from
-      [the PRD](../../../PRD/2026-08-21-pricing-relaunch.md#2-finalized-pricing-table-feasibility-checked-not-just-proposed)
-- [ ] BROKERAGE is not silently renamed to AGENCY — both exist until a real migration decision is
-      made for any existing BROKERAGE subscriber
+- [x] `PLAN_CONFIG` has FREE/SOLO/PRO/TEAM/AGENCY entries with the exact prices and limits from
+      [the PRD](../../../PRD/2026-08-21-pricing-relaunch.md#2-finalized-pricing-table-feasibility-checked-not-just-proposed) —
+      ✅ **verified 2026-10-21, exact match on every figure.** PRD rows 46-49 against
+      `shared/schema.ts`: Solo ₹5,499 / 50 / 10 · Pro ₹10,999 / 100 / 25 · Team ₹21,999 / 200 / 60 ·
+      Agency ₹43,999 / 400 / 150. FREE is 0 / 3. No drift between the PRD and the code.
+- [x] BROKERAGE is not silently renamed to AGENCY — both exist until a real migration decision is
+      made for any existing BROKERAGE subscriber —
+      ✅ **verified 2026-10-21.** Both tiers are present and distinct in `PLAN_CONFIG`:
+      BROKERAGE ₹24,999 / 1,000 / 100 and AGENCY ₹43,999 / 400 / 150. Different prices, different
+      allowances — neither is an alias of the other.
 - [ ] Editable-design allowance (10/25/60/150 per tier) displays correctly without changing the
       live `US-LAUNCH-015` gating behavior
-- [ ] No pricing string on `PricingPage.tsx` is independent of `PLAN_CONFIG`
+- [x] No pricing string on `PricingPage.tsx` is independent of `PLAN_CONFIG` —
+      ✅ **verified 2026-10-21: zero hardcoded ₹ literals** in the file. Every displayed price is
+      derived, so changing `PLAN_CONFIG` changes the page and nothing can silently diverge.
 - [ ] All stories above have status ✅ Done
 - [ ] Verification gates pass (Gate 1 mandatory)
 
