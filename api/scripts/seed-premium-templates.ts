@@ -28,6 +28,8 @@
  * Run from repo root:
  *   npx tsx api/scripts/seed-premium-templates.ts             # write
  *   npx tsx api/scripts/seed-premium-templates.ts --dry-run   # report only
+ *   npx tsx api/scripts/seed-premium-templates.ts --refresh  # rewrite existing rows
+ *   npx tsx api/scripts/seed-premium-templates.ts --refresh --dry-run  # preview that
  *
  * `--dry-run` performs every read and reports exactly what a real run would
  * create, skip and tag, without issuing a single write. Use it to inspect an
@@ -80,6 +82,22 @@ const prisma = new PrismaClient();
  * exactly that blind spot.
  */
 const DRY_RUN = process.argv.includes('--dry-run');
+/**
+ * --refresh: rewrite the canvasData of templates that ALREADY exist, from this
+ * script's own data file.
+ *
+ * Without it the script skips anything already present, which is correct for a
+ * seed but means a correction to the template copy can never reach an environment
+ * that has already been seeded. That is exactly the situation the fabricated
+ * agent identity left us in on 2026-10-21: the five rows were live on production
+ * with a fictional name, phone and RERA registration number, and re-running the
+ * seed changed nothing.
+ *
+ * Rewrites only the admin-curated template rows this script owns, and only their
+ * canvasData/description/badge/tags — never a user's own design. Combine with
+ * --dry-run first; the pairing is the point.
+ */
+const REFRESH = process.argv.includes('--refresh');
 
 /** Build ≥2 tags from badge (style) + category (content) — US-AI-040 AC4. */
 /**
@@ -304,11 +322,56 @@ async function main() {
   console.log(`\n📝 Migrating ${premiumTemplates.length} premium templates...\n`);
   let created = 0;
   let skipped = 0;
+  let refreshed = 0;
 
   for (const tpl of premiumTemplates) {
     if (existingNames.has(tpl.name)) {
-      console.log(`  ⏭  Already migrated: "${tpl.name}"`);
-      skipped++;
+      if (!REFRESH) {
+        console.log(`  ⏭  Already migrated: "${tpl.name}"`);
+        skipped++;
+        continue;
+      }
+
+      // --refresh: the row exists but its content is stale. Rewrite the canvas
+      // from the data file so a correction to template copy actually reaches an
+      // environment that was seeded before the correction was made.
+      const row = existing.find(
+        (e) => (e.propertyData as any)?.canvasDesign?.name === tpl.name,
+      );
+      if (!row) {
+        console.log(`  ⚠  Cannot refresh "${tpl.name}" — name matched but row not found`);
+        continue;
+      }
+
+      if (DRY_RUN) {
+        console.log(`  ○  WOULD refresh: "${tpl.name}" (row ${row.id})`);
+        refreshed++;
+        continue;
+      }
+
+      const existingPd = (row.propertyData ?? {}) as Record<string, any>;
+      await prisma.infographic.update({
+        where: { id: row.id },
+        data: {
+          propertyData: {
+            ...existingPd,
+            canvasDesign: {
+              ...(existingPd.canvasDesign ?? {}),
+              name: tpl.name,
+              type: 'template',
+              category: tpl.category,
+              thumbnail: tpl.image,
+              canvasData: tpl.canvasData,
+              tags: buildTags(tpl.badge, tpl.category),
+              visibility: 'admin_curated',
+              description: tpl.description,
+              badge: tpl.badge,
+            },
+          },
+        },
+      });
+      console.log(`  ♻  Refreshed: "${tpl.name}" [${tpl.badge}]`);
+      refreshed++;
       continue;
     }
 
@@ -413,6 +476,7 @@ async function main() {
   console.log(`\n📊 Summary${DRY_RUN ? ' (DRY RUN — nothing was written)' : ''}:`);
   console.log(`   ${DRY_RUN ? 'Would create' : 'Created'}: ${created}`);
   console.log(`   Skipped (already present): ${skipped}`);
+  console.log(`   Refreshed (content rewritten): ${refreshed}`);
   console.log(`   ${DRY_RUN ? 'Would retag' : 'Tags backfilled'}: ${tagged}`);
 
   if (DRY_RUN) {
@@ -422,7 +486,10 @@ async function main() {
 
   // A run that creates nothing against an empty gallery is the BL-25 failure
   // mode, not a success. Say so rather than printing "Done".
-  if (created === 0 && skipped === 0) {
+  // `refreshed` counts too: a --refresh run legitimately creates and skips nothing
+  // while still changing five rows. Without it this warning fires on a successful
+  // refresh and tells the operator the opposite of what happened.
+  if (created === 0 && skipped === 0 && refreshed === 0) {
     console.log(
       `\n⚠  Created 0 and skipped 0 — the gallery is still empty and this run changed nothing.\n` +
         `   That is the BL-25 signature. Check that the seed data module loaded.\n`,
