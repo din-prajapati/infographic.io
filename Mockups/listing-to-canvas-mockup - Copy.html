@@ -1,0 +1,1892 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Buildographic · Listing to Canvas Interactive Mockup</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ground: #f7f6f2;
+      --surface: #ffffff;
+      --surface-subtle: #fcfbf9;
+      --sunken: #f0eee8;
+      --ink: #191816;
+      --ink-secondary: #4a4742;
+      --muted: #6e6a63;
+      --faint: #9c978f;
+      --rule: #e5e2da;
+      --rule-subtle: #eeece6;
+      
+      /* Semantic design tokens from Buildographic / Lovart palette */
+      --primary: #0ca0eb;
+      --primary-hover: #088ed3;
+      --primary-wash: #e6f6fd;
+      --primary-text: #056291;
+      
+      --structure: #1f448b;
+      --structure-hover: #17346c;
+      --structure-wash: #eef2f9;
+      --structure-border: #ccd8ee;
+      
+      --assist: #7b2fc4;
+      --assist-hover: #6a24ab;
+      --assist-wash: #f5edfb;
+      --assist-border: #dec7f4;
+      
+      --warn: #c2610d;
+      --warn-wash: #fdf3e9;
+      --warn-border: #f7d5b8;
+      
+      --ok: #237b4b;
+      --ok-wash: #edf7f1;
+      --ok-border: #bce3cc;
+      
+      --gold: #b3821a;
+      --gold-wash: #fdf8eb;
+
+      --font-display: "Bricolage Grotesque", Outfit, "Segoe UI", system-ui, sans-serif;
+      --font-body: Inter, "Segoe UI", system-ui, -apple-system, sans-serif;
+      --font-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+      --radius-xl: 20px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03);
+      --shadow-md: 0 4px 14px rgba(0,0,0,0.06), 0 2px 6px rgba(0,0,0,0.03);
+      --shadow-lg: 0 12px 32px rgba(0,0,0,0.09), 0 4px 12px rgba(0,0,0,0.04);
+      --shadow-pop: 0 20px 48px -10px rgba(0,0,0,0.18);
+    }
+
+    [data-theme="dark"] {
+      --ground: #121110;
+      --surface: #1c1a18;
+      --surface-subtle: #22201d;
+      --sunken: #272421;
+      --ink: #f5f3ef;
+      --ink-secondary: #c9c5bd;
+      --muted: #9e978c;
+      --faint: #736e65;
+      --rule: #332f2a;
+      --rule-subtle: #292622;
+      
+      --primary: #38bdf8;
+      --primary-wash: #0c2a38;
+      --primary-text: #7dd3fc;
+      
+      --structure: #7ba3e8;
+      --structure-wash: #142033;
+      --structure-border: #233c66;
+      
+      --assist: #c493ee;
+      --assist-wash: #271836;
+      --assist-border: #502773;
+      
+      --warn: #f59e0b;
+      --warn-wash: #33220c;
+      --warn-border: #664314;
+      
+      --ok: #4ade80;
+      --ok-wash: #0f2c1b;
+      --ok-border: #1a5632;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--ground);
+      color: var(--ink);
+      font-family: var(--font-body);
+      font-size: 13.5px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ---- App Header ---- */
+    .app-header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--rule);
+      height: 54px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      flex-shrink: 0;
+      z-index: 100;
+    }
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .logo-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 17px;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+      text-decoration: none;
+    }
+    .logo-icon {
+      width: 28px;
+      height: 28px;
+      background: linear-gradient(135deg, #0ca0eb 0%, #7b2fc4 100%);
+      border-radius: 7px;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-size: 15px;
+      box-shadow: 0 2px 6px rgba(12,160,235,0.3);
+    }
+    .pill-proto {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      background: var(--structure-wash);
+      color: var(--structure);
+      border: 1px solid var(--structure-border);
+      padding: 2px 7px;
+      border-radius: 12px;
+    }
+
+    /* Top Use-Case Scenario Switcher */
+    .scenario-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--sunken);
+      padding: 4px 6px;
+      border-radius: 24px;
+      border: 1px solid var(--rule);
+    }
+    .scenario-btn {
+      border: none;
+      background: transparent;
+      padding: 4px 11px;
+      border-radius: 18px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--ink-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+    .scenario-btn:hover {
+      background: rgba(0,0,0,0.04);
+      color: var(--ink);
+    }
+    .scenario-btn.active {
+      background: var(--surface);
+      color: var(--ink);
+      font-weight: 600;
+      box-shadow: var(--shadow-sm);
+    }
+    .scenario-btn .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--faint);
+    }
+    .scenario-btn.active .dot {
+      background: var(--primary);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .credit-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      background: var(--sunken);
+      border: 1px solid var(--rule);
+      padding: 4px 10px;
+      border-radius: 16px;
+      color: var(--ink);
+    }
+    .credit-badge b { color: var(--structure); }
+    .theme-toggle, .btn-ghost {
+      background: transparent;
+      border: 1px solid var(--rule);
+      border-radius: 7px;
+      padding: 5px 10px;
+      cursor: pointer;
+      color: var(--ink-secondary);
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .theme-toggle:hover, .btn-ghost:hover {
+      background: var(--sunken);
+      color: var(--ink);
+    }
+
+    /* ---- Main 3-Zone Workspace Layout ---- */
+    .workspace {
+      display: grid;
+      grid-template-columns: 360px 1fr 340px;
+      height: calc(100vh - 54px);
+      overflow: hidden;
+    }
+
+    /* ============================================================
+       ZONE 1: THE LISTING (Left Panel - Structured Data)
+       ============================================================ */
+    .zone-listing {
+      background: var(--surface);
+      border-right: 1px solid var(--rule);
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden;
+      position: relative;
+    }
+    .panel-head {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--rule);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--surface);
+    }
+    .panel-head-title {
+      font-family: var(--font-display);
+      font-size: 14.5px;
+      font-weight: 700;
+      color: var(--structure);
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .zone-badge {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: var(--structure-wash);
+      color: var(--structure);
+      border: 1px solid var(--structure-border);
+    }
+    .panel-body {
+      padding: 18px;
+      overflow-y: auto;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .form-section-title {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--faint);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .form-group label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--ink-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .form-group label .req { color: var(--warn); font-family: var(--font-mono); font-size: 11px; }
+    .form-input, .form-select, .form-textarea {
+      background: var(--surface);
+      border: 1px solid var(--rule);
+      border-radius: var(--radius-sm);
+      padding: 7px 10px;
+      font-size: 13px;
+      color: var(--ink);
+      font-family: var(--font-body);
+      outline: none;
+      transition: all 0.15s ease;
+    }
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      border-color: var(--structure);
+      box-shadow: 0 0 0 3px var(--structure-wash);
+    }
+    .form-input.highlight-extract {
+      animation: fieldPop 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+      border-color: var(--assist);
+      background: var(--assist-wash);
+    }
+    @keyframes fieldPop {
+      0% { transform: scale(1.02); background: var(--assist-wash); border-color: var(--assist); }
+      100% { transform: scale(1); }
+    }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+
+    /* Photo Reference Box */
+    .photo-drop-box {
+      border: 1.5px dashed var(--rule);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      text-align: center;
+      background: var(--sunken);
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+    .photo-drop-box:hover {
+      border-color: var(--structure);
+      background: var(--structure-wash);
+    }
+    .photo-preview-grid {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .photo-thumb {
+      width: 54px;
+      height: 54px;
+      border-radius: 6px;
+      object-fit: cover;
+      border: 2px solid transparent;
+      cursor: pointer;
+    }
+    .photo-thumb.selected {
+      border-color: var(--structure);
+      box-shadow: 0 0 0 2px var(--structure-wash);
+    }
+
+    /* Brand Selector */
+    .brand-pills {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .brand-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      border: 1px solid var(--rule);
+      background: var(--surface);
+      cursor: pointer;
+      font-size: 11.5px;
+      font-weight: 500;
+    }
+    .brand-pill.active {
+      border-color: var(--structure);
+      background: var(--structure-wash);
+      color: var(--structure);
+      font-weight: 600;
+    }
+    .swatch-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    /* Gate & Action Footer (Rule 01 & 03: One Generate Button) */
+    .panel-footer-gate {
+      padding: 16px;
+      border-top: 1px solid var(--rule);
+      background: var(--surface-subtle);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .gate-status-pill {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: var(--radius-sm);
+      transition: all 0.2s ease;
+    }
+    .gate-status-pill.ready {
+      background: var(--ok-wash);
+      color: var(--ok);
+      border: 1px solid var(--ok-border);
+    }
+    .gate-status-pill.missing {
+      background: var(--warn-wash);
+      color: var(--warn);
+      border: 1px solid var(--warn-border);
+    }
+
+    .btn-generate-single {
+      background: linear-gradient(135deg, var(--structure) 0%, #163673 100%);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-md);
+      padding: 13px 18px;
+      font-family: var(--font-display);
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 14px rgba(31,68,139,0.25);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      width: 100%;
+    }
+    .btn-generate-single:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(31,68,139,0.35);
+      background: linear-gradient(135deg, #2551a3 0%, #1c428a 100%);
+    }
+    .btn-generate-single:disabled {
+      background: var(--sunken);
+      color: var(--faint);
+      box-shadow: none;
+      cursor: not-allowed;
+    }
+
+    /* ============================================================
+       ZONE 2: THE CANVAS (Center Area)
+       ============================================================ */
+    .zone-canvas {
+      background: var(--ground);
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      position: relative;
+      overflow: hidden;
+    }
+    .canvas-toolbar {
+      height: 46px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--rule);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      flex-shrink: 0;
+    }
+    .canvas-size-selector {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: var(--sunken);
+      padding: 3px;
+      border-radius: 6px;
+    }
+    .size-btn {
+      border: none;
+      background: transparent;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 11.5px;
+      font-weight: 500;
+      color: var(--ink-secondary);
+      cursor: pointer;
+    }
+    .size-btn.active {
+      background: var(--surface);
+      color: var(--ink);
+      font-weight: 600;
+      box-shadow: var(--shadow-sm);
+    }
+    .canvas-tools-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .canvas-viewport {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      overflow: auto;
+      position: relative;
+    }
+
+    /* Empty Canvas Placeholder */
+    .canvas-empty-state {
+      max-width: 440px;
+      text-align: center;
+      background: var(--surface);
+      border: 2px dashed var(--rule);
+      border-radius: var(--radius-xl);
+      padding: 48px 36px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      box-shadow: var(--shadow-md);
+    }
+    .empty-illustration {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: var(--structure-wash);
+      color: var(--structure);
+      display: grid;
+      place-items: center;
+      font-size: 32px;
+    }
+
+    /* S3: Choosing Variations State */
+    .variations-chooser-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(247, 246, 242, 0.94);
+      backdrop-filter: blur(6px);
+      z-index: 50;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      gap: 20px;
+    }
+    .variations-header {
+      text-align: center;
+    }
+    .variations-header h3 {
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.015em;
+    }
+    .variations-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 260px);
+      gap: 20px;
+    }
+    .variation-card {
+      background: var(--surface);
+      border: 2px solid var(--rule);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-md);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      cursor: pointer;
+    }
+    .variation-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--structure);
+      box-shadow: var(--shadow-lg);
+    }
+    .variation-card.selected {
+      border-color: var(--structure);
+      box-shadow: 0 0 0 3px var(--structure-wash), var(--shadow-lg);
+    }
+    .variation-card-img {
+      width: 100%;
+      height: 280px;
+      background-size: cover;
+      background-position: center;
+      position: relative;
+    }
+    .variation-card-body {
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid var(--rule);
+      background: var(--surface);
+    }
+    .btn-use-design {
+      background: var(--structure);
+      color: #fff;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-use-design:hover {
+      background: var(--structure-hover);
+    }
+
+    /* S4: Placed Active Canvas Board */
+    .canvas-artboard {
+      width: 480px;
+      height: 480px;
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: var(--shadow-pop);
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(0,0,0,0.08);
+      user-select: none;
+    }
+    .canvas-bg-layer {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      transition: all 0.3s ease;
+    }
+    .canvas-bg-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.05) 40%, rgba(0,0,0,0.85) 100%);
+    }
+
+    /* Editable Element Overlays */
+    .canvas-element {
+      position: absolute;
+      cursor: pointer;
+      border: 1.5px dashed transparent;
+      padding: 4px 6px;
+      border-radius: 4px;
+      transition: all 0.12s ease;
+      z-index: 10;
+    }
+    .canvas-element:hover {
+      border-color: rgba(12, 160, 235, 0.7);
+      background: rgba(12, 160, 235, 0.1);
+    }
+    .canvas-element.selected {
+      border-color: var(--primary);
+      border-style: solid;
+      background: rgba(12, 160, 235, 0.15);
+      box-shadow: 0 0 0 2px rgba(12, 160, 235, 0.3);
+    }
+    .canvas-element.selected .resize-handle {
+      display: block;
+    }
+    .resize-handle {
+      display: none;
+      width: 8px;
+      height: 8px;
+      background: #ffffff;
+      border: 1.5px solid var(--primary);
+      position: absolute;
+      border-radius: 2px;
+    }
+    .handle-tl { top: -4px; left: -4px; cursor: nwse-resize; }
+    .handle-tr { top: -4px; right: -4px; cursor: nesw-resize; }
+    .handle-bl { bottom: -4px; left: -4px; cursor: nesw-resize; }
+    .handle-br { bottom: -4px; right: -4px; cursor: nwse-resize; }
+
+    /* Specific Placed Elements */
+    .el-headline {
+      top: 24px;
+      left: 24px;
+      right: 24px;
+      color: #ffffff;
+      font-family: var(--font-display);
+      font-size: 24px;
+      font-weight: 800;
+      line-height: 1.15;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+    }
+    .el-pricechip {
+      bottom: 96px;
+      left: 24px;
+      background: #ffffff;
+      color: #0c2a38;
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 800;
+      padding: 6px 14px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      display: inline-block;
+    }
+    .el-facts {
+      bottom: 64px;
+      left: 24px;
+      right: 24px;
+      color: #f0f8ff;
+      font-size: 13.5px;
+      font-weight: 500;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+      display: flex;
+      gap: 12px;
+    }
+    .el-agent {
+      bottom: 16px;
+      left: 24px;
+      right: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: #ffffff;
+      border-top: 1px solid rgba(255,255,255,0.25);
+      padding-top: 10px;
+    }
+    .agent-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .agent-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 1.5px solid #fff;
+    }
+
+    /* ============================================================
+       ZONE 3: THE ASSISTANT (Right Panel - Context Copilot)
+       ============================================================ */
+    .zone-assistant {
+      background: var(--surface);
+      border-left: 1px solid var(--rule);
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden;
+      position: relative;
+    }
+    .assistant-head {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--rule);
+      background: var(--assist-wash);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .assistant-head-title {
+      font-family: var(--font-display);
+      font-size: 14.5px;
+      font-weight: 700;
+      color: var(--assist);
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .assistant-mode-pill {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 4px;
+      background: #ffffff;
+      color: var(--assist);
+      border: 1px solid var(--assist-border);
+    }
+    
+    .assistant-context-banner {
+      padding: 8px 16px;
+      background: var(--assist-wash);
+      border-bottom: 1px solid var(--assist-border);
+      font-size: 11.5px;
+      color: var(--assist);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .chat-messages {
+      flex: 1;
+      padding: 16px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .chat-msg {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      max-width: 92%;
+    }
+    .chat-msg.assistant {
+      align-self: flex-start;
+    }
+    .chat-msg.user {
+      align-self: flex-end;
+    }
+    .chat-bubble {
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+    .chat-msg.assistant .chat-bubble {
+      background: var(--sunken);
+      color: var(--ink);
+      border-bottom-left-radius: 2px;
+      border: 1px solid var(--rule-subtle);
+    }
+    .chat-msg.user .chat-bubble {
+      background: var(--assist);
+      color: #ffffff;
+      border-bottom-right-radius: 2px;
+    }
+    .chat-time {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--faint);
+    }
+
+    /* Quick Suggestion Chips */
+    .quick-chips-wrap {
+      padding: 8px 16px;
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      border-top: 1px solid var(--rule-subtle);
+      background: var(--surface-subtle);
+    }
+    .quick-chip {
+      font-size: 11.5px;
+      padding: 4px 10px;
+      border-radius: 14px;
+      border: 1px solid var(--assist-border);
+      background: var(--surface);
+      color: var(--assist);
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .quick-chip:hover {
+      background: var(--assist-wash);
+      border-color: var(--assist);
+    }
+
+    /* Chat Input Bar */
+    .chat-input-bar {
+      padding: 12px 16px;
+      border-top: 1px solid var(--rule);
+      background: var(--surface);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .chat-input-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--sunken);
+      border: 1px solid var(--rule);
+      border-radius: var(--radius-md);
+      padding: 4px 8px 4px 12px;
+      transition: all 0.15s;
+    }
+    .chat-input-wrapper:focus-within {
+      border-color: var(--assist);
+      background: var(--surface);
+      box-shadow: 0 0 0 3px var(--assist-wash);
+    }
+    .chat-input-field {
+      flex: 1;
+      border: none;
+      background: transparent;
+      outline: none;
+      font-size: 13px;
+      color: var(--ink);
+      font-family: var(--font-body);
+      padding: 6px 0;
+    }
+    .btn-send {
+      background: var(--assist);
+      color: #fff;
+      border: none;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-send:hover {
+      background: var(--assist-hover);
+    }
+
+    /* Generation Progress Overlay */
+    .progress-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(4px);
+      z-index: 60;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+    }
+    .spinner {
+      width: 44px;
+      height: 44px;
+      border: 3px solid var(--structure-wash);
+      border-top-color: var(--structure);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Floating Toast / Notification */
+    .floating-toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--ink);
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 24px;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: var(--shadow-lg);
+      z-index: 999;
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .floating-toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    /* Explanation Info Modal */
+    .info-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(4px);
+      z-index: 2000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .info-modal-card {
+      background: var(--surface);
+      max-width: 680px;
+      width: 100%;
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--rule);
+      box-shadow: var(--shadow-pop);
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      max-height: 85vh;
+      overflow-y: auto;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ============================================================
+       TOP HEADER & USE CASE SELECTOR
+       ============================================================ -->
+  <header class="app-header">
+    <div class="brand-group">
+      <a href="#" class="logo-badge">
+        <div class="logo-icon">✨</div>
+        Buildographic
+      </a>
+      <span class="pill-proto">Listing to Canvas Prototype</span>
+    </div>
+
+    <!-- Scenario Switcher Bar (UC-1 to UC-6) -->
+    <div class="scenario-bar">
+      <button class="scenario-btn active" onclick="loadScenario('uc1')" id="tab-uc1">
+        <span class="dot"></span> 1. Direct Form (60%)
+      </button>
+      <button class="scenario-btn" onclick="loadScenario('uc2')" id="tab-uc2">
+        <span class="dot"></span> 2. Paste Text (20%)
+      </button>
+      <button class="scenario-btn" onclick="loadScenario('uc3')" id="tab-uc3">
+        <span class="dot"></span> 3. Property Photo (10%)
+      </button>
+      <button class="scenario-btn" onclick="loadScenario('uc4')" id="tab-uc4">
+        <span class="dot"></span> 4. Element Edit (0 Cr)
+      </button>
+      <button class="scenario-btn" onclick="loadScenario('uc5')" id="tab-uc5">
+        <span class="dot"></span> 5. Campaign Kit (S5→S2)
+      </button>
+    </div>
+
+    <div class="header-actions">
+      <div class="credit-badge">
+        <span>⚡ Balance:</span>
+        <b id="credit-count">14 Credits</b>
+      </div>
+      <button class="btn-ghost" onclick="toggleInfoModal()">
+        ℹ️ Architecture Plan
+      </button>
+      <button class="theme-toggle" onclick="toggleTheme()" id="btn-theme">
+        🌓 Dark
+      </button>
+    </div>
+  </header>
+
+  <!-- ============================================================
+       3-ZONE WORKSPACE (Listing | Canvas | Assistant)
+       ============================================================ -->
+  <main class="workspace">
+
+    <!-- ============================================================
+         ZONE 1: THE LISTING (Single Ground Truth)
+         ============================================================ -->
+    <section class="zone-listing">
+      <div class="panel-head">
+        <div class="panel-head-title">
+          <span>📋</span> The Listing
+        </div>
+        <span class="zone-badge">Zone 1 · Single Truth</span>
+      </div>
+
+      <div class="panel-body">
+        <!-- Campaign Goal -->
+        <div class="form-group">
+          <label for="f-goal">Campaign Goal / Status</label>
+          <select id="f-goal" class="form-select" onchange="handleFieldChange()">
+            <option value="Just Listed">🏷️ Just Listed (Hero Announcement)</option>
+            <option value="Open House">🏡 Open House (This Weekend)</option>
+            <option value="Price Drop">📉 Price Drop (High Urgency)</option>
+            <option value="Exclusive">⭐ Exclusive Preview</option>
+            <option value="Just Sold">🎉 Just Sold (Social Proof)</option>
+          </select>
+        </div>
+
+        <!-- Property Title / Headline -->
+        <div class="form-group">
+          <label for="f-title">Headline / Title <span class="req">*</span></label>
+          <input type="text" id="f-title" class="form-input" placeholder="e.g. Contemporary Sea-Facing Penthouse" value="" oninput="handleFieldChange()" />
+        </div>
+
+        <!-- Address -->
+        <div class="form-group">
+          <label for="f-address">Property Address <span class="req">*</span></label>
+          <input type="text" id="f-address" class="form-input" placeholder="e.g. 12 Carter Road, Bandra West, Mumbai" value="" oninput="handleFieldChange()" />
+        </div>
+
+        <!-- Price & Area (Grid) -->
+        <div class="grid-2">
+          <div class="form-group">
+            <label for="f-price">Price <span class="req">*</span></label>
+            <input type="text" id="f-price" class="form-input" placeholder="e.g. ₹4.20 Cr" value="" oninput="handleFieldChange()" />
+          </div>
+          <div class="form-group">
+            <label for="f-area">Built-up Area</label>
+            <input type="text" id="f-area" class="form-input" placeholder="e.g. 1,850 sq ft" value="" oninput="handleFieldChange()" />
+          </div>
+        </div>
+
+        <!-- Beds & Baths (Grid) -->
+        <div class="grid-2">
+          <div class="form-group">
+            <label for="f-beds">Bedrooms</label>
+            <input type="text" id="f-beds" class="form-input" placeholder="e.g. 3 BHK" value="" oninput="handleFieldChange()" />
+          </div>
+          <div class="form-group">
+            <label for="f-baths">Bathrooms</label>
+            <input type="text" id="f-baths" class="form-input" placeholder="e.g. 3 Baths" value="" oninput="handleFieldChange()" />
+          </div>
+        </div>
+
+        <!-- Property Photo Style Reference -->
+        <div class="form-group">
+          <label>Property Photo <span style="color:var(--faint);font-weight:400;">(Style Reference)</span></label>
+          <div class="photo-drop-box" onclick="selectPropertyPhoto(1)">
+            <div id="photo-box-content" style="font-size:12px;color:var(--muted);">
+              📷 <b>Click to attach property photo</b> or drop here
+            </div>
+            <div class="photo-preview-grid" id="photo-thumbs">
+              <img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=300&q=80" class="photo-thumb selected" onclick="selectPropertyPhoto(1); event.stopPropagation();" title="Luxury Modern Villa" />
+              <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=300&q=80" class="photo-thumb" onclick="selectPropertyPhoto(2); event.stopPropagation();" title="Contemporary Penthouse" />
+              <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=300&q=80" class="photo-thumb" onclick="selectPropertyPhoto(3); event.stopPropagation();" title="Boutique Terrace House" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Brand Palette -->
+        <div class="form-group">
+          <label>Brand Palette &amp; Theme</label>
+          <div class="brand-pills">
+            <div class="brand-pill active" onclick="setBrandTheme(this, '#1f448b')">
+              <span class="swatch-dot" style="background:#1f448b;"></span> Luxury Navy
+            </div>
+            <div class="brand-pill" onclick="setBrandTheme(this, '#237b4b')">
+              <span class="swatch-dot" style="background:#237b4b;"></span> Emerald Forest
+            </div>
+            <div class="brand-pill" onclick="setBrandTheme(this, '#c2610d')">
+              <span class="swatch-dot" style="background:#c2610d;"></span> Warm Terracotta
+            </div>
+          </div>
+        </div>
+
+        <!-- Agent Details -->
+        <div class="form-group">
+          <div class="form-section-title">
+            <span>Agent Branding</span>
+            <span style="color:var(--ok);font-size:10px;">✓ Saved Profile</span>
+          </div>
+          <div class="grid-2">
+            <input type="text" id="f-agent-name" class="form-input" value="Priya Sharma" placeholder="Agent Name" />
+            <input type="text" id="f-brokerage" class="form-input" value="Apex Luxury Realty" placeholder="Brokerage" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Single Generate Action Bar (Rule 01 & 03) -->
+      <div class="panel-footer-gate">
+        <div class="gate-status-pill ready" id="gate-status">
+          <span>✓</span> Listing Complete &amp; Verified
+        </div>
+        <button class="btn-generate-single" id="btn-generate-main" onclick="executeGenerate()">
+          <span>✨</span> Create 3 Designs <span style="font-size:12px;opacity:0.85;font-weight:500;">· 1 Credit</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         ZONE 2: THE CANVAS (Center Area)
+         ============================================================ -->
+    <section class="zone-canvas">
+      <!-- Top Canvas Controls -->
+      <div class="canvas-toolbar">
+        <div class="canvas-size-selector">
+          <button class="size-btn active" onclick="setCanvasSize('1:1')">1:1 Square (Feed)</button>
+          <button class="size-btn" onclick="setCanvasSize('9:16')">9:16 Story</button>
+          <button class="size-btn" onclick="setCanvasSize('16:9')">16:9 Landscape</button>
+        </div>
+
+        <div class="canvas-tools-group">
+          <span style="font-family:var(--font-mono);font-size:11px;color:var(--muted);" id="canvas-status-indicator">Canvas: Empty</span>
+          <button class="btn-ghost" style="padding:4px 8px;font-size:11px;" onclick="resetCanvas()">Clear Canvas</button>
+          <button class="btn-ghost" style="padding:4px 8px;font-size:11px;color:var(--structure);" onclick="showToast('Exporting high-resolution PNG package...')">⬇️ Export</button>
+        </div>
+      </div>
+
+      <!-- Main Viewport -->
+      <div class="canvas-viewport" id="viewport-root">
+
+        <!-- State S0/S1: Empty Canvas -->
+        <div class="canvas-empty-state" id="canvas-empty">
+          <div class="empty-illustration">📐</div>
+          <h3 style="font-family:var(--font-display);font-size:18px;">No design placed on canvas</h3>
+          <p style="font-size:13.5px;color:var(--muted);max-width:34ch;">
+            Fill in the <b>Listing form</b> on the left, or paste raw text in the <b>Assistant</b> to begin.
+          </p>
+        </div>
+
+        <!-- State S4: Placed Interactive Design -->
+        <div class="canvas-artboard" id="canvas-placed" style="display:none;">
+          <!-- Background Image Layer -->
+          <div class="canvas-bg-layer" id="artboard-bg" style="background-image:url('https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=85');"></div>
+          <div class="canvas-bg-overlay"></div>
+
+          <!-- Element 1: Headline -->
+          <div class="canvas-element el-headline" id="el-headline" onclick="selectCanvasElement('headline', event)">
+            <span id="canvas-txt-headline">Contemporary Sea-Facing Penthouse</span>
+            <div class="resize-handle handle-tl"></div>
+            <div class="resize-handle handle-tr"></div>
+            <div class="resize-handle handle-bl"></div>
+            <div class="resize-handle handle-br"></div>
+          </div>
+
+          <!-- Element 2: Price Chip -->
+          <div class="canvas-element el-pricechip" id="el-pricechip" onclick="selectCanvasElement('pricechip', event)">
+            <span id="canvas-txt-price">₹4.20 Cr</span>
+            <div class="resize-handle handle-tl"></div>
+            <div class="resize-handle handle-tr"></div>
+            <div class="resize-handle handle-bl"></div>
+            <div class="resize-handle handle-br"></div>
+          </div>
+
+          <!-- Element 3: Facts -->
+          <div class="canvas-element el-facts" id="el-facts" onclick="selectCanvasElement('facts', event)">
+            <span id="canvas-txt-facts">3 BHK • 3 Baths • 1,850 sq ft • Bandra West</span>
+            <div class="resize-handle handle-tl"></div>
+            <div class="resize-handle handle-tr"></div>
+            <div class="resize-handle handle-bl"></div>
+            <div class="resize-handle handle-br"></div>
+          </div>
+
+          <!-- Element 4: Agent Footer -->
+          <div class="canvas-element el-agent" id="el-agent" onclick="selectCanvasElement('agent', event)">
+            <div class="agent-meta">
+              <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=100&q=80" class="agent-avatar" />
+              <div>
+                <div style="font-weight:700;font-size:12px;" id="canvas-txt-agent">Priya Sharma</div>
+                <div style="font-size:10px;opacity:0.85;" id="canvas-txt-brokerage">Apex Luxury Realty · RERA #A51800021</div>
+              </div>
+            </div>
+            <div style="font-family:var(--font-mono);font-size:10.5px;background:rgba(255,255,255,0.2);padding:2px 8px;border-radius:10px;">
+              +91 98200 12345
+            </div>
+          </div>
+        </div>
+
+        <!-- S3: Choosing Variations Overlay -->
+        <div class="variations-chooser-overlay" id="variations-modal" style="display:none;">
+          <div class="variations-header">
+            <span class="pill-proto" style="background:var(--ok-wash);color:var(--ok);border-color:var(--ok-border);">Generated in 1.4s · 3 Variations</span>
+            <h3 style="margin-top:6px;">Choose Your Design</h3>
+            <p style="font-size:13px;color:var(--muted);">Select a design variation to place onto the active canvas for editing</p>
+          </div>
+
+          <div class="variations-grid">
+            <!-- Variation 1 -->
+            <div class="variation-card selected" onclick="pickVariation(1)">
+              <div class="variation-card-img" style="background-image:url('https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=600&q=80');">
+                <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0.3) 0%,rgba(0,0,0,0.8) 100%);padding:14px;display:flex;flex-direction:column;justify-content:space-between;color:#fff;">
+                  <span style="font-family:var(--font-display);font-weight:800;font-size:16px;">Contemporary Sea-Facing Penthouse</span>
+                  <div>
+                    <span style="background:#fff;color:#000;padding:3px 8px;border-radius:4px;font-weight:700;font-size:14px;">₹4.20 Cr</span>
+                    <p style="font-size:11px;margin-top:4px;opacity:0.9;">3 BHK • 1,850 sq ft • Bandra West</p>
+                  </div>
+                </div>
+              </div>
+              <div class="variation-card-body">
+                <span style="font-family:var(--font-mono);font-size:11px;font-weight:600;">Var A · Editorial Bold</span>
+                <button class="btn-use-design" onclick="useChosenDesign(1); event.stopPropagation();">Use This Design</button>
+              </div>
+            </div>
+
+            <!-- Variation 2 -->
+            <div class="variation-card" onclick="pickVariation(2)">
+              <div class="variation-card-img" style="background-image:url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=600&q=80');">
+                <div style="position:absolute;inset:0;background:linear-gradient(0deg,rgba(15,23,42,0.85) 0%,transparent 60%);padding:14px;display:flex;flex-direction:column;justify-content:flex-end;color:#fff;">
+                  <span style="background:var(--gold);color:#fff;padding:2px 6px;border-radius:3px;font-size:10px;width:fit-content;margin-bottom:6px;font-weight:700;">JUST LISTED</span>
+                  <span style="font-family:var(--font-display);font-weight:700;font-size:15px;">Ultra Modern Sea-View Suite</span>
+                  <div style="font-size:13px;font-weight:800;margin-top:4px;">₹4.20 Cr</div>
+                </div>
+              </div>
+              <div class="variation-card-body">
+                <span style="font-family:var(--font-mono);font-size:11px;font-weight:600;">Var B · Luxury Minimal</span>
+                <button class="btn-use-design" onclick="useChosenDesign(2); event.stopPropagation();">Use This Design</button>
+              </div>
+            </div>
+
+            <!-- Variation 3 -->
+            <div class="variation-card" onclick="pickVariation(3)">
+              <div class="variation-card-img" style="background-image:url('https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=600&q=80');">
+                <div style="position:absolute;inset:0;background:rgba(31,68,139,0.35);padding:14px;display:flex;flex-direction:column;justify-content:space-between;color:#fff;">
+                  <span style="border:1px solid #fff;padding:2px 8px;border-radius:20px;font-size:10px;width:fit-content;backdrop-filter:blur(4px);">EXCLUSIVE</span>
+                  <div style="background:rgba(255,255,255,0.92);color:#0c2a38;padding:10px;border-radius:8px;">
+                    <div style="font-size:13px;font-weight:800;">Penthouse at Bandra West</div>
+                    <div style="font-size:11px;color:var(--muted);">₹4.20 Cr · 3 BHK</div>
+                  </div>
+                </div>
+              </div>
+              <div class="variation-card-body">
+                <span style="font-family:var(--font-mono);font-size:11px;font-weight:600;">Var C · Framed Card</span>
+                <button class="btn-use-design" onclick="useChosenDesign(3); event.stopPropagation();">Use This Design</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Generating Spinner Progress -->
+        <div class="progress-overlay" id="progress-overlay">
+          <div class="spinner"></div>
+          <div style="text-align:center;">
+            <div style="font-family:var(--font-display);font-size:16px;font-weight:700;" id="progress-text">1. Structuring layout...</div>
+            <div style="font-family:var(--font-mono);font-size:11.5px;color:var(--muted);margin-top:4px;">Single generation endpoint · Consuming 1 credit</div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============================================================
+         ZONE 3: THE ASSISTANT (Context-Aware Copilot)
+         ============================================================ -->
+    <section class="zone-assistant">
+      <div class="assistant-head">
+        <div class="assistant-head-title">
+          <span>✨</span> <span id="assistant-title">Listing Assistant</span>
+        </div>
+        <span class="assistant-mode-pill" id="assistant-mode-badge">Drafting Mode</span>
+      </div>
+
+      <!-- State-Aware Banner -->
+      <div class="assistant-context-banner" id="assistant-banner">
+        <span>💡</span> <span id="assistant-banner-text">Paste a message or upload a photo to populate the Listing form.</span>
+      </div>
+
+      <!-- Chat Stream -->
+      <div class="chat-messages" id="chat-stream">
+        <div class="chat-msg assistant">
+          <div class="chat-bubble">
+            Hello! I am your <b>Listing Copilot</b>. I extract messy text into structured fields, or help refine elements once a design is on canvas.
+          </div>
+          <span class="chat-time">Just now</span>
+        </div>
+      </div>
+
+      <!-- Dynamic Suggestion Chips -->
+      <div class="quick-chips-wrap" id="chips-container">
+        <!-- populated via JS based on state -->
+      </div>
+
+      <!-- Assistant Input Form -->
+      <div class="chat-input-bar">
+        <div class="chat-input-wrapper">
+          <input type="text" id="assistant-input" class="chat-input-field" placeholder="Paste seller message or type prompt..." onkeydown="if(event.key==='Enter') sendAssistantMsg()" />
+          <button class="btn-send" onclick="sendAssistantMsg()" title="Send to Copilot">
+            ➔
+          </button>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--faint);">
+          <span id="assistant-cost-note">Assistant edits: <b>0 Credits</b></span>
+          <span style="font-family:var(--font-mono);">Never generates directly</span>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Floating Notification Toast -->
+  <div class="floating-toast" id="toast">
+    <span id="toast-icon">✨</span>
+    <span id="toast-text">Notification message</span>
+  </div>
+
+  <!-- Plan & Architecture Explanation Modal -->
+  <div class="info-modal-backdrop" id="info-modal" onclick="if(event.target===this) toggleInfoModal()">
+    <div class="info-modal-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--rule);padding-bottom:12px;">
+        <h2 style="font-family:var(--font-display);font-size:20px;font-weight:700;">Listing to Canvas — Architectural Rules</h2>
+        <button class="btn-ghost" onclick="toggleInfoModal()">✕</button>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px;font-size:13.5px;line-height:1.6;color:var(--ink-secondary);">
+        <p><b>1. The Listing is the single ground truth:</b> Address, price, beds, baths, photo, agent, brand. It outlives the canvas session.</p>
+        <p><b>2. There is exactly ONE Generate button:</b> The assistant never generates designs. It extracts fields into the form or modifies active canvas elements.</p>
+        <p><b>3. Extraction happens at fill time:</b> Natural language input instantly fills visible form fields with highlight animations, preventing late errors.</p>
+        <p><b>4. Canvas is the source of truth after placement:</b> Selecting an element switches the Assistant to <i>Element Edit Mode (0 credits)</i> for rapid typography/style tuning.</p>
+        <p><b>5. S5 → S2 Retention Loop (EPIC-KIT-01):</b> Once a listing is filled, generate Open House flyers, WhatsApp stories, and Price Drop graphics with 1-click without re-typing.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Interactive Mockup Logic -->
+  <script>
+    // State Model
+    const appState = {
+      workflowState: 'S0', // S0: Empty, S1: Drafting, S2: Ready, S3: Choosing, S4: Placed, S5: Expanding
+      selectedElement: null,
+      credits: 14,
+      photoIndex: 1,
+      photos: [
+        'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=85',
+        'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=85',
+        'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=85'
+      ]
+    };
+
+    // Initialize with UC-1 default
+    window.addEventListener('DOMContentLoaded', () => {
+      loadScenario('uc1');
+    });
+
+    function showToast(msg, icon = '✨') {
+      const toast = document.getElementById('toast');
+      document.getElementById('toast-icon').innerText = icon;
+      document.getElementById('toast-text').innerText = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3500);
+    }
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      const isDark = html.getAttribute('data-theme') === 'dark';
+      html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+      document.getElementById('btn-theme').innerText = isDark ? '🌓 Dark' : '☀️ Light';
+    }
+
+    function toggleInfoModal() {
+      const modal = document.getElementById('info-modal');
+      modal.style.display = (modal.style.display === 'flex') ? 'none' : 'flex';
+    }
+
+    function updateChips(chips) {
+      const container = document.getElementById('chips-container');
+      container.innerHTML = '';
+      chips.forEach(chip => {
+        const btn = document.createElement('button');
+        btn.className = 'quick-chip';
+        btn.innerText = chip.label;
+        btn.onclick = chip.action;
+        container.appendChild(btn);
+      });
+    }
+
+    function addChatMessage(sender, text) {
+      const stream = document.getElementById('chat-stream');
+      const msgDiv = document.createElement('div');
+      msgDiv.className = `chat-msg ${sender}`;
+      msgDiv.innerHTML = `
+        <div class="chat-bubble">${text}</div>
+        <span class="chat-time">${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
+      `;
+      stream.appendChild(msgDiv);
+      stream.scrollTop = stream.scrollHeight;
+    }
+
+    // SCENARIO SWITCHER
+    function loadScenario(scenarioKey) {
+      document.querySelectorAll('.scenario-btn').forEach(btn => btn.classList.remove('active'));
+      const activeBtn = document.getElementById(`tab-${scenarioKey}`);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      if (scenarioKey === 'uc1') {
+        // UC-1: Direct Form Entry (~60% case)
+        setFormValues({
+          title: 'Contemporary Sea-Facing Penthouse',
+          address: '12 Carter Road, Bandra West, Mumbai',
+          price: '₹4.20 Cr',
+          area: '1,850 sq ft',
+          beds: '3 BHK',
+          baths: '3 Baths',
+          goal: 'Just Listed'
+        });
+        resetCanvas();
+        setAssistantMode('drafting');
+        addChatMessage('assistant', '<b>UC-1 Loaded: Direct Form Entry</b><br>Details entered directly in the Listing form. Gate verified. Click <b>"Create 3 Designs"</b> to run generation.');
+        updateChips([
+          { label: '✨ Create 3 Designs', action: () => executeGenerate() },
+          { label: '💡 Suggest Luxury Title', action: () => suggestTitle() }
+        ]);
+        showToast('UC-1 Loaded: Direct Listing Sheet in Hand');
+      } 
+      else if (scenarioKey === 'uc2') {
+        // UC-2: Paste Seller Text (~20% case)
+        setFormValues({ title: '', address: '', price: '', area: '', beds: '', baths: '', goal: 'Just Listed' });
+        resetCanvas();
+        setAssistantMode('drafting');
+        const rawSellerText = '3bhk Bandra West, asking 4.2cr, 1450 sqft, sea facing, ready to move';
+        addChatMessage('user', `Extract this listing: "${rawSellerText}"`);
+        setTimeout(() => {
+          simulateExtraction({
+            title: 'Sea Facing 3BHK Apartment',
+            address: 'Bandra West, Mumbai',
+            price: '₹4.20 Cr',
+            area: '1,450 sq ft',
+            beds: '3 BHK',
+            baths: '3 Baths',
+            goal: 'Just Listed'
+          });
+          addChatMessage('assistant', 'Extracted 6 fields into the Listing on your left. Please verify the exact street address before generating.');
+        }, 500);
+        showToast('UC-2 Loaded: Seller text pasted & extracted into Form');
+      }
+      else if (scenarioKey === 'uc3') {
+        // UC-3: Only a Photo (~10% case)
+        setFormValues({ title: 'Luxury Modern Villa', address: '', price: '', area: '2,800 sq ft', beds: '4 BHK', baths: '4 Baths', goal: 'Exclusive' });
+        resetCanvas();
+        setAssistantMode('drafting');
+        selectPropertyPhoto(2);
+        addChatMessage('assistant', '<b>Property Photo Uploaded:</b> Detected contemporary architecture & pool terrace.<br>⚠️ Please specify <b>Address & Price</b> to complete the Listing gate.');
+        updateChips([
+          { label: 'Fill ₹6.5 Cr & Juhu Beach', action: () => {
+            document.getElementById('f-address').value = 'Sea-View Enclave, Juhu Beach, Mumbai';
+            document.getElementById('f-price').value = '₹6.50 Cr';
+            handleFieldChange();
+            showToast('Address and price filled!');
+          }}
+        ]);
+        showToast('UC-3 Loaded: Property photo reference added');
+      }
+      else if (scenarioKey === 'uc4') {
+        // UC-4: Element Edit Mode (0 credits)
+        setFormValues({
+          title: 'Contemporary Sea-Facing Penthouse',
+          address: '12 Carter Road, Bandra West, Mumbai',
+          price: '₹4.20 Cr',
+          area: '1,850 sq ft',
+          beds: '3 BHK',
+          baths: '3 Baths',
+          goal: 'Just Listed'
+        });
+        placeDesignOnCanvas();
+        selectCanvasElement('headline');
+        addChatMessage('assistant', '<b>UC-4: Element Edit Mode</b><br>You clicked the Headline element. Prompts will tune only this element for <b>0 credits</b> without regenerating the whole image.');
+        updateChips([
+          { label: 'Shorter & punchier', action: () => updateSelectedElementText('Ultra-Luxury Bandra Penthouse') },
+          { label: 'Add urgency', action: () => updateSelectedElementText('Rare Sea-Facing Penthouse · Just Listed') },
+          { label: 'Hindi / Regional', action: () => updateSelectedElementText('बांद्रा वेस्ट में सी-फेसिंग पेंटहाउस') }
+        ]);
+        showToast('UC-4 Loaded: Element Edit Mode active on Headline');
+      }
+      else if (scenarioKey === 'uc5') {
+        // UC-5: Campaign Kit Expansion (S5 -> S2)
+        setFormValues({
+          title: 'Contemporary Sea-Facing Penthouse',
+          address: '12 Carter Road, Bandra West, Mumbai',
+          price: '₹4.20 Cr',
+          area: '1,850 sq ft',
+          beds: '3 BHK',
+          baths: '3 Baths',
+          goal: 'Open House'
+        });
+        placeDesignOnCanvas();
+        setAssistantMode('campaign');
+        addChatMessage('assistant', '<b>UC-5: Campaign Kit (S5 → S2 Loop)</b><br>Same Listing saved! Generate matching collateral (Story, Open House, Price Drop) with zero re-typing.');
+        updateChips([
+          { label: '🏡 Open House Flyer', action: () => expandToOpenHouse() },
+          { label: '📱 Instagram Story (9:16)', action: () => setCanvasSize('9:16') },
+          { label: '📉 Price Drop Announcement', action: () => expandToPriceDrop() }
+        ]);
+        showToast('UC-5 Loaded: Campaign Kit expansion ready');
+      }
+    }
+
+    function setFormValues(v) {
+      document.getElementById('f-title').value = v.title || '';
+      document.getElementById('f-address').value = v.address || '';
+      document.getElementById('f-price').value = v.price || '';
+      document.getElementById('f-area').value = v.area || '';
+      document.getElementById('f-beds').value = v.beds || '';
+      document.getElementById('f-baths').value = v.baths || '';
+      if (v.goal) document.getElementById('f-goal').value = v.goal;
+      handleFieldChange();
+    }
+
+    function handleFieldChange() {
+      const title = document.getElementById('f-title').value.trim();
+      const addr = document.getElementById('f-address').value.trim();
+      const price = document.getElementById('f-price').value.trim();
+
+      const gate = document.getElementById('gate-status');
+      const btn = document.getElementById('btn-generate-main');
+
+      const missing = [];
+      if (!title) missing.push('Headline');
+      if (!addr) missing.push('Address');
+      if (!price) missing.push('Price');
+
+      if (missing.length === 0) {
+        gate.className = 'gate-status-pill ready';
+        gate.innerHTML = '<span>✓</span> Listing Complete &amp; Verified';
+        btn.disabled = false;
+      } else {
+        gate.className = 'gate-status-pill missing';
+        gate.innerHTML = `<span>⚠️</span> Add ${missing.join(' & ')} to generate`;
+        btn.disabled = true;
+      }
+
+      // Sync active canvas if placed
+      syncFormToCanvas();
+    }
+
+    function syncFormToCanvas() {
+      const title = document.getElementById('f-title').value || 'Untitled Listing';
+      const addr = document.getElementById('f-address').value || 'Location';
+      const price = document.getElementById('f-price').value || '₹ Price';
+      const beds = document.getElementById('f-beds').value;
+      const area = document.getElementById('f-area').value;
+
+      document.getElementById('canvas-txt-headline').innerText = title;
+      document.getElementById('canvas-txt-price').innerText = price;
+      document.getElementById('canvas-txt-facts').innerText = `${beds ? beds + ' • ' : ''}${area ? area + ' • ' : ''}${addr}`;
+    }
+
+    function simulateExtraction(fields) {
+      Object.keys(fields).forEach((k, idx) => {
+        setTimeout(() => {
+          if (k === 'title') {
+            const el = document.getElementById('f-title');
+            el.value = fields[k];
+            el.classList.add('highlight-extract');
+            setTimeout(() => el.classList.remove('highlight-extract'), 1200);
+          }
+          if (k === 'address') {
+            const el = document.getElementById('f-address');
+            el.value = fields[k];
+            el.classList.add('highlight-extract');
+            setTimeout(() => el.classList.remove('highlight-extract'), 1200);
+          }
+          if (k === 'price') {
+            const el = document.getElementById('f-price');
+            el.value = fields[k];
+            el.classList.add('highlight-extract');
+            setTimeout(() => el.classList.remove('highlight-extract'), 1200);
+          }
+          if (k === 'area') document.getElementById('f-area').value = fields[k];
+          if (k === 'beds') document.getElementById('f-beds').value = fields[k];
+          if (k === 'baths') document.getElementById('f-baths').value = fields[k];
+          handleFieldChange();
+        }, idx * 140);
+      });
+    }
+
+    function selectPropertyPhoto(idx) {
+      appState.photoIndex = idx;
+      const thumbs = document.querySelectorAll('.photo-thumb');
+      thumbs.forEach((t, i) => {
+        if (i === idx - 1) t.classList.add('selected');
+        else t.classList.remove('selected');
+      });
+      const bg = document.getElementById('artboard-bg');
+      if (bg) bg.style.backgroundImage = `url('${appState.photos[idx - 1]}')`;
+      showToast(`Selected Photo #${idx} as style reference`);
+    }
+
+    function setBrandTheme(el, color) {
+      document.querySelectorAll('.brand-pill').forEach(p => p.classList.remove('active'));
+      el.classList.add('active');
+      showToast(`Brand palette updated`);
+    }
+
+    // GENERATION PIPELINE
+    function executeGenerate() {
+      if (appState.credits <= 0) {
+        showToast('Insufficient credits balance', '⚠️');
+        return;
+      }
+
+      const overlay = document.getElementById('progress-overlay');
+      const progressText = document.getElementById('progress-text');
+      overlay.style.display = 'flex';
+
+      const steps = [
+        '1. Planning visual layout from listing data...',
+        '2. Rendering high-res typography & scene...',
+        '3. Composing agent brand furniture...'
+      ];
+
+      steps.forEach((step, index) => {
+        setTimeout(() => {
+          progressText.innerText = step;
+        }, index * 450);
+      });
+
+      setTimeout(() => {
+        overlay.style.display = 'none';
+        appState.credits -= 1;
+        document.getElementById('credit-count').innerText = `${appState.credits} Credits`;
+        document.getElementById('variations-modal').style.display = 'flex';
+        showToast('3 Variations ready! Pick one for your canvas.', '🎉');
+      }, 1500);
+    }
+
+    function pickVariation(num) {
+      document.querySelectorAll('.variation-card').forEach((c, idx) => {
+        if (idx === num - 1) c.classList.add('selected');
+        else c.classList.remove('selected');
+      });
+    }
+
+    function useChosenDesign(num) {
+      document.getElementById('variations-modal').style.display = 'none';
+      selectPropertyPhoto(num);
+      placeDesignOnCanvas();
+      showToast('Placed design onto canvas! Click any text element to edit.', '✅');
+      setAssistantMode('placed');
+      addChatMessage('assistant', 'Design placed on canvas! You can click on the <b>Headline</b>, <b>Price</b>, or <b>Agent badge</b> to modify it with AI for <b>0 credits</b>.');
+      updateChips([
+        { label: '✏️ Select Headline', action: () => selectCanvasElement('headline') },
+        { label: '🏷️ Select Price', action: () => selectCanvasElement('pricechip') },
+        { label: '📱 Export Instagram Story', action: () => setCanvasSize('9:16') }
+      ]);
+    }
+
+    function placeDesignOnCanvas() {
+      document.getElementById('canvas-empty').style.display = 'none';
+      document.getElementById('canvas-placed').style.display = 'block';
+      document.getElementById('canvas-status-indicator').innerText = 'Canvas: Placed Design';
+      syncFormToCanvas();
+    }
+
+    function resetCanvas() {
+      document.getElementById('canvas-placed').style.display = 'none';
+      document.getElementById('canvas-empty').style.display = 'flex';
+      document.getElementById('canvas-status-indicator').innerText = 'Canvas: Empty';
+      deselectAllElements();
+      setAssistantMode('drafting');
+    }
+
+    function selectCanvasElement(elemId, e) {
+      if (e) e.stopPropagation();
+      deselectAllElements();
+
+      appState.selectedElement = elemId;
+      const target = document.getElementById(`el-${elemId}`);
+      if (target) target.classList.add('selected');
+
+      setAssistantMode('element', elemId);
+
+      if (elemId === 'headline') {
+        updateChips([
+          { label: 'Punchier headline', action: () => updateSelectedElementText('Spectacular Sea-Facing Penthouse') },
+          { label: 'Shorter', action: () => updateSelectedElementText('Bandra Sea Penthouse') },
+          { label: 'Luxury Tone', action: () => updateSelectedElementText('The Crown Penthouse · Bandra West') }
+        ]);
+      } else if (elemId === 'pricechip') {
+        updateChips([
+          { label: 'Add Price Negotiable', action: () => updateSelectedElementText('₹4.20 Cr (Negotiable)') },
+          { label: 'All Inclusive', action: () => updateSelectedElementText('₹4.20 Cr All-In') }
+        ]);
+      } else if (elemId === 'facts') {
+        updateChips([
+          { label: 'Add Sea View', action: () => updateSelectedElementText('3 BHK • Sea Facing • 1,850 sq ft • Bandra West') },
+          { label: 'Add Possession Ready', action: () => updateSelectedElementText('3 BHK • Ready to Move • 1,850 sq ft') }
+        ]);
+      }
+    }
+
+    function deselectAllElements() {
+      document.querySelectorAll('.canvas-element').forEach(el => el.classList.remove('selected'));
+      appState.selectedElement = null;
+    }
+
+    function updateSelectedElementText(newText) {
+      if (!appState.selectedElement) return;
+      if (appState.selectedElement === 'headline') {
+        document.getElementById('canvas-txt-headline').innerText = newText;
+        document.getElementById('f-title').value = newText;
+      } else if (appState.selectedElement === 'pricechip') {
+        document.getElementById('canvas-txt-price').innerText = newText;
+        document.getElementById('f-price').value = newText;
+      } else if (appState.selectedElement === 'facts') {
+        document.getElementById('canvas-txt-facts').innerText = newText;
+      }
+      showToast(`Updated element: "${newText}" (0 credits charged)`);
+    }
+
+    function setCanvasSize(ratio) {
+      document.querySelectorAll('.size-btn').forEach(btn => btn.classList.remove('active'));
+      const artboard = document.getElementById('canvas-placed');
+      if (ratio === '1:1') {
+        artboard.style.width = '480px';
+        artboard.style.height = '480px';
+      } else if (ratio === '9:16') {
+        artboard.style.width = '330px';
+        artboard.style.height = '586px';
+        showToast('Switched to 9:16 Story format');
+      } else if (ratio === '16:9') {
+        artboard.style.width = '580px';
+        artboard.style.height = '326px';
+        showToast('Switched to 16:9 Landscape format');
+      }
+    }
+
+    // ASSISTANT MODES & CHAT
+    function setAssistantMode(mode, target = '') {
+      const title = document.getElementById('assistant-title');
+      const badge = document.getElementById('assistant-mode-badge');
+      const banner = document.getElementById('assistant-banner-text');
+      const input = document.getElementById('assistant-input');
+      const costNote = document.getElementById('assistant-cost-note');
+
+      if (mode === 'drafting') {
+        title.innerText = 'Listing Assistant';
+        badge.innerText = 'Drafting Mode';
+        badge.style.color = 'var(--assist)';
+        banner.innerText = 'Drop a photo or paste a message to extract into the Listing form.';
+        input.placeholder = 'Paste seller message or property description...';
+        costNote.innerHTML = 'Assistant writes to form · <b>0 Credits</b>';
+      } else if (mode === 'element') {
+        title.innerText = `Element AI Editor`;
+        badge.innerText = `Editing: ${target.toUpperCase()}`;
+        badge.style.color = 'var(--primary)';
+        banner.innerText = `Tuning selected [${target}] layer directly on the active canvas.`;
+        input.placeholder = `Describe change for ${target} (e.g. "make punchier")...`;
+        costNote.innerHTML = 'Canvas element edits: <b>0 Credits (Free)</b>';
+      } else if (mode === 'placed' || mode === 'campaign') {
+        title.innerText = 'Campaign Assistant';
+        badge.innerText = 'Campaign Expansion';
+        badge.style.color = 'var(--ok)';
+        banner.innerText = 'Generate additional campaign collateral from the same Listing.';
+        input.placeholder = 'e.g. "Create Open House flyer for Saturday"...';
+        costNote.innerHTML = 'Same listing data reused · <b>No retyping</b>';
+      }
+    }
+
+    function sendAssistantMsg() {
+      const input = document.getElementById('assistant-input');
+      const text = input.value.trim();
+      if (!text) return;
+
+      addChatMessage('user', text);
+      input.value = '';
+
+      // AI Response Simulation
+      setTimeout(() => {
+        if (appState.selectedElement) {
+          // Element edit mode
+          if (text.toLowerCase().includes('short') || text.toLowerCase().includes('punchy')) {
+            updateSelectedElementText('Bandra Seaside Villa');
+            addChatMessage('assistant', `Updated the <b>${appState.selectedElement}</b> to be punchier for 0 credits.`);
+          } else {
+            updateSelectedElementText(text);
+            addChatMessage('assistant', `Applied your update to <b>${appState.selectedElement}</b>.`);
+          }
+        } else {
+          // Drafting / Extraction mode
+          if (text.toLowerCase().includes('open house')) {
+            expandToOpenHouse();
+          } else if (text.toLowerCase().includes('price drop') || text.toLowerCase().includes('drop')) {
+            expandToPriceDrop();
+          } else {
+            addChatMessage('assistant', 'I reviewed your text and updated the Listing fields on the left. Click <b>"Create 3 Designs"</b> whenever you are ready!');
+            handleFieldChange();
+          }
+        }
+      }, 400);
+    }
+
+    function suggestTitle() {
+      const titles = [
+        'Contemporary Sea-Facing Penthouse',
+        'Iconic Oceanfront Residence at Bandra',
+        'Bespoke Carter Road Penthouse Suite'
+      ];
+      const pick = titles[Math.floor(Math.random() * titles.length)];
+      document.getElementById('f-title').value = pick;
+      handleFieldChange();
+      showToast(`Suggested title: "${pick}"`);
+    }
+
+    function expandToOpenHouse() {
+      document.getElementById('f-goal').value = 'Open House';
+      document.getElementById('f-title').value = 'Open House · Sunday 2 PM - 5 PM';
+      handleFieldChange();
+      executeGenerate();
+      showToast('Generated Open House campaign variation!');
+    }
+
+    function expandToPriceDrop() {
+      document.getElementById('f-goal').value = 'Price Drop';
+      document.getElementById('f-price').value = '₹3.95 Cr (Reduced)';
+      document.getElementById('f-title').value = 'Huge Price Reduction · Bandra Penthouse';
+      handleFieldChange();
+      executeGenerate();
+      showToast('Updated Price Drop announcement with 1 field change!');
+    }
+  </script>
+</body>
+</html>

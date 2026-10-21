@@ -1,0 +1,1408 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Buildographic · Product Canvas & Listing to Canvas Flow</title>
+  
+  <!-- Fonts matching product design tokens -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Lucide Icons via CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- Tailwind CSS CDN for exact product classes -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            border: "hsl(var(--border))",
+            input: "hsl(var(--input))",
+            ring: "hsl(var(--ring))",
+            background: "hsl(var(--background))",
+            foreground: "hsl(var(--foreground))",
+            primary: {
+              DEFAULT: "hsl(var(--primary))",
+              foreground: "hsl(var(--primary-foreground))",
+            },
+            secondary: {
+              DEFAULT: "hsl(var(--secondary))",
+              foreground: "hsl(var(--secondary-foreground))",
+            },
+            muted: {
+              DEFAULT: "hsl(var(--muted))",
+              foreground: "hsl(var(--muted-foreground))",
+            },
+            accent: {
+              DEFAULT: "hsl(var(--accent))",
+              foreground: "hsl(var(--accent-foreground))",
+            },
+            card: {
+              DEFAULT: "hsl(var(--card))",
+              foreground: "hsl(var(--card-foreground))",
+            },
+            sidebar: {
+              DEFAULT: "hsl(var(--sidebar))",
+              foreground: "hsl(var(--sidebar-foreground))",
+              primary: "hsl(var(--sidebar-primary))",
+              border: "hsl(var(--sidebar-border))",
+            },
+          },
+          fontFamily: {
+            sans: ['Inter', 'Segoe UI', 'system-ui', 'sans-serif'],
+            display: ['"Bricolage Grotesque"', 'Outfit', 'sans-serif'],
+            mono: ['"IBM Plex Mono"', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Exact product design tokens from client/src/design-tokens.css and globals.css */
+    :root {
+      --background: 45 13% 97%;          /* #f9f8f6 warm cream */
+      --foreground: 45 30% 6%;            /* #100f09 near black */
+      --card: 0 0% 100%;
+      --card-foreground: 45 30% 6%;
+      --popover: 0 0% 100%;
+      --popover-foreground: 45 30% 6%;
+      --primary: 207 90% 49%;             /* #0ca0eb Lovart electric blue */
+      --primary-foreground: 0 0% 100%;
+      --secondary: 38 93% 66%;           /* #f9b959 amber */
+      --secondary-foreground: 45 30% 6%;
+      --muted: 45 10% 92%;               /* warm muted */
+      --muted-foreground: 45 5% 48%;
+      --accent: 207 90% 95%;             /* pale blue wash */
+      --accent-foreground: 207 90% 35%;
+      --destructive: 0 84% 60%;
+      --destructive-foreground: 0 0% 98%;
+      --border: 45 10% 88%;              /* #e5e2da */
+      --input: 45 10% 86%;
+      --ring: 207 90% 49%;
+      --sidebar: 45 10% 95%;
+      --sidebar-foreground: 45 30% 15%;
+      --sidebar-primary: 207 90% 49%;
+      --sidebar-border: 45 10% 88%;
+      
+      /* Specific AI and Structure Tokens */
+      --ai-purple: #7b2fc4;
+      --ai-purple-wash: #f5edfb;
+      --ai-purple-border: #dec7f4;
+      --structure-blue: #1f448b;
+      --structure-wash: #eef2f9;
+    }
+
+    .dark {
+      --background: 24 9% 8%;            /* #161413 */
+      --foreground: 45 10% 95%;           /* #f4f3f0 */
+      --card: 24 8% 12%;
+      --card-foreground: 45 10% 95%;
+      --popover: 24 8% 12%;
+      --popover-foreground: 45 10% 95%;
+      --primary: 207 90% 55%;
+      --primary-foreground: 0 0% 100%;
+      --secondary: 38 90% 60%;
+      --secondary-foreground: 45 30% 6%;
+      --muted: 24 6% 18%;
+      --muted-foreground: 45 5% 65%;
+      --accent: 207 70% 20%;
+      --accent-foreground: 207 90% 80%;
+      --border: 24 6% 22%;
+      --input: 24 6% 22%;
+      --ring: 207 90% 55%;
+      --sidebar: 24 8% 10%;
+      --sidebar-foreground: 45 10% 90%;
+      --sidebar-primary: 207 90% 55%;
+      --sidebar-border: 24 6% 20%;
+      
+      --ai-purple: #c493ee;
+      --ai-purple-wash: #271836;
+      --ai-purple-border: #502773;
+      --structure-blue: #7ba3e8;
+      --structure-wash: #142033;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      background-color: hsl(var(--background));
+      color: hsl(var(--foreground));
+      font-family: 'Inter', system-ui, sans-serif;
+      overflow: hidden;
+      height: 100vh;
+      user-select: none;
+    }
+
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: hsl(var(--muted-foreground)); }
+
+    /* Canvas Checkered Pattern */
+    .canvas-grid-bg {
+      background-color: #f1f0eb;
+      background-image: linear-gradient(45deg, #e7e5de 25%, transparent 25%), 
+                        linear-gradient(-45deg, #e7e5de 25%, transparent 25%), 
+                        linear-gradient(45deg, transparent 75%, #e7e5de 75%), 
+                        linear-gradient(-45deg, transparent 75%, #e7e5de 75%);
+      background-size: 20px 20px;
+      background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+    }
+    .dark .canvas-grid-bg {
+      background-color: #141312;
+      background-image: linear-gradient(45deg, #1c1a19 25%, transparent 25%), 
+                        linear-gradient(-45deg, #1c1a19 25%, transparent 25%), 
+                        linear-gradient(45deg, transparent 75%, #1c1a19 75%), 
+                        linear-gradient(-45deg, transparent 75%, #1c1a19 75%);
+    }
+
+    /* Highlight Animation for Extracted Fields */
+    @keyframes extractPulse {
+      0% { background-color: var(--ai-purple-wash); border-color: var(--ai-purple); transform: scale(1.02); }
+      100% { transform: scale(1); }
+    }
+    .highlight-extracted {
+      animation: extractPulse 1.4s cubic-bezier(0.16, 1, 0.3, 1);
+      border-color: var(--ai-purple) !important;
+    }
+
+    /* Canvas Element Active Selection Handles */
+    .canvas-el {
+      position: absolute;
+      cursor: pointer;
+      border: 1.5px dashed transparent;
+      padding: 4px 6px;
+      border-radius: 4px;
+      transition: border 0.12s ease, background 0.12s ease;
+    }
+    .canvas-el:hover {
+      border-color: rgba(12, 160, 235, 0.7);
+      background: rgba(12, 160, 235, 0.08);
+    }
+    .canvas-el.active-selected {
+      border: 1.5px solid #0ca0eb !important;
+      background: rgba(12, 160, 235, 0.12) !important;
+      box-shadow: 0 0 0 2px rgba(12, 160, 235, 0.25);
+    }
+    .canvas-el.active-selected .handle {
+      display: block;
+    }
+    .handle {
+      display: none;
+      width: 8px;
+      height: 8px;
+      background: #ffffff;
+      border: 1.5px solid #0ca0eb;
+      position: absolute;
+      border-radius: 2px;
+      z-index: 50;
+    }
+    .h-nw { top: -4px; left: -4px; cursor: nwse-resize; }
+    .h-ne { top: -4px; right: -4px; cursor: nesw-resize; }
+    .h-sw { bottom: -4px; left: -4px; cursor: nesw-resize; }
+    .h-se { bottom: -4px; right: -4px; cursor: nwse-resize; }
+  </style>
+</head>
+<body class="flex flex-col h-screen overflow-hidden">
+
+  <!-- ============================================================
+       TOP APPLICATION TOOLBAR (Matching EditorToolbar.tsx)
+       ============================================================ -->
+  <header class="h-14 bg-background border-b border-border px-4 relative flex items-center justify-between z-30 shrink-0">
+    
+    <!-- Left Section: Back, Logo, Editable Title -->
+    <div class="flex items-center gap-3">
+      <button class="h-8 w-8 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition" title="Back to Templates" onclick="showToast('Navigating back to templates...')">
+        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+      </button>
+      
+      <div class="flex items-center gap-2">
+        <div class="w-7 h-7 rounded-md bg-yellow-500 flex items-center justify-center shadow-sm">
+          <i data-lucide="sparkles" class="w-4 h-4 text-gray-900"></i>
+        </div>
+        <div class="flex items-center gap-2">
+          <input type="text" id="top-design-name" value="Contemporary Sea-Facing Penthouse" class="font-medium text-sm bg-transparent hover:bg-muted/50 focus:bg-muted px-2 py-1 rounded border border-transparent focus:border-border outline-none transition w-64 text-foreground truncate" />
+          <span class="text-[10px] font-mono uppercase tracking-wider bg-structure-wash text-[#1f448b] border border-[#ccd8ee] px-2 py-0.5 rounded-full font-semibold">Listing to Canvas</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Center Section: Interactive Scenario Switcher (UC-1 to UC-5) + Zoom Controls -->
+    <div class="hidden md:flex items-center gap-2">
+      <!-- Scenario Selector Pills -->
+      <div class="flex items-center bg-muted/70 p-1 rounded-lg border border-border">
+        <button class="px-2.5 py-1 text-xs font-medium rounded-md transition text-foreground bg-card shadow-sm flex items-center gap-1.5" id="btn-scen-uc1" onclick="loadScenario('uc1')">
+          <span class="w-1.5 h-1.5 rounded-full bg-primary"></span> 1. Direct Form (60%)
+        </button>
+        <button class="px-2.5 py-1 text-xs font-medium rounded-md transition text-muted-foreground hover:text-foreground flex items-center gap-1.5" id="btn-scen-uc2" onclick="loadScenario('uc2')">
+          <span class="w-1.5 h-1.5 rounded-full bg-gray-400"></span> 2. Paste Text (20%)
+        </button>
+        <button class="px-2.5 py-1 text-xs font-medium rounded-md transition text-muted-foreground hover:text-foreground flex items-center gap-1.5" id="btn-scen-uc3" onclick="loadScenario('uc3')">
+          <span class="w-1.5 h-1.5 rounded-full bg-gray-400"></span> 3. Photo (10%)
+        </button>
+        <button class="px-2.5 py-1 text-xs font-medium rounded-md transition text-muted-foreground hover:text-foreground flex items-center gap-1.5" id="btn-scen-uc4" onclick="loadScenario('uc4')">
+          <span class="w-1.5 h-1.5 rounded-full bg-gray-400"></span> 4. Element Edit (0 Cr)
+        </button>
+        <button class="px-2.5 py-1 text-xs font-medium rounded-md transition text-muted-foreground hover:text-foreground flex items-center gap-1.5" id="btn-scen-uc5" onclick="loadScenario('uc5')">
+          <span class="w-1.5 h-1.5 rounded-full bg-gray-400"></span> 5. Campaign Kit (S5→S2)
+        </button>
+      </div>
+
+      <!-- Zoom Controls (from ZoomControls.tsx) -->
+      <div class="flex items-center bg-card border border-border rounded-md px-1 py-0.5 shadow-sm text-xs font-mono">
+        <button class="p-1 text-muted-foreground hover:text-foreground" onclick="adjustZoom(-10)" title="Zoom Out"><i data-lucide="minus" class="w-3.5 h-3.5"></i></button>
+        <span class="px-2 font-medium" id="zoom-text">100%</span>
+        <button class="p-1 text-muted-foreground hover:text-foreground" onclick="adjustZoom(10)" title="Zoom In"><i data-lucide="plus" class="w-3.5 h-3.5"></i></button>
+      </div>
+    </div>
+
+    <!-- Right Section: Actions (Save, Save as Template, Export, Preview, Credits) -->
+    <div class="flex items-center gap-2">
+      <!-- Balance Meter -->
+      <div class="flex items-center gap-1.5 bg-muted/60 border border-border rounded-full px-2.5 py-1 text-xs font-mono text-foreground">
+        <i data-lucide="zap" class="w-3.5 h-3.5 text-amber-500 fill-amber-500"></i>
+        <span id="credit-count" class="font-semibold text-primary">14 Credits</span>
+      </div>
+
+      <button class="h-9 px-3 text-xs font-medium rounded-md border border-border bg-card text-foreground hover:bg-muted flex items-center gap-1.5 shadow-sm transition" onclick="showToast('Design saved to account database ✅')">
+        <i data-lucide="save" class="w-3.5 h-3.5"></i>
+        Save
+      </button>
+
+      <button class="h-9 px-3 text-xs font-medium rounded-md border border-border bg-card text-foreground hover:bg-muted flex items-center gap-1.5 shadow-sm transition hidden lg:flex" onclick="showToast('Saved as reusable Template')">
+        <i data-lucide="layout-template" class="w-3.5 h-3.5"></i>
+        Template
+      </button>
+
+      <button class="h-9 px-3.5 text-xs font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90 flex items-center gap-1.5 shadow-sm transition" onclick="showToast('Exporting high-resolution PNG (300 DPI)...')">
+        <i data-lucide="download" class="w-3.5 h-3.5"></i>
+        Export
+      </button>
+
+      <button class="h-8 w-8 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition" onclick="toggleTheme()" id="theme-toggle-btn" title="Toggle Dark/Light Mode">
+        <i data-lucide="moon" class="w-4 h-4"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- ============================================================
+       MAIN EDITOR WORKSPACE (Left Layers | Center Canvas | Right Sidebar)
+       ============================================================ -->
+  <div class="flex-1 flex overflow-hidden relative">
+
+    <!-- ============================================================
+         LEFT SIDEBAR: LAYERS PANEL (w-56)
+         ============================================================ -->
+    <aside class="w-56 h-full border-r border-border bg-sidebar flex flex-col shrink-0 z-10 select-none">
+      <!-- Layers Header -->
+      <div class="h-11 px-3 border-b border-border flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <i data-lucide="layers" class="w-4 h-4 text-muted-foreground"></i>
+          <span class="text-xs font-semibold tracking-wide">Canvas Layers</span>
+        </div>
+        <span class="text-[10px] font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded" id="layer-count">5 items</span>
+      </div>
+
+      <!-- Layers List -->
+      <div class="flex-1 overflow-y-auto p-2 space-y-1" id="layers-list-container">
+        <!-- Layer 1: Headline -->
+        <div class="flex items-center justify-between px-2 py-1.5 rounded-md text-xs hover:bg-muted/70 cursor-pointer border border-transparent transition" id="layer-item-headline" onclick="selectCanvasElement('headline')">
+          <div class="flex items-center gap-2 truncate">
+            <i data-lucide="type" class="w-3.5 h-3.5 text-primary"></i>
+            <span class="truncate font-medium">ps-headline</span>
+          </div>
+          <div class="flex items-center gap-1 text-muted-foreground">
+            <i data-lucide="eye" class="w-3 h-3 hover:text-foreground"></i>
+          </div>
+        </div>
+
+        <!-- Layer 2: Price Chip -->
+        <div class="flex items-center justify-between px-2 py-1.5 rounded-md text-xs hover:bg-muted/70 cursor-pointer border border-transparent transition" id="layer-item-pricechip" onclick="selectCanvasElement('pricechip')">
+          <div class="flex items-center gap-2 truncate">
+            <i data-lucide="tag" class="w-3.5 h-3.5 text-emerald-600"></i>
+            <span class="truncate font-medium">ps-pricechip</span>
+          </div>
+          <div class="flex items-center gap-1 text-muted-foreground">
+            <i data-lucide="eye" class="w-3 h-3 hover:text-foreground"></i>
+          </div>
+        </div>
+
+        <!-- Layer 3: Facts -->
+        <div class="flex items-center justify-between px-2 py-1.5 rounded-md text-xs hover:bg-muted/70 cursor-pointer border border-transparent transition" id="layer-item-facts" onclick="selectCanvasElement('facts')">
+          <div class="flex items-center gap-2 truncate">
+            <i data-lucide="align-left" class="w-3.5 h-3.5 text-amber-600"></i>
+            <span class="truncate font-medium">ps-facts</span>
+          </div>
+          <div class="flex items-center gap-1 text-muted-foreground">
+            <i data-lucide="eye" class="w-3 h-3 hover:text-foreground"></i>
+          </div>
+        </div>
+
+        <!-- Layer 4: Agent Card -->
+        <div class="flex items-center justify-between px-2 py-1.5 rounded-md text-xs hover:bg-muted/70 cursor-pointer border border-transparent transition" id="layer-item-agent" onclick="selectCanvasElement('agent')">
+          <div class="flex items-center gap-2 truncate">
+            <i data-lucide="user-check" class="w-3.5 h-3.5 text-purple-600"></i>
+            <span class="truncate font-medium">ps-agent</span>
+          </div>
+          <div class="flex items-center gap-1 text-muted-foreground">
+            <i data-lucide="eye" class="w-3 h-3 hover:text-foreground"></i>
+          </div>
+        </div>
+
+        <!-- Layer 5: Background -->
+        <div class="flex items-center justify-between px-2 py-1.5 rounded-md text-xs hover:bg-muted/70 cursor-pointer border border-transparent transition text-muted-foreground" id="layer-item-bg" onclick="deselectAllElements()">
+          <div class="flex items-center gap-2 truncate">
+            <i data-lucide="image" class="w-3.5 h-3.5 text-blue-500"></i>
+            <span class="truncate font-normal">Background Photo</span>
+          </div>
+          <div class="flex items-center gap-1">
+            <i data-lucide="lock" class="w-3 h-3"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Add Element Footer in Left Sidebar -->
+      <div class="p-2 border-t border-border bg-card">
+        <button class="w-full h-8 text-xs font-medium rounded border border-dashed border-border hover:border-primary hover:text-primary flex items-center justify-center gap-1.5 transition" onclick="showToast('Add Custom Text Layer')">
+          <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+          Add Layer
+        </button>
+      </div>
+    </aside>
+
+    <!-- ============================================================
+         CENTER CANVAS WORKSPACE
+         ============================================================ -->
+    <main class="flex-1 flex flex-col bg-muted/40 canvas-grid-bg relative overflow-hidden">
+      
+      <!-- Canvas Sub-Toolbar (Format switcher, Mode Indicator, Canvas Controls) -->
+      <div class="h-10 bg-card/90 backdrop-blur-sm border-b border-border px-4 flex items-center justify-between shrink-0 z-20">
+        
+        <!-- Format Selector -->
+        <div class="flex items-center gap-1 bg-muted p-0.5 rounded-md text-xs">
+          <button class="px-2 py-1 rounded font-medium bg-card text-foreground shadow-xs" id="btn-ratio-1" onclick="setCanvasRatio('1:1')">1:1 Feed (1080×1080)</button>
+          <button class="px-2 py-1 rounded font-medium text-muted-foreground hover:text-foreground" id="btn-ratio-2" onclick="setCanvasRatio('9:16')">9:16 Story (1080×1920)</button>
+          <button class="px-2 py-1 rounded font-medium text-muted-foreground hover:text-foreground" id="btn-ratio-3" onclick="setCanvasRatio('16:9')">16:9 Banner</button>
+        </div>
+
+        <!-- Center: Editable Mode Pill (from CanvasEditToolbar.tsx) -->
+        <div class="flex items-center gap-2">
+          <div class="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800" id="canvas-mode-pill">
+            <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
+            <span>✓ Editable layers active</span>
+          </div>
+        </div>
+
+        <!-- Canvas Dimensions & Clear -->
+        <div class="flex items-center gap-3 text-xs text-muted-foreground">
+          <span class="font-mono text-[11px]" id="canvas-dim-text">1080 × 1080 px</span>
+          <button class="hover:text-foreground text-xs" onclick="resetCanvasState()" title="Clear Canvas Elements">Reset</button>
+        </div>
+      </div>
+
+      <!-- Canvas Viewport Center Stage -->
+      <div class="flex-1 flex items-center justify-center p-8 overflow-auto relative" id="canvas-viewport" onclick="handleCanvasBgClick(event)">
+        
+        <!-- Floating Contextual Toolbar (FloatingToolbar.tsx) when element is selected -->
+        <div class="absolute top-12 bg-card/95 backdrop-blur-md border border-border shadow-xl rounded-lg p-1.5 flex items-center gap-1.5 z-40 transition-all duration-200" id="floating-toolbar" style="display:none;">
+          <select class="text-xs bg-muted/60 border border-border rounded px-2 py-1 outline-none text-foreground" onchange="showToast('Font family changed')">
+            <option>Bricolage Grotesque</option>
+            <option>Outfit</option>
+            <option>Inter</option>
+            <option>Playfair Display</option>
+          </select>
+
+          <div class="flex items-center border-l border-r border-border px-1.5 gap-1">
+            <button class="p-1 hover:bg-muted rounded text-muted-foreground hover:text-foreground" onclick="adjustFontSize(-2)" title="Decrease Size"><i data-lucide="minus" class="w-3.5 h-3.5"></i></button>
+            <span class="text-xs font-mono px-1 font-semibold" id="tb-font-size">24</span>
+            <button class="p-1 hover:bg-muted rounded text-muted-foreground hover:text-foreground" onclick="adjustFontSize(2)" title="Increase Size"><i data-lucide="plus" class="w-3.5 h-3.5"></i></button>
+          </div>
+
+          <div class="flex items-center gap-0.5">
+            <button class="p-1 hover:bg-muted rounded text-muted-foreground hover:text-foreground font-bold text-xs w-6 h-6 flex items-center justify-center" title="Bold">B</button>
+            <button class="p-1 hover:bg-muted rounded text-muted-foreground hover:text-foreground italic text-xs w-6 h-6 flex items-center justify-center" title="Italic">I</button>
+            <div class="w-4 h-4 rounded-full bg-white border border-gray-300 shadow-xs cursor-pointer ml-1" title="Color Picker"></div>
+          </div>
+
+          <div class="border-l border-border pl-1.5 flex items-center gap-1">
+            <button class="px-2 py-1 bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300 hover:bg-purple-200 text-xs font-medium rounded flex items-center gap-1" onclick="openAssistantForSelectedElement()">
+              <i data-lucide="sparkles" class="w-3 h-3"></i> AI Edit
+            </button>
+            <button class="p-1 hover:bg-destructive/10 text-destructive rounded" onclick="showToast('Deleted element')" title="Delete"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+          </div>
+        </div>
+
+        <!-- S0: Empty Canvas State -->
+        <div class="max-w-md w-full text-center bg-card border-2 border-dashed border-border rounded-2xl p-10 flex flex-col items-center gap-4 shadow-lg" id="canvas-empty-state" style="display:none;">
+          <div class="w-16 h-16 rounded-full bg-primary/10 text-primary flex items-center justify-center text-2xl">
+            <i data-lucide="layout-grid" class="w-8 h-8"></i>
+          </div>
+          <div>
+            <h3 class="font-display font-bold text-lg text-foreground">Canvas is ready for design</h3>
+            <p class="text-xs text-muted-foreground mt-1 max-w-xs mx-auto">
+              Fill in the <b>Listing form</b> on the right, or drop a seller message into the <b>AI Copilot</b> to extract fields.
+            </p>
+          </div>
+          <button class="px-4 py-2 bg-primary text-primary-foreground text-xs font-semibold rounded-md shadow-sm hover:bg-primary/90 transition flex items-center gap-1.5" onclick="loadScenario('uc1')">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Load Sample Listing
+          </button>
+        </div>
+
+        <!-- S4: Placed Active Design Artboard -->
+        <div class="w-[440px] h-[440px] bg-white rounded-xl shadow-2xl relative overflow-hidden border border-border/80 transition-all duration-300" id="artboard">
+          
+          <!-- Background Hero Image -->
+          <div class="absolute inset-0 bg-cover bg-center transition-all duration-500" id="artboard-hero-bg" style="background-image: url('https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=85');"></div>
+          <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-black/40 pointer-events-none"></div>
+
+          <!-- Layer 1: Headline Element -->
+          <div class="canvas-el top-6 left-6 right-6" id="el-headline" onclick="selectCanvasElement('headline', event)">
+            <h2 class="font-display font-extrabold text-2xl text-white leading-tight drop-shadow-md" id="art-headline">
+              Contemporary Sea-Facing Penthouse
+            </h2>
+            <div class="handle h-nw"></div>
+            <div class="handle h-ne"></div>
+            <div class="handle h-sw"></div>
+            <div class="handle h-se"></div>
+          </div>
+
+          <!-- Layer 2: Price Chip Element -->
+          <div class="canvas-el bottom-24 left-6" id="el-pricechip" onclick="selectCanvasElement('pricechip', event)">
+            <div class="bg-white text-slate-900 font-display font-extrabold text-xl px-3.5 py-1 rounded-lg shadow-lg inline-block" id="art-price">
+              ₹4.20 Cr
+            </div>
+            <div class="handle h-nw"></div>
+            <div class="handle h-ne"></div>
+            <div class="handle h-sw"></div>
+            <div class="handle h-se"></div>
+          </div>
+
+          <!-- Layer 3: Facts Element -->
+          <div class="canvas-el bottom-16 left-6 right-6 text-white text-xs font-medium tracking-wide flex items-center gap-2 drop-shadow-sm" id="el-facts" onclick="selectCanvasElement('facts', event)">
+            <span id="art-facts">3 BHK • 3 Baths • 1,850 sq ft • Bandra West, Mumbai</span>
+            <div class="handle h-nw"></div>
+            <div class="handle h-ne"></div>
+            <div class="handle h-sw"></div>
+            <div class="handle h-se"></div>
+          </div>
+
+          <!-- Layer 4: Agent Card Element -->
+          <div class="canvas-el bottom-3 left-6 right-6 pt-2 border-t border-white/20 flex items-center justify-between text-white" id="el-agent" onclick="selectCanvasElement('agent', event)">
+            <div class="flex items-center gap-2">
+              <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=100&q=80" class="w-7 h-7 rounded-full border border-white/80 object-cover" />
+              <div>
+                <div class="font-bold text-xs leading-none" id="art-agent-name">Priya Sharma</div>
+                <div class="text-[9px] text-white/80 mt-0.5" id="art-brokerage">Apex Luxury Realty · RERA #A51800021</div>
+              </div>
+            </div>
+            <div class="font-mono text-[10px] bg-white/20 px-2 py-0.5 rounded-full backdrop-blur-xs">
+              +91 98200 12345
+            </div>
+            <div class="handle h-nw"></div>
+            <div class="handle h-ne"></div>
+            <div class="handle h-sw"></div>
+            <div class="handle h-se"></div>
+          </div>
+
+        </div>
+
+        <!-- S3: 3 Variations Chooser Overlay (ResultsVariations) -->
+        <div class="absolute inset-0 bg-background/90 backdrop-blur-md flex flex-col items-center justify-center p-6 z-50 transition-all duration-300" id="variations-modal" style="display:none;">
+          <div class="text-center max-w-md mb-5">
+            <span class="text-[10px] font-mono font-semibold uppercase tracking-wider bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-300 px-2.5 py-0.5 rounded-full">AI Generation Finished · 1 Credit</span>
+            <h3 class="font-display font-bold text-xl text-foreground mt-2">Pick Your Design Variation</h3>
+            <p class="text-xs text-muted-foreground">Select a variation to place onto the active editable canvas.</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-4xl w-full">
+            <!-- Var 1 -->
+            <div class="bg-card border-2 border-primary rounded-xl overflow-hidden shadow-lg cursor-pointer hover:-translate-y-1 transition group relative" onclick="selectVariationCard(1)">
+              <div class="h-64 bg-cover bg-center relative p-3 flex flex-col justify-between text-white" style="background-image:url('https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=600&q=80');">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/40"></div>
+                <span class="relative font-display font-extrabold text-sm">Contemporary Sea-Facing Penthouse</span>
+                <div class="relative">
+                  <span class="bg-white text-black text-xs font-bold px-2 py-0.5 rounded">₹4.20 Cr</span>
+                  <div class="text-[10px] text-white/80 mt-1">3 BHK • 1,850 sq ft</div>
+                </div>
+              </div>
+              <div class="p-3 bg-card border-t border-border flex items-center justify-between">
+                <span class="text-xs font-mono font-semibold">Var A · Editorial Bold</span>
+                <button class="px-3 py-1 bg-primary text-primary-foreground text-xs font-semibold rounded hover:bg-primary/90 transition" onclick="useChosenVariation(1); event.stopPropagation();">Use This Design</button>
+              </div>
+            </div>
+
+            <!-- Var 2 -->
+            <div class="bg-card border border-border hover:border-primary rounded-xl overflow-hidden shadow-md cursor-pointer hover:-translate-y-1 transition group relative" onclick="selectVariationCard(2)">
+              <div class="h-64 bg-cover bg-center relative p-3 flex flex-col justify-end text-white" style="background-image:url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=600&q=80');">
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-transparent to-transparent"></div>
+                <div class="relative">
+                  <span class="bg-amber-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded mb-1 inline-block">JUST LISTED</span>
+                  <div class="font-display font-bold text-sm">Ultra Luxury Penthouse</div>
+                  <div class="text-xs font-extrabold text-amber-300 mt-0.5">₹4.20 Cr</div>
+                </div>
+              </div>
+              <div class="p-3 bg-card border-t border-border flex items-center justify-between">
+                <span class="text-xs font-mono font-semibold">Var B · Minimal Gold</span>
+                <button class="px-3 py-1 bg-primary text-primary-foreground text-xs font-semibold rounded hover:bg-primary/90 transition" onclick="useChosenVariation(2); event.stopPropagation();">Use This Design</button>
+              </div>
+            </div>
+
+            <!-- Var 3 -->
+            <div class="bg-card border border-border hover:border-primary rounded-xl overflow-hidden shadow-md cursor-pointer hover:-translate-y-1 transition group relative" onclick="selectVariationCard(3)">
+              <div class="h-64 bg-cover bg-center relative p-3 flex flex-col justify-between text-white" style="background-image:url('https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=600&q=80');">
+                <div class="absolute inset-0 bg-blue-950/40"></div>
+                <span class="relative border border-white/80 text-[10px] px-2 py-0.5 rounded-full w-fit backdrop-blur-xs">EXCLUSIVE</span>
+                <div class="relative bg-white/95 text-slate-900 p-2.5 rounded-lg shadow-md">
+                  <div class="font-bold text-xs">Carter Road Penthouse</div>
+                  <div class="text-[10px] text-muted-foreground font-mono">₹4.20 Cr • Bandra West</div>
+                </div>
+              </div>
+              <div class="p-3 bg-card border-t border-border flex items-center justify-between">
+                <span class="text-xs font-mono font-semibold">Var C · Framed Card</span>
+                <button class="px-3 py-1 bg-primary text-primary-foreground text-xs font-semibold rounded hover:bg-primary/90 transition" onclick="useChosenVariation(3); event.stopPropagation();">Use This Design</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- In-flight Generation Progress Spinner (GenerationProgressBar.tsx) -->
+        <div class="absolute inset-0 bg-background/85 backdrop-blur-sm flex flex-col items-center justify-center gap-4 z-50" id="generation-spinner-modal" style="display:none;">
+          <div class="w-12 h-12 rounded-full border-3 border-primary/20 border-t-primary animate-spin"></div>
+          <div class="text-center">
+            <div class="font-display font-bold text-base text-foreground" id="spinner-step-title">1. Planning layout from listing...</div>
+            <div class="text-xs text-muted-foreground font-mono mt-1">Single generate pipeline · Consuming 1 credit</div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+
+    <!-- ============================================================
+         RIGHT SIDEBAR: THE LISTING (w-80 / 320px) (RightSidebar.tsx)
+         ============================================================ -->
+    <aside class="w-80 h-full border-l border-border bg-card flex flex-col shrink-0 z-20 select-none shadow-sm">
+      
+      <!-- Right Sidebar Tabs (Design, Property Details, Agent Info) -->
+      <div class="h-11 border-b border-border flex items-center px-2 bg-muted/40 shrink-0">
+        <button class="flex-1 py-1.5 text-xs font-semibold border-b-2 border-primary text-primary transition flex items-center justify-center gap-1.5" id="tab-btn-property" onclick="switchRightTab('property')">
+          <i data-lucide="file-text" class="w-3.5 h-3.5"></i>
+          The Listing
+        </button>
+        <button class="flex-1 py-1.5 text-xs font-medium border-b-2 border-transparent text-muted-foreground hover:text-foreground transition flex items-center justify-center gap-1.5" id="tab-btn-design" onclick="switchRightTab('design')">
+          <i data-lucide="palette" class="w-3.5 h-3.5"></i>
+          Design
+        </button>
+        <button class="flex-1 py-1.5 text-xs font-medium border-b-2 border-transparent text-muted-foreground hover:text-foreground transition flex items-center justify-center gap-1.5" id="tab-btn-agent" onclick="switchRightTab('agent')">
+          <i data-lucide="user" class="w-3.5 h-3.5"></i>
+          Agent
+        </button>
+      </div>
+
+      <!-- Tab Content 1: The Listing Form (Property Details Ground Truth) -->
+      <div class="flex-1 overflow-y-auto p-4 space-y-4" id="tab-content-property">
+        
+        <!-- Campaign Goal -->
+        <div class="space-y-1">
+          <label class="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Campaign Goal / Status</label>
+          <select id="form-goal" class="w-full h-8 px-2 text-xs bg-background border border-input rounded-md outline-none focus:border-primary text-foreground" onchange="syncListingFields()">
+            <option value="Just Listed">🏷️ Just Listed (Hero Announcement)</option>
+            <option value="Open House">🏡 Open House (Upcoming Event)</option>
+            <option value="Price Drop">📉 Price Drop (High Urgency)</option>
+            <option value="Exclusive Preview">⭐ Exclusive Preview</option>
+            <option value="Just Sold">🎉 Just Sold (Social Proof)</option>
+          </select>
+        </div>
+
+        <!-- Headline -->
+        <div class="space-y-1">
+          <label class="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider flex justify-between">
+            <span>Property Headline</span>
+            <span class="text-amber-600 font-mono text-[10px]">*Required</span>
+          </label>
+          <input type="text" id="form-title" value="Contemporary Sea-Facing Penthouse" class="w-full h-8 px-2.5 text-xs bg-background border border-input rounded-md outline-none focus:border-primary text-foreground transition" placeholder="e.g. Modern Sea-Facing Penthouse" oninput="syncListingFields()" />
+        </div>
+
+        <!-- Address -->
+        <div class="space-y-1">
+          <label class="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider flex justify-between">
+            <span>Address / Location</span>
+            <span class="text-amber-600 font-mono text-[10px]">*Required</span>
+          </label>
+          <input type="text" id="form-address" value="12 Carter Road, Bandra West, Mumbai" class="w-full h-8 px-2.5 text-xs bg-background border border-input rounded-md outline-none focus:border-primary text-foreground transition" placeholder="e.g. 12 Carter Road, Bandra West" oninput="syncListingFields()" />
+        </div>
+
+        <!-- Price & Area (Grid) -->
+        <div class="grid grid-cols-2 gap-2">
+          <div class="space-y-1">
+            <label class="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider flex justify-between">
+              <span>Price</span>
+              <span class="text-amber-600 font-mono text-[10px]">*</span>
+            </label>
+            <input type="text" id="form-price" value="₹4.20 Cr" class="w-full h-8 px-2.5 text-xs bg-background border border-input rounded-md outline-none focus:border-primary text-foreground transition" placeholder="e.g. ₹4.20 Cr" oninput="syncListingFields()" />
+          </div>
+          <div class="space-y-1">
+            <label class="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Built-up Area</label>
+            <input type="text" id="form-area" value="1,850 sq ft" class="w-full h-8 px-2.5 text-xs bg-background border border-input rounded-md outline-none focus:border-primary text-foreground transition" placeholder="e.g. 1,850 sq ft" oninput="syncListingFields()" />
+          </div>
+        </div>
+
+        <!-- Beds & Baths (Grid) -->
+        <div class="grid grid-cols-2 gap-2">
+          <div class="space-y-1">
+            <label class="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Beds</label>
+            <input type="text" id="form-beds" value="3 BHK" class="w-full h-8 px-2.5 text-xs bg-background border border-input rounded-md outline-none focus:border-primary text-foreground transition" placeholder="e.g. 3 BHK" oninput="syncListingFields()" />
+          </div>
+          <div class="space-y-1">
+            <label class="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Baths</label>
+            <input type="text" id="form-baths" value="3 Baths" class="w-full h-8 px-2.5 text-xs bg-background border border-input rounded-md outline-none focus:border-primary text-foreground transition" placeholder="e.g. 3 Baths" oninput="syncListingFields()" />
+          </div>
+        </div>
+
+        <!-- Property Photos Style Reference -->
+        <div class="space-y-1.5">
+          <label class="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Property Photo Reference</label>
+          <div class="border border-dashed border-border rounded-lg p-2.5 bg-muted/30 text-center cursor-pointer hover:border-primary transition" onclick="showToast('Click photo below to switch')">
+            <div class="flex gap-2 justify-center">
+              <img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=150&q=80" class="w-12 h-12 rounded object-cover border-2 border-primary" onclick="switchPhotoRef(1, this); event.stopPropagation();" />
+              <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=150&q=80" class="w-12 h-12 rounded object-cover border-2 border-transparent hover:border-primary" onclick="switchPhotoRef(2, this); event.stopPropagation();" />
+              <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=150&q=80" class="w-12 h-12 rounded object-cover border-2 border-transparent hover:border-primary" onclick="switchPhotoRef(3, this); event.stopPropagation();" />
+            </div>
+            <p class="text-[10px] text-muted-foreground mt-1.5">Click photo to set style reference</p>
+          </div>
+        </div>
+
+        <!-- Brand Palette Selection -->
+        <div class="space-y-1.5">
+          <label class="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Brand Palette</label>
+          <div class="grid grid-cols-2 gap-1.5">
+            <div class="border border-primary bg-primary/5 rounded-md p-1.5 flex items-center gap-1.5 cursor-pointer text-xs font-medium">
+              <div class="w-3 h-3 rounded-full bg-[#1f448b]"></div> Luxury Navy
+            </div>
+            <div class="border border-border hover:border-primary rounded-md p-1.5 flex items-center gap-1.5 cursor-pointer text-xs font-medium">
+              <div class="w-3 h-3 rounded-full bg-[#16A34A]"></div> Natural Green
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Tab Content 2: Design Styles (Hidden by default) -->
+      <div class="flex-1 overflow-y-auto p-4 space-y-4" id="tab-content-design" style="display:none;">
+        <div class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Brand Color Palettes</div>
+        <div class="space-y-2">
+          <div class="p-2.5 rounded-lg border border-primary bg-accent/40 cursor-pointer">
+            <div class="text-xs font-semibold text-foreground">Luxury Navy (Active)</div>
+            <div class="flex gap-1.5 mt-2">
+              <span class="w-5 h-5 rounded-full bg-[#1E293B]"></span>
+              <span class="w-5 h-5 rounded-full bg-[#334155]"></span>
+              <span class="w-5 h-5 rounded-full bg-[#94A3B8]"></span>
+              <span class="w-5 h-5 rounded-full bg-[#E2E8F0]"></span>
+            </div>
+          </div>
+          <div class="p-2.5 rounded-lg border border-border hover:border-primary cursor-pointer">
+            <div class="text-xs font-semibold text-foreground">Luxury Gold</div>
+            <div class="flex gap-1.5 mt-2">
+              <span class="w-5 h-5 rounded-full bg-[#1F1F1F]"></span>
+              <span class="w-5 h-5 rounded-full bg-[#D4AF37]"></span>
+              <span class="w-5 h-5 rounded-full bg-[#FFFFFF] border"></span>
+              <span class="w-5 h-5 rounded-full bg-[#8B7355]"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab Content 3: Agent Profile (Hidden by default) -->
+      <div class="flex-1 overflow-y-auto p-4 space-y-3" id="tab-content-agent" style="display:none;">
+        <div class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Agent Profile &amp; RERA</div>
+        <div class="space-y-1">
+          <label class="text-[11px] font-semibold text-muted-foreground">Agent Name</label>
+          <input type="text" id="form-agent-name" value="Priya Sharma" class="w-full h-8 px-2 text-xs bg-background border border-input rounded-md" oninput="syncListingFields()" />
+        </div>
+        <div class="space-y-1">
+          <label class="text-[11px] font-semibold text-muted-foreground">Brokerage / Company</label>
+          <input type="text" id="form-brokerage" value="Apex Luxury Realty" class="w-full h-8 px-2 text-xs bg-background border border-input rounded-md" oninput="syncListingFields()" />
+        </div>
+        <div class="space-y-1">
+          <label class="text-[11px] font-semibold text-muted-foreground">Phone Number</label>
+          <input type="text" id="form-phone" value="+91 98200 12345" class="w-full h-8 px-2 text-xs bg-background border border-input rounded-md" />
+        </div>
+        <div class="space-y-1">
+          <label class="text-[11px] font-semibold text-muted-foreground">RERA Licence #</label>
+          <input type="text" id="form-rera" value="RERA #A51800021" class="w-full h-8 px-2 text-xs bg-background border border-input rounded-md" />
+        </div>
+      </div>
+
+      <!-- Right Sidebar Sticky Footer: SINGLE GENERATE ACTION (Rule 01 & 03) -->
+      <div class="p-3.5 border-t border-border bg-card flex flex-col gap-2 shrink-0">
+        <!-- Live Gate Status Indicator -->
+        <div class="flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-mono bg-emerald-50 text-emerald-800 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800" id="gate-indicator">
+          <i data-lucide="check" class="w-3.5 h-3.5"></i>
+          <span id="gate-text">Listing Complete &amp; Verified</span>
+        </div>
+
+        <!-- The Single Generate Button in the Product -->
+        <button class="w-full h-11 bg-primary text-primary-foreground font-display font-bold text-sm rounded-lg shadow-md hover:bg-primary/90 flex items-center justify-center gap-2 transition active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed" id="btn-generate" onclick="runGenerationPipeline()">
+          <i data-lucide="sparkles" class="w-4 h-4"></i>
+          <span>Create 3 Designs</span>
+          <span class="text-xs font-normal opacity-90 font-mono">· 1 Credit</span>
+        </button>
+      </div>
+
+    </aside>
+
+  </div>
+
+  <!-- ============================================================
+       AI COPILOT FLOATING PANEL (AIChatBox.tsx)
+       ============================================================ -->
+  <div class="fixed bottom-4 right-8 z-50 flex flex-col items-end" id="ai-chat-root">
+    
+    <!-- Expanded Chat Window -->
+    <div class="w-96 h-[500px] bg-card border border-border rounded-2xl shadow-2xl flex flex-col overflow-hidden transition-all duration-300 mb-3" id="ai-chat-window" style="display:none;">
+      
+      <!-- AI Chat Header -->
+      <div class="h-12 bg-purple-50 dark:bg-purple-950/40 border-b border-purple-200 dark:border-purple-800 px-3.5 flex items-center justify-between shrink-0">
+        <div class="flex items-center gap-2">
+          <div class="w-6 h-6 rounded-md bg-purple-600 flex items-center justify-center text-white shadow-xs">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+          </div>
+          <div>
+            <h4 class="font-display font-bold text-xs text-purple-950 dark:text-purple-200" id="assistant-header-title">Listing Copilot</h4>
+            <span class="text-[9px] font-mono text-purple-700 dark:text-purple-400" id="assistant-header-subtitle">Drafting &amp; Element Edit Mode</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-1 text-muted-foreground">
+          <button class="p-1 hover:text-foreground rounded hover:bg-purple-100 dark:hover:bg-purple-900" onclick="toggleAIChat()" title="Minimize"><i data-lucide="minus" class="w-4 h-4"></i></button>
+        </div>
+      </div>
+
+      <!-- Context Notification Strip -->
+      <div class="bg-purple-100/60 dark:bg-purple-950/60 px-3 py-1.5 text-[11px] text-purple-900 dark:text-purple-300 border-b border-purple-200/60 flex items-center gap-1.5" id="assistant-context-banner">
+        <i data-lucide="info" class="w-3.5 h-3.5 shrink-0 text-purple-700"></i>
+        <span class="truncate" id="assistant-context-text">Drop seller text to auto-fill the Listing form.</span>
+      </div>
+
+      <!-- Messages Thread -->
+      <div class="flex-1 overflow-y-auto p-3 space-y-3" id="chat-thread">
+        <div class="flex flex-col gap-1 items-start max-w-[85%]">
+          <div class="bg-muted p-2.5 rounded-2xl rounded-tl-xs text-xs text-foreground leading-relaxed shadow-xs">
+            👋 I am your <b>Listing Copilot</b>. I can extract property details from raw messages or refine canvas typography for <b>0 credits</b>.
+          </div>
+          <span class="text-[9px] font-mono text-muted-foreground">Just now</span>
+        </div>
+      </div>
+
+      <!-- Smart Suggestions Chips -->
+      <div class="p-2 border-t border-border bg-muted/20 flex gap-1.5 overflow-x-auto shrink-0" id="chat-chips-bar">
+        <!-- JS populated chips -->
+      </div>
+
+      <!-- Chat Input Field -->
+      <div class="p-2.5 border-t border-border bg-card shrink-0 space-y-1">
+        <div class="flex items-center gap-1.5 bg-muted/50 border border-input rounded-lg px-2 py-1 focus-within:border-purple-500 focus-within:ring-1 focus-within:ring-purple-500 transition">
+          <input type="text" id="chat-input-field" placeholder="Paste seller message or edit prompt..." class="flex-1 text-xs bg-transparent outline-none text-foreground" onkeydown="if(event.key==='Enter') submitChatMessage()" />
+          <button class="w-7 h-7 bg-purple-600 hover:bg-purple-700 text-white rounded-md flex items-center justify-center transition" onclick="submitChatMessage()">
+            <i data-lucide="send" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+        <div class="flex justify-between items-center text-[10px] text-muted-foreground px-1">
+          <span id="chat-cost-pill">Assistant writes to form · <b>0 Credits</b></span>
+          <span class="font-mono">Never generates directly</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Floating Toggle Button (Iconic purple sparkle trigger) -->
+    <button class="h-11 px-4 bg-purple-600 hover:bg-purple-700 text-white rounded-full shadow-xl flex items-center gap-2 font-display font-bold text-xs tracking-wide transition-all duration-200 active:scale-95 group" onclick="toggleAIChat()">
+      <i data-lucide="sparkles" class="w-4 h-4 group-hover:rotate-12 transition"></i>
+      <span id="chat-btn-label">Describe Your Listing</span>
+    </button>
+  </div>
+
+  <!-- Toast Notification Overlay -->
+  <div class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-xs px-4 py-2 rounded-full shadow-2xl flex items-center gap-2 z-50 transition-all duration-300 opacity-0 pointer-events-none" id="toast-el">
+    <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400" id="toast-icon"></i>
+    <span id="toast-msg">Action completed</span>
+  </div>
+
+  <!-- ============================================================
+       SCRIPT: INTERACTIVE LOGIC & PRODUCT STATE
+       ============================================================ -->
+  <script>
+    // State
+    const state = {
+      zoom: 100,
+      credits: 14,
+      selectedElement: null,
+      ratio: '1:1',
+      chatOpen: false,
+      activeScenario: 'uc1'
+    };
+
+    // Initialize Lucide Icons & Initial Load
+    window.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+      loadScenario('uc1');
+    });
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast-el');
+      document.getElementById('toast-msg').innerText = msg;
+      toast.classList.remove('opacity-0', 'pointer-events-none');
+      toast.classList.add('opacity-100');
+      setTimeout(() => {
+        toast.classList.remove('opacity-100');
+        toast.classList.add('opacity-0', 'pointer-events-none');
+      }, 3000);
+    }
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      const isDark = html.classList.toggle('dark');
+      document.getElementById('theme-toggle-btn').innerHTML = isDark ? 
+        '<i data-lucide="sun" class="w-4 h-4"></i>' : 
+        '<i data-lucide="moon" class="w-4 h-4"></i>';
+      lucide.createIcons();
+    }
+
+    function toggleAIChat(forceState) {
+      state.chatOpen = (typeof forceState === 'boolean') ? forceState : !state.chatOpen;
+      const win = document.getElementById('ai-chat-window');
+      win.style.display = state.chatOpen ? 'flex' : 'none';
+      document.getElementById('chat-btn-label').innerText = state.chatOpen ? 'Close Assistant' : 'Describe Your Listing';
+    }
+
+    function adjustZoom(delta) {
+      state.zoom = Math.max(50, Math.min(200, state.zoom + delta));
+      document.getElementById('zoom-text').innerText = `${state.zoom}%`;
+      const artboard = document.getElementById('artboard');
+      artboard.style.transform = `scale(${state.zoom / 100})`;
+    }
+
+    function setCanvasRatio(ratio) {
+      state.ratio = ratio;
+      document.getElementById('btn-ratio-1').className = ratio === '1:1' ? 'px-2 py-1 rounded font-medium bg-card text-foreground shadow-xs' : 'px-2 py-1 rounded font-medium text-muted-foreground hover:text-foreground';
+      document.getElementById('btn-ratio-2').className = ratio === '9:16' ? 'px-2 py-1 rounded font-medium bg-card text-foreground shadow-xs' : 'px-2 py-1 rounded font-medium text-muted-foreground hover:text-foreground';
+      document.getElementById('btn-ratio-3').className = ratio === '16:9' ? 'px-2 py-1 rounded font-medium bg-card text-foreground shadow-xs' : 'px-2 py-1 rounded font-medium text-muted-foreground hover:text-foreground';
+      
+      const artboard = document.getElementById('artboard');
+      const dim = document.getElementById('canvas-dim-text');
+
+      if (ratio === '1:1') {
+        artboard.style.width = '440px';
+        artboard.style.height = '440px';
+        dim.innerText = '1080 × 1080 px';
+      } else if (ratio === '9:16') {
+        artboard.style.width = '300px';
+        artboard.style.height = '533px';
+        dim.innerText = '1080 × 1920 px (Story)';
+      } else if (ratio === '16:9') {
+        artboard.style.width = '540px';
+        artboard.style.height = '304px';
+        dim.innerText = '1200 × 628 px (Banner)';
+      }
+      showToast(`Switched canvas to ${ratio}`);
+    }
+
+    function switchRightTab(tabKey) {
+      ['property', 'design', 'agent'].forEach(k => {
+        const btn = document.getElementById(`tab-btn-${k}`);
+        const content = document.getElementById(`tab-content-${k}`);
+        if (k === tabKey) {
+          btn.className = 'flex-1 py-1.5 text-xs font-semibold border-b-2 border-primary text-primary transition flex items-center justify-center gap-1.5';
+          content.style.display = 'block';
+        } else {
+          btn.className = 'flex-1 py-1.5 text-xs font-medium border-b-2 border-transparent text-muted-foreground hover:text-foreground transition flex items-center justify-center gap-1.5';
+          content.style.display = 'none';
+        }
+      });
+    }
+
+    // SCENARIOS IMPLEMENTATION
+    function loadScenario(scen) {
+      state.activeScenario = scen;
+      ['uc1', 'uc2', 'uc3', 'uc4', 'uc5'].forEach(k => {
+        const btn = document.getElementById(`btn-scen-${k}`);
+        if (k === scen) {
+          btn.className = 'px-2.5 py-1 text-xs font-medium rounded-md transition text-foreground bg-card shadow-sm flex items-center gap-1.5';
+          btn.querySelector('span').className = 'w-1.5 h-1.5 rounded-full bg-primary';
+        } else {
+          btn.className = 'px-2.5 py-1 text-xs font-medium rounded-md transition text-muted-foreground hover:text-foreground flex items-center gap-1.5';
+          btn.querySelector('span').className = 'w-1.5 h-1.5 rounded-full bg-gray-400';
+        }
+      });
+
+      if (scen === 'uc1') {
+        // Direct Form Entry
+        setFormInputs({
+          title: 'Contemporary Sea-Facing Penthouse',
+          address: '12 Carter Road, Bandra West, Mumbai',
+          price: '₹4.20 Cr',
+          area: '1,850 sq ft',
+          beds: '3 BHK',
+          baths: '3 Baths',
+          goal: 'Just Listed'
+        });
+        showCanvasPlaced();
+        deselectAllElements();
+        setAssistantState('drafting');
+        appendAssistantMessage('<b>UC-1 Loaded: Direct Form Entry (~60%)</b><br>Listing details entered in the form. Single Generate button enabled below.');
+        setAssistantChips([
+          { label: '✨ Create 3 Designs', action: () => runGenerationPipeline() },
+          { label: '💡 Suggest Luxury Title', action: () => suggestHeadline() }
+        ]);
+        showToast('Scenario 1: Direct Form Entry loaded');
+      } 
+      else if (scen === 'uc2') {
+        // Paste Text Extraction
+        setFormInputs({ title: '', address: '', price: '', area: '', beds: '', baths: '', goal: 'Just Listed' });
+        showCanvasEmpty();
+        toggleAIChat(true);
+        setAssistantState('drafting');
+        const rawText = "3bhk Bandra West, asking 4.2cr, 1450 sqft, sea facing, ready to move";
+        appendUserMessage(`Extract listing: "${rawText}"`);
+        setTimeout(() => {
+          extractFieldsIntoForm({
+            title: 'Sea Facing 3BHK Apartment',
+            address: 'Bandra West, Mumbai',
+            price: '₹4.20 Cr',
+            area: '1,450 sq ft',
+            beds: '3 BHK',
+            baths: '3 Baths'
+          });
+          appendAssistantMessage('Extracted 6 fields into the Listing form! Verify details on the right, then click <b>"Create 3 Designs"</b>.');
+        }, 400);
+        showToast('Scenario 2: Natural Language Extraction simulated');
+      }
+      else if (scen === 'uc3') {
+        // Property Photo Style Reference
+        setFormInputs({ title: 'Ultra Modern Villa', address: '', price: '', area: '2,800 sq ft', beds: '4 BHK', baths: '4 Baths', goal: 'Exclusive Preview' });
+        showCanvasEmpty();
+        toggleAIChat(true);
+        switchPhotoRef(2);
+        appendAssistantMessage('<b>Property Photo Attached:</b> Detected contemporary villa architecture.<br>⚠️ Please add <b>Address & Price</b> to complete the Listing.');
+        setAssistantChips([
+          { label: 'Fill ₹6.5 Cr & Juhu Beach', action: () => {
+            document.getElementById('form-address').value = 'Juhu Beach Enclave, Mumbai';
+            document.getElementById('form-price').value = '₹6.50 Cr';
+            syncListingFields();
+            showToast('Filled Address & Price');
+          }}
+        ]);
+        showToast('Scenario 3: Property Photo attached');
+      }
+      else if (scen === 'uc4') {
+        // Element Edit Mode
+        setFormInputs({
+          title: 'Contemporary Sea-Facing Penthouse',
+          address: '12 Carter Road, Bandra West, Mumbai',
+          price: '₹4.20 Cr',
+          area: '1,850 sq ft',
+          beds: '3 BHK',
+          baths: '3 Baths',
+          goal: 'Just Listed'
+        });
+        showCanvasPlaced();
+        selectCanvasElement('headline');
+        toggleAIChat(true);
+        appendAssistantMessage('<b>UC-4: Element Edit Mode</b><br>You selected the Headline layer. Refinements modify only this layer for <b>0 credits</b>.');
+        setAssistantChips([
+          { label: 'Shorter & Punchier', action: () => updateElementText('Bandra Seaside Villa') },
+          { label: 'Add Urgency (Price Drop)', action: () => updateElementText('Rare Sea-Facing Penthouse · Just Listed') },
+          { label: 'Hindi / Regional', action: () => updateElementText('बांद्रा वेस्ट में सी-फेसिंग पेंटहाउस') }
+        ]);
+        showToast('Scenario 4: Element Edit Mode active on Headline');
+      }
+      else if (scen === 'uc5') {
+        // Campaign Kit (S5 -> S2)
+        setFormInputs({
+          title: 'Contemporary Sea-Facing Penthouse',
+          address: '12 Carter Road, Bandra West, Mumbai',
+          price: '₹4.20 Cr',
+          area: '1,850 sq ft',
+          beds: '3 BHK',
+          baths: '3 Baths',
+          goal: 'Open House'
+        });
+        showCanvasPlaced();
+        toggleAIChat(true);
+        setAssistantState('campaign');
+        appendAssistantMessage('<b>UC-5: Campaign Kit Expansion (S5 → S2)</b><br>Same Listing preserved! Generate matching formats with 1 click without re-typing.');
+        setAssistantChips([
+          { label: '🏡 Open House Flyer', action: () => triggerCampaignOpenHouse() },
+          { label: '📱 Instagram Story (9:16)', action: () => setCanvasRatio('9:16') },
+          { label: '📉 Price Drop Graphic', action: () => triggerCampaignPriceDrop() }
+        ]);
+        showToast('Scenario 5: Campaign Kit Expansion ready');
+      }
+    }
+
+    function setFormInputs(data) {
+      document.getElementById('form-title').value = data.title || '';
+      document.getElementById('form-address').value = data.address || '';
+      document.getElementById('form-price').value = data.price || '';
+      document.getElementById('form-area').value = data.area || '';
+      document.getElementById('form-beds').value = data.beds || '';
+      document.getElementById('form-baths').value = data.baths || '';
+      if (data.goal) document.getElementById('form-goal').value = data.goal;
+      syncListingFields();
+    }
+
+    function syncListingFields() {
+      const title = document.getElementById('form-title').value.trim();
+      const addr = document.getElementById('form-address').value.trim();
+      const price = document.getElementById('form-price').value.trim();
+      const area = document.getElementById('form-area').value.trim();
+      const beds = document.getElementById('form-beds').value.trim();
+      const baths = document.getElementById('form-baths').value.trim();
+      const agent = document.getElementById('form-agent-name').value.trim();
+      const brokerage = document.getElementById('form-brokerage').value.trim();
+
+      // Update Artboard Elements
+      document.getElementById('art-headline').innerText = title || 'Untitled Listing';
+      document.getElementById('art-price').innerText = price || '₹ Price';
+      document.getElementById('art-facts').innerText = `${beds ? beds + ' • ' : ''}${area ? area + ' • ' : ''}${addr}`;
+      document.getElementById('art-agent-name').innerText = agent || 'Agent Name';
+      document.getElementById('art-brokerage').innerText = `${brokerage || 'Brokerage'} · RERA Verified`;
+      document.getElementById('top-design-name').value = title || 'Untitled Design';
+
+      // Validate Gate
+      const gatePill = document.getElementById('gate-indicator');
+      const gateText = document.getElementById('gate-text');
+      const genBtn = document.getElementById('btn-generate');
+
+      const missing = [];
+      if (!title) missing.push('Headline');
+      if (!addr) missing.push('Address');
+      if (!price) missing.push('Price');
+
+      if (missing.length === 0) {
+        gatePill.className = 'flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-mono bg-emerald-50 text-emerald-800 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800';
+        gatePill.innerHTML = '<i data-lucide="check" class="w-3.5 h-3.5"></i> <span>Listing Complete &amp; Verified</span>';
+        genBtn.disabled = false;
+      } else {
+        gatePill.className = 'flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-mono bg-amber-50 text-amber-800 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800';
+        gatePill.innerHTML = `<i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i> <span>Add ${missing.join(' & ')} to generate</span>`;
+        genBtn.disabled = true;
+      }
+      lucide.createIcons();
+    }
+
+    function extractFieldsIntoForm(fields) {
+      Object.keys(fields).forEach((key, idx) => {
+        setTimeout(() => {
+          if (key === 'title') {
+            const el = document.getElementById('form-title');
+            el.value = fields[key];
+            el.classList.add('highlight-extracted');
+            setTimeout(() => el.classList.remove('highlight-extracted'), 1500);
+          }
+          if (key === 'address') {
+            const el = document.getElementById('form-address');
+            el.value = fields[key];
+            el.classList.add('highlight-extracted');
+            setTimeout(() => el.classList.remove('highlight-extracted'), 1500);
+          }
+          if (key === 'price') {
+            const el = document.getElementById('form-price');
+            el.value = fields[key];
+            el.classList.add('highlight-extracted');
+            setTimeout(() => el.classList.remove('highlight-extracted'), 1500);
+          }
+          if (key === 'area') document.getElementById('form-area').value = fields[key];
+          if (key === 'beds') document.getElementById('form-beds').value = fields[key];
+          if (key === 'baths') document.getElementById('form-baths').value = fields[key];
+          syncListingFields();
+        }, idx * 150);
+      });
+    }
+
+    function switchPhotoRef(idx, el) {
+      const photos = [
+        'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=85',
+        'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=85',
+        'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=85'
+      ];
+      document.getElementById('artboard-hero-bg').style.backgroundImage = `url('${photos[idx - 1]}')`;
+      showToast(`Selected Photo #${idx} as style reference`);
+    }
+
+    // CANVAS INTERACTIONS
+    function selectCanvasElement(elemId, event) {
+      if (event) event.stopPropagation();
+      deselectAllElements();
+
+      state.selectedElement = elemId;
+      const target = document.getElementById(`el-${elemId}`);
+      if (target) target.classList.add('active-selected');
+
+      // Highlight left sidebar layer
+      const layer = document.getElementById(`layer-item-${elemId}`);
+      if (layer) layer.className = 'flex items-center justify-between px-2 py-1.5 rounded-md text-xs bg-primary/10 text-primary border border-primary/30 font-semibold cursor-pointer';
+
+      // Position floating toolbar
+      const fb = document.getElementById('floating-toolbar');
+      fb.style.display = 'flex';
+
+      setAssistantState('element', elemId);
+
+      if (elemId === 'headline') {
+        setAssistantChips([
+          { label: 'Punchier headline', action: () => updateElementText('Spectacular Sea-Facing Penthouse') },
+          { label: 'Shorter', action: () => updateElementText('Bandra Seaside Villa') },
+          { label: 'Luxury Tone', action: () => updateElementText('The Crown Penthouse · Bandra West') }
+        ]);
+      } else if (elemId === 'pricechip') {
+        setAssistantChips([
+          { label: 'Add Price Negotiable', action: () => updateElementText('₹4.20 Cr (Negotiable)') },
+          { label: 'All-Inclusive', action: () => updateElementText('₹4.20 Cr All-In') }
+        ]);
+      } else if (elemId === 'facts') {
+        setAssistantChips([
+          { label: 'Add Sea View', action: () => updateElementText('3 BHK • Sea Facing • 1,850 sq ft • Bandra West') },
+          { label: 'Ready to Move', action: () => updateElementText('3 BHK • Ready to Move • 1,850 sq ft') }
+        ]);
+      }
+    }
+
+    function deselectAllElements() {
+      document.querySelectorAll('.canvas-el').forEach(el => el.classList.remove('active-selected'));
+      ['headline', 'pricechip', 'facts', 'agent'].forEach(k => {
+        const layer = document.getElementById(`layer-item-${k}`);
+        if (layer) layer.className = 'flex items-center justify-between px-2 py-1.5 rounded-md text-xs hover:bg-muted/70 cursor-pointer border border-transparent transition';
+      });
+      document.getElementById('floating-toolbar').style.display = 'none';
+      state.selectedElement = null;
+    }
+
+    function handleCanvasBgClick(e) {
+      if (!e.target.closest('.canvas-el') && !e.target.closest('#floating-toolbar')) {
+        deselectAllElements();
+        setAssistantState('placed');
+      }
+    }
+
+    function updateElementText(newText) {
+      if (!state.selectedElement) return;
+      if (state.selectedElement === 'headline') {
+        document.getElementById('art-headline').innerText = newText;
+        document.getElementById('form-title').value = newText;
+      } else if (state.selectedElement === 'pricechip') {
+        document.getElementById('art-price').innerText = newText;
+        document.getElementById('form-price').value = newText;
+      } else if (state.selectedElement === 'facts') {
+        document.getElementById('art-facts').innerText = newText;
+      }
+      showToast(`Updated element: "${newText}" (0 credits charged)`);
+    }
+
+    function adjustFontSize(delta) {
+      const el = document.getElementById('tb-font-size');
+      let curr = parseInt(el.innerText) + delta;
+      el.innerText = curr;
+      if (state.selectedElement === 'headline') {
+        document.getElementById('art-headline').style.fontSize = `${curr}px`;
+      }
+    }
+
+    function showCanvasPlaced() {
+      document.getElementById('canvas-empty-state').style.display = 'none';
+      document.getElementById('artboard').style.display = 'block';
+      syncListingFields();
+    }
+
+    function showCanvasEmpty() {
+      document.getElementById('artboard').style.display = 'none';
+      document.getElementById('canvas-empty-state').style.display = 'flex';
+      deselectAllElements();
+    }
+
+    function resetCanvasState() {
+      showCanvasEmpty();
+      showToast('Canvas reset to empty state');
+    }
+
+    // GENERATION PIPELINE
+    function runGenerationPipeline() {
+      if (state.credits <= 0) {
+        showToast('Insufficient credit balance');
+        return;
+      }
+
+      const spinner = document.getElementById('generation-spinner-modal');
+      const stepTitle = document.getElementById('spinner-step-title');
+      spinner.style.display = 'flex';
+
+      const steps = [
+        '1. Planning visual layout from listing data...',
+        '2. Rendering high-res typography & scene...',
+        '3. Composing agent brand furniture...'
+      ];
+
+      steps.forEach((s, idx) => {
+        setTimeout(() => { stepTitle.innerText = s; }, idx * 450);
+      });
+
+      setTimeout(() => {
+        spinner.style.display = 'none';
+        state.credits -= 1;
+        document.getElementById('credit-count').innerText = `${state.credits} Credits`;
+        document.getElementById('variations-modal').style.display = 'flex';
+        showToast('Generated 3 variations! Pick one for your canvas.', '🎉');
+      }, 1500);
+    }
+
+    function selectVariationCard(num) {
+      showToast(`Selected Variation #${num}`);
+    }
+
+    function useChosenVariation(num) {
+      document.getElementById('variations-modal').style.display = 'none';
+      switchPhotoRef(num);
+      showCanvasPlaced();
+      showToast('Placed design onto canvas! Click any text to edit.', '✅');
+      setAssistantState('placed');
+      appendAssistantMessage('Design placed on canvas! Click on <b>Headline</b>, <b>Price</b>, or <b>Agent</b> to edit for <b>0 credits</b>.');
+      setAssistantChips([
+        { label: '✏️ Select Headline', action: () => selectCanvasElement('headline') },
+        { label: '🏷️ Select Price Chip', action: () => selectCanvasElement('pricechip') },
+        { label: '📱 Export Instagram Story', action: () => setCanvasRatio('9:16') }
+      ]);
+    }
+
+    // ASSISTANT CHAT SYSTEM
+    function setAssistantState(mode, target = '') {
+      const title = document.getElementById('assistant-header-title');
+      const sub = document.getElementById('assistant-header-subtitle');
+      const banner = document.getElementById('assistant-context-text');
+      const cost = document.getElementById('chat-cost-pill');
+
+      if (mode === 'drafting') {
+        title.innerText = 'Listing Copilot';
+        sub.innerText = 'Drafting Mode';
+        banner.innerText = 'Drop seller text to auto-fill the Listing form.';
+        cost.innerHTML = 'Assistant writes to form · <b>0 Credits</b>';
+      } else if (mode === 'element') {
+        title.innerText = `Element AI Editor`;
+        sub.innerText = `Editing: ${target.toUpperCase()}`;
+        banner.innerText = `Targeted modifications on [${target}] for 0 credits.`;
+        cost.innerHTML = 'Canvas element edit · <b>0 Credits (Free)</b>';
+      } else if (mode === 'placed' || mode === 'campaign') {
+        title.innerText = 'Campaign Copilot';
+        sub.innerText = 'Campaign Expansion';
+        banner.innerText = 'Generate collateral from the same Listing without retyping.';
+        cost.innerHTML = 'Reuses listing data · <b>No retyping</b>';
+      }
+    }
+
+    function setAssistantChips(chips) {
+      const bar = document.getElementById('chat-chips-bar');
+      bar.innerHTML = '';
+      chips.forEach(c => {
+        const btn = document.createElement('button');
+        btn.className = 'px-2.5 py-1 text-[11px] font-medium rounded-full border border-purple-300 dark:border-purple-800 bg-card text-purple-900 dark:text-purple-300 hover:bg-purple-100 whitespace-nowrap shadow-xs transition';
+        btn.innerText = c.label;
+        btn.onclick = c.action;
+        bar.appendChild(btn);
+      });
+    }
+
+    function appendUserMessage(text) {
+      const thread = document.getElementById('chat-thread');
+      const div = document.createElement('div');
+      div.className = 'flex flex-col gap-1 items-end max-w-[85%] ml-auto';
+      div.innerHTML = `
+        <div class="bg-purple-600 text-white p-2.5 rounded-2xl rounded-tr-xs text-xs leading-relaxed shadow-xs">${text}</div>
+        <span class="text-[9px] font-mono text-muted-foreground">${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
+      `;
+      thread.appendChild(div);
+      thread.scrollTop = thread.scrollHeight;
+    }
+
+    function appendAssistantMessage(html) {
+      const thread = document.getElementById('chat-thread');
+      const div = document.createElement('div');
+      div.className = 'flex flex-col gap-1 items-start max-w-[85%]';
+      div.innerHTML = `
+        <div class="bg-muted p-2.5 rounded-2xl rounded-tl-xs text-xs text-foreground leading-relaxed shadow-xs">${html}</div>
+        <span class="text-[9px] font-mono text-muted-foreground">${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
+      `;
+      thread.appendChild(div);
+      thread.scrollTop = thread.scrollHeight;
+    }
+
+    function submitChatMessage() {
+      const input = document.getElementById('chat-input-field');
+      const val = input.value.trim();
+      if (!val) return;
+
+      appendUserMessage(val);
+      input.value = '';
+
+      setTimeout(() => {
+        if (state.selectedElement) {
+          if (val.toLowerCase().includes('short') || val.toLowerCase().includes('punch')) {
+            updateElementText('Bandra Seaside Villa');
+            appendAssistantMessage(`Updated <b>${state.selectedElement}</b> to be punchier for 0 credits.`);
+          } else {
+            updateElementText(val);
+            appendAssistantMessage(`Updated <b>${state.selectedElement}</b>.`);
+          }
+        } else {
+          if (val.toLowerCase().includes('open house')) {
+            triggerCampaignOpenHouse();
+          } else if (val.toLowerCase().includes('price drop')) {
+            triggerCampaignPriceDrop();
+          } else {
+            appendAssistantMessage('I updated the Listing fields on the right. Click <b>"Create 3 Designs"</b> to generate.');
+            syncListingFields();
+          }
+        }
+      }, 400);
+    }
+
+    function suggestHeadline() {
+      const titles = [
+        'Contemporary Sea-Facing Penthouse',
+        'Bespoke Oceanfront Residence at Bandra',
+        'Iconic Penthouse Suite · Carter Road'
+      ];
+      const pick = titles[Math.floor(Math.random() * titles.length)];
+      document.getElementById('form-title').value = pick;
+      syncListingFields();
+      showToast(`Suggested headline: "${pick}"`);
+    }
+
+    function triggerCampaignOpenHouse() {
+      document.getElementById('form-goal').value = 'Open House';
+      document.getElementById('form-title').value = 'Open House · Sunday 2 PM - 5 PM';
+      syncListingFields();
+      runGenerationPipeline();
+      showToast('Generated Open House campaign variation!');
+    }
+
+    function triggerCampaignPriceDrop() {
+      document.getElementById('form-goal').value = 'Price Drop';
+      document.getElementById('form-price').value = '₹3.95 Cr (Reduced)';
+      document.getElementById('form-title').value = 'Huge Price Reduction · Bandra Penthouse';
+      syncListingFields();
+      runGenerationPipeline();
+      showToast('Updated Price Drop graphic with 1-click!');
+    }
+
+    function openAssistantForSelectedElement() {
+      toggleAIChat(true);
+      if (state.selectedElement) {
+        setAssistantState('element', state.selectedElement);
+      }
+    }
+  </script>
+</body>
+</html>
