@@ -183,10 +183,10 @@ be hardened.
 
 | Milestone | Scope | Target | Status |
 |-----------|-------|--------|:------:|
-| [M-PAY-01-pricing-foundation](milestones/M-PAY-01-pricing-foundation.md) | Config model, tiers, editable-limit relabel, drift-bug fix | TBD | 🔲 |
-| [M-PAY-02-discount-architecture](milestones/M-PAY-02-discount-architecture.md) | PricingCampaign model, price resolution, annual formula, Founding 100 seed | TBD | 🔲 |
-| [M-PAY-03-billing-integration](milestones/M-PAY-03-billing-integration.md) | Razorpay Plan IDs, checkout `offer_id`, webhook/entitlement mapping | TBD | 🔲 |
-| [M-PAY-04-pricing-page-relaunch](milestones/M-PAY-04-pricing-page-relaunch.md) | Card redesign, founding UX, responsive, comparison section | TBD | 🔲 |
+| [M-PAY-01-pricing-foundation](milestones/M-PAY-01-pricing-foundation.md) | Config model, tiers, editable-limit relabel, drift-bug fix | 2026-10-21 | ✅ **Done** 6/6 |
+| [M-PAY-02-discount-architecture](milestones/M-PAY-02-discount-architecture.md) | PricingCampaign model, price resolution, annual formula, Founding 100 seed | TBD | 🟡 5/7 — founding ⏸ + Gate 4 ⏸ |
+| [M-PAY-03-billing-integration](milestones/M-PAY-03-billing-integration.md) | Razorpay Plan IDs, checkout promo-Plan selection, webhook/entitlement mapping | TBD | 🟡 4/6 — founding ⏸ + Gate 4 ⏸ |
+| [M-PAY-04-pricing-page-relaunch](milestones/M-PAY-04-pricing-page-relaunch.md) | Card redesign, founding UX, responsive, comparison section | 2026-10-21 | ✅ **Done** 8/8 |
 
 ---
 
@@ -200,10 +200,10 @@ be hardened.
 | 1 | [US-PAY-105](stories/US-PAY-105/STORY.md) | PricingCampaign Prisma model + migration | F-PAY-02 | M-PAY-02 | S | — | ✅ (code) | — | V2 |
 | 1 | [US-PAY-107](stories/US-PAY-107/STORY.md) | Standing annual-discount formula (×10) | F-PAY-02 | M-PAY-02 | S | US-PAY-102 | ✅ (code) | — | **V1** |
 | 2 | [US-PAY-106](stories/US-PAY-106/STORY.md) | `getEffectivePrice()` resolution service | F-PAY-02 | M-PAY-02 | M | US-PAY-102, US-PAY-105 | ✅ (code) | — | V2 |
-| 1 | [US-PAY-109](stories/US-PAY-109/STORY.md) | New Razorpay Plan IDs for PRO/AGENCY tiers | F-PAY-03 | M-PAY-03 | S | US-PAY-102 | 🟡 (T0 human) | — | **V1** |
+| 1 | [US-PAY-109](stories/US-PAY-109/STORY.md) | New Razorpay Plan IDs for PRO/AGENCY tiers | F-PAY-03 | M-PAY-03 | S | US-PAY-102 | ✅ (code) | — | **V1** |
 | 3 | [US-PAY-108](stories/US-PAY-108/STORY.md) | ~~Founding Customer 100 campaign seed + Offer linkage~~ | F-PAY-02 | M-PAY-02 | M | US-PAY-105, US-PAY-106 | ⏭️ **Superseded** | — | V2 |
 | 2 | [US-PAY-111](stories/US-PAY-111/STORY.md) | Webhook/entitlement mapping for new tiers | F-PAY-03 | M-PAY-03 | S | US-PAY-109 | ✅ (code) | — | **V1** |
-| 2 | [US-PAY-110](stories/US-PAY-110/STORY.md) | Checkout selects the promo Plan server-side | F-PAY-03 | M-PAY-03 | M | US-PAY-106, US-PAY-109 | 🟡 (rescoped, code done) | — | V2 |
+| 2 | [US-PAY-110](stories/US-PAY-110/STORY.md) | Checkout selects the promo Plan server-side | F-PAY-03 | M-PAY-03 | M | US-PAY-106, US-PAY-109 | ✅ (code, rescoped) | — | V2 |
 | 1 | [US-PAY-112](stories/US-PAY-112/STORY.md) | Pricing page redesign — cards, founding badge, toggle | F-PAY-04 | M-PAY-04 | L | US-PAY-102, US-PAY-106 | ✅ (code) | — | V2 |
 | 2 | [US-PAY-113](stories/US-PAY-113/STORY.md) | Responsive layout + comparison section + messaging | F-PAY-04 | M-PAY-04 | S | US-PAY-112 | ✅ (code) | — | V2 |
 

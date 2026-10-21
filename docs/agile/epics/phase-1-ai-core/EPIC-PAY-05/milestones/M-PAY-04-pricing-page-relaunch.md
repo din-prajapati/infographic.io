@@ -9,11 +9,16 @@ updated: 2026-08-23
 
 > **Epic:** [EPIC-PAY-05](../EPIC.md)
 > **Feature:** F-PAY-04
-> **Status:** 🟡 In Progress — both stories code-complete; manual mobile/staging verification and
-> milestone PR still open (need a deployed environment, not available from an implementation
-> session)
+> **Status:** ✅ **Done — closed 2026-10-21. 8/8 acceptance criteria.** Both stories (US-PAY-112,
+> US-PAY-113) merged to `main`. The last open item was the mobile + desktop visual check, run
+> 2026-10-21 against deployed staging *and* production: zero horizontal overflow at both widths,
+> the comparison table confirmed scrolling inside its own 329px box, grids collapsing to a single
+> column at 375px, and [[BL-32]] confirmed inapplicable by measurement (this page renders no
+> `header` element). All three gates re-run rather than carried over — `npm run check` 0 errors,
+> 726 backend tests, 278 frontend tests.
 > **Target date:** TBD (deferred to V2 — see [EPIC.md](../EPIC.md) "Scope split")
-> **Branch:** `feat/pay/m-01-pricing-relaunch`
+> **Branch:** none — `feat/pay/m-01-pricing-relaunch` was never created; the stories landed on
+> `main` directly and are traceable by `git log --grep "<US-ID>"`.
 > **Version:** V2 — both stories deferred until after the first real ₹ transaction; also blocked
 > on capturing per-tier "5–8 key features" content, which currently exists only as "see chat
 > history" in the source PRD, not in any durable file

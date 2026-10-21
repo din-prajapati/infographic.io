@@ -9,11 +9,18 @@ updated: 2026-10-21
 
 > **Epic:** [EPIC-PAY-05](../EPIC.md)
 > **Feature:** F-PAY-02
-> **Status:** 🟡 In Progress — **no story is blocked.** US-PAY-105/106/107 code-complete
-> (manual/PR still open); US-PAY-108 ⏭️ **closed as superseded 2026-08-27**. Remaining work is
-> manual verification + the milestone PR.
+> **Status:** 🟡 **5/7 — no work remains, only two external blocks (2026-10-21).** All five stories
+> are code-complete and merged to `main`. The second-campaign criterion was verified *literally*
+> as the card demanded — 10 checks, 10 pass, driving the real services with no source edits. The
+> `PERCENT`/`FLAT` composition criterion was struck and replaced: it tested arithmetic the
+> 2026-08-27 rewrite deleted.
+>
+> **Open: (1) the Founding Customer 100 seed — ⏸ on hold by decision**, founding pricing is held
+> and this is a deferral, not a gap; **(2) Gate 4 — ⏸ blocked by [[BL-28]]**, the integration-test
+> database is unreachable, which blocks every backend story in the repo. Neither is payments work.
 > **Target date:** TBD
-> **Branch:** `feat/pay/m-01-pricing-relaunch`
+> **Branch:** none — `feat/pay/m-01-pricing-relaunch` was never created; the stories landed on
+> `main` directly and are traceable by `git log --grep "<US-ID>"`.
 > **Version:** **Mixed** — US-PAY-107 is V1 (ships before the first real ₹ transaction); US-PAY-105,
 > 106, 108 are V2 (deferred — generalized campaign engine, premature before real demand data). See
 > [EPIC.md](../EPIC.md) "Scope split."

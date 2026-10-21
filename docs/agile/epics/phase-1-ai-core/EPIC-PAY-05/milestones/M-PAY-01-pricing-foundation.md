@@ -9,10 +9,16 @@ updated: 2026-10-21
 
 > **Epic:** [EPIC-PAY-05](../EPIC.md)
 > **Feature:** F-PAY-01
-> **Status:** 🟡 In Progress — US-PAY-103/104 code-complete (manual/PR still open); US-PAY-102
-> re-opened 2026-08-23 for a real SOLO/TEAM gap, in progress (8/15 tasks)
+> **Status:** ✅ **Done — closed 2026-10-21. 6/6 acceptance criteria.** All three stories
+> (US-PAY-102, US-PAY-103, US-PAY-104) are code-complete and merged to `main`. The editable-design
+> allowance was verified on the *rendered* page at 375px and desktop, against deployed staging —
+> Free 0/3/trial · Solo ₹5,499/50/10 · Pro ₹10,999/100/25 · Team ₹21,999/200/60 ·
+> Agency ₹43,999/400/150, an exact match to `PLAN_CONFIG` and the PRD. Gate 1 green
+> (`npm run check` 0 errors, 726 backend tests). No milestone PR — the stories landed on `main`
+> piecemeal and are traceable by `git log --grep`; epic DoD amended to match.
 > **Target date:** TBD
-> **Branch:** `feat/pay/m-01-pricing-relaunch`
+> **Branch:** none — `feat/pay/m-01-pricing-relaunch` was never created; the stories landed on
+> `main` directly and are traceable by `git log --grep "<US-ID>"`.
 > **Version:** V1 — all 3 stories ship before the first real ₹ transaction (see [EPIC.md](../EPIC.md) "Scope split")
 
 ---

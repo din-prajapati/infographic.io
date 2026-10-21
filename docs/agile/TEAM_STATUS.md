@@ -19,7 +19,7 @@
 
 | Domain | Active Epic | Status | Blocked | Upcoming |
 |--------|-------------|--------|---------|----------|
-| [Payments (PAY)](#-payments-pay) | EPIC-PAY-01 ✅ · EPIC-PAY-05 🟡 | 🟡 **11/12 stories code-complete**, all 4 milestones 🟡 open on manual verification + PRs | Nothing code-blocked. PT-06 BROKERAGE deferred | One real ₹ checkout closes several stories at once (US-PAY-109/110/111 + US-LAUNCH-005 AC6) |
+| [Payments (PAY)](#-payments-pay) | EPIC-PAY-01 ✅ · EPIC-PAY-05 🟡 | 🟡 **12/12 stories code-complete. M-PAY-01 + M-PAY-04 closed 2026-10-21**; M-PAY-02 (5/7) and M-PAY-03 (4/6) have no work left | Founding pricing ⏸ on hold by decision · Gate 4 ⏸ [[BL-28]] (repo-wide) | Lift the hold *and* fix BL-28 and the epic closes. Fixing only BL-28 closes nothing |
 | [Design (DESIGN)](#-design--frontend-design) | EPIC-DESIGN-01 + EPIC-DESIGN-02 | 🟡 US-DESIGN-004 all 10 TCs pass (2026-09-07); US-DESIGN-003 5/6 ACs | Human visual spot-check on staging | Both close on that one spot-check |
 | [Auth (AUTH)](#-auth-auth) | EPIC-AUTH-01 | ✅ Done | — | Full invite flow post-MVP |
 | [Canvas Editor (EDIT)](#-canvas-editor-edit) | EPIC-EDIT-01 | ✅ Done | — | Batch upload Phase 3 |
@@ -39,6 +39,14 @@
 **Phase:** 1 (Revenue Strategy)
 
 ### Now (In Progress)
+> **Update 2026-10-21 — M-PAY-01 and M-PAY-04 are closed.** All twelve stories are
+> code-complete and merged; **no implementation work remains anywhere in EPIC-PAY-05.** M-PAY-04
+> (8/8) closed on a mobile + desktop visual pass against deployed staging and production; M-PAY-01
+> (6/6) closed on the same pass plus story traceability. M-PAY-02 (5/7) and M-PAY-03 (4/6) are each
+> held by exactly two things, neither of them payments work: **founding pricing is ⏸ on hold by
+> decision**, and **Gate 4 is ⏸ blocked by [[BL-28]]** across the whole repo. Plan objects were
+> re-audited against both deployed environments — production 8/8 LIVE, staging 8/8 TEST.
+>
 > **Correction 2026-09-08 — EPIC-PAY-05 is not "not started".** 11 of its 12 stories are
 > code-complete and merged to `main`; US-PAY-108 was superseded and closed 2026-08-27. All four
 > milestones sit 🟡 for the same reason: manual verification and PRs, not code. US-PAY-109's live

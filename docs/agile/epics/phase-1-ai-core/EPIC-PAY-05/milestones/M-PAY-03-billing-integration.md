@@ -9,26 +9,16 @@ updated: 2026-10-21
 
 > **Epic:** [EPIC-PAY-05](../EPIC.md)
 > **Feature:** F-PAY-03
-> **Status:** 🟡 In Progress — **no story is blocked.** US-PAY-109's T0 was never actually open:
-> all 8 live-mode Razorpay Plan objects exist and charge exactly what `PLAN_CONFIG` says, re-verified
-> against production 2026-09-08 by `npm run audit:razorpay-plans` (8 match · 0 wrong, LIVE mode).
-> The card carried "blocked on T0" for 16 days while the work sat finished in the dashboard.
-> US-PAY-111 code-complete (manual/PR still open); US-PAY-110 **rescoped 2026-08-27 and
-> code-complete** — its `offer_id` dependency on US-PAY-108 is gone, since a promo is now its own
-> Plan object.
+> **Status:** 🟡 **4/6 — no work remains, only two external blocks (2026-10-21).** All five stories
+> are code-complete and merged to `main`. Plan objects audited against both deployed environments'
+> own injected environments: production 8 match / 0 wrong (LIVE), staging 8 (TEST). The
+> client-supplied-amount criterion was amended — `offer_id` no longer exists — and holds in a
+> stronger form: `CreateSubscriptionDto` carries no price field at all. PRO/AGENCY entitlement on
+> `subscription.charged` is covered by test at the enforcement point.
 >
-> **Audited 2026-10-21 — two of the four substantive acceptance items are now closed.** AC2
-> (no client-supplied amount) and AC4 (PRO/AGENCY entitlement on `subscription.charged`) are
-> verified and ticked; AC2's wording was amended, since the `offer_id` mechanism it named no
-> longer exists. **AC1 needs two read-only operator commands** against staging's and production's
-> own environments — the TEST account is already clean, 8 match · 0 wrong. **AC3 is ⏸ on hold by
-> decision (2026-10-21): founding pricing is held, Buildographic sells at list price for now.** The
-> Founding Customer 100 campaign is correspondingly inert — no promo price authored in
-> `PLAN_CONFIG`, no `PricingCampaign` row, no promo Plan objects — which is expected, not a
-> defect. So **closing this milestone is a descope decision, not implementation.** The earlier claim
-> that all three stories waited on “a PR and one real checkout” was wrong on both halves: the
-> milestone branch does not exist (the stories landed on `main` piecemeal), and the checkout in
-> question is the one AC3 cannot stage. See Notes / Blockers.
+> **Open: (1) AC3, a founding-priced subscription — ⏸ on hold by decision**, the same deferral as
+> M-PAY-02's seed item; **(2) Gate 4 — ⏸ blocked by [[BL-28]]**, repo-wide. Neither is payments
+> work. US-PAY-110 remains **V2** scope.
 > **Target date:** TBD
 > **Branch:** none — `feat/pay/m-01-pricing-relaunch` was never created; US-PAY-109/110/111
 > landed on `main` directly. See Notes / Blockers.
