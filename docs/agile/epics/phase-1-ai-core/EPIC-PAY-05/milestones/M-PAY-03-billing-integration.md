@@ -9,16 +9,19 @@ updated: 2026-10-21
 
 > **Epic:** [EPIC-PAY-05](../EPIC.md)
 > **Feature:** F-PAY-03
-> **Status:** 🟡 **4/6 — no work remains, only two external blocks (2026-10-21).** All five stories
+> **Status:** 🟡 **5/6 — no work remains; one item, held by decision (2026-10-21).** All five stories
 > are code-complete and merged to `main`. Plan objects audited against both deployed environments'
 > own injected environments: production 8 match / 0 wrong (LIVE), staging 8 (TEST). The
 > client-supplied-amount criterion was amended — `offer_id` no longer exists — and holds in a
 > stronger form: `CreateSubscriptionDto` carries no price field at all. PRO/AGENCY entitlement on
 > `subscription.charged` is covered by test at the enforcement point.
 >
-> **Open: (1) AC3, a founding-priced subscription — ⏸ on hold by decision**, the same deferral as
-> M-PAY-02's seed item; **(2) Gate 4 — ⏸ blocked by [[BL-28]]**, repo-wide. Neither is payments
-> work. US-PAY-110 remains **V2** scope.
+> **Gate 4 now passes — [[BL-28]] was fixed 2026-10-21** (19 tests / 3 files against a real
+> database, no residue).
+>
+> **One thing is open: AC3, a founding-priced subscription — ⏸ on hold by decision**, the same
+> deferral as M-PAY-02's seed item. **Lift the hold and this milestone closes.** US-PAY-110 remains
+> **V2** scope.
 > **Target date:** TBD
 > **Branch:** none — `feat/pay/m-01-pricing-relaunch` was never created; US-PAY-109/110/111
 > landed on `main` directly. See Notes / Blockers.
@@ -183,10 +186,19 @@ activation recognizes the new tiers.
       | [US-PAY-111](../stories/US-PAY-111/STORY.md) | 4 |
 
       Epic DoD amended to match (see [EPIC.md](../EPIC.md)).
-- [ ] Verification gates pass (Gate 1 + Gate 4) — **Gate 1 ✅ 2026-10-21:** `npm run check`
-      (`tsc` + `tsc -p api/tsconfig.json`, 0 errors) and `npm run test:unit:backend`
-      (**726 passed / 52 files**). **Gate 4 ⏸ blocked by [[BL-28]]** — the integration-test
-      database is unreachable, so no backend story in this repo can run Gate 4 today.
+- [x] Verification gates pass (Gate 1 + Gate 4) — ✅ **both pass, 2026-10-21.**
+      **Gate 1:** `npm run check` (`tsc` + `tsc -p api/tsconfig.json`, 0 errors) and
+      `npm run test:unit:backend` (**726 passed / 52 files**).
+
+      **Gate 4 ✅ 2026-10-21 — [[BL-28]] is fixed.** `npx vitest run --config
+      vitest.integration.config.ts` → **19 passed / 3 files** against a real PostgreSQL database.
+      Row counts on the dev database were identical before and after the run (129 users, 128 orgs,
+      17 subscriptions, 173 infographics), so the scoped cleanup left no residue.
+
+      This milestone's own subscription behaviour is covered there by
+      `payments.service.integration.spec.ts` (4 tests) — PENDING written before the webhook fires,
+      promotion to ACTIVE with the org upgraded on `subscription.charged`, the prior subscription
+      cancelled on upgrade, and downgrade to FREE on `subscription.cancelled`.
 
 ---
 

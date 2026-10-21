@@ -9,15 +9,17 @@ updated: 2026-10-21
 
 > **Epic:** [EPIC-PAY-05](../EPIC.md)
 > **Feature:** F-PAY-02
-> **Status:** 🟡 **5/7 — no work remains, only two external blocks (2026-10-21).** All five stories
+> **Status:** 🟡 **6/7 — no work remains; one item, held by decision (2026-10-21).** All five stories
 > are code-complete and merged to `main`. The second-campaign criterion was verified *literally*
 > as the card demanded — 10 checks, 10 pass, driving the real services with no source edits. The
 > `PERCENT`/`FLAT` composition criterion was struck and replaced: it tested arithmetic the
 > 2026-08-27 rewrite deleted.
 >
-> **Open: (1) the Founding Customer 100 seed — ⏸ on hold by decision**, founding pricing is held
-> and this is a deferral, not a gap; **(2) Gate 4 — ⏸ blocked by [[BL-28]]**, the integration-test
-> database is unreachable, which blocks every backend story in the repo. Neither is payments work.
+> **Gate 4 now passes — [[BL-28]] was fixed 2026-10-21** and a 7-test integration spec was added
+> for the campaign services, so "Gate 4 for the new service" has something to run.
+>
+> **One thing is open: the Founding Customer 100 seed — ⏸ on hold by decision.** Founding pricing
+> is held, so this is a deferral, not a gap. **Lift the hold and this milestone closes.**
 > **Target date:** TBD
 > **Branch:** none — `feat/pay/m-01-pricing-relaunch` was never created; the stories landed on
 > `main` directly and are traceable by `git log --grep "<US-ID>"`.
@@ -212,7 +214,25 @@ frontend and checkout never compute price independently.
       | [US-PAY-108](../stories/US-PAY-108/STORY.md) | 7 |
 
       Epic DoD amended to match (see [EPIC.md](../EPIC.md)). US-PAY-108 is ⏭️ superseded (closed 2026-08-27, not shipped as written) — counted as resolved, not outstanding.
-- [ ] Verification gates pass (Gate 1 + Gate 4 for the new service)
+- [x] Verification gates pass (Gate 1 + Gate 4 for the new service) — ✅ **2026-10-21.**
+      **Gate 1:** `npm run check` (0 errors) · `npm run test:unit:backend` (726 passed / 52 files) ·
+      `npm run test:unit:client` (278 passed, 1 skipped / 17 files).
+
+      **Gate 4 ✅ 2026-10-21 — [[BL-28]] is fixed.** `npx vitest run --config
+      vitest.integration.config.ts` → **19 passed / 3 files** against a real PostgreSQL database.
+      Row counts on the dev database were identical before and after the run (129 users, 128 orgs,
+      17 subscriptions, 173 infographics), so the scoped cleanup left no residue.
+
+      **“For the new service” is now actually covered.** No integration spec existed for
+      `PricingCampaignService` / `PricingResolutionService`, so this criterion had nothing to run
+      even once the database worked. Added `api/tests/payments/pricing-campaign.integration.spec.ts`
+      — **7 tests** against a real database, covering what only a real database can show: the
+      single-active guard (a read-then-reject across two statements), `activateCampaign()`'s
+      transaction, and the redemption cap enforced in the `WHERE` clause — including **two
+      concurrent redemptions at the boundary, where exactly one succeeds**. It also pins the
+      invariant this milestone rests on: a live campaign with no authored price leaves all 8
+      tier/interval combinations at list. Cleanup is scoped to codes prefixed `ITEST_`, which no
+      real campaign code can match.
 
 ---
 
