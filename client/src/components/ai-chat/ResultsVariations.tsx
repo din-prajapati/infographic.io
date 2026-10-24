@@ -11,12 +11,45 @@ import {
   InfographicOrientation,
   previewAspectClass,
 } from '../../lib/aiGenerationSettings';
+import type { AiComposition, ResultVariation as ApiResultVariation } from '../../lib/api';
 
 export interface ResultVariation {
   id: string;
   previewUrl: string;
   title: string;
   description: string;
+  /**
+   * US-EDIT-012 — carried through from the API's `ResultVariation.composition`
+   * so the canvas knows whether this image is a plain background or a finished
+   * poster. This UI shape is a deliberate subset of the API one (note
+   * `previewUrl` vs `imageUrl`), and the mapping that builds it drops anything
+   * not named — which is how the AI Chat door initially missed the flag while
+   * Quick Generate had it.
+   *
+   * Undefined is legacy and reads as 'background'.
+   */
+  composition?: AiComposition;
+}
+
+/**
+ * API variation → UI variation.
+ *
+ * Extracted and exported purely so it can be tested. It was six inline lines
+ * in AIChatBox's completion handler, and because it names each field
+ * explicitly, adding `composition` to the API type did not add it here — the
+ * AI Chat door placed posters as backgrounds while Quick Generate placed them
+ * correctly, with nothing failing to say so. A named-field mapping silently
+ * drops every field added upstream after it was written; this one now has a
+ * test that fails when that happens again.
+ */
+export function toUiVariation(v: ApiResultVariation): ResultVariation {
+  return {
+    id: v.id,
+    previewUrl: v.imageUrl,
+    title: v.title,
+    description: v.description,
+    composition: v.composition,
+  };
 }
 
 interface ResultsVariationsProps {
