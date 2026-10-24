@@ -71,6 +71,7 @@ gated behind having already generated something.
 | [M-EDIT-01-editable-menu-surfacing](milestones/M-EDIT-01-editable-menu-surfacing.md) | Promote the existing renderMode toggle to a persistent, labeled entry point | 2026-08-26 | ✅ |
 | [M-EDIT-02-brand-layers](milestones/M-EDIT-02-brand-layers.md) | Agent brand furniture (logo, licence, headshot, QR) as real canvas layers | TBD | 🔲 |
 | [M-EDIT-03-single-editable-path](milestones/M-EDIT-03-single-editable-path.md) | Remove the pre-placement Flat/Editable toggle — one way to get editable text, on the canvas | TBD | 🟡 PR #49 |
+| [M-EDIT-04-ai-composition-over-template](milestones/M-EDIT-04-ai-composition-over-template.md) | An AI design placed over a template renders one set of property facts, not three — closes BL-27 | TBD | 🔲 |
 
 ---
 
@@ -83,6 +84,9 @@ gated behind having already generated something.
 | 3 | [US-EDIT-007](stories/US-EDIT-007/STORY.md) | Agent headshot + QR code | M-EDIT-02 | M | US-EDIT-006 | 🔲 | — |
 | 4 | [US-EDIT-008](stories/US-EDIT-008/STORY.md) | Editable quota badge + charge confirmation | M-EDIT-01 | M | — (deferred from US-EDIT-005 AC4) | 🔲 | — |
 | 5 | [US-EDIT-009](stories/US-EDIT-009/STORY.md) | Remove the pre-placement Flat/Editable toggle | M-EDIT-03 | M | — | 🟡 | [#49](https://github.com/din-prajapati/infographic.io/pull/49) |
+| 6 | [US-EDIT-011](stories/US-EDIT-011/STORY.md) | Persist the AI composition flag end to end | M-EDIT-04 | M | — | 🔲 | — |
+| 7 | [US-EDIT-012](stories/US-EDIT-012/STORY.md) | Branch the layer rule on composition, with one undo | M-EDIT-04 | M | US-EDIT-011 (contract only) | 🔲 | — |
+| 8 | [US-EDIT-013](stories/US-EDIT-013/STORY.md) | Remove the dead AI chat panel code | M-EDIT-04 | S | — | 🔲 | — |
 
 > **Revised 2026-08-21** — original scope was an in-place relabel of the existing `RightSidebar`
 > toggle (S-size). Revised after reviewing `design-preview-canvas-menu.html`: a floating
