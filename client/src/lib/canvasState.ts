@@ -380,8 +380,11 @@ export function splitElementsForAiBackground(
   // for every pre-existing element and the retained set is byte-for-byte what
   // it was before this story.
   const displacesSlots = composition === 'poster';
+  // `.trim()` rather than `.length > 0`: a slot of "" or "   " is a template
+  // authoring slip, not a declaration that this layer renders a listing fact.
+  // Treating whitespace as a real slot would silently delete the layer.
   const isSlotLayer = (el: CanvasElement) =>
-    displacesSlots && typeof el.slot === 'string' && el.slot.length > 0;
+    displacesSlots && typeof el.slot === 'string' && el.slot.trim().length > 0;
 
   return {
     priorAiImage: elements.find(isAiBackground),
