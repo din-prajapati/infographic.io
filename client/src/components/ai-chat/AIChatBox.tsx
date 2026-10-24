@@ -31,7 +31,6 @@ import { GenerationProgress, GenerationStep } from "./GenerationProgress";
 import { ResultsVariations, ResultVariation } from "./ResultsVariations";
 import { ConversationMessages } from "./ConversationMessages";
 import { ConversationHistoryView } from "./ConversationHistoryView";
-import { EnhancedSuggestionsPanel } from "./EnhancedSuggestionsPanel";
 import { GenerationProgressBar } from "./GenerationProgressBar";
 import {
   loadTestConversations,
@@ -207,7 +206,6 @@ export function AIChatBox({
   // Built but intentionally not surfaced — deferred to Phase 2 (EPIC-AI-01
   // conversational core) per 2026-07-07 AI Chat Panel audit. No trigger sets
   // this true yet; that is deliberate, not an oversight.
-  const [showEnhancedSuggestions, setShowEnhancedSuggestions] = useState(false);
 
   // NEW: History view state
   const [showHistoryView, setShowHistoryView] = useState(false);
@@ -1169,11 +1167,6 @@ export function AIChatBox({
     favoriteMutation.mutate({ id: conversationId, isFavorite: !conv.isFavorite });
   };
 
-  const handleEnhancedSuggestionClick = (suggestion: string) => {
-    setState((prev) => ({ ...prev, inputValue: suggestion }));
-    setShowEnhancedSuggestions(false);
-  };
-
   const handleCategoryTemplateSelect = (template: Template) => {
     setState((prev) => ({ ...prev, inputValue: `Create a ${template.name} design` }));
     setShowCategoryBrowse(false);
@@ -1530,13 +1523,6 @@ export function AIChatBox({
             onClose={() => setShowImageUploadPanel(false)}
             onImageUpload={handleImageUpload}
             buttonRef={paperclipRef}
-          />
-          <EnhancedSuggestionsPanel
-            isOpen={showEnhancedSuggestions}
-            onClose={() => setShowEnhancedSuggestions(false)}
-            onSuggestionClick={handleEnhancedSuggestionClick}
-            propertyType={propertyType}
-            priceRange={priceRange}
           />
 
           {/* Hidden file input — triggered by the 📎 paperclip button (AC1, AC2) */}
