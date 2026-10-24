@@ -249,6 +249,34 @@ describe('splitElementsForAiBackground — US-EDIT-012 composition branch', () =
 
   // AC1 — an empty-string slot is not a slot. Guards against a template author
   // writing `slot: ""` and silently losing the layer.
+  // Raised by the US-EDIT-012 cross-model verification pass: whitespace is a
+  // template authoring slip, not a declaration that a layer renders a fact.
+  it('does not treat a whitespace-only slot as a fact layer', () => {
+    const blank = { ...textEl('ws-slot'), slot: '   ' } as unknown as CanvasElement;
+    const { retained, discardedSlots } = splitElementsForAiBackground([aiImage('ai-gen-1'), blank], 'poster');
+    expect(retained.map((el) => el.id)).toEqual(['ws-slot']);
+    expect(discardedSlots).toEqual([]);
+  });
+
+  // Also raised by verification: replacing a poster with another poster must
+  // still leave a single-step undo back to the pre-placement canvas.
+  it('poster replacing a poster: one undo still returns the original canvas', () => {
+    const before = canvas();
+    useCanvasStore.setState({ elements: before, history: { past: [], future: [] } });
+
+    for (const gen of ['ai-gen-2', 'ai-gen-3']) {
+      const store = useCanvasStore.getState();
+      const { retained } = splitElementsForAiBackground(store.elements, 'poster');
+      store.pushToHistory(store.elements);
+      store.loadCanvas({ elements: [aiImage(gen), ...retained], selectedElementIds: [] });
+    }
+
+    expect(useCanvasStore.getState().elements.map((el) => el.id)).toEqual(['ai-gen-3', 'template-logo', 'user-note']);
+    useCanvasStore.getState().undo();
+    expect(useCanvasStore.getState().elements.map((el) => el.id)).toEqual(['ai-gen-2', 'template-logo', 'user-note']);
+    useCanvasStore.getState().undo();
+    expect(useCanvasStore.getState().elements.map((el) => el.id)).toEqual(before.map((el) => el.id));
+  });
   it('does not treat an empty-string slot as a fact layer', () => {
     const blank = { ...textEl('blank-slot'), slot: '' } as unknown as CanvasElement;
     const { retained } = splitElementsForAiBackground([aiImage('ai-gen-1'), blank], 'poster');
