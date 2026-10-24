@@ -252,11 +252,34 @@ Lane 1 first — Lane 2's deletions are inert, so a conflict there is cheaper to
 than the implementer produces a green tick that means nothing. Gemini needs no worktree and no
 hooks — it only reads.
 
+### Two prerequisites, both learned the hard way on 2026-10-24
+
+**1 · Auth must be `oauth-personal`, or Pro is unreachable.** A Google AI Pro subscription attaches
+to the *Google account*; the CLI only reaches it by logging in with Google. `gemini-api-key` auth
+bills against a different surface entirely — the Gemini Developer API — where Pro models sit at
+`limit: 0` on the free tier and return 429 regardless of what you are subscribed to. Check first:
+
+```bash
+cat ~/.gemini/settings.json          # security.auth.selectedType
+```
+
+If it reads `gemini-api-key`, run `gemini` and use `/auth` → **Login with Google**. Valid values are
+`oauth-personal`, `gemini-api-key`, `vertex-ai`, `cloud-shell`.
+
+**2 · The diff goes on stdin, not in `-p`.** A real milestone diff is ~80KB, which exceeds the
+Windows argv limit and fails with `Argument list too long`. The CLI appends `-p` to anything on
+stdin, so pipe the payload and keep `-p` for the instruction — as the command below does.
+
 ```bash
 cd D:/Dinesh/DCloud/GITDrive/Work/Products/InfographicEditor-Unified
 S=docs/agile/epics/phase-1-ai-core/EPIC-EDIT-03/stories
 
-gemini --model=<STRONG-MODEL> -p "$(cat <<EOF
+# Build the payload once, then pipe it — see prerequisite 2.
+{ sed -n '/## Acceptance Criteria/,/## Out of Scope/p' $S/US-EDIT-01{1,2,3}/STORY.md
+  echo "=== DIFF ==="; git diff main...HEAD -- client/src api/src api/scripts api/tests
+} > /tmp/verify-input.txt
+
+cat /tmp/verify-input.txt | gemini -m gemini-3-pro-preview -p "$(cat <<EOF
 You are an independent verifier. You did not write this code. Report findings only — make no
 edits, propose no refactors, and do not review anything outside the diff below.
 
