@@ -35,7 +35,7 @@ export interface PromptSuggestion {
   previewImage: string;
 }
 
-import type { ComposedDesign } from '../../lib/api';
+import type { AiComposition, ComposedDesign } from '../../lib/api';
 
 export interface Template {
   id: string;
@@ -47,6 +47,16 @@ export interface Template {
   isAiVariation?: boolean;
   /** Layout used when this variation was generated */
   aiOrientation?: 'landscape' | 'portrait' | 'square';
+  /**
+   * US-EDIT-012 — whether the generated image is a plain background or a
+   * finished poster. Carried from `ResultVariation.composition` by whoever
+   * builds this Template, and read by CenterCanvas when it places the raster.
+   *
+   * Without it the AI Chat door would place posters as backgrounds while Quick
+   * Generate placed them correctly, leaving BL-27 fixed on one route only.
+   * Undefined is legacy and reads as 'background'.
+   */
+  aiComposition?: AiComposition;
   isPopular?: boolean;
   emoji: string;
   /**

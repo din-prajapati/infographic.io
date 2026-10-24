@@ -176,3 +176,109 @@ describe('useCanvasStore history — US-AI-053 AC2', () => {
     expect(useCanvasStore.getState().elements.map((el) => el.id)).toEqual(['ai-gen-2']);
   });
 });
+
+// ─── US-EDIT-012 (BL-27) — the composition branch ────────────────────────────
+
+/** A template's own fact layer: carries a slot tag, which is what makes it a duplicate. */
+function slotText(id: string, slot: string): TextElement {
+  return { ...textEl(id), slot } as unknown as TextElement;
+}
+
+/**
+ * BL-27: an AI poster already renders the listing facts into its pixels, so the
+ * template's own slot-tagged layers sitting on top of one show the same facts
+ * twice. These assert the branch that fixes it, and — more importantly — the
+ * two directions it must NOT change: a background, and a legacy element with no
+ * composition at all.
+ */
+describe('splitElementsForAiBackground — US-EDIT-012 composition branch', () => {
+  const canvas = (): CanvasElement[] => [
+    aiImage('ai-gen-1'),
+    templateImage('template-logo'),
+    slotText('tpl-price', 'property.price'),
+    slotText('tpl-headline', 'property.headline'),
+    textEl('user-note'),
+  ];
+
+  // TC-EDIT-012-01 · AC1
+  it("poster: discards the template's slot-tagged fact layers", () => {
+    const { retained, discardedSlots } = splitElementsForAiBackground(canvas(), 'poster');
+
+    expect(retained.map((el) => el.id)).toEqual(['template-logo', 'user-note']);
+    expect(discardedSlots).toEqual(['property.price', 'property.headline']);
+  });
+
+  // TC-EDIT-012-05 · AC1 — the untagged user element is the control. It is not a
+  // listing fact and duplicates nothing in the poster, so it must survive.
+  it('poster: a user\'s own untagged text box survives', () => {
+    const { retained } = splitElementsForAiBackground(canvas(), 'poster');
+    expect(retained.map((el) => el.id)).toContain('user-note');
+  });
+
+  // AC1 / D1 — edit state is explicitly NOT the discriminator. A slot the user
+  // typed into goes too: keeping it is exactly how BL-27 reproduces.
+  it('poster: discards a slot layer even when the user has edited it', () => {
+    const edited = { ...slotText('tpl-price', 'property.price'), text: '₹1.85 Cr' };
+    const { retained } = splitElementsForAiBackground(
+      [aiImage('ai-gen-1'), edited as unknown as CanvasElement], 'poster',
+    );
+    expect(retained).toHaveLength(0);
+  });
+
+  // TC-EDIT-012-02 · AC2 — the real-photo path is untouched.
+  it("background: retains everything, exactly as before this story", () => {
+    const withFlag = splitElementsForAiBackground(canvas(), 'background');
+    const legacy = splitElementsForAiBackground(canvas());
+
+    expect(withFlag.retained.map((el) => el.id))
+      .toEqual(['template-logo', 'tpl-price', 'tpl-headline', 'user-note']);
+    expect(withFlag.discardedSlots).toEqual([]);
+    // The two must be identical — that equivalence is AC3.
+    expect(withFlag.retained.map((el) => el.id)).toEqual(legacy.retained.map((el) => el.id));
+  });
+
+  // TC-EDIT-012-03 · AC3 / AC6 — the legacy path, and the one that protects the
+  // 181 already-saved designs. Absent must never resolve to 'poster'.
+  it('absent composition behaves as background, never as poster', () => {
+    const { retained, discardedSlots } = splitElementsForAiBackground(canvas(), undefined);
+
+    expect(discardedSlots).toEqual([]);
+    expect(retained.map((el) => el.id))
+      .toEqual(['template-logo', 'tpl-price', 'tpl-headline', 'user-note']);
+  });
+
+  // AC1 — an empty-string slot is not a slot. Guards against a template author
+  // writing `slot: ""` and silently losing the layer.
+  it('does not treat an empty-string slot as a fact layer', () => {
+    const blank = { ...textEl('blank-slot'), slot: '' } as unknown as CanvasElement;
+    const { retained } = splitElementsForAiBackground([aiImage('ai-gen-1'), blank], 'poster');
+    expect(retained.map((el) => el.id)).toEqual(['blank-slot']);
+  });
+
+  // TC-EDIT-012-06 · AC7 — the US-AI-053 singleton guarantee survives on the
+  // poster branch too, not just the background one.
+  it('poster: still leaves no prior AI background in the retained set', () => {
+    const { retained, priorAiImage } = splitElementsForAiBackground(canvas(), 'poster');
+    expect(priorAiImage?.id).toBe('ai-gen-1');
+    expect(retained.some((el) => (el as ImageElement).isAiImport)).toBe(false);
+  });
+
+  // TC-EDIT-012-04 · AC5 — one Undo restores the discarded fact layers. D2 says
+  // no property-store write happens, so the canvas snapshot is the whole undo.
+  it('TC-04: one undo restores the layers a poster discarded', () => {
+    const before = canvas();
+    useCanvasStore.setState({ elements: before, history: { past: [], future: [] } });
+
+    const store = useCanvasStore.getState();
+    const { retained } = splitElementsForAiBackground(before, 'poster');
+    store.pushToHistory(before);
+    store.loadCanvas({ elements: [aiImage('ai-gen-2'), ...retained], selectedElementIds: [] });
+
+    expect(useCanvasStore.getState().elements.map((el) => el.id))
+      .toEqual(['ai-gen-2', 'template-logo', 'user-note']);
+
+    useCanvasStore.getState().undo();
+
+    expect(useCanvasStore.getState().elements.map((el) => el.id)).toEqual(before.map((el) => el.id));
+  });
+});

@@ -112,6 +112,10 @@ export function CenterCanvas({ isPreviewMode = false }: CenterCanvasProps) {
           template.previewImage,
           template.name,
           template.aiOrientation,
+          // US-EDIT-012 — the AI Chat door. Undefined until AIChatBox carries
+          // the variation's composition onto the Template it builds; undefined
+          // reads as 'background', which is today's behaviour.
+          template.aiComposition,
         );
         if (success) {
           setIsAIChatExpanded(false);
