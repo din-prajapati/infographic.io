@@ -28,7 +28,7 @@ import { TemplateCategoryView } from "./TemplateCategoryView";
 import { AISuggestionsPanel } from "./AISuggestionsPanel";
 import { ImageUploadPanel } from "./ImageUploadPanel";
 import { GenerationProgress, GenerationStep } from "./GenerationProgress";
-import { ResultsVariations, ResultVariation } from "./ResultsVariations";
+import { ResultsVariations, ResultVariation, toUiVariation } from "./ResultsVariations";
 import { ConversationMessages } from "./ConversationMessages";
 import { ConversationHistoryView } from "./ConversationHistoryView";
 import { GenerationProgressBar } from "./GenerationProgressBar";
@@ -360,14 +360,11 @@ export function AIChatBox({
       setGenerationSteps(completedSteps);
       setCurrentStep(completedSteps.length - 1);
 
-      const uiVariations: ResultVariation[] = variations.map(
-        (v: ApiResultVariation) => ({
-          id: v.id,
-          previewUrl: v.imageUrl,
-          title: v.title,
-          description: v.description,
-        }),
-      );
+      // US-EDIT-012 — the mapping lives in ResultsVariations.tsx so it can be
+      // tested. Inline and field-by-field, it silently dropped `composition`
+      // when that was added upstream, which left this door placing posters as
+      // backgrounds while Quick Generate placed them correctly.
+      const uiVariations: ResultVariation[] = variations.map(toUiVariation);
 
       setResultVariations(uiVariations);
       // Pair the results with their generation for the editable Edit path —
@@ -1119,6 +1116,11 @@ export function AIChatBox({
         previewImage: variation.previewUrl,
         isAiVariation: true,
         aiOrientation: generationOrientation,
+        // US-EDIT-012 — the last hop of the AI Chat door. CenterCanvas reads
+        // this and passes it to loadAiVariationToCanvas, so a poster placed
+        // from the chat now discards the template's duplicate fact layers
+        // exactly as one placed from Quick Generate does.
+        aiComposition: variation.composition,
         emoji: "🎨",
       };
       onTemplateLoad(template);
