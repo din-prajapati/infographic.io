@@ -84,11 +84,18 @@ its own; US-EDIT-012 is what consumes it.
 - [ ] **AC6 [happy-path]:** `ImageElement` in `client/src/lib/canvasTypes.ts` declares
       `aiComposition?: AiComposition`. Declaring it here — not in the canvas lane — is what lets
       Lane 1 and Lane 2 fork without either owning a shared type.
-- [ ] **AC7 [happy-path]:** `property.price` and `property.headline` carry a `slot` tag on all five
-      templates in `api/scripts/data/premium-templates.data.ts` (price is currently tagged on 3 of
-      5, headline on 4 of 5), so US-EDIT-012's rule has complete coverage to act on. **This is a
-      hard dependency of US-EDIT-012 AC1, not a peer task** — it is why that story cannot start
-      until this one merges.
+- [ ] **AC7 [happy-path]:** Every text element in `api/scripts/data/premium-templates.data.ts` that
+      renders a listing or agent fact carries a `slot` tag, so US-EDIT-012's discard rule can see
+      all of them. Verified per template, not assumed: a template that legitimately has no price
+      is not a gap.
+
+      **Scope corrected 2026-10-24.** An earlier draft asserted `property.price` was missing on 2
+      of 5 templates and required tagging there. That was wrong — *Market Report — Email Header*
+      carries only `report.*` slots and has no listing price by design, and *MLS Listing Sheet* has
+      no price element at all (it has `property.specs` and `property.description`). **There is no
+      untagged price layer standing on any template.** This AC is therefore a verification pass
+      that tags only genuine gaps. Whether MLS Listing Sheet *should* show a price is a product
+      question for a separate story, not a BL-27 fix.
 
 ---
 
@@ -113,7 +120,7 @@ its own; US-EDIT-012 is what consumes it.
   - `api/src/modules/infographics/controllers/generations.controller.ts` — return on variations
   - `client/src/lib/api.ts` — `AiComposition`, `ResultVariation.composition?`
   - `client/src/lib/canvasTypes.ts` — `ImageElement.aiComposition?` (AC6)
-  - `api/scripts/data/premium-templates.data.ts` — close the slot-tag gaps (AC7)
+  - `api/scripts/data/premium-templates.data.ts` — verify slot coverage, tag only genuine gaps (AC7)
   - `api/tests/` — new specs
 
 ---
@@ -134,7 +141,7 @@ its own; US-EDIT-012 is what consumes it.
 | TC-EDIT-011-02 | Unit | P0 | Given a generate request with no `photoReference`, When the orchestrator runs, Then `propertyData.composition === 'poster'` | 🔲 | |
 | TC-EDIT-011-03 | Unit | P0 | Given a row whose `propertyData` has no `composition`, When variations are fetched, Then the field is absent and no error is thrown | 🔲 | |
 | TC-EDIT-011-04 | Unit | P1 | Given a generation that fails after creation, When the row is read, Then `composition` is present | 🔲 | |
-| TC-EDIT-011-05 | Unit | P1 | Given the five seeded templates, When slot tags are enumerated, Then `property.price` and `property.headline` appear on all five | 🔲 | |
+| TC-EDIT-011-05 | Unit | P1 | Given the five seeded templates, When every text element is enumerated, Then each one rendering a listing or agent fact carries a `slot` tag (a template with no such element is not a gap) | 🔲 | |
 | TC-EDIT-011-06 | Unit | P0 | Given the merged Foundation, When `npm run check` runs across client and api, Then `AiComposition` resolves from both sides of the contract | 🔲 | |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked

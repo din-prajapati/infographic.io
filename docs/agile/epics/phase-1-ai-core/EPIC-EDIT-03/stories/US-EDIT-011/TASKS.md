@@ -66,12 +66,21 @@ has no record of what the first attempt produced.
 - **Type:** `test` · **AC(s):** AC1, AC2, AC3, AC5
 - Three cases minimum: with photo, without photo, and a legacy row with no stored value.
 
-### T4 — Close the slot-tag gaps
+### T4 — Verify slot coverage, tag only genuine gaps
 - **File:** `api/scripts/data/premium-templates.data.ts`
 - **Type:** `fix` · **AC(s):** AC7
-- `property.price` is tagged on 3 of 5 templates, `property.headline` on 4 of 5. Tag the rest.
-- **This is a hard dependency of US-EDIT-012 AC1.** Without it the layer rule leaves an untagged
-  price standing on two templates — the exact defect BL-27 describes.
+- Walk all five templates. **Every text element that renders a listing or agent fact must carry a
+  `slot` tag**, because that tag is the only thing US-EDIT-012's discard rule can see.
+- **Scope corrected 2026-10-24 — do not blind-tag `property.price` on all five.** An earlier
+  draft of this task said price was missing on 2 of 5 and should be added. It was wrong:
+  *Market Report — Email Header* carries only `report.*` slots and has no listing price by design;
+  *MLS Listing Sheet* has no price element at all. **No untagged price layer exists on any
+  template.** Treat this as a verification pass.
+- If you find a fact-bearing element with no slot, tag it. If you find a template that arguably
+  *should* show a fact it does not (MLS Listing Sheet and price is the candidate), **report it and
+  change nothing** — that is a product question, not a BL-27 fix.
+- Note: BL-40 replaced the fabricated values with bracketed placeholders (`[Price]`,
+  `[Property name]` — 37 of them, test-pinned). Those are correct and must stay.
 
 ### T5 — Merge, then fork
 - **Type:** integration, no new code

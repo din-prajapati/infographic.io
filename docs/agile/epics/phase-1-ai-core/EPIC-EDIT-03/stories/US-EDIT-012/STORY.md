@@ -66,8 +66,9 @@ places the image beneath the survivors at `minZIndex - 1`. The function is corre
 ## Acceptance Criteria
 
 - [ ] **AC1 [happy-path]:** When a variation carrying `composition: 'poster'` is placed,
-      `splitElementsForAiBackground` additionally discards template-owned slot-tagged layers, and
-      the canvas renders one price, one headline and one agent footer.
+      `splitElementsForAiBackground` additionally discards template-owned slot-tagged layers —
+      edited or not, per **D1 = (a)** — and the canvas renders one price, one headline and one
+      agent footer. Layers with no slot tag survive.
 - [ ] **AC2 [happy-path]:** When a variation carrying `composition: 'background'` is placed, the
       partition is byte-for-byte what today's code produces — the real-photo path is unchanged.
 - [ ] **AC3 [error-path]:** When a variation carries **no** `composition` (a legacy generation, or
@@ -79,8 +80,8 @@ places the image beneath the survivors at `minZIndex - 1`. The function is corre
       `canvasTypes.ts` and does not write it.
 - [ ] **AC5 [rollback]:** One Undo press after a poster placement restores the pre-placement canvas
       in a single step — the existing `pushToHistory(snapshot.elements)` at `canvasState.ts:441`
-      covers everything the story discards. If D2 selects the store-write variant, the same single
-      press also restores the prior property values.
+      covers everything the story discards. Per **D2 = (a)** no property-store write occurs, so
+      the canvas snapshot is the whole of the undo.
 - [ ] **AC6 [error-path]:** Opening a design saved before this milestone renders identically to how
       it rendered before this milestone. Verified against a real saved design, not a fixture.
 - [ ] **AC7 [happy-path]:** Repeated placement does not accumulate duplicate background layers —
@@ -115,12 +116,34 @@ places the image beneath the survivors at `minZIndex - 1`. The function is corre
 
 ---
 
-## Decisions required before implementation
+## Decisions — settled 2026-10-24
 
-| ID | Question | Default if undecided |
-|----|----------|----------------------|
-| D1 | Does "replace" mean the whole composition, or only template-owned slot-tagged layers? A user's own text box carries no slot tag. | Warn-only — the defect survives the story |
-| D2 | One undo spanning the canvas *and* the property store, or no store write at all? | **No store write** — layer discard only, AC5's second sentence drops |
+### D1 — "replace" discards template-owned slot-tagged layers · **(a)**
+
+When `composition === 'poster'`, discard slot-tagged layers **regardless of whether the user edited
+them**. Layers with no slot tag survive untouched.
+
+Slot tags *are* the property-fact vocabulary — `property.price`, `agent.rera`, `property.headline`.
+A poster already renders those facts into pixels, so a slot-tagged layer over a poster is a
+duplicate by construction: exactly the set to drop, and nothing more. A user's own text box carries
+no slot tag precisely because it is not a listing fact, so discarding it would be collateral damage.
+
+**Rejected: "discard only unfilled placeholders."** Tempting now that BL-40 replaced the fabricated
+values with visibly-fake bracketed placeholders like `[Price]`. It is wrong: if the user typed
+₹1.85 Cr and the poster carries ₹1.9 Cr, keeping the edited layer reproduces the bug exactly.
+**Edit state is not the discriminator — poster-vs-background is.**
+
+### D2 — layer discard only, no property-store write · **(a)**
+
+AC5's second sentence does not apply. `usePropertyStore` is **not** modified; T4 is canvas-only.
+
+The user's typed facts are not at risk either way: a value typed into the sidebar lives in
+`usePropertyStore`, which this story never touches, and a value typed onto the canvas is restored
+by the existing `pushToHistory` snapshot in one Undo press. Writing to the store would make
+`canvasState` the first writer across that seam — the binding layer, out of scope and needing a
+migration plan for 181 saved designs. The failure modes are also asymmetric: (a) fails as "press
+Undo"; (b) fails as "Undo restores the layers and silently keeps the overwritten price", because
+`pushToHistory` records canvas elements only. An Undo that lies is worse than no feature.
 
 ---
 
@@ -152,9 +175,14 @@ places the image beneath the survivors at `minZIndex - 1`. The function is corre
   treats unedited slot content as disposable will treat a reopened customer design the same way.
   **This is the most likely source of a data-loss bug in the milestone**, and it is why AC6 requires
   a real saved design rather than a fixture.
-- **Slot coverage is uneven.** `property.price` is tagged on 3 of 5 templates, `property.headline` on
-  4 of 5. US-EDIT-011 AC7 closes the gap; if that AC is descoped, AC1 must state the partial
-  coverage honestly rather than claiming all five.
+- **Slot coverage is adequate.** An earlier draft of this card claimed `property.price` was missing
+  on 2 of 5 templates. It is not a gap: *Market Report — Email Header* has no listing price by
+  design and *MLS Listing Sheet* has no price element at all. US-EDIT-011 AC7 verifies coverage
+  rather than adding tags, so AC1 can claim all five honestly.
+- **BL-40's bracketed placeholders are the thing you will see discarded.** The templates now carry
+  `[Price]`, `[Property name]` and 35 others, test-pinned, in place of the fabricated values. They
+  are correct, and under D1 they are discarded along with any edited slot layer — edit state is not
+  the discriminator.
 
 ---
 

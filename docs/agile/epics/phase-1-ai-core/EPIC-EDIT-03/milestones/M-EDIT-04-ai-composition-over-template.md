@@ -152,12 +152,17 @@ These are product calls. No agent can make them, and US-EDIT-012 cannot start wi
 
 ## Notes / Blockers
 
-- **Slot coverage is uneven, and it changes D1's reach.** `slot?: string` exists on `BaseElement`
-  (`canvasTypes.ts:28`) and the five production templates carry 54 tags between them — but
-  `property.price` is tagged on only **3 of 5** and `property.headline` on **4 of 5**. A
-  discard-slot-tagged-layers rule therefore leaves an untagged price standing on two templates.
-  Either tag the gaps in `api/scripts/data/premium-templates.data.ts` as part of US-EDIT-011, or
-  state the partial coverage in US-EDIT-012's acceptance. Do not leave it implicit.
+- **Slot coverage is adequate — an earlier note here said otherwise and was wrong.** `slot?: string`
+  exists on `BaseElement` (`canvasTypes.ts:28`) and the five templates carry 54 tags. This document
+  previously claimed `property.price` was missing on 2 of 5 and that the discard rule would leave
+  an untagged price standing. **It would not.** *Market Report — Email Header* carries only
+  `report.*` slots and has no listing price by design; *MLS Listing Sheet* has no price element at
+  all. US-EDIT-011 AC7 is therefore a verification pass, not a tagging job.
+- **BL-27 reproduces less severely than its backlog row describes.** The row cites three
+  contradictory prices — ₹1.9 Cr baked, ₹1.18 Cr placeholder, ₹1.85 Cr typed. BL-40 replaced that
+  fabricated ₹1.18 Cr with the bracketed placeholder `[Price]` on 2026-10-21. Today it reproduces
+  as one real price plus a visible `[Price]` overlapping it — still a defect, no longer a listing
+  advertising two prices that disagree. The fix is unchanged; the urgency is lower.
 - **`loadComposedDesignToCanvas` is a second path to the canvas** and per
   [BL-23](../../../../BACKLOG.md) it is missing the same undo-history push. Decide whether the flag
   is set on both routes or whether the composed path is explicitly out of scope for this milestone;
