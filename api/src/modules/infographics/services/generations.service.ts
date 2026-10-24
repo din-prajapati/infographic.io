@@ -7,6 +7,7 @@ import { TemplatesService } from '../../templates/services/templates.service';
 import { UsageAlertService } from './usage-alert.service';
 import { UsageLimitService, EditableRequiresUpgradeException } from './usage-limit.service';
 import { composeCacheKey } from '../../ai-generation/services/ai-orchestrator.service';
+import { AiComposition, resolveAiComposition } from '../../ai-generation/types/ai-composition.types';
 import { GenerationProgressGateway } from '../gateways/generation-progress.gateway';
 import { GenerateFromChatDto } from '../dto/generate-from-chat.dto';
 import { ComposedDesign } from '../../ai-generation/types/composed-design.types';
@@ -162,6 +163,13 @@ export class GenerationsService {
       // billing. Both undefined = passthrough (echo what the user typed, invent nothing).
       locale: dto.locale,
       currencyToken: dto.currencyToken,
+      // US-EDIT-011 — whether this generation will come back as a plain background
+      // or as a finished poster with the facts baked in. Written HERE, at creation,
+      // rather than in the orchestrator: the orchestrator runs asynchronously after
+      // the row exists, so a run that fails or is cancelled would otherwise leave no
+      // record of what it attempted (AC3). Same predicate both places, so the value
+      // persisted and the prompt actually chosen can never disagree.
+      composition: resolveAiComposition(dto.photoReference),
     };
 
     // Generate infographic using existing service
@@ -301,12 +309,26 @@ export class GenerationsService {
 
     // Check if variations are stored in propertyData
     const propertyData = infographic.propertyData as any;
+
+    // US-EDIT-011 AC4/AC5 — carry the stored composition out to the client so the
+    // canvas branches on a fact instead of inferring from pixels. Deliberately
+    // spread rather than defaulted: a row generated before this shipped has no
+    // stored value, and the field must arrive ABSENT so the canvas can apply its
+    // legacy rule ('background', today's behaviour). Defaulting here would
+    // silently relabel every pre-existing poster as a background.
+    const composition: AiComposition | undefined =
+      propertyData?.composition === 'background' || propertyData?.composition === 'poster'
+        ? propertyData.composition
+        : undefined;
+    const compositionField = composition ? { composition } : {};
+
     if (propertyData?.variations && Array.isArray(propertyData.variations)) {
       return propertyData.variations.map((v: any) => ({
         id: v.id || `${generationId}_var_${Math.random()}`,
         imageUrl: v.imageUrl,
         title: v.title || 'Generated Infographic',
         description: v.description || 'AI-generated property infographic',
+        ...compositionField,
       }));
     }
 
@@ -317,6 +339,7 @@ export class GenerationsService {
         imageUrl: infographic.imageUrl,
         title: 'Generated Infographic',
         description: 'AI-generated property infographic',
+        ...compositionField,
       },
     ];
   }

@@ -444,7 +444,13 @@ export const PREMIUM_CANVAS_TEMPLATES: StarterCanvasTemplate[] = [
           ["oh-f6", 1280, 2480, "[Feature]"],
         ].flatMap(([id, x, y, label]) => [
           box(`${id}-bg`, `${id} bg`, x as number, y as number, 1080, 160, { fill: "#f1f5f9", cornerRadius: 16, zIndex: 2 }),
-          text(`${id}-txt`, `${id} text`, label as string, (x as number) + 40, (y as number) + 48, 1000, 64, 36, "#0f172a", { weight: 700, zIndex: 3 }),
+          // US-EDIT-011 T4 — these six were the only fact-bearing text elements in
+          // any template with no slot tag, because they are built in a flatMap
+          // rather than written out like the rest. Untagged, US-EDIT-012's discard
+          // rule cannot see them, so placing an AI poster on this template would
+          // leave six amenity claims sitting on top of a composition that already
+          // renders them. Every other template tags its features.
+          text(`${id}-txt`, `${id} text`, label as string, (x as number) + 40, (y as number) + 48, 1000, 64, 36, "#0f172a", { slot: "property.features", weight: 700, zIndex: 3 }),
         ]),
         box("oh-locstrip", "Location Strip", 120, 2700, 2240, 120, { fill: "#ecfeff", cornerRadius: 16, zIndex: 2 }),
         text("oh-location", "Location", "[Location]  —  [What makes this location worth noting]", 160, 2732, 2160, 56, 32, "#0f766e", { slot: "property.location", weight: 600, zIndex: 3 }),

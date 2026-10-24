@@ -16,6 +16,7 @@ import {
   getVariationModifier,
 } from './infographic-prompt.builder';
 import { ComposedDesign, ListingField } from '../types/composed-design.types';
+import { resolveAiComposition } from '../types/ai-composition.types';
 import { mapBlocksToFields } from './text-block.mapper';
 
 /**
@@ -270,9 +271,11 @@ export class AiOrchestrator {
             // US-AI-051's own guard is kept verbatim: photoReference must be a
             // non-empty string. An empty-string photo falls through to the
             // composed imagePrompt, as it always has.
+            // US-EDIT-011 — the condition now lives in resolveAiComposition() so
+            // that this prompt choice and the `composition` persisted on the row at
+            // creation can never disagree. Behaviour here is unchanged.
             let photoBasePrompt = imagePrompt;
-            const useTextFree =
-              typeof photoReference === 'string' && photoReference.length > 0;
+            const useTextFree = resolveAiComposition(photoReference) === 'background';
             if (useTextFree) {
               try {
                 photoBasePrompt = applyStylePreset(

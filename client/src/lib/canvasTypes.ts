@@ -1,5 +1,7 @@
 // Canvas element types and interfaces
 
+import type { AiComposition } from './api';
+
 export type ElementType = 'text' | 'shape' | 'image';
 export type ShapeType = 'rectangle' | 'circle' | 'ellipse' | 'triangle' | 'star' | 'speechBubble' | 'arrowLeft' | 'arrowRight';
 export type TextAlign = 'left' | 'center' | 'right';
@@ -80,6 +82,19 @@ export interface ImageElement extends BaseElement {
   aiSourceUrl?: string;
   /** Detected orientation when imported from AI (landscape 16:9, portrait 9:16, square 1:1) */
   aiOrientation?: 'landscape' | 'portrait' | 'square';
+  /**
+   * US-EDIT-011 — whether this image is a plain background or a finished poster
+   * with the listing facts baked into its pixels. Carried from the generation
+   * record via `ResultVariation.composition`.
+   *
+   * `isAiImport` cannot substitute: it is `true` on both paths, which is why the
+   * canvas previously had to infer from pixels and got BL-27 wrong.
+   *
+   * **Absent means legacy** — an element placed before this shipped, or one whose
+   * generation predates it. Absent MUST be read as `'background'` (today's
+   * retain-everything behaviour), never as `'poster'`.
+   */
+  aiComposition?: AiComposition;
   cornerRadius: number;
   flipHorizontal: boolean;
   flipVertical: boolean;
