@@ -52,6 +52,14 @@ adapters:
       session_start: first-turn-marker
       agents_md_target: "AGENTS.md"
       per_skill_stubs: false
+  gemini:
+    enabled: true                # Gemini adapter — ships in v0.6.1
+    install_dir: ".gemini"
+    naming:
+      router_name: "orion"       # /orion in the Gemini CLI (.gemini/commands/orion.toml)
+    options:
+      session_start: first-turn-marker
+      per_skill_stubs: false
 
 # ─────────────────────────────────────────────────────────────────────────────
 # SKILLS — the routing table.
@@ -475,6 +483,16 @@ intent_map:
     after-file-edit:    { surface: native, event: PostToolUse, matcher: "Edit|Write|Apply" }
     session-start:      { surface: first-turn-marker }
     session-stop:       { surface: native, event: Stop }
+  gemini:
+    # matcher values use ORION's internal Read/Write/Edit/Bash/Glob/Grep vocabulary —
+    # gemini.js's genSettings() remaps to Gemini's native tool names
+    # (read_file/write_file/replace/run_shell_command/glob/grep_search) at generate
+    # time, unlike codex's matcher above which is already hand-remapped to "Apply".
+    git.pre-push:       { surface: husky,  file: .husky/pre-push }
+    before-file-edit:   { surface: native, event: PreToolUse,  matcher: "Edit|Write" }
+    after-file-edit:    { surface: native, event: PostToolUse, matcher: "Edit|Write" }
+    session-start:      { surface: first-turn-marker }
+    session-stop:       { surface: native, event: Stop }
 
 # ─────────────────────────────────────────────────────────────────────────────
 # RULES — canonical markdown in .orion/rules/; compiled per IDE by `orion install`.
@@ -484,27 +502,27 @@ rules:
   - source: rules/PROJECT.md
     scope:
       globs: ["**/*"]
-    targets: [claude-code, cursor, codex]
+    targets: [claude-code, cursor, codex, gemini]
 
   - source: rules/AGILE.md
     scope:
       globs: ["docs/agile/**", "**/STORY.md", "**/EPIC.md", "**/MILESTONE.md", "**/TASKS.md"]
-    targets: [claude-code, cursor, codex]
+    targets: [claude-code, cursor, codex, gemini]
 
   - source: rules/DOMAIN.md
     scope:
       globs: ["src/**", "app/**", "lib/**"]
-    targets: [claude-code, cursor, codex]
+    targets: [claude-code, cursor, codex, gemini]
 
   - source: rules/SECURITY.md
     scope:
       globs: ["**/.env*", "**/secrets/**", "src/auth/**", "**/middleware/**"]
-    targets: [claude-code, cursor, codex]
+    targets: [claude-code, cursor, codex, gemini]
 
   - source: rules/OBSERVABILITY.md
     scope:
       globs: ["src/**/*.ts", "src/**/*.py", "src/**/*.js"]
-    targets: [claude-code, cursor, codex]
+    targets: [claude-code, cursor, codex, gemini]
 
 # ─────────────────────────────────────────────────────────────────────────────
 # AGENTS — role definitions. Referenced by skills[].agents.

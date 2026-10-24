@@ -1,0 +1,54 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${GEMINI_PROJECT_DIR}/.orion/hooks/pre-edit-env-secret.sh"
+          }
+        ],
+        "matcher": "replace|write_file"
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${GEMINI_PROJECT_DIR}/.orion/hooks/pre-edit-schema-warn.sh"
+          }
+        ],
+        "matcher": "replace|write_file"
+      }
+    ],
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${GEMINI_PROJECT_DIR}/.orion/hooks/post-edit-tasks-sync.sh"
+          }
+        ],
+        "matcher": "replace|write_file"
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${GEMINI_PROJECT_DIR}/.orion/hooks/post-edit-story-close-check.sh"
+          }
+        ],
+        "matcher": "replace|write_file"
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${GEMINI_PROJECT_DIR}/.orion/hooks/stop-session-summary.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
