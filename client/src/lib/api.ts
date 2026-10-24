@@ -170,11 +170,30 @@ export interface GenerationStatus {
   errorMessage?: string;
 }
 
+/**
+ * US-EDIT-011 — what the server produced, rather than what the canvas can guess.
+ *
+ * `'background'` is the text-free real-photo path: an image with no baked-in text,
+ * safe to sit under the template's own layers. `'poster'` is a finished composition
+ * with the headline and price rendered into the pixels — stacking template text on
+ * top of one is BL-27.
+ *
+ * Mirrors `api/src/modules/ai-generation/types/ai-composition.types.ts`.
+ */
+export type AiComposition = 'background' | 'poster';
+
 export interface ResultVariation {
   id: string;
   imageUrl: string;
   title: string;
   description: string;
+  /**
+   * Absent on any generation created before US-EDIT-011 shipped. Absent means
+   * legacy and MUST be read as `'background'` — today's retain-everything
+   * behaviour — never as `'poster'`. This is what keeps the 181 saved designs
+   * rendering exactly as they do now.
+   */
+  composition?: AiComposition;
 }
 
 // Payments API
