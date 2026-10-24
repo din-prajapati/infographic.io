@@ -26,8 +26,6 @@ export { GenerationProgress } from './GenerationProgress';
 export { ResultsVariations } from './ResultsVariations';
 
 // Property-Aware AI Chat
-export { AIPropertyChatInput } from './AIPropertyChatInput';
-export { EnhancedSuggestionsPanel } from './EnhancedSuggestionsPanel';
 
 // Phase 2.5: Conversation UI
 export { ConversationMessages } from './ConversationMessages';
