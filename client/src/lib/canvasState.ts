@@ -6,7 +6,7 @@
 import { exportCanvasToImage } from './canvasExport';
 import { useCanvasStore } from '../hooks/useCanvasStore';
 import type { CanvasElement, ImageElement, TextElement, TextAlign } from './canvasTypes';
-import type { ComposedDesign, ComposedTextElementGeometry } from './api';
+import type { AiComposition, ComposedDesign, ComposedTextElementGeometry } from './api';
 // US-AI-053 AC3. This module is otherwise UI-free, and the toast could instead
 // be raised by the two callers (CenterCanvas, RightSidebar). It lives here
 // because this is the only place that knows a replacement actually happened —
@@ -334,10 +334,39 @@ function loadImageFromSrc(src: string): Promise<HTMLImageElement> {
  *                              changes what the toast needs to say (AC4).
  *          retained            everything that survives: the template's and the
  *                              user's own elements, untouched.
+ *
+ * US-EDIT-012 (BL-27) adds the `composition` parameter.
+ *
+ * A `'background'` is text-free, so the template's own layers belong on top of
+ * it and everything is retained — that is this function's original behaviour and
+ * it is unchanged.
+ *
+ * A `'poster'` is a finished composition that already renders the listing facts
+ * into its own pixels. Keeping the template's slot-tagged layers over one is
+ * BL-27: the canvas shows the baked price and the slot's `[Price]` at once.
+ * So for a poster, slot-tagged layers are discarded as well.
+ *
+ * Two things that are deliberately NOT the discriminator:
+ *
+ *   - **Edit state.** A slot the user has typed into goes too. If they typed
+ *     ₹1.85 Cr and the poster carries ₹1.9 Cr, keeping the edited layer
+ *     reproduces the defect exactly. (D1)
+ *   - **Being a text element.** The rule keys on the `slot` tag, which is the
+ *     property-fact vocabulary. A user's own text box carries no slot precisely
+ *     because it is not a listing fact, so it survives — it duplicates nothing
+ *     in the poster, and discarding it would be collateral damage.
+ *
+ * `undefined` composition means a legacy element or generation and is treated as
+ * `'background'`. Never as `'poster'` — that direction would change what 181
+ * already-saved designs do on reopen.
  */
-export function splitElementsForAiBackground(elements: CanvasElement[]): {
+export function splitElementsForAiBackground(
+  elements: CanvasElement[],
+  composition?: AiComposition,
+): {
   priorAiImage?: ImageElement;
   hadExtractedLayers: boolean;
+  discardedSlots: string[];
   retained: CanvasElement[];
 } {
   const isAiBackground = (el: CanvasElement): el is ImageElement =>
@@ -346,10 +375,23 @@ export function splitElementsForAiBackground(elements: CanvasElement[]): {
   // on why a `type === 'text'` check would wrongly match a template's layers.
   const isExtractedLayer = (el: CanvasElement) => el.id.startsWith('composed-');
 
+  // US-EDIT-012 — only a poster displaces the template's own fact layers.
+  // Absent composition is legacy and behaves as 'background', so this is false
+  // for every pre-existing element and the retained set is byte-for-byte what
+  // it was before this story.
+  const displacesSlots = composition === 'poster';
+  const isSlotLayer = (el: CanvasElement) =>
+    displacesSlots && typeof el.slot === 'string' && el.slot.length > 0;
+
   return {
     priorAiImage: elements.find(isAiBackground),
     hadExtractedLayers: elements.some(isExtractedLayer),
-    retained: elements.filter((el) => !isAiBackground(el) && !isExtractedLayer(el)),
+    // Reported so the toast can say what went, and so a test can assert the
+    // discard without reconstructing the set difference itself.
+    discardedSlots: elements.filter(isSlotLayer).map((el) => el.slot as string),
+    retained: elements.filter(
+      (el) => !isAiBackground(el) && !isExtractedLayer(el) && !isSlotLayer(el),
+    ),
   };
 }
 
@@ -357,6 +399,12 @@ export async function loadAiVariationToCanvas(
   imageUrl: string,
   name: string,
   preferredOrientation?: AiOrientation,
+  /**
+   * US-EDIT-012 — what the server said this image is. Undefined for a
+   * generation that predates US-EDIT-011, and read as `'background'`:
+   * today's retain-everything behaviour.
+   */
+  composition?: AiComposition,
 ): Promise<boolean> {
   try {
     let imageSrc = imageUrl;
@@ -400,8 +448,8 @@ export async function loadAiVariationToCanvas(
       // extraction against the image being replaced, so keeping them leaves the
       // headline over the house and the price off the scrim. AC2's history push
       // below is what makes dropping them recoverable.
-      const { priorAiImage, hadExtractedLayers, retained: existingElements } =
-        splitElementsForAiBackground(snapshot.elements);
+      const { priorAiImage, hadExtractedLayers, discardedSlots, retained: existingElements } =
+        splitElementsForAiBackground(snapshot.elements, composition);
       const imageOrientation = preferredOrientation
         ?? resolveAiArtboard(img.naturalWidth, img.naturalHeight).orientation;
 
@@ -427,6 +475,9 @@ export async function loadAiVariationToCanvas(
         isAiImport: true,
         aiSourceUrl: imageUrl,
         aiOrientation: imageOrientation,
+        // US-EDIT-012 — carried from the variation so the element itself records
+        // what it is. `isAiImport` cannot serve: it is true on both paths.
+        aiComposition: composition,
         objectFit: 'contain',
         cornerRadius: 0,
         flipHorizontal: false,
@@ -451,11 +502,25 @@ export async function loadAiVariationToCanvas(
 
       // AC3 — say so, but only on an actual replacement. The first generation
       // onto a template is an insert and stays silent.
-      if (priorAiImage) {
-        toast.success('Background replaced', {
-          description: hadExtractedLayers
+      //
+      // US-EDIT-012 adds a second reason to speak: placing a poster removes the
+      // template's own fact layers, which is a visible change the user did not
+      // explicitly ask for. That must be announced even on a first placement —
+      // staying silent while deleting their typed price is how a correctness fix
+      // becomes a data-loss complaint. The single history push above is what the
+      // Undo action here rewinds, and it covers both the removal and the insert.
+      if (priorAiImage || discardedSlots.length > 0) {
+        const title = discardedSlots.length > 0
+          ? 'Template text replaced by the design'
+          : 'Background replaced';
+        const description = discardedSlots.length > 0
+          ? `This design already includes the listing details, so ${discardedSlots.length} template ${discardedSlots.length === 1 ? 'field' : 'fields'} were removed to avoid showing them twice.`
+          : hadExtractedLayers
             ? 'Press Edit elements to extract text from the new design.'
-            : undefined,
+            : undefined;
+
+        toast.success(title, {
+          description,
           action: {
             label: 'Undo',
             onClick: () => useCanvasStore.getState().undo(),

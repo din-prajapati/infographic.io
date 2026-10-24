@@ -563,7 +563,15 @@ export function RightSidebar() {
       // ever have returned flat. Extracting text is a separate, explicit act
       // on the canvas (CanvasEditToolbar), which owns the upgrade and
       // monthly-limit handling that lived in this block.
-      await loadAiVariationToCanvas(variation.imageUrl, variation.title ?? "AI Design");
+      // US-EDIT-012 — pass what the server said this image is. Undefined for a
+      // generation that predates US-EDIT-011, which the canvas reads as a
+      // background: today's behaviour, unchanged.
+      await loadAiVariationToCanvas(
+        variation.imageUrl,
+        variation.title ?? "AI Design",
+        undefined,
+        variation.composition,
+      );
       setSelectedVariationId(variation.id);
       toast.success("Design loaded", {
         description: "Add text overlays with Quick Styles in the Design tab.",
