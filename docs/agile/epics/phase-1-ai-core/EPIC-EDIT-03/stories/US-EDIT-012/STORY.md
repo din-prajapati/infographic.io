@@ -7,7 +7,7 @@ updated: 2026-10-24
 
 # Story Card — US-EDIT-012 — Branch the layer rule on composition, with one undo
 
-> **Status:** 🔲 Not Started — **blocked on D1, D2, and US-EDIT-011 merging**
+> **Status:** 🟡 In Progress — all ACs verified 2026-10-25; closes when milestone PR #64 merges
 > **Epic:** [EPIC-EDIT-03](../../EPIC.md)
 > **Milestone:** [M-EDIT-04-ai-composition-over-template](../../milestones/M-EDIT-04-ai-composition-over-template.md)
 > **Linear:** LIN-XXX
@@ -65,26 +65,26 @@ places the image beneath the survivors at `minZIndex - 1`. The function is corre
 
 ## Acceptance Criteria
 
-- [ ] **AC1 [happy-path]:** When a variation carrying `composition: 'poster'` is placed,
+- [x] **AC1 [happy-path]:** When a variation carrying `composition: 'poster'` is placed,
       `splitElementsForAiBackground` additionally discards template-owned slot-tagged layers —
       edited or not, per **D1 = (a)** — and the canvas renders one price, one headline and one
       agent footer. Layers with no slot tag survive.
-- [ ] **AC2 [happy-path]:** When a variation carrying `composition: 'background'` is placed, the
+- [x] **AC2 [happy-path]:** When a variation carrying `composition: 'background'` is placed, the
       partition is byte-for-byte what today's code produces — the real-photo path is unchanged.
-- [ ] **AC3 [error-path]:** When a variation carries **no** `composition` (a legacy generation, or
+- [x] **AC3 [error-path]:** When a variation carries **no** `composition` (a legacy generation, or
       a design saved before this milestone), the function behaves as `'background'`. Absent is never
       treated as `'poster'`.
-- [ ] **AC4 [happy-path]:** `loadAiVariationToCanvas` sets `aiComposition` on the `ImageElement` it
+- [x] **AC4 [happy-path]:** `loadAiVariationToCanvas` sets `aiComposition` on the `ImageElement` it
       builds, from the variation passed by its two callers — `CenterCanvas.tsx:111` and
       `RightSidebar.tsx:566`. The field itself is declared by US-EDIT-011 AC6; this story reads
       `canvasTypes.ts` and does not write it.
-- [ ] **AC5 [rollback]:** One Undo press after a poster placement restores the pre-placement canvas
+- [x] **AC5 [rollback]:** One Undo press after a poster placement restores the pre-placement canvas
       in a single step — the existing `pushToHistory(snapshot.elements)` at `canvasState.ts:441`
       covers everything the story discards. Per **D2 = (a)** no property-store write occurs, so
       the canvas snapshot is the whole of the undo.
-- [ ] **AC6 [error-path]:** Opening a design saved before this milestone renders identically to how
+- [ ] ⚠️ **AC6 [error-path]:** _(pending post-deploy check on PR #64 — see TC-EDIT-012-07)_ Opening a design saved before this milestone renders identically to how
       it rendered before this milestone. Verified against a real saved design, not a fixture.
-- [ ] **AC7 [happy-path]:** Repeated placement does not accumulate duplicate background layers —
+- [x] **AC7 [happy-path]:** Repeated placement does not accumulate duplicate background layers —
       the US-AI-053 AC1 guarantee survives on both composition branches.
 
 ---
@@ -106,7 +106,7 @@ places the image beneath the survivors at `minZIndex - 1`. The function is corre
 ## Engineering / PR
 
 - **Branch:** `feat/edit/l1-canvas-layer-rule`, cut from the milestone branch **after Foundation merges** (worktree: `../bg-canvas`)
-- **PR:** squash into the milestone branch
+- **PR:** #64 (milestone PR, rebase-and-merge)
 - **Primary files touched:**
   - `client/src/lib/canvasState.ts` — the branch, the element, the history push
   - `client/src/components/editor/CenterCanvas.tsx` — pass the variation's flag at the `:111` call site
@@ -151,14 +151,14 @@ Undo"; (b) fails as "Undo restores the layers and silently keeps the overwritten
 
 | TC ID | Type | Priority | Scenario | Status | Finding |
 |-------|------|:--------:|----------|:------:|---------|
-| TC-EDIT-012-01 | Unit | P0 | Given elements + `composition: 'poster'`, When split, Then slot-tagged template layers are in neither `retained` nor the canvas | 🔲 | |
-| TC-EDIT-012-02 | Unit | P0 | Given elements + `composition: 'background'`, When split, Then the partition equals today's output | 🔲 | |
-| TC-EDIT-012-03 | Unit | P0 | Given elements + no composition, When split, Then the partition equals the `'background'` case | 🔲 | |
-| TC-EDIT-012-04 | Unit | P0 | Given a poster placement, When undo is called once, Then elements equal the pre-placement snapshot | 🔲 | |
-| TC-EDIT-012-05 | Unit | P1 | Given a user-authored text box with no slot tag, When a poster is placed, Then it survives or is discarded per D1 — asserted either way | 🔲 | |
-| TC-EDIT-012-06 | Unit | P1 | Given two successive poster placements, When the second lands, Then exactly one AI image element exists | 🔲 | |
-| TC-EDIT-012-07 | Manual | P0 | Given a design saved before this milestone, When reopened, Then it renders identically — real saved design | 🔲 | |
-| TC-EDIT-012-08 | Manual | P0 | Given a poster on a template, When exported and the **file** opened, Then one price, no overlap, no placeholder | 🔲 | |
+| TC-EDIT-012-01 | Unit | P0 | Given elements + `composition: 'poster'`, When split, Then slot-tagged template layers are in neither `retained` nor the canvas | ✅ | `canvasState.aiBackground.spec.ts` |
+| TC-EDIT-012-02 | Unit | P0 | Given elements + `composition: 'background'`, When split, Then the partition equals today's output | ✅ | `canvasState.aiBackground.spec.ts` |
+| TC-EDIT-012-03 | Unit | P0 | Given elements + no composition, When split, Then the partition equals the `'background'` case | ✅ | `canvasState.aiBackground.spec.ts` |
+| TC-EDIT-012-04 | Unit | P0 | Given a poster placement, When undo is called once, Then elements equal the pre-placement snapshot | ✅ | `canvasState.aiBackground.spec.ts`; poster-replacing-a-poster double undo added in `b6c9411` |
+| TC-EDIT-012-05 | Unit | P1 | Given a user-authored text box with no slot tag, When a poster is placed, Then it survives or is discarded per D1 — asserted either way | ✅ | `canvasState.aiBackground.spec.ts` — an untagged user text box survives (D1) |
+| TC-EDIT-012-06 | Unit | P1 | Given two successive poster placements, When the second lands, Then exactly one AI image element exists | ✅ | `canvasState.aiBackground.spec.ts` |
+| TC-EDIT-012-07 | Manual | P0 | Given a design saved before this milestone, When reopened, Then it renders identically — real saved design | ⚠️ | Dev DB holds no template-based or AI design saved before this milestone (5 pre-milestone designs, none slot-tagged). Verified by code (`restoreCanvasData` untouched by the diff), TC-03, and Gate 2 step 4. Post-deploy check on a production design is listed on PR #64 |
+| TC-EDIT-012-08 | Manual | P0 | Given a poster on a template, When exported and the **file** opened, Then one price, no overlap, no placeholder | ✅ | Gate 2 step 5, 2026-10-25: exported poster file has one price, no placeholder, no overlap (after BL-41 fix, #62) |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 
@@ -188,12 +188,14 @@ Undo"; (b) fails as "Undo restores the layers and silently keeps the overwritten
 
 ## Definition of Done
 
-- [ ] All ACs checked ✅
-- [ ] All test cases run and recorded
-- [ ] Gate 1 passes (`npm run check`, `npm run test:unit:client`)
-- [ ] Gate 2 passes (frontend story — the manual export inspection, milestone doc §Gate 2)
-- [ ] PR merged (milestone PR #_____)
-- [ ] [TASKS.md](./TASKS.md) task list fully checked
+- [ ] All ACs checked ✅ — AC6 pending, see DoD note
+- [x] All test cases run and recorded
+- [x] Gate 1 passes (`npm run check`, `npm run test:unit:client`)
+- [x] Gate 2 passes (frontend story — the manual export inspection, milestone doc §Gate 2)
+- [ ] PR merged (milestone PR #64)
+
+> **DoD note:** TC-EDIT-012-07 (AC6) is ⚠️ — no pre-milestone template or AI design exists in the dev DB to reopen. Covered by code inspection, unit tests and Gate 2 step 4; the check against a real production design is a post-deploy item on PR #64. Recorded 2026-10-25; needs your sign-off before close.
+- [x] [TASKS.md](./TASKS.md) task list fully checked
 - [ ] STORY.md status updated to ✅ Done
 
 ---

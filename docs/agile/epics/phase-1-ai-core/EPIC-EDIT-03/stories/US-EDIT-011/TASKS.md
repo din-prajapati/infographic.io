@@ -15,10 +15,10 @@ updated: 2026-10-24
 
 ## Four Pillars Pre-flight
 
-- [ ] **Brain** — STORY.md filled, 7 ACs, all file-specific
-- [ ] **Muscle** — T1-T5 below
-- [ ] **Map** — [ARCHITECTURE.mmd](../../ARCHITECTURE.mmd)
-- [ ] **Env** — no environment changes; no migration (D5)
+- [x] **Brain** — STORY.md filled, 7 ACs, all file-specific
+- [x] **Muscle** — T1-T5 below
+- [x] **Map** — [ARCHITECTURE.mmd](../../ARCHITECTURE.mmd)
+- [x] **Env** — no environment changes; no migration (D5)
 
 ---
 
@@ -112,8 +112,8 @@ has no record of what the first attempt produced.
 
 ## Gates
 
-- [ ] Gate 1 — `npm run check`, `npm run test:unit:backend`
-- [ ] Gate 4 — `npm run test:integration` (needs `.env.test`)
+- [x] Gate 1 — `npm run check`, `npm run test:unit:backend`
+- [x] Gate 4 — `npm run test:integration` (needs `.env.test`)
 
 ---
 

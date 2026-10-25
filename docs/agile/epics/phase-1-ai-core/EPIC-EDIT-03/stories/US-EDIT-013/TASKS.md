@@ -17,10 +17,10 @@ updated: 2026-10-24
 
 ## Four Pillars Pre-flight
 
-- [ ] **Brain** — STORY.md filled, 5 ACs, all file-specific
-- [ ] **Muscle** — T1-T4 below
-- [ ] **Map** — [ARCHITECTURE.mmd](../../ARCHITECTURE.mmd)
-- [ ] **Env** — no environment changes
+- [x] **Brain** — STORY.md filled, 5 ACs, all file-specific
+- [x] **Muscle** — T1-T4 below
+- [x] **Map** — [ARCHITECTURE.mmd](../../ARCHITECTURE.mmd)
+- [x] **Env** — no environment changes
 
 ---
 
@@ -110,8 +110,8 @@ grep -rn "Real Estate Templates" client/src
 
 ## Gates
 
-- [ ] Gate 1 — `npm run check`, `npm run test:unit:client`
-- [ ] Gate 2 — open the panel, send a prompt, attach a photo, generate, render variations. Behaviour identical.
+- [x] Gate 1 — `npm run check`, `npm run test:unit:client`
+- [x] Gate 2 — open the panel, send a prompt, attach a photo, generate, render variations. Behaviour identical.
 
 ---
 
