@@ -560,6 +560,12 @@ export function AIChatBox({
       description:
         descriptionOverride ??
         `You've used ${current} of ${limit} AI Marketing Designs this month${planTier ? ` on your ${planTier} plan` : ""}. Upgrade to continue generating.`,
+      // BL-45 — this is the only feedback a blocked generation gets: the
+      // optimistic chat bubbles are removed at the same moment. At the default
+      // ~4 s it was gone before most users looked, so Generate appeared to do
+      // nothing. It stays until dismissed; it is also the upgrade prompt.
+      duration: Infinity,
+      closeButton: true,
       action: {
         label: "View plans",
         onClick: () => {
@@ -704,7 +710,10 @@ export function AIChatBox({
       } else {
         setConversationMessages([]);
       }
-      setState((prev) => ({ ...prev, isGenerating: false }));
+      // BL-45 — the input was cleared optimistically above, before the quota
+      // check. Put the user's prompt back so a blocked generation does not also
+      // cost them what they typed.
+      setState((prev) => ({ ...prev, isGenerating: false, inputValue: state.inputValue }));
       setCurrentAiMessageId(null);
       return;
     }
