@@ -395,3 +395,61 @@ describe('splitElementsForAiBackground — BL-43 hero placeholder', () => {
     expect(useCanvasStore.getState().elements.map((el) => el.id)).toContain('ps-hero');
   });
 });
+
+/**
+ * BL-44 — a shape tagged `frameOf` exists only to hold slot text. A poster
+ * removes the text, so it removes the frame too; on a background the text stays
+ * and so does its frame.
+ */
+describe('splitElementsForAiBackground — BL-44 frames', () => {
+  function frame(id: string, frameOf: string): CanvasElement {
+    return { ...templateImage(id), type: 'shape', frameOf } as unknown as CanvasElement;
+  }
+  function plainShape(id: string): CanvasElement {
+    return { ...templateImage(id), type: 'shape' } as unknown as CanvasElement;
+  }
+
+  const canvas = (): CanvasElement[] => [
+    aiImage('ai-gen-1'),
+    frame('price-pill', 'property.price'),
+    slotText('tpl-price', 'property.price'),
+    plainShape('header-band'),
+    textEl('user-note'),
+  ];
+
+  it('poster: drops the frame together with the text it holds', () => {
+    const { retained } = splitElementsForAiBackground(canvas(), 'poster');
+    expect(retained.map((el) => el.id)).toEqual(['header-band', 'user-note']);
+  });
+
+  it('poster: a frame is not counted as a template field in the toast', () => {
+    const { discardedSlots } = splitElementsForAiBackground(canvas(), 'poster');
+    expect(discardedSlots).toEqual(['property.price']);
+  });
+
+  it('background: keeps the frame, because the text it holds stays', () => {
+    const { retained } = splitElementsForAiBackground(canvas(), 'background');
+    expect(retained.map((el) => el.id)).toEqual(['price-pill', 'tpl-price', 'header-band', 'user-note']);
+  });
+
+  it('absent composition keeps frames, exactly like background', () => {
+    const { retained } = splitElementsForAiBackground(canvas());
+    expect(retained.map((el) => el.id)).toContain('price-pill');
+  });
+
+  it('does not treat a whitespace-only frameOf as a frame', () => {
+    const { retained } = splitElementsForAiBackground([frame('blank', '   ')], 'poster');
+    expect(retained.map((el) => el.id)).toEqual(['blank']);
+  });
+
+  it('one undo brings the frames back after a poster placement', () => {
+    const before = canvas().slice(1);
+    useCanvasStore.setState({ elements: before, history: { past: [], future: [] } });
+    const { retained } = splitElementsForAiBackground(before, 'poster');
+    const store = useCanvasStore.getState();
+    store.pushToHistory(before);
+    store.loadCanvas({ elements: [aiImage('ai-gen-2'), ...retained], selectedElementIds: [] });
+    useCanvasStore.getState().undo();
+    expect(useCanvasStore.getState().elements.map((el) => el.id)).toContain('price-pill');
+  });
+});

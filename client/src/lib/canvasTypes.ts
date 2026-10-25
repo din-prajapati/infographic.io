@@ -28,6 +28,14 @@ export interface BaseElement {
    * all elements and absent on legacy designs.
    */
   slot?: string;
+  /**
+   * BL-44 — the slot whose text this element exists to hold (a price pill, a
+   * CTA bar, a readability scrim). When an AI poster displaces slot layers, a
+   * frame goes with them rather than floating empty over the poster. Kept
+   * separate from `slot` so a frame never reads as the slot's value. Optional;
+   * absent on legacy designs and on templates seeded before BL-44.
+   */
+  frameOf?: string;
 }
 
 export interface TextElement extends BaseElement {
