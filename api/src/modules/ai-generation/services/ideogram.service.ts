@@ -11,6 +11,7 @@ import {
 } from '../../../config/image-generation.config';
 import { logGen, elapsed } from '../../../common/utils/ai-gen-logger';
 import { StorageService } from '../../storage/services/storage.service';
+import { cropToOrientation, ORIENTATION_ASPECT } from '../utils/crop-to-orientation';
 
 // PHOTO_UPLOADS_DIR is also declared in infographics.controller.ts — update
 // both if the upload path ever changes (US-AI-031 AC4 cross-reference).
@@ -307,23 +308,45 @@ export class IdeogramService {
   ): Promise<string> {
     const t0 = Date.now();
     const renderingSpeed = V4_RENDERING_SPEED[normalizeImageModel(model)] || 'DEFAULT';
+    const requestedOrientation = orientation && ORIENTATION_ASPECT[orientation] ? orientation : 'landscape';
+
+    // Throws HttpException(422) if file is unreadable (AC4) — deliberate hard-fail.
+    // See STORY.md "Behaviour change": the previous warn-and-continue produced a
+    // fabricated house and reported success. That is a trust and liability defect.
+    const sourceBuffer = await this.readSourcePhoto(photoPath, generationId);
+
+    // BL-43 — the remix output takes the uploaded photo's aspect ratio (see the
+    // BL-42 note on the form below), so the photo is cropped to the requested
+    // orientation first. A crop failure is NOT fatal: the original photo is
+    // sent instead, which is exactly the pre-BL-43 behaviour (correct content,
+    // wrong framing). Failing the whole generation over framing would be worse.
+    let photoBuffer: Buffer = sourceBuffer;
+    let resolutionApplied = 'source-image-aspect';
+    try {
+      const crop = await cropToOrientation(sourceBuffer, requestedOrientation);
+      photoBuffer = crop.buffer;
+      resolutionApplied = `${crop.cropped ? 'cropped' : 'already'}-${crop.width}x${crop.height}`;
+    } catch (cropErr: any) {
+      logGen(
+        {
+          generationId: generationId ?? 'unknown',
+          event: 'image:remix:crop-skipped',
+          requestedOrientation,
+          error: cropErr?.message ?? String(cropErr),
+        },
+        'warn',
+      );
+    }
 
     logGen({
       generationId: generationId ?? 'unknown',
       event: 'image:remix:start',
       imageModel: 'ideogram-4-remix',
-      // BL-42: the remix path cannot honour an orientation — see the comment on
-      // the form below. Logged as the requested-but-not-applied value so the
-      // discrepancy is visible in logs rather than silently absent.
-      requestedOrientation: orientation ?? 'landscape',
-      resolutionApplied: 'source-image-aspect',
+      requestedOrientation,
+      resolutionApplied,
       renderingSpeed,
     });
 
-    // Throws HttpException(422) if file is unreadable (AC4) — deliberate hard-fail.
-    // See STORY.md "Behaviour change": the previous warn-and-continue produced a
-    // fabricated house and reported success. That is a trust and liability defect.
-    const photoBuffer = await this.readSourcePhoto(photoPath, generationId);
     const mimeType = photoPath.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg';
     const photoBlob = new Blob([photoBuffer], { type: mimeType });
 
@@ -354,13 +377,9 @@ export class IdeogramService {
       // image_weight for orientation control would put fabricated contact
       // details into a customer's listing: the BL-40 defect class, reintroduced.
       //
-      // The cost is real and accepted: output now takes the SOURCE photo's
-      // aspect ratio rather than `orientation`, so a 3:2 photo on a 9:16 story
-      // canvas letterboxes under the AI background's objectFit:'contain'. Wrong
-      // framing is recoverable by the user; a fabricated RERA-adjacent identity
-      // is not. Restoring both needs the source photo cropped to the target
-      // aspect before upload, which needs an image library this project does not
-      // yet carry — follow-up, not a blocker.
+      // The cost: output takes the SOURCE photo's aspect ratio rather than
+      // `orientation`. BL-43 restores orientation control by cropping the photo
+      // to the target aspect before this call (cropToOrientation, above).
 
       const response = await axios.post(IDEOGRAM_V4_REMIX_URL, form, {
         // Do NOT set Content-Type here — axios must set the multipart boundary automatically
