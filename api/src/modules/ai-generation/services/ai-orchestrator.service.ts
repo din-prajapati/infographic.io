@@ -12,6 +12,8 @@ import {
   buildTextFreeImagePrompt,
   buildExpectedTexts,
   verifyAndRepairV4JsonPrompt,
+  stripInventedTextElements,
+  buildMagicPromptInput,
   applyStylePreset,
   getVariationModifier,
 } from './infographic-prompt.builder';
@@ -328,8 +330,20 @@ export class AiOrchestrator {
             let v4JsonPrompt: Record<string, any> | null = null;
             if (isV4) {
               try {
-                const converted = await this.ideogramService.convertTextPromptToV4Json(imagePrompt, orientation, infographicId);
-                const { jsonPrompt, repairs } = verifyAndRepairV4JsonPrompt(converted, buildExpectedTexts(propertyData, headline));
+                // BL-46 — tell the converter to use only our text; the strip below
+                // is the safety net for anything it still invents.
+                const converted = await this.ideogramService.convertTextPromptToV4Json(
+                  buildMagicPromptInput(imagePrompt), orientation, infographicId,
+                );
+                const expectedTexts = buildExpectedTexts(propertyData, headline);
+                // BL-46 — drop copy the converter invented (agency names, phone
+                // numbers, websites, specs we never supplied) BEFORE repair, so a
+                // real fact it merged with invented words is re-added cleanly.
+                const { jsonPrompt: stripped, removed } = stripInventedTextElements(converted, expectedTexts);
+                if (removed.length > 0) {
+                  logGen({ generationId: infographicId, event: 'v4:jsonprompt:invented-text-removed', removed }, 'warn');
+                }
+                const { jsonPrompt, repairs } = verifyAndRepairV4JsonPrompt(stripped, expectedTexts);
                 if (repairs.length > 0) {
                   logGen({ generationId: infographicId, event: 'v4:jsonprompt:repaired', repairs }, 'warn');
                 }
