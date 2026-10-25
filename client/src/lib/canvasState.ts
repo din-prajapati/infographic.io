@@ -359,6 +359,16 @@ function loadImageFromSrc(src: string): Promise<HTMLImageElement> {
  * `undefined` composition means a legacy element or generation and is treated as
  * `'background'`. Never as `'poster'` — that direction would change what 181
  * already-saved designs do on reopen.
+ *
+ * BL-43 — on the background path, the template's hero image is dropped while it
+ * still shows the template's own placeholder. A background is the listing
+ * photo, so it IS the hero; leaving the opaque placeholder on top hid most of
+ * it ("Replace hero image" over the top ~60% of a story). A hero the user has
+ * filled with their own picture is kept. Placeholders are inline SVG data URIs
+ * (`premium-templates.data.ts` placeholderImage()); a picture set through the
+ * sidebar is a raster data URL or a URL, so "still an SVG" means "still the
+ * default". This runs only on placement, never on reopen, so saved designs are
+ * not affected.
  */
 export function splitElementsForAiBackground(
   elements: CanvasElement[],
@@ -367,6 +377,8 @@ export function splitElementsForAiBackground(
   priorAiImage?: ImageElement;
   hadExtractedLayers: boolean;
   discardedSlots: string[];
+  /** BL-43 — true when an unfilled hero placeholder made way for the photo. */
+  replacedHeroPlaceholder: boolean;
   retained: CanvasElement[];
 } {
   const isAiBackground = (el: CanvasElement): el is ImageElement =>
@@ -385,6 +397,14 @@ export function splitElementsForAiBackground(
   // Treating whitespace as a real slot would silently delete the layer.
   const isSlotLayer = (el: CanvasElement) =>
     displacesSlots && typeof el.slot === 'string' && el.slot.trim().length > 0;
+  // BL-43 — the background-path counterpart. A poster already drops the hero
+  // through isSlotLayer, so this only ever fires when that one does not.
+  const isUnfilledHeroPlaceholder = (el: CanvasElement) =>
+    !displacesSlots &&
+    el.type === 'image' &&
+    el.slot?.trim() === 'property.heroImage' &&
+    typeof (el as ImageElement).src === 'string' &&
+    (el as ImageElement).src.startsWith('data:image/svg+xml');
 
   return {
     priorAiImage: elements.find(isAiBackground),
@@ -392,8 +412,13 @@ export function splitElementsForAiBackground(
     // Reported so the toast can say what went, and so a test can assert the
     // discard without reconstructing the set difference itself.
     discardedSlots: elements.filter(isSlotLayer).map((el) => el.slot as string),
+    replacedHeroPlaceholder: elements.some(isUnfilledHeroPlaceholder),
     retained: elements.filter(
-      (el) => !isAiBackground(el) && !isExtractedLayer(el) && !isSlotLayer(el),
+      (el) =>
+        !isAiBackground(el) &&
+        !isExtractedLayer(el) &&
+        !isSlotLayer(el) &&
+        !isUnfilledHeroPlaceholder(el),
     ),
   };
 }

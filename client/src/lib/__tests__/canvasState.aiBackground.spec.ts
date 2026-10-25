@@ -310,3 +310,88 @@ describe('splitElementsForAiBackground — US-EDIT-012 composition branch', () =
     expect(useCanvasStore.getState().elements.map((el) => el.id)).toEqual(before.map((el) => el.id));
   });
 });
+
+/**
+ * BL-43 — on the background (real-photo) path the AI image IS the hero, so the
+ * template's hero image is dropped while it still shows the template's own
+ * placeholder, and kept once the user has put their own picture there.
+ */
+describe('splitElementsForAiBackground — BL-43 hero placeholder', () => {
+  // The shape premium-templates.data.ts produces: an inline SVG data URI.
+  const SVG_PLACEHOLDER = 'data:image/svg+xml;utf8,%0A%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E';
+
+  function heroImage(src: string, slot = 'property.heroImage'): ImageElement {
+    return { ...templateImage('ps-hero'), src, slot, zIndex: 0 } as ImageElement;
+  }
+
+  const canvasWith = (hero: ImageElement): CanvasElement[] => [
+    hero,
+    slotText('tpl-price', 'property.price'),
+    templateImage('template-logo'),
+  ];
+
+  it('background: drops a hero that still shows the template placeholder', () => {
+    const { retained, replacedHeroPlaceholder, discardedSlots } =
+      splitElementsForAiBackground(canvasWith(heroImage(SVG_PLACEHOLDER)), 'background');
+
+    expect(retained.map((el) => el.id)).toEqual(['tpl-price', 'template-logo']);
+    expect(replacedHeroPlaceholder).toBe(true);
+    // Not a fact-layer discard — the poster toast must not fire for this.
+    expect(discardedSlots).toEqual([]);
+  });
+
+  it('background: keeps a hero the user filled with their own photo', () => {
+    const { retained, replacedHeroPlaceholder } = splitElementsForAiBackground(
+      canvasWith(heroImage('data:image/jpeg;base64,/9j/4AAQSkZJRg')), 'background',
+    );
+    expect(retained.map((el) => el.id)).toContain('ps-hero');
+    expect(replacedHeroPlaceholder).toBe(false);
+  });
+
+  it('background: keeps a hero set from a hosted URL', () => {
+    const { retained } = splitElementsForAiBackground(
+      canvasWith(heroImage('https://assets.example.com/photo.jpg')), 'background',
+    );
+    expect(retained.map((el) => el.id)).toContain('ps-hero');
+  });
+
+  it('absent composition behaves exactly like background here too', () => {
+    const withFlag = splitElementsForAiBackground(canvasWith(heroImage(SVG_PLACEHOLDER)), 'background');
+    const legacy = splitElementsForAiBackground(canvasWith(heroImage(SVG_PLACEHOLDER)));
+    expect(legacy.retained.map((el) => el.id)).toEqual(withFlag.retained.map((el) => el.id));
+    expect(legacy.replacedHeroPlaceholder).toBe(true);
+  });
+
+  it('background: other placeholder images are left alone (gallery, logo, agent photo)', () => {
+    const others: CanvasElement[] = [
+      heroImage(SVG_PLACEHOLDER, 'property.galleryImage'),
+      { ...heroImage(SVG_PLACEHOLDER, 'brand.logo'), id: 'tpl-logo' } as ImageElement,
+      { ...heroImage(SVG_PLACEHOLDER, 'agent.photo'), id: 'tpl-agent' } as ImageElement,
+    ];
+    const { retained, replacedHeroPlaceholder } = splitElementsForAiBackground(others, 'background');
+    expect(retained).toHaveLength(3);
+    expect(replacedHeroPlaceholder).toBe(false);
+  });
+
+  it('poster: the hero still goes through the slot rule, not this one', () => {
+    const { retained, discardedSlots, replacedHeroPlaceholder } =
+      splitElementsForAiBackground(canvasWith(heroImage(SVG_PLACEHOLDER)), 'poster');
+    expect(retained.map((el) => el.id)).toEqual(['template-logo']);
+    expect(discardedSlots).toContain('property.heroImage');
+    expect(replacedHeroPlaceholder).toBe(false);
+  });
+
+  it('one undo brings the placeholder back after a background placement', () => {
+    const before = canvasWith(heroImage(SVG_PLACEHOLDER));
+    useCanvasStore.setState({ elements: before, history: { past: [], future: [] } });
+
+    const { retained } = splitElementsForAiBackground(before, 'background');
+    const store = useCanvasStore.getState();
+    store.pushToHistory(before);
+    store.loadCanvas({ elements: [aiImage('ai-gen-2'), ...retained], selectedElementIds: [] });
+    expect(useCanvasStore.getState().elements.map((el) => el.id)).not.toContain('ps-hero');
+
+    useCanvasStore.getState().undo();
+    expect(useCanvasStore.getState().elements.map((el) => el.id)).toContain('ps-hero');
+  });
+});
