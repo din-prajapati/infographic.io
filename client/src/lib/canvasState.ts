@@ -397,6 +397,12 @@ export function splitElementsForAiBackground(
   // Treating whitespace as a real slot would silently delete the layer.
   const isSlotLayer = (el: CanvasElement) =>
     displacesSlots && typeof el.slot === 'string' && el.slot.trim().length > 0;
+  // BL-44 — a frame (price pill, CTA bar, scrim) exists only to hold slot text.
+  // A poster displaces every slot layer, so its frames go too; left behind they
+  // float empty over the poster. Not reported in discardedSlots, so the toast's
+  // "N template fields" count stays a count of facts, not of decoration.
+  const isFrameLayer = (el: CanvasElement) =>
+    displacesSlots && typeof el.frameOf === 'string' && el.frameOf.trim().length > 0;
   // BL-43 — the background-path counterpart. A poster already drops the hero
   // through isSlotLayer, so this only ever fires when that one does not.
   const isUnfilledHeroPlaceholder = (el: CanvasElement) =>
@@ -418,6 +424,7 @@ export function splitElementsForAiBackground(
         !isAiBackground(el) &&
         !isExtractedLayer(el) &&
         !isSlotLayer(el) &&
+        !isFrameLayer(el) &&
         !isUnfilledHeroPlaceholder(el),
     ),
   };
