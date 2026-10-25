@@ -135,6 +135,34 @@ log('🚀 Starting NestJS API server on port 3001...');
 
 const app = express();
 
+// BL-41 — host of our own R2 asset bucket, allowed through /api/proxy-image.
+//
+// This Express process never loads .env (only NestJS does, via ConfigModule),
+// so in local dev process.env.R2_PUBLIC_URL is empty and the proxy would refuse
+// every R2 image. On Railway the variable is injected into the environment, so
+// that wins. Otherwise read this ONE key from .env with dotenv.parse, which
+// returns an object and does not touch process.env — loading the whole file
+// into Express would change what the legacy routes see.
+//
+// dotenv is a devDependency and the production bundle keeps packages external,
+// so it is imported dynamically and never outside development.
+const R2_PUBLIC_HOST = await (async () => {
+  let raw = process.env.R2_PUBLIC_URL ?? '';
+  if (!raw && process.env.NODE_ENV !== 'production') {
+    try {
+      const { default: dotenv } = await import('dotenv');
+      raw = dotenv.parse(fs.readFileSync(path.resolve(process.cwd(), '.env'))).R2_PUBLIC_URL ?? '';
+    } catch {
+      raw = '';
+    }
+  }
+  try {
+    return raw ? new URL(raw).hostname : '';
+  } catch {
+    return '';
+  }
+})();
+
 // Image proxy route - fetches external images server-side to bypass browser CORS
 app.get('/api/proxy-image', async (req: Request, res: Response) => {
   const url = req.query.url as string;
@@ -143,9 +171,28 @@ app.get('/api/proxy-image', async (req: Request, res: Response) => {
   }
   // Only allow Ideogram AI and other known image hosts
   const allowedHosts = ['ideogram.ai', 'ideogram.com', 'openai.com', 'oaidalleapiprodscus.blob.core.windows.net'];
+
+  // BL-41: our own asset host must be proxyable too. Canvas export loads images
+  // with crossOrigin='anonymous' (mandatory — otherwise toDataURL() throws on a
+  // tainted canvas), which requires a CORS header the R2 bucket does not send.
+  // Routing those loads through here supplies one.
+  //
+  // Derived from R2_PUBLIC_URL rather than hardcoded because the host differs
+  // per environment — staging serves from *.r2.dev, production from the
+  // assets.buildographic.com custom domain. Hardcoding either would fix the
+  // export in one environment and leave it broken in the other.
+  if (R2_PUBLIC_HOST) allowedHosts.push(R2_PUBLIC_HOST);
+
   try {
     const parsed = new URL(url);
-    if (!allowedHosts.some(h => parsed.hostname.endsWith(h))) {
+    // Exact host, or a subdomain of an allowed host. The previous check was a
+    // bare endsWith(), which also matched `evil-ideogram.ai` and any other
+    // host merely ending in an allowed suffix. Tightened here because this
+    // edit adds an entry to the same list.
+    const hostAllowed = allowedHosts.some(
+      h => parsed.hostname === h || parsed.hostname.endsWith(`.${h}`),
+    );
+    if (!hostAllowed) {
       return res.status(403).json({ error: 'Host not allowed' });
     }
   } catch {
