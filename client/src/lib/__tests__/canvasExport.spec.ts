@@ -22,6 +22,7 @@ import {
   wrapTextToWidth,
   computeObjectFitDraw,
   computeCropSourceRect,
+  toLoadableImageSrc,
 } from '@/lib/canvasExport';
 
 // ---------------------------------------------------------------------------
@@ -232,5 +233,73 @@ describe('computeCropSourceRect — crop source rect contract (ImageElement.tsx:
     const crop = { x: 0, y: 0, width: 1920, height: 1080 };
     const result = computeCropSourceRect(crop);
     expect(result).toEqual({ sx: 0, sy: 0, sw: 1920, sh: 1080 });
+  });
+});
+
+/**
+ * BL-41 — toLoadableImageSrc
+ *
+ * The defect these pin: canvas export sets img.crossOrigin='anonymous' (it must,
+ * or toDataURL() throws on a tainted canvas), which makes the browser demand an
+ * Access-Control-Allow-Origin header. The R2 bucket serving AI imagery sends
+ * none, so every AI image failed to load — and the old onerror called resolve(),
+ * so the export reported success with the design missing.
+ *
+ * The editor preview never showed this because it draws the image as a CSS
+ * background-image, and CSS needs no CORS.
+ *
+ * jsdom serves these tests from http://localhost:3000.
+ */
+describe('toLoadableImageSrc (BL-41)', () => {
+  const R2 =
+    'https://pub-c4533d683e4e45c68ab89280d537e997.r2.dev/infographics/abc/image-v0.jpg';
+
+  it('routes a cross-origin R2 image through the proxy', () => {
+    expect(toLoadableImageSrc(R2)).toBe(
+      `/api/proxy-image?url=${encodeURIComponent(R2)}`,
+    );
+  });
+
+  it('round-trips the original URL through the proxy parameter without corruption', () => {
+    const proxied = toLoadableImageSrc(R2);
+    const recovered = new URL(proxied, 'http://localhost:3000').searchParams.get('url');
+    expect(recovered).toBe(R2);
+  });
+
+  it('encodes a query string in the source URL so it cannot truncate the proxy parameter', () => {
+    const signed = 'https://cdn.example.com/a.png?exp=123&sig=deadbeef';
+    const proxied = toLoadableImageSrc(signed);
+    expect(proxied).not.toContain('&sig=');
+    expect(
+      new URL(proxied, 'http://localhost:3000').searchParams.get('url'),
+    ).toBe(signed);
+  });
+
+  it('leaves a data: URL untouched — inline bytes need no proxy', () => {
+    const data = 'data:image/png;base64,iVBORw0KGgo=';
+    expect(toLoadableImageSrc(data)).toBe(data);
+  });
+
+  it('leaves a blob: URL untouched', () => {
+    const blob = 'blob:http://localhost:3000/9f1c-uuid';
+    expect(toLoadableImageSrc(blob)).toBe(blob);
+  });
+
+  it('leaves a same-origin absolute URL untouched', () => {
+    expect(toLoadableImageSrc('http://localhost:3000/uploads/x.png')).toBe(
+      'http://localhost:3000/uploads/x.png',
+    );
+  });
+
+  it('leaves a same-origin relative path untouched', () => {
+    expect(toLoadableImageSrc('/uploads/x.png')).toBe('/uploads/x.png');
+  });
+
+  it('returns an unparseable src unchanged rather than guessing a repair', () => {
+    expect(toLoadableImageSrc('not a url at all')).toBe('not a url at all');
+  });
+
+  it('returns empty string unchanged', () => {
+    expect(toLoadableImageSrc('')).toBe('');
   });
 });

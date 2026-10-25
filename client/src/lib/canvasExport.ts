@@ -527,8 +527,54 @@ export function computeCropSourceRect(crop: {
  *  - crop:      applies element.crop when present (previously ignored)
  *  - isAiImport: treated as objectFit:'contain' (matches preview background-size:contain)
  */
+/**
+ * BL-41 — resolve an element's `src` to something the export canvas can
+ * actually load.
+ *
+ * Two constraints pull in opposite directions and both are non-negotiable:
+ *
+ *  1. `img.crossOrigin = 'anonymous'` must stay. Without it a cross-origin
+ *     image taints the canvas and `toDataURL()` throws SecurityError, which
+ *     kills the export outright (and the thumbnail path in canvasState.ts with
+ *     it).
+ *  2. Setting it makes the browser REQUIRE an `Access-Control-Allow-Origin`
+ *     header from the image host. AI imagery is served from the R2 bucket,
+ *     which returns none — verified directly: 200 OK, correct content-type,
+ *     zero `access-control-*` headers.
+ *
+ * So every AI image failed to load on export while rendering perfectly in the
+ * editor, because the preview draws it as a CSS `background-image` and CSS
+ * needs no CORS. That asymmetry is why this survived: the editor could never
+ * show the bug.
+ *
+ * `/api/proxy-image` re-serves the bytes from our own origin with
+ * `Access-Control-Allow-Origin: *`, satisfying both constraints at once. It
+ * already existed for exactly this purpose; the export path simply never used
+ * it.
+ *
+ * Same-origin and inline sources are returned untouched — proxying them would
+ * add a network hop for no benefit.
+ *
+ * Exported for unit testing.
+ */
+export function toLoadableImageSrc(src: string): string {
+  if (!src) return src;
+  if (src.startsWith('data:') || src.startsWith('blob:')) return src;
+
+  try {
+    const url = new URL(src, window.location.href);
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') return src;
+    if (url.origin === window.location.origin) return src;
+    return `/api/proxy-image?url=${encodeURIComponent(url.href)}`;
+  } catch {
+    // Unparseable src — hand it to the browser unchanged and let onerror
+    // report it, rather than guessing at a repair here.
+    return src;
+  }
+}
+
 async function renderImageElement(ctx: CanvasRenderingContext2D, element: ImageElement): Promise<void> {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     const img = new Image();
     img.crossOrigin = 'anonymous';
 
@@ -610,12 +656,30 @@ async function renderImageElement(ctx: CanvasRenderingContext2D, element: ImageE
       resolve();
     };
     
+    // Proxy first: AI imagery lives on R2, which sends no CORS header, so the
+    // proxy is the route that works for the common case. If the proxy refuses
+    // the host (it only allows a short list), retry the original URL directly —
+    // hosts that DO send CORS headers, such as the Unsplash fallback images in
+    // ai-orchestrator.service.ts, exported fine before BL-41 and must keep doing so.
+    const proxiedSrc = toLoadableImageSrc(element.src);
+    let triedDirect = proxiedSrc === element.src;
+
     img.onerror = () => {
-      console.error('Failed to load image:', element.src);
-      resolve(); // Continue even if image fails
+      if (!triedDirect) {
+        triedDirect = true;
+        img.src = element.src;
+        return;
+      }
+      // BL-41 — this used to call resolve(), which made a failed image load
+      // indistinguishable from a successful one. The export then completed, the
+      // caller saw `true`, and the user was told "Design exported!" while the
+      // file they received was missing a layer. For an AI design that layer is
+      // the entire design. Failing loudly is the point: a wrong file that
+      // claims to be right is worse than no file.
+      reject(new Error(`Export failed: could not load image ${element.src}`));
     };
-    
-    img.src = element.src;
+
+    img.src = proxiedSrc;
   });
 }
 
