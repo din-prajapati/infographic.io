@@ -263,6 +263,91 @@ export function verifyAndRepairV4JsonPrompt(
   return { jsonPrompt: jp, repairs };
 }
 
+/**
+ * BL-46 — appended to the text prompt ONLY when it goes to magic-prompt-v4.
+ *
+ * Left to itself the converter writes its own copy into the layout (agency
+ * names, monograms, taglines, specs, and once a phone number and website).
+ * Measured 2026-10-25 on one listing: without this line, invented text in 4 of
+ * 4 conversions; with it, 0 of 4 — every layout carried exactly our facts.
+ * Not added to buildImagePrompt itself: that prompt also feeds the V3 fallback
+ * verbatim and is pinned by its own experiment.
+ */
+export const MAGIC_PROMPT_TEXT_ONLY_INSTRUCTION =
+  '- Text: use ONLY the text listed above, exactly as written. Do not add any other words: ' +
+  'no brand, agency or company names, logos, monograms or initials, taglines, calls to action, ' +
+  'phone numbers, email addresses, websites, social handles, or property specifications that are not listed.';
+
+/** The text prompt as sent to magic-prompt-v4 (BL-46). */
+export function buildMagicPromptInput(imagePrompt: string): string {
+  return `${imagePrompt}\n${MAGIC_PROMPT_TEXT_ONLY_INSTRUCTION}`;
+}
+
+/**
+ * Upper-cased word tokens. Thousands separators are joined first ("2,400" →
+ * "2400") so a number reads the same however the converter formats it.
+ */
+function factTokens(s: string): string[] {
+  return s
+    .toUpperCase()
+    .replace(/(\d),(?=\d)/g, '$1')
+    .split(/[^\p{L}\p{N}.₹$€£]+/u)
+    .map((t) => t.replace(/^\.+|\.+$/g, ''))
+    .filter(Boolean);
+}
+
+export interface StripInventedTextResult {
+  jsonPrompt: Record<string, any>;
+  /** The text of every element removed, for the generation log. */
+  removed: string[];
+}
+
+/**
+ * BL-46 — drop text the magic-prompt conversion invented.
+ *
+ * magic-prompt-v4 art-directs well but writes its own copy into the layout:
+ * measured 2026-10-25 on one listing over 4 runs, it added a fictional
+ * brokerage ("LUXE ESTATES MUMBAI", "MERIDIAN ESTATES") in 3, specs that were
+ * not in the prompt ("3 BHK · 2,400 SQ FT · SEA VIEW") in all 4, and in one a
+ * phone number and website ("+91 98200 55500 · luxeestates.in/…") that the
+ * image model then rendered legibly. A customer's listing must carry only the
+ * facts the customer gave us — the BL-40 rule, applied to the poster path.
+ *
+ * A text element survives only if every word in it appears in one of the
+ * expected values. That keeps a headline split across two lines, an address
+ * reformatted with different punctuation, or "₹1.9 Cr" set as "₹1.9 CR", and
+ * removes anything carrying a word we never supplied. Taglines and calls to
+ * action ("SCHEDULE A VIEWING") go too: they are harmless on their own, but no
+ * rule can tell a tagline from a made-up agency name, and only the second is a
+ * liability.
+ *
+ * Run BEFORE verifyAndRepairV4JsonPrompt: a fact the converter merged with
+ * invented words is removed here and then re-added cleanly by the repair step.
+ * Non-text elements (shapes, rules, badges) are left alone.
+ */
+export function stripInventedTextElements(
+  jsonPrompt: Record<string, any>,
+  expected: ExpectedText[],
+): StripInventedTextResult {
+  const jp = JSON.parse(JSON.stringify(jsonPrompt));
+  const elements: Record<string, any>[] | undefined = jp?.compositional_deconstruction?.elements;
+  if (!Array.isArray(elements)) return { jsonPrompt: jp, removed: [] };
+
+  const allowed = new Set(expected.flatMap((e) => factTokens(e.value)));
+  const removed: string[] = [];
+
+  jp.compositional_deconstruction.elements = elements.filter((el) => {
+    if (el?.type !== 'text' || typeof el.text !== 'string') return true;
+    const tokens = factTokens(el.text);
+    if (tokens.length === 0) return true; // punctuation-only: nothing to invent
+    if (tokens.every((t) => allowed.has(t))) return true;
+    removed.push(el.text);
+    return false;
+  });
+
+  return { jsonPrompt: jp, removed };
+}
+
 /** Style preset applied to the text prompt (V2/V3 path and V4 pre-conversion). */
 export function applyStylePreset(prompt: string, style?: string): string {
   if (!style) return prompt;
