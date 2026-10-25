@@ -194,7 +194,7 @@ Undo"; (b) fails as "Undo restores the layers and silently keeps the overwritten
 - [x] Gate 2 passes (frontend story — the manual export inspection, milestone doc §Gate 2)
 - [ ] PR merged (milestone PR #64)
 
-> **DoD note:** TC-EDIT-012-07 (AC6) is ⚠️ — no pre-milestone template or AI design exists in the dev DB to reopen. Covered by code inspection, unit tests and Gate 2 step 4; the check against a real production design is a post-deploy item on PR #64. Recorded 2026-10-25; needs your sign-off before close.
+> **DoD note:** TC-EDIT-012-07 (AC6) is ⚠️ — no pre-milestone template or AI design exists in the dev DB to reopen. Covered by code inspection, unit tests and Gate 2 step 4; the check against a real production design is a post-deploy item on PR #64. Recorded 2026-10-25. **Exception approved by Dinesh, 2026-10-25:** accepted with the post-deploy production check as the closing condition for AC6.
 - [x] [TASKS.md](./TASKS.md) task list fully checked
 - [ ] STORY.md status updated to ✅ Done
 
