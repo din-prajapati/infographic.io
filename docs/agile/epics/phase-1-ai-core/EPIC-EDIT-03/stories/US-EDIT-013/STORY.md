@@ -7,14 +7,14 @@ updated: 2026-10-24
 
 # Story Card — US-EDIT-013 — Remove the dead AI chat panel code
 
-> **Status:** 🟡 In Progress — all ACs verified 2026-10-25; closes when milestone PR #64 merges
+> **Status:** ✅ Done — merged in [#64](https://github.com/din-prajapati/infographic.io/pull/64) (2026-10-25)
 > **Epic:** [EPIC-EDIT-03](../../EPIC.md)
 > **Milestone:** [M-EDIT-04-ai-composition-over-template](../../milestones/M-EDIT-04-ai-composition-over-template.md)
 > **Linear:** LIN-XXX
 > **Size:** S
 > **Stage:** **Lane 2 — parallel with US-EDIT-012** · worktree `../bg-cleanup`
 > **Engine:** Claude (primary)
-> **Created:** 2026-10-24 | **Closed:** —
+> **Created:** 2026-10-24 | **Closed:** 2026-10-25
 
 ```yaml
 depends_on: []                                    # independent of Foundation — deletes only
@@ -134,9 +134,9 @@ today finds it, concludes the rename never shipped, and re-files a closed defect
 - [x] All test cases run and recorded
 - [x] Gate 1 passes (`npm run check`, `npm run test:unit:client`)
 - [x] Gate 2 passes (frontend story — panel behaviour unchanged)
-- [ ] PR merged (milestone PR #64)
+- [x] PR merged (milestone PR #64)
 - [x] [TASKS.md](./TASKS.md) task list fully checked
-- [ ] STORY.md status updated to ✅ Done
+- [x] STORY.md status updated to ✅ Done
 
 ---
 

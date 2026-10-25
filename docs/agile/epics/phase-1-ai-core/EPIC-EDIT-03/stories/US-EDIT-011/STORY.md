@@ -7,14 +7,14 @@ updated: 2026-10-24
 
 # Story Card — US-EDIT-011 — Persist the AI composition flag end to end
 
-> **Status:** 🟡 In Progress — all ACs verified 2026-10-25; closes when milestone PR #64 merges
+> **Status:** ✅ Done — merged in [#64](https://github.com/din-prajapati/infographic.io/pull/64) (2026-10-25)
 > **Epic:** [EPIC-EDIT-03](../../EPIC.md)
 > **Milestone:** [M-EDIT-04-ai-composition-over-template](../../milestones/M-EDIT-04-ai-composition-over-template.md)
 > **Linear:** LIN-XXX
 > **Size:** M
 > **Stage:** **Foundation — sequential. Merges before either lane forks.**
 > **Engine:** Claude (primary)
-> **Created:** 2026-10-24 | **Closed:** —
+> **Created:** 2026-10-24 | **Closed:** 2026-10-25
 
 ```yaml
 depends_on: []
@@ -154,9 +154,9 @@ its own; US-EDIT-012 is what consumes it.
 - [x] All test cases run and recorded
 - [x] Gate 1 passes (`npm run check`, `npm run test:unit:backend`)
 - [x] Gate 4 passes (backend story — integration suite against `.env.test`)
-- [ ] PR merged (milestone PR #64)
+- [x] PR merged (milestone PR #64)
 - [x] [TASKS.md](./TASKS.md) task list fully checked
-- [ ] STORY.md status updated to ✅ Done
+- [x] STORY.md status updated to ✅ Done
 
 ---
 

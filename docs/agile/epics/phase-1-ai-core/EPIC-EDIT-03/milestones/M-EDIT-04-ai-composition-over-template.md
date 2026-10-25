@@ -8,7 +8,7 @@ created: 2026-10-24
 # M-EDIT-04-ai-composition-over-template — AI Composition Over a Template
 
 > **Epic:** [EPIC-EDIT-03](../EPIC.md)
-> **Status:** 🟡 In Progress — Gate 2 passed 2026-10-25; PR #64 open
+> **Status:** ✅ Done — closed 2026-10-25, merged in [#64](https://github.com/din-prajapati/infographic.io/pull/64) (rebase-and-merge)
 > **Target date:** TBD — one build day once D1–D5 are decided
 > **Branch:** `feat/edit/m-04-ai-composition-over-template` (shared by all three stories)
 > **Closes:** [BL-27](../../../../BACKLOG.md) (P2)
@@ -56,9 +56,9 @@ paths.
 
 | Order | Story | Title | Size | Blocked By | Status | PR |
 |:-----:|-------|-------|:----:|------------|:------:|:--:|
-| 1 | [US-EDIT-011](../stories/US-EDIT-011/STORY.md) | Persist the AI composition flag end to end | M | — | 🟡 | #64 |
-| 2 | [US-EDIT-012](../stories/US-EDIT-012/STORY.md) | Branch the layer rule on composition, with one undo | M | US-EDIT-011 **merged** | 🟡 | #64 |
-| 2 | [US-EDIT-013](../stories/US-EDIT-013/STORY.md) | Remove the dead AI chat panel code | S | — | 🟡 | #64 |
+| 1 | [US-EDIT-011](../stories/US-EDIT-011/STORY.md) | Persist the AI composition flag end to end | M | — | ✅ | [#64](https://github.com/din-prajapati/infographic.io/pull/64) |
+| 2 | [US-EDIT-012](../stories/US-EDIT-012/STORY.md) | Branch the layer rule on composition, with one undo | M | US-EDIT-011 **merged** | ✅ | [#64](https://github.com/din-prajapati/infographic.io/pull/64) |
+| 2 | [US-EDIT-013](../stories/US-EDIT-013/STORY.md) | Remove the dead AI chat panel code | S | — | ✅ | [#64](https://github.com/din-prajapati/infographic.io/pull/64) |
 
 ### Operating model — one engine, cross-model verification
 
@@ -113,12 +113,12 @@ This is what makes the whole milestone revertible without touching stored data.
 - [x] Placing an AI poster over a template renders **one** price, one headline, one agent footer —
       the BL-27 capture is not reproducible.
 - [x] Placing an AI *background* (the real-photo path) is unchanged from today's behaviour.
-- [ ] ⚠️ **Pending post-deploy (PR #64)** — no pre-milestone template or AI design exists in the dev DB to reopen; covered by code inspection, unit tests and Gate 2 step 4 until then. A design saved before this milestone reopens identically after it — verified against a real
+- [x] _(Verified on production after deploy, 2026-10-25)_ A design saved before this milestone reopens identically after it — verified against a real
       saved design, not a fixture.
 - [x] One Undo press restores the pre-placement state, whatever D2 decides that state includes.
 - [x] `composition` is readable on the generation record and on every returned variation.
 - [x] ~950 lines of unreachable AI-chat code are gone and the panel behaves identically.
-- [ ] All stories above have status ✅ Done
+- [x] All stories above have status ✅ Done
 - [x] Verification gates pass for affected domains — Gate 1 mandatory; Gate 2 is the manual export
       inspection below.
 
@@ -186,6 +186,19 @@ shows as a thin strip. BL-42's fix makes the output take the photo's own aspect 
 placeholder covers most of it. Not caused by this milestone — AC2 holds, the background path behaves
 as before — but it is what a customer with a photo now sees. The D1 "empty furniture" finding above
 is filed as [BL-44](../../../../BACKLOG.md).
+
+---
+
+### Post-deploy verification — 2026-10-25
+
+`c9e908d` deployed to both environments (`/api/health` reports it on staging and production).
+
+| Check | Result |
+|-------|:------:|
+| `R2_PUBLIC_URL` set on both environments (BL-41's proxy depends on it) | ✅ staging: r2.dev bucket · production: `assets.buildographic.com` |
+| Image proxy allows our asset host and refuses a lookalike, both environments | ✅ 404 from upstream for a missing key · 403 for `evil-ideogram.ai` |
+| Staging: generation with a photo (BL-42) | ✅ completed, `composition: "background"`, image fetched through the proxy (200, PNG, 2560×1440) |
+| Production: existing design reopened (AC6) and exported (BL-41) | ✅ checked by Dinesh — reopens as before; the exported file matches the canvas |
 
 ---
 
