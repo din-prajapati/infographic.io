@@ -306,14 +306,17 @@ export class IdeogramService {
     generationId?: string,
   ): Promise<string> {
     const t0 = Date.now();
-    const resolution = V4_RESOLUTION[orientation || 'landscape'] || V4_RESOLUTION.landscape;
     const renderingSpeed = V4_RENDERING_SPEED[normalizeImageModel(model)] || 'DEFAULT';
 
     logGen({
       generationId: generationId ?? 'unknown',
       event: 'image:remix:start',
       imageModel: 'ideogram-4-remix',
-      resolution,
+      // BL-42: the remix path cannot honour an orientation — see the comment on
+      // the form below. Logged as the requested-but-not-applied value so the
+      // discrepancy is visible in logs rather than silently absent.
+      requestedOrientation: orientation ?? 'landscape',
+      resolutionApplied: 'source-image-aspect',
       renderingSpeed,
     });
 
@@ -330,7 +333,34 @@ export class IdeogramService {
       form.append('text_prompt', prompt);
       form.append('image_weight', String(REMIX_IMAGE_WEIGHT));
       form.append('rendering_speed', renderingSpeed);
-      form.append('resolution', resolution);
+
+      // BL-42 — `resolution` is deliberately NOT sent alongside `image_weight`.
+      //
+      // Ideogram now rejects the pair outright: "Supply either image_weight or a
+      // resolution that changes the aspect ratio, not both. Without a resolution,
+      // image_weight applies at the source image's aspect ratio." The two were
+      // accepted together when this was written — OQ-2's calibration run
+      // (2026-08-12) made six remix calls at resolution=2560x1440 with varying
+      // image_weight — so this is an upstream API change, not a latent bug. The
+      // effect was total: every generation with a photo returned 400.
+      //
+      // `image_weight` is the parameter that must survive, and it is not a
+      // tuning preference. OQ-2 measured the whole range on a real listing
+      // photo: at 75 the output is the photograph with NO text, which is exactly
+      // what the text-free background path (US-AI-051) asks for. At the API
+      // default the model bakes text back in AND invents listing facts — a
+      // photorealistic headshot of a person who does not exist and the phone
+      // number +91 98765 43210, neither of which appeared in the prompt. Trading
+      // image_weight for orientation control would put fabricated contact
+      // details into a customer's listing: the BL-40 defect class, reintroduced.
+      //
+      // The cost is real and accepted: output now takes the SOURCE photo's
+      // aspect ratio rather than `orientation`, so a 3:2 photo on a 9:16 story
+      // canvas letterboxes under the AI background's objectFit:'contain'. Wrong
+      // framing is recoverable by the user; a fabricated RERA-adjacent identity
+      // is not. Restoring both needs the source photo cropped to the target
+      // aspect before upload, which needs an image library this project does not
+      // yet carry — follow-up, not a blocker.
 
       const response = await axios.post(IDEOGRAM_V4_REMIX_URL, form, {
         // Do NOT set Content-Type here — axios must set the multipart boundary automatically

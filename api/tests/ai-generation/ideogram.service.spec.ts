@@ -156,6 +156,62 @@ describe('IdeogramService', () => {
       expect(calledUrl).not.toContain('/v1/ideogram-v4/generate');
       expect(calledUrl).not.toContain('/v1/ideogram-v3/');
     });
+
+    // ────────────────────────────────────────────────────────────────────────
+    // BL-42 — `resolution` and `image_weight` are mutually exclusive upstream.
+    //
+    // Ideogram rejects the pair: "Supply either image_weight or a resolution
+    // that changes the aspect ratio, not both." Sending both returned 400 for
+    // EVERY photo-backed generation, surfaced to the user as "Failed to compose
+    // image with source photo".
+    //
+    // These pin the resolution of that conflict in the direction that keeps
+    // image_weight. That is not a preference: OQ-2 (2026-08-12) measured the
+    // range on a real listing photo and found 75 yields the photograph with no
+    // text — what US-AI-051's text-free path wants — while the API default
+    // bakes text back in and invents an agent headshot and phone number.
+    // Flipping this to keep `resolution` would put fabricated contact details
+    // into customer listings (the BL-40 defect class).
+    // ────────────────────────────────────────────────────────────────────────
+    it('BL-42: never sends resolution and image_weight together', async () => {
+      const appendSpy = vi.spyOn(FormData.prototype, 'append');
+      await service.composeWithSourceImage('Design', validPhotoName, 'ideogram-4', 'portrait', 'gen-bl42-a');
+
+      const appendedKeys = appendSpy.mock.calls.map(([key]) => key);
+      expect(appendedKeys).toContain('image_weight');
+      expect(appendedKeys).not.toContain('resolution');
+    });
+
+    it('BL-42: keeps image_weight at the OQ-2 calibrated value, not the API default', async () => {
+      const appendSpy = vi.spyOn(FormData.prototype, 'append');
+      await service.composeWithSourceImage('Design', validPhotoName, 'ideogram-4', 'landscape', 'gen-bl42-b');
+
+      const weightCall = appendSpy.mock.calls.find(([key]) => key === 'image_weight');
+      expect(weightCall).toBeDefined();
+      expect(weightCall![1]).toBe('75');
+    });
+
+    it('BL-42: omits resolution for every orientation, not just the default one', async () => {
+      for (const orientation of ['landscape', 'portrait', 'square', undefined]) {
+        vi.restoreAllMocks();
+        (fs.readFileSync as ReturnType<typeof vi.fn>).mockReturnValue(Buffer.from('fake-photo'));
+        (axios.post as ReturnType<typeof vi.fn>).mockResolvedValue({
+          data: { data: [{ url: 'https://cdn.example.com/remix.jpg' }] },
+        });
+
+        const appendSpy = vi.spyOn(FormData.prototype, 'append');
+        await service.composeWithSourceImage(
+          'Design',
+          validPhotoName,
+          'ideogram-4',
+          orientation,
+          `gen-bl42-${orientation ?? 'none'}`,
+        );
+
+        const appendedKeys = appendSpy.mock.calls.map(([key]) => key);
+        expect(appendedKeys, `orientation=${orientation}`).not.toContain('resolution');
+      }
+    });
   });
 });
 
