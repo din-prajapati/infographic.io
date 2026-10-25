@@ -17,10 +17,10 @@ updated: 2026-10-24
 
 ## Four Pillars Pre-flight
 
-- [ ] **Brain** — STORY.md filled, 7 ACs, all file-specific
-- [ ] **Muscle** — T0-T5 below
-- [ ] **Map** — [ARCHITECTURE.mmd](../../ARCHITECTURE.mmd)
-- [ ] **Env** — no environment changes
+- [x] **Brain** — STORY.md filled, 7 ACs, all file-specific
+- [x] **Muscle** — T0-T5 below
+- [x] **Map** — [ARCHITECTURE.mmd](../../ARCHITECTURE.mmd)
+- [x] **Env** — no environment changes
 
 ---
 
@@ -119,8 +119,8 @@ grep -rn "restoreCanvasData" client/src
 
 ## Gates
 
-- [ ] Gate 1 — `npm run check`, `npm run test:unit:client`
-- [ ] Gate 2 — manual, milestone doc §Gate 2. **Step 5 (open the exported file) is non-negotiable** — BL-09 says preview and export disagree at full resolution.
+- [x] Gate 1 — `npm run check`, `npm run test:unit:client`
+- [x] Gate 2 — manual, milestone doc §Gate 2. **Step 5 (open the exported file) is non-negotiable** — BL-09 says preview and export disagree at full resolution.
 
 ---
 

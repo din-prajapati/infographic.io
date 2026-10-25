@@ -7,7 +7,7 @@ updated: 2026-10-24
 
 # Story Card — US-EDIT-011 — Persist the AI composition flag end to end
 
-> **Status:** 🔲 Not Started
+> **Status:** 🟡 In Progress — all ACs verified 2026-10-25; closes when milestone PR #64 merges
 > **Epic:** [EPIC-EDIT-03](../../EPIC.md)
 > **Milestone:** [M-EDIT-04-ai-composition-over-template](../../milestones/M-EDIT-04-ai-composition-over-template.md)
 > **Linear:** LIN-XXX
@@ -67,24 +67,24 @@ its own; US-EDIT-012 is what consumes it.
 
 ## Acceptance Criteria
 
-- [ ] **AC1 [happy-path]:** When a generation is created with a non-empty `photoReference`,
+- [x] **AC1 [happy-path]:** When a generation is created with a non-empty `photoReference`,
       `ai-orchestrator.service.ts` persists `composition: 'background'` into the `Infographic`
       row's `propertyData` JSON.
-- [ ] **AC2 [happy-path]:** When a generation is created without a `photoReference`,
+- [x] **AC2 [happy-path]:** When a generation is created without a `photoReference`,
       the same path persists `composition: 'poster'`.
-- [ ] **AC3 [error-path]:** When a generation fails or is cancelled after creation, the persisted
+- [x] **AC3 [error-path]:** When a generation fails or is cancelled after creation, the persisted
       `composition` is still readable on the row — the value is written at creation, not on
       completion, so a failed run records what it attempted.
-- [ ] **AC4 [happy-path]:** `GET /infographics/generations/:id/variations` returns `composition` on
+- [x] **AC4 [happy-path]:** `GET /infographics/generations/:id/variations` returns `composition` on
       every item, and `ResultVariation` in `client/src/lib/api.ts:173` declares it as
       `composition?: AiComposition`.
-- [ ] **AC5 [error-path]:** When a pre-existing generation row has no stored `composition`, the
+- [x] **AC5 [error-path]:** When a pre-existing generation row has no stored `composition`, the
       variations endpoint returns the field **absent** rather than defaulting or throwing. Absent is
       the legacy signal US-EDIT-012 reads as `'background'`.
-- [ ] **AC6 [happy-path]:** `ImageElement` in `client/src/lib/canvasTypes.ts` declares
+- [x] **AC6 [happy-path]:** `ImageElement` in `client/src/lib/canvasTypes.ts` declares
       `aiComposition?: AiComposition`. Declaring it here — not in the canvas lane — is what lets
       Lane 1 and Lane 2 fork without either owning a shared type.
-- [ ] **AC7 [happy-path]:** Every text element in `api/scripts/data/premium-templates.data.ts` that
+- [x] **AC7 [happy-path]:** Every text element in `api/scripts/data/premium-templates.data.ts` that
       renders a listing or agent fact carries a `slot` tag, so US-EDIT-012's discard rule can see
       all of them. Verified per template, not assumed: a template that legitimately has no price
       is not a gap.
@@ -113,7 +113,7 @@ its own; US-EDIT-012 is what consumes it.
 ## Engineering / PR
 
 - **Branch:** `feat/edit/m-04-ai-composition-over-template` — **the milestone branch itself.** Foundation is not a worktree; it merges before the lanes fork.
-- **PR:** #_____ (milestone PR)
+- **PR:** #64 (milestone PR, rebase-and-merge)
 - **Primary files touched:**
   - `api/src/modules/ai-generation/services/ai-orchestrator.service.ts` — derive and pass `composition`
   - `api/src/modules/infographics/services/generations.service.ts` — persist at creation
@@ -137,12 +137,12 @@ its own; US-EDIT-012 is what consumes it.
 
 | TC ID | Type | Priority | Scenario | Status | Finding |
 |-------|------|:--------:|----------|:------:|---------|
-| TC-EDIT-011-01 | Unit | P0 | Given a generate request with `photoReference`, When the orchestrator runs, Then `propertyData.composition === 'background'` | 🔲 | |
-| TC-EDIT-011-02 | Unit | P0 | Given a generate request with no `photoReference`, When the orchestrator runs, Then `propertyData.composition === 'poster'` | 🔲 | |
-| TC-EDIT-011-03 | Unit | P0 | Given a row whose `propertyData` has no `composition`, When variations are fetched, Then the field is absent and no error is thrown | 🔲 | |
-| TC-EDIT-011-04 | Unit | P1 | Given a generation that fails after creation, When the row is read, Then `composition` is present | 🔲 | |
-| TC-EDIT-011-05 | Unit | P1 | Given the five seeded templates, When every text element is enumerated, Then each one rendering a listing or agent fact carries a `slot` tag (a template with no such element is not a gap) | 🔲 | |
-| TC-EDIT-011-06 | Unit | P0 | Given the merged Foundation, When `npm run check` runs across client and api, Then `AiComposition` resolves from both sides of the contract | 🔲 | |
+| TC-EDIT-011-01 | Unit | P0 | Given a generate request with `photoReference`, When the orchestrator runs, Then `propertyData.composition === 'background'` | ✅ | `ai-composition.spec.ts` — "returns 'background' when a listing photograph was supplied" |
+| TC-EDIT-011-02 | Unit | P0 | Given a generate request with no `photoReference`, When the orchestrator runs, Then `propertyData.composition === 'poster'` | ✅ | `ai-composition.spec.ts` — "returns 'poster' when no photograph was supplied" |
+| TC-EDIT-011-03 | Unit | P0 | Given a row whose `propertyData` has no `composition`, When variations are fetched, Then the field is absent and no error is thrown | ✅ | `ai-composition.spec.ts` — absent for a legacy row, key omitted, unrecognised value treated as absent |
+| TC-EDIT-011-04 | Unit | P1 | Given a generation that fails after creation, When the row is read, Then `composition` is present | ✅ | `ai-composition.spec.ts` — derived from the request DTO at creation, before any generation runs |
+| TC-EDIT-011-05 | Unit | P1 | Given the five seeded templates, When every text element is enumerated, Then each one rendering a listing or agent fact carries a `slot` tag (a template with no such element is not a gap) | ⚠️ | T4 verification pass (`12a0e19`): 36 `text()` sites, 33 tagged. 2 correctly untagged (labels). 1 real gap — Open House Flyer `[Feature]` ×6 — tagged `property.features` |
+| TC-EDIT-011-06 | Unit | P0 | Given the merged Foundation, When `npm run check` runs across client and api, Then `AiComposition` resolves from both sides of the contract | ✅ | `npm run check` clean on client + api, re-run after rebase onto `main` 2026-10-25 |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 
@@ -150,12 +150,12 @@ its own; US-EDIT-012 is what consumes it.
 
 ## Definition of Done
 
-- [ ] All ACs checked ✅
-- [ ] All test cases run and recorded
-- [ ] Gate 1 passes (`npm run check`, `npm run test:unit:backend`)
-- [ ] Gate 4 passes (backend story — integration suite against `.env.test`)
-- [ ] PR merged (milestone PR #_____)
-- [ ] [TASKS.md](./TASKS.md) task list fully checked
+- [x] All ACs checked ✅
+- [x] All test cases run and recorded
+- [x] Gate 1 passes (`npm run check`, `npm run test:unit:backend`)
+- [x] Gate 4 passes (backend story — integration suite against `.env.test`)
+- [ ] PR merged (milestone PR #64)
+- [x] [TASKS.md](./TASKS.md) task list fully checked
 - [ ] STORY.md status updated to ✅ Done
 
 ---

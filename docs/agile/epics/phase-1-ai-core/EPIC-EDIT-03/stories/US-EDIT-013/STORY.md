@@ -7,7 +7,7 @@ updated: 2026-10-24
 
 # Story Card — US-EDIT-013 — Remove the dead AI chat panel code
 
-> **Status:** 🔲 Not Started
+> **Status:** 🟡 In Progress — all ACs verified 2026-10-25; closes when milestone PR #64 merges
 > **Epic:** [EPIC-EDIT-03](../../EPIC.md)
 > **Milestone:** [M-EDIT-04-ai-composition-over-template](../../milestones/M-EDIT-04-ai-composition-over-template.md)
 > **Linear:** LIN-XXX
@@ -73,11 +73,11 @@ today finds it, concludes the rename never shipped, and re-files a closed defect
 
 ## Acceptance Criteria
 
-- [ ] **AC1 [happy-path]:** The six orphaned components are deleted and `client/src/components/ai-chat/index.ts` no longer exports them. `npm run check` passes with no dangling import.
-- [ ] **AC2 [happy-path]:** The `EnhancedSuggestionsPanel` import, the `showEnhancedSuggestions` state and the mount are removed from `AIChatBox.tsx`, and the component file is deleted. Its only two importers — `AIChatBox.tsx` and the orphaned `AIPropertyChatInput.tsx` — are both owned by this story, so the deletion typechecks inside this worktree with no cross-lane coordination.
-- [ ] **AC3 [happy-path]:** The AI chat panel opens, accepts input, uploads a photo, generates, and renders variations exactly as before — no behaviour change is observable in the panel.
-- [ ] **AC4 [error-path]:** A repo-wide grep for `"Real Estate Templates"` returns only the legitimate pricing-page feature bullet in `client/src/pages/PricingPage.tsx:102` — no component copy survives.
-- [ ] **AC5 [error-path]:** Orphan status is **re-verified at implementation time**, not taken from this card. Any file that has gained an importer since 2026-10-24 is reported and left in place rather than deleted.
+- [x] **AC1 [happy-path]:** The six orphaned components are deleted and `client/src/components/ai-chat/index.ts` no longer exports them. `npm run check` passes with no dangling import.
+- [x] **AC2 [happy-path]:** The `EnhancedSuggestionsPanel` import, the `showEnhancedSuggestions` state and the mount are removed from `AIChatBox.tsx`, and the component file is deleted. Its only two importers — `AIChatBox.tsx` and the orphaned `AIPropertyChatInput.tsx` — are both owned by this story, so the deletion typechecks inside this worktree with no cross-lane coordination.
+- [x] **AC3 [happy-path]:** The AI chat panel opens, accepts input, uploads a photo, generates, and renders variations exactly as before — no behaviour change is observable in the panel.
+- [x] **AC4 [error-path]:** A repo-wide grep for `"Real Estate Templates"` returns only the legitimate pricing-page feature bullet in `client/src/pages/PricingPage.tsx:102` — no component copy survives.
+- [x] **AC5 [error-path]:** Orphan status is **re-verified at implementation time**, not taken from this card. Any file that has gained an importer since 2026-10-24 is reported and left in place rather than deleted.
 
 ---
 
@@ -95,7 +95,7 @@ today finds it, concludes the rename never shipped, and re-files a closed defect
 ## Engineering / PR
 
 - **Branch:** `feat/edit/l2-chat-panel-dead-code`, cut from the milestone branch (worktree: `../bg-cleanup`)
-- **PR:** squash into the milestone branch
+- **PR:** #64 (milestone PR, rebase-and-merge)
 - **Primary files touched:**
   - `client/src/components/ai-chat/{AIPropertyChatInput,AIChatInput,TemplateQuickActions,TemplateDropdown,AIFloatingButton,AIChatHeader}.tsx` — delete
   - `client/src/components/ai-chat/EnhancedSuggestionsPanel.tsx` — delete
@@ -108,11 +108,11 @@ today finds it, concludes the rename never shipped, and re-files a closed defect
 
 | TC ID | Type | Priority | Scenario | Status | Finding |
 |-------|------|:--------:|----------|:------:|---------|
-| TC-EDIT-013-01 | Manual | P0 | Given the orphan scan is re-run, When each of the six files is checked, Then none has an importer outside the barrel | 🔲 | |
-| TC-EDIT-013-02 | Unit | P0 | Given the deletions, When `npm run check` runs, Then it exits 0 with no unresolved import | 🔲 | |
-| TC-EDIT-013-03 | Manual | P0 | Given the panel is opened, When a prompt is sent and a photo attached, Then generation completes and variations render as before | 🔲 | |
-| TC-EDIT-013-04 | Manual | P1 | Given a repo-wide grep for `"Real Estate Templates"`, When run, Then only `PricingPage.tsx:102` matches | 🔲 | |
-| TC-EDIT-013-05 | Unit | P1 | Given the full client suite, When run, Then no test referenced a deleted component | 🔲 | |
+| TC-EDIT-013-01 | Manual | P0 | Given the orphan scan is re-run, When each of the six files is checked, Then none has an importer outside the barrel | ✅ | Re-scanned 2026-10-25: 7 deleted files, zero references in any `.ts`/`.tsx` |
+| TC-EDIT-013-02 | Unit | P0 | Given the deletions, When `npm run check` runs, Then it exits 0 with no unresolved import | ✅ | `npm run check` exits 0 |
+| TC-EDIT-013-03 | Manual | P0 | Given the panel is opened, When a prompt is sent and a photo attached, Then generation completes and variations render as before | ✅ | Gate 2 step 1, 2026-10-25: panel prompt + attached photo → 3 variations rendered → placed |
+| TC-EDIT-013-04 | Manual | P1 | Given a repo-wide grep for `"Real Estate Templates"`, When run, Then only `PricingPage.tsx:102` matches | ⚠️ | Code matches only `PricingPage.tsx:102` plus an explanatory comment at `AIChatBox.tsx:1246`. Stale `.md` notes in `components/ai-chat/` still quote the old header — docs, not UI |
+| TC-EDIT-013-05 | Unit | P1 | Given the full client suite, When run, Then no test referenced a deleted component | ✅ | Client suite 301 passed / 1 skipped |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 
@@ -130,12 +130,12 @@ today finds it, concludes the rename never shipped, and re-files a closed defect
 
 ## Definition of Done
 
-- [ ] All ACs checked ✅
-- [ ] All test cases run and recorded
-- [ ] Gate 1 passes (`npm run check`, `npm run test:unit:client`)
-- [ ] Gate 2 passes (frontend story — panel behaviour unchanged)
-- [ ] PR merged (milestone PR #_____)
-- [ ] [TASKS.md](./TASKS.md) task list fully checked
+- [x] All ACs checked ✅
+- [x] All test cases run and recorded
+- [x] Gate 1 passes (`npm run check`, `npm run test:unit:client`)
+- [x] Gate 2 passes (frontend story — panel behaviour unchanged)
+- [ ] PR merged (milestone PR #64)
+- [x] [TASKS.md](./TASKS.md) task list fully checked
 - [ ] STORY.md status updated to ✅ Done
 
 ---
