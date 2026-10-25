@@ -134,6 +134,36 @@ Step 5 is non-negotiable. [BL-09](../../../../BACKLOG.md) records that the edita
 does not match the composed preview at full resolution, so a clean preview is not evidence of a
 clean export.
 
+### Gate 2 — RUN 2026-10-25, through Claude in Chrome, on local dev
+
+Real dev server, real signed-in session, real generations. Template: *Premium Listing — Story*.
+Saved design: "M-EDIT-04 Gate2 poster".
+
+| Step | Result | Evidence |
+|:----:|:------:|----------|
+| 1 — generate **with** a photo | ⛔ **Blocked, not failed** | Generation errors before any placement: *"Failed to compose image with source photo"*. Root-caused to [BL-42](../../../../BACKLOG.md) — unrelated to this milestone. **The one path M-EDIT-04 leaves unchanged is the one that cannot be exercised.** |
+| 2 — generate **without** a photo → place | ✅ **Pass** | Poster placed over the template renders **one** price (₹1.9 Cr), one headline, one brand mark. Zero bracketed placeholders survive. **BL-27 is not reproducible.** |
+| 3 — one Undo press | ✅ **Pass** | Single press restored every discarded layer — `[Property name]`, `[Price]`, 3×`[Key fact]`, the CTA footer — and the sidebar's *Template Content* section reappeared with it. |
+| 4 — save, reload, reopen | ✅ **Pass** | Full page reload: design reopens identically, one price, no placeholders resurrected. `restoreCanvasData` did **not** treat the reopened design's content as disposable — the hazard this milestone's notes called the most likely source of a data-loss bug. |
+| 5 — open the exported file | ❌ **FAIL** | The exported PNG contains the navy background, one orphaned pill and one blue bar. **The AI poster is absent entirely.** Cause is [BL-41](../../../../BACKLOG.md), pre-existing and not caused by this milestone. |
+
+**Verdict: the milestone's own fix is verified; its acceptance checklist is not satisfiable.**
+Steps 2–4 demonstrate BL-27 is fixed, including the undo and the saved-design safety case. Step 5
+fails for a reason this milestone does not touch and cannot fix within scope, and step 1 is blocked
+by a second unrelated defect. Both are filed as P1.
+
+Two findings the decision record did not anticipate:
+
+- **D1 discards slot-tagged *text* but keeps its untagged *background***. The template's price pill
+  and CTA bar are shapes carrying no `slot`, so they survive by rule while the text they existed to
+  frame is discarded — leaving empty furniture floating over the poster. Visible in steps 2 and 4
+  and in the export. Not a BL-27 regression; a real gap in D1's reasoning, since a slot-tagged text
+  layer routinely sits on an untagged shape.
+- **Gate 2's own step sequence is incoherent.** Step 4 restores "identical to step 3" — the
+  *undone*, all-placeholder state — and step 5 then demands "no placeholder" in the export. Export
+  is only meaningful on a placed poster. This run redid the placement before saving, which tests
+  strictly more; the checklist should be amended to say so.
+
 ---
 
 ## Decisions required before implementation
