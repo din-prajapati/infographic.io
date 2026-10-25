@@ -7,14 +7,14 @@ updated: 2026-10-24
 
 # Story Card — US-EDIT-012 — Branch the layer rule on composition, with one undo
 
-> **Status:** 🟡 In Progress — all ACs verified 2026-10-25; closes when milestone PR #64 merges
+> **Status:** ✅ Done — merged in [#64](https://github.com/din-prajapati/infographic.io/pull/64) (2026-10-25)
 > **Epic:** [EPIC-EDIT-03](../../EPIC.md)
 > **Milestone:** [M-EDIT-04-ai-composition-over-template](../../milestones/M-EDIT-04-ai-composition-over-template.md)
 > **Linear:** LIN-XXX
 > **Size:** M
 > **Stage:** **Lane 1 — parallel with US-EDIT-013** · worktree `../bg-canvas`
 > **Engine:** Claude (primary), interactive — see Notes
-> **Created:** 2026-10-24 | **Closed:** —
+> **Created:** 2026-10-24 | **Closed:** 2026-10-25
 
 ```yaml
 depends_on: [US-EDIT-011]
@@ -82,7 +82,7 @@ places the image beneath the survivors at `minZIndex - 1`. The function is corre
       in a single step — the existing `pushToHistory(snapshot.elements)` at `canvasState.ts:441`
       covers everything the story discards. Per **D2 = (a)** no property-store write occurs, so
       the canvas snapshot is the whole of the undo.
-- [ ] ⚠️ **AC6 [error-path]:** _(pending post-deploy check on PR #64 — see TC-EDIT-012-07)_ Opening a design saved before this milestone renders identically to how
+- [x] **AC6 [error-path]:** _(verified on production by Dinesh, 2026-10-25 — see TC-EDIT-012-07)_ Opening a design saved before this milestone renders identically to how
       it rendered before this milestone. Verified against a real saved design, not a fixture.
 - [x] **AC7 [happy-path]:** Repeated placement does not accumulate duplicate background layers —
       the US-AI-053 AC1 guarantee survives on both composition branches.
@@ -157,7 +157,7 @@ Undo"; (b) fails as "Undo restores the layers and silently keeps the overwritten
 | TC-EDIT-012-04 | Unit | P0 | Given a poster placement, When undo is called once, Then elements equal the pre-placement snapshot | ✅ | `canvasState.aiBackground.spec.ts`; poster-replacing-a-poster double undo added in `b6c9411` |
 | TC-EDIT-012-05 | Unit | P1 | Given a user-authored text box with no slot tag, When a poster is placed, Then it survives or is discarded per D1 — asserted either way | ✅ | `canvasState.aiBackground.spec.ts` — an untagged user text box survives (D1) |
 | TC-EDIT-012-06 | Unit | P1 | Given two successive poster placements, When the second lands, Then exactly one AI image element exists | ✅ | `canvasState.aiBackground.spec.ts` |
-| TC-EDIT-012-07 | Manual | P0 | Given a design saved before this milestone, When reopened, Then it renders identically — real saved design | ⚠️ | Dev DB holds no template-based or AI design saved before this milestone (5 pre-milestone designs, none slot-tagged). Verified by code (`restoreCanvasData` untouched by the diff), TC-03, and Gate 2 step 4. Post-deploy check on a production design is listed on PR #64 |
+| TC-EDIT-012-07 | Manual | P0 | Given a design saved before this milestone, When reopened, Then it renders identically — real saved design | ✅ | Dev DB had no pre-milestone template or AI design to reopen, so this closed on production after deploy: an existing design reopened unchanged and its export matched the canvas (checked by Dinesh, 2026-10-25). Supporting evidence: `restoreCanvasData` untouched by the diff, TC-03, Gate 2 step 4 |
 | TC-EDIT-012-08 | Manual | P0 | Given a poster on a template, When exported and the **file** opened, Then one price, no overlap, no placeholder | ✅ | Gate 2 step 5, 2026-10-25: exported poster file has one price, no placeholder, no overlap (after BL-41 fix, #62) |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
@@ -188,15 +188,15 @@ Undo"; (b) fails as "Undo restores the layers and silently keeps the overwritten
 
 ## Definition of Done
 
-- [ ] All ACs checked ✅ — AC6 pending, see DoD note
+- [x] All ACs checked ✅
 - [x] All test cases run and recorded
 - [x] Gate 1 passes (`npm run check`, `npm run test:unit:client`)
 - [x] Gate 2 passes (frontend story — the manual export inspection, milestone doc §Gate 2)
-- [ ] PR merged (milestone PR #64)
+- [x] PR merged (milestone PR #64)
 
-> **DoD note:** TC-EDIT-012-07 (AC6) is ⚠️ — no pre-milestone template or AI design exists in the dev DB to reopen. Covered by code inspection, unit tests and Gate 2 step 4; the check against a real production design is a post-deploy item on PR #64. Recorded 2026-10-25. **Exception approved by Dinesh, 2026-10-25:** accepted with the post-deploy production check as the closing condition for AC6.
+> **DoD note:** AC6 could not be checked against the dev DB (no pre-milestone template or AI design). Exception approved by Dinesh 2026-10-25, closed the same day by the post-deploy production check. No exception remains open.
 - [x] [TASKS.md](./TASKS.md) task list fully checked
-- [ ] STORY.md status updated to ✅ Done
+- [x] STORY.md status updated to ✅ Done
 
 ---
 
