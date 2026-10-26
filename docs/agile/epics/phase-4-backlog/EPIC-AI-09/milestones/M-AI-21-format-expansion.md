@@ -1,4 +1,6 @@
-# M-AI-19-format-expansion — Sample Template Format Expansion
+# M-AI-21-format-expansion — Sample Template Format Expansion
+
+> **Renumbered 2026-10-26:** this milestone was `M-AI-19`, an ID already used by `M-AI-19-generation-progress-delivery` (EPIC-AI-07). Content unchanged.
 
 > **Epic:** [EPIC-AI-09](../EPIC.md)
 > **Status:** 🔲 Not Started

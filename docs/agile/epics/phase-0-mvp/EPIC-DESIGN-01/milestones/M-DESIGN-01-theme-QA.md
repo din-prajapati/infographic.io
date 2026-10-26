@@ -17,7 +17,7 @@ Run automated + manual QA on all non-editor pages in Light, Dark, and System mod
 | Story | Title | Status | PR |
 |-------|-------|--------|----|
 | [US-DESIGN-001](../stories/US-DESIGN-001/STORY.md) | Theme system works on all non-editor screens | ✅ Done — Human QA 2026-04-29 (3 bugs found & fixed) | — |
-| [US-DESIGN-004](../stories/US-DESIGN-004/STORY.md) | All pages consistent typography and nav | 🟡 AC1,5 ✅ auto · AC2–4,6 🔲 human (staging) | — |
+| [US-DESIGN-004](../stories/US-DESIGN-004/STORY.md) | All pages consistent typography and nav | 🟢 All 6 ACs verified — 10/10 automated TCs pass (2026-09-07). The remaining human visual spot-check on staging is tracked in M-DESIGN-02, per this milestone's deferral rule | — |
 
 ---
 

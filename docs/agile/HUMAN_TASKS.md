@@ -3,7 +3,7 @@ title: Human Tasks Tracker
 type: tracker
 layer: cross-cutting
 tags: [orion, human-tasks, ops, dashboard]
-updated: 2026-08-22
+updated: 2026-10-26
 ---
 
 # Human Tasks Tracker
@@ -34,11 +34,12 @@ within a phase, in the order they unblock downstream work.
 | 1 | Phase 0 | EPIC-INFRA-01 (legacy MVP deploy) | Phase 0 Task 3 | Push `v1.0.0` tag → production auto-deploy | ✅ **Done 2026-08-30** — first `v*` tag in the repo; production deployed `15a904b`, health `200`/`db connected` |
 | 2 | Phase 0 | EPIC-INFRA-01 | Phase 0 Task 3, rows P-15/16/17 | Full production smoke test (3D) — unrun since the domain/keys work landed | 🔲 |
 | 3 | Phase 1 | EPIC-LAUNCH-01 | US-LAUNCH-005 AC5 | Run `npm run verify:payment-prereqs` against production config | ✅ **Done 2026-09-03 — passes (exit 0), all 10 vars present.** ⚠️ **Correction 2026-10-16:** an earlier note on this row reported the production Razorpay keys as **test** keys (`rzp_test_` prefix) and concluded that no real subscription could succeed there. That was wrong — live-mode keys were deployed 2026-07-28 (see the Task 3 note in `docs/testing/PHASE_0_HUMAN_QA_CHECKLIST.md`) and re-confirmed 2026-10-16. The stale reading is what marked task #4 blocked; it was not. |
-| 4 | Phase 1 | EPIC-LAUNCH-01 | US-LAUNCH-005 AC6 | One real ₹ subscription on production (smallest plan) → verify webhook activates it → refund/cancel from dashboard | 🟡 **In progress — attempted 2026-10-16, not yet complete.** Previously marked ⛔ BLOCKED on the stale test-key premise corrected in row #3; that blocker was not real. Checkout completed on the smallest plan and the subscription reached ACTIVE, but the `subscription.charged` leg of the AC had not occurred at time of writing, so AC6 cannot be ticked yet. Defects found during the attempt are held outside this repo pending triage — see [[BL-38]] for why. |
+| 4 | Phase 1 | EPIC-LAUNCH-01 | US-LAUNCH-005 AC6 | One real ₹ subscription on production (smallest plan) → verify webhook activates it → refund/cancel from dashboard | ✅ **Done 2026-10-19** — a real ₹5,499 SOLO charge ran 2026-10-16 → 19: `subscription.charged` received and signature-verified, `PENDING → ACTIVE`, then refunded and cancelled (net cost about ₹21, the provider fee). US-LAUNCH-005 closed. |
 | 5 | Phase 1 | EPIC-INFRA-02 | US-INFRA-001 | Provision **two** Cloudflare R2 buckets (staging + production) and **two** API tokens, each scoped to its own bucket. R2 has no test/live mode, so the token scope is the only isolation — see §5 | ✅ **Done 2026-08-31** — buckets, tokens, custom domain, local `.env` and staging all live. **US-INFRA-001 is unblocked.** Production env vars deliberately deferred to the story's deploy step, see §5 |
 | 6 | Phase 1 | EPIC-PAY-05 (V1) | US-PAY-109 T0 | Create **8** Razorpay Plan objects per tier×interval — see §6 for the exact amounts (annual figures corrected 2026-08-27: they were stale ×10-derived values, superseded by `PLAN_CONFIG`'s authored prices). Naming: `BG-<TIER>-<INTERVAL>-<YYYY>-<MM>`. **Amount field takes rupees, not paise.** | ✅ **DONE — live mode verified 2026-09-08.** All 8 LIVE Plan objects exist on production with the exact `PLAN_CONFIG` amounts and correct cadences, and none is one of the abandoned 100× objects below. Staging is equally complete on TEST-mode plans. Verified by `npm run audit:razorpay-plans`, not by eye. The task had in fact been completed in the dashboard and was never closed out here — US-PAY-109 carried "blocked on T0 HUMAN task" while the plans were live. |
 | ~~7~~ | ~~Phase 1~~ | ~~EPIC-PAY-05 (V2)~~ | ~~US-PAY-108 T0~~ | ~~Create 4 Razorpay Offer objects (Founding-100 discount)~~ | ❌ **RETIRED 2026-08-27** — Razorpay Offers are no longer used at all. See §7 |
 | 8 | Phase 0 | EPIC-LAUNCH-01 | US-LAUNCH-001 | Final legal review of Terms/Privacy/Refund wording — drafted content is a starting point, not legal advice, and these pages are already live in production | 🔲 — standing item, no deadline set |
+| 9 | Phase 1 | EPIC-OBS-00 | US-OBS-005 T5 | **Closes BL-34 (P1).** Prove the uptime alert email actually arrives (trigger a failing check); confirm GitHub Actions email notifications are on; set Railway billing alerts in the dashboard | 🔲 **Unblocked** — code merged in PR #57 (2026-10-02) and the Uptime workflow runs on schedule. Added here 2026-10-26; it was missing from this tracker |
 
 **Likely already resolved, worth a quick verify rather than re-doing:**
 
@@ -67,6 +68,7 @@ things remain:
   the deploy trigger for future reference: **production deploys on a `v*` tag push only**, while
   staging auto-deploys on every push to `main` (`.github/workflows/deploy.yml`) — so merging to
   `main` does **not** reach production until a tag is cut.
+  ⚠️ **Corrected 2026-10-26:** that was wrong even then — both staging and production deploy from `main` (measured 2026-09-29; the `v*` trigger in `deploy.yml` is fiction, BL-35). Merging to `main` reaches production.
 - **Full smoke test** (§3D, rows P-15/16/17) — still unrun. Now more relevant, not less: the
   `v1.0.0` deploy shipped the pricing-module rewrite and the AGENCY seat fix, and production has
   since had its Razorpay plan IDs repointed to the live 2026-09 set.
@@ -292,3 +294,4 @@ un-tracked indefinitely now that real customers can reach these pages.
   `main`. Merging to `main` does not reach production. Task #2 (full production smoke test) is
   unaffected and still open — arguably more relevant now, since `v1.0.0` shipped the pricing
   rewrite and the AGENCY seat fix.
+- **2026-10-26** — Status sweep. #4 (real ₹ transaction) closed: done 2026-10-16 → 19, US-LAUNCH-005 closed 2026-10-19. #9 added: US-OBS-005 T5 — the operator step that closes BL-34 (P1) — had never been listed. Corrected the 2026-08-31 entry's deploy-trigger claim: both environments deploy from `main` (BL-35).

@@ -100,7 +100,7 @@ Swap image generation from Ideogram to Nano Banana Flash (FREE/SOLO) and Pro (TE
 ### B-19 — EPIC-AI-09 — Sample Template Format Expansion
 
 **Epic:** [EPIC-AI-09](EPIC-AI-09/EPIC.md)
-**Milestone:** [M-AI-19-format-expansion](EPIC-AI-09/milestones/M-AI-19-format-expansion.md)
+**Milestone:** [M-AI-21-format-expansion](EPIC-AI-09/milestones/M-AI-21-format-expansion.md)
 **Added:** 2026-08-20, found during a format-coverage audit while wiring real images into the 5
 existing sample templates
 **Prereq:** None technical. Product-level relevance to `EPIC-KIT-01` — see the epic's own

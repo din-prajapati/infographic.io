@@ -9,7 +9,7 @@ updated: 2026-08-26
 
 > **Status:** 🔲 Not Started
 > **Epic:** [EPIC-EDIT-03](../../EPIC.md)
-> **Milestone:** [M-EDIT-01-editable-menu-surfacing](../../milestones/M-EDIT-01-editable-menu-surfacing.md)
+> **Milestone:** Unassigned — split from US-EDIT-005 AC4; [M-EDIT-01](../../milestones/M-EDIT-01-editable-menu-surfacing.md) closed 2026-08-26 without it. Assign when scheduled.
 > **Size:** M
 > **Deferred from:** [US-EDIT-005](../US-EDIT-005/STORY.md) AC4 — descoped 2026-08-26 so that
 > story could close on the value it had actually delivered.
