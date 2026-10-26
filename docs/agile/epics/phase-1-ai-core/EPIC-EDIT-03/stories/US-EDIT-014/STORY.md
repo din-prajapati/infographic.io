@@ -89,6 +89,9 @@ no component.
 - [x] **AC10 [happy-path]:** Undo and Redo re-fill the stores from the canvas, so one Undo reverts both
       the canvas text and its field (milestone acceptance; US-EDIT-016 AC2). A history push, a normal edit
       and a design load do not trigger it. *Added 2026-10-26: history holds canvas elements only.*
+- [x] **AC11 [happy-path]:** Consecutive writes to the same field share one history entry, so typing a
+      price in the sidebar is one Undo step (milestone acceptance). Another field, a canvas edit or an Undo
+      starts a new step. *Added 2026-10-26 at integration: the Lane A forms write on every keystroke.*
 
 ---
 
@@ -148,6 +151,7 @@ No slot: `agent.website`, `property.type`, `property.locale`. No field: `propert
 | TC-EDIT-014-07 | Unit | P1 | Given a `frameOf` shape and a shape tagged with a text slot, When hydrated, Then neither is read | 🔲 | |
 | TC-EDIT-014-08 | Unit | P0 | Given saved canvas data with slot text, When `restoreCanvasData` runs, Then the stores hold its values; given data with no slot text, Then the stores are unchanged | 🔲 | |
 | TC-EDIT-014-09 | Unit | P0 | Given a field written to the canvas, When Undo then Redo run, Then canvas and field revert and re-apply together; a push, an edit or a load does not trigger it | ✅ | AC10 |
+| TC-EDIT-014-10 | Unit | P0 | Given keystroke-by-keystroke writes to the price, Then one history entry and one Undo restores `[Price]` and empties the field; another field, a canvas edit or an Undo starts a new step | ✅ | AC11 |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 
