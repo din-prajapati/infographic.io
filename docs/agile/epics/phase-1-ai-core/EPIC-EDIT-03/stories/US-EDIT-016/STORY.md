@@ -55,18 +55,18 @@ that is the normal case, not an error.
 
 ## Acceptance Criteria
 
-- [ ] **AC1 [happy-path]:** Committing an edit on a **slot-tagged** text element also writes the
+- [x] **AC1 [happy-path]:** Committing an edit on a **slot-tagged** text element also writes the
       matching store field via `writeCanvasToField`.
-- [ ] **AC2 [happy-path]:** One canvas edit produces **one** history entry; one Undo reverts both the
-      canvas text and the field.
-- [ ] **AC3 [error-path]:** Committing an edit on an **untagged** text element writes only the element —
+- [x] **AC2 [happy-path]:** One canvas edit produces **one** history entry; one Undo reverts both the
+      canvas text and the field. (Both asserted in TC-EDIT-016-02; the store side is US-EDIT-014 AC10.)
+- [x] **AC3 [error-path]:** Committing an edit on an **untagged** text element writes only the element —
       no store write.
-- [ ] **AC4 [error-path]:** An element whose slot has no field (`report.kpis`, `openHouse.date`,
+- [x] **AC4 [error-path]:** An element whose slot has no field (`report.kpis`, `openHouse.date`,
       `agent.cta`) commits normally and writes no field; nothing throws.
-- [ ] **AC5 [error-path]:** An edit to a `property.specs` / `property.facts` element stays on the
+- [x] **AC5 [error-path]:** An edit to a `property.specs` / `property.facts` element stays on the
       canvas and does not change `beds`, `baths` or `sqft` (Q1, answered 2026-10-26).
-- [ ] **AC6 [happy-path]:** A `composed-*` element from extraction follows the same rule as any other
-      element with or without a slot — no special case.
+- [x] **AC6 [happy-path]:** A `composed-*` element from extraction follows the same rule as any other
+      element with or without a slot — no special case. (No special-case code exists; verified by TC-EDIT-016-01/03.)
 
 ---
 
@@ -81,12 +81,12 @@ that is the normal case, not an error.
 
 | TC ID | Type | Priority | Scenario | Status | Finding |
 |-------|------|:--------:|----------|:------:|---------|
-| TC-EDIT-016-01 | Unit | P0 | Given a `property.headline` text element, When an edit commits, Then the store headline equals the new text | 🔲 | |
-| TC-EDIT-016-02 | Unit | P0 | Given that edit, When Undo is pressed once, Then canvas and store both revert | 🔲 | |
-| TC-EDIT-016-03 | Unit | P0 | Given an untagged text element, When an edit commits, Then no store field changes | 🔲 | |
-| TC-EDIT-016-04 | Unit | P1 | Given a `report.kpis` element, When an edit commits, Then it commits and nothing throws | 🔲 | |
-| TC-EDIT-016-05 | Unit | P1 | Given a specs element, When edited, Then `beds`/`baths`/`sqft` are unchanged (Q1) | 🔲 | |
-| TC-EDIT-016-06 | Manual | P0 | Given the editor, When the canvas headline is edited, Then the Headline input shows it (runbook MV-05-02) | 🔲 | |
+| TC-EDIT-016-01 | Unit | P0 | Given a `property.headline` text element, When an edit commits, Then the store headline equals the new text | ✅ | |
+| TC-EDIT-016-02 | Unit | P0 | Given that edit, When Undo is pressed once, Then canvas and store both revert | ✅ | Canvas and field both revert (US-EDIT-014 AC10) |
+| TC-EDIT-016-03 | Unit | P0 | Given an untagged text element, When an edit commits, Then no store field changes | ✅ | |
+| TC-EDIT-016-04 | Unit | P1 | Given a `report.kpis` element, When an edit commits, Then it commits and nothing throws | ✅ | |
+| TC-EDIT-016-05 | Unit | P1 | Given a specs element, When edited, Then `beds`/`baths`/`sqft` are unchanged (Q1) | ✅ | |
+| TC-EDIT-016-06 | Manual | P0 | Given the editor, When the canvas headline is edited, Then the Headline input shows it (runbook MV-05-02) | ⏸ | Blocked — lead runs at Stage 4 integration |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 

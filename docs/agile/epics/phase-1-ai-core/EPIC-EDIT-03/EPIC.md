@@ -177,6 +177,11 @@ against a dependency nobody owned.
 
 ## Implementation Update (log)
 
+### 2026-10-26 — US-EDIT-016 implementation complete (pre-PR)
+- **Files touched:** `client/src/components/canvas/TextElement.tsx`, `client/src/components/canvas/__tests__/TextElement.spec.ts`, `docs/agile/epics/phase-1-ai-core/EPIC-EDIT-03/stories/US-EDIT-016/TASKS.md`, `docs/agile/epics/phase-1-ai-core/EPIC-EDIT-03/stories/US-EDIT-016/STORY.md`
+- **ACs covered:** AC1, AC2 (canvas-revert only; store-revert deferred to integration), AC3, AC4, AC5, AC6
+- **Commits:** 3 on branch `feat/edit/m05-lb-canvas` (`a016932` T1, `ee30a53` T2, `37cc486` T3)
+- **Notes:** `commitEdit` extracted from `handleBlur` so unit tests run without mounting `react-rnd`. Mutation check confirmed: removing the write-back causes TC-EDIT-016-01 (2 tests) to fail. TC-EDIT-016-06 (manual) remains for the lead's Stage 4 Chrome run. Store-revert side of AC2 requires Foundation's undo listeners in `usePropertyStore` — wired at integration.
 ### 2026-10-26 — US-EDIT-017 implementation complete (pre-PR)
 - **Files touched:** `client/src/components/editor/CustomizePanel.tsx` (deleted), `client/src/lib/slotIds.ts` (comment fix), `client/src/lib/templateSlots.ts` (comment fix)
 - **ACs covered:** AC1 (file deleted, zero references remain in client/src/), AC2 (comments updated to name TemplateSlotSection), AC3 (grep confirmed no importers before deletion), AC4 (nothing imported the file; no behaviour change)

@@ -4,6 +4,26 @@ import { useState, useRef, useEffect } from 'react';
 import { Rnd } from 'react-rnd';
 import { TextElement as TextElementType } from '../../lib/canvasTypes';
 import { useCanvasStore } from '../../hooks/useCanvasStore';
+import { writeCanvasToField } from '../../lib/listingBindings';
+
+/**
+ * Applies a committed text edit: updates the canvas element and, when the
+ * element carries a slot tag, writes back to the matching field store (D3).
+ * Exported so the commit logic is unit-testable without mounting the component.
+ */
+export function commitEdit(
+  updateFn: (id: string, updates: Partial<TextElementType>) => void,
+  element: { id: string; slot?: string },
+  value: string,
+): void {
+  updateFn(element.id, { content: value });
+  // D3: write back to the field when the element is slot-tagged.
+  // writeCanvasToField returns false (never throws) for slots with no field
+  // and for the specs line (Q1) — both are the normal case.
+  if (element.slot) {
+    writeCanvasToField(element.slot, value);
+  }
+}
 
 interface TextElementProps {
   element: TextElementType;
@@ -43,7 +63,7 @@ export function TextElement({ element, isSelected, onSelect }: TextElementProps)
   const handleBlur = () => {
     setIsEditing(false);
     if (editValue !== element.content) {
-      updateElement(element.id, { content: editValue });
+      commitEdit(updateElement, element, editValue);
     }
   };
 
