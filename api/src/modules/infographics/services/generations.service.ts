@@ -321,6 +321,12 @@ export class GenerationsService {
         ? propertyData.composition
         : undefined;
     const compositionField = composition ? { composition } : {};
+    // US-EDIT-018 AC4 — what a poster printed, for the editor's fields. Absent
+    // for a background and for anything generated before this shipped (AC6).
+    const listingField =
+      propertyData?.printedListing && typeof propertyData.printedListing === 'object'
+        ? { listing: propertyData.printedListing }
+        : {};
 
     if (propertyData?.variations && Array.isArray(propertyData.variations)) {
       return propertyData.variations.map((v: any) => ({
@@ -329,6 +335,7 @@ export class GenerationsService {
         title: v.title || 'Generated Infographic',
         description: v.description || 'AI-generated property infographic',
         ...compositionField,
+        ...listingField,
       }));
     }
 
@@ -340,6 +347,7 @@ export class GenerationsService {
         title: 'Generated Infographic',
         description: 'AI-generated property infographic',
         ...compositionField,
+        ...listingField,
       },
     ];
   }

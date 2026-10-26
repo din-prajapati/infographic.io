@@ -15,7 +15,15 @@ import type { AiComposition, ComposedDesign, ComposedTextElementGeometry } from 
 import { toast } from 'sonner';
 import { mapExtractedFont } from './fontMap';
 import { createMeasureText } from './layout/connectLayout';
-import { FIELD_TO_SLOT, hydrateStoresFromCanvas, type BoundField } from './listingBindings';
+import {
+  FIELD_TO_SLOT,
+  applySavedListing,
+  captureListing,
+  fillStoresFromPrintedListing,
+  hydrateStoresFromCanvas,
+  type BoundField,
+  type PrintedListing,
+} from './listingBindings';
 
 /**
  * Capture current canvas state as JSON.
@@ -39,6 +47,10 @@ export function captureCanvasData(): any {
     canvasHeight: state.canvasHeight,
     backgroundColor: state.backgroundColor,
     zoom: state.zoom,
+    // US-EDIT-018 AC1 — the listing facts travel with the design, so a fact
+    // with no element on this template (Brokerage on the Story template,
+    // Website everywhere) survives a reopen.
+    listing: captureListing(),
     timestamp: new Date().toISOString(),
   };
 }
@@ -199,6 +211,10 @@ export function restoreCanvasData(canvasData: any): boolean {
     // need the same thing: a reopened design shows its own values; a fresh
     // template's bracketed placeholders fill as empty; a canvas with no slot
     // text leaves the stores untouched. No stored data is migrated.
+    // US-EDIT-018 AC2 — a design saved with its listing restores it first;
+    // slot text then wins where it exists. Without one (older designs, seeded
+    // templates) this is a no-op and only the hydration below applies.
+    applySavedListing(canvasData.listing);
     hydrateStoresFromCanvas();
 
     // Ensure loaded templates/infographics are fully visible in the current viewport.
@@ -448,6 +464,13 @@ export async function loadAiVariationToCanvas(
    * today's retain-everything behaviour.
    */
   composition?: AiComposition,
+  /**
+   * US-EDIT-018 AC5 — what the generation printed. When this placement
+   * removes the template's fact layers (a poster), the fields are filled from
+   * it so the sidebar shows what the design shows. Undefined for generations
+   * made before US-EDIT-018: the fields are left as they are (AC6).
+   */
+  printedListing?: PrintedListing,
 ): Promise<boolean> {
   try {
     let imageSrc = imageUrl;
@@ -542,6 +565,11 @@ export async function loadAiVariationToCanvas(
         elements: [imageElement, ...existingElements],
         selectedElementIds: [],
       });
+
+      // US-EDIT-018 AC5/AC6 — only a placement that took the slot layers away
+      // leaves the sidebar with nothing on the canvas to match. One Undo
+      // restores the template and, through US-EDIT-014 AC10, its fields.
+      if (discardedSlots.length > 0) fillStoresFromPrintedListing(printedListing);
 
       // AC3 — say so, but only on an actual replacement. The first generation
       // onto a template is an insert and stays silent.

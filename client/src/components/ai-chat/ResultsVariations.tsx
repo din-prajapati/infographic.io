@@ -29,6 +29,8 @@ export interface ResultVariation {
    * Undefined is legacy and reads as 'background'.
    */
   composition?: AiComposition;
+  /** US-EDIT-018 — what a poster printed; fills the fields on placement. */
+  listing?: ApiResultVariation['listing'];
 }
 
 /**
@@ -49,6 +51,7 @@ export function toUiVariation(v: ApiResultVariation): ResultVariation {
     title: v.title,
     description: v.description,
     composition: v.composition,
+    listing: v.listing,
   };
 }
 

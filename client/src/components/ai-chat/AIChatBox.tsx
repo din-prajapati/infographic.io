@@ -1130,6 +1130,7 @@ export function AIChatBox({
         // from the chat now discards the template's duplicate fact layers
         // exactly as one placed from Quick Generate does.
         aiComposition: variation.composition,
+        aiListing: variation.listing,
         emoji: "🎨",
       };
       onTemplateLoad(template);

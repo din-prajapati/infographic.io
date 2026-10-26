@@ -116,6 +116,8 @@ export function CenterCanvas({ isPreviewMode = false }: CenterCanvasProps) {
           // the variation's composition onto the Template it builds; undefined
           // reads as 'background', which is today's behaviour.
           template.aiComposition,
+          // US-EDIT-018 AC5 — a placed poster fills the fields with what it printed.
+          template.aiListing,
         );
         if (success) {
           setIsAIChatExpanded(false);

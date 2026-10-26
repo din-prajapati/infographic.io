@@ -57,6 +57,8 @@ export interface Template {
    * Undefined is legacy and reads as 'background'.
    */
   aiComposition?: AiComposition;
+  /** US-EDIT-018 — what a poster printed; CenterCanvas passes it to placement. */
+  aiListing?: import('../../lib/listingBindings').PrintedListing;
   isPopular?: boolean;
   emoji: string;
   /**
