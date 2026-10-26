@@ -126,7 +126,20 @@ describe('hydrateStoresFromCanvas', () => {
     expect(isPlaceholder('[Property\nname]')).toBe(true);
     expect(isPlaceholder(' [Key fact] ')).toBe(true);
     expect(isPlaceholder('₹1.9 Cr')).toBe(false);
-    expect(isPlaceholder('Call [now]')).toBe(false);
+    expect(isPlaceholder('Priya Shah  ·  RERA PRM/KA/1')).toBe(false);
+  });
+
+  // Found in Chrome (MV-05-03): templates mix labels with tokens in one line.
+  it('treats a line with any bracketed token as unfilled, so labels never land in a field', () => {
+    for (const v of ['RERA [Your RERA number]', 'By [Your name] · [Your brand]',
+      '• [Feature]\n• [Feature]', '[Your name]  ·  RERA [Your RERA number]', '[PERIOD] MARKET REPORT']) {
+      expect(isPlaceholder(v)).toBe(true);
+    }
+    setCanvas([text('l', 'agent.rera', 'RERA [Your RERA number]'), text('a', 'agent.name', 'By [Your name] · [Your brand]')]);
+    useAgentStore.getState().setAgent({ license: 'x', name: 'y' });
+    hydrateStoresFromCanvas();
+    expect(useAgentStore.getState().agent.license).toBe('');
+    expect(useAgentStore.getState().agent.name).toBe('');
   });
 
   // TC-EDIT-014-05 · AC5

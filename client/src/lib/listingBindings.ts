@@ -72,9 +72,15 @@ export const SLOT_TO_FIELD: Readonly<Partial<Record<SlotId, BoundField>>> = Obje
  */
 const STORE_TO_CANVAS_ONLY: ReadonlySet<BoundField> = new Set(['stats']);
 
-/** BL-40 convention: a bracketed placeholder means "no real value here". */
+/**
+ * BL-40 convention: a bracketed placeholder means "no real value here". Any
+ * bracketed token counts, not only a whole-text one: templates mix labels with
+ * tokens (`RERA [Your RERA number]`, `By [Your name] · [Your brand]`,
+ * `• [Feature]`), and such a line is still unfilled. Listing values do not
+ * contain square brackets.
+ */
 export function isPlaceholder(value: string): boolean {
-  return /^\[[\s\S]+\]$/.test(value.trim());
+  return /\[[^\]]+\]/.test(value);
 }
 
 const isBindableText = (el: CanvasElement): el is TextElement =>
