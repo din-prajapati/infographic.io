@@ -3,7 +3,7 @@
 > **Audience:** Engineering leads and domain teams  
 > **Purpose:** Per-domain view of what's in progress, what's next, and what's blocked — mapped to epics and stories.  
 > **Update cadence:** When a story status changes (start / block / complete).  
-> **Last updated:** 2026-09-08 — board had gone 24 days stale and was materially wrong in two
+> **Last updated:** 2026-10-26 — stale-status sweep: EDIT, INFRA and LAUNCH rows corrected; EPIC-EDIT-03 added (missing from this board); EDIT and INFRA sections carry a dated update. Before that: 2026-09-08 — board had gone 24 days stale and was materially wrong in two
 > places: it called EPIC-PAY-05 "scaffolded, not started" when 11 of its 12 stories are
 > code-complete, and it showed INFRA at "Task 3 next" when M-INFRA-01's three stories shipped
 > 2026-08-31. Refreshed against the actual story cards, not against this board's own history.
@@ -22,10 +22,10 @@
 | [Payments (PAY)](#-payments-pay) | EPIC-PAY-01 ✅ · EPIC-PAY-05 🟢 V1 | 🟢 **V1 COMPLETE — all four V1 milestones closed 2026-10-21.** 12/12 stories merged; BL-28 fixed so Gate 4 runs again | Nothing blocked. V2 (M-PAY-05, founding/promo) ⏸ held until payment traction | V2 resumes when founding pricing does. `BETA_MODE` is now a real checkout kill-switch (D2) |
 | [Design (DESIGN)](#-design--frontend-design) | EPIC-DESIGN-01 + EPIC-DESIGN-02 | 🟡 US-DESIGN-004 all 10 TCs pass (2026-09-07); US-DESIGN-003 5/6 ACs | Human visual spot-check on staging | Both close on that one spot-check |
 | [Auth (AUTH)](#-auth-auth) | EPIC-AUTH-01 | ✅ Done | — | Full invite flow post-MVP |
-| [Canvas Editor (EDIT)](#-canvas-editor-edit) | EPIC-EDIT-01 | ✅ Done | — | Batch upload Phase 3 |
+| [Canvas Editor (EDIT)](#-canvas-editor-edit) | EPIC-EDIT-01 ✅ · EPIC-EDIT-03 🟡 | 🟡 **10/14 Done** — M-EDIT-01 (2026-08-26), M-EDIT-04 (2026-10-25, BL-27) and M-EDIT-05 (2026-10-26, one source of truth for listing facts, #73) closed; M-EDIT-03 code merged, not closed (US-EDIT-009 Gate 2 step 5 — BL-26); M-EDIT-02 (brand layers, US-EDIT-006–008) not started | US-EDIT-009 closes on BL-26 (Gate 2 step 5 never uploads a photo) | M-EDIT-02 brand layers · BL-47 |
 | [AI Generation (AI)](#-ai-generation-ai) | EPIC-AI-06 ✅ · EPIC-AI-02 ✅ | ✅ EPIC-AI-06 closed 2026-08-15; M-AI-20 closed 2026-09-05 (US-AI-053). BL-25 (empty production gallery) closed 2026-09-07 — gallery seeded and verified | none | EPIC-KIT-01 (listing kits), or EPIC-MKT-01 (drafted 2026-09-07, parked) |
-| [Infrastructure (INFRA)](#-infrastructure-infra) | EPIC-INFRA-02 · EPIC-DEPLOY-01 | 🟡 M-INFRA-01: all 3 stories ✅ Done + merged (PR #46, 2026-08-31); **3 of 4 runtime Acceptance checks never run**. DEPLOY-01: 1/7 Done | Gate 4 unrunnable repo-wide — integration DB unreachable (BL-28) | M-INFRA-01 check 2 is ordinary code, not an infra event — cheapest of the three |
-| [Launch Readiness (LAUNCH)](#-launch-readiness-launch) | EPIC-LAUNCH-01 | 🟡 13/15 stories ✅ Done; US-LAUNCH-005 open at **AC6 only** (AC5 passed against production 2026-09-07), 014 backlog | Real ₹ txn go-ahead — the single remaining gate | ⚠️ **BL-29**: checkout is already live to strangers and AC6 has never run. M-LAUNCH-01 also still has 2 open Acceptance checks |
+| [Infrastructure (INFRA)](#-infrastructure-infra) | EPIC-INFRA-02 ✅ · EPIC-DEPLOY-01 · EPIC-OBS-00 | ✅ **M-INFRA-01 / EPIC-INFRA-02 closed 2026-10-19** — all four runtime checks verified on production. DEPLOY-01: 2/7 Done (US-DEPLOY-007, US-DEPLOY-004). OBS-00: US-OBS-005 (uptime monitor) code merged | **US-OBS-005 T5 (HUMAN):** prove the alert email arrives + set Railway billing alerts — this closes **BL-34 (P1)** | BL-48 (close-story workflow), BL-35/36/37 |
+| [Launch Readiness (LAUNCH)](#-launch-readiness-launch) | EPIC-LAUNCH-01 | ✅ **15/17 Done — both milestones closed 2026-10-19.** Beta is live and takes payment: real ₹5,499 charge run 2026-10-16 → 19, webhook verified, refunded | none | US-LAUNCH-016/017 (sign-up onboarding, backlog) |
 | [Organization (ORG)](#-organization--team-org) | — | Post-MVP | No email provider (US-LAUNCH-002 will fix) | EPIC-ORG-01 post-launch |
 
 ---
@@ -163,6 +163,8 @@
 **Phase:** 0 (MVP) ✅ Done
 
 ### Now
+> **Update 2026-10-26 — [EPIC-EDIT-03](epics/phase-1-ai-core/EPIC-EDIT-03/EPIC.md) is the active EDIT epic (it was missing from this board).** 10/14 stories Done. M-EDIT-05 (one source of truth for listing facts: one input per fact, canvas edits reach the field, listing saved with the design, one fact per template element) merged in #73 and deployed 2026-10-26; M-EDIT-04 (AI composition over a template, BL-27) closed 2026-10-25. Open: US-EDIT-009 / M-EDIT-03 on BL-26, M-EDIT-02 not started. The note below is the Phase 0 history.
+>
 > No active development. Editor + AI chat token pass shipped on **US-DESIGN-002** ([PR #1](https://github.com/din-prajapati/infographic.io/pull/1) merged 2026-04-17); follow-ups under EPIC-DESIGN-01.
 
 ### Done
@@ -262,6 +264,8 @@
 **Epic lead:** Dinesh  
 **Active epic:** EPIC-INFRA-01 — MVP Deployment  
 **Phase:** 0 (MVP) 🟡 In Progress
+
+> **Update 2026-10-26 — this section below is Phase 0 history.** Production is live at `app.buildographic.com`; staging and production both deploy from `main` and report the running commit at `/api/health`. EPIC-INFRA-02 (durable asset storage, R2) closed 2026-10-19 with all runtime checks verified on production. US-DEPLOY-004 (migrations as `preDeployCommand`, BL-33) closed 2026-10-01. Open: **BL-34 (P1, no outage alerting)** → US-OBS-005 T5 is a HUMAN step; BL-48 (close-story workflow runs a missing script).
 
 ### Now (Phase 0 deploy — 2 of 3 tasks signed off)
 

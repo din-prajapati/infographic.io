@@ -13,7 +13,7 @@ updated: 2026-08-19
 > **Milestone:** [M-INFRA-01-durable-asset-storage](../../milestones/M-INFRA-01-durable-asset-storage.md)
 > **Linear:** LIN-XXX
 > **Size:** S
-> **Created:** 2026-08-19 | **Closed:** —
+> **Created:** 2026-08-19 | **Closed:** 2026-08-31
 >
 > **Depends on:** US-INFRA-001 must be merged before this story can start.
 
@@ -87,7 +87,7 @@ site and would otherwise have to be rediscovered by whoever adds the first priva
 ## Engineering / PR
 
 - **Branch:** `feat/infra/m-01-durable-asset-storage`
-- **PR:** #_____ (milestone PR — opens when the milestone's Acceptance is complete)
+- **PR:** [#46](https://github.com/din-prajapati/infographic.io/pull/46) (milestone PR, merged 2026-09-01)
 - **Primary files touched:**
   - `api/src/modules/infographics/controllers/infographics.controller.ts` — inject `StorageService`; in `uploadPhoto()`, call `storageService.upload(file.buffer, 'source-photos/' + photoId)` synchronously before returning the response
   - `api/src/modules/ai-generation/services/ideogram.service.ts` — inject `StorageService`; update `readSourcePhoto()` to (1) validate `photoPath` format, (2) attempt R2 download, (3) fall back to local tmp, (4) throw `HttpException(422)` if both fail
@@ -214,16 +214,16 @@ AC5 [happy-path]: npm run test:unit passes with 0 failures. api/tests/infra/us-i
 
 ## Definition of Done
 
-- [ ] All ACs checked ✅
-- [ ] All test cases run and recorded in the table above
-- [ ] Gate 1 passes: `npm run check` (0 new TypeScript errors)
-- [ ] Gate 4 passes: `npm run test:unit` (no regressions; `api/tests/infra/us-infra-003.spec.ts` fully green)
-- [ ] Manual flow verified: upload photo, delete from tmp, generate — R2 read succeeds (TC-INFRA-003-05)
-- [ ] Manual flow verified: crafted path-traversal `photoReference` is rejected with 400 (TC-INFRA-003-06)
-- [ ] No console errors in the upload or generation flow
-- [ ] PR merged (PR #{number})
-- [ ] [TASKS.md](./TASKS.md) task list fully checked
-- [ ] STORY.md status updated to ✅ Done
+- [x] All ACs checked ✅
+- [x] All test cases run and recorded in the table above
+- [x] Gate 1 passes: `npm run check` (0 new TypeScript errors)
+- [x] Gate 4 passes: `npm run test:unit` (no regressions; `api/tests/infra/us-infra-003.spec.ts` fully green)
+- [x] Manual flow verified: upload photo, delete from tmp, generate — R2 read succeeds (TC-INFRA-003-05)
+- [x] Manual flow verified: crafted path-traversal `photoReference` is rejected with 400 (TC-INFRA-003-06)
+- [x] No console errors in the upload or generation flow — not recorded as a separate check; the flow was exercised by the manual TCs above and by M-INFRA-01's production verification (2026-10-19)
+- [x] PR merged ([#46](https://github.com/din-prajapati/infographic.io/pull/46))
+- [x] [TASKS.md](./TASKS.md) task list fully checked
+- [x] STORY.md status updated to ✅ Done
 
 ---
 

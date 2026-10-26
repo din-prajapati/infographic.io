@@ -13,7 +13,7 @@ updated: 2026-08-19
 > **Milestone:** [M-INFRA-01-durable-asset-storage](../../milestones/M-INFRA-01-durable-asset-storage.md)
 > **Linear:** LIN-XXX
 > **Size:** S → **M** (AC6 + T5/T6 added 2026-08-30 — the bucket/environment boot guard)
-> **Created:** 2026-08-19 | **Closed:** —
+> **Created:** 2026-08-19 | **Closed:** 2026-08-31
 
 ---
 
@@ -81,7 +81,7 @@ updated: 2026-08-19
 ## Engineering / PR
 
 - **Branch:** `feat/infra/m-01-durable-asset-storage`
-- **PR:** #_____ (milestone PR — opens when the full milestone's Acceptance is complete; see AGILE.md Git Standards)
+- **PR:** [#46](https://github.com/din-prajapati/infographic.io/pull/46) (milestone PR, merged 2026-09-01)
 - **Primary files touched:**
   - `api/src/modules/storage/storage.module.ts` — new file; `@Global()` NestJS module, provides and exports `StorageService`
   - `api/src/modules/storage/services/storage.service.ts` — new file; wraps `@aws-sdk/client-s3` `S3Client` pointed at R2 endpoint; exposes `upload()` and `getPublicUrl()`
@@ -191,15 +191,15 @@ Rules:
 
 ## Definition of Done
 
-- [ ] All ACs checked ✅
-- [ ] All test cases run and recorded in the table above
-- [ ] Gate 1 passes: `npm run check` returns 0 new TypeScript errors
-- [ ] Gate 4 passes: `npm run test:unit` passes with no regressions (all pre-existing tests still green, new spec file green)
-- [ ] Manual flow verified: NestJS starts without error when `R2_*` env vars are present (TC-INFRA-001-05)
-- [ ] PR merged (PR #{number})
-- [ ] No console errors in the changed flow
-- [ ] [TASKS.md](./TASKS.md) task list fully checked
-- [ ] STORY.md status updated to ✅ Done
+- [x] All ACs checked ✅
+- [x] All test cases run and recorded in the table above
+- [x] Gate 1 passes: `npm run check` returns 0 new TypeScript errors
+- [x] Gate 4 passes: `npm run test:unit` passes with no regressions (all pre-existing tests still green, new spec file green)
+- [x] Manual flow verified: NestJS starts without error when `R2_*` env vars are present (TC-INFRA-001-05)
+- [x] PR merged ([#46](https://github.com/din-prajapati/infographic.io/pull/46))
+- [x] No console errors in the changed flow — not recorded as a separate check; the flow was exercised by the manual TCs above and by M-INFRA-01's production verification (2026-10-19)
+- [x] [TASKS.md](./TASKS.md) task list fully checked
+- [x] STORY.md status updated to ✅ Done
 
 ---
 

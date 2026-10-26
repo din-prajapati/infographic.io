@@ -13,7 +13,7 @@ updated: 2026-08-19
 > **Milestone:** [M-INFRA-01-durable-asset-storage](../../milestones/M-INFRA-01-durable-asset-storage.md)
 > **Linear:** LIN-XXX
 > **Size:** M
-> **Created:** 2026-08-19 | **Closed:** —
+> **Created:** 2026-08-19 | **Closed:** 2026-08-31
 >
 > **Depends on:** US-INFRA-001 must be merged before this story can start — `StorageService` (`api/src/modules/storage/storage.service.ts`) must exist and be globally provided before this story's changes compile.
 
@@ -86,7 +86,7 @@ updated: 2026-08-19
 ## Engineering / PR
 
 - **Branch:** `feat/infra/m-01-durable-asset-storage`
-- **PR:** #_____ (milestone PR — opens when M-INFRA-01 Acceptance checklist is complete; see AGILE.md "Git Standards")
+- **PR:** [#46](https://github.com/din-prajapati/infographic.io/pull/46) (milestone PR, merged 2026-09-01)
 - **Primary files touched:**
   - `api/src/modules/ai-generation/services/ai-orchestrator.service.ts` — inject `StorageService`; add private `uploadAndFallback(ideogramUrl, storageKey, generationId)` helper; call it on every element of `imageUrls` after Ideogram calls return and before the primary DB write; call it on `backgroundUrl` in `composeDesignForEdit()` before the cache write
   - `api/src/modules/ai-generation/services/infographic.processor.ts` — inject `StorageService` via `@Inject()`; call `uploadAndFallback` (or inline equivalent) on `imageUrl` after `generateImage()` returns and before `prisma.infographic.update`
@@ -258,16 +258,16 @@ Rules:
 
 ## Definition of Done
 
-- [ ] All ACs checked ✅
-- [ ] All test cases run and recorded in the table above
-- [ ] Gate 1 passes: `npm run check` — 0 new TypeScript errors
-- [ ] Gate 4 passes: `npm run test:unit` — no regressions in existing suite, new tests all pass
-- [ ] Manual flow verified on `localhost:5000`: generate an infographic, open Prisma Studio, confirm the saved `Infographic.imageUrl` begins with the value of `R2_PUBLIC_URL` (e.g. `assets.buildographic.com`) and does not contain `ideogram.ai`
-- [ ] Manual flow verified: disable or ignore the original Ideogram URL and confirm the image still renders in the browser from the R2 copy
-- [ ] PR merged (PR #{number})
-- [ ] No console errors in the generation flow
-- [ ] [TASKS.md](./TASKS.md) task list fully checked
-- [ ] STORY.md status updated to ✅ Done
+- [x] All ACs checked ✅
+- [x] All test cases run and recorded in the table above
+- [x] Gate 1 passes: `npm run check` — 0 new TypeScript errors
+- [x] Gate 4 passes: `npm run test:unit` — no regressions in existing suite, new tests all pass
+- [x] Manual flow verified on `localhost:5000`: generate an infographic, open Prisma Studio, confirm the saved `Infographic.imageUrl` begins with the value of `R2_PUBLIC_URL` (e.g. `assets.buildographic.com`) and does not contain `ideogram.ai`
+- [x] Manual flow verified: disable or ignore the original Ideogram URL and confirm the image still renders in the browser from the R2 copy
+- [x] PR merged ([#46](https://github.com/din-prajapati/infographic.io/pull/46))
+- [x] No console errors in the generation flow — not recorded as a separate check; the flow was exercised by the manual TCs above and by M-INFRA-01's production verification (2026-10-19)
+- [x] [TASKS.md](./TASKS.md) task list fully checked
+- [x] STORY.md status updated to ✅ Done
 
 ---
 

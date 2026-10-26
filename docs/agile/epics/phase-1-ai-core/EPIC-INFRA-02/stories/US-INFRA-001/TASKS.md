@@ -9,17 +9,17 @@ updated: 2026-08-19
 
 > **Story:** [STORY.md](./STORY.md)
 > **Milestone branch:** `feat/infra/m-01-durable-asset-storage`
-> **PR:** #_____ (milestone PR — see AGILE.md §"Git Standards")
+> **PR:** [#46](https://github.com/din-prajapati/infographic.io/pull/46)
 > **Linear:** LIN-XXX
 
 ---
 
 ## Four Pillars Pre-flight
 
-- [ ] **Brain** — STORY.md is filled: ACs written, out-of-scope listed, AI Implementation Prompt ready
-- [ ] **Muscle** — This TASKS.md has T1..Tn (one per AC × file) + exact test commands
-- [ ] **Map** — [ARCHITECTURE.mmd](../../ARCHITECTURE.mmd) exists for this epic
-- [ ] **Env** — [ENV.yaml](../../ENV.yaml) loaded (paths not guessed)
+- [x] **Brain** — STORY.md is filled: ACs written, out-of-scope listed, AI Implementation Prompt ready
+- [x] **Muscle** — This TASKS.md has T1..Tn (one per AC × file) + exact test commands
+- [x] **Map** — [ARCHITECTURE.mmd](../../ARCHITECTURE.mmd) exists for this epic
+- [x] **Env** — [ENV.yaml](../../ENV.yaml) loaded (paths not guessed)
 
 > Incomplete context = wasted AI session.
 
@@ -201,9 +201,9 @@ curl http://localhost:5000/api/health
 - [x] T6 — Boot-guard tests (file: `api/tests/config/env.validation.spec.ts`, type: `test`)
 - [x] Gate 1 passes ✅
 - [x] Manual test verified ✅ — exceeded TC-INFRA-001-05: live round-trip through StorageService against the staging bucket (upload → public fetch 200 → byte-identical → cleaned up), not just a boot check
-- [ ] PR opened with story card as description ✅
+- [x] PR opened with story card as description ✅
 - [x] STORY.md ACs ticked off ✅ — all 6
-- [ ] EPIC.md "Implementation Update" log appended ✅ (by code-agent)
+- [x] EPIC.md "Implementation Update" log appended ✅ (by code-agent)
 
 ---
 
