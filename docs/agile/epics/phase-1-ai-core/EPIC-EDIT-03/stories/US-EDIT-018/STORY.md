@@ -7,13 +7,13 @@ updated: 2026-10-26
 
 # Story Card — US-EDIT-018 — Listing facts persist with the design
 
-> **Status:** 🔲 Not Started
+> **Status:** ✅ Done — merged in [#73](https://github.com/din-prajapati/infographic.io/pull/73) (2026-10-26)
 > **Epic:** [EPIC-EDIT-03](../../EPIC.md)
 > **Milestone:** [M-EDIT-05-one-source-of-truth](../../milestones/M-EDIT-05-one-source-of-truth.md)
 > **Linear:** LIN-XXX
 > **Size:** M
 > **Engine:** Claude (primary)
-> **Created:** 2026-10-26 | **Closed:** —
+> **Created:** 2026-10-26 | **Closed:** 2026-10-26
 
 ```yaml
 depends_on: [US-EDIT-014]
@@ -106,13 +106,13 @@ Decision (user, 2026-10-26): fill the fields from what the poster printed; persi
 
 ## Definition of Done
 
-- [ ] All ACs checked ✅
-- [ ] All test cases run and recorded
-- [ ] Gate 1 passes (`npm run check`, `npm run test:unit`, `npm run test:unit:client`)
-- [ ] Gate 2 passes (TC-EDIT-018-07)
-- [ ] PR merged (milestone PR #_____)
-- [ ] [TASKS.md](./TASKS.md) task list fully checked
-- [ ] STORY.md status updated to ✅ Done
+- [x] All ACs checked ✅
+- [x] All test cases run and recorded
+- [x] Gate 1 passes (`npm run check`, `npm run test:unit`, `npm run test:unit:client`)
+- [x] Gate 2 passes (TC-EDIT-018-07)
+- [x] PR merged (milestone PR #73)
+- [x] [TASKS.md](./TASKS.md) task list fully checked
+- [x] STORY.md status updated to ✅ Done
 
 ---
 

@@ -39,4 +39,4 @@ Unit test for AC5 (fabricated hints absent). Manual checks per TC table.
 ## Gates
 
 - [x] Gate 1 — `npm run check` ✅, `npm run test:unit:client` ✅ (347 passed, 1 skipped)
-- [ ] Gate 2 — runbook MV-05-01 and MV-05-03 in Chrome, exported file opened
+- [x] Gate 2 — runbook MV-05-01 and MV-05-03 in Chrome, exported file opened

@@ -7,14 +7,14 @@ updated: 2026-10-25
 
 # Story Card — US-EDIT-015 — Lane A: one form per fact in the sidebar
 
-> **Status:** 🚧 Implementation complete — Gate 1 ✅, Gate 2 pending (manual Chrome verification)
+> **Status:** ✅ Done — merged in [#73](https://github.com/din-prajapati/infographic.io/pull/73) (2026-10-26)
 > **Epic:** [EPIC-EDIT-03](../../EPIC.md)
 > **Milestone:** [M-EDIT-05-one-source-of-truth](../../milestones/M-EDIT-05-one-source-of-truth.md)
 > **Linear:** LIN-XXX
 > **Size:** M
 > **Stage:** Lane A — worktree `../bg-canvas`, supervised (the only lane a user sees immediately)
 > **Engine:** Claude (primary)
-> **Created:** 2026-10-25 | **Closed:** —
+> **Created:** 2026-10-25 | **Closed:** 2026-10-26
 
 ```yaml
 depends_on: [US-EDIT-014]      # merged, not promised
@@ -95,12 +95,12 @@ Content keeps only the fields the forms do not have.
 
 | TC ID | Type | Priority | Scenario | Status | Finding |
 |-------|------|:--------:|----------|:------:|---------|
-| TC-EDIT-015-01 | Manual | P0 | Given a premium template, When the Property tab is read, Then exactly one price input exists | 🔲 | |
-| TC-EDIT-015-02 | Manual | P0 | Given the price input, When `₹85,00,000` is typed, Then the canvas price reads `₹85,00,000`, and one Undo reverts it | 🔲 | |
-| TC-EDIT-015-03 | Manual | P0 | Given *Open House Flyer* and *Market Report*, When their tabs are opened, Then the date / report fields are present and edit the canvas | 🔲 | |
-| TC-EDIT-015-04 | Unit | P1 | Given `TemplateSlotSection.tsx`, When its hints are scanned, Then none of the fabricated strings remain | 🔲 | |
-| TC-EDIT-015-05 | Manual | P1 | Given a blank canvas, When the Property tab opens, Then the form renders and nothing errors | 🔲 | |
-| TC-EDIT-015-06 | Manual | P0 | Given *Luxury Home Showcase*, When Brokerage is typed in the Agent tab, Then the agency name on the canvas changes and the Design tab shows no agency-name field | 🔲 | |
+| TC-EDIT-015-01 | Manual | P0 | Given a premium template, When the Property tab is read, Then exactly one price input exists | ✅ | |
+| TC-EDIT-015-02 | Manual | P0 | Given the price input, When `₹85,00,000` is typed, Then the canvas price reads `₹85,00,000`, and one Undo reverts it | ✅ | |
+| TC-EDIT-015-03 | Manual | P0 | Given *Open House Flyer* and *Market Report*, When their tabs are opened, Then the date / report fields are present and edit the canvas | ✅ | |
+| TC-EDIT-015-04 | Unit | P1 | Given `TemplateSlotSection.tsx`, When its hints are scanned, Then none of the fabricated strings remain | ✅ | |
+| TC-EDIT-015-05 | Manual | P1 | Given a blank canvas, When the Property tab opens, Then the form renders and nothing errors | ✅ | |
+| TC-EDIT-015-06 | Manual | P0 | Given *Luxury Home Showcase*, When Brokerage is typed in the Agent tab, Then the agency name on the canvas changes and the Design tab shows no agency-name field | ✅ | |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 
@@ -108,13 +108,13 @@ Content keeps only the fields the forms do not have.
 
 ## Definition of Done
 
-- [ ] All ACs checked ✅
-- [ ] All test cases run and recorded
-- [ ] Gate 1 passes (`npm run check`, `npm run test:unit:client`)
-- [ ] Gate 2 passes (runbook MV-05-01, MV-05-03, exported file opened)
-- [ ] PR merged (milestone PR #_____)
-- [ ] [TASKS.md](./TASKS.md) task list fully checked
-- [ ] STORY.md status updated to ✅ Done
+- [x] All ACs checked ✅
+- [x] All test cases run and recorded
+- [x] Gate 1 passes (`npm run check`, `npm run test:unit:client`)
+- [x] Gate 2 passes (runbook MV-05-01, MV-05-03, exported file opened)
+- [x] PR merged (milestone PR #73)
+- [x] [TASKS.md](./TASKS.md) task list fully checked
+- [x] STORY.md status updated to ✅ Done
 
 ---
 

@@ -39,4 +39,4 @@ All 9 tests pass. Mutation check: removing the write-back causes TC-EDIT-016-01 
 ## Gates
 
 - [x] Gate 1 — `npm run check`, `npm run test:unit:client` — 340 passed, 1 skipped (pre-existing)
-- [ ] Gate 2 — runbook MV-05-02 in Chrome (TC-EDIT-016-06, manual, lead runs at integration)
+- [x] Gate 2 — runbook MV-05-02 in Chrome (TC-EDIT-016-06, manual, lead runs at integration)

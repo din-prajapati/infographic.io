@@ -8,8 +8,8 @@ created: 2026-10-25
 # M-EDIT-05-one-source-of-truth — One Source of Truth for Listing Facts
 
 > **Epic:** [EPIC-EDIT-03](../EPIC.md)
-> **Status:** 🔲 Not Started — scaffolded 2026-10-25, D1–D5 approved
-> **Target date:** TBD
+> **Status:** ✅ Done — merged in [#73](https://github.com/din-prajapati/infographic.io/pull/73) (rebase-and-merge, `main` @ `56c7a46`) and deployed to staging and production 2026-10-26
+> **Target date:** TBD | **Closed:** 2026-10-26
 > **Branch:** `feat/edit/m-05-one-source-of-truth` (shared by all four stories)
 > **Runbook:** [M-EDIT-05-RUNBOOK.md](M-EDIT-05-RUNBOOK.md) — prompts, decisions, verification procedure
 > **Source spec:** [buildographic-canvas-bl27-ux-implementation-spec.md](buildographic-canvas-bl27-ux-implementation-spec.md) §5, §9, §10.1
@@ -43,12 +43,12 @@ element carrying a slot in one history entry. What is missing is a caller, and o
 
 | Order | Story | Title | Size | Blocked By | Status | PR |
 |:-----:|-------|-------|:----:|------------|:------:|:--:|
-| 1 | [US-EDIT-014](../stories/US-EDIT-014/STORY.md) | Foundation: one binding contract for listing facts | M | — | 🔲 | — |
-| 2 | [US-EDIT-015](../stories/US-EDIT-015/STORY.md) | Lane A: one form per fact in the sidebar | M | US-EDIT-014 **merged** | 🔲 | — |
-| 2 | [US-EDIT-016](../stories/US-EDIT-016/STORY.md) | Lane B: canvas edits reach the field | M | US-EDIT-014 **merged** | 🔲 | — |
-| 1 | [US-EDIT-017](../stories/US-EDIT-017/STORY.md) | Lane C: delete the orphaned CustomizePanel | S | — | 🔲 | — |
-| 3 | [US-EDIT-018](../stories/US-EDIT-018/STORY.md) | Listing facts persist with the design | M | US-EDIT-014 | 🔲 | — |
-| 3 | [US-EDIT-019](../stories/US-EDIT-019/STORY.md) | One fact per template element | M | US-EDIT-014 | 🔲 | — |
+| 1 | [US-EDIT-014](../stories/US-EDIT-014/STORY.md) | Foundation: one binding contract for listing facts | M | — | ✅ | [#73](https://github.com/din-prajapati/infographic.io/pull/73) |
+| 2 | [US-EDIT-015](../stories/US-EDIT-015/STORY.md) | Lane A: one form per fact in the sidebar | M | US-EDIT-014 **merged** | ✅ | [#73](https://github.com/din-prajapati/infographic.io/pull/73) |
+| 2 | [US-EDIT-016](../stories/US-EDIT-016/STORY.md) | Lane B: canvas edits reach the field | M | US-EDIT-014 **merged** | ✅ | [#73](https://github.com/din-prajapati/infographic.io/pull/73) |
+| 1 | [US-EDIT-017](../stories/US-EDIT-017/STORY.md) | Lane C: delete the orphaned CustomizePanel | S | — | ✅ | [#73](https://github.com/din-prajapati/infographic.io/pull/73) |
+| 3 | [US-EDIT-018](../stories/US-EDIT-018/STORY.md) | Listing facts persist with the design | M | US-EDIT-014 | ✅ | [#73](https://github.com/din-prajapati/infographic.io/pull/73) |
+| 3 | [US-EDIT-019](../stories/US-EDIT-019/STORY.md) | One fact per template element | M | US-EDIT-014 | ✅ | [#73](https://github.com/din-prajapati/infographic.io/pull/73) |
 
 ---
 
@@ -69,15 +69,16 @@ element carrying a slot in one history entry. What is missing is a caller, and o
 
 ## Acceptance (Milestone Done When…)
 
-- [ ] The Property tab renders one price input and the Agent tab one agent-name input.
-- [ ] Typing a price in the Property tab changes the price on the canvas, in one Undo step.
-- [ ] Editing the headline on the canvas updates the Headline field, and one Undo reverts both.
-- [ ] A design saved before this milestone reopens with its own values in the sidebar — not blanks, not `[Price]`.
-- [ ] A fresh template shows empty fields, and no fabricated value anywhere.
-- [ ] The Open House date and Market Report fields are still editable.
-- [ ] `CustomizePanel.tsx` is gone and nothing changed for the user.
-- [ ] All stories above have status ✅ Done.
-- [ ] Gate 1 passes; Gate 2 is the Chrome verification in the runbook (MV-05-01 … 05), including opening the exported file.
+- [x] The Property tab renders one price input and the Agent tab one agent-name input.
+- [x] Typing a price in the Property tab changes the price on the canvas, in one Undo step.
+- [x] Editing the headline on the canvas updates the Headline field, and one Undo reverts both.
+- [x] A design saved before this milestone reopens with its own values in the sidebar — not blanks, not `[Price]`.
+- [x] A fresh template shows empty fields, and no fabricated value anywhere.
+- [x] The Open House date and Market Report fields are still editable.
+- [x] `CustomizePanel.tsx` is gone and nothing changed for the user.
+- [x] All stories above have status ✅ Done.
+- [x] Gate 1 passes; Gate 2 is the Chrome verification in the runbook (MV-05-01 … 05), including opening the exported file.
+      > **Exception:** MV-05-05 *with a photo* was not run — this milestone touched no photo path; the no-photo run passed. Recorded in PR #73.
 
 ---
 
@@ -85,6 +86,15 @@ element carrying a slot in one history entry. What is missing is a caller, and o
 
 - **D4 is where data can be lost.** `restoreCanvasData` serves both template load and saved-design restore; hydration must read, never reset. A canvas with no slot tags (for example after a poster placement, which discards slot layers since M-EDIT-04) must leave the stores untouched.
 - **Out of scope** (runbook §"What this milestone deliberately does NOT do"): AI-assistant redesign (§8), tab renames (§9.1), export preflight (§11, blocked on BL-09), verified registration data (§5.5).
+
+---
+
+## Closeout (2026-10-26)
+
+- Lanes A, B and C ran in parallel in separate worktrees and were squash-merged into the milestone branch; Foundation fixes made at integration became US-EDIT-014 AC10/AC11.
+- Gate 2 found the poster/sidebar disagreement and the mixed template lines → US-EDIT-018 and US-EDIT-019 (Q3), shipped in the same PR.
+- Template refresh (`seed-premium-templates.ts --refresh`) run on dev/staging and, after deploy, production (`ep-aged-king`): 5 rows, 7 split elements, 7 `slotFormat`s, verified at the data layer.
+- Known limit: after Undo of a poster placement, beds/baths/sq ft keep the poster's values (Q1 — the specs line never hydrates).
 
 ---
 

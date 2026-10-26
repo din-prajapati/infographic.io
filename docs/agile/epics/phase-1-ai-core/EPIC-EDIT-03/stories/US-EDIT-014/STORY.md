@@ -7,14 +7,14 @@ updated: 2026-10-25
 
 # Story Card — US-EDIT-014 — Foundation: one binding contract for listing facts
 
-> **Status:** 🔲 Not Started
+> **Status:** ✅ Done — merged in [#73](https://github.com/din-prajapati/infographic.io/pull/73) (2026-10-26)
 > **Epic:** [EPIC-EDIT-03](../../EPIC.md)
 > **Milestone:** [M-EDIT-05-one-source-of-truth](../../milestones/M-EDIT-05-one-source-of-truth.md)
 > **Linear:** LIN-XXX
 > **Size:** M
 > **Stage:** **Foundation — sequential. Merges before Lanes A and B fork.**
 > **Engine:** Claude (primary)
-> **Created:** 2026-10-25 | **Closed:** —
+> **Created:** 2026-10-25 | **Closed:** 2026-10-26
 
 ```yaml
 depends_on: []
@@ -64,26 +64,26 @@ no component.
 
 ## Acceptance Criteria
 
-- [ ] **AC1 [happy-path]:** `client/src/lib/listingBindings.ts` exports `FIELD_TO_SLOT` and
+- [x] **AC1 [happy-path]:** `client/src/lib/listingBindings.ts` exports `FIELD_TO_SLOT` and
       `SLOT_TO_FIELD`. `canvasState.ts` and `connectLayout.ts` import it and no longer declare their
       own map.
-- [ ] **AC2 [happy-path]:** `stats` resolves to `property.specs` **and** `property.facts` (D5): a
+- [x] **AC2 [happy-path]:** `stats` resolves to `property.specs` **and** `property.facts` (D5): a
       store→canvas write updates elements carrying either id, and both ids map back to `stats`.
-- [ ] **AC3 [happy-path]:** `writeFieldToCanvas(field, value)` updates every element tagged with the
+- [x] **AC3 [happy-path]:** `writeFieldToCanvas(field, value)` updates every element tagged with the
       field's slot(s) and produces exactly **one** history entry per call.
-- [ ] **AC4 [happy-path]:** `hydrateStoresFromCanvas()` fills the property and agent stores from the
+- [x] **AC4 [happy-path]:** `hydrateStoresFromCanvas()` fills the property and agent stores from the
       canvas's slot-tagged text: a real value hydrates as itself; a bracketed placeholder (`[Price]`,
       `[Property\nname]` — match with `[\s\S]`) hydrates as `''`.
-- [ ] **AC5 [error-path]:** `hydrateStoresFromCanvas()` on a canvas with **no** slot-tagged text is a
+- [x] **AC5 [error-path]:** `hydrateStoresFromCanvas()` on a canvas with **no** slot-tagged text is a
       no-op — it does not reset or blank any store field. (After a poster placement the slot layers
       are gone; the stores must keep the user's facts.)
-- [ ] **AC6 [error-path]:** A field with no slot (e.g. `website`) and a slot with no field (e.g.
+- [x] **AC6 [error-path]:** A field with no slot (e.g. `website`) and a slot with no field (e.g.
       `openHouse.date`, `report.kpis`) are handled without throwing: the write is a no-op, the lookup
       returns `undefined`.
-- [ ] **AC7 [error-path]:** A framing shape carrying `frameOf` (BL-44) is never read or written as a
+- [x] **AC7 [error-path]:** A framing shape carrying `frameOf` (BL-44) is never read or written as a
       slot value, and a non-text element carrying a text slot is skipped by hydration.
-- [ ] **AC8 [happy-path]:** No file under `client/src/components/` is changed.
-- [ ] **AC9 [happy-path]:** `restoreCanvasData` (the single load path for templates and saved designs)
+- [x] **AC8 [happy-path]:** No file under `client/src/components/` is changed.
+- [x] **AC9 [happy-path]:** `restoreCanvasData` (the single load path for templates and saved designs)
       calls `hydrateStoresFromCanvas` after loading, so D4's "fill the stores on load" happens without
       any component change. *Added 2026-10-26 during implementation: no story wired hydration to load.*
 - [x] **AC10 [happy-path]:** Undo and Redo re-fill the stores from the canvas, so one Undo reverts both
@@ -142,14 +142,14 @@ No slot: `agent.website`, `property.type`, `property.locale`. No field: `propert
 
 | TC ID | Type | Priority | Scenario | Status | Finding |
 |-------|------|:--------:|----------|:------:|---------|
-| TC-EDIT-014-01 | Unit | P0 | Given both modules, When imported, Then they share one `FIELD_TO_SLOT` and neither declares its own | 🔲 | |
-| TC-EDIT-014-02 | Unit | P0 | Given a canvas with `property.facts` and one with `property.specs`, When `stats` is written, Then both update | 🔲 | |
-| TC-EDIT-014-03 | Unit | P0 | Given a price write, When it lands, Then history grows by exactly one | 🔲 | |
-| TC-EDIT-014-04 | Unit | P0 | Given `[Price]` and `[Property\nname]` on the canvas, When hydrated, Then the fields are `''` | 🔲 | |
-| TC-EDIT-014-05 | Unit | P0 | Given filled stores and a canvas with no slot text, When hydrated, Then the stores are unchanged | 🔲 | |
-| TC-EDIT-014-06 | Unit | P1 | Given `website` and `openHouse.date`, When written/looked up, Then no throw, no change | 🔲 | |
-| TC-EDIT-014-07 | Unit | P1 | Given a `frameOf` shape and a shape tagged with a text slot, When hydrated, Then neither is read | 🔲 | |
-| TC-EDIT-014-08 | Unit | P0 | Given saved canvas data with slot text, When `restoreCanvasData` runs, Then the stores hold its values; given data with no slot text, Then the stores are unchanged | 🔲 | |
+| TC-EDIT-014-01 | Unit | P0 | Given both modules, When imported, Then they share one `FIELD_TO_SLOT` and neither declares its own | ✅ | |
+| TC-EDIT-014-02 | Unit | P0 | Given a canvas with `property.facts` and one with `property.specs`, When `stats` is written, Then both update | ✅ | |
+| TC-EDIT-014-03 | Unit | P0 | Given a price write, When it lands, Then history grows by exactly one | ✅ | |
+| TC-EDIT-014-04 | Unit | P0 | Given `[Price]` and `[Property\nname]` on the canvas, When hydrated, Then the fields are `''` | ✅ | |
+| TC-EDIT-014-05 | Unit | P0 | Given filled stores and a canvas with no slot text, When hydrated, Then the stores are unchanged | ✅ | |
+| TC-EDIT-014-06 | Unit | P1 | Given `website` and `openHouse.date`, When written/looked up, Then no throw, no change | ✅ | |
+| TC-EDIT-014-07 | Unit | P1 | Given a `frameOf` shape and a shape tagged with a text slot, When hydrated, Then neither is read | ✅ | |
+| TC-EDIT-014-08 | Unit | P0 | Given saved canvas data with slot text, When `restoreCanvasData` runs, Then the stores hold its values; given data with no slot text, Then the stores are unchanged | ✅ | |
 | TC-EDIT-014-09 | Unit | P0 | Given a field written to the canvas, When Undo then Redo run, Then canvas and field revert and re-apply together; a push, an edit or a load does not trigger it | ✅ | AC10 |
 | TC-EDIT-014-10 | Unit | P0 | Given keystroke-by-keystroke writes to the price, Then one history entry and one Undo restores `[Price]` and empties the field; another field, a canvas edit or an Undo starts a new step | ✅ | AC11 |
 
@@ -159,12 +159,12 @@ No slot: `agent.website`, `property.type`, `property.locale`. No field: `propert
 
 ## Definition of Done
 
-- [ ] All ACs checked ✅
-- [ ] All test cases run and recorded
-- [ ] Gate 1 passes (`npm run check`, `npm run test:unit:client`)
-- [ ] PR merged (milestone PR #_____)
-- [ ] [TASKS.md](./TASKS.md) task list fully checked
-- [ ] STORY.md status updated to ✅ Done
+- [x] All ACs checked ✅
+- [x] All test cases run and recorded
+- [x] Gate 1 passes (`npm run check`, `npm run test:unit:client`)
+- [x] PR merged (milestone PR #73)
+- [x] [TASKS.md](./TASKS.md) task list fully checked
+- [x] STORY.md status updated to ✅ Done
 
 ---
 
