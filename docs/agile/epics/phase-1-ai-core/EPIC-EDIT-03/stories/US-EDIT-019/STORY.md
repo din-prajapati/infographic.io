@@ -56,16 +56,16 @@ Fix in the data, not in a token-replacement rule: one fact per element, and an o
 
 ## Acceptance Criteria
 
-- [ ] **AC1 [happy-path]:** No seeded template has a slot-tagged text element whose placeholder holds more
+- [x] **AC1 [happy-path]:** No seeded template has a slot-tagged text element whose placeholder holds more
       than one fact. Each split-out fact gets its own element and slot, inside the original line's area.
-- [ ] **AC2 [happy-path]:** An element may carry `slotFormat` with one `{}`. A field write renders
+- [x] **AC2 [happy-path]:** An element may carry `slotFormat` with one `{}`. A field write renders
       `slotFormat` around the value; for a multi-line value (features) it applies per line. An empty value
       writes empty.
-- [ ] **AC3 [happy-path]:** Hydration and canvas write-back strip the `slotFormat` label before storing, so
+- [x] **AC3 [happy-path]:** Hydration and canvas write-back strip the `slotFormat` label before storing, so
       `RERA PRM/KA/1` stores `PRM/KA/1` and `RERA [Your RERA number]` stores empty.
-- [ ] **AC4 [error-path]:** Text that no longer matches its `slotFormat` (the user rewrote the label on the
+- [x] **AC4 [error-path]:** Text that no longer matches its `slotFormat` (the user rewrote the label on the
       canvas) is stored as typed — nothing is dropped, nothing throws.
-- [ ] **AC5 [happy-path]:** Placeholder words that name no field are removed rather than kept as fake
+- [x] **AC5 [happy-path]:** Placeholder words that name no field are removed rather than kept as fake
       content (`— [What makes this location worth noting]`, `— [Configuration]`).
 - [ ] **AC6 [happy-path]:** `seed-premium-templates.ts --refresh` updates the five rows on dev/staging and
       production; verified at the data layer.
@@ -83,13 +83,13 @@ Fix in the data, not in a token-replacement rule: one fact per element, and an o
 
 | TC ID | Type | Priority | Scenario | Status | Finding |
 |-------|------|:--------:|----------|:------:|---------|
-| TC-EDIT-019-01 | Unit (api) | P0 | For every seeded template, no slot-tagged text element contains two bracketed tokens unless its slot has no field | 🔲 | |
-| TC-EDIT-019-02 | Unit | P0 | Given `slotFormat: "RERA {}"`, When license `PRM/KA/1` is written, Then content is `RERA PRM/KA/1` | 🔲 | |
-| TC-EDIT-019-03 | Unit | P0 | Given `"• {}"`, When features Pool, Garage are written, Then content is `• Pool\n• Garage` | 🔲 | |
-| TC-EDIT-019-04 | Unit | P0 | Given `RERA [Your RERA number]` with the format, When hydrated, Then license is empty; `RERA PRM/KA/1` gives `PRM/KA/1` | 🔲 | |
-| TC-EDIT-019-05 | Unit | P1 | Given content that does not match the format, When written back, Then the field holds the content as typed | 🔲 | |
-| TC-EDIT-019-06 | Manual | P0 | Chrome: Story template — name, phone and RERA typed in the Agent tab each show in their own place | 🔲 | |
-| TC-EDIT-019-07 | Data | P0 | After `--refresh`, each DB has 5 premium rows and the split elements present | 🔲 | |
+| TC-EDIT-019-01 | Unit (api) | P0 | For every seeded template, no slot-tagged text element contains two bracketed tokens unless its slot has no field | ✅ | Fails on the old data with the 11 mixed lines, passes on the new |
+| TC-EDIT-019-02 | Unit | P0 | Given `slotFormat: "RERA {}"`, When license `PRM/KA/1` is written, Then content is `RERA PRM/KA/1` | ✅ |  |
+| TC-EDIT-019-03 | Unit | P0 | Given `"• {}"`, When features Pool, Garage are written, Then content is `• Pool\n• Garage` | ✅ |  |
+| TC-EDIT-019-04 | Unit | P0 | Given `RERA [Your RERA number]` with the format, When hydrated, Then license is empty; `RERA PRM/KA/1` gives `PRM/KA/1` | ✅ |  |
+| TC-EDIT-019-05 | Unit | P1 | Given content that does not match the format, When written back, Then the field holds the content as typed | ✅ |  |
+| TC-EDIT-019-06 | Manual | P0 | Chrome: Story template — name, phone and RERA typed in the Agent tab each show in their own place | ✅ | Story footer: `Priya Shah | +91 98200 12345 | RERA PRM/KA/0001`; reopen stored license bare |
+| TC-EDIT-019-07 | Data | P0 | After `--refresh`, each DB has 5 premium rows and the split elements present | ⚠️ | dev/staging (`ep-billowing-cell`) refreshed 2026-10-26: 5 curated rows, 7 split ids, 7 slotFormats, 0 old lines. Production pending approval |
 
 ---
 
