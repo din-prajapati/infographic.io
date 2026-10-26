@@ -83,6 +83,9 @@ no component.
 - [ ] **AC7 [error-path]:** A framing shape carrying `frameOf` (BL-44) is never read or written as a
       slot value, and a non-text element carrying a text slot is skipped by hydration.
 - [ ] **AC8 [happy-path]:** No file under `client/src/components/` is changed.
+- [ ] **AC9 [happy-path]:** `restoreCanvasData` (the single load path for templates and saved designs)
+      calls `hydrateStoresFromCanvas` after loading, so D4's "fill the stores on load" happens without
+      any component change. *Added 2026-10-26 during implementation: no story wired hydration to load.*
 
 ---
 
@@ -140,6 +143,7 @@ No slot: `agent.website`, `property.type`, `property.locale`. No field: `propert
 | TC-EDIT-014-05 | Unit | P0 | Given filled stores and a canvas with no slot text, When hydrated, Then the stores are unchanged | 🔲 | |
 | TC-EDIT-014-06 | Unit | P1 | Given `website` and `openHouse.date`, When written/looked up, Then no throw, no change | 🔲 | |
 | TC-EDIT-014-07 | Unit | P1 | Given a `frameOf` shape and a shape tagged with a text slot, When hydrated, Then neither is read | 🔲 | |
+| TC-EDIT-014-08 | Unit | P0 | Given saved canvas data with slot text, When `restoreCanvasData` runs, Then the stores hold its values; given data with no slot text, Then the stores are unchanged | 🔲 | |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 

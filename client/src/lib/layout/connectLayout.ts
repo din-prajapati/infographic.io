@@ -26,22 +26,12 @@
 import { layoutDesign } from './layoutEngine';
 import { templateRegistry } from './templates';
 import type { ComposedDesign, ComposedTextElement } from '@/lib/api';
+import { FIELD_TO_SLOTS, type BoundField } from '../listingBindings';
 
-/**
- * ListingField (server vocabulary) → SlotId (template vocabulary).
- *
- * The engine takes SlotId keys in and emits ListingSlot values out, so this map
- * is only needed on the way in. Keep in sync with LISTING_FIELD_TO_SLOT in
- * canvasState.ts, which performs the mirror-image conversion on the way out.
- */
-const FIELD_TO_SLOT: Record<string, string> = {
-  headline:  'property.headline',
-  price:     'property.price',
-  address:   'property.location',
-  stats:     'property.facts',
-  agentName: 'agent.name',
-  brokerage: 'brand.name',
-};
+// US-EDIT-014 — ListingField → SlotId comes from listingBindings.ts. A field
+// can map to more than one slot (`stats` → property.specs AND property.facts);
+// the value is written under each, and the engine uses whichever its template
+// declares (the layout templates use property.facts).
 
 /** Palette used until the layout planner supplies one (that is a later story). */
 export const DEFAULT_PALETTE = {
@@ -128,8 +118,7 @@ export function composeFromCanonicalValues(input: {
   const values: Record<string, string> = {};
   for (const [field, value] of Object.entries(canonicalValues)) {
     if (!value || !value.trim()) continue;
-    const slot = FIELD_TO_SLOT[field];
-    if (slot) values[slot] = value;
+    for (const slot of FIELD_TO_SLOTS[field as BoundField] ?? []) values[slot] = value;
   }
   // Nothing worth laying out — let the caller fall back.
   if (Object.keys(values).length === 0) return null;
