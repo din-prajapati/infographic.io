@@ -15,6 +15,7 @@ import type { AiComposition, ComposedDesign, ComposedTextElementGeometry } from 
 import { toast } from 'sonner';
 import { mapExtractedFont } from './fontMap';
 import { createMeasureText } from './layout/connectLayout';
+import { FIELD_TO_SLOT, hydrateStoresFromCanvas, type BoundField } from './listingBindings';
 
 /**
  * Capture current canvas state as JSON.
@@ -192,6 +193,13 @@ export function restoreCanvasData(canvasData: any): boolean {
       canvasPanY: 0,
       history: { past: [], future: [] },
     });
+
+    // US-EDIT-014 AC9 (M-EDIT-05 D4) — fill the sidebar stores from what was
+    // just loaded. Template load and saved-design restore both arrive here and
+    // need the same thing: a reopened design shows its own values; a fresh
+    // template's bracketed placeholders fill as empty; a canvas with no slot
+    // text leaves the stores untouched. No stored data is migrated.
+    hydrateStoresFromCanvas();
 
     // Ensure loaded templates/infographics are fully visible in the current viewport.
     scheduleFitCanvasZoomToViewport();
@@ -616,18 +624,9 @@ export async function loadAiVariationToCanvas(
 
 // ── Listing-field → slot-id mapping (US-AI-032 T3) ───────────────────────────
 //
-// ListingField values come from the ComposedDesign contract (US-AI-031b).
-// SlotId values come from slotIds.ts (T1 of this story).
-// Keep this map in sync with both: if a new ListingField is added in
-// composed-design.types.ts, add its SlotId counterpart here.
-const LISTING_FIELD_TO_SLOT: Record<string, string> = {
-  headline:  'property.headline',
-  address:   'property.location',
-  price:     'property.price',
-  stats:     'property.specs',
-  agentName: 'agent.name',
-  brokerage: 'brand.name',
-};
+// US-EDIT-014 — the map now lives in listingBindings.ts (FIELD_TO_SLOT), the
+// one place that binds listing facts to slots. Extracted elements take the
+// canonical slot, so `stats` is still tagged `property.specs` here.
 
 // Safe geometry defaults — applied per-field when extraction values are
 // missing, zero, or non-finite.  The value is always rendered; only the
@@ -764,7 +763,7 @@ export async function loadComposedDesignToCanvas(design: ComposedDesign): Promis
       const { x: safeX, y: safeY, width: geoW, height: safeH, fontSize: safeFs, angle: safeAngle } =
         computeSafeTextGeometry(geo, scale, offsetX, offsetY);
 
-      const slotId = el.slot ? LISTING_FIELD_TO_SLOT[el.slot] : undefined;
+      const slotId = el.slot ? FIELD_TO_SLOT[el.slot as BoundField] : undefined;
 
       // Map the provider font identifier to a CSS-resolvable family + weight.
       // geo?.fontFamily may be "Montserrat-Bold.ttf" or an opaque hash like
