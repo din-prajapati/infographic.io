@@ -193,6 +193,39 @@ describe('formatStatsLine', () => {
   });
 });
 
+// TC-EDIT-014-09 · AC10
+describe('Undo and Redo move the fields with the canvas', () => {
+  it('one Undo after a field write reverts canvas and field; Redo re-applies both', () => {
+    setCanvas([text('p', 'property.price', '₹1 Cr')]);
+    usePropertyStore.getState().setProperty({ price: '₹2 Cr' });
+    writeFieldToCanvas('price', '₹2 Cr');
+
+    useCanvasStore.getState().undo();
+    expect(contentOf('p')).toBe('₹1 Cr');
+    expect(usePropertyStore.getState().property.price).toBe('₹1 Cr');
+
+    useCanvasStore.getState().redo();
+    expect(contentOf('p')).toBe('₹2 Cr');
+    expect(usePropertyStore.getState().property.price).toBe('₹2 Cr');
+  });
+
+  it('a normal edit, a history push and a design load do not trigger it', () => {
+    usePropertyStore.getState().setProperty({ price: 'typed' });
+    setCanvas([text('p', 'property.price', '[Price]')]); // history reset, no undo
+    useCanvasStore.getState().pushToHistory();
+    useCanvasStore.getState().updateElement('p', { content: 'x' } as never);
+    expect(usePropertyStore.getState().property.price).toBe('typed');
+  });
+
+  it('an Undo that restores a placeholder empties the field', () => {
+    setCanvas([text('a', 'agent.name', '[Your name]')]);
+    writeFieldToCanvas('agentName', 'Priya');
+    useAgentStore.getState().setAgent({ name: 'Priya' });
+    useCanvasStore.getState().undo();
+    expect(useAgentStore.getState().agent.name).toBe('');
+  });
+});
+
 // TC-EDIT-014-08 · AC9
 describe('restoreCanvasData fills the stores on load', () => {
   it('a reopened design shows its own values; a canvas with no slot text changes nothing', async () => {
