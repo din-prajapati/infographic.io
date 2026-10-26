@@ -162,6 +162,12 @@ function box(
 
 interface TextOpts {
   slot?: string;
+  /**
+   * US-EDIT-019 — a fixed label around the slot's value, `{}` marks the value
+   * (`"RERA {}"`, `"• {}"`, applied per line). The editor writes and reads
+   * through it, so a field holds the bare value and the label survives.
+   */
+  slotFormat?: string;
   weight?: number;
   align?: "left" | "center" | "right";
   zIndex?: number;
@@ -207,6 +213,7 @@ function text(
     textTransform: "none",
     listStyle: "none",
     slot: opts.slot,
+    slotFormat: opts.slotFormat,
   };
 }
 
@@ -379,8 +386,11 @@ export const PREMIUM_CANVAS_TEMPLATES: StarterCanvasTemplate[] = [
         text("ps-price", "Price", "[Price]", 80, 1200, 380, 44, 32, "#1f2937", { slot: "property.price", weight: 800, align: "center", zIndex: 4 }),
         text("ps-facts", "Key Facts", "[Key fact]\n[Key fact]\n[Key fact]", 56, 1296, 968, 180, 28, "#e2e8f0", { slot: "property.facts", weight: 600, lineHeight: 1.5, zIndex: 3 }),
         box("ps-cta", "CTA Bar", 0, 1752, 1080, 168, { frameOf: "agent.cta", fill: "#0ca0eb", zIndex: 2 }),
-        text("ps-cta-text", "CTA Text", "Schedule a Site Visit  ·  [Your phone]", 56, 1776, 968, 60, 30, "#ffffff", { slot: "agent.cta", weight: 700, align: "center", zIndex: 3 }),
-        text("ps-agent", "Agent", "[Your name]  ·  RERA [Your RERA number]", 56, 1856, 968, 40, 22, "#e0f2fe", { slot: "agent.name", weight: 600, align: "center", zIndex: 3 }),
+        text("ps-cta-text", "CTA Text", "Schedule a Site Visit", 56, 1776, 968, 60, 30, "#ffffff", { slot: "agent.cta", weight: 700, align: "center", zIndex: 3 }),
+        // US-EDIT-019 — one fact per element: name, phone and RERA share the line in thirds.
+        text("ps-agent", "Agent Name", "[Your name]", 56, 1856, 322, 40, 22, "#e0f2fe", { slot: "agent.name", weight: 600, align: "center", zIndex: 3 }),
+        text("ps-agentphone", "Agent Phone", "[Your phone]", 378, 1856, 322, 40, 22, "#e0f2fe", { slot: "agent.phone", weight: 600, align: "center", zIndex: 3 }),
+        text("ps-agentrera", "Agent RERA", "RERA [Your RERA number]", 700, 1856, 324, 40, 22, "#e0f2fe", { slot: "agent.rera", slotFormat: "RERA {}", weight: 600, align: "center", zIndex: 3 }),
       ],
     },
   },
@@ -409,12 +419,12 @@ export const PREMIUM_CANVAS_TEMPLATES: StarterCanvasTemplate[] = [
         text("sq-headline", "Headline", "[Property\nname]", 624, 200, 432, 200, 44, "#0f172a", { slot: "property.headline", weight: 800, lineHeight: 1.05, zIndex: 2 }),
         box("sq-pricechip", "Price Chip", 624, 420, 360, 56, { frameOf: "property.price", fill: "#fde68a", cornerRadius: 28, zIndex: 2 }),
         text("sq-price", "Price", "[Price]", 644, 432, 320, 32, 24, "#1f2937", { slot: "property.price", weight: 800, align: "center", zIndex: 3 }),
-        text("sq-features", "Features", "• [Feature]\n• [Feature]\n• [Feature]\n• [Feature]", 624, 512, 432, 220, 24, "#475569", { slot: "property.features", weight: 500, lineHeight: 1.6, zIndex: 2 }),
+        text("sq-features", "Features", "• [Feature]\n• [Feature]\n• [Feature]\n• [Feature]", 624, 512, 432, 220, 24, "#475569", { slot: "property.features", slotFormat: "• {}", weight: 500, lineHeight: 1.6, zIndex: 2 }),
         box("sq-agentcard", "Agent Card", 624, 824, 432, 200, { frameOf: "agent.name", fill: "#f1f5f9", cornerRadius: 16, zIndex: 2 }),
         img("sq-photo", "Agent Photo", PHOTO_PLACEHOLDER, 656, 856, 136, 136, { slot: "agent.photo", objectFit: "cover", cornerRadius: 68, zIndex: 3 }),
         text("sq-agentname", "Agent Name", "[Your name]", 816, 872, 220, 32, 24, "#0f172a", { slot: "agent.name", weight: 700, zIndex: 3 }),
         text("sq-agentphone", "Agent Phone", "[Your phone]", 816, 908, 220, 26, 18, "#475569", { slot: "agent.phone", weight: 500, zIndex: 3 }),
-        text("sq-agentrera", "Agent RERA", "RERA [Your RERA number]", 816, 940, 220, 24, 16, "#0ca0eb", { slot: "agent.rera", weight: 600, zIndex: 3 }),
+        text("sq-agentrera", "Agent RERA", "RERA [Your RERA number]", 816, 940, 220, 24, 16, "#0ca0eb", { slot: "agent.rera", slotFormat: "RERA {}", weight: 600, zIndex: 3 }),
       ],
     },
   },
@@ -463,12 +473,14 @@ export const PREMIUM_CANVAS_TEMPLATES: StarterCanvasTemplate[] = [
           text(`${id}-txt`, `${id} text`, label as string, (x as number) + 40, (y as number) + 48, 1000, 64, 36, "#0f172a", { slot: "property.features", weight: 700, zIndex: 3 }),
         ]),
         box("oh-locstrip", "Location Strip", 120, 2700, 2240, 120, { frameOf: "property.location", fill: "#ecfeff", cornerRadius: 16, zIndex: 2 }),
-        text("oh-location", "Location", "[Location]  —  [What makes this location worth noting]", 160, 2732, 2160, 56, 32, "#0f766e", { slot: "property.location", weight: 600, zIndex: 3 }),
+        text("oh-location", "Location", "[Location]", 160, 2732, 2160, 56, 32, "#0f766e", { slot: "property.location", weight: 600, zIndex: 3 }),
         // Agent footer
         img("oh-photo", "Agent Photo", PHOTO_PLACEHOLDER, 120, 2880, 200, 200, { slot: "agent.photo", objectFit: "cover", cornerRadius: 100, zIndex: 2 }),
         text("oh-agentname", "Agent Name", "[Your name]", 360, 2900, 1200, 56, 44, "#0f172a", { slot: "agent.name", weight: 800, zIndex: 2 }),
-        text("oh-agentphone", "Agent Phone", "[Your phone]  ·  [Your email]", 360, 2960, 1800, 44, 30, "#475569", { slot: "agent.phone", weight: 500, zIndex: 2 }),
-        text("oh-agentrera", "Agent RERA", "RERA: [Your RERA number]  ·  [Your brand]", 360, 3012, 1800, 40, 26, "#0ca0eb", { slot: "agent.rera", weight: 600, zIndex: 2 }),
+        text("oh-agentphone", "Agent Phone", "[Your phone]", 360, 2960, 860, 44, 30, "#475569", { slot: "agent.phone", weight: 500, zIndex: 2 }),
+        text("oh-agentemail", "Agent Email", "[Your email]", 1240, 2960, 920, 44, 30, "#475569", { slot: "agent.email", weight: 500, zIndex: 2 }),
+        text("oh-agentrera", "Agent RERA", "RERA: [Your RERA number]", 360, 3012, 860, 40, 26, "#0ca0eb", { slot: "agent.rera", slotFormat: "RERA: {}", weight: 600, zIndex: 2 }),
+        text("oh-brand", "Brand Name", "[Your brand]", 1240, 3012, 920, 40, 26, "#0ca0eb", { slot: "brand.name", weight: 600, zIndex: 2 }),
         box("oh-footbar", "Footer Bar", 0, 3380, 2480, 128, { fill: "#0f172a", zIndex: 1 }),
         text("oh-disclaim", "Disclaimer", "Prices are indicative and exclusive of taxes & registration. Images are artistic impressions. T&C apply.", 120, 3416, 2240, 48, 24, "#94a3b8", { weight: 500, zIndex: 2 }),
       ],
@@ -499,7 +511,8 @@ export const PREMIUM_CANVAS_TEMPLATES: StarterCanvasTemplate[] = [
         box("mr-accent", "Accent Strip", 0, 392, 1200, 8, { fill: "#0ca0eb", slot: "brand.accentColor", zIndex: 2 }),
         box("mr-cta", "CTA Button", 880, 144, 280, 112, { frameOf: "agent.cta", fill: "#0ca0eb", cornerRadius: 16, zIndex: 2 }),
         text("mr-ctatext", "CTA Text", "Read Full\nReport", 904, 168, 232, 64, 30, "#ffffff", { slot: "agent.cta", weight: 800, align: "center", lineHeight: 1.15, zIndex: 3 }),
-        text("mr-agent", "Agent", "By [Your name] · [Your brand]", 824, 288, 360, 28, 18, "#cbd5e1", { slot: "agent.name", weight: 600, align: "center", zIndex: 2 }),
+        text("mr-agent", "Agent", "By [Your name]", 824, 280, 360, 24, 18, "#cbd5e1", { slot: "agent.name", slotFormat: "By {}", weight: 600, align: "center", zIndex: 2 }),
+        text("mr-brand", "Brand Name", "[Your brand]", 824, 306, 360, 24, 18, "#cbd5e1", { slot: "brand.name", weight: 600, align: "center", zIndex: 2 }),
       ],
     },
   },
@@ -527,15 +540,18 @@ export const PREMIUM_CANVAS_TEMPLATES: StarterCanvasTemplate[] = [
         img("ml-hero", "Hero Image", HERO_PLACEHOLDER, 32, 128, 720, 480, { slot: "property.heroImage", zIndex: 1, cornerRadius: 12 }),
         img("ml-gallery", "Secondary Image", HERO_PLACEHOLDER, 784, 128, 464, 232, { slot: "property.galleryImage", zIndex: 1, cornerRadius: 12 }),
         box("ml-specbg2", "Spec Card 2 bg", 784, 376, 464, 232, { frameOf: "property.specs", fill: "#f1f5f9", cornerRadius: 12, zIndex: 1 }),
-        text("ml-specs", "Specs", "Beds: [n]\nBaths: [n]\nArea: [n] sq.ft\nPrice: [Price]", 816, 408, 400, 180, 28, "#0f172a", { slot: "property.specs", weight: 700, lineHeight: 1.5, zIndex: 2 }),
-        text("ml-headline", "Headline", "[Property name] — [Configuration]", 32, 632, 1216, 48, 34, "#0f172a", { slot: "property.headline", weight: 800, zIndex: 2 }),
+        // US-EDIT-019 — the specs line and the price are separate facts.
+        text("ml-specs", "Specs", "[Beds · Baths · Area]", 816, 408, 400, 84, 28, "#0f172a", { slot: "property.specs", weight: 700, lineHeight: 1.5, zIndex: 2 }),
+        text("ml-price", "Price", "Price: [Price]", 816, 508, 400, 42, 28, "#0f172a", { slot: "property.price", slotFormat: "Price: {}", weight: 700, zIndex: 2 }),
+        text("ml-headline", "Headline", "[Property name]", 32, 632, 1216, 48, 34, "#0f172a", { slot: "property.headline", weight: 800, zIndex: 2 }),
         box("ml-accent", "Accent", 32, 688, 96, 6, { fill: "#0ca0eb", slot: "brand.accentColor", zIndex: 2 }),
         text("ml-desc", "Description", "[Describe the property — what makes this home worth a viewing.]", 32, 712, 1216, 112, 24, "#475569", { slot: "property.description", weight: 500, lineHeight: 1.5, zIndex: 2 }),
         box("ml-footbar", "Footer Bar", 0, 832, 1280, 128, { frameOf: "agent.name", fill: "#0f172a", zIndex: 1 }),
         img("ml-photo", "Agent Photo", PHOTO_PLACEHOLDER, 32, 852, 96, 96, { slot: "agent.photo", objectFit: "cover", cornerRadius: 48, zIndex: 2 }),
         text("ml-agentname", "Agent Name", "[Your name]", 156, 858, 700, 36, 28, "#ffffff", { slot: "agent.name", weight: 800, zIndex: 2 }),
-        text("ml-agentphone", "Agent Phone", "[Your phone]  ·  [Your email]", 156, 896, 800, 28, 20, "#cbd5e1", { slot: "agent.phone", weight: 500, zIndex: 2 }),
-        text("ml-agentrera", "Agent RERA", "RERA: [Your RERA number]", 940, 888, 308, 28, 20, "#fde68a", { slot: "agent.rera", weight: 700, align: "right", zIndex: 2 }),
+        text("ml-agentphone", "Agent Phone", "[Your phone]", 156, 896, 380, 28, 20, "#cbd5e1", { slot: "agent.phone", weight: 500, zIndex: 2 }),
+        text("ml-agentemail", "Agent Email", "[Your email]", 540, 896, 390, 28, 20, "#cbd5e1", { slot: "agent.email", weight: 500, zIndex: 2 }),
+        text("ml-agentrera", "Agent RERA", "RERA: [Your RERA number]", 940, 888, 308, 28, 20, "#fde68a", { slot: "agent.rera", slotFormat: "RERA: {}", weight: 700, align: "right", zIndex: 2 }),
       ],
     },
   },
