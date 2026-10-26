@@ -7,13 +7,13 @@ updated: 2026-10-26
 
 # Story Card — US-EDIT-019 — One fact per template element
 
-> **Status:** 🔲 Not Started
+> **Status:** ✅ Done — merged in [#73](https://github.com/din-prajapati/infographic.io/pull/73) (2026-10-26)
 > **Epic:** [EPIC-EDIT-03](../../EPIC.md)
 > **Milestone:** [M-EDIT-05-one-source-of-truth](../../milestones/M-EDIT-05-one-source-of-truth.md)
 > **Linear:** LIN-XXX
 > **Size:** M
 > **Engine:** Claude (primary)
-> **Created:** 2026-10-26 | **Closed:** —
+> **Created:** 2026-10-26 | **Closed:** 2026-10-26
 
 ```yaml
 depends_on: [US-EDIT-014]
@@ -67,7 +67,7 @@ Fix in the data, not in a token-replacement rule: one fact per element, and an o
       canvas) is stored as typed — nothing is dropped, nothing throws.
 - [x] **AC5 [happy-path]:** Placeholder words that name no field are removed rather than kept as fake
       content (`— [What makes this location worth noting]`, `— [Configuration]`).
-- [ ] **AC6 [happy-path]:** `seed-premium-templates.ts --refresh` updates the five rows on dev/staging and
+- [x] **AC6 [happy-path]:** `seed-premium-templates.ts --refresh` updates the five rows on dev/staging and
       production; verified at the data layer.
 
 ---
@@ -89,19 +89,19 @@ Fix in the data, not in a token-replacement rule: one fact per element, and an o
 | TC-EDIT-019-04 | Unit | P0 | Given `RERA [Your RERA number]` with the format, When hydrated, Then license is empty; `RERA PRM/KA/1` gives `PRM/KA/1` | ✅ |  |
 | TC-EDIT-019-05 | Unit | P1 | Given content that does not match the format, When written back, Then the field holds the content as typed | ✅ |  |
 | TC-EDIT-019-06 | Manual | P0 | Chrome: Story template — name, phone and RERA typed in the Agent tab each show in their own place | ✅ | Story footer: `Priya Shah | +91 98200 12345 | RERA PRM/KA/0001`; reopen stored license bare |
-| TC-EDIT-019-07 | Data | P0 | After `--refresh`, each DB has 5 premium rows and the split elements present | ⚠️ | dev/staging (`ep-billowing-cell`) refreshed 2026-10-26: 5 curated rows, 7 split ids, 7 slotFormats, 0 old lines. Production pending approval |
+| TC-EDIT-019-07 | Data | P0 | After `--refresh`, each DB has 5 premium rows and the split elements present | ✅ | dev/staging and production (`ep-aged-king`) refreshed 2026-10-26: each 5 curated rows, 7 split ids, 7 slotFormats, 0 old lines; production BL-44 frames intact (20) |
 
 ---
 
 ## Definition of Done
 
-- [ ] All ACs checked ✅
-- [ ] All test cases run and recorded
-- [ ] Gate 1 passes
-- [ ] Gate 2 passes (TC-EDIT-019-06, TC-EDIT-019-07)
-- [ ] PR merged (milestone PR #_____)
-- [ ] [TASKS.md](./TASKS.md) task list fully checked
-- [ ] STORY.md status updated to ✅ Done
+- [x] All ACs checked ✅
+- [x] All test cases run and recorded
+- [x] Gate 1 passes
+- [x] Gate 2 passes (TC-EDIT-019-06, TC-EDIT-019-07)
+- [x] PR merged (milestone PR #73)
+- [x] [TASKS.md](./TASKS.md) task list fully checked
+- [x] STORY.md status updated to ✅ Done
 
 ---
 

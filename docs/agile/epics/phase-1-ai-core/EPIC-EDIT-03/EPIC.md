@@ -8,7 +8,7 @@ updated: 2026-08-26
 # EPIC-EDIT-03 — Editable Design Discoverability
 
 > **Phase:** Phase 1 — Revenue Strategy
-> **Status:** 🟡 In Progress — **M-EDIT-04 closed 2026-10-25** ([#64](https://github.com/din-prajapati/infographic.io/pull/64): BL-27 fixed). **M-EDIT-01 closed 2026-08-26.** US-EDIT-005 shipped and was
+> **Status:** 🟡 In Progress — **M-EDIT-05 closed 2026-10-26** ([#73](https://github.com/din-prajapati/infographic.io/pull/73): one source of truth for listing facts). **M-EDIT-04 closed 2026-10-25** ([#64](https://github.com/din-prajapati/infographic.io/pull/64): BL-27 fixed). **M-EDIT-01 closed 2026-08-26.** US-EDIT-005 shipped and was
 > live-verified; its AC4 was descoped to US-EDIT-008, which now owns the quota badge and the
 > backend response-shape change it depends on. M-EDIT-02 (brand layers) scaffolded, not started.
 > Open: US-EDIT-006, US-EDIT-007, US-EDIT-008, US-EDIT-009.
@@ -72,7 +72,7 @@ gated behind having already generated something.
 | [M-EDIT-02-brand-layers](milestones/M-EDIT-02-brand-layers.md) | Agent brand furniture (logo, licence, headshot, QR) as real canvas layers | TBD | 🔲 |
 | [M-EDIT-03-single-editable-path](milestones/M-EDIT-03-single-editable-path.md) | Remove the pre-placement Flat/Editable toggle — one way to get editable text, on the canvas | TBD | 🟡 PR #49 |
 | [M-EDIT-04-ai-composition-over-template](milestones/M-EDIT-04-ai-composition-over-template.md) | An AI design placed over a template renders one set of property facts, not three — closes BL-27 | 2026-10-25 | ✅ |
-| [M-EDIT-05-one-source-of-truth](milestones/M-EDIT-05-one-source-of-truth.md) | One editor and one stored value per listing fact — the sidebar number is the canvas number | TBD | 🔲 |
+| [M-EDIT-05-one-source-of-truth](milestones/M-EDIT-05-one-source-of-truth.md) | One editor and one stored value per listing fact — the sidebar number is the canvas number | 2026-10-26 | ✅ |
 
 ---
 
@@ -88,12 +88,12 @@ gated behind having already generated something.
 | 6 | [US-EDIT-011](stories/US-EDIT-011/STORY.md) | Persist the AI composition flag end to end | M-EDIT-04 | M | — | ✅ Done | [#64](https://github.com/din-prajapati/infographic.io/pull/64) |
 | 7 | [US-EDIT-012](stories/US-EDIT-012/STORY.md) | Branch the layer rule on composition, with one undo | M-EDIT-04 | M | US-EDIT-011 (contract only) | ✅ Done | [#64](https://github.com/din-prajapati/infographic.io/pull/64) |
 | 8 | [US-EDIT-013](stories/US-EDIT-013/STORY.md) | Remove the dead AI chat panel code | M-EDIT-04 | S | — | ✅ Done | [#64](https://github.com/din-prajapati/infographic.io/pull/64) |
-| 9 | [US-EDIT-014](stories/US-EDIT-014/STORY.md) | Foundation: one binding contract for listing facts | M-EDIT-05 | M | — | 🔲 | — |
-| 10 | [US-EDIT-015](stories/US-EDIT-015/STORY.md) | Lane A: one form per fact in the sidebar | M-EDIT-05 | M | US-EDIT-014 | 🔲 | — |
-| 11 | [US-EDIT-016](stories/US-EDIT-016/STORY.md) | Lane B: canvas edits reach the field | M-EDIT-05 | M | US-EDIT-014 | 🔲 | — |
-| 12 | [US-EDIT-017](stories/US-EDIT-017/STORY.md) | Lane C: delete the orphaned CustomizePanel | M-EDIT-05 | S | — | 🔲 | — |
-| 13 | [US-EDIT-018](stories/US-EDIT-018/STORY.md) | Listing facts persist with the design | M-EDIT-05 | M | US-EDIT-014 | 🔲 | — |
-| 14 | [US-EDIT-019](stories/US-EDIT-019/STORY.md) | One fact per template element | M-EDIT-05 | M | US-EDIT-014 | 🔲 | — |
+| 9 | [US-EDIT-014](stories/US-EDIT-014/STORY.md) | Foundation: one binding contract for listing facts | M-EDIT-05 | M | — | ✅ Done | [#73](https://github.com/din-prajapati/infographic.io/pull/73) |
+| 10 | [US-EDIT-015](stories/US-EDIT-015/STORY.md) | Lane A: one form per fact in the sidebar | M-EDIT-05 | M | US-EDIT-014 | ✅ Done | [#73](https://github.com/din-prajapati/infographic.io/pull/73) |
+| 11 | [US-EDIT-016](stories/US-EDIT-016/STORY.md) | Lane B: canvas edits reach the field | M-EDIT-05 | M | US-EDIT-014 | ✅ Done | [#73](https://github.com/din-prajapati/infographic.io/pull/73) |
+| 12 | [US-EDIT-017](stories/US-EDIT-017/STORY.md) | Lane C: delete the orphaned CustomizePanel | M-EDIT-05 | S | — | ✅ Done | [#73](https://github.com/din-prajapati/infographic.io/pull/73) |
+| 13 | [US-EDIT-018](stories/US-EDIT-018/STORY.md) | Listing facts persist with the design | M-EDIT-05 | M | US-EDIT-014 | ✅ Done | [#73](https://github.com/din-prajapati/infographic.io/pull/73) |
+| 14 | [US-EDIT-019](stories/US-EDIT-019/STORY.md) | One fact per template element | M-EDIT-05 | M | US-EDIT-014 | ✅ Done | [#73](https://github.com/din-prajapati/infographic.io/pull/73) |
 
 > **Revised 2026-08-21** — original scope was an in-place relabel of the existing `RightSidebar`
 > toggle (S-size). Revised after reviewing `design-preview-canvas-menu.html`: a floating

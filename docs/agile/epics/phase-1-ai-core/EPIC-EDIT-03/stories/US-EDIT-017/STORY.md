@@ -7,14 +7,14 @@ updated: 2026-10-25
 
 # Story Card — US-EDIT-017 — Lane C: delete the orphaned CustomizePanel
 
-> **Status:** 🔲 Not Started — independent; can start now
+> **Status:** ✅ Done — merged in [#73](https://github.com/din-prajapati/infographic.io/pull/73) (2026-10-26)
 > **Epic:** [EPIC-EDIT-03](../../EPIC.md)
 > **Milestone:** [M-EDIT-05-one-source-of-truth](../../milestones/M-EDIT-05-one-source-of-truth.md)
 > **Linear:** LIN-XXX
 > **Size:** S
 > **Stage:** Lane C — worktree `../bg-deadcode`
 > **Engine:** Claude (primary)
-> **Created:** 2026-10-25 | **Closed:** —
+> **Created:** 2026-10-25 | **Closed:** 2026-10-26
 
 ```yaml
 depends_on: []                 # independent
@@ -64,10 +64,10 @@ risk: low           # nothing imports it
 
 | TC ID | Type | Priority | Scenario | Status | Finding |
 |-------|------|:--------:|----------|:------:|---------|
-| TC-EDIT-017-01 | Manual | P0 | Given the repo, When `CustomizePanel` is searched in `client/src/`, Then no import exists before deletion | 🔲 | |
-| TC-EDIT-017-02 | Unit | P0 | Given the deletion, When `npm run check` runs, Then it exits 0 | 🔲 | |
-| TC-EDIT-017-03 | Manual | P1 | Given the edited comments, When read, Then they name `TemplateSlotSection` | 🔲 | |
-| TC-EDIT-017-04 | Manual | P1 | Given the editor, When the sidebar is opened, Then it renders as before | 🔲 | |
+| TC-EDIT-017-01 | Manual | P0 | Given the repo, When `CustomizePanel` is searched in `client/src/`, Then no import exists before deletion | ✅ | |
+| TC-EDIT-017-02 | Unit | P0 | Given the deletion, When `npm run check` runs, Then it exits 0 | ✅ | |
+| TC-EDIT-017-03 | Manual | P1 | Given the edited comments, When read, Then they name `TemplateSlotSection` | ✅ | |
+| TC-EDIT-017-04 | Manual | P1 | Given the editor, When the sidebar is opened, Then it renders as before | ✅ | |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 
@@ -75,12 +75,12 @@ risk: low           # nothing imports it
 
 ## Definition of Done
 
-- [ ] All ACs checked ✅
-- [ ] All test cases run and recorded
-- [ ] Gate 1 passes (`npm run check`, `npm run test:unit:client`)
-- [ ] PR merged (milestone PR #_____)
-- [ ] [TASKS.md](./TASKS.md) task list fully checked
-- [ ] STORY.md status updated to ✅ Done
+- [x] All ACs checked ✅
+- [x] All test cases run and recorded
+- [x] Gate 1 passes (`npm run check`, `npm run test:unit:client`)
+- [x] PR merged (milestone PR #73)
+- [x] [TASKS.md](./TASKS.md) task list fully checked
+- [x] STORY.md status updated to ✅ Done
 
 ---
 

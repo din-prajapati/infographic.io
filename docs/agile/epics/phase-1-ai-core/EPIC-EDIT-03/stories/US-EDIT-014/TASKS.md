@@ -14,10 +14,10 @@ updated: 2026-10-25
 
 ## Four Pillars Pre-flight
 
-- [ ] **Brain** — STORY.md filled, 8 typed ACs
-- [ ] **Muscle** — T1–T5 below
-- [ ] **Map** — runbook §Contract
-- [ ] **Env** — no environment changes; no migration (D4)
+- [x] **Brain** — STORY.md filled, 8 typed ACs
+- [x] **Muscle** — T1–T5 below
+- [x] **Map** — runbook §Contract
+- [x] **Env** — no environment changes; no migration (D4)
 
 ---
 
@@ -48,4 +48,4 @@ See STORY.md `owns:`. Nothing under `client/src/components/`.
 
 ## Gates
 
-- [ ] Gate 1 — `npm run check`, `npm run test:unit:client`
+- [x] Gate 1 — `npm run check`, `npm run test:unit:client`

@@ -7,14 +7,14 @@ updated: 2026-10-25
 
 # Story Card — US-EDIT-016 — Lane B: canvas edits reach the field
 
-> **Status:** 🔲 Not Started — **blocked on US-EDIT-014 merging**
+> **Status:** ✅ Done — merged in [#73](https://github.com/din-prajapati/infographic.io/pull/73) (2026-10-26)
 > **Epic:** [EPIC-EDIT-03](../../EPIC.md)
 > **Milestone:** [M-EDIT-05-one-source-of-truth](../../milestones/M-EDIT-05-one-source-of-truth.md)
 > **Linear:** LIN-XXX
 > **Size:** M
 > **Stage:** Lane B — worktree `../bg-cleanup`
 > **Engine:** Claude (primary)
-> **Created:** 2026-10-25 | **Closed:** —
+> **Created:** 2026-10-25 | **Closed:** 2026-10-26
 
 ```yaml
 depends_on: [US-EDIT-014]
@@ -86,7 +86,7 @@ that is the normal case, not an error.
 | TC-EDIT-016-03 | Unit | P0 | Given an untagged text element, When an edit commits, Then no store field changes | ✅ | |
 | TC-EDIT-016-04 | Unit | P1 | Given a `report.kpis` element, When an edit commits, Then it commits and nothing throws | ✅ | |
 | TC-EDIT-016-05 | Unit | P1 | Given a specs element, When edited, Then `beds`/`baths`/`sqft` are unchanged (Q1) | ✅ | |
-| TC-EDIT-016-06 | Manual | P0 | Given the editor, When the canvas headline is edited, Then the Headline input shows it (runbook MV-05-02) | ⏸ | Blocked — lead runs at Stage 4 integration |
+| TC-EDIT-016-06 | Manual | P0 | Given the editor, When the canvas headline is edited, Then the Headline input shows it (runbook MV-05-02) | ✅ | MV-05-02 passed 2026-10-26 |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 
@@ -94,13 +94,13 @@ that is the normal case, not an error.
 
 ## Definition of Done
 
-- [ ] All ACs checked ✅
-- [ ] All test cases run and recorded
-- [ ] Gate 1 passes (`npm run check`, `npm run test:unit:client`)
-- [ ] Gate 2 passes (runbook MV-05-02)
-- [ ] PR merged (milestone PR #_____)
-- [ ] [TASKS.md](./TASKS.md) task list fully checked
-- [ ] STORY.md status updated to ✅ Done
+- [x] All ACs checked ✅
+- [x] All test cases run and recorded
+- [x] Gate 1 passes (`npm run check`, `npm run test:unit:client`)
+- [x] Gate 2 passes (runbook MV-05-02)
+- [x] PR merged (milestone PR #73)
+- [x] [TASKS.md](./TASKS.md) task list fully checked
+- [x] STORY.md status updated to ✅ Done
 
 ---
 
