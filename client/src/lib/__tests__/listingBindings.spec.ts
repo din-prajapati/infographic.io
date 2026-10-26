@@ -226,6 +226,39 @@ describe('Undo and Redo move the fields with the canvas', () => {
   });
 });
 
+// TC-EDIT-014-10 · AC11
+describe('typing in one field is one Undo step', () => {
+  it('keystroke-by-keystroke writes to one field make one history entry', () => {
+    setCanvas([text('p', 'property.price', '[Price]')]);
+    for (const v of ['₹', '₹8', '₹85', '₹85,00,000']) writeFieldToCanvas('price', v);
+    expect(contentOf('p')).toBe('₹85,00,000');
+    expect(useCanvasStore.getState().history.past).toHaveLength(1);
+    useCanvasStore.getState().undo();
+    expect(contentOf('p')).toBe('[Price]');
+    expect(usePropertyStore.getState().property.price).toBe('');
+  });
+
+  it('a different field, or any other canvas change, starts a new step', () => {
+    setCanvas([text('p', 'property.price', '[Price]'), text('h', 'property.headline', '[Name]')]);
+    writeFieldToCanvas('price', '₹1');
+    writeFieldToCanvas('headline', 'Bayfront');
+    expect(useCanvasStore.getState().history.past).toHaveLength(2);
+    useCanvasStore.getState().updateElement('h', { content: 'Bay' } as never);
+    writeFieldToCanvas('headline', 'Bayview');
+    expect(useCanvasStore.getState().history.past).toHaveLength(4);
+  });
+
+  it('after an Undo, typing again is a new step (redo is not silently lost into the old one)', () => {
+    setCanvas([text('p', 'property.price', '[Price]')]);
+    writeFieldToCanvas('price', '₹1');
+    useCanvasStore.getState().undo();
+    writeFieldToCanvas('price', '₹2');
+    expect(useCanvasStore.getState().history.past).toHaveLength(1);
+    useCanvasStore.getState().undo();
+    expect(contentOf('p')).toBe('[Price]');
+  });
+});
+
 // TC-EDIT-014-08 · AC9
 describe('restoreCanvasData fills the stores on load', () => {
   it('a reopened design shows its own values; a canvas with no slot text changes nothing', async () => {

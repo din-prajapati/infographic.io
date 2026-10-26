@@ -93,7 +93,14 @@ export function formatStatsLine(property: Pick<PropertyInfo, 'beds' | 'baths' | 
  * store → canvas. Writes `value` into every text element carrying the field's
  * slot(s), as ONE history entry. Returns false (and changes nothing) when no
  * element on the canvas carries those slots.
+ *
+ * AC11 — the sidebar forms call this on every keystroke. Consecutive writes to
+ * the same field share one history entry, so typing a price is one Undo step.
+ * The run ends as soon as anything else touches the canvas (another field, a
+ * canvas edit, an Undo): the canvas no longer is the one this function left.
  */
+let lastWrite: { field: BoundField; elements: CanvasElement[] } | null = null;
+
 export function writeFieldToCanvas(field: BoundField, value: string): boolean {
   const slots = FIELD_TO_SLOTS[field];
   if (!slots) return false;
@@ -103,12 +110,13 @@ export function writeFieldToCanvas(field: BoundField, value: string): boolean {
   );
   if (targets.size === 0) return false;
 
-  state.pushToHistory(state.elements);
-  useCanvasStore.setState({
-    elements: state.elements.map((el) =>
-      targets.has(el.id) ? ({ ...el, content: value } as TextElement) : el,
-    ),
-  });
+  const continuesRun = lastWrite?.field === field && lastWrite.elements === state.elements;
+  if (!continuesRun) state.pushToHistory(state.elements);
+  const elements = state.elements.map((el) =>
+    targets.has(el.id) ? ({ ...el, content: value } as TextElement) : el,
+  );
+  useCanvasStore.setState({ elements });
+  lastWrite = { field, elements };
   return true;
 }
 
