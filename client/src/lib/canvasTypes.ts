@@ -36,6 +36,13 @@ export interface BaseElement {
    * absent on legacy designs and on templates seeded before BL-44.
    */
   frameOf?: string;
+  /**
+   * US-EDIT-019 — a fixed label around the slot's value, with one `{}` where
+   * the value goes (`"RERA {}"`, `"• {}"`). Applied per line. The binding
+   * renders it on write and strips it on read, so the field holds the bare
+   * value. Optional; absent means the element shows the value as is.
+   */
+  slotFormat?: string;
 }
 
 export interface TextElement extends BaseElement {

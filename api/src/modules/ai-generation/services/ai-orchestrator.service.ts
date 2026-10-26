@@ -11,6 +11,7 @@ import {
   buildImagePrompt,
   buildTextFreeImagePrompt,
   buildExpectedTexts,
+  buildPrintedListing,
   verifyAndRepairV4JsonPrompt,
   stripInventedTextElements,
   buildMagicPromptInput,
@@ -502,6 +503,12 @@ export class AiOrchestrator {
           title: `Variation ${index + 1}`,
           description: this.getVariationDescription(index, style),
         })),
+        // US-EDIT-018 AC4 — a poster's text is pixels; record what it printed so
+        // the editor can show the same values in its fields after placement.
+        // A photo background prints no listing text, so it records nothing.
+        ...(propertyData.composition === 'poster'
+          ? { printedListing: buildPrintedListing(propertyData, headline) }
+          : {}),
       };
       try {
         await this.prisma.infographic.update({ where: { id: infographicId }, data: { propertyData: updatedPropertyData as any } });

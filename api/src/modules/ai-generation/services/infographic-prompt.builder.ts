@@ -195,6 +195,35 @@ export function buildExpectedTexts(propertyData: any, headline: string): Expecte
   return expected;
 }
 
+/**
+ * US-EDIT-018 AC4 — what a poster prints, for the editor's fields. The strings
+ * are exactly the canonical texts the image was asked to render (the same ones
+ * `buildExpectedTexts` verifies); beds/baths/sqft are the raw numbers behind
+ * the printed stats line, so the editor can fill its steppers without parsing.
+ */
+export interface PrintedListing {
+  headline?: string;
+  address?: string;
+  price?: string;
+  stats?: string;
+  agentName?: string;
+  brokerage?: string;
+  beds?: number;
+  baths?: number;
+  sqft?: number | string;
+}
+
+export function buildPrintedListing(propertyData: any, headline: string): PrintedListing {
+  const printed: PrintedListing = {};
+  for (const { key, value } of buildExpectedTexts(propertyData, headline)) {
+    if (value) printed[key] = value;
+  }
+  if (Number(propertyData.beds) > 0) printed.beds = Number(propertyData.beds);
+  if (Number(propertyData.baths) > 0) printed.baths = Number(propertyData.baths);
+  if (Number(propertyData.sqft) > 0) printed.sqft = propertyData.sqft;
+  return printed;
+}
+
 /** Case/whitespace/linebreak-insensitive comparison form. */
 function normalize(s: string): string {
   return s.toUpperCase().replace(/[\n\s]+/g, ' ').replace(/\s*\|\s*/g, ' | ').trim();

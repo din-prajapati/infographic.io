@@ -1,3 +1,4 @@
+import type { PrintedListing } from './listingBindings';
 import { apiRequest } from './queryClient';
 import type { RegisterInput, LoginInput, GenerateInfographicInput, AuthResponse, Template, Infographic, PlanTier } from '@shared/schema';
 import type { DesignMetadata } from './storage';
@@ -194,6 +195,12 @@ export interface ResultVariation {
    * rendering exactly as they do now.
    */
   composition?: AiComposition;
+  /**
+   * US-EDIT-018 AC4 — what a poster printed (exact strings, plus the raw
+   * beds/baths/sqft behind the stats line). Absent for a photo background and
+   * for generations made before US-EDIT-018.
+   */
+  listing?: PrintedListing;
 }
 
 // Payments API

@@ -324,6 +324,19 @@ export function RightSidebar() {
   const activeSlots: ReadonlySet<string> = new Set(
     elements.map((el) => el.slot).filter((s): s is string => Boolean(s)),
   );
+  // US-EDIT-018 AC7 — a placed AI poster carries its listing text as pixels,
+  // so the forms cannot change what it shows; they feed the next generation.
+  const hasAiPoster = elements.some(
+    (el) => el.type === 'image' && (el as { aiComposition?: string }).aiComposition === 'poster',
+  );
+  const posterNote = hasAiPoster ? (
+    <p
+      className="mx-3 mt-3 rounded-md border border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground"
+      data-testid="ai-poster-note"
+    >
+      This design's text is part of the image. Changes here apply to your next generation.
+    </p>
+  ) : null;
   const setBackgroundColor = useCanvasStore((state) => state.setBackgroundColor);
   const setSelectedThemeColors = useCanvasStore((state) => state.setSelectedThemeColors);
   const backgroundColor = useCanvasStore((state) => state.backgroundColor);
@@ -571,6 +584,8 @@ export function RightSidebar() {
         variation.title ?? "AI Design",
         undefined,
         variation.composition,
+        // US-EDIT-018 AC5 — a placed poster fills the fields with what it printed.
+        variation.listing,
       );
       setSelectedVariationId(variation.id);
       toast.success("Design loaded", {
@@ -1368,6 +1383,7 @@ export function RightSidebar() {
                 />
               </div>
             )}
+            {posterNote}
             <PropertyDetailsForm />
           </ScrollArea>
         ) : (
@@ -1382,6 +1398,7 @@ export function RightSidebar() {
                 />
               </div>
             )}
+            {posterNote}
             <AgentInfoForm />
           </ScrollArea>
         )}

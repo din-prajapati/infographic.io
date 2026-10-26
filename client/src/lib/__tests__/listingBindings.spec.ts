@@ -14,6 +14,8 @@ import {
   isPlaceholder,
   writeCanvasToField,
   writeFieldToCanvas,
+  applySavedListing,
+  fillStoresFromPrintedListing,
 } from '../listingBindings';
 import { useCanvasStore } from '../../hooks/useCanvasStore';
 import { usePropertyStore } from '../../hooks/usePropertyStore';
@@ -284,5 +286,134 @@ describe('restoreCanvasData fills the stores on load', () => {
     restoreCanvasData({ elements: [shape('bg', {})] });
     expect(usePropertyStore.getState().property.price).toBe('₹85,00,000');
     expect(useAgentStore.getState().agent.name).toBe('Priya Shah');
+  });
+});
+
+/* ── US-EDIT-019 — slotFormat ─────────────────────────────────────────────── */
+describe('slotFormat keeps a fixed label around the value', () => {
+  // TC-EDIT-019-02
+  it('renders the label around a written value, and writes empty for an empty value', () => {
+    setCanvas([text('r', 'agent.rera', 'RERA [Your RERA number]', { slotFormat: 'RERA {}' })]);
+    writeFieldToCanvas('agentLicense', 'PRM/KA/1');
+    expect(contentOf('r')).toBe('RERA PRM/KA/1');
+    writeFieldToCanvas('agentLicense', '');
+    expect(contentOf('r')).toBe('');
+  });
+
+  // TC-EDIT-019-03
+  it('applies per line for a multi-line value', () => {
+    setCanvas([text('f', 'property.features', '• [Feature]\n• [Feature]', { slotFormat: '• {}' })]);
+    writeFieldToCanvas('features', 'Pool\nGarage');
+    expect(contentOf('f')).toBe('• Pool\n• Garage');
+  });
+
+  // TC-EDIT-019-04
+  it('strips the label on hydration; a labelled placeholder fills as empty', () => {
+    useAgentStore.getState().setAgent({ license: 'old' });
+    setCanvas([text('r', 'agent.rera', 'RERA [Your RERA number]', { slotFormat: 'RERA {}' })]);
+    hydrateStoresFromCanvas();
+    expect(useAgentStore.getState().agent.license).toBe('');
+    setCanvas([
+      text('r', 'agent.rera', 'RERA PRM/KA/1', { slotFormat: 'RERA {}' }),
+      text('f', 'property.features', '• Pool\n• Garage', { slotFormat: '• {}' }),
+    ]);
+    hydrateStoresFromCanvas();
+    expect(useAgentStore.getState().agent.license).toBe('PRM/KA/1');
+    expect(usePropertyStore.getState().property.features).toEqual(['Pool', 'Garage']);
+  });
+
+  it('a canvas edit stores the bare value', () => {
+    expect(writeCanvasToField('agent.name', 'By Priya Shah', 'By {}')).toBe(true);
+    expect(useAgentStore.getState().agent.name).toBe('Priya Shah');
+  });
+
+  // TC-EDIT-019-05
+  it('text that no longer matches its label is stored as typed', () => {
+    expect(writeCanvasToField('agent.rera', 'Reg. no PRM/KA/9', 'RERA {}')).toBe(true);
+    expect(useAgentStore.getState().agent.license).toBe('Reg. no PRM/KA/9');
+  });
+
+  it('a label with regex characters is matched literally', () => {
+    expect(writeCanvasToField('property.price', 'Price (est.): ₹2 Cr', 'Price (est.): {}')).toBe(true);
+    expect(usePropertyStore.getState().property.price).toBe('₹2 Cr');
+  });
+});
+
+/* ── US-EDIT-018 — listing facts persist with the design ──────────────────── */
+describe('the listing is saved with the design and restored on reopen', () => {
+  // TC-EDIT-018-01
+  it('restores a fact that has no element on the canvas', async () => {
+    const { captureCanvasData, restoreCanvasData } = await import('../canvasState');
+    setCanvas([text('h', 'property.headline', 'Bayfront Bliss')]);
+    useAgentStore.getState().setAgent({ brokerage: 'Skyline Realty', website: 'skyline.in', logoPreview: 'data:big' });
+    usePropertyStore.getState().setProperty({ headline: 'Bayfront Bliss', type: 'commercial' as never });
+    const saved = JSON.parse(JSON.stringify(captureCanvasData()));
+    expect(saved.listing.agent.logoPreview).toBeUndefined();
+
+    useAgentStore.getState().resetAgent();
+    usePropertyStore.getState().resetProperty();
+    restoreCanvasData(saved);
+    expect(useAgentStore.getState().agent.brokerage).toBe('Skyline Realty');
+    expect(useAgentStore.getState().agent.website).toBe('skyline.in');
+    expect(usePropertyStore.getState().property.type).toBe('commercial');
+  });
+
+  // TC-EDIT-018-02
+  it('a design with its own listing gets nothing from the design open before it', async () => {
+    const { restoreCanvasData } = await import('../canvasState');
+    useAgentStore.getState().setAgent({ phone: '+91 98', brokerage: 'Old Realty', logoPreview: 'data:logo' });
+    usePropertyStore.getState().setProperty({ price: '₹9 Cr' });
+    restoreCanvasData({ elements: [], listing: { property: { headline: 'B' }, agent: { name: 'Asha' } } });
+    expect(useAgentStore.getState().agent.phone).toBe('');
+    expect(useAgentStore.getState().agent.brokerage).toBe('');
+    expect(useAgentStore.getState().agent.name).toBe('Asha');
+    expect(usePropertyStore.getState().property.price).toBe('');
+    expect(useAgentStore.getState().agent.logoPreview).toBe('data:logo'); // the session's upload stays
+  });
+
+  it('slot text wins over the saved listing where both exist', async () => {
+    const { restoreCanvasData } = await import('../canvasState');
+    restoreCanvasData({
+      elements: [text('p', 'property.price', '₹2 Cr')],
+      listing: { property: { price: '₹1 Cr' }, agent: {} },
+    });
+    expect(usePropertyStore.getState().property.price).toBe('₹2 Cr');
+  });
+
+  // TC-EDIT-018-03
+  it('canvas data without a listing restores exactly as before (no reset)', async () => {
+    const { restoreCanvasData } = await import('../canvasState');
+    useAgentStore.getState().setAgent({ phone: '+91 98' });
+    expect(applySavedListing(undefined)).toBe(false);
+    restoreCanvasData({ elements: [text('n', 'agent.name', '[Your name]')] });
+    expect(useAgentStore.getState().agent.phone).toBe('+91 98');
+    expect(useAgentStore.getState().agent.name).toBe('');
+  });
+});
+
+describe('a placed poster fills the fields with what it printed', () => {
+  // TC-EDIT-018-05 (store side)
+  it('replaces each field the poster printed and keeps the rest', () => {
+    usePropertyStore.getState().setProperty({ price: '₹85,00,000', address: 'typed address' });
+    useAgentStore.getState().setAgent({ phone: '+91 98', name: 'Old' });
+    expect(fillStoresFromPrintedListing({
+      headline: 'Sea-View Living', price: '₹4.2 Cr', agentName: 'Priya Shah', beds: 3, sqft: 1850, address: '',
+    })).toBe(true);
+    const { property } = usePropertyStore.getState();
+    expect(property.price).toBe('₹4.2 Cr');
+    expect(property.headline).toBe('Sea-View Living');
+    expect(property.beds).toBe(3);
+    expect(property.sqft).toBe('1850');
+    expect(property.address).toBe('typed address');
+    expect(useAgentStore.getState().agent.name).toBe('Priya Shah');
+    expect(useAgentStore.getState().agent.phone).toBe('+91 98');
+  });
+
+  // TC-EDIT-018-06
+  it('no listing changes nothing', () => {
+    usePropertyStore.getState().setProperty({ price: '₹85,00,000' });
+    expect(fillStoresFromPrintedListing(undefined)).toBe(false);
+    expect(fillStoresFromPrintedListing({})).toBe(false);
+    expect(usePropertyStore.getState().property.price).toBe('₹85,00,000');
   });
 });

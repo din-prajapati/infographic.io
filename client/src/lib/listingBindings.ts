@@ -86,6 +86,38 @@ export function isPlaceholder(value: string): boolean {
 const isBindableText = (el: CanvasElement): el is TextElement =>
   el.type === 'text' && typeof el.slot === 'string' && el.slot in SLOT_TO_FIELD && !el.frameOf;
 
+/**
+ * US-EDIT-019 AC2 — render a value through an element's `slotFormat`, per
+ * line. No format: the value as is. An empty value writes empty, so a cleared
+ * field never leaves a dangling label like `RERA `.
+ */
+export function applySlotFormat(format: string | undefined, value: string): string {
+  if (!format || !format.includes('{}') || value === '') return value;
+  return value.split('\n').map((line) => format.replace('{}', line)).join('\n');
+}
+
+/**
+ * US-EDIT-019 AC3/AC4 — the bare value from text rendered through `slotFormat`.
+ * A line that no longer matches the format (the user rewrote the label on the
+ * canvas) is kept as typed.
+ */
+export function stripSlotFormat(format: string | undefined, content: string): string {
+  if (!format || !format.includes('{}')) return content;
+  const [before, after] = format.split('{}');
+  const esc = (t: string) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const re = new RegExp(`^${esc(before)}(.*)${esc(after)}$`);
+  return content
+    .split('\n')
+    .map((line) => line.match(re)?.[1] ?? line)
+    .join('\n');
+}
+
+/** What an element holds for its field: format stripped, placeholders empty. */
+function fieldValueOf(content: string, format: string | undefined): string {
+  const value = stripSlotFormat(format, content);
+  return isPlaceholder(value) ? '' : value;
+}
+
 /** The specs line as the canvas shows it, from the store's separate values. */
 export function formatStatsLine(property: Pick<PropertyInfo, 'beds' | 'baths' | 'sqft' | 'locale'>): string {
   const locale = property.locale || null;
@@ -119,7 +151,7 @@ export function writeFieldToCanvas(field: BoundField, value: string): boolean {
   const continuesRun = lastWrite?.field === field && lastWrite.elements === state.elements;
   if (!continuesRun) state.pushToHistory(state.elements);
   const elements = state.elements.map((el) =>
-    targets.has(el.id) ? ({ ...el, content: value } as TextElement) : el,
+    targets.has(el.id) ? ({ ...el, content: applySlotFormat(el.slotFormat, value) } as TextElement) : el,
   );
   useCanvasStore.setState({ elements });
   lastWrite = { field, elements };
@@ -155,10 +187,10 @@ function patchFor(field: BoundField, value: string):
  * canvas. Returns false for a slot with no field, and for `stats` (Q1). Never
  * throws. Pushes no history: the canvas edit that triggered it already did.
  */
-export function writeCanvasToField(slot: string, value: string): boolean {
+export function writeCanvasToField(slot: string, value: string, slotFormat?: string): boolean {
   const field = SLOT_TO_FIELD[slot as SlotId];
   if (!field || STORE_TO_CANVAS_ONLY.has(field)) return false;
-  const result = patchFor(field, isPlaceholder(value) ? '' : value);
+  const result = patchFor(field, fieldValueOf(value, slotFormat));
   if (!result) return false;
   if (result.store === 'property') usePropertyStore.getState().setProperty(result.patch);
   else useAgentStore.getState().setAgent(result.patch);
@@ -185,7 +217,7 @@ export function hydrateStoresFromCanvas(): boolean {
     const field = SLOT_TO_FIELD[el.slot as SlotId]!;
     if (seen.has(field) || STORE_TO_CANVAS_ONLY.has(field)) continue; // first element wins
     seen.add(field);
-    const result = patchFor(field, isPlaceholder(el.content ?? '') ? '' : el.content ?? '');
+    const result = patchFor(field, fieldValueOf(el.content ?? '', el.slotFormat));
     if (!result) continue;
     Object.assign(result.store === 'property' ? property : agent, result.patch);
   }
@@ -218,3 +250,81 @@ export function isUndoOrRedo(
 useCanvasStore.subscribe((next, prev) => {
   if (isUndoOrRedo(prev, next)) hydrateStoresFromCanvas();
 });
+
+/* ── US-EDIT-018 — listing facts persist with the design ─────────────────── */
+
+/** What a saved design carries besides its canvas (`canvasData.listing`). */
+export interface SavedListing {
+  property: Partial<PropertyInfo>;
+  agent: Partial<Omit<AgentInfo, 'logoPreview'>>;
+}
+
+/**
+ * AC1 — the listing facts to save with a design. The logo preview is left out:
+ * it is an uploaded image (often a large data URL), not a listing fact.
+ */
+export function captureListing(): SavedListing {
+  const { logoPreview: _logo, ...agent } = useAgentStore.getState().agent;
+  return { property: { ...usePropertyStore.getState().property }, agent };
+}
+
+/**
+ * AC2/AC3 — restore a design's saved listing. A design that carries one gets
+ * exactly its own facts (stores reset first, so nothing leaks from the design
+ * open before it); the logo the user uploaded this session is kept. A design
+ * or template without one (saved before US-EDIT-018, every seeded template)
+ * changes nothing here — slot-text hydration alone applies, as before.
+ * Returns whether a listing was applied.
+ */
+export function applySavedListing(listing: unknown): boolean {
+  if (!listing || typeof listing !== 'object') return false;
+  const { property, agent } = listing as Partial<SavedListing>;
+  if (!property && !agent) return false;
+  const logoPreview = useAgentStore.getState().agent.logoPreview;
+  usePropertyStore.getState().resetProperty();
+  useAgentStore.getState().resetAgent();
+  if (property) usePropertyStore.getState().setProperty(property);
+  useAgentStore.getState().setAgent({ ...(agent ?? {}), logoPreview });
+  return true;
+}
+
+/**
+ * What a generation printed on its poster, as returned on each variation
+ * (`listing`, US-EDIT-018 AC4). Strings are exactly what the image shows;
+ * beds/baths/sqft are the raw numbers behind the printed stats line.
+ */
+export interface PrintedListing {
+  headline?: string;
+  address?: string;
+  price?: string;
+  stats?: string;
+  agentName?: string;
+  brokerage?: string;
+  beds?: number;
+  baths?: number;
+  sqft?: number | string;
+}
+
+/**
+ * AC5 — after a poster is placed, the fields show what it printed. Only
+ * non-empty values replace a field: a fact the poster does not show (a phone
+ * number, a blank address) keeps what the user typed. Writes the stores only;
+ * the poster's text is pixels and cannot be re-rendered from a field.
+ */
+export function fillStoresFromPrintedListing(listing: PrintedListing | undefined | null): boolean {
+  if (!listing || typeof listing !== 'object') return false;
+  const str = (v: unknown) => (typeof v === 'string' ? v.trim() : '');
+  const property: Partial<PropertyInfo> = {};
+  const agent: Partial<AgentInfo> = {};
+  if (str(listing.headline)) property.headline = str(listing.headline);
+  if (str(listing.address)) property.address = str(listing.address);
+  if (str(listing.price)) property.price = str(listing.price);
+  if (typeof listing.beds === 'number' && listing.beds > 0) property.beds = listing.beds;
+  if (typeof listing.baths === 'number' && listing.baths > 0) property.baths = listing.baths;
+  if (listing.sqft && Number(listing.sqft) > 0) property.sqft = String(listing.sqft);
+  if (str(listing.agentName)) agent.name = str(listing.agentName);
+  if (str(listing.brokerage)) agent.brokerage = str(listing.brokerage);
+  if (Object.keys(property).length > 0) usePropertyStore.getState().setProperty(property);
+  if (Object.keys(agent).length > 0) useAgentStore.getState().setAgent(agent);
+  return Object.keys(property).length + Object.keys(agent).length > 0;
+}

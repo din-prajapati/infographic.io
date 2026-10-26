@@ -13,7 +13,7 @@ import { writeCanvasToField } from '../../lib/listingBindings';
  */
 export function commitEdit(
   updateFn: (id: string, updates: Partial<TextElementType>) => void,
-  element: { id: string; slot?: string },
+  element: { id: string; slot?: string; slotFormat?: string },
   value: string,
 ): void {
   updateFn(element.id, { content: value });
@@ -21,7 +21,8 @@ export function commitEdit(
   // writeCanvasToField returns false (never throws) for slots with no field
   // and for the specs line (Q1) — both are the normal case.
   if (element.slot) {
-    writeCanvasToField(element.slot, value);
+    // US-EDIT-019 — the element's fixed label is stripped before the field stores it.
+    writeCanvasToField(element.slot, value, element.slotFormat);
   }
 }
 
