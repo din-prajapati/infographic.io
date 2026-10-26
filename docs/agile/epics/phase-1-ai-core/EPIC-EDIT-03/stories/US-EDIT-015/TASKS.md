@@ -13,30 +13,30 @@ updated: 2026-10-25
 
 ## Four Pillars Pre-flight
 
-- [ ] **Brain** — STORY.md filled, 6 typed ACs
-- [ ] **Muscle** — T1–T4 below
-- [ ] **Map** — runbook §Stage 3 · Lane A
-- [ ] **Env** — no environment changes
+- [x] **Brain** — STORY.md filled, 6 typed ACs
+- [x] **Muscle** — T1–T4 below
+- [x] **Map** — runbook §Stage 3 · Lane A
+- [x] **Env** — no environment changes
 
 ---
 
 ## Task Breakdown
 
-### T1 — Trim the field catalogues
+### T1 — Trim the field catalogues ✅
 In `TemplateSlotSection.tsx`, remove the Property/Agent fields that the forms own (STORY.md table); keep Hero/Secondary image, Open House, Report, Agent Photo, CTA. Replace the fabricated hints (AC5). Remove `brand.name` from `BRAND_SLOT_FIELDS` — the agency name is the Agent tab's Brokerage field (Q2); logo and accent colour stay.
 
-### T2 — Forms write through the binding
+### T2 — Forms write through the binding ✅
 `PropertyDetailsForm` / `AgentInfoForm` call `writeFieldToCanvas` for every bound field on change.
 
-### T3 — Sidebar render rules
+### T3 — Sidebar render rules ✅
 `RightSidebar.tsx`: Template Content renders only when the canvas has slots **and** a kept field applies; the forms always render (AC6).
 
-### T4 — Test
+### T4 — Test ✅
 Unit test for AC5 (fabricated hints absent). Manual checks per TC table.
 
 ---
 
 ## Gates
 
-- [ ] Gate 1 — `npm run check`, `npm run test:unit:client`
+- [x] Gate 1 — `npm run check` ✅, `npm run test:unit:client` ✅ (347 passed, 1 skipped)
 - [ ] Gate 2 — runbook MV-05-01 and MV-05-03 in Chrome, exported file opened
