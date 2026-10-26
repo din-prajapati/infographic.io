@@ -30,5 +30,5 @@ AIChatBox → Template → CenterCanvas → `loadAiVariationToCanvas(…, listin
 
 ## Gates
 
-- [ ] Gate 1 — `npm run check`, `npm run test:unit`, `npm run test:unit:client`
-- [ ] Gate 2 — TC-EDIT-018-07 in Chrome
+- [x] Gate 1 — `npm run check`, `npm run test:unit`, `npm run test:unit:client`
+- [x] Gate 2 — TC-EDIT-018-07 in Chrome

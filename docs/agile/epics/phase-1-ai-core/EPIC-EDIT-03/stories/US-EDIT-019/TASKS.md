@@ -24,5 +24,5 @@ updated: 2026-10-26
 
 ## Gates
 
-- [ ] Gate 1 — `npm run check`, `npm run test:unit`, `npm run test:unit:client`
+- [x] Gate 1 — `npm run check`, `npm run test:unit`, `npm run test:unit:client`
 - [ ] Gate 2 — TC-EDIT-019-06 in Chrome; TC-EDIT-019-07 at the data layer
