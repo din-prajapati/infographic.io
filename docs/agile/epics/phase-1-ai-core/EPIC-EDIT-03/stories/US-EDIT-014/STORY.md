@@ -86,6 +86,9 @@ no component.
 - [ ] **AC9 [happy-path]:** `restoreCanvasData` (the single load path for templates and saved designs)
       calls `hydrateStoresFromCanvas` after loading, so D4's "fill the stores on load" happens without
       any component change. *Added 2026-10-26 during implementation: no story wired hydration to load.*
+- [x] **AC10 [happy-path]:** Undo and Redo re-fill the stores from the canvas, so one Undo reverts both
+      the canvas text and its field (milestone acceptance; US-EDIT-016 AC2). A history push, a normal edit
+      and a design load do not trigger it. *Added 2026-10-26: history holds canvas elements only.*
 
 ---
 
@@ -144,6 +147,7 @@ No slot: `agent.website`, `property.type`, `property.locale`. No field: `propert
 | TC-EDIT-014-06 | Unit | P1 | Given `website` and `openHouse.date`, When written/looked up, Then no throw, no change | 🔲 | |
 | TC-EDIT-014-07 | Unit | P1 | Given a `frameOf` shape and a shape tagged with a text slot, When hydrated, Then neither is read | 🔲 | |
 | TC-EDIT-014-08 | Unit | P0 | Given saved canvas data with slot text, When `restoreCanvasData` runs, Then the stores hold its values; given data with no slot text, Then the stores are unchanged | 🔲 | |
+| TC-EDIT-014-09 | Unit | P0 | Given a field written to the canvas, When Undo then Redo run, Then canvas and field revert and re-apply together; a push, an edit or a load does not trigger it | ✅ | AC10 |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 

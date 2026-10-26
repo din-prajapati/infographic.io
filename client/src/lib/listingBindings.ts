@@ -179,3 +179,28 @@ export function hydrateStoresFromCanvas(): boolean {
   if (Object.keys(agent).length > 0) useAgentStore.getState().setAgent(agent);
   return true;
 }
+
+/**
+ * AC10 — Undo and Redo move the fields with the canvas. A field write and a
+ * canvas edit are each one history entry, but history holds canvas elements
+ * only; without this, one Undo reverts the canvas and leaves the sidebar
+ * showing the undone value.
+ *
+ * Undo/Redo is the only change that swaps `elements` AND moves an entry
+ * between `past` and `future` in one update. `pushToHistory` never touches
+ * `elements`, and a design load empties both stacks (and hydrates itself).
+ * Hydration writes the stores only, never the canvas, so this cannot loop.
+ */
+export function isUndoOrRedo(
+  prev: Pick<ReturnType<typeof useCanvasStore.getState>, 'elements' | 'history'>,
+  next: Pick<ReturnType<typeof useCanvasStore.getState>, 'elements' | 'history'>,
+): boolean {
+  if (prev.elements === next.elements || prev.history === next.history) return false;
+  const dFuture = next.history.future.length - prev.history.future.length;
+  const dPast = next.history.past.length - prev.history.past.length;
+  return (dFuture === 1 && dPast === -1) || (dFuture === -1 && dPast === 1);
+}
+
+useCanvasStore.subscribe((next, prev) => {
+  if (isUndoOrRedo(prev, next)) hydrateStoresFromCanvas();
+});
