@@ -49,8 +49,8 @@
 | [US-LAUNCH-013](stories/US-LAUNCH-013/STORY.md) | Subscription renewal reminder email (3-day notice) | M-LAUNCH-02 | S | ✅ Done | `fa1d345`+`5c52dc0` |
 | [US-LAUNCH-014](stories/US-LAUNCH-014/STORY.md) | Sign-up verification gate + abuse controls (re-scoped 2026-09-14 from soft verification; re-rated should-have 2026-09-21) | M-LAUNCH-01 | L | ✅ Done 2026-09-29 — deployed to staging + production | [#55](https://github.com/din-prajapati/infographic.io/pull/55) (`09c6e9e`), fix `7044a44` |
 | [US-LAUNCH-015](stories/US-LAUNCH-015/STORY.md) | Editable-design monetization (FREE gate + extra-compose credits) | M-LAUNCH-02 | M | ✅ Done 2026-08-15 — live-verified `[201, 402]` | — |
-| [US-LAUNCH-016](stories/US-LAUNCH-016/STORY.md) | Post-signup onboarding — Screen 1 required profile (backlog, non-blocking) | M-LAUNCH-01 | M | 🔲 | — |
-| [US-LAUNCH-017](stories/US-LAUNCH-017/STORY.md) | Onboarding brand kit — Screen 2, persisted + fed to generation (backlog, depends on 016) | M-LAUNCH-01 | M | 🔲 | — |
+| [US-LAUNCH-016](stories/US-LAUNCH-016/STORY.md) | Post-signup onboarding — Screen 1 required profile (backlog, non-blocking) | Backlog | M | 🔲 | — |
+| [US-LAUNCH-017](stories/US-LAUNCH-017/STORY.md) | Onboarding brand kit — Screen 2, persisted + fed to generation (backlog, depends on 016) | Backlog | M | 🔲 | — |
 
 ---
 

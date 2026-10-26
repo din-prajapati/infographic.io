@@ -69,7 +69,7 @@ Printables) can trail after, since Kit's own goal doesn't name them.
 
 | Milestone | Scope | Target | Status |
 |-----------|-------|--------|--------|
-| [M-AI-19-format-expansion](milestones/M-AI-19-format-expansion.md) | Design + build canvas templates for all 18 missing formats | after Phase 3 gate, or pulled forward alongside EPIC-KIT-01 | 🔲 |
+| [M-AI-21-format-expansion](milestones/M-AI-21-format-expansion.md) | Design + build canvas templates for all 18 missing formats | after Phase 3 gate, or pulled forward alongside EPIC-KIT-01 | 🔲 |
 
 ---
 
@@ -81,7 +81,7 @@ Printables) can trail after, since Kit's own goal doesn't name them.
 
 | Story ID | Title | Milestone | Status |
 |----------|-------|-----------|--------|
-| — | *TBD — draft when pulled from backlog* | M-AI-19 | 🔲 |
+| — | *TBD — draft when pulled from backlog* | M-AI-21 | 🔲 |
 
 ---
 

@@ -27,8 +27,8 @@ whether any of it can be undone.
 `M-AI-06` is closed and must not be reopened; this is its follow-on, not its continuation.
 
 > **Numbering note:** `M-AI-19` is used twice already (`M-AI-19-generation-progress-delivery` and
-> `M-AI-19-format-expansion`, both 🔲 Not Started, different epics). This milestone took `M-AI-20`
-> to avoid extending that collision. The existing duplicate is untouched and unresolved.
+> `M-AI-21-format-expansion`, both 🔲 Not Started, different epics). This milestone took `M-AI-20`
+> to avoid extending that collision. **Resolved 2026-10-26:** the Phase 4 one is now `M-AI-21-format-expansion`.
 
 ---
 

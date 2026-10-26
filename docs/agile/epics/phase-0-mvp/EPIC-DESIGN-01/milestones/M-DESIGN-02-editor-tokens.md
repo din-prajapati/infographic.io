@@ -27,6 +27,7 @@
 - [x] US-DESIGN-002 **PR merged** + PR# in [STORY.md](../stories/US-DESIGN-002/STORY.md)
 - [x] US-DESIGN-003 auto + static TCs recorded (5/6 ACs verified 2026-04-29)
 - [ ] US-DESIGN-003 AC3 — generation result on staging (requires live Ideogram API)
+- [ ] US-DESIGN-004 — human visual spot-check on staging (button height, card borders, spacing, dark-mode chart labels); deferred here from M-DESIGN-01. Added 2026-10-26 — it was tracked nowhere
 - [ ] Editor Light/Dark smoke + `npm run check` gate on staging
 - [ ] Manual smoke on staging: add text, shape, image, drag-resize
 

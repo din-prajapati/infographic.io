@@ -35,8 +35,8 @@
 | T2 | Failure output names env + status + time; `workflow_dispatch` switch to rehearse a failure | AC5 | 20 m | ✅ Done |
 | T3 | Runbook: what the alert means, how to triage, and the monitor's own failure modes | AC6 | 30 m | ✅ Done |
 | T4 | Verify green path against both live envs, incl. staging asleep | TC-01, TC-03 | 15 m | ✅ Done — TC-01/03/04 pass locally |
-| T5 | **OPERATOR:** prove the email actually arrives; confirm GitHub Actions email notifications are on; set Railway billing alerts in the dashboard | AC4, TC-02 | 10 m | ⏸ Blocked — needs merge first (dispatch only registers from default branch) |
-| T6 | Close BL-34, closeout, PR | DoD | 20 m | 🟡 PR open; BL-34 closes after T5 |
+| T5 | **OPERATOR:** prove the email actually arrives; confirm GitHub Actions email notifications are on; set Railway billing alerts in the dashboard | AC4, TC-02 | 10 m | 🔲 **Unblocked** — PR #57 merged 2026-10-02 and the scheduled Uptime workflow runs; only the operator steps remain |
+| T6 | Close BL-34, closeout, PR | DoD | 20 m | 🟡 PR #57 merged; BL-34 closes after T5 |
 
 ---
 

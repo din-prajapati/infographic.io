@@ -1,7 +1,7 @@
 # M-AI-19-generation-progress-delivery — Fix Frozen Progress UI
 
 > **Epic:** [EPIC-AI-07](../EPIC.md)
-> **Status:** 🔲 Not Started
+> **Status:** ✅ Done — closed 2026-07-09 (US-AI-034, PR #14; US-AI-035 superseded). Status recorded 2026-10-26; the epic and both stories already said so.
 > **Target date:** 2026-07-11
 
 ---
@@ -16,17 +16,17 @@ A real generation on staging renders its result cards in the browser within 30 s
 
 | Story | Title | Status | PR |
 |-------|-------|--------|----|
-| [US-AI-034](../stories/US-AI-034/STORY.md) | Diagnose and fix generation-progress delivery on staging | 🟡 Fix in code + locally verified; staging re-test pending deploy | — |
+| [US-AI-034](../stories/US-AI-034/STORY.md) | Diagnose and fix generation-progress delivery on staging | ✅ Done — deployed, staging re-verified 2026-07-09 (foreground + backgrounded tab) | [#14](https://github.com/din-prajapati/infographic.io/pull/14) |
 | [US-AI-035](../stories/US-AI-035/STORY.md) | Client-side fallback re-sync for stalled progress UI | ⏭️ Superseded by US-AI-034 | — |
 
 ---
 
 ## Acceptance (Milestone Done When…)
 
-- [ ] Root cause of the staging delivery gap is documented (in US-AI-034's STORY.md or a linked ADR)
-- [ ] 3 consecutive real generations against staging each render results within 30s of backend `gen:complete` — re-verified using the same live-pass method as the 2026-07-09 discovery session
-- [ ] A generation that somehow still misses its live-update event self-heals via REST poll within a bounded time (US-AI-035), so no single delivery mechanism failure can strand a user again
-- [ ] All stories above have status ✅ Done
+- [x] Root cause of the staging delivery gap is documented (in US-AI-034's STORY.md or a linked ADR)
+- [x] 3 consecutive real generations against staging each render results within 30s of backend `gen:complete` — re-verified using the same live-pass method as the 2026-07-09 discovery session — ✅ staging re-verified 2026-07-09 (US-AI-034)
+- [x] ~~A generation that somehow still misses its live-update event self-heals via REST poll within a bounded time (US-AI-035), so no single delivery mechanism failure can strand a user again~~ — superseded: US-AI-034\'s fix covers this scope (US-AI-035 closed as superseded)
+- [x] All stories above have status ✅ Done (US-AI-035: superseded)
 
 ---
 

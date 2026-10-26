@@ -23,7 +23,7 @@
 
 | Milestone | Scope | Target | Status |
 |-----------|-------|--------|--------|
-| [M-AI-19-generation-progress-delivery](milestones/M-AI-19-generation-progress-delivery.md) | Root-cause + fix the delivery gap; add a client-side self-healing fallback | 2026-07-11 | 🔲 |
+| [M-AI-19-generation-progress-delivery](milestones/M-AI-19-generation-progress-delivery.md) | Root-cause + fix the delivery gap; add a client-side self-healing fallback | 2026-07-11 | ✅ Done 2026-07-09 |
 
 ---
 

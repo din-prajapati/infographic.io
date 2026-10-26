@@ -83,7 +83,7 @@ gated behind having already generated something.
 | 1 | [US-EDIT-005](stories/US-EDIT-005/STORY.md) | Floating "Edit elements" control on the canvas | M-EDIT-01 | M | — | ✅ Done | [#35](https://github.com/din-prajapati/infographic.io/pull/35), [#38](https://github.com/din-prajapati/infographic.io/pull/38) |
 | 2 | [US-EDIT-006](stories/US-EDIT-006/STORY.md) | Brand layers from existing data — logo + licence | M-EDIT-02 | M | — | 🔲 | — |
 | 3 | [US-EDIT-007](stories/US-EDIT-007/STORY.md) | Agent headshot + QR code | M-EDIT-02 | M | US-EDIT-006 | 🔲 | — |
-| 4 | [US-EDIT-008](stories/US-EDIT-008/STORY.md) | Editable quota badge + charge confirmation | M-EDIT-01 | M | — (deferred from US-EDIT-005 AC4) | 🔲 | — |
+| 4 | [US-EDIT-008](stories/US-EDIT-008/STORY.md) | Editable quota badge + charge confirmation | — (unassigned) | M | — (deferred from US-EDIT-005 AC4) | 🔲 | — |
 | 5 | [US-EDIT-009](stories/US-EDIT-009/STORY.md) | Remove the pre-placement Flat/Editable toggle | M-EDIT-03 | M | — | 🟡 | [#49](https://github.com/din-prajapati/infographic.io/pull/49) |
 | 6 | [US-EDIT-011](stories/US-EDIT-011/STORY.md) | Persist the AI composition flag end to end | M-EDIT-04 | M | — | ✅ Done | [#64](https://github.com/din-prajapati/infographic.io/pull/64) |
 | 7 | [US-EDIT-012](stories/US-EDIT-012/STORY.md) | Branch the layer rule on composition, with one undo | M-EDIT-04 | M | US-EDIT-011 (contract only) | ✅ Done | [#64](https://github.com/din-prajapati/infographic.io/pull/64) |

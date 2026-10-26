@@ -1,6 +1,6 @@
 # Story Card — US-OBS-005
 
-> **Status:** 🟡 In Progress — code + docs done, blocked on T5 (operator: prove the email arrives, set Railway billing alerts)
+> **Status:** 🟡 In Progress — code merged (PR #57, 2026-10-02) and the Uptime workflow runs on schedule; waiting on T5 (operator: prove the alert email arrives, set Railway billing alerts) to close BL-34
 > **Feature:** F-OBS-00-05 — External availability monitoring
 > **Epic:** [EPIC-OBS-00](../../EPIC.md) · **Milestone:** M-OBS-01
 > **Size:** S · **Estimate:** 1–2 h · **Created:** 2026-10-02

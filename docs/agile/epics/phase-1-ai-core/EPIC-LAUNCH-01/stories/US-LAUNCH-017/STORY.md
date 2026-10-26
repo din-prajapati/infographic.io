@@ -4,7 +4,7 @@
 > **Priority:** Backlog — should-have, not launch-blocking. Does NOT gate the M-LAUNCH-01 Acceptance checklist.
 > **Feature:** F-LAUNCH-08 — Signup Onboarding
 > **Epic:** [EPIC-LAUNCH-01](../../EPIC.md)
-> **Milestone:** [M-LAUNCH-01-public-beta](../../milestones/M-LAUNCH-01-public-beta.md)
+> **Milestone:** Backlog — not part of [M-LAUNCH-01](../../milestones/M-LAUNCH-01-public-beta.md), which closed 2026-10-19 without it (see its closeout). Assign when scheduled.
 > **Size:** M (4–7 h)
 > **Depends on:** [US-LAUNCH-016](../US-LAUNCH-016/STORY.md) merged (`UserProfile` model, `/onboarding` route, Screen 1 hand-off). US-INFRA-001 `StorageService` (R2) — already Done.
 > **Related:** Delivers the persistence half of US-AI-028 ("Agent profile persistence", Phase 3 stub with no real ACs) — review that stub for supersession at closeout. Gives US-EDIT-007 the `headshotUrl` field it noted was missing; placing the headshot on canvas remains US-EDIT-007's job. Org-level brand sync stays B-07.

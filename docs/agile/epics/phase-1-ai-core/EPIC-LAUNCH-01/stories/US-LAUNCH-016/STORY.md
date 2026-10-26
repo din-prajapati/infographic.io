@@ -4,7 +4,7 @@
 > **Priority:** Backlog — should-have, not launch-blocking. Like US-LAUNCH-014, it does NOT gate the M-LAUNCH-01 "Acceptance (Done When)" checklist.
 > **Feature:** F-LAUNCH-08 — Signup Onboarding
 > **Epic:** [EPIC-LAUNCH-01](../../EPIC.md)
-> **Milestone:** [M-LAUNCH-01-public-beta](../../milestones/M-LAUNCH-01-public-beta.md)
+> **Milestone:** Backlog — not part of [M-LAUNCH-01](../../milestones/M-LAUNCH-01-public-beta.md), which closed 2026-10-19 without it (see its closeout). Assign when scheduled.
 > **Size:** M (4–7 h)
 > **Depends on:** None logically. **File overlap with US-LAUNCH-014** (`auth.service.ts`, `App.tsx`, `shared/schema.ts`) — do not run the two in parallel worktrees; whichever lands second rebases.
 > **Split from:** the post-signup onboarding request (2026-09-14). Screen 2 (brand kit) is [US-LAUNCH-017](../US-LAUNCH-017/STORY.md), which depends on this story.
