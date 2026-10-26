@@ -7,7 +7,7 @@ updated: 2026-10-25
 
 # Story Card — US-EDIT-015 — Lane A: one form per fact in the sidebar
 
-> **Status:** 🔲 Not Started — **blocked on US-EDIT-014 merging and Q1/Q2 answered**
+> **Status:** 🔲 Not Started — **blocked on US-EDIT-014 merging**
 > **Epic:** [EPIC-EDIT-03](../../EPIC.md)
 > **Milestone:** [M-EDIT-05-one-source-of-truth](../../milestones/M-EDIT-05-one-source-of-truth.md)
 > **Linear:** LIN-XXX
@@ -58,7 +58,8 @@ Content keeps only the fields the forms do not have.
 | Agent Name, Phone, Email, RERA ID | **Removed** — edited in `AgentInfoForm` |
 | Hero Image, Secondary Image, Open House Date/Time, Report Headline/KPIs/Period | **Kept** — no form counterpart |
 | Agent Photo, Call-to-Action Text | **Kept** — no form counterpart |
-| Brand logo / accent / name (Design tab) | **Unchanged** (D2, Q2) |
+| Brand / Agency Name (Design tab) | **Removed** — the agency name is the Agent tab's Brokerage field (Q2) |
+| Brand logo, accent colour (Design tab) | **Unchanged** |
 
 ---
 
@@ -70,7 +71,10 @@ Content keeps only the fields the forms do not have.
       through `writeFieldToCanvas` — the canvas price matches the typed price — in one Undo step.
 - [ ] **AC3 [happy-path]:** The fields listed as **Kept** above still render and still edit their
       canvas layers directly, so the Open House and Market Report templates stay fully editable.
-- [ ] **AC4 [happy-path]:** The Design tab's brand fields are unchanged.
+- [ ] **AC4 [happy-path]:** The agency name has one editor: typing in the Agent tab's **Brokerage**
+      field changes the agency name on *Luxury Home Showcase* and *MLS Listing Sheet*, and the Design
+      tab no longer shows a Brand / Agency Name field. Brand logo and accent colour stay in the Design
+      tab, unchanged (Q2).
 - [ ] **AC5 [error-path]:** The fabricated sample hints in `TemplateSlotSection.tsx` are gone —
       "Skyline Signature Residences", "From ₹1.18 Cr", "Sarjapur Road, Bengaluru", "3 BHK · 2,480
       sq.ft", "Aisha Sharma", "+91 90000 00000", "agent@agency.in", the sample RERA id, "Skyline
@@ -96,6 +100,7 @@ Content keeps only the fields the forms do not have.
 | TC-EDIT-015-03 | Manual | P0 | Given *Open House Flyer* and *Market Report*, When their tabs are opened, Then the date / report fields are present and edit the canvas | 🔲 | |
 | TC-EDIT-015-04 | Unit | P1 | Given `TemplateSlotSection.tsx`, When its hints are scanned, Then none of the fabricated strings remain | 🔲 | |
 | TC-EDIT-015-05 | Manual | P1 | Given a blank canvas, When the Property tab opens, Then the form renders and nothing errors | 🔲 | |
+| TC-EDIT-015-06 | Manual | P0 | Given *Luxury Home Showcase*, When Brokerage is typed in the Agent tab, Then the agency name on the canvas changes and the Design tab shows no agency-name field | 🔲 | |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 

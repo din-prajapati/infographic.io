@@ -7,7 +7,7 @@ updated: 2026-10-25
 
 # Story Card — US-EDIT-016 — Lane B: canvas edits reach the field
 
-> **Status:** 🔲 Not Started — **blocked on US-EDIT-014 merging and Q1 answered**
+> **Status:** 🔲 Not Started — **blocked on US-EDIT-014 merging**
 > **Epic:** [EPIC-EDIT-03](../../EPIC.md)
 > **Milestone:** [M-EDIT-05-one-source-of-truth](../../milestones/M-EDIT-05-one-source-of-truth.md)
 > **Linear:** LIN-XXX
@@ -63,9 +63,8 @@ that is the normal case, not an error.
       no store write.
 - [ ] **AC4 [error-path]:** An element whose slot has no field (`report.kpis`, `openHouse.date`,
       `agent.cta`) commits normally and writes no field; nothing throws.
-- [ ] **AC5 [error-path]:** The specs line follows the Q1 answer. If Q1 is accepted as recommended, an
-      edit to a `property.specs` / `property.facts` element stays on the canvas and does not change
-      `beds`, `baths` or `sqft`.
+- [ ] **AC5 [error-path]:** An edit to a `property.specs` / `property.facts` element stays on the
+      canvas and does not change `beds`, `baths` or `sqft` (Q1, answered 2026-10-26).
 - [ ] **AC6 [happy-path]:** A `composed-*` element from extraction follows the same rule as any other
       element with or without a slot — no special case.
 

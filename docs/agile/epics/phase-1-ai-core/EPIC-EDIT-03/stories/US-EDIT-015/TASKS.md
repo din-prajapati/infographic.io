@@ -23,7 +23,7 @@ updated: 2026-10-25
 ## Task Breakdown
 
 ### T1 — Trim the field catalogues
-In `TemplateSlotSection.tsx`, remove the Property/Agent fields that the forms own (STORY.md table); keep Hero/Secondary image, Open House, Report, Agent Photo, CTA. Replace the fabricated hints (AC5).
+In `TemplateSlotSection.tsx`, remove the Property/Agent fields that the forms own (STORY.md table); keep Hero/Secondary image, Open House, Report, Agent Photo, CTA. Replace the fabricated hints (AC5). Remove `brand.name` from `BRAND_SLOT_FIELDS` — the agency name is the Agent tab's Brokerage field (Q2); logo and accent colour stay.
 
 ### T2 — Forms write through the binding
 `PropertyDetailsForm` / `AgentInfoForm` call `writeFieldToCanvas` for every bound field on change.

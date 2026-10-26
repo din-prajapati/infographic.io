@@ -55,10 +55,12 @@ element carrying a slot in one history entry. What is missing is a caller, and o
 | ID | Decision |
 |----|----------|
 | D1 | The stores (`usePropertyStore`, `useAgentStore`) own listing facts; slot-tagged canvas text is a projection of them |
-| D2 | Template Content fields that duplicate the property/agent forms are removed; `openHouse.*` and `report.*` stay (no other editor); brand fields stay in the Design tab |
+| D2 | Template Content fields that duplicate the property/agent forms are removed; `openHouse.*` and `report.*` stay (no other editor); brand logo and accent colour stay in the Design tab |
 | D3 | Editing slot-tagged text on the canvas writes back to the field |
 | D4 | No migration: on load, the stores are filled from the canvas's slot values; bracketed placeholders fill as empty; a canvas with no slot tags leaves the stores alone |
 | D5 | One map. `stats` → `property.specs`, and also writes/reads `property.facts` (the Story template uses `facts`, MLS uses `specs`) |
+| Q1 | *(2026-10-26)* The specs line is store→canvas only; a canvas edit to it is not parsed back into beds/baths/sqft |
+| Q2 | *(2026-10-26)* The agency name is owned by the Agent tab's **Brokerage** field; the Design tab keeps canvas-design controls only (logo, accent colour, styles) |
 
 ---
 

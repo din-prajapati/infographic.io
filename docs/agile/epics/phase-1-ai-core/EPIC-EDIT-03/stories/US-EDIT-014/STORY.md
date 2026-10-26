@@ -93,14 +93,14 @@ no component.
 | `property.headline` | `property.headline` | |
 | `property.price` | `property.price` | |
 | `property.address` | `property.location` | |
-| `stats` (from `beds`, `baths`, `sqft`) | `property.specs`, `property.facts` | **Q1** — see Open questions |
+| `stats` (from `beds`, `baths`, `sqft`) | `property.specs`, `property.facts` | **Q1 answered** — store→canvas only |
 | `property.description` | `property.description` | |
 | `property.features` | `property.features` | array ↔ newline-separated text |
 | `agent.name` | `agent.name` | |
 | `agent.phone` | `agent.phone` | |
 | `agent.email` | `agent.email` | |
 | `agent.license` | `agent.rera` | |
-| `agent.brokerage` | `brand.name` | **Q2** — see Open questions |
+| `agent.brokerage` | `brand.name` | **Q2 answered** — the Agent tab's Brokerage field is the only editor of the agency name |
 
 No slot: `agent.website`, `property.type`, `property.locale`. No field: `property.heroImage`,
 `property.galleryImage`, `openHouse.*`, `report.*`, `agent.photo`, `agent.cta`, `brand.logo`,
@@ -108,15 +108,16 @@ No slot: `agent.website`, `property.type`, `property.locale`. No field: `propert
 
 ---
 
-## Open questions — answer before Lanes A and B start
+## Questions — answered by Dinesh, 2026-10-26
 
 - **Q1 — the specs line.** The store holds `beds`, `baths`, `sqft` as separate values; the canvas
   shows one sentence. Store→canvas is a formatter. Canvas→store (D3) would need parsing free text.
-  **Recommended:** specs is store→canvas only; a canvas edit to the specs line stays on the canvas
-  and does not touch `beds`/`baths`/`sqft` — a documented exception to D3.
+  **Answer: store→canvas only.** A canvas edit to the specs line stays on the canvas and does not
+  touch `beds`/`baths`/`sqft` — a documented exception to D3.
 - **Q2 — agency name.** `agent.brokerage` maps to `brand.name`, which D2 keeps in the Design tab.
-  **Recommended:** `brand.name` stays a Design-tab field and is not bound to `agent.brokerage` in this
-  milestone, so the agency name has one editor.
+  **Answer: the Agent tab owns it.** `agent.brokerage` is bound to `brand.name`; the Design tab no
+  longer shows a Brand / Agency Name field. The Design tab keeps canvas-design controls only (logo,
+  accent colour, styles).
 
 ---
 
