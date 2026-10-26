@@ -9,17 +9,17 @@ updated: 2026-08-19
 
 > **Story:** [STORY.md](./STORY.md)
 > **Milestone branch:** `feat/infra/m-01-durable-asset-storage`
-> **PR:** #_____ (milestone PR — see AGILE.md §"Git Standards")
+> **PR:** [#46](https://github.com/din-prajapati/infographic.io/pull/46)
 > **Linear:** LIN-XXX
 
 ---
 
 ## Four Pillars Pre-flight
 
-- [ ] **Brain** — STORY.md is filled: ACs written, out-of-scope listed, AI Implementation Prompt ready
-- [ ] **Muscle** — This TASKS.md has T1..Tn (one per AC × file) + exact test commands
-- [ ] **Map** — [ARCHITECTURE.mmd](../../ARCHITECTURE.mmd) exists for this epic
-- [ ] **Env** — [ENV.yaml](../../ENV.yaml) loaded (paths not guessed)
+- [x] **Brain** — STORY.md is filled: ACs written, out-of-scope listed, AI Implementation Prompt ready
+- [x] **Muscle** — This TASKS.md has T1..Tn (one per AC × file) + exact test commands
+- [x] **Map** — [ARCHITECTURE.mmd](../../ARCHITECTURE.mmd) exists for this epic
+- [x] **Env** — [ENV.yaml](../../ENV.yaml) loaded (paths not guessed)
 
 > **Depends on:** US-INFRA-001 merged (StorageService must exist as a `@Global()` provider).
 
@@ -146,10 +146,10 @@ npm run dev
 - [x] T3 — R2-first read with tmp fallback (file: `ideogram.service.ts`, type: `fix`)
 - [x] T4 — Unit tests (file: `api/tests/infra/us-infra-003.spec.ts`, type: `test`)
 - [x] Gate 1 passes ✅
-- [ ] Manual test verified ✅ (TC-INFRA-003-05, TC-INFRA-003-06)
-- [ ] PR opened with story card as description ✅
-- [ ] STORY.md ACs ticked off ✅
-- [ ] EPIC.md "Implementation Update" log appended ✅ (by code-agent)
+- [x] Manual test verified ✅ (TC-INFRA-003-05, TC-INFRA-003-06)
+- [x] PR opened with story card as description ✅
+- [x] STORY.md ACs ticked off ✅
+- [x] EPIC.md "Implementation Update" log appended ✅ (by code-agent)
 
 ---
 

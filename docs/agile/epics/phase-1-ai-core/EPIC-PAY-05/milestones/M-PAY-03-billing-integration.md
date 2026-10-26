@@ -41,9 +41,9 @@ activation recognizes the new tiers.
 
 | Order | Story | Title | Size | Blocked By | Status | PR | Version |
 |:-----:|-------|-------|:----:|------------|:------:|:--:|:---:|
-| 1 | [US-PAY-109](../stories/US-PAY-109/STORY.md) | New Razorpay Plan IDs for PRO/AGENCY tiers | S | US-PAY-102 (M-PAY-01) | 🟢 (all ACs verified) | — | **V1** |
-| 2 | [US-PAY-111](../stories/US-PAY-111/STORY.md) | Webhook/entitlement mapping for new tiers | S | US-PAY-109 | ✅ (code) | — | **V1** |
-| 2 | [US-PAY-110](../stories/US-PAY-110/STORY.md) | Checkout selects the promo Plan server-side | M | US-PAY-106, US-PAY-109 | 🟡 (rescoped, code done) | — | V2 |
+| 1 | [US-PAY-109](../stories/US-PAY-109/STORY.md) | New Razorpay Plan IDs for PRO/AGENCY tiers | S | US-PAY-102 (M-PAY-01) | ✅ Done | — (landed on `main`) | **V1** |
+| 2 | [US-PAY-111](../stories/US-PAY-111/STORY.md) | Webhook/entitlement mapping for new tiers | S | US-PAY-109 | ✅ Done (code) — manual check open on the card | — (landed on `main`) | **V1** |
+| 2 | [US-PAY-110](../stories/US-PAY-110/STORY.md) | Checkout selects the promo Plan server-side | M | US-PAY-106, US-PAY-109 | ✅ Done (code) — manual check in M-PAY-05 | — (landed on `main`) | V2 |
 
 ---
 

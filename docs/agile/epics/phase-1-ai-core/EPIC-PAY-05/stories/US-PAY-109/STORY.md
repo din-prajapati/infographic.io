@@ -7,7 +7,7 @@ updated: 2026-08-21
 
 # Story Card — US-PAY-109
 
-> **Status:** 🟢 **All ACs verified 2026-09-08 — T0 was already complete and unrecorded.**
+> **Status:** ✅ Done — closed 2026-10-21 with M-PAY-03 at V1. All ACs verified 2026-09-08; the one real checkout it waited on ran 2026-10-16 → 19 (US-LAUNCH-005 AC6).
 > Every Razorpay Plan object exists and charges exactly what `PLAN_CONFIG` says: **8/8 on production
 > in LIVE mode**, 8/8 on staging in TEST mode, correct amounts and cadences throughout. The story had
 > been carried as "blocked on T0 HUMAN task" while the plans were live. Verified by a new read-only
@@ -20,7 +20,7 @@ updated: 2026-08-21
 > **Milestone:** [M-PAY-03-billing-integration](../../milestones/M-PAY-03-billing-integration.md)
 > **Linear:** LIN-XXX
 > **Size:** S
-> **Created:** 2026-08-21 | **Closed:** — (all ACs verified 2026-09-08; open on the PR and one real checkout)
+> **Created:** 2026-08-21 | **Closed:** 2026-10-21
 
 ---
 
@@ -85,7 +85,7 @@ updated: 2026-08-21
 ## Engineering / PR
 
 - **Branch:** `feat/pay/m-01-pricing-relaunch`
-- **PR:** #_____ (milestone PR)
+- **PR:** none — EPIC-PAY-05 had no milestone branch; the work landed on `main` (`git log --grep "US-PAY-109"`)
 - **Primary files touched:**
   - `api/src/modules/payments/services/payments.service.ts` — extend `RAZORPAY_PLAN_KEYS`
   - `.env.example` — document the 4 new env vars
@@ -149,11 +149,11 @@ Rules:
 - [x] All test cases run and recorded (TC-03 blocked, recorded as such)
 - [x] Gate 1 passes
 - [~] Gate 4 (backend) — API-side verified by the live plan audit (8/8 on production). The integration suite cannot run at all: the `.env.test` database is unreachable (BL-28), which blocks Gate 4 for every backend story, not this one.
-- [ ] Manual flow verified — **HUMAN.** No longer blocked on T0 (the Plans are live); needs one real checkout against a live plan, which is the same transaction US-LAUNCH-005 AC6 wants.
-- [ ] PR merged
-- [ ] No console errors for the changed flow
+- [x] Manual flow verified — real checkout on production 2026-10-16 → 19 (US-LAUNCH-005 AC6)
+- [x] PR merged — n/a: no milestone PR; merged to `main` directly
+- [x] No console errors for the changed flow — server-side change; covered by the live plan audit
 - [x] [TASKS.md](./TASKS.md) task list fully checked — **T0 is complete**: all 8 Plan objects exist in LIVE mode with correct amounts and cadences, verified 2026-09-08. It had been done in the dashboard without anyone closing it here.
-- [ ] STORY.md status updated to ✅ Done — every AC now holds; open only on the PR and the one real checkout.
+- [x] STORY.md status updated to ✅ Done
 
 ---
 

@@ -7,7 +7,7 @@ updated: 2026-08-21
 
 # Story Card — US-PAY-110
 
-> **Status:** 🟢 **Code complete and verified — 2026-09-07.** All four ACs (AC1′/AC2/AC3/AC4) hold, with 61 passing tests across `payments.service.spec.ts`, `pricing-campaign.service.spec.ts` and `pricing-resolution.service.spec.ts`; the four TCs are recorded below. Gate 1 green. **Not closed**, and only two things stand in the way, neither of them code: a real staging checkout under an active campaign (human), and the PR. Gate 4's integration half is blocked by a dead `.env.test` database (BL-28), not by this story. (The earlier header read "AC2/AC3/AC4 are implemented; AC1 is…" — AC1 was voided on 2026-08-27 and replaced by AC1′, which is done.)
+> **Status:** ✅ Done (code, V2 scope) — closed 2026-10-21 with M-PAY-03. All four ACs verified 2026-09-07. The one open check — a real staging checkout under an active campaign — needs a campaign to exist, so it was carried to [M-PAY-05](../../milestones/M-PAY-05-founding-promo-activation.md) (⏸ on hold until payment traction).
 > **void** (replaced). Not blocked on anything. Remaining: manual verification + PR.
 > The `offer_id` mechanism this story was written around no longer exists — the same protections
 > are delivered by selecting a promo Plan object instead. See "What 2026-08-27 changed".
@@ -16,7 +16,7 @@ updated: 2026-08-21
 > **Milestone:** [M-PAY-03-billing-integration](../../milestones/M-PAY-03-billing-integration.md)
 > **Linear:** LIN-XXX
 > **Size:** M
-> **Created:** 2026-08-21 | **Closed:** —
+> **Created:** 2026-08-21 | **Closed:** 2026-10-21 (code) — manual check carried to M-PAY-05
 
 ---
 
@@ -89,7 +89,7 @@ mechanism changed.
 ## Engineering / PR
 
 - **Branch:** `feat/pay/m-01-pricing-relaunch`
-- **PR:** #_____ (milestone PR)
+- **PR:** none — EPIC-PAY-05 had no milestone branch; the work landed on `main` (`git log --grep "US-PAY-110"`)
 - **Primary files touched:**
   - `api/src/modules/payments/services/payments.service.ts` — `createSubscription()` calls
     `getEffectivePrice()` and passes `offer_id` when applicable
@@ -160,8 +160,8 @@ Rules:
       (`ep-lingering-frost-afktjhej`, us-west-2) refuses every connection; DNS resolves, so it is a
       suspended project or rotated credentials, not a pause. 2 files failed, 12 tests skipped.
       Nothing in this story can fix it — see BL-28.
-- [ ] Manual flow verified (real staging checkout under an active campaign) — **HUMAN**
-- [ ] PR merged
+- [ ] Manual flow verified (real staging checkout under an active campaign) — **carried to M-PAY-05**, which is on hold by decision (2026-10-21)
+- [x] PR merged — n/a: no milestone PR; merged to `main` directly
 - [x] No console errors for the changed flow — API smoke clean
 - [x] [TASKS.md](./TASKS.md) task list fully checked
 - [ ] STORY.md status updated to ✅ Done — held: two DoD lines remain

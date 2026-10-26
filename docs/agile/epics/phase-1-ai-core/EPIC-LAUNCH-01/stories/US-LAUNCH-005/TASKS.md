@@ -10,10 +10,10 @@
 
 ## Three Pillars Pre-flight (check before starting AI session)
 
-- [ ] **Brain** — STORY.md filled
-- [ ] **Muscle** — file list + ordered tasks + exact test commands
-- [ ] **Map** — [ARCHITECTURE.mmd](../../ARCHITECTURE.mmd) exists
-- [ ] **Env** — [ENV.yaml](../../ENV.yaml) loaded (all RAZORPAY_* live vars listed there)
+- [x] **Brain** — STORY.md filled
+- [x] **Muscle** — file list + ordered tasks + exact test commands
+- [x] **Map** — [ARCHITECTURE.mmd](../../ARCHITECTURE.mmd) exists
+- [x] **Env** — [ENV.yaml](../../ENV.yaml) loaded (all RAZORPAY_* live vars listed there)
 
 ---
 
@@ -73,8 +73,8 @@ npm run verify:payment-prereqs   # against prod config (AC5)
 
 - [x] T1 — startup assert — shipped separately under US-LAUNCH-010's boot-validation guard (`api/src/config/env.validation.ts` / `app-env.ts`), not a standalone T1 PR here
 - [x] T2 — unit tests — covered by US-LAUNCH-010's test suite
-- [ ] T3 — env docs — `ENV.yaml` not yet updated with the actual live var names used
-- [ ] T4 — HUMAN ops checklist complete (incl. real ₹ transaction + refund) — KYC/plans/webhook/Railway vars done 2026-07-28; real ₹ transaction + refund intentionally not run
+- [x] T3 — env docs — `ENV.yaml` lists every live plan variable checkout reads, including PRO/AGENCY (added 2026-10-26)
+- [x] T4 — HUMAN ops checklist complete — real ₹5,499 SOLO charge run on production 2026-10-16 → 19: charged, webhook verified, `PENDING → ACTIVE`, refunded and cancelled
 - [x] `npm run check` passes ✅
 - [x] `npm run test:unit` passes ✅
 - [x] ~~PR opened with story card as description~~ — n/a, ops-only scope (T3/T4); see the DoD exception in STORY.md
