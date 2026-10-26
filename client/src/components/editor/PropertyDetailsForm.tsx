@@ -12,6 +12,7 @@ import { Separator } from "../ui/separator";
 import { NumberStepper } from "../ui/number-stepper";
 import { usePropertyStore } from "../../hooks/usePropertyStore";
 import { resolveLocale, LOCALES } from "@shared/locale";
+import { writeFieldToCanvas, formatStatsLine } from "../../lib/listingBindings";
 
 const FEATURES = ["Pool", "Garage", "Garden", "Fireplace", "AC", "Heating"];
 
@@ -48,6 +49,7 @@ export function PropertyDetailsForm() {
   const cycleLocale = () => {
     const next = LOCALE_CYCLE[(LOCALE_CYCLE.indexOf(property.locale) + 1) % LOCALE_CYCLE.length];
     setProperty({ locale: next });
+    writeFieldToCanvas('stats', formatStatsLine({ beds: property.beds, baths: property.baths, sqft: property.sqft, locale: next }));
   };
 
   const toggleFeature = (feature: string) => {
@@ -55,6 +57,7 @@ export function PropertyDetailsForm() {
       ? property.features.filter((f) => f !== feature)
       : [...property.features, feature];
     setProperty({ features: next });
+    writeFieldToCanvas('features', next.join('\n'));
   };
 
   return (
@@ -100,7 +103,7 @@ export function PropertyDetailsForm() {
             type="text"
             placeholder="e.g. Stunning Hilltop Retreat"
             value={property.headline}
-            onChange={(e) => setProperty({ headline: e.target.value })}
+            onChange={(e) => { setProperty({ headline: e.target.value }); writeFieldToCanvas('headline', e.target.value); }}
             maxLength={35}
             className="h-9"
           />
@@ -119,7 +122,7 @@ export function PropertyDetailsForm() {
             type="text"
             placeholder={pricePlaceholder}
             value={property.price}
-            onChange={(e) => setProperty({ price: e.target.value })}
+            onChange={(e) => { setProperty({ price: e.target.value }); writeFieldToCanvas('price', e.target.value); }}
             className="h-9"
           />
           {/* Locale indicator — the agent can see what will be printed on the image
@@ -142,7 +145,7 @@ export function PropertyDetailsForm() {
             <Label className="text-sm">Beds</Label>
             <NumberStepper
               value={property.beds}
-              onChange={(v) => setProperty({ beds: v })}
+              onChange={(v) => { setProperty({ beds: v }); writeFieldToCanvas('stats', formatStatsLine({ beds: v, baths: property.baths, sqft: property.sqft, locale: property.locale })); }}
               min={0}
               max={20}
               className="w-full"
@@ -152,7 +155,7 @@ export function PropertyDetailsForm() {
             <Label className="text-sm">Baths</Label>
             <NumberStepper
               value={property.baths}
-              onChange={(v) => setProperty({ baths: v })}
+              onChange={(v) => { setProperty({ baths: v }); writeFieldToCanvas('stats', formatStatsLine({ beds: property.beds, baths: v, sqft: property.sqft, locale: property.locale })); }}
               min={0}
               max={20}
               className="w-full"
@@ -170,7 +173,7 @@ export function PropertyDetailsForm() {
             type="text"
             placeholder="2,500"
             value={property.sqft}
-            onChange={(e) => setProperty({ sqft: e.target.value })}
+            onChange={(e) => { setProperty({ sqft: e.target.value }); writeFieldToCanvas('stats', formatStatsLine({ beds: property.beds, baths: property.baths, sqft: e.target.value, locale: property.locale })); }}
             className="h-9"
           />
         </div>
@@ -185,7 +188,7 @@ export function PropertyDetailsForm() {
             type="text"
             placeholder="123 Main Street, City, State"
             value={property.address}
-            onChange={(e) => setProperty({ address: e.target.value })}
+            onChange={(e) => { setProperty({ address: e.target.value }); writeFieldToCanvas('address', e.target.value); }}
             className="h-9"
           />
         </div>
@@ -199,7 +202,7 @@ export function PropertyDetailsForm() {
             id="description"
             placeholder="Beautiful family home with modern amenities..."
             value={property.description}
-            onChange={(e) => setProperty({ description: e.target.value })}
+            onChange={(e) => { setProperty({ description: e.target.value }); writeFieldToCanvas('description', e.target.value); }}
             className="min-h-[80px] resize-none"
             maxLength={500}
           />

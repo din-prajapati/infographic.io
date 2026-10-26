@@ -177,6 +177,15 @@ against a dependency nobody owned.
 
 ## Implementation Update (log)
 
+### 2026-10-26 — US-EDIT-015 implementation complete (pre-PR)
+- **Files touched:** `client/src/components/editor/TemplateSlotSection.tsx`, `client/src/components/editor/PropertyDetailsForm.tsx`, `client/src/components/editor/AgentInfoForm.tsx`, `client/src/components/editor/RightSidebar.tsx`, `client/src/components/editor/__tests__/TemplateSlotSection.spec.ts`
+- **ACs covered:** AC1, AC2, AC3, AC4, AC5, AC6 (all six from code; AC1–AC3 require Gate 2 / Chrome to confirm rendered deduplication)
+- **Commits:** 4 on branch `feat/edit/m05-la-sidebar`
+  - `51644e9` T1 trim field catalogues, remove fabricated hints
+  - `5f7ebf4` T2 forms write through writeFieldToCanvas on change
+  - `3d648f6` T3 sidebar render rules, update subtitles after field trim
+  - `39691db` T4 assert fabricated hints absent, kept fields correct
+- **Notes:** Write-through fires per keystroke (matching TemplateSlotSection's existing `updateTextSlot` pattern — one history entry per keystroke). The `brand.name` field is removed from `BRAND_SLOT_FIELDS`; Brokerage in AgentInfoForm writes `writeFieldToCanvas('brokerage', …)` which maps to the `brand.name` slot via `FIELD_TO_SLOTS`. Gate 1: 347 tests pass, 1 skipped (pre-existing). Gate 2 (Chrome MV-05-01, MV-05-03) is pending human verification.
 ### 2026-10-26 — US-EDIT-016 implementation complete (pre-PR)
 - **Files touched:** `client/src/components/canvas/TextElement.tsx`, `client/src/components/canvas/__tests__/TextElement.spec.ts`, `docs/agile/epics/phase-1-ai-core/EPIC-EDIT-03/stories/US-EDIT-016/TASKS.md`, `docs/agile/epics/phase-1-ai-core/EPIC-EDIT-03/stories/US-EDIT-016/STORY.md`
 - **ACs covered:** AC1, AC2 (canvas-revert only; store-revert deferred to integration), AC3, AC4, AC5, AC6

@@ -41,33 +41,26 @@ export interface SlotFieldDef {
 export const BRAND_SLOT_FIELDS: SlotFieldDef[] = [
   { slot: "brand.logo",        label: "Brand Logo",           control: "image" },
   { slot: "brand.accentColor", label: "Accent Color",         control: "color" },
-  { slot: "brand.name",        label: "Brand / Agency Name",  control: "text", placeholder: "Skyline Realty" },
+  // brand.name removed — agency name is owned by the Agent tab's Brokerage field (Q2).
 ];
 
+// Headline, Price, Location, Key Facts, Specs, Description, Features are edited in
+// PropertyDetailsForm (D2). Only fields without a form counterpart remain here.
 export const PROPERTY_SLOT_FIELDS: SlotFieldDef[] = [
-  { slot: "property.heroImage",    label: "Hero Image",        control: "image" },
-  { slot: "property.galleryImage", label: "Secondary Image",   control: "image" },
-  { slot: "property.headline",     label: "Headline",          control: "text", placeholder: "Skyline Signature Residences" },
-  { slot: "property.price",        label: "Price",             control: "text", placeholder: "From ₹1.18 Cr" },
-  { slot: "property.location",     label: "Location",          control: "text", placeholder: "Sarjapur Road, Bengaluru" },
-  { slot: "property.facts",        label: "Key Facts",         control: "text", multiline: true },
-  { slot: "property.features",     label: "Features",          control: "text", multiline: true },
-  { slot: "property.description",  label: "Description",       control: "text", multiline: true },
-  { slot: "property.specs",        label: "Specs",             control: "text", placeholder: "3 BHK · 2,480 sq.ft" },
-  { slot: "openHouse.date",        label: "Open House Date",   control: "text", placeholder: "Sat 12 Jul, 11 AM – 2 PM" },
-  { slot: "openHouse.time",        label: "Open House Time",   control: "text" },
-  { slot: "report.headline",       label: "Report Headline",   control: "text" },
-  { slot: "report.kpis",           label: "KPIs",              control: "text", multiline: true },
-  { slot: "report.period",         label: "Report Period",     control: "text", placeholder: "Q2 2026" },
+  { slot: "property.heroImage",    label: "Hero Image",       control: "image" },
+  { slot: "property.galleryImage", label: "Secondary Image",  control: "image" },
+  { slot: "openHouse.date",        label: "Open House Date",  control: "text", placeholder: "Sat 12 Jul, 11 AM – 2 PM" },
+  { slot: "openHouse.time",        label: "Open House Time",  control: "text" },
+  { slot: "report.headline",       label: "Report Headline",  control: "text" },
+  { slot: "report.kpis",           label: "KPIs",             control: "text", multiline: true },
+  { slot: "report.period",         label: "Report Period",    control: "text", placeholder: "Q2 2026" },
 ];
 
+// Agent Name, Phone, Email, RERA ID are edited in AgentInfoForm (D2).
+// Only fields without a form counterpart remain here.
 export const AGENT_SLOT_FIELDS: SlotFieldDef[] = [
-  { slot: "agent.photo", label: "Agent Photo",        control: "image" },
-  { slot: "agent.name",  label: "Agent Name",         control: "text", placeholder: "Aisha Sharma" },
-  { slot: "agent.phone", label: "Phone",              control: "text", placeholder: "+91 90000 00000" },
-  { slot: "agent.email", label: "Email",              control: "text", placeholder: "agent@agency.in" },
-  { slot: "agent.rera",  label: "RERA ID",            control: "text", placeholder: "PRM/KA/RERA/1254/..." },
-  { slot: "agent.cta",   label: "Call-to-Action Text",control: "text", placeholder: "Schedule a Site Visit" },
+  { slot: "agent.photo", label: "Agent Photo",         control: "image" },
+  { slot: "agent.cta",   label: "Call-to-Action Text", control: "text", placeholder: "Schedule a Site Visit" },
 ];
 
 /* ------------------------------------------------------------------ */

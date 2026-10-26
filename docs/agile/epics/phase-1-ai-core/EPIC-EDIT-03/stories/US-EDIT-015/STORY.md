@@ -7,7 +7,7 @@ updated: 2026-10-25
 
 # Story Card — US-EDIT-015 — Lane A: one form per fact in the sidebar
 
-> **Status:** 🔲 Not Started — **blocked on US-EDIT-014 merging**
+> **Status:** 🚧 Implementation complete — Gate 1 ✅, Gate 2 pending (manual Chrome verification)
 > **Epic:** [EPIC-EDIT-03](../../EPIC.md)
 > **Milestone:** [M-EDIT-05-one-source-of-truth](../../milestones/M-EDIT-05-one-source-of-truth.md)
 > **Linear:** LIN-XXX
@@ -65,22 +65,22 @@ Content keeps only the fields the forms do not have.
 
 ## Acceptance Criteria
 
-- [ ] **AC1 [happy-path]:** The Property tab renders exactly **one** price input and the Agent tab
-      exactly **one** agent-name input.
-- [ ] **AC2 [happy-path]:** A value typed in `PropertyDetailsForm` or `AgentInfoForm` reaches the canvas
-      through `writeFieldToCanvas` — the canvas price matches the typed price — in one Undo step.
-- [ ] **AC3 [happy-path]:** The fields listed as **Kept** above still render and still edit their
-      canvas layers directly, so the Open House and Market Report templates stay fully editable.
-- [ ] **AC4 [happy-path]:** The agency name has one editor: typing in the Agent tab's **Brokerage**
+- [x] **AC1 [happy-path]:** The Property tab renders exactly **one** price input and the Agent tab
+      exactly **one** agent-name input. (price removed from PROPERTY_SLOT_FIELDS; agent.name removed from AGENT_SLOT_FIELDS)
+- [x] **AC2 [happy-path]:** A value typed in `PropertyDetailsForm` or `AgentInfoForm` reaches the canvas
+      through `writeFieldToCanvas` — the canvas price matches the typed price — in one Undo step. (each onChange calls writeFieldToCanvas)
+- [x] **AC3 [happy-path]:** The fields listed as **Kept** above still render and still edit their
+      canvas layers directly, so the Open House and Market Report templates stay fully editable. (kept in PROPERTY_SLOT_FIELDS, write through updateTextSlot)
+- [x] **AC4 [happy-path]:** The agency name has one editor: typing in the Agent tab's **Brokerage**
       field changes the agency name on *Luxury Home Showcase* and *MLS Listing Sheet*, and the Design
       tab no longer shows a Brand / Agency Name field. Brand logo and accent colour stay in the Design
-      tab, unchanged (Q2).
-- [ ] **AC5 [error-path]:** The fabricated sample hints in `TemplateSlotSection.tsx` are gone —
+      tab, unchanged (Q2). (brand.name removed from BRAND_SLOT_FIELDS; brokerage → writeFieldToCanvas('brokerage', …) → brand.name slot)
+- [x] **AC5 [error-path]:** The fabricated sample hints in `TemplateSlotSection.tsx` are gone —
       "Skyline Signature Residences", "From ₹1.18 Cr", "Sarjapur Road, Bengaluru", "3 BHK · 2,480
       sq.ft", "Aisha Sharma", "+91 90000 00000", "agent@agency.in", the sample RERA id, "Skyline
-      Realty". Neutral bracketed hints replace them (BL-40 convention).
-- [ ] **AC6 [error-path]:** A canvas with no slot tags degrades to today's behaviour (the forms render;
-      Template Content does not), not to an empty tab.
+      Realty". Neutral bracketed hints replace them (BL-40 convention). (all removed with their fields; verified by unit test TC-015-04)
+- [x] **AC6 [error-path]:** A canvas with no slot tags degrades to today's behaviour (the forms render;
+      Template Content does not), not to an empty tab. (activeSlots.size > 0 guard preserved; forms always render unconditionally)
 
 ---
 

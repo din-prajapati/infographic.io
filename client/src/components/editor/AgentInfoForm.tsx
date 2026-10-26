@@ -10,6 +10,7 @@ import { Separator } from "../ui/separator";
 import { ScrollArea } from "../ui/scroll-area";
 import { Upload, User } from "lucide-react";
 import { useAgentStore } from "../../hooks/useAgentStore";
+import { writeFieldToCanvas } from "../../lib/listingBindings";
 
 export function AgentInfoForm() {
   const { agent, setAgent } = useAgentStore();
@@ -93,7 +94,7 @@ export function AgentInfoForm() {
             type="text"
             placeholder="John Doe"
             value={agentName}
-            onChange={(e) => setAgent({ name: e.target.value })}
+            onChange={(e) => { setAgent({ name: e.target.value }); writeFieldToCanvas('agentName', e.target.value); }}
             className="h-9"
           />
         </div>
@@ -108,7 +109,7 @@ export function AgentInfoForm() {
             type="tel"
             placeholder="(555) 123-4567"
             value={phone}
-            onChange={(e) => setAgent({ phone: e.target.value })}
+            onChange={(e) => { setAgent({ phone: e.target.value }); writeFieldToCanvas('agentPhone', e.target.value); }}
             className="h-9"
           />
         </div>
@@ -123,7 +124,7 @@ export function AgentInfoForm() {
             type="email"
             placeholder="john@realestate.com"
             value={email}
-            onChange={(e) => setAgent({ email: e.target.value })}
+            onChange={(e) => { setAgent({ email: e.target.value }); writeFieldToCanvas('agentEmail', e.target.value); }}
             className="h-9"
           />
         </div>
@@ -138,7 +139,7 @@ export function AgentInfoForm() {
             type="text"
             placeholder="RE123456"
             value={license}
-            onChange={(e) => setAgent({ license: e.target.value })}
+            onChange={(e) => { setAgent({ license: e.target.value }); writeFieldToCanvas('agentLicense', e.target.value); }}
             className="h-9"
           />
         </div>
@@ -153,7 +154,7 @@ export function AgentInfoForm() {
             type="text"
             placeholder="ABC Realty"
             value={brokerage}
-            onChange={(e) => setAgent({ brokerage: e.target.value })}
+            onChange={(e) => { setAgent({ brokerage: e.target.value }); writeFieldToCanvas('brokerage', e.target.value); }}
             className="h-9"
           />
         </div>

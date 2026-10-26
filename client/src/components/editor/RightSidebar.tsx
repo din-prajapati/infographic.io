@@ -1139,9 +1139,10 @@ export function RightSidebar() {
           <ScrollArea className="h-full">
             <div className="p-3 space-y-6">
               {/* Template Brand — only shown when brand.* slots exist on canvas */}
+              {/* brand.name removed — agency name is the Agent tab's Brokerage field (Q2). */}
               <TemplateSection
                 title="Template Brand"
-                subtitle="Swap logo, accent color, and agency name on this template"
+                subtitle="Swap logo and accent color for this template"
                 fields={BRAND_SLOT_FIELDS}
                 activeSlots={activeSlots}
               />
@@ -1353,12 +1354,15 @@ export function RightSidebar() {
             </div>
           </ScrollArea>
         ) : activeTab === "property-details" ? (
+          // Forms always render (AC6 — a canvas with no slots is not an empty tab).
+          // TemplateSection gates itself internally; the outer guard prevents the
+          // wrapper div from rendering on a blank canvas, which is today's behaviour.
           <ScrollArea className="h-full">
             {activeSlots.size > 0 && (
               <div className="px-3 pt-3">
                 <TemplateSection
                   title="Template Content"
-                  subtitle="Hero, headline, price, and listing details"
+                  subtitle="Hero image, Open House, and Market Report fields"
                   fields={PROPERTY_SLOT_FIELDS}
                   activeSlots={activeSlots}
                 />
@@ -1372,7 +1376,7 @@ export function RightSidebar() {
               <div className="px-3 pt-3">
                 <TemplateSection
                   title="Template Agent"
-                  subtitle="Swap agent photo, CTA, and contact details"
+                  subtitle="Swap agent photo and call-to-action"
                   fields={AGENT_SLOT_FIELDS}
                   activeSlots={activeSlots}
                 />
