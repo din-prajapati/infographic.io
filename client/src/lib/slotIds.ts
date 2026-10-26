@@ -1,6 +1,6 @@
 /**
  * Canonical slot-id vocabulary — single source of truth for both sidebar
- * catalogs (TemplateSlotSection and CustomizePanel).
+ * catalogs (TemplateSlotSection).
  *
  * Add a new id here before tagging any canvas element with it.  The
  * dev-time guard (assertKnownSlotId) then catches typos at render time

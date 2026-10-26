@@ -1,13 +1,13 @@
 /**
- * Slot system — links sidebar Customize panel fields to specific canvas
- * elements via a `slot` tag (e.g. "brand.logo", "property.price").
+ * Slot system — links sidebar fields to specific canvas elements via a
+ * `slot` tag (e.g. "brand.logo", "property.price").
  *
  * Each premium template authors its elements with `slot` tags; the
- * CustomizePanel reads/writes through these helpers so brand + content
+ * TemplateSlotSection reads/writes through these helpers so brand + content
  * edits propagate to the right element without manual selection.
  *
  * Legacy designs without slots are unaffected (helpers return empty /
- * no-op), and the CustomizePanel degrades to a manual-edit hint.
+ * no-op), and the TemplateSlotSection degrades gracefully.
  */
 
 import { useCanvasStore } from "../hooks/useCanvasStore";

@@ -49,13 +49,13 @@ risk: low           # nothing imports it
 
 ## Acceptance Criteria
 
-- [ ] **AC1 [happy-path]:** `CustomizePanel.tsx` is deleted, and a repo-wide search for
+- [x] **AC1 [happy-path]:** `CustomizePanel.tsx` is deleted, and a repo-wide search for
       `CustomizePanel` in `client/src/` finds no import and no stale reference.
-- [ ] **AC2 [happy-path]:** The comments in `slotIds.ts` and `templateSlots.ts` that name
+- [x] **AC2 [happy-path]:** The comments in `slotIds.ts` and `templateSlots.ts` that name
       `CustomizePanel` are corrected to name `TemplateSlotSection`, not left pointing at a deleted file.
-- [ ] **AC3 [error-path]:** If `CustomizePanel` has gained an importer since 2026-10-25, it is left in
+- [x] **AC3 [error-path]:** If `CustomizePanel` has gained an importer since 2026-10-25, it is left in
       place and reported — not deleted.
-- [ ] **AC4 [error-path]:** No user-visible behaviour changes. If removing something changes what a
+- [x] **AC4 [error-path]:** No user-visible behaviour changes. If removing something changes what a
       user sees, it was not dead — revert that part and report it.
 
 ---

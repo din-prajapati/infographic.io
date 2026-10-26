@@ -177,6 +177,12 @@ against a dependency nobody owned.
 
 ## Implementation Update (log)
 
+### 2026-10-26 — US-EDIT-017 implementation complete (pre-PR)
+- **Files touched:** `client/src/components/editor/CustomizePanel.tsx` (deleted), `client/src/lib/slotIds.ts` (comment fix), `client/src/lib/templateSlots.ts` (comment fix)
+- **ACs covered:** AC1 (file deleted, zero references remain in client/src/), AC2 (comments updated to name TemplateSlotSection), AC3 (grep confirmed no importers before deletion), AC4 (nothing imported the file; no behaviour change)
+- **Commits:** 2 on branch `feat/edit/m05-lc-customize-panel` — `53144d3` (T2 delete), `f94bcd1` (T3 comment fix)
+- **Notes:** T1 (orphan verification) produced no file change and was folded into the T2 commit narrative. Gate 1: `npm run check` clean, `test:unit:client` 19 files / 331 tests pass. No scope drift; no forbidden files touched.
+
 ### 2026-09-01 — US-EDIT-009 implemented (M-EDIT-03): one editable path
 
 The pre-generation "Edit as: Flat / Editable" toggle is gone from both of the places it rendered

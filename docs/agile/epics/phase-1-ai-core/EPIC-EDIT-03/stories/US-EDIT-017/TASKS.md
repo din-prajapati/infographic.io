@@ -1,7 +1,7 @@
 ---
 title: PR Task List — US-EDIT-017
 type: tasks
-updated: 2026-10-25
+updated: 2026-10-26
 ---
 
 # PR Task List — US-EDIT-017 — Lane C · dead code
@@ -13,10 +13,10 @@ updated: 2026-10-25
 
 ## Four Pillars Pre-flight
 
-- [ ] **Brain** — STORY.md filled, 4 typed ACs
-- [ ] **Muscle** — T1–T3 below
-- [ ] **Map** — runbook §Stage 3 · Lane C
-- [ ] **Env** — no environment changes
+- [x] **Brain** — STORY.md filled, 4 typed ACs
+- [x] **Muscle** — T1–T3 below
+- [x] **Map** — runbook §Stage 3 · Lane C
+- [x] **Env** — no environment changes
 
 ---
 
@@ -35,4 +35,4 @@ Remove `client/src/components/editor/CustomizePanel.tsx`. Do **not** touch `Temp
 
 ## Gates
 
-- [ ] Gate 1 — `npm run check`, `npm run test:unit:client`
+- [x] Gate 1 — `npm run check`, `npm run test:unit:client`
