@@ -92,6 +92,8 @@ gated behind having already generated something.
 | 10 | [US-EDIT-015](stories/US-EDIT-015/STORY.md) | Lane A: one form per fact in the sidebar | M-EDIT-05 | M | US-EDIT-014 | 🔲 | — |
 | 11 | [US-EDIT-016](stories/US-EDIT-016/STORY.md) | Lane B: canvas edits reach the field | M-EDIT-05 | M | US-EDIT-014 | 🔲 | — |
 | 12 | [US-EDIT-017](stories/US-EDIT-017/STORY.md) | Lane C: delete the orphaned CustomizePanel | M-EDIT-05 | S | — | 🔲 | — |
+| 13 | [US-EDIT-018](stories/US-EDIT-018/STORY.md) | Listing facts persist with the design | M-EDIT-05 | M | US-EDIT-014 | 🔲 | — |
+| 14 | [US-EDIT-019](stories/US-EDIT-019/STORY.md) | One fact per template element | M-EDIT-05 | M | US-EDIT-014 | 🔲 | — |
 
 > **Revised 2026-08-21** — original scope was an in-place relabel of the existing `RightSidebar`
 > toggle (S-size). Revised after reviewing `design-preview-canvas-menu.html`: a floating
