@@ -75,10 +75,17 @@ boundary at the latest.
 | | Question | Proposed answer |
 |---|---|---|
 | **D1** | Which side owns a listing fact? | **The stores.** `usePropertyStore` / `useAgentStore` are canonical; slot-tagged canvas text is a projection of them |
-| **D2** | What happens to the duplicate `TemplateSection` fields in the Property and Agent tabs? | **The duplicates are removed** — every Template Content field that also exists in `PropertyDetailsForm` / `AgentInfoForm`. **Fields with no form counterpart stay** in Template Content: `openHouse.*` and `report.*` (removing them would delete the only editor for those templates). `BRAND_SLOT_FIELDS` stays in the Design tab — brand logo/accent/name are styling, not listing facts |
+| **D2** | What happens to the duplicate `TemplateSection` fields in the Property and Agent tabs? | **The duplicates are removed** — every Template Content field that also exists in `PropertyDetailsForm` / `AgentInfoForm`. **Fields with no form counterpart stay** in Template Content: `openHouse.*` and `report.*` (removing them would delete the only editor for those templates). Brand logo and accent colour stay in the Design tab. **The agency name moves to the Agent tab's Brokerage field (Q2, 2026-10-26)** |
 | **D3** | A user edits a bound text layer directly on the canvas | **Writes back to the field.** Detaching to freeform is a later explicit action, not an accident |
 | **D4** | Migration for the 181 saved designs | **None.** On load, hydrate the stores *from* the canvas's existing slot values. Saved designs already carry `slot` tags; nothing changes shape |
 | **D5** | `property.facts` vs `property.specs` — the two maps disagree | **One map, `property.specs`.** Both ids stay in `SLOT_IDS` for back-compat, **and `stats` writes to and reads from both** — verified 2026-10-25: *Premium Listing — Story* tags its facts `property.facts`, *MLS Listing Sheet* uses `property.specs`. Writing only one id would silently stop the store reaching the other template |
+
+#### Follow-up answers — Dinesh, 2026-10-26
+
+| | Question | Answer |
+|---|---|---|
+| **Q1** | Is a canvas edit to the specs line parsed back into beds/baths/sqft? | **No.** Store→canvas only; a documented exception to D3 |
+| **Q2** | Who owns the agency name — Design tab or Agent tab? | **Agent tab, Brokerage field.** The Design tab keeps canvas-design controls only (logo, accent colour, styles) |
 
 ### Why D1 = the stores
 
@@ -220,7 +227,8 @@ Acceptance shape:
 1. The Property tab renders **one** price input, not two (`RightSidebar.tsx:1355-1367`).
 2. The Agent tab renders **one** agent-name input (`:1369-1381`).
 3. `PropertyDetailsForm` / `AgentInfoForm` writes reach the canvas through `writeFieldToCanvas`.
-4. `BRAND_SLOT_FIELDS` still renders in the Design tab and still writes slots directly.
+4. The agency name is edited only through the Agent tab's Brokerage field (Q2): `brand.name` is removed from
+   `BRAND_SLOT_FIELDS`; brand logo and accent colour still render in the Design tab and still write slots directly.
 5. The fabricated placeholder strings are gone from `TemplateSlotSection.tsx:50-66`
    (`Aisha Sharma`, `From ₹1.18 Cr`, `Skyline Signature Residences`, the sample RERA id) —
    BL-40 removed them from the rendered templates; these are the last copies.
@@ -397,8 +405,9 @@ CONTEXT YOU DO NOT NEED TO REDISCOVER:
 - The duplication is literal and stacked: RightSidebar.tsx:1355-1367 renders <TemplateSection
   fields={PROPERTY_SLOT_FIELDS}> and then <PropertyDetailsForm /> in the SAME ScrollArea.
   :1369-1381 does the same with AGENT_SLOT_FIELDS and <AgentInfoForm />. That is the bug.
-- BRAND_SLOT_FIELDS is NOT part of this. Brand logo / accent colour / agency name are styling.
-  They stay where they are and keep writing slots directly.
+- Q2 (2026-10-26): the agency name belongs to the Agent tab's Brokerage field. Remove `brand.name`
+  from BRAND_SLOT_FIELDS so the Design tab no longer edits it. Brand logo and accent colour stay where
+  they are and keep writing slots directly.
 - PROPERTY_SLOT_FIELDS also carries openHouse.* and report.* entries with no store field behind
   them. Those have no form to merge into. Keep them rendering through TemplateSection — removing
   them would delete the only editor for a Market Report template.
