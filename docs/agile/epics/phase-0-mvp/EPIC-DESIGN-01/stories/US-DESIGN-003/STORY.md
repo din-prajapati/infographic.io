@@ -57,7 +57,7 @@
 | TC-DS-003-06 | Static | P1 | Error state shows styled token bubble, not raw JSON | ✅ STATIC 2026-04-29 | MessageBubble isError path → `bg-destructive/10 border border-destructive/30`. No JSON leakage path exists. Human re-verify appearance on staging. |
 | TC-DS-003-07 | Auto | P1 | AI chat panel opens in Dark mode | ✅ PASS 2026-04-29 | Panel visible, renders correctly (12.1s) |
 | TC-DS-003-07b | Auto | P1 | AI chat panel opens in Light mode | ✅ PASS 2026-04-29 | Panel visible, renders correctly |
-| TC-DS-003-08 | Manual | P2 | Generate 3 → 4th blocked with correct limit message (FREE tier) | 🔲 HUMAN | Requires FREE account + 3 generations. NOTE: in-chat 429/403 handling is not surfaced once a conversation is active (`apiRequest` throws a plain `Error` with no `.response.status`) — limit message verification stays human / backend-side. |
+| TC-DS-003-08 | Manual | P2 | Generate 3 → 4th blocked with correct limit message (FREE tier) | ✅ PASS 2026-10-27 (human) | Verified by the product owner on a Free account at its limit: the 4th generation is blocked with the monthly-limit message and upgrade option, and the typed prompt is kept (BL-45 fix, PR #69). |
 | TC-DS-003-09 | Auto (offline) | P1 | Invalid prompt (missing price) → styled "Missing Information" guidance, no API call, no raw JSON | ✅ AUTO 2026-06-03 | Mock-backed E2E: amber guidance bubble shown, `POST /generations` never fired. Validates AC4 "styled message, not raw JSON" for the guidance path. |
 
 ---
