@@ -38,7 +38,7 @@ Every PR is traceable from `git log` → Story → Milestone → Epic.
 
 | Epic ID | Title | Status | Stories | Pending |
 |---------|-------|--------|---------|---------|
-| [EPIC-DESIGN-01](epics/phase-0-mvp/EPIC-DESIGN-01/EPIC.md) | MVP UI Design Consistency & Theme | 🟡 In Progress | US-001 ✅ · US-002 ✅ · US-003 🟡 · US-004 🟡 | US-003 AC3 + US-004 ACs (staging) |
+| [EPIC-DESIGN-01](epics/phase-0-mvp/EPIC-DESIGN-01/EPIC.md) | MVP UI Design Consistency & Theme | ✅ Done 2026-10-28 | US-001 ✅ · US-002 ✅ · US-003 ✅ · US-004 ✅ | — |
 | [EPIC-DESIGN-02](epics/phase-0-mvp/EPIC-DESIGN-02/EPIC.md) | UI/UX Redesign — Blue/Amber/Warm-Cream Palette | ✅ Done (Phase 0 scope) | US-005–008 ✅ · US-009–011 → [EPIC-DESIGN-03](epics/phase-4-backlog/EPIC-DESIGN-03/EPIC.md) | — |
 | [EPIC-DESIGN-04](epics/phase-0.5-foundation/EPIC-DESIGN-04/EPIC.md) | Premium Sample Templates & Brand Customization | ✅ Done | US-012 ✅ | — |
 | EPIC-PAY-01 | MVP Payments Live | ✅ Done | All closed | — |
@@ -46,7 +46,7 @@ Every PR is traceable from `git log` → Story → Milestone → Epic.
 | EPIC-EDIT-01 | Canvas Editor (CRUD + export) | ✅ Done | All closed | — |
 | EPIC-AI-01 | MVP AI Pipeline (GPT-4o + Ideogram) | ✅ Done | All closed | — |
 | EPIC-INFRA-01 | Railway + Sentry + DB migrations | 🟡 In Progress | Code ✅ | 3 human deploy tasks |
-| [EPIC-AI-07](epics/phase-0-mvp/EPIC-AI-07/EPIC.md) | Generation Progress Delivery Fix — **PT-09, launch blocker** | 🟡 Fix in code | US-AI-034 🟡 (fix done, staging re-test pending deploy) · US-AI-035 ⏭️ superseded | Fix implemented + locally verified 2026-07-09; needs deploy to staging to close AC3 |
+| [EPIC-AI-07](epics/phase-0-mvp/EPIC-AI-07/EPIC.md) | Generation Progress Delivery Fix — **PT-09** | ✅ Done 2026-07-09 | US-AI-034 ✅ (PR #14, staging-verified) · US-AI-035 ⏭️ superseded | — |
 
 ## AI Capability Epics (Phase 0.5 → Phase 3)
 
