@@ -3,6 +3,7 @@
 > **Milestone:** [M-DESIGN-02-editor-tokens](M-DESIGN-02-editor-tokens.md)  
 > **Epic:** [EPIC-DESIGN-01](../EPIC.md)  
 > **Architecture:** [ARCHITECTURE.mmd](../ARCHITECTURE.mmd)
+> **Closed 2026-10-28:** the milestone closed; this plan is history. The checklist below was not maintained — the milestone file records what was verified.
 
 ---
 

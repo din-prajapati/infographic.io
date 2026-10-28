@@ -1,7 +1,7 @@
 # EPIC-DESIGN-01 — MVP UI Design Consistency & Theme Correctness
 
 > **Phase:** Phase 0 — MVP Launch  
-> **Status:** 🟡 In Progress  
+> **Status:** ✅ Done — closed 2026-10-28. 4/4 stories, both milestones closed.  
 > **Linear Project:** LIN-EPIC-01 (create when setting up Linear)  
 > **Target date:** 2026-04-30  
 > **Owner:** Dinesh
@@ -23,7 +23,7 @@
 | Milestone | Scope | Target | Status |
 |-----------|-------|--------|--------|
 | [M-DESIGN-01 — Theme & Global QA](milestones/M-DESIGN-01-theme-QA.md) | QA all non-editor pages (no code changes) | 2026-04-13 | ✅ Done — 2026-04-13 |
-| [M-DESIGN-02 — Editor Token Fix](milestones/M-DESIGN-02-editor-tokens.md) | US-002 ✅ merged; US-003 5/6 ACs ✅; staging smoke pending | 2026-04-30 | 🟡 In Progress — staging gate |
+| [M-DESIGN-02 — Editor Token Fix](milestones/M-DESIGN-02-editor-tokens.md) | US-002 ✅ merged; US-003/004 verified on staging; editor smoke passed | 2026-04-30 | ✅ Done — 2026-10-28 |
 
 ---
 
@@ -33,8 +33,8 @@
 |----------|-------|-----------|--------|----|
 | [US-DESIGN-001](stories/US-DESIGN-001/STORY.md) | Theme system works on all non-editor screens | M-DESIGN-01 | ✅ Done — 2026-04-29 · Human QA passed · 3 bugs fixed | — |
 | [US-DESIGN-002](stories/US-DESIGN-002/STORY.md) | Editor + AI chat adopt design tokens + dark-mode polish | M-DESIGN-02 | ✅ Done — 2026-04-17 · PR merged | [#1](https://github.com/din-prajapati/infographic.io/pull/1) |
-| [US-DESIGN-003](stories/US-DESIGN-003/STORY.md) | AI Generation flow has consistent UX states | M-DESIGN-02 | 🟡 5/6 ACs ✅ auto+static · AC3 🔲 staging (live Ideogram API) | — |
-| [US-DESIGN-004](stories/US-DESIGN-004/STORY.md) | All pages have consistent typography and nav | M-DESIGN-01 | 🟡 AC1,5 ✅ auto · AC2–4,6 🔲 human (staging visual check) | — |
+| [US-DESIGN-003](stories/US-DESIGN-003/STORY.md) | AI Generation flow has consistent UX states | M-DESIGN-02 | ✅ Done — 2026-10-28 · AC3 verified on staging 2026-10-27 | — |
+| [US-DESIGN-004](stories/US-DESIGN-004/STORY.md) | All pages have consistent typography and nav | M-DESIGN-01 | ✅ Done — 2026-10-28 · human checks on staging 2026-10-27 | — |
 
 ---
 
@@ -129,17 +129,17 @@ text-gray-900         → text-foreground
 ## Definition of Done (Epic)
 
 - [x] M-DESIGN-01 closed ✅ — 2026-04-13
-- [ ] M-DESIGN-02 closed — pending staging smoke (deploy gate)
+- [x] M-DESIGN-02 closed ✅ — 2026-10-28
 - [x] US-DESIGN-001 ✅ Done — 2026-04-29 (Human QA + 3 bugs fixed)
 - [x] US-DESIGN-002 ✅ Done — PR merged 2026-04-17
 - [x] US-DESIGN-003 5/6 ACs ✅ — AC3 pending staging live API
-- [ ] US-DESIGN-003 AC3 — generation result on staging
-- [ ] US-DESIGN-004 AC2–4,6 — staging visual check (button heights, card borders, spacing, split-personality)
+- [x] US-DESIGN-003 AC3 — generation result on staging ✅ 2026-10-27
+- [x] US-DESIGN-004 AC2–4,6 — automated 2026-09-07; human checks on staging ✅ 2026-10-27
 - [x] `npm run check` passing (no new errors in changed files)
 - [x] `npm run test:unit` passing
-- [ ] All 4 stories ✅ Done or remaining TCs formally deferred
-- [ ] [docs/MVP_LAUNCH_TRACKER.md](../../../../MVP_LAUNCH_TRACKER.md) design QA task ticked
-- [ ] AGILE_INDEX.md epic row updated to ✅ Done
+- [x] All 4 stories ✅ Done — 2026-10-28
+- [x] [docs/MVP_LAUNCH_TRACKER.md](../../../../MVP_LAUNCH_TRACKER.md) design QA task ticked — n/a: that tracker has no design-QA row (checked 2026-10-28)
+- [x] AGILE_INDEX.md epic row updated to ✅ Done — 2026-10-28
 
 ---
 

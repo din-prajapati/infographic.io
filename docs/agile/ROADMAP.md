@@ -11,7 +11,7 @@
 
 | Rank | Work item | Why this rank | Effort | Blocks |
 |------|-----------|---------------|--------|--------|
-| **0** | 🟡 **Phase 0 close** — production is live (`app.buildographic.com`). Remaining: the full production smoke test ([HUMAN_TASKS #2](HUMAN_TASKS.md)) and the US-DESIGN-003/004 visual spot-check on staging | Everything else is theoretical without a production URL. | ~2–3 h (human) | — |
+| **0** | 🟡 **Phase 0 close** — production is live (`app.buildographic.com`). Remaining: the full production smoke test ([HUMAN_TASKS #2](HUMAN_TASKS.md)). US-DESIGN-003/004 closed 2026-10-28 | Everything else is theoretical without a production URL. | ~2–3 h (human) | — |
 | **1** | ✅ **[M-LAUNCH-01-public-beta](epics/phase-1-ai-core/EPIC-LAUNCH-01/milestones/M-LAUNCH-01-public-beta.md)** — legal pages · email · password reset · beta mode — **closed 2026-10-19** | The "can't responsibly have users" gaps. | done | — |
 | **1∥** | 🔲 **[M-OBS-01-sentry-integration](epics/phase-1-ai-core/EPIC-OBS-00/EPIC.md)** — US-OBS-001/002/003, not started. Related: US-OBS-005 (uptime alerts) is merged and waits on its operator step to close **BL-34 (P1)** | First beta user's bug must arrive via Sentry, not WhatsApp. | ~8 h | Beta quality |
 | — | 🚀 ✅ **BETA LIVE** — `app.buildographic.com`, M-LAUNCH-01 closed 2026-10-19 | | | |

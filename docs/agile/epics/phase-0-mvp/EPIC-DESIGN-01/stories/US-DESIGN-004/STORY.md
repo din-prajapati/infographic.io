@@ -1,11 +1,11 @@
 # Story Card — US-DESIGN-004
 
-> **Status:** 🟢 **All 6 ACs verified — 10/10 automated TCs PASS 2026-09-07** against local dev (`e2e/us-design-004-global-consistency.spec.ts`). The seven TCs previously recorded as "SKIPS when DB offline" were never DB-gated — they skip on **login failure**, and `TEST_USER_EMAIL`/`TEST_USER_PASSWORD` were already set in `.env`. They had simply never been run. Remaining: human visual spot-check on staging (see DoD).
+> **Status:** ✅ Done — closed 2026-10-28. All 6 ACs verified: 10/10 automated TCs pass (2026-09-07); the two human checks passed on staging 2026-10-27 (no split light/dark panels; dark-mode chart labels readable).
 > **Feature:** F-DESIGN-04 — Global Page Consistency  
 > **Epic:** [EPIC-DESIGN-01](../../EPIC.md)  
 > **Milestone:** [M-DESIGN-01 — Theme & Global QA](../../milestones/M-DESIGN-01-theme-QA.md)  
 > **Linear:** LIN-XXX  
-> **Created:** 2026-04-13 | **Closed:** —
+> **Created:** 2026-04-13 | **Closed:** 2026-10-28
 
 ---
 
@@ -39,7 +39,7 @@
 ## Engineering / PR
 
 - **Branch:** Only if code changes surface from manual QA
-- **PR:** #_____ (only if non-editor pages need fixes)
+- **PR:** none — verification-only story; no fixes were needed
 - **Primary paths (if changes needed):** `client/src/pages/*.tsx` · `client/src/index.css`
 
 ---
@@ -49,7 +49,7 @@
 | TC ID | Type | Priority | Scenario | Status | Finding |
 |-------|------|----------|----------|--------|---------|
 | TC-DS-004-01 | Auto | P0 | Templates → My Designs → Account: header identical on all three | ✅ PASS 2026-04-13 | Logo, 3 nav tabs, 64px height consistent |
-| TC-DS-004-02 | Manual | P0 | Light mode: no page has dark panel adjacent to light panel (split-personality) | 🔲 HUMAN | Editor (US-DESIGN-002) is known offender |
+| TC-DS-004-02 | Manual | P0 | Light mode: no page has dark panel adjacent to light panel (split-personality) | ✅ PASS staging 2026-10-27 | Light mode, measured: Templates, My Designs, Account, Usage, Editor and the AI chat panel have no dark surface. Pricing\'s "For Brokerages & Enterprise" banner is dark by design (product owner, 2026-10-28); the Pricing and Landing pages are fixed light marketing designs that do not follow dark mode. |
 | TC-DS-004-03 | Auto | P1 | Templates page: card hover state works in both themes | ✅ PASS 2026-04-13 | Cards render with Use Template buttons visible |
 | TC-DS-004-04 | Auto | P1 | Account page: billing section text visible in Dark mode | ✅ PASS 2026-04-13 | Billing/subscription/plan text visible |
 | TC-DS-004-05 | Auto | P1 | Pricing page: plan cards readable in both themes | ✅ PASS 2026-04-13 | Solo heading + segment buttons visible |
@@ -57,15 +57,15 @@
 | TC-DS-004-07 | Auto | P2 | Auth page: form and Google button visible in both themes | ✅ PASS 2026-04-13 | All inputs + buttons visible |
 | TC-DS-004-08 | Auto | P2 | Body text 14px across all pages | ✅ PASS 2026-04-13 | `getComputedStyle` confirms 14px |
 | TC-DS-004-09a | Auto | P1 | Pricing page CTA buttons ≤56px height (no regression) | ✅ PASS 2026-06-09 | `getBoundingClientRect().height` — 1 passed, no auth needed |
-| TC-DS-004-09b | Auto | P1 | Account page buttons ≤56px (no regression) | 🟡 SKIPS when DB offline | Runs on staging; same assertion as 09a |
-| TC-DS-004-09c | Auto | P1 | Templates "Use Template" buttons 32–42px | 🟡 SKIPS when DB offline | Tight 36px±2 assertion; runs on staging |
-| TC-DS-004-card-light | Auto | P1 | Template cards have CSS border > 0 in Light mode | 🟡 SKIPS when DB offline | `getComputedStyle().borderWidth > 0` |
-| TC-DS-004-card-dark | Auto | P1 | Template cards have CSS border > 0 in Dark mode | 🟡 SKIPS when DB offline | Same check in dark mode |
-| TC-DS-004-spacing | Auto | P1 | Account sections vertically separated ≥20px | 🟡 SKIPS when DB offline | `boundingBox` gap measurement |
-| TC-DS-004-02-auto Light | Auto | P0 | Pages body `--background` not pure black in Light mode | 🟡 SKIPS when DB offline | CSS variable check |
-| TC-DS-004-02-auto Dark | Auto | P0 | Pages body `--background` not pure white in Dark mode | 🟡 SKIPS when DB offline | CSS variable check |
-| TC-DS-004-02-auto Consistency | Auto | P0 | `--background` same value across all pages per theme | 🟡 SKIPS when DB offline | Set de-dupe check |
-| TC-DS-004-10 | Manual | P1 | Chart data labels readable in Dark mode (Usage Dashboard) | 🔲 HUMAN | AC3 chart labels — chart lib test IDs not exposed |
+| TC-DS-004-09b | Auto | P1 | Account page buttons ≤56px (no regression) | ✅ PASS 2026-09-07 (local dev, `e2e/us-design-004-global-consistency.spec.ts`) | Runs on staging; same assertion as 09a |
+| TC-DS-004-09c | Auto | P1 | Templates "Use Template" buttons 32–42px | ✅ PASS 2026-09-07 (local dev, `e2e/us-design-004-global-consistency.spec.ts`) | Tight 36px±2 assertion; runs on staging |
+| TC-DS-004-card-light | Auto | P1 | Template cards have CSS border > 0 in Light mode | ✅ PASS 2026-09-07 (local dev, `e2e/us-design-004-global-consistency.spec.ts`) | `getComputedStyle().borderWidth > 0` |
+| TC-DS-004-card-dark | Auto | P1 | Template cards have CSS border > 0 in Dark mode | ✅ PASS 2026-09-07 (local dev, `e2e/us-design-004-global-consistency.spec.ts`) | Same check in dark mode |
+| TC-DS-004-spacing | Auto | P1 | Account sections vertically separated ≥20px | ✅ PASS 2026-09-07 (local dev, `e2e/us-design-004-global-consistency.spec.ts`) | `boundingBox` gap measurement |
+| TC-DS-004-02-auto Light | Auto | P0 | Pages body `--background` not pure black in Light mode | ✅ PASS 2026-09-07 (local dev, `e2e/us-design-004-global-consistency.spec.ts`) | CSS variable check |
+| TC-DS-004-02-auto Dark | Auto | P0 | Pages body `--background` not pure white in Dark mode | ✅ PASS 2026-09-07 (local dev, `e2e/us-design-004-global-consistency.spec.ts`) | CSS variable check |
+| TC-DS-004-02-auto Consistency | Auto | P0 | `--background` same value across all pages per theme | ✅ PASS 2026-09-07 (local dev, `e2e/us-design-004-global-consistency.spec.ts`) | Set de-dupe check |
+| TC-DS-004-10 | Manual | P1 | Chart data labels readable in Dark mode (Usage Dashboard) | ✅ PASS staging 2026-10-27 | Dark mode, measured: counts 16.7:1 and month labels 5.72:1 against the card — both above WCAG AA 4.5:1 at 14px. |
 
 ---
 
@@ -74,11 +74,11 @@
 | AC | Method | Result | Remaining |
 |----|--------|--------|-----------|
 | AC1 | Auto (Playwright) | ✅ PASS | — |
-| AC2 | Auto (Playwright, TC-DS-004-09a/b/c) | ✅ 09a PASS · 09b/c run on staging | Visual spot-check on staging |
-| AC3 | Auto (Playwright, card-light/dark) | ✅ logic ready · runs on staging | Chart label visual check (HUMAN) |
-| AC4 | Auto (Playwright, TC-DS-004-spacing) | ✅ logic ready · runs on staging | Visual spot-check on staging |
+| AC2 | Auto (Playwright, TC-DS-004-09a/b/c) | ✅ PASS (2026-09-07) | — |
+| AC3 | Auto (Playwright, card-light/dark) + Human | ✅ PASS (auto 2026-09-07 · chart labels staging 2026-10-27) | — |
+| AC4 | Auto (Playwright, TC-DS-004-spacing) | ✅ PASS (2026-09-07) | — |
 | AC5 | Auto (Playwright) | ✅ PASS | — |
-| AC6 | Auto (Playwright, TC-DS-004-02-auto) | ✅ logic ready · runs on staging | Per-panel visual inspection (HUMAN) |
+| AC6 | Auto (Playwright, TC-DS-004-02-auto) + Human | ✅ PASS (auto 2026-09-07 · per-page panels staging 2026-10-27) | — |
 
 Test file: `e2e/us-design-004-global-consistency.spec.ts` — run: `npx playwright test e2e/us-design-004-global-consistency.spec.ts`
 

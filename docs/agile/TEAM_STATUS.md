@@ -20,7 +20,7 @@
 | Domain | Active Epic | Status | Blocked | Upcoming |
 |--------|-------------|--------|---------|----------|
 | [Payments (PAY)](#-payments-pay) | EPIC-PAY-01 ✅ · EPIC-PAY-05 🟢 V1 | 🟢 **V1 COMPLETE — all four V1 milestones closed 2026-10-21.** 12/12 stories merged; BL-28 fixed so Gate 4 runs again | Nothing blocked. V2 (M-PAY-05, founding/promo) ⏸ held until payment traction | V2 resumes when founding pricing does. `BETA_MODE` is now a real checkout kill-switch (D2) |
-| [Design (DESIGN)](#-design--frontend-design) | EPIC-DESIGN-01 + EPIC-DESIGN-02 | 🟡 US-DESIGN-004 all 10 TCs pass (2026-09-07); US-DESIGN-003 5/6 ACs | Human visual spot-check on staging | Both close on that one spot-check |
+| [Design (DESIGN)](#-design--frontend-design) | EPIC-DESIGN-01 ✅ · EPIC-DESIGN-02 | ✅ **EPIC-DESIGN-01 closed 2026-10-28** — US-DESIGN-003/004 verified on staging 2026-10-27 | none | M-DESIGN-05 component polish (Phase 4 backlog) |
 | [Auth (AUTH)](#-auth-auth) | EPIC-AUTH-01 | ✅ Done | — | Full invite flow post-MVP |
 | [Canvas Editor (EDIT)](#-canvas-editor-edit) | EPIC-EDIT-01 ✅ · EPIC-EDIT-03 🟡 | 🟡 **10/14 Done** — M-EDIT-01 (2026-08-26), M-EDIT-04 (2026-10-25, BL-27) and M-EDIT-05 (2026-10-26, one source of truth for listing facts, #73) closed; M-EDIT-03 code merged, not closed (US-EDIT-009 Gate 2 step 5 — BL-26); M-EDIT-02 (brand layers, US-EDIT-006–008) not started | US-EDIT-009 closes on BL-26 (Gate 2 step 5 never uploads a photo) | M-EDIT-02 brand layers · BL-47 |
 | [AI Generation (AI)](#-ai-generation-ai) | EPIC-AI-06 ✅ · EPIC-AI-02 ✅ | ✅ EPIC-AI-06 closed 2026-08-15; M-AI-20 closed 2026-09-05 (US-AI-053). BL-25 (empty production gallery) closed 2026-09-07 — gallery seeded and verified | none | EPIC-KIT-01 (listing kits), or EPIC-MKT-01 (drafted 2026-09-07, parked) |
@@ -101,8 +101,8 @@
 
 | Story | Title | Status | Unblocked by |
 |-------|-------|--------|--------------|
-| [US-DESIGN-003](epics/phase-0-mvp/EPIC-DESIGN-01/stories/US-DESIGN-003/STORY.md) | AI Generation flow UX states | 🟡 AC3 🔲 — result image proportions | Live Ideogram API on staging |
-| [US-DESIGN-004](epics/phase-0-mvp/EPIC-DESIGN-01/stories/US-DESIGN-004/STORY.md) | Global typography + nav consistency | 🟡 AC2–4,6 🔲 — button heights, card borders, spacing | Staging deploy |
+| [US-DESIGN-003](epics/phase-0-mvp/EPIC-DESIGN-01/stories/US-DESIGN-003/STORY.md) | AI Generation flow UX states | ✅ Done 2026-10-28 | — |
+| [US-DESIGN-004](epics/phase-0-mvp/EPIC-DESIGN-01/stories/US-DESIGN-004/STORY.md) | Global typography + nav consistency | ✅ Done 2026-10-28 | — |
 
 **Ship gate:** Deploy `main` to staging (HUMAN TASK 2) → run US-DESIGN-003 AC3 + US-DESIGN-004 visual spot checks. Both stories close on same staging session.
 

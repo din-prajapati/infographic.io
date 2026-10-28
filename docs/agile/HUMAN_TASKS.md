@@ -51,8 +51,8 @@ within a phase, in the order they unblock downstream work.
 
 | Story | Remaining HUMAN item |
 |---|---|
-| US-DESIGN-003 | Real Ideogram image fidelity + live usage-counter increment, visual judgment on staging |
-| US-DESIGN-004 | Visual spot-checks: button-height/card-border/spacing on staging; chart-label dark-mode readability; per-panel split-personality inspection |
+| ~~US-DESIGN-003~~ | ✅ **Done 2026-10-27** — real generation on staging checked (image fidelity, usage 7 → 8); story closed 2026-10-28 |
+| ~~US-DESIGN-004~~ | ✅ **Done 2026-10-27** — panels and dark-mode chart labels checked on staging; story closed 2026-10-28 |
 
 ---
 
@@ -295,3 +295,4 @@ un-tracked indefinitely now that real customers can reach these pages.
   unaffected and still open — arguably more relevant now, since `v1.0.0` shipped the pricing
   rewrite and the AGENCY seat fix.
 - **2026-10-26** — Status sweep. #4 (real ₹ transaction) closed: done 2026-10-16 → 19, US-LAUNCH-005 closed 2026-10-19. #9 added: US-OBS-005 T5 — the operator step that closes BL-34 (P1) — had never been listed. Corrected the 2026-08-31 entry's deploy-trigger claim: both environments deploy from `main` (BL-35).
+- **2026-10-28** — US-DESIGN-003/004 staging checks done (2026-10-27) and both stories closed; EPIC-DESIGN-01 closed. TC-DS-003-08 (limit message) verified by the product owner.

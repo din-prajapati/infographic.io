@@ -11,7 +11,7 @@
 
 | Phase | Release | Business Outcome | Status | Complete | Target |
 |-------|---------|-----------------|--------|----------|--------|
-| [Phase 0](#phase-0--mvp-launch) | v1.0 | Working product in production | 🟡 In Progress | **98%** | Week 1 of launch |
+| [Phase 0](#phase-0--mvp-launch) | v1.0 | Working product in production | 🟡 Stories done | **9/9 stories** — one human item left: the full production smoke test ([HUMAN_TASKS #2](HUMAN_TASKS.md)) | Live |
 | [Phase 1](#phase-1--release-11-revenue-strategy) | v1.1 | **Revenue strategy** — go-live/revenue readiness (EPIC-LAUNCH-01), real-photo hybrid, listing kits | 🟡 In Progress | **73%** (61/84 stories — recounted 2026-10-26 from the story cards in `phase-1-ai-core/`, superseded stories excluded; now includes EPIC-EDIT-03) | Beta: live again on `7044a44` after a 15-day outage ([[BL-34]]) · Revenue: one story from the gate (US-LAUNCH-005 AC5/6) |
 | [Phase 2](#phase-2--release-12-polish--self-serve) | v1.2 | Conversational polish, refine loop, usage/billing self-serve | 🔲 Not Started | 0% | After Phase 1 gate |
 | [Phase 3](#phase-3--release-13-speed--batch) | v1.3 | Fast generation, batch uploads, volume pricing | 🔲 Not Started | 0% | Month 3 |
@@ -44,9 +44,9 @@ Each phase requires a gate decision before the next phase starts:
 
 ## Phase 0 — MVP Launch
 
-> **Release:** v1.0 · **Status:** 🔴 Staging QA found a launch blocker · **3 deploy tasks + 2 staging QA items + PT-09 fix remain**  
+> **Release:** v1.0 · **Status:** 🟡 All 9 stories done (US-DESIGN-003/004 closed 2026-10-28); production live. One human item left: the full production smoke test ([HUMAN_TASKS #2](HUMAN_TASKS.md)).  
 > **Outcome:** Real estate agents can generate branded infographics, manage subscriptions, and export their work.  
-> **Last updated:** 2026-07-09 · **Timeline:** Blocked on PT-09 (EPIC-AI-07) before Task 2 can sign off
+> **Last updated:** 2026-10-28 · PT-09 was fixed 2026-07-09 (EPIC-AI-07); the staging checks closed 2026-10-27/28.
 
 ### Gate Criteria (Phase 0 → Done)
 - [x] Core infrastructure: auth, API, DB, AI generation pipeline
@@ -75,10 +75,10 @@ far past this point). **Full detail, all phases: [HUMAN_TASKS.md](HUMAN_TASKS.md
 | EPIC-AUTH-01 | Auth | JWT + Google OAuth, user limits | ✅ Done | All closed |
 | EPIC-EDIT-01 | Editor | Canvas CRUD, export | ✅ Done | All closed |
 | EPIC-AI-01 | AI | GPT-4o + Ideogram generation pipeline | ✅ Done | All closed |
-| [EPIC-DESIGN-01](epics/phase-0-mvp/EPIC-DESIGN-01/EPIC.md) | Design | UI theme consistency, editor token fix | 🟡 In Progress | US-001 ✅ US-002 ✅ US-003 🟡 US-004 🟡 |
+| [EPIC-DESIGN-01](epics/phase-0-mvp/EPIC-DESIGN-01/EPIC.md) | Design | UI theme consistency, editor token fix | ✅ Done 2026-10-28 | US-001 ✅ US-002 ✅ US-003 ✅ US-004 ✅ |
 | [EPIC-DESIGN-02](epics/phase-0-mvp/EPIC-DESIGN-02/EPIC.md) | Design | Blue/Amber/Warm-Cream palette + domain colors | ✅ Done (P0 scope) | US-005–008 ✅ · US-009–011 → Phase 4 Backlog |
 | EPIC-INFRA-01 | Infra | Railway + Sentry + DB migrations | 🟡 In Progress | Code ✅ · 3 deploy tasks pending |
-| [EPIC-AI-07](epics/phase-0-mvp/EPIC-AI-07/EPIC.md) | AI | Generation Progress Delivery Fix — **PT-09** | 🔴 Not Started | US-AI-034 (root cause+fix) · US-AI-035 (fallback) — the current critical path |
+| [EPIC-AI-07](epics/phase-0-mvp/EPIC-AI-07/EPIC.md) | AI | Generation Progress Delivery Fix — **PT-09** | ✅ Done 2026-07-09 | US-AI-034 ✅ (PR #14) · US-AI-035 ⏭️ superseded |
 
 > Epics not yet in `docs/agile/epics/` are tracked in [docs/MVP_LAUNCH_TRACKER.md](../MVP_LAUNCH_TRACKER.md) (legacy flat tracker).
 
