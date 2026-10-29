@@ -115,6 +115,7 @@ Every PR is traceable from `git log` → Story → Milestone → Epic.
 | B-22 | [EPIC-DEPLOY-02](epics/phase-4-backlog/EPIC-DEPLOY-02/EPIC.md) — Deployment Velocity remainder (from EPIC-DEPLOY-01, 2026-10-29) | DEPLOY | ~4 days | The pain is real (e.g. BL-36) |
 | B-23 | [US-AI-027](epics/phase-4-backlog/EPIC-AI-08/stories/US-AI-027/STORY.md) — Market data enrichment (from EPIC-AI-05, 2026-10-29) | AI | ~12h | Agents ask for it |
 | B-24 | [M-PAY-05](epics/phase-1-ai-core/EPIC-PAY-05/milestones/M-PAY-05-founding-promo-activation.md) — Founding promo activation (on hold since 2026-10-21) | PAY | — | Payment traction |
+| B-25 | Speed & Batch — caching · pre-rendering · progressive generation UI · batch CSV upload · job queue · volume pricing (legacy PHASE_TRACKER Phase 3, moved 2026-10-29) | EDIT/INFRA/PAY | ~30–40h | Batch / volume demand |
 | B-19 | [EPIC-AI-09](epics/phase-4-backlog/EPIC-AI-09/EPIC.md) — Sample Template Format Expansion (added 2026-08-20). 18 of 23 `formatTaxonomy.ts` formats have zero admin_curated template; likely prerequisite/trigger-adjacent to EPIC-KIT-01 (Kit's own Goal names "WhatsApp card" as a deliverable, no WhatsApp template exists). Stories not yet drafted | AI | ~27-36h (XL — must split ~5-6 stories) | EPIC-KIT-01 pulled forward, or Phase 3 gate closes |
 
 ---

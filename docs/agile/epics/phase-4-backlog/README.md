@@ -34,6 +34,7 @@
 | B-22 | [EPIC-DEPLOY-02 — Deployment Velocity remainder](EPIC-DEPLOY-02/EPIC.md) | DEPLOY | ~4 days | Medium | From EPIC-DEPLOY-01, 2026-10-29 — pull forward when it hurts |
 | B-23 | [US-AI-027 — Market data enrichment](EPIC-AI-08/stories/US-AI-027/STORY.md) | AI | ~12h | Low | From EPIC-AI-05, 2026-10-29 |
 | B-24 | [M-PAY-05 — Founding promo activation](../phase-1-ai-core/EPIC-PAY-05/milestones/M-PAY-05-founding-promo-activation.md) | PAY | — | Medium | On hold by decision since 2026-10-21 |
+| B-25 | Speed & Batch — caching, template pre-rendering, progressive generation UI, batch CSV upload, job queue, volume pricing | EDIT/INFRA/PAY | ~30–40h | Medium | Legacy PHASE_TRACKER Phase 3, moved 2026-10-29 (ADR-003) |
 | B-19 | [EPIC-AI-09 — Sample Template Format Expansion](#b-19--epic-ai-09--sample-template-format-expansion) | AI | ~27-36h | Medium | EPIC-AI-09 (added 2026-08-20, likely prerequisite/trigger-adjacent to EPIC-KIT-01) |
 
 ---
