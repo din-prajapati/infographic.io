@@ -39,7 +39,7 @@ updated: 2026-10-29
 
 ## Out of Scope
 
-- Editor-wide light theme, phone layout
+- The editor shell restyle (US-EDIT-024) and the phone layout
 - New templates
 - Removing shapes, fonts, crop or adjustments
 

@@ -10,20 +10,20 @@
 
 ## Summary
 
-**145 story cards — 80 Done, 10 superseded, 55 open.** No verification-only stories remain (US-DESIGN-004, US-PAY-109 and US-PAY-110 all closed).
+**149 story cards — 80 Done, 10 superseded, 59 open.** No verification-only stories remain (US-DESIGN-004, US-PAY-109 and US-PAY-110 all closed).
 
 | Phase | Open | Sized | Est. (low) | Est. (high) | Weeks @ ~37 h/wk (high) |
 |---|:--:|:--:|--:|--:|:--:|
-| **Phase 1.5** — property foundation + V3 editor | 22 | 16/22 | 79 h | **158 h** | 4.3 |
+| **Phase 1.5** — property foundation + V3 editor | 26 | 20/26 | 98 h | **196 h** | 5.3 |
 | **Phase 2** — kits + asset quality | 10 | 6/10 | 40 h | **80 h** | 2.2 |
 | **Phase 3** — campaigns + team operations | 6 | 1/6 | 21 h | **42 h** | 1.1 |
 | **Phase 4** — backlog (stories only) | 17 | 6/17 | 58 h | **115 h** | 3.1 |
-| **Total** | **55** | 29/55 | **198 h** | **395 h** | **≈ 10.7** |
+| **Total** | **59** | 33/59 | **217 h** | **433 h** | **≈ 11.7** |
 
 Phases 0, 0.5 and 1 are closed. The backlog's B-items without story cards (B-02 to B-15, B-25 …) are **not** in these totals; the backlog index
 sizes them in weeks.
 
-**Plan against the high band.** Phase 1.5's high band (≈ 4.3 weeks of build) sits inside the phase README's 5–6 week allowance, which adds
+**Plan against the high band.** Phase 1.5's high band (≈ 5.3 weeks of build) sits inside the phase README's 7–9 week allowance, which adds
 browser verification and the `/new-story` hardening each drafted story still needs.
 
 ---
@@ -35,7 +35,7 @@ The only phase with committed open work.
 | Epic | Open | Sizes | Estimate | TASKS.md (none / stub / real) |
 |---|:--:|---|--:|:--:|
 | [EPIC-PROP-01](epics/phase-1.5-foundation-v3/EPIC-PROP-01/EPIC.md) — Property & Brand Foundation | 10 | 7M, 1L, 1S, 1 unsized | 36–72 h | 5 / 1 / 4 |
-| [EPIC-EDIT-04](epics/phase-1.5-foundation-v3/EPIC-EDIT-04/EPIC.md) — V3 Editor Simplification | 7 | 5M, 1L, 1 unsized | 27–54 h | 4 / 1 / 2 |
+| [EPIC-EDIT-04](epics/phase-1.5-foundation-v3/EPIC-EDIT-04/EPIC.md) — V3 Editor Simplification (incl. V3 shell, tabs, autosave, Edit Elements review) | 11 | 7M, 3L, 1 unsized | 46–92 h | 8 / 1 / 2 |
 | [EPIC-OBS-00](epics/phase-1.5-foundation-v3/EPIC-OBS-00/EPIC.md) — Observability | 5 | 1S, 4 unsized | 16–32 h | 4 / 1 / 0 |
 
 EPIC-OBS-00's figure is likely high: US-OBS-002/003 are partly built already (Sentry wired in both apps, source maps verified 2026-07-26), so
@@ -59,7 +59,7 @@ Unchanged from the previous edition. The repository has no size→hours mapping 
 
 - **Low band** anchors on the project rule *"Each story = one Claude session (≤4h work)"*: `XS 1h · S 2h · M 3.5h · L 6h`
 - **High band** doubles it: `XS 2h · S 4h · M 7h · L 12h`
-- **Unsized stories** count as M. 26 of 55 open stories are unsized, so this assumption still drives much of the total.
+- **Unsized stories** count as M. 26 of 59 open stories are unsized, so this assumption still drives much of the total.
 
 The 2026-09-08 edition reconciled the high band against measured throughput (~5 stories/week, ~37 h/week); that reconciliation is reused here,
 not re-measured.
@@ -69,7 +69,7 @@ not re-measured.
 | Tier | Scope | Why |
 |---|---|---|
 | **Firm** | EPIC-AI-03; the five moved stories in M-PROP-02 with real TASKS.md | Sized and task-decomposed |
-| **Soft** | The nine new Phase 1.5 drafts (US-PROP-001–005, US-EDIT-020–023) | Sized from the 2026-10-29 analysis; ACs drafted, no TASKS.md yet |
+| **Soft** | The thirteen new Phase 1.5 drafts (US-PROP-001–005, US-EDIT-020–027) | Sized from the 2026-10-29 analysis; ACs drafted, no TASKS.md yet |
 | **Speculative** | EPIC-OBS-00, EPIC-KIT-01, Phase 3 stubs, backlog | Unsized, stub-only, or awaiting re-scope |
 
 ---
@@ -78,12 +78,12 @@ not re-measured.
 
 | Phase | No TASKS.md | Stub | Real breakdown |
 |---|:--:|:--:|:--:|
-| **Phase 1.5** | **13** | 3 | 6 |
+| **Phase 1.5** | **17** | 3 | 6 |
 | Phase 2 | 6 | 0 | 4 |
 | Phase 3 | 0 | 4 | 2 |
 | Phase 4 | 6 | 3 | 8 |
 
-Same pattern as before: **the nearest work is the least planned.** 13 of Phase 1.5's 22 stories have no TASKS.md, so by the project's own rule
+Same pattern as before: **the nearest work is the least planned.** 17 of Phase 1.5's 26 stories have no TASKS.md, so by the project's own rule
 (*"Stories without a Four-Pillars Pre-flight are not ready to implement"*) they need `/new-story` first. Do that one milestone at a time, just
 before its wave, rather than all at once.
 
@@ -106,4 +106,4 @@ Task readiness counts checklist items in each sibling `TASKS.md`: absent → non
 
 ---
 
-*Created 2026-09-08. Regenerated 2026-10-29 for the Phase 1.5 restructure.*
+*Created 2026-09-08. Regenerated 2026-10-29 for the Phase 1.5 restructure; updated the same day for US-EDIT-024–027.*

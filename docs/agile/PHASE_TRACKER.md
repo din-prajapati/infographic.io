@@ -13,7 +13,7 @@
 |-------|---------|-----------------|--------|----------|--------|
 | [Phase 0](#phase-0--mvp-launch) | v1.0 | Working product in production | ✅ Done 2026-10-29 | **9/9 stories**; all three human tasks signed off PASS (Task 3 on 2026-10-29, after the production smoke test) | Live |
 | [Phase 1](#phase-1--release-11-revenue-strategy) | v1.1 | **Revenue strategy** — beta live, revenue on, real-photo pipeline, durable storage, pricing relaunch, one source of truth for listing facts | ✅ Closed 2026-10-29 | **60/60 stories** at delivered scope (open work moved by [ADR-003](decisions/ADR-003-phase-1-close-and-phase-1.5.md)) | Beta live · Revenue on |
-| [Phase 1.5](#phase-15--release-111-property-foundation--v3-editor) | v1.1.1 | **Property foundation + V3 editor** — Property · Brand profile · template contract · linked editing · Design tab · AI Assistant | 🟡 Opened 2026-10-29 | 0/22 stories | ≈ 5–6 weeks |
+| [Phase 1.5](#phase-15--release-111-property-foundation--v3-editor) | v1.1.1 | **Property foundation + V3 editor** — Property · Brand profile · template contract · linked editing · Design tab · AI Assistant | 🟡 Opened 2026-10-29 | 0/26 stories | ≈ 7–9 weeks |
 | [Phase 2](#phase-2--release-12-kits--asset-quality) | v1.2 | **Kits & asset quality** — listing kits on proven templates, background removal, print upscale, element edit | 🔲 Not Started | 0/10 | After Phase 1.5 gate |
 | [Phase 3](#phase-3--release-13-campaigns--team-operations) | v1.3 | **Campaigns & team operations** — Campaign Mode, mockups, outpainting, photo cleanup, org roles | 🔲 Not Started | 0/6 | After Phase 2 gate |
 | [Phase 4](#phase-4--backlog-promoted-by-trigger-not-calendar) | v2.0+ | **Backlog** — B2B API, analytics, hardening, mobile, speed & batch, deferred AI — promoted by trigger | 🔲 Not Started | 0/17 + B-items | By trigger |
@@ -141,15 +141,15 @@ far past this point). **Full detail, all phases: [HUMAN_TASKS.md](HUMAN_TASKS.md
 
 ## Phase 1.5 — Release 1.1.1: Property Foundation & V3 Editor
 
-> **Release:** v1.1.1 · **Status:** 🟡 Opened 2026-10-29 — 0/22 stories ([ADR-003](decisions/ADR-003-phase-1-close-and-phase-1.5.md))
+> **Release:** v1.1.1 · **Status:** 🟡 Opened 2026-10-29 — 0/26 stories ([ADR-003](decisions/ADR-003-phase-1-close-and-phase-1.5.md))
 > **Outcome:** A saved Property (structured price, Sale/Rent intent), a saved Brand profile and an explicit element-to-fact template contract — plus the V3 editor that makes them visible: linked editing, a simple Design tab, one AI Assistant, an export check.
-> **Plan, waves and gate:** [epics/phase-1.5-foundation-v3/README.md](epics/phase-1.5-foundation-v3/README.md) · **Effort:** ≈ 22–31 working days (5–6 weeks)
+> **Plan, waves and gate:** [epics/phase-1.5-foundation-v3/README.md](epics/phase-1.5-foundation-v3/README.md) · **Effort:** ≈ 30–42 working days (7–9 weeks)
 
 | # | Epic | Domain | Focus | Status |
 |---|------|--------|-------|--------|
 | 0 | [EPIC-OBS-00](epics/phase-1.5-foundation-v3/EPIC-OBS-00/EPIC.md) | INFRA | Observability — M-OBS-01 first; reconcile the partly-built Sentry cards; US-OBS-005 T5 closes BL-34 | 🟡 0/5 |
 | 1 | [EPIC-PROP-01](epics/phase-1.5-foundation-v3/EPIC-PROP-01/EPIC.md) | PROP | Property record · structured price + intent · Auto-Fill · Brand profile · template contract | 🔲 0/10 |
-| 2 | [EPIC-EDIT-04](epics/phase-1.5-foundation-v3/EPIC-EDIT-04/EPIC.md) | EDIT | Single editable path (BL-26) · linked editing · Design tab · AI Assistant · export review | 🟡 0/7 (US-EDIT-009 code merged) |
+| 2 | [EPIC-EDIT-04](epics/phase-1.5-foundation-v3/EPIC-EDIT-04/EPIC.md) | EDIT | Single editable path (BL-26) · linked editing · Design tab · AI Assistant · export review · V3 shell (light + dark) · Property/Contact tabs · autosave · Edit Elements review | 🟡 0/11 (US-EDIT-009 code merged) |
 
 
 ---

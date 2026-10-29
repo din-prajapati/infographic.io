@@ -30,18 +30,18 @@ Template library — versioned, "proven"       ← M-PROP-03  (this phase)
 |:-:|------|-------|--------|
 | 0 | [EPIC-OBS-00](EPIC-OBS-00/EPIC.md) | Observability — M-OBS-01 first (moved from Phase 1); reconcile the partly-built Sentry cards | 🟡 US-OBS-005 waits on T5 (BL-34) |
 | 1 | [EPIC-PROP-01](EPIC-PROP-01/EPIC.md) | Property & Brand Foundation — Property record, structured price + intent, Auto-Fill, Brand profile, template contract | 🔲 drafted |
-| 2 | [EPIC-EDIT-04](EPIC-EDIT-04/EPIC.md) | V3 Editor Simplification — single editable path, linked editing, Design tab, AI Assistant, export review | 🟡 M-EDIT-03 waits on BL-26 |
+| 2 | [EPIC-EDIT-04](EPIC-EDIT-04/EPIC.md) | V3 Editor Simplification — single editable path, linked editing, Design tab, AI Assistant, export review, V3 shell (light and dark), Property and Contact tabs, autosave, Edit Elements review | 🟡 0/11 — M-EDIT-03 waits on BL-26 |
 
 ## Order and dependencies
 
 | Wave | Work | Depends on | Estimate |
 |:----:|------|------------|----------|
 | 0 | **M-OBS-01** (Sentry reconcile + US-OBS-005 T5) ∥ **M-EDIT-03** (US-EDIT-009, fix BL-26) | — | 2–3 days |
-| 1 | **M-PROP-01** (US-PROP-001 → 002 → 003) ∥ **M-PROP-03** (US-PROP-004, US-PROP-005) | — | 7–9 days |
-| 2 | **M-EDIT-06** (US-EDIT-020 → 021) ∥ **M-PROP-02** (US-AI-028 → US-LAUNCH-016/017, US-EDIT-006 → 007) | US-PROP-002, US-PROP-004 | 6–9 days |
-| 3 | **M-EDIT-07** (US-EDIT-022) | US-PROP-005, M-PROP-02 | 3–4 days |
+| 1 | **M-PROP-01** (US-PROP-001 → 002 → 003) ∥ **M-PROP-03** (US-PROP-004, US-PROP-005) ∥ **US-EDIT-024** V3 shell | — | 8–11 days |
+| 2 | **M-EDIT-06** (US-EDIT-020 → 021) ∥ **M-PROP-02** (US-AI-028 → US-LAUNCH-016/017, US-EDIT-006 → 007) ∥ **US-EDIT-027** autosave | US-PROP-002, US-PROP-004, US-EDIT-024 | 7–10 days |
+| 3 | **M-EDIT-07** (US-EDIT-022) → **US-EDIT-025** Property and Contact tabs ∥ **M-EDIT-10** (spike → US-EDIT-026 Edit Elements review) | US-PROP-005, M-PROP-02, US-EDIT-009, US-PROP-004 | 8–11 days |
 | 4 | **M-EDIT-08** (US-EDIT-023 → US-AI-015, US-EDIT-008) | US-PROP-003, US-EDIT-009 | 4–6 days |
-| | **Total** | | **≈ 22–31 working days (5–6 weeks)**, browser verification included |
+| | **Total** | | **≈ 30–42 working days (7–9 weeks)**, browser verification included — was 22–31 before US-EDIT-024–027 were added |
 
 Estimates are planning allowances from the 2026-10-29 analysis, not commitments; the five stories moved into M-PROP-02 were sized
 before this restructure.
@@ -56,5 +56,8 @@ before this restructure.
 - [ ] The agent can see, detach and reconnect links; Export blocks missing, placeholder and out-of-date facts
 - [ ] The Design tab offers Look / Accent / Photo / Format; switching look keeps the facts
 - [ ] AI lives in one Assistant panel (Create design / Generate Background); the floating chat is retired
+- [ ] The editor matches the V3 layout — top bar, guide bar, canvas header, tool rail, Design / Property / Contact tabs — in **both light and dark** themes
+- [ ] Edits save automatically with a visible status
+- [ ] Making an AI poster editable shows what was found and needs the agent's confirmation
 
 > Phase 2 (Kits & Asset Quality) starts only after this gate — kits are built on Property + proven templates.

@@ -8,7 +8,7 @@ updated: 2026-10-29
 # EPIC-EDIT-04 — V3 Editor Simplification
 
 > **Phase:** Phase 1.5 — Property Foundation & V3 Editor
-> **Status:** 🟡 In Progress — M-EDIT-03 (moved in from EPIC-EDIT-03) has its code merged and waits on BL-26; the rest drafted 2026-10-29
+> **Status:** 🟡 In Progress — 0/11. M-EDIT-03 (moved in from EPIC-EDIT-03) has its code merged and waits on BL-26; the rest drafted (US-EDIT-024–027 added 2026-10-29) 2026-10-29
 > **Owner:** Dinesh
 > **Decision:** [ADR-003](../../../decisions/ADR-003-phase-1-close-and-phase-1.5.md) · **Design source:** V3 canvas mockup (`Mockups/buildographic-canvas-simplification-v3/`, untracked)
 
@@ -38,6 +38,8 @@ facts, generate a background without touching the text, and is stopped at Export
 | [M-EDIT-06-linked-editing](milestones/M-EDIT-06-linked-editing.md) | Linked-element inspector + Manage links · export review dialog + out-of-date image guard | 🔲 |
 | [M-EDIT-07-design-tab](milestones/M-EDIT-07-design-tab.md) | Design tab: Look · Accent · Property photo · Format & logo; Design/Property/Contact tabs | 🔲 |
 | [M-EDIT-08-ai-assistant](milestones/M-EDIT-08-ai-assistant.md) | AI Assistant (Create design / Generate Background) · refine chips · quota badge | 🔲 |
+| [M-EDIT-09-v3-shell](milestones/M-EDIT-09-v3-shell.md) | V3 shell (top bar · guide bar · canvas header · tool rail), Property and Contact tabs, autosave — light and dark | 🔲 |
+| [M-EDIT-10-extraction-review](milestones/M-EDIT-10-extraction-review.md) | Edit Elements review — confirm links before a poster becomes editable | 🔲 |
 
 ---
 
@@ -52,14 +54,18 @@ facts, generate a background without touching the text, and is stopped at Export
 | 5 | [US-EDIT-023](stories/US-EDIT-023/STORY.md) | AI Assistant — Create design or Generate Background | M-EDIT-08 | L | 🔲 |
 | 6 | [US-AI-015](stories/US-AI-015/STORY.md) | Quick Refine chips — *moved from EPIC-AI-03, re-scope before implementing* | M-EDIT-08 | M | 🔲 |
 | 7 | [US-EDIT-008](stories/US-EDIT-008/STORY.md) | Editable quota badge + charge confirmation — *moved from EPIC-EDIT-03* | M-EDIT-08 | M | 🔲 |
+| 8 | [US-EDIT-024](stories/US-EDIT-024/STORY.md) | Editor shell in the V3 layout, light and dark | M-EDIT-09 | L | 🔲 |
+| 9 | [US-EDIT-027](stories/US-EDIT-027/STORY.md) | Autosave and save status | M-EDIT-09 | M | 🔲 |
+| 10 | [US-EDIT-025](stories/US-EDIT-025/STORY.md) | Property and Contact tabs in the V3 layout | M-EDIT-09 | M | 🔲 |
+| 11 | [US-EDIT-026](stories/US-EDIT-026/STORY.md) | Edit Elements review — confirm links before a poster becomes editable | M-EDIT-10 | L | 🔲 |
 
 ---
 
 ## Out of Scope (this epic)
 
-- A full light-theme reskin of the editor and the phone layout (V3 has both; neither is asked for yet).
+- The phone layout (V3 has one; not asked for yet). *Amended 2026-10-29:* the V3 shell **is** in scope (US-EDIT-024), in both light and dark themes.
 - Removing the free-form design tools (shapes, fonts, crop, adjustments) — they stay; V3 drops them, we do not.
-- SVG export, export history, autosave and the in-editor project switcher.
+- SVG export and export history. *(Autosave moved into scope as US-EDIT-027; the Projects breadcrumb is part of US-EDIT-024.)*
 - Conversational AI (EPIC-AI-01, moved to the backlog).
 
 ---

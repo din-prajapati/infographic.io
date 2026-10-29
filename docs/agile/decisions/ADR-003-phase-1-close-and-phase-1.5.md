@@ -54,6 +54,10 @@ Campaign Mode and the advanced asset tools (EPIC-AI-04), EPIC-AI-05's US-AI-029,
 Phase 1 (EPIC-EDIT-03, EPIC-LAUNCH-01, EPIC-DEPLOY-01, EPIC-PAY-05) are closed *at Phase 1 scope*, following the EPIC-DESIGN-02 →
 EPIC-DESIGN-03 precedent; their moved stories keep their IDs.
 
+### Amendment — 2026-10-29
+
+US-EDIT-024 to US-EDIT-027 (milestones M-EDIT-09 and M-EDIT-10) were added to EPIC-EDIT-04 so that Phase 1.5 delivers the full V3 redesign: the V3 shell (top bar, guide bar, canvas header, tool rail) in **both light and dark themes**, the Property and **Contact** tabs (the third tab is named Contact), autosave, and the Edit Elements review. Phase 1.5 grows from 22 to 26 stories and from ≈ 5–6 to ≈ 7–9 weeks.
+
 ## Alternatives Considered
 
 - **Keep Phase 1 open and add the foundation to it** — rejected: Phase 1's goal (revenue on) is met; one more open epic would keep
@@ -65,7 +69,7 @@ EPIC-DESIGN-03 precedent; their moved stories keep their IDs.
 
 ## Consequences
 
-- ➕ Phase 1 reads as done; Phase 1.5 has one coherent goal and a dependency-ordered plan (≈ 5–6 weeks).
+- ➕ Phase 1 reads as done; Phase 1.5 has one coherent goal and a dependency-ordered plan (≈ 7–9 weeks after the amendment).
 - ➕ Seven stories leave the active plan (five superseded, US-AI-027 and the conversational epic to the backlog).
 - ➖ Five pre-existing stories moved into M-PROP-02/M-EDIT-08 were written before this decision; each needs `/new-story` re-checking.
 - ⚠️ The untracked property-campaign PRD gates Phase 2+ on demand evidence (paid customers); this ADR does not adopt those gates —
