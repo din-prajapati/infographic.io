@@ -13,7 +13,7 @@
  *   step 1  TC-EDIT-009-01  no mode choice anywhere pre-generation      [FREE]
  *   step 3  TC-EDIT-009-12  AI Chat design → "Edit elements" resolves   [1 gen]
  *   step 4  TC-EDIT-009-05  a fresh template is not "already editable"  [free]
- *   step 5  —               real-photo background (opt-in, see below)   [1 gen]
+ *   step 5  —               real listing photo → text-free background   [1 gen, opt-in]
  *
  * Cost: ONE real generation by default (~$0.08). Step 5 costs a second one and
  * is skipped unless RUN_PHOTO_CHECK=1.
@@ -38,8 +38,14 @@ import { test, expect, type Page } from "@playwright/test";
 import process from "node:process";
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 const baseURL = (process.env.PLAYWRIGHT_BASE_URL || "http://localhost:5000").replace(/\/$/, "");
+
+/** A real listing photograph for step 5 (shared with us-ai-031-real-photo-composition.spec.ts). */
+const LISTING_PHOTO = fileURLToPath(
+  new URL("../client/src/assets/images/carousel/property-1.jpg", import.meta.url),
+);
 
 /** The exact toast AC9 must never produce. CanvasEditToolbar.tsx:92. */
 const NOT_LINKED_TOAST = /Design isn't linked to a generation/i;
@@ -470,25 +476,87 @@ test.describe("US-EDIT-009 — Gate 2 (automated portion)", () => {
     await expect(freshToolbar.getByText(/editable layers active/i)).toHaveCount(0);
   });
 
-  // ── Step 5 — opt-in, and an honest proxy rather than a real check ───────
-  test("step 5: real-photo generation evidence (opt-in)", async ({ page }, testInfo) => {
+  // ── Step 5 — opt-in: a real listing photo must produce a text-free background ──
+  //
+  // BL-26: this step used to generate from text alone. US-EDIT-009 settled that
+  // the text-free prompt fires on `photoReference` alone (Option A), so with no
+  // photo a fully composed poster was the *expected* output and the step could
+  // neither pass nor fail for the reason it exists. It now attaches a real
+  // listing photograph and asserts on the two things a machine can decide:
+  //   1. the generate request actually carries a photoReference, and
+  //   2. the server classified the generation as a text-free `background`.
+  // (2) is read from the variations payload. `composition` is computed by
+  // resolveAiComposition(photoReference) — the same function the orchestrator
+  // calls to choose the text-free prompt (US-EDIT-011), so it cannot disagree
+  // with the prompt that was sent. Whether the pixels are actually free of text
+  // stays a human judgment on the saved screenshot — see the note at the end.
+  test("step 5: a real listing photo produces a text-free background (opt-in)", async ({
+    page,
+  }, testInfo) => {
     test.skip(
       process.env.RUN_PHOTO_CHECK !== "1",
       "Costs a second generation. Set RUN_PHOTO_CHECK=1 to run.",
     );
 
+    // Request side: what AI Chat sent. Response side: what the server decided.
+    let generateBody: Record<string, unknown> | null = null;
+    page.on("request", (r) => {
+      if (r.method() === "POST" && /\/infographics\/generations\/?(\?|$)/.test(r.url())) {
+        try {
+          generateBody = r.postDataJSON();
+        } catch {
+          /* non-JSON — the assertion below reports it */
+        }
+      }
+    });
+    const compositions: unknown[] = [];
+    page.on("response", async (res) => {
+      if (!/\/infographics\/generations\/[^/]+\/variations/.test(res.url())) return;
+      try {
+        const body = await res.json();
+        for (const v of Array.isArray(body) ? body : []) compositions.push(v?.composition);
+      } catch {
+        /* the assertion below reports an empty capture */
+      }
+    });
+
     await openTemplateInEditor(page);
     await openAiChat(page);
+
+    // Attach a real listing photograph — the input BL-26 found missing. Same
+    // fixture as us-ai-031-real-photo-composition.spec.ts: a real interior
+    // photo, so the model has an actual building to keep, not a 1×1 pixel.
+    const panel = page.locator("#ai-chat-panel");
+    await panel.locator("input[type='file']").setInputFiles(LISTING_PHOTO);
+    await expect(panel.getByText("Property photo attached")).toBeVisible({ timeout: 30_000 });
+
     await generateFromAiChat(
       page,
       "3 BHK villa at 12 Oak Road, Ahmedabad priced 18500000 with pool",
     );
 
+    // 1 — the photo reached the generate request.
+    expect(generateBody, "no POST /infographics/generations request was captured").not.toBeNull();
+    const photoReference = (generateBody as Record<string, unknown> | null)?.photoReference;
+    expect(typeof photoReference, "generate request carried no photoReference").toBe("string");
+    expect((photoReference as string).length).toBeGreaterThan(0);
+
+    // 2 — the server took the text-free path for every variation.
+    expect(
+      compositions.length,
+      "no /variations response was captured — the check below would pass vacuously",
+    ).toBeGreaterThan(0);
+    for (const c of compositions) {
+      expect(c, "a photo-backed generation must be classified as a text-free background").toBe(
+        "background",
+      );
+    }
+
     await placementButton(page).click();
     await expect(page.locator('[data-testid="design-canvas"]')).toBeVisible();
+    await expect(page.getByText(/AI design loaded/i)).toBeVisible({ timeout: 120_000 });
 
-    // Capture the background for human review. This test does NOT decide
-    // whether the photo came back unmarked — see the note below.
+    // Capture the background for the human half of the check (see below).
     const shot = await page.locator('[data-testid="design-canvas"]').screenshot();
     await testInfo.attach("generated-background", { body: shot, contentType: "image/png" });
 
@@ -510,19 +578,19 @@ test.describe("US-EDIT-009 — Gate 2 (automated portion)", () => {
     console.log(`\n===== STEP 5 EVIDENCE =====\n  ${evidencePath}\n`);
 
     /**
-     * Deliberately no pass/fail assertion on "is the background text-free".
+     * What is asserted, and what is not.
      *
-     * The obvious proxy — compose and assert `extraction.blocksDetected === 0`
-     * — does not hold. US-AI-031b's AC1 was live-verified on 2026-08-15 with
-     * blocksDetected: 0 on a run that went through the *text-baked* path;
-     * extraction returning zero blocks is a known outcome that says nothing
-     * about whether text was baked in. Asserting on it would produce a test
-     * that passes whether or not AC8 works, which is worse than no test.
+     * Asserted above: the photo reached the request, and the server chose the
+     * text-free path (`composition: 'background'`, from the same predicate that
+     * picks the prompt). Those were the parts BL-26 showed were never exercised.
      *
-     * So this leaves the judgment where it belongs and just hands the
-     * screenshot to whoever runs Gate 2. Closing it properly needs a real
-     * check — OCR over the background, or asserting on the prompt the
-     * orchestrator sent — and that is worth its own story, not a proxy here.
+     * Not asserted: that the returned pixels contain no text. The obvious proxy
+     * — compose and assert `extraction.blocksDetected === 0` — does not hold:
+     * US-AI-031b's AC1 was live-verified on 2026-08-15 with blocksDetected: 0 on
+     * a run that went through the *text-baked* path, so zero blocks says nothing
+     * about whether text was baked in. The pixel judgment therefore stays with
+     * whoever runs Gate 2, on the screenshot saved above. A real automated check
+     * would need OCR over the background — its own story, not a proxy here.
      */
   });
 });

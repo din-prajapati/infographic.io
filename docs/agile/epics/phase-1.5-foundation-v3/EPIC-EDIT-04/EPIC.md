@@ -8,7 +8,7 @@ updated: 2026-10-29
 # EPIC-EDIT-04 — V3 Editor Simplification
 
 > **Phase:** Phase 1.5 — Property Foundation & V3 Editor
-> **Status:** 🟡 In Progress — 0/11. M-EDIT-03 (moved in from EPIC-EDIT-03) has its code merged and waits on BL-26; the rest drafted (US-EDIT-024–027 added 2026-10-29) 2026-10-29
+> **Status:** 🟡 In Progress — 1/11. M-EDIT-03 (moved in from EPIC-EDIT-03) ✅ closed 2026-10-29 — US-EDIT-009 done after BL-26; the rest drafted (US-EDIT-024–027 added 2026-10-29) 2026-10-29
 > **Owner:** Dinesh
 > **Decision:** [ADR-003](../../../decisions/ADR-003-phase-1-close-and-phase-1.5.md) · **Design source:** V3 canvas mockup (`Mockups/buildographic-canvas-simplification-v3/`, untracked)
 
@@ -34,7 +34,7 @@ facts, generate a background without touching the text, and is stopped at Export
 
 | Milestone | Scope | Status |
 |-----------|-------|:------:|
-| [M-EDIT-03-single-editable-path](milestones/M-EDIT-03-single-editable-path.md) | One way to get editable text, on the canvas — *moved from EPIC-EDIT-03* | 🟡 code merged; BL-26 |
+| [M-EDIT-03-single-editable-path](milestones/M-EDIT-03-single-editable-path.md) | One way to get editable text, on the canvas — *moved from EPIC-EDIT-03* | ✅ 2026-10-29 |
 | [M-EDIT-06-linked-editing](milestones/M-EDIT-06-linked-editing.md) | Linked-element inspector + Manage links · export review dialog + out-of-date image guard | 🔲 |
 | [M-EDIT-07-design-tab](milestones/M-EDIT-07-design-tab.md) | Design tab: Look · Accent · Property photo · Format & logo; Design/Property/Contact tabs | 🔲 |
 | [M-EDIT-08-ai-assistant](milestones/M-EDIT-08-ai-assistant.md) | AI Assistant (Create design / Generate Background) · refine chips · quota badge | 🔲 |
@@ -47,7 +47,7 @@ facts, generate a background without touching the text, and is stopped at Export
 
 | # | Story | Title | Milestone | Size | Status |
 |:-:|-------|-------|-----------|:----:|:------:|
-| 1 | [US-EDIT-009](stories/US-EDIT-009/STORY.md) | Remove the pre-placement Flat/Editable toggle — *moved from EPIC-EDIT-03* | M-EDIT-03 | M | 🟡 |
+| 1 | [US-EDIT-009](stories/US-EDIT-009/STORY.md) | Remove the pre-placement Flat/Editable toggle — *moved from EPIC-EDIT-03* | M-EDIT-03 | M | ✅ |
 | 2 | [US-EDIT-020](stories/US-EDIT-020/STORY.md) | Linked-element inspector and Manage links | M-EDIT-06 | M | 🔲 |
 | 3 | [US-EDIT-021](stories/US-EDIT-021/STORY.md) | Export review dialog and out-of-date image guard | M-EDIT-06 | M | 🔲 |
 | 4 | [US-EDIT-022](stories/US-EDIT-022/STORY.md) | Design tab simplification | M-EDIT-07 | M | 🔲 |

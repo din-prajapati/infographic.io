@@ -7,16 +7,14 @@ updated: 2026-09-01
 
 # Story Card — US-EDIT-009
 
-> **Status:** 🟡 Implemented — Gate 1 green; **Gate 2 steps 1, 3 and 4 ✅ PASSED 2026-09-07** on local dev via `e2e/us-edit-009-gate2.spec.ts` (AC9 verified on the real AI Chat path: real generation id, 201, "Editable layers active" in 52s, no "isn't linked" toast; M-INFRA-01 check 1 cleared — variations stored on R2). **Step 5 still unverified** — the test never uploads a photo, so `photoReference` is never set and the path it names is not exercised (BL-26). Story stays open on step 5.
-> staging (2026-09-03). **Only step 5 (real-photo background) is outstanding**, and it is a human
-> visual check by design — see the Gate 2 section for why it was not turned into a proxy.
+> **Status:** ✅ Done — closed 2026-10-29. Gate 2 steps 1, 3, 4 and 5 re-run on staging 2026-10-29 (`b2cac42`), all passing. Step 5 now attaches a real listing photo (BL-26) and asserts `photoReference` on the generate request and `composition: "background"` on every variation; the saved background is the uploaded photo with no baked-in text (evidence `test-results/gate2-evidence/us-edit-009-step5-background-2026-10-29T11-33-02-916Z.png`).
 > **Feature:** F-EDIT-01 — Editable design discoverability
 > **Epic:** [EPIC-EDIT-04](../../EPIC.md)
 > **Moved 2026-10-29:** from EPIC-EDIT-03 (Phase 1) to EPIC-EDIT-04 (Phase 1.5), with its milestone M-EDIT-03 by the Phase 1.5 restructure — [ADR-003](../../../../../decisions/ADR-003-phase-1-close-and-phase-1.5.md). Status unchanged: implemented, waiting on BL-26 (Gate 2 step 5).
 > **Milestone:** [M-EDIT-03-single-editable-path](../../milestones/M-EDIT-03-single-editable-path.md)
 > **Linear:** LIN-XXX
 > **Size:** M
-> **Created:** 2026-09-01 | **Closed:** —
+> **Created:** 2026-09-01 | **Closed:** 2026-10-29
 >
 > **Decision this implements (2026-09-01):** generation is **always flat**; extracting text into
 > editable layers is **always** a post-placement canvas action.
@@ -214,13 +212,15 @@ faked into an assertion.
 | 2 | Generate from AI Chat (no photo). Place a result with "Edit" | Design lands flat, no mode was ever asked for | AC1 | ✅ covered by step 3's setup |
 | 3 | With that AI Chat design on the canvas, press **"Edit elements"** | `POST /generations/:id/compose` fires with a real generation id | **TC-12 / AC9** | ✅ automated |
 | 4 | Open a fresh template (no AI content) in the same session, after step 3 succeeded | "Edit elements" does **not** claim the canvas is editable | **TC-05** | ✅ automated |
-| 5 | Upload a real listing photo and generate | Background comes back **unmarked** — no headline/price/address burned into the photo | **AC8 / T4a** | 🔲 **human** |
+| 5 | Upload a real listing photo and generate | Background comes back **unmarked** — no headline/price/address burned into the photo | **AC8 / T4a** | ✅ automated + visual (2026-10-29) |
 
 **Step 3 asserts the network call, not the toast.** The toast is the symptom; the compose request
 is the thing. If the id never reaches the store, `CanvasEditToolbar` returns early and the request
 is never sent — so it either happens or it does not, with nothing that auto-dismisses while the
 test looks at it. The test also asserts the id is not the literal `current-gen` placeholder, the
 bug US-EDIT-005 fixed once already.
+
+**Update 2026-10-29 — step 5 is now automated (BL-26).** The test attaches a real listing photo and asserts the two decidable facts: the request carries `photoReference`, and the server classified every variation as `composition: "background"` (the same `resolveAiComposition` predicate that picks the text-free prompt). Only the pixel judgment stays human, on the saved screenshot. The paragraph below is the original reasoning, still true for the pixel half.
 
 **Step 5 has no automated assertion, deliberately.** The obvious proxy —
 `extraction.blocksDetected === 0` — does not hold: US-AI-031b's AC1 was live-verified on
@@ -251,10 +251,10 @@ orchestrator sent — its own story, not a proxy here.
 
 ## Definition of Done
 
-- [ ] All ACs checked
+- [x] All ACs checked
 - [x] The scope question is **decided and recorded in this card** — Option A, 2026-09-01
-- [ ] Gate 1 passes (`npm run check` + `npm run test:unit`)
-- [ ] Gate 2 — visual check on staging: generate from AI Chat, confirm no mode choice appears, then
+- [x] Gate 1 passes (`npm run check` + `npm run test:unit`) — re-run 2026-10-29: types clean, 811 API + 375 client tests
+- [x] Gate 2 — steps 1–5 pass on staging 2026-10-29. Visual check on staging: generate from AI Chat, confirm no mode choice appears, then
       press "Edit elements" on the placed image and confirm text extracts
-- [ ] `US-AI-051` stays ✅ and its "Reachability at risk" banner is removed (Option A preserved it)
-- [ ] PR opened with story card as description
+- [x] `US-AI-051` stays ✅ and its "Reachability at risk" banner is removed (Option A preserved it)
+- [x] PR opened with story card as description — #49 (code), #82 (BL-26 test fix + closeout)

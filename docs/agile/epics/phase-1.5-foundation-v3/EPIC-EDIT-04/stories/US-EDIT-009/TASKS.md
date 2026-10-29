@@ -94,7 +94,7 @@ feat(edit): T{n} {summary} — US-EDIT-009
 - [x] T5 — Tests
 - [x] Gate 1 passes
 - [x] Gate 2 steps 1–4 — automated in `e2e/us-edit-009-gate2.spec.ts`, passing on staging 2026-09-03
-- [ ] Gate 2 — staging real-photo check: generate from an uploaded listing photo, confirm the
+- [x] Gate 2 — staging real-photo check (2026-10-29, automated — BL-26): generate from an uploaded listing photo, confirm the
       background comes back **unmarked** (T4a's whole point)
 - [x] US-AI-051 banner updated to record the resolution; status stays ✅
 - [x] PR opened — #49
