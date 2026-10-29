@@ -262,18 +262,18 @@
 ## 🏗️ Infrastructure (INFRA)
 
 **Epic lead:** Dinesh  
-**Active epic:** EPIC-INFRA-01 — MVP Deployment  
-**Phase:** 0 (MVP) 🟡 In Progress
+**Active epic:** EPIC-INFRA-01 — MVP Deployment — ✅ **Done 2026-10-29** (Phase 0 gate passed)  
+**Phase:** 0 (MVP) ✅ Done
 
 > **Update 2026-10-26 — this section below is Phase 0 history.** Production is live at `app.buildographic.com`; staging and production both deploy from `main` and report the running commit at `/api/health`. EPIC-INFRA-02 (durable asset storage, R2) closed 2026-10-19 with all runtime checks verified on production. US-DEPLOY-004 (migrations as `preDeployCommand`, BL-33) closed 2026-10-01. Open: **BL-34 (P1, no outage alerting)** → US-OBS-005 T5 is a HUMAN step; BL-48 (close-story workflow runs a missing script).
 
-### Now (Phase 0 deploy — 2 of 3 tasks signed off)
+### Phase 0 deploy — ✅ all 3 tasks signed off (2026-10-29)
 
 | Task | Owner | Status | Reference |
 |------|-------|--------|-----------|
 | Task 1 — Critical-path manual QA | HUMAN | ✅ PASS 2026-06-20 | [testing/PHASE_0_HUMAN_QA_CHECKLIST.md](../testing/PHASE_0_HUMAN_QA_CHECKLIST.md) |
 | Task 2 — Staging smoke test (Railway) | HUMAN | ✅ PASS 2026-07-11 (incl. live Ideogram I-05/I-06, I-10 error state; 2 bugs fixed PT-10/PT-11) | [testing/PHASE_0_HUMAN_QA_CHECKLIST.md](../testing/PHASE_0_HUMAN_QA_CHECKLIST.md) |
-| Task 3 — Production go-live + Sentry verify | HUMAN | ⏳ Next (unblocked) — ~1 hr | Same |
+| Task 3 — Production go-live + Sentry verify | HUMAN | ✅ PASS 2026-10-29 (production smoke test §3D completed the same day; Sentry 2026-07-26; OAuth 2026-07-30) | Same |
 
 ### Done
 | Area | Status |

@@ -14,7 +14,7 @@
 | —   | [Automation Already Done](#automation-already-done--skip-these)                                   | Playwright + unit tests — skip these                                 | ✅ All green (2026-06-19)                                                        |
 | 1   | [Task 1 — Local QA](#task-1--critical-path-manual-qa-local-before-staging-deploy)                 | Flows 1A–1G: auth, generation, canvas, payments, team, cross-browser | ✅ **SIGNED OFF — 2026-06-20 · PASS**                                            |
 | 2   | [Task 2 — Staging](#task-2--staging-smoke-test-railway--neon)                                     | Railway + Neon staging deploy + E2E + live Ideogram verify           | ✅ **SIGNED OFF — 2026-07-11 · PASS** |
-| 3   | [Task 3 — Production](#task-3--production-go-live--sentry-verify)                                 | Live keys, v1.0.0 tag, Sentry, Google OAuth prod                     | 🟢 **All rows resolved 2026-10-29 — awaiting sign-off.** 3A/3B/3C done (live keys 2026-07-28, `v1.0.0` 2026-08-30); 3D smoke test complete — P-13 to P-17 by 2026-10-16, P-18/P-19 by the real ₹5,499 charge 2026-10-19, P-20 and P-25 to P-27 verified on production 2026-10-29, P-28 superseded; 3E Sentry ☑ 2026-07-26; 3F OAuth ☑ 2026-07-30 (rows renumbered P-30/P-31 — they duplicated P-25/P-26). Earlier status history: see the git log of this file. |
+| 3   | [Task 3 — Production](#task-3--production-go-live--sentry-verify)                                 | Live keys, v1.0.0 tag, Sentry, Google OAuth prod                     | ✅ **SIGNED OFF — 2026-10-29 · PASS.** 3A/3B/3C done (live keys 2026-07-28, `v1.0.0` 2026-08-30); 3D smoke test complete — P-13 to P-17 by 2026-10-16, P-18/P-19 by the real ₹5,499 charge 2026-10-19, P-20 and P-25 to P-27 verified on production 2026-10-29, P-28 superseded; 3E Sentry ☑ 2026-07-26; 3F OAuth ☑ 2026-07-30 (rows renumbered P-30/P-31 — they duplicated P-25/P-26). Earlier status history: see the git log of this file. |
 | 7   | [Flow 7 — Right Sidebar](#flow-7--right-sidebar-design--property--agent-panel)                    | RightSidebar.tsx 44-point checklist                                  | ⏸ **DEFERRED to Phase 1** — all stale bugs verified as implemented (2026-06-20) |
 | —   | [Deferred Feature Backlog](#deferred-feature-backlog--architectural-gaps-found-during-phase-0-qa) | GAP-01 (lightbox) · GAP-02 (editable canvas layers)                  | GAP-01 ✅ Implemented · GAP-02 🔲 Phase 1                                        |
 | —   | [Deployment Strategy](#deployment-strategy--work-sizing--timeline)                                | Work sizing and timeline for infra                                   | 📋 Reference                                                                    |
@@ -608,13 +608,15 @@ Fixed on both environments:
 
 ---
 
-**Task 3 sign-off:** Production live, Sentry receiving events, Google OAuth working. Date: __________ Result: PASS / FAIL
+**Task 3 sign-off:** Production live, Sentry receiving events, Google OAuth working. Date: **2026-10-29** Result: ✅ **PASS** (signed off by the product owner after the 3D smoke test completed the same day)
 
 ---
 
 ---
 
 ## Phase 0 Gate — Done ✅
+
+> ✅ **Gate passed 2026-10-29** — Task 1 (2026-06-20), Task 2 (2026-07-11) and Task 3 (2026-10-29) all signed off PASS. The three tracker updates below were made the same day. The "Next" line is kept as written in 2026-06; that work shipped long ago.
 
 All 3 tasks signed off → Phase 0 is complete. Update:
 

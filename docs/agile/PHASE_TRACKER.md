@@ -11,7 +11,7 @@
 
 | Phase | Release | Business Outcome | Status | Complete | Target |
 |-------|---------|-----------------|--------|----------|--------|
-| [Phase 0](#phase-0--mvp-launch) | v1.0 | Working product in production | 🟡 Stories done | **9/9 stories**; production smoke test done 2026-10-29 ([HUMAN_TASKS #2](HUMAN_TASKS.md)) — only the Task 3 sign-off line remains | Live |
+| [Phase 0](#phase-0--mvp-launch) | v1.0 | Working product in production | ✅ Done 2026-10-29 | **9/9 stories**; all three human tasks signed off PASS (Task 3 on 2026-10-29, after the production smoke test) | Live |
 | [Phase 1](#phase-1--release-11-revenue-strategy) | v1.1 | **Revenue strategy** — go-live/revenue readiness (EPIC-LAUNCH-01), real-photo hybrid, listing kits | 🟡 In Progress | **73%** (61/84 stories — recounted 2026-10-26 from the story cards in `phase-1-ai-core/`, superseded stories excluded; now includes EPIC-EDIT-03) | Beta: live again on `7044a44` after a 15-day outage ([[BL-34]]) · Revenue: one story from the gate (US-LAUNCH-005 AC5/6) |
 | [Phase 2](#phase-2--release-12-polish--self-serve) | v1.2 | Conversational polish, refine loop, usage/billing self-serve | 🔲 Not Started | 0% | After Phase 1 gate |
 | [Phase 3](#phase-3--release-13-speed--batch) | v1.3 | Fast generation, batch uploads, volume pricing | 🔲 Not Started | 0% | Month 3 |
@@ -44,9 +44,9 @@ Each phase requires a gate decision before the next phase starts:
 
 ## Phase 0 — MVP Launch
 
-> **Release:** v1.0 · **Status:** 🟡 All 9 stories done (US-DESIGN-003/004 closed 2026-10-28); production live. Production smoke test complete 2026-10-29 ([HUMAN_TASKS #2](HUMAN_TASKS.md)); only the Task 3 sign-off line remains.  
+> **Release:** v1.0 · **Status:** ✅ **Done 2026-10-29** — all 9 stories done (US-DESIGN-003/004 closed 2026-10-28); production live; production smoke test complete ([HUMAN_TASKS #2](HUMAN_TASKS.md)) and Task 3 signed off PASS 2026-10-29.  
 > **Outcome:** Real estate agents can generate branded infographics, manage subscriptions, and export their work.  
-> **Last updated:** 2026-10-28 · PT-09 was fixed 2026-07-09 (EPIC-AI-07); the staging checks closed 2026-10-27/28.
+> **Last updated:** 2026-10-29 (Phase 0 gate passed) · PT-09 was fixed 2026-07-09 (EPIC-AI-07); the staging checks closed 2026-10-27/28.
 
 ### Gate Criteria (Phase 0 → Done)
 - [x] Core infrastructure: auth, API, DB, AI generation pipeline
@@ -111,7 +111,7 @@ far past this point). **Full detail, all phases: [HUMAN_TASKS.md](HUMAN_TASKS.md
 > **Full sequenced path:** [ROADMAP.md](ROADMAP.md)
 
 ### Gate Criteria (Phase 0 → Phase 1)
-- [ ] Phase 0 production deployed
+- [x] Phase 0 production deployed — ✅ Task 3 signed off PASS 2026-10-29
 - [ ] Phase 0.5 closed (incl. EPIC-GEN-01 V4 pipeline merged) — **all code merged; blocked only on staging verification.** EPIC-AI-00 ✅ (2026-08-05) · EPIC-DESIGN-04 ✅ · EPIC-GEN-01 has both milestones ✅ (M-GEN-01 2026-07-07, M-GEN-02 2026-08-07) but one open DoD item: *"Verified on staging environment"*. That single unchecked box is the whole of what keeps Phase 0.5 open.
 
 ### Phase 1 internal gates (two launch moments)
