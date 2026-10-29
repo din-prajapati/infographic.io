@@ -78,8 +78,8 @@ visit, booking open, possession. The drop cadence *is* the recurring value, and 
 keep what you made but stop receiving new ones. Fair, and still sticky.
 
 **2. Make the brand kit the lock-in, paid only.** Highest retention per rupee of build cost available, and
-**[US-LAUNCH-016](../agile/epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-016/STORY.md) /
-[US-LAUNCH-017](../agile/epics/phase-1-ai-core/EPIC-LAUNCH-01/stories/US-LAUNCH-017/STORY.md) are already written
+**[US-LAUNCH-016](../agile/epics/phase-1.5-foundation-v3/EPIC-PROP-01/stories/US-LAUNCH-016/STORY.md) /
+[US-LAUNCH-017](../agile/epics/phase-1.5-foundation-v3/EPIC-PROP-01/stories/US-LAUNCH-017/STORY.md) are already written
 and now unblocked** (their DTO-validation ACs depended on BL-30, fixed 2026-10-02). Logo, colours, fonts, headshot
 and contact block auto-applied to every template: 10 templates × their brand feels bespoke at zero AI cost, and
 leaving means rebuilding their brand everywhere.

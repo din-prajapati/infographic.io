@@ -1,6 +1,6 @@
 # ROADMAP — Path to First Revenue and Beyond
 
-> **Status refreshed:** 2026-10-26 — beta is live and revenue is on (real ₹5,499 charge 2026-10-16 → 19); ranks 1–3∥∥∥ are closed. Open now: rank 0's last two human items, rank 1∥ (Sentry, BL-34 alerting), rank 4+.
+> **Status refreshed:** 2026-10-29 — **Phase 0 and Phase 1 are closed.** Next is Phase 1.5 (Property foundation + V3 editor), then Phase 2 (kits on proven templates + asset quality) — [ADR-003](decisions/ADR-003-phase-1-close-and-phase-1.5.md). Earlier: 2026-10-26, beta live and revenue on.
 > **Created:** 2026-07-07, from the launch-readiness assessment (code done, operations not; charging irresponsible until real-photo pipeline ships).
 > **Governing principle:** Two launch moments, not one. **Beta live** (free, disclosed limitations) comes as fast as possible; **revenue on** waits for EPIC-AI-06 — you cannot sell real-estate marketing that can't depict the real estate.
 > **See also:** [PHASE_TRACKER.md](PHASE_TRACKER.md) (executive view) · [ESTIMATES.md](ESTIMATES.md) (remaining effort by phase, with derivation) · [AGILE_INDEX.md](AGILE_INDEX.md) (epic registry) · [LAUNCH_TIMELINE.md](LAUNCH_TIMELINE.md) (dated timeline: marketable beta in 1–2 days · deploy maturity ~2 wks parallel · revenue ~3–4 wks)
@@ -13,7 +13,7 @@
 |------|-----------|---------------|--------|--------|
 | **0** | ✅ **Phase 0 close** — production is live (`app.buildographic.com`). US-DESIGN-003/004 closed 2026-10-28; production smoke test ([HUMAN_TASKS #2](HUMAN_TASKS.md)) complete and Task 3 signed off PASS 2026-10-29. **Phase 0 closed** | Everything else is theoretical without a production URL. | done | — |
 | **1** | ✅ **[M-LAUNCH-01-public-beta](epics/phase-1-ai-core/EPIC-LAUNCH-01/milestones/M-LAUNCH-01-public-beta.md)** — legal pages · email · password reset · beta mode — **closed 2026-10-19** | The "can't responsibly have users" gaps. | done | — |
-| **1∥** | 🔲 **[M-OBS-01-sentry-integration](epics/phase-1-ai-core/EPIC-OBS-00/EPIC.md)** — US-OBS-001/002/003, not started. Related: US-OBS-005 (uptime alerts) is merged and waits on its operator step to close **BL-34 (P1)** | First beta user's bug must arrive via Sentry, not WhatsApp. | ~8 h | Beta quality |
+| **1∥** | ➡️ **[M-OBS-01-sentry-integration](epics/phase-1.5-foundation-v3/EPIC-OBS-00/EPIC.md)** — moved to Phase 1.5 as its Wave 0 gate. US-OBS-005 waits on its operator step to close **BL-34 (P1)** | First beta user's bug must arrive via Sentry, not WhatsApp. | ~1–2 days | Phase 1.5 |
 | — | 🚀 ✅ **BETA LIVE** — `app.buildographic.com`, M-LAUNCH-01 closed 2026-10-19 | | | |
 | **2** | ✅ **[EPIC-AI-02](epics/phase-1-ai-core/EPIC-AI-02/EPIC.md) deps** — US-AI-010 photo upload done (M-AI-06 closed 2026-08-05); US-AI-011 superseded by US-AI-036/037/038 | Hard dependencies of EPIC-AI-06. | done | — |
 | **3** | ✅ **[EPIC-AI-06](epics/phase-1-ai-core/EPIC-AI-06/EPIC.md)** — Hybrid Real-Photo Pipeline — **fully closed 2026-08-15, both milestones.** M-AI-18 (editable overlay, 10 stories) and M-AI-17 (real-photo composition, US-AI-031/031b — credit topped up same day, both live-verified) | **The chargeability gate.** Agents must market their actual listing photo, not an AI-invented house with a fake headshot. This is what makes the product defensibly paid. | ~30 h | Revenue |
@@ -21,8 +21,9 @@
 | **3∥∥** | ✅ **[EPIC-INFRA-02](epics/phase-1-ai-core/EPIC-INFRA-02/EPIC.md)** — Durable Asset Storage (Cloudflare R2) — **closed 2026-10-19**, verified on production | Customer deliverables no longer depend on Ideogram's expiring URLs. | done | — |
 | **3∥∥∥** | 🟢 **[EPIC-PAY-05](epics/phase-1-ai-core/EPIC-PAY-05/EPIC.md)** — Pricing Relaunch. **V1 COMPLETE — all four V1 milestones closed 2026-10-21**, 12/12 stories merged. V2 (M-PAY-05, founding/promo activation) ⏸ held until payment traction | The real ₹ transaction (US-LAUNCH-005 AC6) should run against the relaunched, feasibility-checked prices — not the old beta prices, which measured 8% worst-case margin with editable usage. | ~4–6 days | Revenue |
 | — | 💰 ✅ **REVENUE ON** — all four gates closed: rank 3 (2026-08-15), 3∥ and 3∥∥ (2026-10-19), 3∥∥∥ V1 (2026-10-21). Checkout is live; founding/promo pricing (M-PAY-05) is held by decision | | | |
-| **4** | **[EPIC-KIT-01](epics/phase-1-ai-core/EPIC-KIT-01/EPIC.md)** — Listing Marketing Kits | Retention + price justification after revenue starts. | ~45 h | Phase 1 gate |
-| **5** | **Phase 2** — EPIC-AI-01 conversational core · EPIC-AI-03 refine loop · EPIC-AI-02 remainder · EPIC-USAGE-01 · EPIC-PAY-02/03 | Polish and self-serve follow revenue. | ~60–80 h | — |
+| **4** | 🟡 **[Phase 1.5 — Property Foundation & V3 Editor](epics/phase-1.5-foundation-v3/README.md)** — Wave 0: M-OBS-01 ∥ M-EDIT-03 · Wave 1: M-PROP-01 ∥ M-PROP-03 · Wave 2: M-EDIT-06 ∥ M-PROP-02 · Wave 3: M-EDIT-07 · Wave 4: M-EDIT-08 | Kits, campaigns and an AI campaign agent all need a saved Property, a saved Brand profile and a reliable template contract first. | ≈ 22–31 days | Phase 2 |
+| **5** | **Phase 2 — Kits & Asset Quality** — [EPIC-KIT-01](epics/phase-2-ai-refine/EPIC-KIT-01/EPIC.md) re-scoped on Property + proven templates · EPIC-AI-03 (element edit, background removal, print upscale) · EPIC-USAGE-01 / EPIC-PAY-02/03 placeholders | Retention and price justification once the foundation exists. | ~45 h + | — |
+| **6** | **Phase 3** — EPIC-AI-04 Campaign Mode backend + asset tools · EPIC-ORG-01 · EPIC-AI-05 (US-AI-029) | The Campaign layer and team operations. | — | — |
 
 ---
 
@@ -35,7 +36,8 @@ Phase 0 deploy (rank 0)
   │       └─ US-LAUNCH-002 EmailService ──→ US-LAUNCH-003 reset · US-LAUNCH-006 receipts
   ├─→ M-OBS-01 Sentry (rank 1∥)
   └─→ US-AI-010/011 (rank 2) ──→ EPIC-AI-06 (rank 3) ──┐
-          M-LAUNCH-02 prep (rank 3∥) ────────────────────┴─→ 💰 REVENUE ON ──→ EPIC-KIT-01 (rank 4)
+          M-LAUNCH-02 prep (rank 3∥) ────────────────────┴─→ 💰 REVENUE ON
+                                                                   └─→ Phase 1.5 foundation (rank 4) ──→ Phase 2 kits (rank 5) ──→ Phase 3 campaigns (rank 6)
 ```
 
 ---

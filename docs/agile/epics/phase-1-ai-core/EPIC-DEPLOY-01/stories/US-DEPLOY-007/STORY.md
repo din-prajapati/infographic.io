@@ -5,7 +5,7 @@
 > **Epic:** [EPIC-DEPLOY-01](../../EPIC.md)
 > **Milestone:** [M-DEPLOY-01](../../milestones/M-DEPLOY-01-velocity-foundation.md)
 > **Size:** M
-> **Related:** [US-DEPLOY-001](../US-DEPLOY-001/STORY.md) (CI gate hardening — adjacent, does not overlap)
+> **Related:** [US-DEPLOY-001](../../../../phase-4-backlog/EPIC-DEPLOY-02/stories/US-DEPLOY-001/STORY.md) (CI gate hardening — adjacent, does not overlap)
 > **Blocks:** [US-AI-032](../../../EPIC-AI-06/stories/US-AI-032/STORY.md) AC5
 > **Linear:** LIN-XXX
 > **Created:** 2026-08-11 | **Closed:** 2026-08-15
@@ -62,7 +62,7 @@ environment: 'node',
 ## Out of Scope
 
 - **Rewriting or expanding backend test coverage** — untouched beyond confirming it still runs.
-- **E2E/Playwright changes** — [US-DEPLOY-001](../US-DEPLOY-001/STORY.md) owns the E2E half of the gate.
+- **E2E/Playwright changes** — [US-DEPLOY-001](../../../../phase-4-backlog/EPIC-DEPLOY-02/stories/US-DEPLOY-001/STORY.md) owns the E2E half of the gate.
 - **Component/interaction testing** (React Testing Library patterns, user-event flows). This story establishes the *runner*; broad component coverage is separate, larger work.
 - **Visual regression / screenshot diffing.** Tempting for AC5 of US-AI-032, but a different tool class and a different story.
 - **Backfilling tests for every untested client file.** AC3 requires one meaningful suite, not a coverage target.

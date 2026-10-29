@@ -1,7 +1,7 @@
 # M-AI-10-semantic-layer — Semantic Layer Split + R2 Asset Storage
 
 > **Epic:** [EPIC-AI-03](../EPIC.md)
-> **Status:** 🔲 Not Started
+> **Status:** 🔲 Not Started — US-AI-020 superseded 2026-10-29 (delivered by EPIC-INFRA-02); US-AI-019 remains — mostly covered by US-AI-048 extraction, re-scope before implementing
 > **Target date:** 2026-10-15
 
 ---

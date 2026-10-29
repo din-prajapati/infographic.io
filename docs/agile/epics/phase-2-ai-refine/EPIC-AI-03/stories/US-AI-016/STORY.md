@@ -1,6 +1,6 @@
 # Story Card — US-AI-016
 
-> **Status:** 🔲 Not Started
+> **Status:** ⏭️ Superseded 2026-10-29 — merged into [US-EDIT-023](../../../../phase-1.5-foundation-v3/EPIC-EDIT-04/stories/US-EDIT-023/STORY.md) — the AI Assistant's Generate Background task is the one "refine from the canvas" entry point. See [ADR-003](../../../../../decisions/ADR-003-phase-1-close-and-phase-1.5.md).
 > **Feature:** F-AI-03-01
 > **Epic:** [EPIC-AI-03](../../EPIC.md)
 > **Milestone:** [M-AI-08-quick-refine](../../milestones/M-AI-08-quick-refine.md)

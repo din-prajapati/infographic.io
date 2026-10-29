@@ -1,6 +1,6 @@
 # Story Card — US-AI-030
 
-> **Status:** 🔲 Not Started
+> **Status:** ⏭️ Superseded 2026-10-29 — in-chat search retires with the floating AI chat ([US-EDIT-023](../../../../phase-1.5-foundation-v3/EPIC-EDIT-04/stories/US-EDIT-023/STORY.md)). See [ADR-003](../../../../../decisions/ADR-003-phase-1-close-and-phase-1.5.md).
 > **Feature:** F-AI-05-04 | **Epic:** [EPIC-AI-05](../../EPIC.md)
 > **Milestone:** [M-AI-16-status-search](../../milestones/M-AI-16-status-search.md)
 > **Capability:** CAP-24 (8h) | **Created:** 2026-04-28

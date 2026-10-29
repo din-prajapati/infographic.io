@@ -1,7 +1,9 @@
 # EPIC-DEPLOY-01 — Deployment Velocity & Safety (Cursor-style shipping)
 
 > **Phase:** Phase 1 — Platform / Velocity
-> **Status:** 🟡 In Progress — 1/7 Done. US-DEPLOY-007 (client-side unit test infrastructure), an unplanned addition (2026-08-11) that became a hard blocker for US-AI-032, closed 2026-08-15 (all 7 ACs + 6 TCs live-verified). US-DEPLOY-001–006 remain not started (no TASKS.md yet) — still non-blocking/rolling per this epic's own scope note below.
+> **Status:** ✅ **Closed at Phase 1 scope 2026-10-29 — 2/7 done** (US-DEPLOY-007 2026-08-15, US-DEPLOY-004 2026-10-01). The five open stories moved to [EPIC-DEPLOY-02](../../phase-4-backlog/EPIC-DEPLOY-02/EPIC.md) (Phase 4 backlog) — [ADR-003](../../../decisions/ADR-003-phase-1-close-and-phase-1.5.md).
+>
+> *Status before the restructure (stale — said 1/7):* 🟡 In Progress — 1/7 Done. US-DEPLOY-007 (client-side unit test infrastructure), an unplanned addition (2026-08-11) that became a hard blocker for US-AI-032, closed 2026-08-15 (all 7 ACs + 6 TCs live-verified). US-DEPLOY-001–006 remain not started (no TASKS.md yet) — still non-blocking/rolling per this epic's own scope note below.
 > **Depends on:** EPIC-INFRA-01 Task 3 (production exists) for US-DEPLOY-005 only · [US-LAUNCH-010](../EPIC-LAUNCH-01/stories/US-LAUNCH-010/STORY.md) (`APP_ENV`) for US-DEPLOY-002/003
 > **Target date:** rolling (non-blocking) — see timeline
 > **Owner:** Dinesh
@@ -57,12 +59,12 @@ it to a % of users → a bad release auto-rolls-back on health check.
 
 | Story ID | Title | Size | Est. | Status | Depends on |
 |----------|-------|------|------|--------|-----------|
-| [US-DEPLOY-001](stories/US-DEPLOY-001/STORY.md) | Harden the CI gate (fast, mandatory, + E2E) | S | 0.5 day | 🔲 | — |
-| [US-DEPLOY-003](stories/US-DEPLOY-003/STORY.md) | Feature-flag mechanism (env-var first, table later) | S | 0.5 day | 🔲 | US-LAUNCH-004 (first consumer) |
-| [US-DEPLOY-002](stories/US-DEPLOY-002/STORY.md) | Preview environment per PR (Railway PR env + Neon branch) | L | 1.5 days | 🔲 | US-LAUNCH-010 (`APP_ENV`) |
-| [US-DEPLOY-006](stories/US-DEPLOY-006/STORY.md) | Approval governance — RACI, required checks, runbook (solo → team) | S | 0.5 day | 🔲 | US-DEPLOY-001/002/003 |
+| [US-DEPLOY-001](../../phase-4-backlog/EPIC-DEPLOY-02/stories/US-DEPLOY-001/STORY.md) | Harden the CI gate (fast, mandatory, + E2E) | S | 0.5 day | 🔲 | — |
+| [US-DEPLOY-003](../../phase-4-backlog/EPIC-DEPLOY-02/stories/US-DEPLOY-003/STORY.md) | Feature-flag mechanism (env-var first, table later) | S | 0.5 day | 🔲 | US-LAUNCH-004 (first consumer) |
+| [US-DEPLOY-002](../../phase-4-backlog/EPIC-DEPLOY-02/stories/US-DEPLOY-002/STORY.md) | Preview environment per PR (Railway PR env + Neon branch) | L | 1.5 days | 🔲 | US-LAUNCH-010 (`APP_ENV`) |
+| [US-DEPLOY-006](../../phase-4-backlog/EPIC-DEPLOY-02/stories/US-DEPLOY-006/STORY.md) | Approval governance — RACI, required checks, runbook (solo → team) | S | 0.5 day | 🔲 | US-DEPLOY-001/002/003 |
 | [US-DEPLOY-004](stories/US-DEPLOY-004/STORY.md) | Production migration workflow (`migrate deploy` + expand/contract) | M | 1 day | ✅ | ~~prod has real data~~ — done 2026-10-01, PR #56, driven by BL-33 (rollback), not data volume |
-| [US-DEPLOY-005](stories/US-DEPLOY-005/STORY.md) | Progressive delivery + auto-rollback (canary, health-gated) | M | 1 day | 🔲 | EPIC-INFRA-01 Task 3, US-DEPLOY-004 (safe rollout needs backward-compatible migrations first) |
+| [US-DEPLOY-005](../../phase-4-backlog/EPIC-DEPLOY-02/stories/US-DEPLOY-005/STORY.md) | Progressive delivery + auto-rollback (canary, health-gated) | M | 1 day | 🔲 | EPIC-INFRA-01 Task 3, US-DEPLOY-004 (safe rollout needs backward-compatible migrations first) |
 | [US-DEPLOY-007](stories/US-DEPLOY-007/STORY.md) | Client-side unit test infrastructure (not originally planned — became a hard blocker for US-AI-032 AC5) | M | ~3 h | ✅ Done 2026-08-15 | US-AI-032 AC5 (was blocked on this) |
 
 **Total engineering effort: ~5 focused days** (see timeline below for calendar).

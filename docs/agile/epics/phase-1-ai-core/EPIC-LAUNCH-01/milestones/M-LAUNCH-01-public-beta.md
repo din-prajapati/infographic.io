@@ -24,8 +24,8 @@ A real estate agent who is a total stranger can sign up on production, generate 
 | 2 | [US-LAUNCH-010](../stories/US-LAUNCH-010/STORY.md) | Config hardening — APP_ENV + boot validation + RazorPay guard | US-LAUNCH-009 | ✅ Done | [#17](https://github.com/din-prajapati/infographic.io/pull/17) |
 | 3 | [US-LAUNCH-011](../stories/US-LAUNCH-011/STORY.md) | Rebrand user-facing surfaces to Buildographic | — | ✅ Done | [#16](https://github.com/din-prajapati/infographic.io/pull/16) |
 | Backlog | [US-LAUNCH-014](../stories/US-LAUNCH-014/STORY.md) | Sign-up verification gate + abuse controls | — | ✅ Done 2026-09-29 | [#55](https://github.com/din-prajapati/infographic.io/pull/55) (`09c6e9e`) + fix `7044a44` |
-| Backlog | [US-LAUNCH-016](../stories/US-LAUNCH-016/STORY.md) | Post-signup onboarding — Screen 1 required profile | — (file overlap with 014: sequence, don't parallelize) | 🔲 | — |
-| Backlog | [US-LAUNCH-017](../stories/US-LAUNCH-017/STORY.md) | Onboarding brand kit — Screen 2 | US-LAUNCH-016 | 🔲 | — |
+| Backlog | [US-LAUNCH-016](../../../phase-1.5-foundation-v3/EPIC-PROP-01/stories/US-LAUNCH-016/STORY.md) | Post-signup onboarding — Screen 1 required profile | — (file overlap with 014: sequence, don't parallelize) | 🔲 | — |
+| Backlog | [US-LAUNCH-017](../../../phase-1.5-foundation-v3/EPIC-PROP-01/stories/US-LAUNCH-017/STORY.md) | Onboarding brand kit — Screen 2 | US-LAUNCH-016 | 🔲 | — |
 
 > **Order** = wave. Same order = no known file overlap, safe to run in parallel worktrees. **Blocked By** = genuine logical dependency (must be ✅ Done, not just merged-and-mergeable). File-overlap safety within an order is verified automatically by `orion run next M-LAUNCH-01`, not by this column.
 >

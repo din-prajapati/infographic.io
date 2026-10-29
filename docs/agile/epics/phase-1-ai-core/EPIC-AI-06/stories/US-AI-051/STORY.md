@@ -12,7 +12,7 @@
 
 ---
 
-> ## 🔁 Trigger changed by [US-EDIT-009](../../../EPIC-EDIT-03/stories/US-EDIT-009/STORY.md) — behaviour preserved
+> ## 🔁 Trigger changed by [US-EDIT-009](../../../../phase-1.5-foundation-v3/EPIC-EDIT-04/stories/US-EDIT-009/STORY.md) — behaviour preserved
 >
 > **Implemented 2026-09-01 (Option A).** The text-free path now fires on `photoReference` alone.
 > `US-EDIT-009` AC8 dropped only the `renderMode === 'editable' &&` clause from `useTextFree`

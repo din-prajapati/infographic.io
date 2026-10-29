@@ -1,6 +1,6 @@
 # Story Card — US-AI-020
 
-> **Status:** 🔲 Not Started
+> **Status:** ⏭️ Superseded 2026-10-29 — delivered by [EPIC-INFRA-02](../../../../phase-1-ai-core/EPIC-INFRA-02/EPIC.md) (Cloudflare R2, closed 2026-10-19). See [ADR-003](../../../../../decisions/ADR-003-phase-1-close-and-phase-1.5.md).
 > **Feature:** F-AI-03-03
 > **Epic:** [EPIC-AI-03](../../EPIC.md)
 > **Milestone:** [M-AI-10-semantic-layer](../../milestones/M-AI-10-semantic-layer.md)

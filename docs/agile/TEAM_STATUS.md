@@ -3,7 +3,7 @@
 > **Audience:** Engineering leads and domain teams  
 > **Purpose:** Per-domain view of what's in progress, what's next, and what's blocked — mapped to epics and stories.  
 > **Update cadence:** When a story status changes (start / block / complete).  
-> **Last updated:** 2026-10-26 — stale-status sweep: EDIT, INFRA and LAUNCH rows corrected; EPIC-EDIT-03 added (missing from this board); EDIT and INFRA sections carry a dated update. Before that: 2026-09-08 — board had gone 24 days stale and was materially wrong in two
+> **Last updated:** 2026-10-29 — **Phase 1 closed at its delivered scope; Phase 1.5 opened** ([ADR-003](decisions/ADR-003-phase-1-close-and-phase-1.5.md)): EPIC-OBS-00, the new EPIC-PROP-01 (Property & Brand Foundation) and the new EPIC-EDIT-04 (V3 Editor Simplification) are the active epics; EPIC-KIT-01 moved to Phase 2. Domain sections below predate this and still describe Phase 1. Before that: 2026-10-26 — stale-status sweep: EDIT, INFRA and LAUNCH rows corrected; EPIC-EDIT-03 added (missing from this board); EDIT and INFRA sections carry a dated update. Before that: 2026-09-08 — board had gone 24 days stale and was materially wrong in two
 > places: it called EPIC-PAY-05 "scaffolded, not started" when 11 of its 12 stories are
 > code-complete, and it showed INFRA at "Task 3 next" when M-INFRA-01's three stories shipped
 > 2026-08-31. Refreshed against the actual story cards, not against this board's own history.

@@ -10,7 +10,7 @@ updated: 2026-08-26
 > **Status:** ✅ Done — merged (PR #35) and live-verified 2026-08-25/26. The verification pass
 > found and fixed **three** real defects that made the control non-functional in the template flow
 > (PR #38 — see Implementation Update). **AC4 was descoped 2026-08-26** to
-> [US-EDIT-008](../US-EDIT-008/STORY.md); see the DoD exception below.
+> [US-EDIT-008](../../../../phase-1.5-foundation-v3/EPIC-EDIT-04/stories/US-EDIT-008/STORY.md); see the DoD exception below.
 > **Epic:** [EPIC-EDIT-03](../../EPIC.md)
 > **Milestone:** [M-EDIT-01-editable-menu-surfacing](../../milestones/M-EDIT-01-editable-menu-surfacing.md)
 > **Linear:** LIN-XXX
@@ -74,7 +74,7 @@ redundant.
       (cached) response resolves before the spinner would ever render; a slow (fresh) one reliably
       shows it. **Not yet manually verified** (TC-EDIT-005-03).
 - [~] **AC4 [error-path]:** ~~Quota badge decrements at the exact moment of charge.~~
-      **DESCOPED 2026-08-26 → [US-EDIT-008](../US-EDIT-008/STORY.md).** Not achievable in this
+      **DESCOPED 2026-08-26 → [US-EDIT-008](../../../../phase-1.5-foundation-v3/EPIC-EDIT-04/stories/US-EDIT-008/STORY.md).** Not achievable in this
       story for a structural reason, not an incomplete one: `POST /:id/compose` never returns
       `isCacheHit` / `isExtraCompose` to the client (they are local variables in
       `generations.service.ts`, confirmed absent from `composed-design.types.ts`). Without that
@@ -251,7 +251,7 @@ Rules:
 > **DoD exception:** AC4 (and its task T4b) descoped rather than delivered. `POST /:id/compose`
 > does not expose `isCacheHit` / `isExtraCompose` to the client, so the quota badge could not be
 > built honestly from this story's scope; the alternative was to guess at charge state, which was
-> rejected. Deferred in full to [US-EDIT-008](../US-EDIT-008/STORY.md), which owns the response-shape
+> rejected. Deferred in full to [US-EDIT-008](../../../../phase-1.5-foundation-v3/EPIC-EDIT-04/stories/US-EDIT-008/STORY.md), which owns the response-shape
 > change. The story is closed on the value it did deliver — AC1/2/3/5, all live-verified.
 > Approved by: Dinesh, 2026-08-26.
 

@@ -121,6 +121,6 @@ after. The uptime check is the backstop, not the fix.
 ## Related
 
 - [MIGRATION_ROLLBACK.md](./MIGRATION_ROLLBACK.md) — if the cause is a failed migration or deploy
-- [US-OBS-005](../agile/epics/phase-1-ai-core/EPIC-OBS-00/stories/US-OBS-005/STORY.md) — ACs and test evidence
+- [US-OBS-005](../agile/epics/phase-1.5-foundation-v3/EPIC-OBS-00/stories/US-OBS-005/STORY.md) — ACs and test evidence
 - BL-36 — staging scale-to-zero, the reason for the retry budget
 - BL-34 — the original 15-day outage

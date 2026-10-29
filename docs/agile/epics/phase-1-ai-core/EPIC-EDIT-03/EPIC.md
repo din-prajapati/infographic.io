@@ -8,7 +8,9 @@ updated: 2026-08-26
 # EPIC-EDIT-03 — Editable Design Discoverability
 
 > **Phase:** Phase 1 — Revenue Strategy
-> **Status:** 🟡 In Progress — **M-EDIT-05 closed 2026-10-26** ([#73](https://github.com/din-prajapati/infographic.io/pull/73): one source of truth for listing facts). **M-EDIT-04 closed 2026-10-25** ([#64](https://github.com/din-prajapati/infographic.io/pull/64): BL-27 fixed). **M-EDIT-01 closed 2026-08-26.** US-EDIT-005 shipped and was
+> **Status:** ✅ **Closed at Phase 1 scope 2026-10-29** — M-EDIT-01, M-EDIT-04 and M-EDIT-05 done (10 stories). The open work moved in the Phase 1.5 restructure ([ADR-003](../../../decisions/ADR-003-phase-1-close-and-phase-1.5.md)): US-EDIT-008/009 and M-EDIT-03 → [EPIC-EDIT-04](../../phase-1.5-foundation-v3/EPIC-EDIT-04/EPIC.md); US-EDIT-006/007 (M-EDIT-02) → [EPIC-PROP-01](../../phase-1.5-foundation-v3/EPIC-PROP-01/EPIC.md).
+>
+> *Status before the restructure:* 🟡 In Progress — **M-EDIT-05 closed 2026-10-26** ([#73](https://github.com/din-prajapati/infographic.io/pull/73): one source of truth for listing facts). **M-EDIT-04 closed 2026-10-25** ([#64](https://github.com/din-prajapati/infographic.io/pull/64): BL-27 fixed). **M-EDIT-01 closed 2026-08-26.** US-EDIT-005 shipped and was
 > live-verified; its AC4 was descoped to US-EDIT-008, which now owns the quota badge and the
 > backend response-shape change it depends on. M-EDIT-02 (brand layers) scaffolded, not started.
 > Open: US-EDIT-006, US-EDIT-007, US-EDIT-008, US-EDIT-009.
@@ -69,8 +71,8 @@ gated behind having already generated something.
 | Milestone | Scope | Target | Status |
 |-----------|-------|--------|:------:|
 | [M-EDIT-01-editable-menu-surfacing](milestones/M-EDIT-01-editable-menu-surfacing.md) | Promote the existing renderMode toggle to a persistent, labeled entry point | 2026-08-26 | ✅ |
-| [M-EDIT-02-brand-layers](milestones/M-EDIT-02-brand-layers.md) | Agent brand furniture (logo, licence, headshot, QR) as real canvas layers | TBD | 🔲 |
-| [M-EDIT-03-single-editable-path](milestones/M-EDIT-03-single-editable-path.md) | Remove the pre-placement Flat/Editable toggle — one way to get editable text, on the canvas | TBD | 🟡 PR #49 |
+| [M-EDIT-02-brand-layers](milestones/M-EDIT-02-brand-layers.md) | Agent brand furniture (logo, licence, headshot, QR) as real canvas layers | — | ⏭️ Moved → M-PROP-02 (Phase 1.5) |
+| [M-EDIT-03-single-editable-path](../../phase-1.5-foundation-v3/EPIC-EDIT-04/milestones/M-EDIT-03-single-editable-path.md) | Remove the pre-placement Flat/Editable toggle — one way to get editable text, on the canvas | TBD | ➡️ Moved → EPIC-EDIT-04 (Phase 1.5) |
 | [M-EDIT-04-ai-composition-over-template](milestones/M-EDIT-04-ai-composition-over-template.md) | An AI design placed over a template renders one set of property facts, not three — closes BL-27 | 2026-10-25 | ✅ |
 | [M-EDIT-05-one-source-of-truth](milestones/M-EDIT-05-one-source-of-truth.md) | One editor and one stored value per listing fact — the sidebar number is the canvas number | 2026-10-26 | ✅ |
 
@@ -81,10 +83,10 @@ gated behind having already generated something.
 | Order | Story ID | Title | Milestone | Size | Blocked By | Status | PR |
 |:-----:|----------|-------|-----------|:----:|------------|:------:|:--:|
 | 1 | [US-EDIT-005](stories/US-EDIT-005/STORY.md) | Floating "Edit elements" control on the canvas | M-EDIT-01 | M | — | ✅ Done | [#35](https://github.com/din-prajapati/infographic.io/pull/35), [#38](https://github.com/din-prajapati/infographic.io/pull/38) |
-| 2 | [US-EDIT-006](stories/US-EDIT-006/STORY.md) | Brand layers from existing data — logo + licence | M-EDIT-02 | M | — | 🔲 | — |
-| 3 | [US-EDIT-007](stories/US-EDIT-007/STORY.md) | Agent headshot + QR code | M-EDIT-02 | M | US-EDIT-006 | 🔲 | — |
-| 4 | [US-EDIT-008](stories/US-EDIT-008/STORY.md) | Editable quota badge + charge confirmation | — (unassigned) | M | — (deferred from US-EDIT-005 AC4) | 🔲 | — |
-| 5 | [US-EDIT-009](stories/US-EDIT-009/STORY.md) | Remove the pre-placement Flat/Editable toggle | M-EDIT-03 | M | — | 🟡 | [#49](https://github.com/din-prajapati/infographic.io/pull/49) |
+| 2 | [US-EDIT-006](../../phase-1.5-foundation-v3/EPIC-PROP-01/stories/US-EDIT-006/STORY.md) | Brand layers from existing data — logo + licence | M-EDIT-02 | M | — | ➡️ → EPIC-PROP-01 | — |
+| 3 | [US-EDIT-007](../../phase-1.5-foundation-v3/EPIC-PROP-01/stories/US-EDIT-007/STORY.md) | Agent headshot + QR code | M-EDIT-02 | M | US-EDIT-006 | ➡️ → EPIC-PROP-01 | — |
+| 4 | [US-EDIT-008](../../phase-1.5-foundation-v3/EPIC-EDIT-04/stories/US-EDIT-008/STORY.md) | Editable quota badge + charge confirmation | — (unassigned) | M | — (deferred from US-EDIT-005 AC4) | ➡️ → EPIC-EDIT-04 | — |
+| 5 | [US-EDIT-009](../../phase-1.5-foundation-v3/EPIC-EDIT-04/stories/US-EDIT-009/STORY.md) | Remove the pre-placement Flat/Editable toggle | M-EDIT-03 | M | — | ➡️ → EPIC-EDIT-04 (🟡) | [#49](https://github.com/din-prajapati/infographic.io/pull/49) |
 | 6 | [US-EDIT-011](stories/US-EDIT-011/STORY.md) | Persist the AI composition flag end to end | M-EDIT-04 | M | — | ✅ Done | [#64](https://github.com/din-prajapati/infographic.io/pull/64) |
 | 7 | [US-EDIT-012](stories/US-EDIT-012/STORY.md) | Branch the layer rule on composition, with one undo | M-EDIT-04 | M | US-EDIT-011 (contract only) | ✅ Done | [#64](https://github.com/din-prajapati/infographic.io/pull/64) |
 | 8 | [US-EDIT-013](stories/US-EDIT-013/STORY.md) | Remove the dead AI chat panel code | M-EDIT-04 | S | — | ✅ Done | [#64](https://github.com/din-prajapati/infographic.io/pull/64) |
@@ -168,10 +170,10 @@ gated behind having already generated something.
 | Blocker | Owner | Status |
 |---|---|---|
 | `getEditableUsageQuota()` — needed for US-EDIT-005 AC4's quota number | US-PAY-103 | ✅ **cleared 2026-08-26** — shipped to `main` with the EPIC-PAY-05 merge (`generations.controller.ts:29`, `GET /infographics/generations/usage/quota/editable`) |
-| `POST /:id/compose` does not return `isCacheHit` / `isExtraCompose` to the client | [US-EDIT-008](stories/US-EDIT-008/STORY.md) | ✅ **owned as of 2026-08-26** — was unowned; US-EDIT-005 AC4 descoped into a story that carries it |
+| `POST /:id/compose` does not return `isCacheHit` / `isExtraCompose` to the client | [US-EDIT-008](../../phase-1.5-foundation-v3/EPIC-EDIT-04/stories/US-EDIT-008/STORY.md) | ✅ **owned as of 2026-08-26** — was unowned; US-EDIT-005 AC4 descoped into a story that carries it |
 
 Resolved 2026-08-26 by descoping: AC4 moved out of US-EDIT-005 into
-[US-EDIT-008](stories/US-EDIT-008/STORY.md), which owns both the badge and the response-shape
+[US-EDIT-008](../../phase-1.5-foundation-v3/EPIC-EDIT-04/stories/US-EDIT-008/STORY.md), which owns both the badge and the response-shape
 change it needs. US-EDIT-005 closed on the value it had delivered rather than sitting open
 against a dependency nobody owned.
 

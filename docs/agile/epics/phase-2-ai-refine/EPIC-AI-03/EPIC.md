@@ -1,6 +1,6 @@
 # EPIC-AI-03 — Refine Loop
 
-> **Phase:** Phase 2 — Refine Loop (Month 3–6)
+> **Phase:** Phase 2 — Kits & Asset Quality (re-scoped 2026-10-29: refine chips moved to Phase 1.5; US-AI-016/018/020 superseded — [ADR-003](../../../decisions/ADR-003-phase-1-close-and-phase-1.5.md))
 > **Status:** 🔲 Not Started
 > **Depends on:** EPIC-AI-01 + EPIC-AI-02 complete
 > **Linear Project:** LIN-EPIC-AI-03
@@ -34,12 +34,12 @@
 
 | Story ID | Title | Milestone | Status | PR |
 |----------|-------|-----------|--------|----|
-| [US-AI-015](stories/US-AI-015/STORY.md) | Quick Refine chips post-generation (CAP-11) | M-AI-08 | 🔲 | — |
-| [US-AI-016](stories/US-AI-016/STORY.md) | "Refine with AI" from canvas editor (CAP-12) | M-AI-08 | 🔲 | — |
+| [US-AI-015](../../phase-1.5-foundation-v3/EPIC-EDIT-04/stories/US-AI-015/STORY.md) | Quick Refine chips post-generation (CAP-11) | M-AI-08 | ➡️ → EPIC-EDIT-04 (Phase 1.5) | — |
+| [US-AI-016](stories/US-AI-016/STORY.md) | "Refine with AI" from canvas editor (CAP-12) | M-AI-08 | ⏭️ Superseded → US-EDIT-023 | — |
 | [US-AI-017](stories/US-AI-017/STORY.md) | Element Edit Mode — targeted modifications (CAP-13) | M-AI-09 | 🔲 | — |
-| [US-AI-018](stories/US-AI-018/STORY.md) | Edit listing details in image — text-in-image (CAP-14) | M-AI-09 | 🔲 | — |
+| [US-AI-018](stories/US-AI-018/STORY.md) | Edit listing details in image — text-in-image (CAP-14) | M-AI-09 | ⏭️ Superseded → US-EDIT-020 + US-EDIT-009 | — |
 | [US-AI-019](stories/US-AI-019/STORY.md) | Infographic semantic layer split (CAP-15) | M-AI-10 | 🔲 | — |
-| [US-AI-020](stories/US-AI-020/STORY.md) | Cloudflare R2 asset storage + signed URLs | M-AI-10 | 🔲 | — |
+| [US-AI-020](stories/US-AI-020/STORY.md) | Cloudflare R2 asset storage + signed URLs | M-AI-10 | ⏭️ Superseded — done by EPIC-INFRA-02 | — |
 | [US-AI-021](stories/US-AI-021/STORY.md) | Property photo background removal (CAP-16) | M-AI-11 | 🔲 | — |
 | [US-AI-022](stories/US-AI-022/STORY.md) | Upscale to Print Quality — 4K output (CAP-17) | M-AI-11 | 🔲 | — |
 

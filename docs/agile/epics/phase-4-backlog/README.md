@@ -29,6 +29,11 @@
 | B-15 | [Mobile App](#b-15--mobile-app) | Mobile | 10–14 wks | Medium | PRODUCT_ROADMAP §2.2 |
 | B-16 | [EPIC-AI-08 — Quality Tiers & Campaign Mode UI](#b-16--m-ai-07--quality-tiers--campaign-mode-ui) | AI | ~8-10h | Medium | EPIC-AI-08 (moved from EPIC-AI-02) |
 | B-17 | [EPIC-AI-08 — M-AI-02 Ideogram → Nano Banana image-model swap](#b-17--m-ai-02--ideogram--nano-banana-image-model-swap) | AI | ~6-8h | Medium | EPIC-AI-08 (moved from EPIC-AI-00, 2026-08-04) |
+| B-20 | [EPIC-AI-01 — Conversational AI Core](EPIC-AI-01/EPIC.md) | AI | ~27h | Low | Moved from Phase 2, 2026-10-29 (ADR-003) — revisit if agents ask for conversation |
+| B-21 | [EPIC-MKT-01 — Market-Aware Generation](EPIC-MKT-01/EPIC.md) | MKT | ~25–28h | Medium | Moved from Phase 1, 2026-10-29 — parked, trigger unchanged |
+| B-22 | [EPIC-DEPLOY-02 — Deployment Velocity remainder](EPIC-DEPLOY-02/EPIC.md) | DEPLOY | ~4 days | Medium | From EPIC-DEPLOY-01, 2026-10-29 — pull forward when it hurts |
+| B-23 | [US-AI-027 — Market data enrichment](EPIC-AI-08/stories/US-AI-027/STORY.md) | AI | ~12h | Low | From EPIC-AI-05, 2026-10-29 |
+| B-24 | [M-PAY-05 — Founding promo activation](../phase-1-ai-core/EPIC-PAY-05/milestones/M-PAY-05-founding-promo-activation.md) | PAY | — | Medium | On hold by decision since 2026-10-21 |
 | B-19 | [EPIC-AI-09 — Sample Template Format Expansion](#b-19--epic-ai-09--sample-template-format-expansion) | AI | ~27-36h | Medium | EPIC-AI-09 (added 2026-08-20, likely prerequisite/trigger-adjacent to EPIC-KIT-01) |
 
 ---

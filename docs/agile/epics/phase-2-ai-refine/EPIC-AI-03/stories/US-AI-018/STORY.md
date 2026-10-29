@@ -1,6 +1,6 @@
 # Story Card — US-AI-018
 
-> **Status:** 🔲 Not Started
+> **Status:** ⏭️ Superseded 2026-10-29 — replaced by element linking ([US-EDIT-020](../../../../phase-1.5-foundation-v3/EPIC-EDIT-04/stories/US-EDIT-020/STORY.md)) plus Make editable ([US-EDIT-009](../../../../phase-1.5-foundation-v3/EPIC-EDIT-04/stories/US-EDIT-009/STORY.md)) — listing text is edited on the canvas, never repainted inside the image. See [ADR-003](../../../../../decisions/ADR-003-phase-1-close-and-phase-1.5.md).
 > **Feature:** F-AI-03-02
 > **Epic:** [EPIC-AI-03](../../EPIC.md)
 > **Milestone:** [M-AI-09-element-edit](../../milestones/M-AI-09-element-edit.md)

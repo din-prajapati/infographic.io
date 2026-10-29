@@ -42,6 +42,8 @@ domains:
     scope: "React Native / PWA mobile app"
   - prefix: "KIT"
     scope: "Multi-format kits, lifecycle, recurring content, compliance"
+  - prefix: "PROP"
+    scope: "Property and Brand records: saved listings, structured price/intent, brand profile, template binding contract"
   - prefix: "GEN"
     scope: "Image-generation pipeline quality, prompt engineering, cost control"
   - prefix: "LAUNCH"
@@ -60,11 +62,11 @@ domains:
 # sweep of highest IDs actually referenced in docs/agile/ — highest source wins
 # (a skipped number is harmless; a reused one collides).
 counters:
-  ADR: 3
+  ADR: 4
   DESIGN: { epic: 5, feature: 3, story: 13 }
   PAY: { epic: 6, feature: 5, story: 114 }  # EPIC-PAY-05 (Pricing Relaunch) consumed epic 5, feature 1-4, story 102-113
   AUTH: { epic: 2, feature: 1, story: 5 }
-  EDIT: { epic: 4, feature: 1, story: 19 }  # US-EDIT-018/019 added 2026-10-26 (M-EDIT-05 Gate 2 findings); M-EDIT-05 + US-EDIT-014..017 added 2026-10-25 (one source of truth for listing facts); EPIC-EDIT-03 (Editable Design Discoverability) consumed epic 3, story 5; M-EDIT-02 (brand layers) added 2026-08-26 consuming stories 6-7; US-EDIT-008 added 2026-08-26 (US-EDIT-005 AC4 descoped) US-EDIT-009 + M-EDIT-03 added 2026-09-01 (remove the pre-placement Flat/Editable toggle); M-EDIT-04 + US-EDIT-011/012/013 added 2026-10-24 (BL-27 — AI composition over a template; story 10 was never consumed, 011-013 continue the sequence)
+  EDIT: { epic: 5, feature: 1, story: 24 }  # 2026-10-29: EPIC-EDIT-04 + US-EDIT-020..023 (ADR-003).  # US-EDIT-018/019 added 2026-10-26 (M-EDIT-05 Gate 2 findings); M-EDIT-05 + US-EDIT-014..017 added 2026-10-25 (one source of truth for listing facts); EPIC-EDIT-03 (Editable Design Discoverability) consumed epic 3, story 5; M-EDIT-02 (brand layers) added 2026-08-26 consuming stories 6-7; US-EDIT-008 added 2026-08-26 (US-EDIT-005 AC4 descoped) US-EDIT-009 + M-EDIT-03 added 2026-09-01 (remove the pre-placement Flat/Editable toggle); M-EDIT-04 + US-EDIT-011/012/013 added 2026-10-24 (BL-27 — AI composition over a template; story 10 was never consumed, 011-013 continue the sequence)
   AI: { epic: 9, feature: 35, story: 53 } # reconciled 2026-08-14: US-AI-044 (LLM layout planner) + US-AI-045 (pipeline integration) merged from a long-orphaned branch — both now real story cards under EPIC-AI-06. Counter already accounted for their slots (043-051 all reserved 2026-08-12/13); no change needed. EPIC-AI-08 created 2026-07-30 (quality tiers + Campaign Mode UI, deferred from EPIC-AI-02 to Phase 4 Backlog, revenue-gated); US-AI-036/037/038 added 2026-07-29, replacing superseded US-AI-011; US-AI-039 added 2026-07-31 (Format Picker Canva-style reorg, F-AI-02-07); US-AI-040/041 added 2026-07-31 (Templates UX gaps split into two stories: US-AI-040 preview modal + tag filters, new F-AI-02-08; US-AI-041 device-mockup format previews, extends F-AI-02-07, depends on US-AI-039 merging first — US-AI-042 added 2026-08-02 (real canvas thumbnails on save, new F-AI-02-09); feature counter unchanged, both use EPIC-AI-02's epic-scoped F-AI-02-NN sub-numbering, not the global F-AI-NN sequence)
   USAGE: { epic: 2, feature: 1, story: 1 }
   INFRA: { epic: 4, feature: 1, story: 3 }
@@ -73,16 +75,17 @@ counters:
   TEST: { epic: 2, feature: 1, story: 1 }
   MOBILE: { epic: 2, feature: 1, story: 1 }
   KIT: { epic: 2, feature: 5, story: 7 }
+  PROP: { epic: 2, feature: 1, story: 6 } # added 2026-10-29: EPIC-PROP-01, US-PROP-001..005 (ADR-003)
   GEN: { epic: 2, feature: 3, story: 3 }
   LAUNCH: { epic: 2, feature: 9, story: 18 } # 2026-09-14: F-LAUNCH-08 + US-LAUNCH-016/017 (signup onboarding, split from one L request). reconciled 2026-08-13: US-LAUNCH-015 added (editable-design monetization, M-LAUNCH-02) — counter was stale at 12 while 012/013/014/015 already existed. Previously reconciled 2026-07-17: F-LAUNCH-07 + US-LAUNCH-011 created; counters were stale (009/010 + F-06 already existed)
-  DEPLOY: { epic: 2, feature: 1, story: 8 } # added 2026-08-15: DEPLOY domain existed in docs/agile/ (EPIC-DEPLOY-01, US-DEPLOY-001-007, added 2026-07-13) but was never registered here — real gap, not a reconciliation. story:8 = next after US-DEPLOY-007 (closed 2026-08-15).
+  DEPLOY: { epic: 3, feature: 1, story: 8 } # 2026-10-29: EPIC-DEPLOY-02 (backlog holder, ADR-003). # added 2026-08-15: DEPLOY domain existed in docs/agile/ (EPIC-DEPLOY-01, US-DEPLOY-001-007, added 2026-07-13) but was never registered here — real gap, not a reconciliation. story:8 = next after US-DEPLOY-007 (closed 2026-08-15).
 
 phases:
   - id: 0
     folder: "phase-0-mvp"
     release: "v1.0"
     outcome: "Working product in production — auth, payments, AI generation"
-    status: "in-progress"
+    status: "done" # Task 3 signed off 2026-10-29
   - id: "0.5"
     folder: "phase-0.5-foundation"
     release: "v1.0.1"
@@ -92,11 +95,16 @@ phases:
     folder: "phase-1-ai-core"
     release: "v1.1"
     outcome: "Revenue strategy — go-live/revenue readiness (EPIC-LAUNCH-01), real-photo hybrid, listing kits"
-    status: "in-progress" # corrected 2026-08-15 — was "planning" while 33/54 stories (61%) were already Done; see PHASE_TRACKER.md
+    status: "done" # closed 2026-10-29 at delivered scope (ADR-003); was in-progress since 2026-08-15
+  - id: "1.5"
+    folder: "phase-1.5-foundation-v3"
+    release: "v1.1.1"
+    outcome: "Property & Brand foundation + V3 editor — saved Property, structured price/intent, brand profile, template contract, linked editing, AI Assistant"
+    status: "in-progress"
   - id: 2
     folder: "phase-2-ai-refine"
     release: "v1.2"
-    outcome: "Conversational polish, refine loop, usage/billing self-serve"
+    outcome: "Kits on proven templates + asset quality (background removal, print upscale, element edit)"
     status: "not-started"
   - id: 3
     folder: "phase-3-ai-advanced"

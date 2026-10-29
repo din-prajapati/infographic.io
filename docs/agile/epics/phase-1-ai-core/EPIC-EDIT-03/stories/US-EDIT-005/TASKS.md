@@ -159,7 +159,7 @@ npm run test:unit:client
       untouched — two bare toasts, no dedicated moment. Fixed: real `Dialog`
       modal (`client/src/components/ui/dialog.tsx`) shown on
       `EDITABLE_REQUIRES_UPGRADE_REASON`.
-- [~] ~~T4b — quota badge (type: `feat`)~~ _(deferred 2026-08-26 → [US-EDIT-008](../US-EDIT-008/TASKS.md) — `/compose` does not expose the charge signal; see STORY.md DoD exception)_
+- [~] ~~T4b — quota badge (type: `feat`)~~ _(deferred 2026-08-26 → [US-EDIT-008](../../../../phase-1.5-foundation-v3/EPIC-EDIT-04/stories/US-EDIT-008/TASKS.md) — `/compose` does not expose the charge signal; see STORY.md DoD exception)_
       No badge exists in the component; `getEditableUsageQuota()` does not exist
       anywhere in the codebase (verified). Do not check this off until that story
       ships and the badge is wired to it.
