@@ -45,7 +45,7 @@ Every PR is traceable from `git log` → Story → Milestone → Epic.
 | EPIC-AUTH-01 | MVP Auth (JWT + Google OAuth) | ✅ Done | All closed | — |
 | EPIC-EDIT-01 | Canvas Editor (CRUD + export) | ✅ Done | All closed | — |
 | EPIC-AI-01 | MVP AI Pipeline (GPT-4o + Ideogram) | ✅ Done | All closed | — |
-| EPIC-INFRA-01 | Railway + Sentry + DB migrations | 🟡 In Progress | Code ✅ | 3 human deploy tasks |
+| EPIC-INFRA-01 | Railway + Sentry + DB migrations | ✅ Done 2026-10-29 | Code ✅ · Tasks 1–3 signed off PASS (Task 3: 2026-10-29) | — |
 | [EPIC-AI-07](epics/phase-0-mvp/EPIC-AI-07/EPIC.md) | Generation Progress Delivery Fix — **PT-09** | ✅ Done 2026-07-09 | US-AI-034 ✅ (PR #14, staging-verified) · US-AI-035 ⏭️ superseded | — |
 
 ## AI Capability Epics (Phase 0.5 → Phase 3)
