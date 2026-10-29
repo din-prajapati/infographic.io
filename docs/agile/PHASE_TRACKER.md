@@ -11,7 +11,7 @@
 
 | Phase | Release | Business Outcome | Status | Complete | Target |
 |-------|---------|-----------------|--------|----------|--------|
-| [Phase 0](#phase-0--mvp-launch) | v1.0 | Working product in production | 🟡 Stories done | **9/9 stories** — one human item left: the full production smoke test ([HUMAN_TASKS #2](HUMAN_TASKS.md)) | Live |
+| [Phase 0](#phase-0--mvp-launch) | v1.0 | Working product in production | 🟡 Stories done | **9/9 stories**; production smoke test done 2026-10-29 ([HUMAN_TASKS #2](HUMAN_TASKS.md)) — only the Task 3 sign-off line remains | Live |
 | [Phase 1](#phase-1--release-11-revenue-strategy) | v1.1 | **Revenue strategy** — go-live/revenue readiness (EPIC-LAUNCH-01), real-photo hybrid, listing kits | 🟡 In Progress | **73%** (61/84 stories — recounted 2026-10-26 from the story cards in `phase-1-ai-core/`, superseded stories excluded; now includes EPIC-EDIT-03) | Beta: live again on `7044a44` after a 15-day outage ([[BL-34]]) · Revenue: one story from the gate (US-LAUNCH-005 AC5/6) |
 | [Phase 2](#phase-2--release-12-polish--self-serve) | v1.2 | Conversational polish, refine loop, usage/billing self-serve | 🔲 Not Started | 0% | After Phase 1 gate |
 | [Phase 3](#phase-3--release-13-speed--batch) | v1.3 | Fast generation, batch uploads, volume pricing | 🔲 Not Started | 0% | Month 3 |
@@ -44,7 +44,7 @@ Each phase requires a gate decision before the next phase starts:
 
 ## Phase 0 — MVP Launch
 
-> **Release:** v1.0 · **Status:** 🟡 All 9 stories done (US-DESIGN-003/004 closed 2026-10-28); production live. One human item left: the full production smoke test ([HUMAN_TASKS #2](HUMAN_TASKS.md)).  
+> **Release:** v1.0 · **Status:** 🟡 All 9 stories done (US-DESIGN-003/004 closed 2026-10-28); production live. Production smoke test complete 2026-10-29 ([HUMAN_TASKS #2](HUMAN_TASKS.md)); only the Task 3 sign-off line remains.  
 > **Outcome:** Real estate agents can generate branded infographics, manage subscriptions, and export their work.  
 > **Last updated:** 2026-10-28 · PT-09 was fixed 2026-07-09 (EPIC-AI-07); the staging checks closed 2026-10-27/28.
 
@@ -63,7 +63,7 @@ Each phase requires a gate decision before the next phase starts:
 **Human tasks (2026-08-22 correction — the 3 lines this replaces were stale):** Task 1 and Task 2
 are in fact ✅ signed off (2026-06-20, 2026-07-11 — verified directly against
 `docs/testing/PHASE_0_HUMAN_QA_CHECKLIST.md`). Task 3 is mostly done (domain live, RazorPay
-live-mode, OAuth, Sentry all verified); 2 rows remain (tag `v1.0.0`, full smoke test). US-DESIGN-003/004's
+live-mode, OAuth, Sentry all verified); 2 rows remain (tag `v1.0.0`, full smoke test). **Update 2026-10-29:** both done — `v1.0.0` 2026-08-30, smoke test 2026-10-29. US-DESIGN-003/004's
 staging visual checks are still open but low-priority/stale (dated 2026-04–06, product has moved
 far past this point). **Full detail, all phases: [HUMAN_TASKS.md](HUMAN_TASKS.md).**
 
