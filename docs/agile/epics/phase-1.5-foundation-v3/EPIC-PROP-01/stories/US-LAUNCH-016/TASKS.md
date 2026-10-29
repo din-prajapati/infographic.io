@@ -21,7 +21,7 @@ One-liner: new signups (email + Google) must answer a 4-question profile screen 
 
 ## Task Breakdown
 
-- **T1** — `api/prisma/schema.prisma`: `User.onboardingRequired` (default false) + `UserProfile` model; `npx prisma generate`
+- **T1** — `api/prisma/schema.prisma`: `User.onboardingRequired Boolean @default(false)` + onboarding fields on the existing `UserProfile` (base model owned by US-AI-028); `npx prisma generate`
 - **T2** — `api/src/modules/auth/services/auth.service.ts`: flag new users in `register()` + `googleLogin()` new-user branch; expose `onboardingRequired` in returned user objects
 - **T3** — `api/src/modules/users/dto/onboarding.dto.ts` (new) + `users.service.ts` + `users.controller.ts`: `POST /users/me/onboarding`
 - **T4** — `api/tests/users/onboarding.spec.ts` (new): AC10 (a)–(f)

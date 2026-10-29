@@ -14,7 +14,7 @@
 
 | Phase | Open | Sized | Est. (low) | Est. (high) | Weeks @ ~37 h/wk (high) |
 |---|:--:|:--:|--:|--:|:--:|
-| **Phase 1.5** — property foundation + V3 editor | 26 | 20/26 | 98 h | **196 h** | 5.3 |
+| **Phase 1.5** — property foundation + V3 editor | 27 | 21/27 | 100 h | **199 h** | 5.4 |
 | **Phase 2** — kits + asset quality | 10 | 6/10 | 40 h | **80 h** | 2.2 |
 | **Phase 3** — campaigns + team operations | 6 | 1/6 | 21 h | **42 h** | 1.1 |
 | **Phase 4** — backlog (stories only) | 17 | 6/17 | 58 h | **115 h** | 3.1 |

@@ -7,9 +7,9 @@
 > **Milestone:** [M-PROP-02-brand-profile](../../milestones/M-PROP-02-brand-profile.md)
 > **Moved 2026-10-29:** from EPIC-LAUNCH-01 backlog (Phase 1) to EPIC-PROP-01 / M-PROP-02 (Phase 1.5) by the Phase 1.5 restructure — [ADR-003](../../../../../decisions/ADR-003-phase-1-close-and-phase-1.5.md). The onboarding screens write the saved Brand profile from US-AI-028.
 > **Size:** M (4–7 h)
-> **Depends on:** None logically. **File overlap with US-LAUNCH-014** (`auth.service.ts`, `App.tsx`, `shared/schema.ts`) — do not run the two in parallel worktrees; whichever lands second rebases.
+> **Depends on:** [US-AI-028](../US-AI-028/STORY.md) merged (UserProfile base model + User.profile relation already in the schema). **File overlap with US-LAUNCH-014** (`auth.service.ts`, `App.tsx`, `shared/schema.ts`) — do not run the two in parallel worktrees; whichever lands second rebases.
 > **Split from:** the post-signup onboarding request (2026-09-14). Screen 2 (brand kit) is [US-LAUNCH-017](../US-LAUNCH-017/STORY.md), which depends on this story.
-> **Note:** Introduces a new `UserProfile` model and one new `User` field (`onboardingRequired`) — run `npx prisma generate --schema=api/prisma/schema.prisma` after the schema change.
+> **Note:** Extends the existing `UserProfile` model (base created by US-AI-028) with onboarding fields, and adds one new `User` field (`onboardingRequired Boolean @default(false)`) — run `npx prisma generate --schema=api/prisma/schema.prisma` after the schema change.
 > **Linear:** LIN-XXX
 > **Created:** 2026-09-14 | **Closed:** —
 
@@ -27,7 +27,7 @@
 
 - [ ] **AC1 — Schema.** `api/prisma/schema.prisma` has:
   - on `User`: `onboardingRequired Boolean @default(false)` and the relation `profile UserProfile?`
-  - a new model `UserProfile` with `id String @id @default(cuid())`, `userId String @unique` (relation to `User`, `onDelete: Cascade`), `role String`, `teamSize String`, `primaryMarket String`, `firstAssetType String`, `acquisitionSource String?`, `acquisitionSourceOther String?`, `marketingOptIn Boolean @default(false)`, `marketingOptInAt DateTime?`, `createdAt DateTime @default(now())`, `updatedAt DateTime @updatedAt`.
+  - the existing `UserProfile` model (base fields created by US-AI-028) gains the onboarding fields: `role String`, `teamSize String`, `primaryMarket String`, `firstAssetType String`, `acquisitionSource String?`, `acquisitionSourceOther String?`, `marketingOptIn Boolean @default(false)`, `marketingOptInAt DateTime?`. Do not re-add `id`, `userId`, the User relation, `createdAt` or `updatedAt` — they already exist.
   The `@default(false)` on `onboardingRequired` is deliberate: **existing users are never sent through onboarding** — no backfill is needed.
 
 - [ ] **AC2 — Only new signups are flagged.** `AuthService.register()` creates the user with `onboardingRequired: true`. In `AuthService.googleLogin()`, **only** the branch that creates a brand-new user (neither `googleId` nor `email` matched) sets `onboardingRequired: true`; the "link Google to an existing email account" branch does not change it. The `user` object returned by `register()`, `login()` and the Google exchange (`googleLogin()` → `exchangeOAuthCode()`) includes `onboardingRequired` with the database value.
@@ -135,7 +135,8 @@ Verified facts about the current code (2026-09-14):
 - TemplatesPage.tsx already has tag chips: state activeChips, derived availableChips, toggleChip().
 
 Schema (api/prisma/schema.prisma):
-  model User { ... onboardingRequired Boolean @default(false)  profile UserProfile? }
+  model User { ... onboardingRequired Boolean @default(false) }  // User.profile relation already exists from US-AI-028
+  // Extend the existing UserProfile model (US-AI-028 created it). Add these migration fields ONLY:
   model UserProfile {
     id                     String    @id @default(cuid())
     userId                 String    @unique

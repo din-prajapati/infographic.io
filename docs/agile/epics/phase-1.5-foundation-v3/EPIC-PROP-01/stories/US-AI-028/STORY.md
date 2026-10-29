@@ -14,23 +14,28 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC1:** Core CAP-22 (10h) capability works end-to-end
-- [ ] **AC2:** No model names or technical details exposed in UI or API response
-- [ ] **AC3:** Feature degrades gracefully if external API is unavailable
+- [ ] **AC1 [happy-path]:** `api/prisma/schema.prisma` gains a `UserProfile` model (`id String @id @default(cuid())`, `userId String @unique`, relation to `User` with `onDelete: Cascade`, `phone String?`, `brokerageName String?`, `licenseNumber String?`, `cta String?`, `website String?`, `logoUrl String?`, `brandColors String[] @default([])`, `createdAt DateTime @default(now())`, `updatedAt DateTime @updatedAt`) plus the `User.profile UserProfile?` relation, applied as a migration that `prisma migrate deploy` runs cleanly on an empty database.
+- [ ] **AC2 [security]:** `GET /api/v1/users/me/profile` (guarded by `AuthGuard('jwt')`; 401 without a valid JWT) returns the `UserProfile` fields for `req.user.id`. When no profile row exists it returns all-null / empty-array defaults rather than 404.
+- [ ] **AC3 [security]:** `PUT /api/v1/users/me/profile` (JWT-guarded) accepts an optional subset of the AC1 fields (`phone`, `brokerageName`, `licenseNumber`, `cta`, `website`, `logoUrl`, `brandColors`), upserts the `UserProfile` row for `req.user.id`, and returns the saved fields. A `userId` in the request body is ignored; identity comes only from `req.user.id`.
 - [ ] **AC4:** `npm run check` passes
 
 ## Engineering / PR
 
 - **Branch:** `feat/ai-us-ai-028-agent-profile`
-- **Primary files:** Determined during implementation session (read EPIC-AI-05/EPIC.md first)
+- **Primary files touched:**
+  - `api/prisma/schema.prisma` — `UserProfile` model + `User.profile` relation
+  - `api/src/modules/users/dto/profile.dto.ts` — new: all-optional `ProfileDto`
+  - `api/src/modules/users/users.service.ts` — `getProfile(userId)`, `saveProfile(userId, dto)`
+  - `api/src/modules/users/users.controller.ts` — `GET me/profile`, `PUT me/profile`
+  - `api/tests/users/profile.spec.ts` — new
 
 ## AI Implementation Prompt
 
 ```
 Context: InfographicAI SaaS — NestJS (port 3001) + React (port 5000). See CLAUDE.md.
-Read EPIC-AI-05/EPIC.md and ARCHITECTURE.mmd before starting.
-Capability: CAP-22 (10h) — Agent profile persistence
-Implement minimum viable version. Graceful degradation if external API unavailable.
+This story is the M-PROP-02 schema foundation. US-LAUNCH-016 and US-LAUNCH-017 both extend the UserProfile model and User.profile relation it creates.
+Deliver: (1) UserProfile Prisma model per AC1 + User.profile relation + prisma generate; (2) ProfileDto (all fields optional) + users.service.ts getProfile/saveProfile + users.controller.ts GET me/profile and PUT me/profile, both JWT-guarded, req.user.id only; (3) api/tests/users/profile.spec.ts: a valid dto upserts with the right userId, GET with no row returns null defaults, a body userId is never used.
+Out of scope: onboarding fields (role, teamSize — US-LAUNCH-016), brand-kit additions (headshotUrl, equalHousing — US-LAUNCH-017), any frontend UI. Touch only the Primary files listed above.
 When done: list files changed, ACs checked, test command to verify.
 ```
 

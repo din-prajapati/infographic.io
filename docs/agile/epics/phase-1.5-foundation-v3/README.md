@@ -37,7 +37,7 @@ Template library — versioned, "proven"       ← M-PROP-03  (this phase)
 | Wave | Work | Depends on | Estimate |
 |:----:|------|------------|----------|
 | 0 | **M-OBS-01** (Sentry reconcile + US-OBS-005 T5) ∥ ~~**M-EDIT-03** (US-EDIT-009, fix BL-26)~~ ✅ 2026-10-29 | — | 2–3 days |
-| 1 | **M-PROP-01** (US-PROP-001 → 002 → 003) ∥ **M-PROP-03** (US-PROP-004, US-PROP-005) ∥ **US-EDIT-024** V3 shell | — | 8–11 days |
+| 1 | **M-PROP-01** (US-PROP-001 → US-PROP-006 ∥ US-PROP-002 → US-PROP-003) ∥ **M-PROP-03** (US-PROP-004, US-PROP-005) ∥ **US-EDIT-024** V3 shell | — | 8–11 days |
 | 2 | **M-EDIT-06** (US-EDIT-020 → 021) ∥ **M-PROP-02** (US-AI-028 → US-LAUNCH-016/017, US-EDIT-006 → 007) ∥ **US-EDIT-027** autosave | US-PROP-002, US-PROP-004, US-EDIT-024 | 7–10 days |
 | 3 | **M-EDIT-07** (US-EDIT-022) → **US-EDIT-025** Property and Contact tabs ∥ **M-EDIT-10** (spike → US-EDIT-026 Edit Elements review) | US-PROP-005, M-PROP-02, US-EDIT-009, US-PROP-004 | 8–11 days |
 | 4 | **M-EDIT-08** (US-EDIT-023 → US-AI-015, US-EDIT-008) | US-PROP-003, US-EDIT-009 | 4–6 days |

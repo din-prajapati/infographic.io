@@ -6,7 +6,7 @@
 feat(ai): Agent profile persistence — US-AI-028
 ```
 
-Tasks to be detailed during the AI implementation session. See EPIC-AI-05/EPIC.md.
+Tasks to be detailed during the implementation session. See STORY.md ACs and the Primary files list.
 
 ## Exact Test Commands
 

@@ -25,7 +25,7 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC1 — Schema.** `UserProfile` gains: `brokerageName String?`, `phone String?`, `licenseNumber String?`, `logoUrl String?`, `headshotUrl String?`, `brandColors String[] @default([])`, `equalHousing Boolean @default(false)`, `channels String[] @default([])`, `brandKitCompletedAt DateTime?`. No change to `Organization.brandColors` / `Organization.logoUrl` (org-level brand sync is B-07).
+- [ ] **AC1 — Schema.** `UserProfile` gains the brand-kit-only additions: `headshotUrl String?`, `equalHousing Boolean @default(false)`, `channels String[] @default([])`, `brandKitCompletedAt DateTime?`. The fields `brokerageName`, `phone`, `licenseNumber`, `logoUrl` and `brandColors` already exist in the base model (US-AI-028) — do not re-add them. No change to `Organization.brandColors` / `Organization.logoUrl` (org-level brand sync is B-07).
 
 - [ ] **AC2 — Asset upload endpoint.** `POST /api/v1/users/me/brand-assets` (guarded by `AuthGuard('jwt')`; 401 without JWT), `multipart/form-data` with field `file` and field `kind` ∈ `logo | headshot`:
   - accepts only `image/png`, `image/jpeg`, `image/webp` up to **5 MB** (`ParseFilePipe` with `MaxFileSizeValidator` + `FileTypeValidator`, mirroring `infographics.controller.ts` `uploadPhoto`); anything else — including `image/svg+xml` — returns HTTP 400
@@ -123,9 +123,8 @@ Verified facts (2026-09-14):
 - JWT guard: req.user.id.
 
 Schema: add to UserProfile
-  brokerageName String?  phone String?  licenseNumber String?  logoUrl String?  headshotUrl String?
-  brandColors String[] @default([])  equalHousing Boolean @default(false)  channels String[] @default([])
-  brandKitCompletedAt DateTime?
+  headshotUrl String?  // brokerageName, phone, licenseNumber, logoUrl, brandColors exist in the base model (US-AI-028) — do not re-add
+  equalHousing Boolean @default(false)  channels String[] @default([])  brandKitCompletedAt DateTime?
 Then npx prisma generate --schema=api/prisma/schema.prisma
 
 Backend:

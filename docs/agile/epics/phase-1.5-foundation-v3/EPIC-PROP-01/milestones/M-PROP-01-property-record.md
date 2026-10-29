@@ -23,7 +23,8 @@ A listing is a saved Property with structured price and Sale/Rent intent, filled
 
 | Order | Story | Title | Size | Blocked By | Status | PR |
 |:-----:|-------|-------|:----:|------------|:------:|:--:|
-| 1 | [US-PROP-001](../stories/US-PROP-001/STORY.md) | Property as a saved record | L | — | 🔲 | — |
+| 1 | [US-PROP-001](../stories/US-PROP-001/STORY.md) | Property as a saved record (backend) | M | — | 🔲 | — |
+| 2 | [US-PROP-006](../stories/US-PROP-006/STORY.md) | Property as a saved record (client) | M | US-PROP-001 | 🔲 | — |
 | 2 | [US-PROP-002](../stories/US-PROP-002/STORY.md) | Structured price and listing intent | M | US-PROP-001 | 🔲 | — |
 | 3 | [US-PROP-003](../stories/US-PROP-003/STORY.md) | Auto-Fill from a listing message, with review | M | US-PROP-002 | 🔲 | — |
 
@@ -41,7 +42,8 @@ A listing is a saved Property with structured price and Sale/Rent intent, filled
 
 ## Notes / Blockers
 
-- US-PROP-001 includes a Prisma migration — runs as the Railway `preDeployCommand`; staging DB is the dev DB (BL-37).
+- US-PROP-006 and US-PROP-002 both start after US-PROP-001 and can run in parallel; both touch `usePropertyStore.ts`, so merge US-PROP-006 first. US-PROP-003 follows US-PROP-002.
+- US-PROP-001 and US-PROP-002 each add a Prisma migration (in that order); US-PROP-001 — runs as the Railway `preDeployCommand`; staging DB is the dev DB (BL-37).
 
 ---
 

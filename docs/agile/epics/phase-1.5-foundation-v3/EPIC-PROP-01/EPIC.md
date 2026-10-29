@@ -56,7 +56,8 @@ generated poster.
 
 | # | Story | Title | Milestone | Size | Status |
 |:-:|-------|-------|-----------|:----:|:------:|
-| 1 | [US-PROP-001](stories/US-PROP-001/STORY.md) | Property as a saved record | M-PROP-01 | L | 🔲 |
+| 1 | [US-PROP-001](stories/US-PROP-001/STORY.md) | Property as a saved record (backend) | M-PROP-01 | M | 🔲 |
+| 1b | [US-PROP-006](stories/US-PROP-006/STORY.md) | Property as a saved record (client) — *split from US-PROP-001 on 2026-10-29* | M-PROP-01 | M | 🔲 |
 | 2 | [US-PROP-002](stories/US-PROP-002/STORY.md) | Structured price and listing intent | M-PROP-01 | M | 🔲 |
 | 3 | [US-PROP-003](stories/US-PROP-003/STORY.md) | Auto-Fill from a listing message, with review | M-PROP-01 | M | 🔲 |
 | 4 | [US-AI-028](stories/US-AI-028/STORY.md) | Agent profile persistence — *moved from EPIC-AI-05* | M-PROP-02 | M | 🔲 |
