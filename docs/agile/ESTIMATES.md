@@ -92,7 +92,7 @@ before its wave, rather than all at once.
 ## What these numbers deliberately exclude
 
 - **Human steps:** US-OBS-005 T5 (prove the outage alert email arrives — closes BL-34) and Railway billing alerts. Minutes of work, not estimated.
-- **BL-26** — the Gate 2 step 5 test fix that unblocks US-EDIT-009. Small, but on Wave 0's critical path.
+- ~~**BL-26**~~ — fixed 2026-10-29; US-EDIT-009 closed (Phase 1.5 is now 25 open stories, about 7 h less at the high band).
 - **Backlog B-items without story cards** (B-02–B-15, B-25 …), sized in weeks in the backlog index.
 - **Open backlog defects** (BL-47, BL-48, BL-49 and older), none scheduled into a story.
 

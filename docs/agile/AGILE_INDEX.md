@@ -56,7 +56,7 @@ Every PR is traceable from `git log` → Story → Milestone → Epic.
 |---------|-------|--------|---------|
 | [EPIC-OBS-00](epics/phase-1.5-foundation-v3/EPIC-OBS-00/EPIC.md) | Structured Observability (Sentry · uptime) — moved from Phase 1 | 🟡 0/5 — US-OBS-005 waits on T5 (BL-34); reconcile US-OBS-002/003 against the existing Sentry wiring | US-OBS-001 to US-OBS-005 |
 | [EPIC-PROP-01](epics/phase-1.5-foundation-v3/EPIC-PROP-01/EPIC.md) | Property & Brand Foundation (Property record · structured price + intent · Auto-Fill · Brand profile · template contract) | 🔲 0/10 — drafted | US-PROP-001 to 005 · US-AI-028 · US-LAUNCH-016/017 · US-EDIT-006/007 |
-| [EPIC-EDIT-04](epics/phase-1.5-foundation-v3/EPIC-EDIT-04/EPIC.md) | V3 Editor Simplification (single editable path · linked editing · Design tab · AI Assistant · export review · V3 shell, light + dark · Property/Contact tabs · autosave · Edit Elements review) | 🟡 0/11 — US-EDIT-009 code merged (BL-26) | US-EDIT-008/009 · US-EDIT-020 to 027 · US-AI-015 |
+| [EPIC-EDIT-04](epics/phase-1.5-foundation-v3/EPIC-EDIT-04/EPIC.md) | V3 Editor Simplification (single editable path · linked editing · Design tab · AI Assistant · export review · V3 shell, light + dark · Property/Contact tabs · autosave · Edit Elements review) | 🟡 1/11 — M-EDIT-03 ✅ 2026-10-29 | US-EDIT-008/009 · US-EDIT-020 to 027 · US-AI-015 |
 
 ## AI Capability Epics (Phase 0.5 → Phase 3)
 
