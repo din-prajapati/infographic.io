@@ -3,7 +3,7 @@ title: Human Tasks Tracker
 type: tracker
 layer: cross-cutting
 tags: [orion, human-tasks, ops, dashboard]
-updated: 2026-10-26
+updated: 2026-10-29
 ---
 
 # Human Tasks Tracker
@@ -32,7 +32,7 @@ within a phase, in the order they unblock downstream work.
 | # | Phase | Epic | Story/Milestone | Task | Status |
 |:-:|-------|------|------------------|------|:------:|
 | 1 | Phase 0 | EPIC-INFRA-01 (legacy MVP deploy) | Phase 0 Task 3 | Push `v1.0.0` tag → production auto-deploy | ✅ **Done 2026-08-30** — first `v*` tag in the repo; production deployed `15a904b`, health `200`/`db connected` |
-| 2 | Phase 0 | EPIC-INFRA-01 | Phase 0 Task 3, rows P-15/16/17 | Full production smoke test (3D) — unrun since the domain/keys work landed | 🔲 |
+| 2 | Phase 0 | EPIC-INFRA-01 | Phase 0 Task 3, §3D | Full production smoke test (3D) | ✅ **Done 2026-10-29** — every 3D row resolved. P-15/16/17 had passed 2026-10-16 (this row named them after they were done); P-18/19 closed by the real charge 2026-10-19; P-20, P-25, P-26, P-27 verified on production 2026-10-29; P-28 superseded. Only the Task 3 sign-off line remains, for the product owner |
 | 3 | Phase 1 | EPIC-LAUNCH-01 | US-LAUNCH-005 AC5 | Run `npm run verify:payment-prereqs` against production config | ✅ **Done 2026-09-03 — passes (exit 0), all 10 vars present.** ⚠️ **Correction 2026-10-16:** an earlier note on this row reported the production Razorpay keys as **test** keys (`rzp_test_` prefix) and concluded that no real subscription could succeed there. That was wrong — live-mode keys were deployed 2026-07-28 (see the Task 3 note in `docs/testing/PHASE_0_HUMAN_QA_CHECKLIST.md`) and re-confirmed 2026-10-16. The stale reading is what marked task #4 blocked; it was not. |
 | 4 | Phase 1 | EPIC-LAUNCH-01 | US-LAUNCH-005 AC6 | One real ₹ subscription on production (smallest plan) → verify webhook activates it → refund/cancel from dashboard | ✅ **Done 2026-10-19** — a real ₹5,499 SOLO charge ran 2026-10-16 → 19: `subscription.charged` received and signature-verified, `PENDING → ACTIVE`, then refunded and cancelled (net cost about ₹21, the provider fee). US-LAUNCH-005 closed. |
 | 5 | Phase 1 | EPIC-INFRA-02 | US-INFRA-001 | Provision **two** Cloudflare R2 buckets (staging + production) and **two** API tokens, each scoped to its own bucket. R2 has no test/live mode, so the token scope is the only isolation — see §5 | ✅ **Done 2026-08-31** — buckets, tokens, custom domain, local `.env` and staging all live. **US-INFRA-001 is unblocked.** Production env vars deliberately deferred to the story's deploy step, see §5 |
@@ -69,7 +69,7 @@ things remain:
   staging auto-deploys on every push to `main` (`.github/workflows/deploy.yml`) — so merging to
   `main` does **not** reach production until a tag is cut.
   ⚠️ **Corrected 2026-10-26:** that was wrong even then — both staging and production deploy from `main` (measured 2026-09-29; the `v*` trigger in `deploy.yml` is fiction, BL-35). Merging to `main` reaches production.
-- **Full smoke test** (§3D, rows P-15/16/17) — still unrun. Now more relevant, not less: the
+- ~~**Full smoke test** (§3D, rows P-15/16/17)~~ — ✅ **done 2026-10-29** (see row #2). Original note: still unrun. Now more relevant, not less: the
   `v1.0.0` deploy shipped the pricing-module rewrite and the AGENCY seat fix, and production has
   since had its Razorpay plan IDs repointed to the live 2026-09 set.
 
@@ -296,3 +296,4 @@ un-tracked indefinitely now that real customers can reach these pages.
   rewrite and the AGENCY seat fix.
 - **2026-10-26** — Status sweep. #4 (real ₹ transaction) closed: done 2026-10-16 → 19, US-LAUNCH-005 closed 2026-10-19. #9 added: US-OBS-005 T5 — the operator step that closes BL-34 (P1) — had never been listed. Corrected the 2026-08-31 entry's deploy-trigger claim: both environments deploy from `main` (BL-35).
 - **2026-10-28** — US-DESIGN-003/004 staging checks done (2026-10-27) and both stories closed; EPIC-DESIGN-01 closed. TC-DS-003-08 (limit message) verified by the product owner.
+- **2026-10-29** — #2 (production smoke test) closed. The row was stale: P-15/16/17 had passed 2026-10-16. The rows actually open were P-18/19 (closed by the 2026-10-19 charge), P-20 and P-25–P-27 (run on production 2026-10-29, all pass) and P-28 (superseded). Phase 0 has no open human items; the Task 3 sign-off line is left for the product owner.
