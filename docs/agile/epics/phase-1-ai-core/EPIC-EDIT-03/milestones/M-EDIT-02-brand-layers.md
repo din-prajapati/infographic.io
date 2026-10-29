@@ -8,7 +8,7 @@ updated: 2026-08-26
 # M-EDIT-02-brand-layers — Brand Assets as Canvas Layers
 
 > **Epic:** [EPIC-EDIT-03](../EPIC.md)
-> **Status:** 🔲 Not Started
+> **Status:** ⏭️ Moved 2026-10-29 — its two stories moved to [M-PROP-02](../../../phase-1.5-foundation-v3/EPIC-PROP-01/milestones/M-PROP-02-brand-profile.md) (Phase 1.5). Kept here as history. See [ADR-003](../../../../decisions/ADR-003-phase-1-close-and-phase-1.5.md).
 > **Target date:** TBD — scheduled on effort/sensitivity, see §Effort
 > **Branch:** `feat/edit/m-02-brand-layers`
 > **Source:** [PRD findings 2026-08-26](../../../../PRD/2026-08-26-compose-forward-findings.md)
@@ -96,8 +96,8 @@ Evaluated and rejected 2026-08-26 — see the
 
 | Order | Story | Title | Size | Blocked By | Status | PR |
 |:-----:|-------|-------|:----:|------------|:------:|:--:|
-| 1 | [US-EDIT-006](../stories/US-EDIT-006/STORY.md) | Brand layers from existing data — logo + licence | M | — | 🔲 | — |
-| 2 | [US-EDIT-007](../stories/US-EDIT-007/STORY.md) | Agent headshot + QR code | M | US-EDIT-006 | 🔲 | — |
+| 1 | [US-EDIT-006](../../../phase-1.5-foundation-v3/EPIC-PROP-01/stories/US-EDIT-006/STORY.md) | Brand layers from existing data — logo + licence | M | — | 🔲 | — |
+| 2 | [US-EDIT-007](../../../phase-1.5-foundation-v3/EPIC-PROP-01/stories/US-EDIT-007/STORY.md) | Agent headshot + QR code | M | US-EDIT-006 | 🔲 | — |
 
 Split at the **data boundary**, not the component boundary: US-EDIT-006 builds the image-slot
 mechanism and proves it against data that already exists (`logoPreview`, `license`). US-EDIT-007

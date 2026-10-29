@@ -9,7 +9,7 @@ updated: 2026-08-26
 
 > **Epic:** [EPIC-EDIT-03](../EPIC.md)
 > **Status:** ✅ Done — closed 2026-08-26. US-EDIT-005 merged (PR #35 + #38) and live-verified;
-> its AC4 was descoped to [US-EDIT-008](../stories/US-EDIT-008/STORY.md), which now carries the
+> its AC4 was descoped to [US-EDIT-008](../../../phase-1.5-foundation-v3/EPIC-EDIT-04/stories/US-EDIT-008/STORY.md), which now carries the
 > quota-badge work and its backend dependency.
 > **Target date:** TBD
 > **Branch:** `feat/edit/m-01-editable-menu-surfacing`

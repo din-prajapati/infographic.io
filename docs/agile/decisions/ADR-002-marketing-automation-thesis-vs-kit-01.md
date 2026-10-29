@@ -16,7 +16,7 @@ updated: 2026-08-12
 
 An external product analysis proposed repositioning the product from "AI infographic generator" to **"Real Estate Marketing Automation: turn one listing into a complete branded campaign in seconds."** Input a listing URL or photos; output Instagram feed/story, Facebook, WhatsApp, flyer, carousel, open-house poster, email asset, captions and hashtags.
 
-**On review, roughly 80% of that thesis is already this repo's stated strategy.** [EPIC-KIT-01](../epics/phase-1-ai-core/EPIC-KIT-01/EPIC.md), written 2026-07-03, states:
+**On review, roughly 80% of that thesis is already this repo's stated strategy.** [EPIC-KIT-01](../epics/phase-2-ai-refine/EPIC-KIT-01/EPIC.md), written 2026-07-03, states:
 
 > *"One listing in → a complete marketing kit out: Instagram post (1:1), Instagram story (9:16), A4 flyer (print-ready), WhatsApp card, and email header — from one extraction, one brand profile, with exact text verified on every asset."*
 
@@ -98,7 +98,7 @@ Any one of: (a) the M-AI-17/18 re-scope lands and EPIC-AI-06 is stable again; (b
 
 ## References
 
-- [EPIC-KIT-01](../epics/phase-1-ai-core/EPIC-KIT-01/EPIC.md) — the existing kit strategy
+- [EPIC-KIT-01](../epics/phase-2-ai-refine/EPIC-KIT-01/EPIC.md) — the existing kit strategy
 - [OQ-2 findings](../../testing/reports/oq2-image-weight-2026-08-12/FINDINGS.md) — why image generation is a liability
 - [Pure-canvas spike](../../testing/reports/spike-pure-canvas-2026-08-12/FINDINGS.md) — why templates are structural
 - [US-AI-043](../epics/phase-1-ai-core/EPIC-AI-06/stories/US-AI-043/STORY.md) — layout engine

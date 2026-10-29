@@ -1,7 +1,9 @@
 # EPIC-LAUNCH-01 — Go-Live & Revenue Readiness
 
 > **Phase:** Phase 1 — Revenue Strategy (v1.1)
-> **Status:** 🟡 In Progress — **15/17 stories Done**, 2 Not Started (US-LAUNCH-016/017 signup onboarding, backlog). **Both milestones are now closed: M-LAUNCH-01 (public beta) and M-LAUNCH-02 (revenue-on), 2026-10-19.** Beta is live at `app.buildographic.com` and takes payment — a real ₹5,499 transaction was charged, webhook-verified, refunded and cancelled. Beta-gating was retired by decision rather than verified; see M-LAUNCH-01. US-LAUNCH-014 closed 2026-09-29: sign-up verif
+> **Status:** ✅ **Done — 15/15 in scope.** US-LAUNCH-016/017 (signup onboarding) moved to [EPIC-PROP-01](../../phase-1.5-foundation-v3/EPIC-PROP-01/EPIC.md) on 2026-10-29 ([ADR-003](../../../decisions/ADR-003-phase-1-close-and-phase-1.5.md)).
+>
+> *Status before the restructure:* 🟡 In Progress — **15/17 stories Done**, 2 Not Started (US-LAUNCH-016/017 signup onboarding, backlog). **Both milestones are now closed: M-LAUNCH-01 (public beta) and M-LAUNCH-02 (revenue-on), 2026-10-19.** Beta is live at `app.buildographic.com` and takes payment — a real ₹5,499 transaction was charged, webhook-verified, refunded and cancelled. Beta-gating was retired by decision rather than verified; see M-LAUNCH-01. US-LAUNCH-014 closed 2026-09-29: sign-up verif
 > **Depends on:** EPIC-INFRA-01 (Phase 0 production deploy) for all stories · EPIC-AI-06 gates the **revenue-on switch** (M-LAUNCH-02 DoD), not M-LAUNCH-02 prep work
 > **Linear Project:** LIN-EPIC-XXX
 > **Target date:** 2026-08-15
@@ -49,8 +51,8 @@
 | [US-LAUNCH-013](stories/US-LAUNCH-013/STORY.md) | Subscription renewal reminder email (3-day notice) | M-LAUNCH-02 | S | ✅ Done | `fa1d345`+`5c52dc0` |
 | [US-LAUNCH-014](stories/US-LAUNCH-014/STORY.md) | Sign-up verification gate + abuse controls (re-scoped 2026-09-14 from soft verification; re-rated should-have 2026-09-21) | M-LAUNCH-01 | L | ✅ Done 2026-09-29 — deployed to staging + production | [#55](https://github.com/din-prajapati/infographic.io/pull/55) (`09c6e9e`), fix `7044a44` |
 | [US-LAUNCH-015](stories/US-LAUNCH-015/STORY.md) | Editable-design monetization (FREE gate + extra-compose credits) | M-LAUNCH-02 | M | ✅ Done 2026-08-15 — live-verified `[201, 402]` | — |
-| [US-LAUNCH-016](stories/US-LAUNCH-016/STORY.md) | Post-signup onboarding — Screen 1 required profile (backlog, non-blocking) | Backlog | M | 🔲 | — |
-| [US-LAUNCH-017](stories/US-LAUNCH-017/STORY.md) | Onboarding brand kit — Screen 2, persisted + fed to generation (backlog, depends on 016) | Backlog | M | 🔲 | — |
+| [US-LAUNCH-016](../../phase-1.5-foundation-v3/EPIC-PROP-01/stories/US-LAUNCH-016/STORY.md) | Post-signup onboarding — Screen 1 required profile (backlog, non-blocking) | Backlog | M | ➡️ → EPIC-PROP-01 (Phase 1.5) | — |
+| [US-LAUNCH-017](../../phase-1.5-foundation-v3/EPIC-PROP-01/stories/US-LAUNCH-017/STORY.md) | Onboarding brand kit — Screen 2, persisted + fed to generation (backlog, depends on 016) | Backlog | M | ➡️ → EPIC-PROP-01 (Phase 1.5) | — |
 
 ---
 

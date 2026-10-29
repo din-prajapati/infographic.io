@@ -9,6 +9,7 @@ updated: 2026-08-21
 
 > **Phase:** Phase 1 — Revenue Strategy
 > **Status:** 🟢 **V1 complete — all four V1 milestones closed 2026-10-21.** M-PAY-01 (6/6),
+> **2026-10-29:** epic closed at Phase 1 scope (V1). M-PAY-05 stays on hold by decision and is tracked as a Phase 4 backlog item — [ADR-003](../../../decisions/ADR-003-phase-1-close-and-phase-1.5.md).
 > M-PAY-02 (7/7), M-PAY-03 (6/6) and M-PAY-04 (8/8) are ✅ Done; all twelve stories are
 > code-complete and merged to `main`. **No implementation work remains in this epic's V1 scope.**
 >

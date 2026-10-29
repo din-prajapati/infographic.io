@@ -210,7 +210,7 @@ Already in the repo:
 
 ## 11. Approval model & roles (solo → team)
 
-> Full story: [US-DEPLOY-006](agile/epics/phase-1-ai-core/EPIC-DEPLOY-01/stories/US-DEPLOY-006/STORY.md).
+> Full story: [US-DEPLOY-006](agile/epics/phase-4-backlog/EPIC-DEPLOY-02/stories/US-DEPLOY-006/STORY.md).
 
 Two different questions get asked about every change, and conflating them is what makes teams slow: **"is the code
 correct"** (an engineering question) vs. **"are users allowed to see it"** (a business question). Keeping them

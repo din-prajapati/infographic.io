@@ -3,134 +3,107 @@
 > **Audience:** Product owner, planning.
 > **Purpose:** What is left to build, by phase, with the derivation shown so the numbers can be argued with rather than trusted.
 > **Update cadence:** After each milestone closes, or whenever a batch of stories is sized.
-> **Generated:** 2026-09-08 · **Re-verified:** 2026-09-14 (no stories closed in the interval) · **Updated:** 2026-09-14 — added US-LAUNCH-016/017 (signup onboarding, 2M); US-LAUNCH-014 re-scoped M → L
+> **Regenerated:** 2026-10-29 — after Phase 1 closed and Phase 1.5 opened ([ADR-003](decisions/ADR-003-phase-1-close-and-phase-1.5.md)). Previous edition: 2026-09-08 / 2026-09-14 (see git history).
 > **See also:** [ROADMAP.md](ROADMAP.md) (ranked sequence) · [PHASE_TRACKER.md](PHASE_TRACKER.md) (executive view) · [TEAM_STATUS.md](TEAM_STATUS.md) (per-domain board)
 
 ---
 
 ## Summary
 
-**126 stories total — 67 Done, 6 superseded, 3 verification-only, 51 open.**
+**149 story cards — 80 Done, 10 superseded, 59 open.** No verification-only stories remain (US-DESIGN-004, US-PAY-109 and US-PAY-110 all closed).
 
-| Phase | Open | Sized | Est. (low) | Est. (high) | Weeks @ 5/wk |
+| Phase | Open | Sized | Est. (low) | Est. (high) | Weeks @ ~37 h/wk (high) |
 |---|:--:|:--:|--:|--:|:--:|
-| **Phase 1** — ai-core | 23 | 19/23 | 86 h | **172 h** | 4.6 |
-| **Phase 2** — ai-refine | 11 | 0/11 | 38 h | **77 h** | 2.2 |
-| **Phase 3** — ai-advanced | 8 | 0/8 | 28 h | **56 h** | 1.6 |
-| **Phase 4** — backlog | 9 | 1/9 | 32 h | **63 h** | 1.8 |
-| **Total** | **51** | 20/51 | **184 h** | **368 h** | **≈10** |
+| **Phase 1.5** — property foundation + V3 editor | 26 | 20/26 | 98 h | **196 h** | 5.3 |
+| **Phase 2** — kits + asset quality | 10 | 6/10 | 40 h | **80 h** | 2.2 |
+| **Phase 3** — campaigns + team operations | 6 | 1/6 | 21 h | **42 h** | 1.1 |
+| **Phase 4** — backlog (stories only) | 17 | 6/17 | 58 h | **115 h** | 3.1 |
+| **Total** | **59** | 33/59 | **217 h** | **433 h** | **≈ 11.7** |
 
-Phase 0 and Phase 0.5 are closed. Phase 0's single open item (US-DESIGN-004) is verification-only — code complete, waiting on a human visual spot-check.
+Phases 0, 0.5 and 1 are closed. The backlog's B-items without story cards (B-02 to B-15, B-25 …) are **not** in these totals; the backlog index
+sizes them in weeks.
 
-**Plan against the high band.** Reasoning under "Derivation" below.
+**Plan against the high band.** Phase 1.5's high band (≈ 5.3 weeks of build) sits inside the phase README's 7–9 week allowance, which adds
+browser verification and the `/new-story` hardening each drafted story still needs.
 
 ---
 
-## Phase 1 by epic
+## Phase 1.5 by epic
 
 The only phase with committed open work.
 
-| Epic | Stories | Sizes | Estimate | TASKS.md? |
+| Epic | Open | Sizes | Estimate | TASKS.md (none / stub / real) |
 |---|:--:|---|--:|:--:|
-| EPIC-KIT-01 — listing marketing kits | 6 | 4M, 2L | 26–52 h | ❌ none |
-| EPIC-DEPLOY-01 — deploy maturity | 6 | 3S, 2M, 1L | 19–38 h | ❌ none |
-| EPIC-OBS-00 — Sentry + AI metrics | 4 | unsized | 14–28 h | ❌ none |
-| EPIC-EDIT-03 — brand layers | 3 | 3M | 10–21 h | ✅ real |
-| EPIC-ORG-01 — organization roles | 1 | M | 4–7 h | ✅ real |
-| EPIC-LAUNCH-01 — signup trust & onboarding (US-LAUNCH-014 verification gate + abuse controls · 016 onboarding profile · 017 brand kit) | 3 | 1L, 2M | 13–26 h | ✅ real |
+| [EPIC-PROP-01](epics/phase-1.5-foundation-v3/EPIC-PROP-01/EPIC.md) — Property & Brand Foundation | 10 | 7M, 1L, 1S, 1 unsized | 36–72 h | 5 / 1 / 4 |
+| [EPIC-EDIT-04](epics/phase-1.5-foundation-v3/EPIC-EDIT-04/EPIC.md) — V3 Editor Simplification (incl. V3 shell, tabs, autosave, Edit Elements review) | 11 | 7M, 3L, 1 unsized | 46–92 h | 8 / 1 / 2 |
+| [EPIC-OBS-00](epics/phase-1.5-foundation-v3/EPIC-OBS-00/EPIC.md) — Observability | 5 | 1S, 4 unsized | 16–32 h | 4 / 1 / 0 |
 
-US-LAUNCH-014 was re-scoped 2026-09-14 from soft verification (M) to verify-before-generate plus disposable-domain block, alias normalization and proxy-aware sign-up rate limits (L). US-LAUNCH-016 and -017 were added the same day by splitting one L-sized request (post-signup onboarding form). 017 depends on 016; 016 shares three files with 014, so the three run sequentially, not in parallel. All three are backlog (non-blocking for M-LAUNCH-01).
+EPIC-OBS-00's figure is likely high: US-OBS-002/003 are partly built already (Sentry wired in both apps, source maps verified 2026-07-26), so
+reconciling the cards may close part of the epic without new code.
 
-### Verification-only (no implementation left)
+## Later phases by epic
 
-| Story | Phase | Waiting on |
-|---|---|---|
-| US-DESIGN-004 | phase-0-mvp | Human visual spot-check on staging |
-| US-PAY-109 | phase-1-ai-core | PR #54 + one real checkout |
-| US-PAY-110 | phase-1-ai-core | Staging checkout under an active campaign |
-
-These carry **zero build hours** and are excluded from every total above. They are not free — they have been outstanding for weeks — but the constraint is human attention, not engineering.
+| Phase | Epic | Open | Estimate | Note |
+|---|---|:--:|--:|---|
+| 2 | [EPIC-KIT-01](epics/phase-2-ai-refine/EPIC-KIT-01/EPIC.md) | 6 | 26–52 h | Needs re-scoping on Property + proven templates; no TASKS.md |
+| 2 | [EPIC-AI-03](epics/phase-2-ai-refine/EPIC-AI-03/EPIC.md) | 4 | 14–28 h | Fully decomposed (4 real TASKS.md) |
+| 3 | [EPIC-AI-04](epics/phase-3-ai-advanced/EPIC-AI-04/EPIC.md) | 4 | 14–28 h | Mostly stubs |
+| 3 | [EPIC-AI-05](epics/phase-3-ai-advanced/EPIC-AI-05/EPIC.md) · [EPIC-ORG-01](epics/phase-3-ai-advanced/EPIC-ORG-01/EPIC.md) | 2 | 7–14 h | |
+| 4 | EPIC-AI-08 · EPIC-DEPLOY-02 · EPIC-DESIGN-03 · EPIC-AI-01 | 17 | 58–115 h | Promoted by trigger |
 
 ---
 
 ## Derivation
 
-The repository has **no size→hours mapping**, and **no `TASKS.md` carries per-task effort** despite `AGILE_RULES` stating that is where estimates live. Both bands are therefore derived, not read:
+Unchanged from the previous edition. The repository has no size→hours mapping and no per-task effort in TASKS.md, so both bands are derived:
 
-- **Low band** anchors on the project's own rule — *"Each story = one Claude session (≤4h work)"*:
-  `XS 1h · S 2h · M 3.5h · L 6h`
+- **Low band** anchors on the project rule *"Each story = one Claude session (≤4h work)"*: `XS 1h · S 2h · M 3.5h · L 6h`
 - **High band** doubles it: `XS 2h · S 4h · M 7h · L 12h`
-- **Unsized stories** are treated as M (3.5h / 7h). 31 of 51 open stories are unsized, so this assumption drives most of the total.
+- **Unsized stories** count as M. 26 of 59 open stories are unsized, so this assumption still drives much of the total.
 
-### Why the high band
-
-It reconciles with two independent sources:
-
-1. **`ROADMAP.md`'s own figures.** It puts EPIC-KIT-01 at ~45 h (this model: 26–52) and Phase 2 at ~60–80 h (this model: 38–77). Both land in the upper half of the range.
-2. **Measured throughput.** 67 stories closed between 2026-04-17 and 2026-09-07:
-
-| Window | Rate | 51 stories ≈ |
-|---|:--:|:--:|
-| Lifetime (Apr–Sep) | 3.4 stories/wk | ~15 weeks |
-| Recent (Jul–Sep) | 5.4 stories/wk | ~9.5 weeks |
-| August peak | 9.3 stories/wk | ~5.5 weeks (not repeatable) |
-
-At 5 stories/week the two methods agree: 368 h ÷ ~10 weeks ≈ 37 h/week. The hours model and the story-count model landing in the same place is the main reason to trust the high band over the low.
+The 2026-09-08 edition reconciled the high band against measured throughput (~5 stories/week, ~37 h/week); that reconciliation is reused here,
+not re-measured.
 
 ### Confidence
 
-| Tier | Scope | Hours |
-|---|---|--:|
-| **Firm** — sized *and* task-decomposed | EDIT-03, ORG-001, LAUNCH-014/016/017 | ~28–54 h |
-| **Soft** — sized by epic intent, no task breakdown | KIT-01, OBS-00, DEPLOY-01 | ~59–118 h |
-| **Speculative** — 2-task stubs, unsized | Phases 3 and 4 | ~60–119 h |
-
-Treat the speculative tier as **story counts, not hours**.
+| Tier | Scope | Why |
+|---|---|---|
+| **Firm** | EPIC-AI-03; the five moved stories in M-PROP-02 with real TASKS.md | Sized and task-decomposed |
+| **Soft** | The thirteen new Phase 1.5 drafts (US-PROP-001–005, US-EDIT-020–027) | Sized from the 2026-10-29 analysis; ACs drafted, no TASKS.md yet |
+| **Speculative** | EPIC-OBS-00, EPIC-KIT-01, Phase 3 stubs, backlog | Unsized, stub-only, or awaiting re-scope |
 
 ---
 
-## The finding that matters more than the numbers
-
-**Readiness is inverted: the nearest work is the least planned.**
+## Readiness
 
 | Phase | No TASKS.md | Stub | Real breakdown |
 |---|:--:|:--:|:--:|
-| **Phase 1** | **16** | 0 | 7 |
-| Phase 2 | 0 | 1 | **10** |
-| Phase 3 | 0 | 7 | 1 |
-| Phase 4 | 1 | 2 | 6 |
+| **Phase 1.5** | **17** | 3 | 6 |
+| Phase 2 | 6 | 0 | 4 |
+| Phase 3 | 0 | 4 | 2 |
+| Phase 4 | 6 | 3 | 8 |
 
-Sixteen of Phase 1's 23 open stories — **all of EPIC-KIT-01, EPIC-OBS-00 and EPIC-DEPLOY-01** — have no `TASKS.md` at all, therefore no Four-Pillars pre-flight. By this project's own rule (*"Stories without a Four-Pillars Pre-flight are not ready to implement"*) they are **not implementation-ready**, and they account for 59–118 h of Phase 1's 86–172 h.
-
-The ±2x band on Phase 1 is really ±2x on those three epics. Everything else is comparatively tight.
-
-Meanwhile **Phase 2 is the best-planned phase** (10 of 11 fully decomposed) — and it is the one the 2026-09-07 session recommended cutting to US-AI-009 alone. Doing so would remove roughly 60 of its 77 hours. The planning investment there is already sunk; the question is whether to spend the build hours.
+Same pattern as before: **the nearest work is the least planned.** 17 of Phase 1.5's 26 stories have no TASKS.md, so by the project's own rule
+(*"Stories without a Four-Pillars Pre-flight are not ready to implement"*) they need `/new-story` first. Do that one milestone at a time, just
+before its wave, rather than all at once.
 
 ---
 
 ## What these numbers deliberately exclude
 
-- **Manual verification debt.** US-LAUNCH-005 AC6 (one real ₹ transaction), the password-reset inbox test, the staging visual spot-checks. Near-zero implementation hours; outstanding for weeks. This is the actual critical path to revenue, and no estimate model captures it because it is not engineering work.
-- **BL-29** — unbounded risk, not effort. See below.
-- **Gate 4 being unsatisfiable repo-wide** (BL-28, integration DB unreachable). Every backend story's DoD carries a line that currently cannot be ticked, so "Done" is being recorded against an incomplete gate across the board.
-- **12 open backlog items**, none scheduled into a story.
+- **Human steps:** US-OBS-005 T5 (prove the outage alert email arrives — closes BL-34) and Railway billing alerts. Minutes of work, not estimated.
+- **BL-26** — the Gate 2 step 5 test fix that unblocks US-EDIT-009. Small, but on Wave 0's critical path.
+- **Backlog B-items without story cards** (B-02–B-15, B-25 …), sized in weeks in the backlog index.
+- **Open backlog defects** (BL-47, BL-48, BL-49 and older), none scheduled into a story.
 
 ---
 
 ## Method
 
-Figures generated by walking every `docs/agile/epics/**/STORY.md`, parsing the `**Status:**` and `**Size:**` fields, and classifying:
-
-- `⏭` / `⛔` / "Supersed" → superseded (excluded)
-- `✅` → Done
-- `🟢` → verification-only (excluded from build hours)
-- `🟡` → in progress (counted)
-- anything else → open
-
-Task-readiness comes from counting checklist items in each story's sibling `TASKS.md`: absent → none, ≤3 → stub, >3 → real.
-
-To regenerate, re-run that sweep. The classification depends on status-line emoji being used consistently — a story whose card drifts from its real state will be counted wrong, which is exactly what happened to `EPIC-PAY-05` before 2026-09-08 (carried as "not started" with 11 of 12 stories code-complete).
+Generated by walking every `docs/agile/epics/**/STORY.md`, reading `**Status:**` and `**Size:**`, and classifying: `⏭` / `⛔` / "Supersed" →
+superseded; `✅` → Done (US-EDIT-009's status contains "✅ PASSED" for a sub-check and is counted open); `🟢` → verification-only; anything else → open.
+Task readiness counts checklist items in each sibling `TASKS.md`: absent → none, ≤ 3 → stub, > 3 → real. Re-run that sweep to regenerate.
 
 ---
 
-*Created 2026-09-08. Re-verified 2026-09-14: PR #54 still open, `main` unmoved, no story closed in the interval. Updated 2026-09-14: US-LAUNCH-016/017 added (+2 open, 2M, +7–14 h) and US-LAUNCH-014 re-scoped M → L (+2.5–5 h) — Phase 1 +9.5–19 h in total; no other figure changed.*
+*Created 2026-09-08. Regenerated 2026-10-29 for the Phase 1.5 restructure; updated the same day for US-EDIT-024–027.*

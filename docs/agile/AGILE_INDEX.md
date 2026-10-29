@@ -48,27 +48,40 @@ Every PR is traceable from `git log` → Story → Milestone → Epic.
 | EPIC-INFRA-01 | Railway + Sentry + DB migrations | ✅ Done 2026-10-29 | Code ✅ · Tasks 1–3 signed off PASS (Task 3: 2026-10-29) | — |
 | [EPIC-AI-07](epics/phase-0-mvp/EPIC-AI-07/EPIC.md) | Generation Progress Delivery Fix — **PT-09** | ✅ Done 2026-07-09 | US-AI-034 ✅ (PR #14, staging-verified) · US-AI-035 ⏭️ superseded | — |
 
+## Phase 1.5 — Property Foundation & V3 Editor (opened 2026-10-29)
+
+> Plan, waves and gate: [epics/phase-1.5-foundation-v3/README.md](epics/phase-1.5-foundation-v3/README.md) · decision: [ADR-003](decisions/ADR-003-phase-1-close-and-phase-1.5.md)
+
+| Epic ID | Title | Status | Stories |
+|---------|-------|--------|---------|
+| [EPIC-OBS-00](epics/phase-1.5-foundation-v3/EPIC-OBS-00/EPIC.md) | Structured Observability (Sentry · uptime) — moved from Phase 1 | 🟡 0/5 — US-OBS-005 waits on T5 (BL-34); reconcile US-OBS-002/003 against the existing Sentry wiring | US-OBS-001 to US-OBS-005 |
+| [EPIC-PROP-01](epics/phase-1.5-foundation-v3/EPIC-PROP-01/EPIC.md) | Property & Brand Foundation (Property record · structured price + intent · Auto-Fill · Brand profile · template contract) | 🔲 0/10 — drafted | US-PROP-001 to 005 · US-AI-028 · US-LAUNCH-016/017 · US-EDIT-006/007 |
+| [EPIC-EDIT-04](epics/phase-1.5-foundation-v3/EPIC-EDIT-04/EPIC.md) | V3 Editor Simplification (single editable path · linked editing · Design tab · AI Assistant · export review · V3 shell, light + dark · Property/Contact tabs · autosave · Edit Elements review) | 🟡 0/11 — US-EDIT-009 code merged (BL-26) | US-EDIT-008/009 · US-EDIT-020 to 027 · US-AI-015 |
+
 ## AI Capability Epics (Phase 0.5 → Phase 3)
 
 | Epic ID | Title | Phase Folder | Status | Effort | Stories |
 |---------|-------|-------------|--------|--------|---------|
 | [EPIC-AI-00](epics/phase-0.5-foundation/EPIC-AI-00/EPIC.md) | Foundation Fixes (Socket.io · GPT model · Gemini LLM routing · Persistence) | [phase-0.5-foundation](epics/phase-0.5-foundation/) | ✅ Done (closed 2026-07-03, PRs #7–#10) | 22h | US-AI-001/002/002a/005/006 + US-QA-001 — US-AI-003/004 moved to EPIC-AI-08 as B-17 (2026-08-04) |
-| [EPIC-AI-01](epics/phase-2-ai-refine/EPIC-AI-01/EPIC.md) | Conversational AI Core (intent · pre-plan · chips) — demoted to Phase 2 (2026-07-03) | [phase-2-ai-refine](epics/phase-2-ai-refine/) | 🔲 Not Started | ~27h | US-AI-007 to US-AI-009 |
+| [EPIC-AI-01](epics/phase-4-backlog/EPIC-AI-01/EPIC.md) | Conversational AI Core — **moved to the backlog 2026-10-29** (replaced by the V3 AI Assistant) | [phase-4-backlog](epics/phase-4-backlog/) | 🔲 Not Started — US-AI-009 superseded | ~27h | US-AI-007, US-AI-008 |
 | [EPIC-AI-02](epics/phase-1-ai-core/EPIC-AI-02/EPIC.md) | Generation Control — US-AI-010/036/037/038/039/040/042 ✅ Done (2026-08-03); US-PANEL-01 ✅ Done (2026-08-05, PR #26); US-AI-011/041 superseded; US-AI-012/013/014 moved to EPIC-AI-08 (Phase 4 Backlog, revenue-gated, 2026-07-30) | [phase-1-ai-core](epics/phase-1-ai-core/) | ✅ Done | — (M-AI-06 closed 2026-08-05) | US-AI-010, US-AI-036 to US-AI-042, US-PANEL-01 |
-| [EPIC-AI-03](epics/phase-2-ai-refine/EPIC-AI-03/EPIC.md) | Refine Loop (quick refine · element edit · R2 storage · media tools) | [phase-2-ai-refine](epics/phase-2-ai-refine/) | 🔲 Not Started | ~97h | US-AI-015 to US-AI-022 |
+| [EPIC-AI-03](epics/phase-2-ai-refine/EPIC-AI-03/EPIC.md) | Asset quality (element edit · semantic layer remainder · background removal · print upscale) — re-scoped 2026-10-29 | [phase-2-ai-refine](epics/phase-2-ai-refine/) | 🔲 0/4 — US-AI-015 → EPIC-EDIT-04; 016/018/020 superseded | — | US-AI-017, 019, 021, 022 |
 | [EPIC-AI-04](epics/phase-3-ai-advanced/EPIC-AI-04/EPIC.md) | Production Tools (mockup · outpaint · cleanup · Campaign backend) | [phase-3-ai-advanced](epics/phase-3-ai-advanced/) | 🔲 Not Started | ~72h | US-AI-023 to US-AI-026 |
-| [EPIC-AI-05](epics/phase-3-ai-advanced/EPIC-AI-05/EPIC.md) | Intelligence Enrichment (market data · agent profile · tone · search) | [phase-3-ai-advanced](epics/phase-3-ai-advanced/) | 🔲 Not Started | ~38h | US-AI-027 to US-AI-030 |
+| [EPIC-AI-05](epics/phase-3-ai-advanced/EPIC-AI-05/EPIC.md) | Intelligence Enrichment — re-scoped 2026-10-29 to listing-status tone (US-AI-029) | [phase-3-ai-advanced](epics/phase-3-ai-advanced/) | 🔲 0/1 — US-AI-028 → EPIC-PROP-01, US-AI-027 → backlog, US-AI-030 superseded | — | US-AI-029 |
+| [EPIC-ORG-01](epics/phase-3-ai-advanced/EPIC-ORG-01/EPIC.md) | Organization Access Control — **moved to Phase 3 2026-10-29** | [phase-3-ai-advanced](epics/phase-3-ai-advanced/) | 🔲 0/1 | — | US-ORG-001 |
 | [EPIC-GEN-01](epics/phase-0.5-foundation/EPIC-GEN-01/EPIC.md) | Generation Quality — V4 Magic-Prompt Pipeline (garble fix · verify/repair · cost markers) + output localisation | [phase-0.5-foundation](epics/phase-0.5-foundation/) | 🟡 **Both milestones ✅ done** — M-GEN-01 (2026-07-07) · M-GEN-02 (US-GEN-003, PR #28, 2026-08-07). **Staging DoD still pending** — pre-dates M-GEN-02, blocks the epic and Phase 0.5 | ~18h | US-GEN-001 to US-GEN-003 |
 | [EPIC-AI-06](epics/phase-1-ai-core/EPIC-AI-06/EPIC.md) | Hybrid Real-Photo Pipeline (real photo background · editable overlay · synthetic guard) — **promoted to Phase 1** | [phase-1-ai-core](epics/phase-1-ai-core/) | ✅ **Fully closed 2026-08-15** — both milestones done. M-AI-18 (editable overlay): 10 stories Done/resolved-superseded. M-AI-17 (real-photo composition): US-AI-031/031b's AC1 live-verified same day after an Ideogram credit top-up — real photo confirmed recognizable in the composition, canonical values confirmed rendering correctly over it | ~30h+ | 12 stories under M-AI-18 (9 Done, 1 closed-superseded); 2 stories under M-AI-17 (both Done) |
-| [EPIC-KIT-01](epics/phase-1-ai-core/EPIC-KIT-01/EPIC.md) | Listing Marketing Kits (multi-format batch · lifecycle · recurring content · compliance) — **promoted to Phase 1** | [phase-1-ai-core](epics/phase-1-ai-core/) | 🔲 Not Started | ~45h | US-KIT-001 to US-KIT-006 |
-| [EPIC-MKT-01](epics/phase-1-ai-core/EPIC-MKT-01/EPIC.md) | Market-Aware Generation (MarketProfile · market-aware extraction · three-axis offshore authoring · persona) — **drafted 2026-09-07 from BL-22 steps 2–5, parked pending beta evidence** | [phase-1-ai-core](epics/phase-1-ai-core/) | 🔲 Not Started | ~25–28h | US-MKT-001 to US-MKT-006 |
-| [EPIC-LAUNCH-01](epics/phase-1-ai-core/EPIC-LAUNCH-01/EPIC.md) | Go-Live & Revenue Readiness (RazorPay live · email + password reset · legal pages · beta mode · metering · editable-design monetization · sign-up verification gate) — **Phase 1 priority #1, added 2026-07-07** | [phase-1-ai-core](epics/phase-1-ai-core/) | 🟡 In Progress — **15/17 stories ✅ Done**; **Both milestones closed 2026-10-19** — M-LAUNCH-01 (public beta) and M-LAUNCH-02 (revenue-on), the latter after US-LAUNCH-005 AC6 ran a real ₹5,499 transaction end to end. Remaining: US-LAUNCH-016/017 (signup onboarding, backlog) | 2 |
-| [EPIC-DEPLOY-01](epics/phase-1-ai-core/EPIC-DEPLOY-01/EPIC.md) | Deployment Velocity & Safety (Cursor-style: CI gate · preview envs · feature flags · migrations · progressive delivery) — **non-blocking to beta, added 2026-07-13** | [phase-1-ai-core](epics/phase-1-ai-core/) | 🟡 In Progress — 2/7 Done. US-DEPLOY-007 (client-side unit test infra), an unplanned addition (2026-08-11) that became a hard blocker for US-AI-032, closed 2026-08-15, all 7 ACs + 6 TCs live-verified; US-DEPLOY-004 (migrations as a Railway `preDeployCommand`, BL-33) closed 2026-10-01. US-DEPLOY-001–003/005/006 remain 🔲 not started (no TASKS.md yet), still non-blocking/rolling | ~5 days | US-DEPLOY-001 to US-DEPLOY-007 |
+| [EPIC-KIT-01](epics/phase-2-ai-refine/EPIC-KIT-01/EPIC.md) | Listing Marketing Kits — **moved to Phase 2 2026-10-29**; re-scope on Property + proven templates before implementing | [phase-2-ai-refine](epics/phase-2-ai-refine/) | 🔲 Not Started | ~45h | US-KIT-001 to US-KIT-006 |
+| [EPIC-MKT-01](epics/phase-4-backlog/EPIC-MKT-01/EPIC.md) | Market-Aware Generation — **moved to the backlog 2026-10-29** (parked, trigger unchanged) | [phase-4-backlog](epics/phase-4-backlog/) | 🔲 Not Started | ~25–28h | US-MKT-001 to US-MKT-006 |
+| [EPIC-LAUNCH-01](epics/phase-1-ai-core/EPIC-LAUNCH-01/EPIC.md) | Go-Live & Revenue Readiness | [phase-1-ai-core](epics/phase-1-ai-core/) | ✅ **Done — 15/15**; US-LAUNCH-016/017 moved to EPIC-PROP-01 2026-10-29 | 0 |
+| [EPIC-DEPLOY-01](epics/phase-1-ai-core/EPIC-DEPLOY-01/EPIC.md) | Deployment Velocity & Safety | [phase-1-ai-core](epics/phase-1-ai-core/) | ✅ **Closed at Phase 1 scope 2026-10-29 — 2/7** (US-DEPLOY-004, 007); five open → [EPIC-DEPLOY-02](epics/phase-4-backlog/EPIC-DEPLOY-02/EPIC.md) | — | US-DEPLOY-004, US-DEPLOY-007 |
 | [EPIC-INFRA-02](epics/phase-1-ai-core/EPIC-INFRA-02/EPIC.md) | Durable Asset Storage (Cloudflare R2: generated images + composed designs + source photos off Ideogram's expiring URLs / ephemeral tmp dir) — **revenue-on gate blocker, added 2026-08-19** | [phase-1-ai-core](epics/phase-1-ai-core/) | ✅ **Done 2026-10-19** — 3/3 stories, M-INFRA-01 closed, assets verified serving from `assets.buildographic.com` on production | 0 |
-| [EPIC-PAY-05](epics/phase-1-ai-core/EPIC-PAY-05/EPIC.md) | Pricing Relaunch — Founding Customer Launch (Free/Solo/Pro/Team/Agency/Enterprise, feasibility-checked 75-80% margin, generic `PricingCampaign` promo system, standing annual discount, Razorpay Offer-based checkout) — **added 2026-08-21, before the revenue-on flip** | [phase-1-ai-core](epics/phase-1-ai-core/) | 🟢 V1 Complete — 12/12 stories, all 4 V1 milestones closed 2026-10-21; V2 (M-PAY-05) ⏸ held | ~4-6 days | US-PAY-102 to US-PAY-113 |
-| [EPIC-EDIT-03](epics/phase-1-ai-core/EPIC-EDIT-03/EPIC.md) | Editable Design Discoverability (editable menu surfacing · brand layers · one editable path · AI composition over a template · one source of truth for listing facts) — **added 2026-08-26; was missing from this index until 2026-10-26** | [phase-1-ai-core](epics/phase-1-ai-core/) | 🟡 **10/14 Done** — M-EDIT-01 (2026-08-26), M-EDIT-04 (2026-10-25, BL-27) and M-EDIT-05 (2026-10-26, one source of truth for listing facts, #73) closed; M-EDIT-03 code merged, not closed (US-EDIT-009 Gate 2 step 5 — BL-26); M-EDIT-02 (brand layers, US-EDIT-006–008) not started | — | US-EDIT-005 to US-EDIT-019 |
+| [EPIC-PAY-05](epics/phase-1-ai-core/EPIC-PAY-05/EPIC.md) | Pricing Relaunch | [phase-1-ai-core](epics/phase-1-ai-core/) | ✅ **Closed at Phase 1 scope (V1) 2026-10-29** — 11/11 + 1 superseded; M-PAY-05 on hold (backlog B-24) | — | US-PAY-102 to US-PAY-113 |
+| [EPIC-EDIT-03](epics/phase-1-ai-core/EPIC-EDIT-03/EPIC.md) | Editable Design Discoverability | [phase-1-ai-core](epics/phase-1-ai-core/) | ✅ **Closed at Phase 1 scope 2026-10-29 — 10/10** (M-EDIT-01/04/05); open stories → EPIC-EDIT-04 / EPIC-PROP-01 | — | US-EDIT-005, US-EDIT-011 to US-EDIT-019 |
 
-> **Priority order (re-ranked 2026-07-07 — launch-readiness assessment; see [ROADMAP.md](ROADMAP.md)):** ① Phase 0 close (3 HUMAN deploy tasks + staging QA — EPIC-INFRA-01). ② EPIC-LAUNCH-01 M-LAUNCH-01 (public beta: legal pages, email, password reset, beta flag) with EPIC-OBS-00 M-OBS-01 in parallel — beta goes live here. ③ US-AI-010/011 (deps) → EPIC-AI-06 (real-photo pipeline — the chargeability gate), with EPIC-LAUNCH-01 M-LAUNCH-02 prep (RazorPay live activation) in parallel. ④ Revenue-on flip: BETA_MODE off once AI-06 + M-LAUNCH-02 close **and EPIC-PAY-05 ships** (added 2026-08-21 — real ₹ transactions should run against the relaunched, feasibility-checked prices, not the old beta prices US-LAUNCH-005 AC6 would otherwise charge). ⑤ EPIC-KIT-01. EPIC-AI-01 + EPIC-AI-03 follow in Phase 2; EPIC-AI-04/05 Month 6–12. EPIC-AI-02's quality-tier/Campaign-Mode remainder (US-AI-012/013/014) moved to EPIC-AI-08 in Phase 4 Backlog (2026-07-30) — revenue-gated, not sequenced into Phase 2. Rationale: [docs/research/2026-07-03-V4-PIPELINE-FIX-AND-PRODUCT-STRATEGY.md](../research/2026-07-03-V4-PIPELINE-FIX-AND-PRODUCT-STRATEGY.md) + 2026-07-07 launch-readiness verdict.
+> **Priority order (2026-10-29, [ADR-003](decisions/ADR-003-phase-1-close-and-phase-1.5.md)):** Phase 0 and Phase 1 are closed. ① **Phase 1.5** in waves — M-OBS-01 ∥ M-EDIT-03, then M-PROP-01 ∥ M-PROP-03, then M-EDIT-06 ∥ M-PROP-02, then M-EDIT-07, then M-EDIT-08. ② **Phase 2** — EPIC-KIT-01 (re-scoped) and EPIC-AI-03 asset quality. ③ **Phase 3** — EPIC-AI-04 Campaign Mode, EPIC-ORG-01, EPIC-AI-05. *The 2026-07-07 ranking below is history.*
+>
+> **Priority order (re-ranked 2026-07-07
 >
 > **Model opacity rule (all AI epics):** Model names (Nano Banana, Gemini, Flash, Pro) must NEVER appear in any UI label, API response, or user-visible message. Users see: "Quick Generate", "Campaign Quality", "Social", "Print Quality".
 
@@ -97,6 +110,12 @@ Every PR is traceable from `git log` → Story → Milestone → Epic.
 | B-16 | [EPIC-AI-08](epics/phase-4-backlog/EPIC-AI-08/EPIC.md) — M-AI-07 Quality Tiers & Campaign Mode UI (moved from EPIC-AI-02, 2026-07-30) | AI | ~8-10h | First real revenue (M-LAUNCH-02 flips) |
 | B-17 | [EPIC-AI-08](epics/phase-4-backlog/EPIC-AI-08/EPIC.md) — M-AI-02 Ideogram → Nano Banana **image**-model swap (moved from EPIC-AI-00, 2026-08-04; the LLM/text half already shipped via PRs #9/#10) | AI | ~6-8h | Image cost/quality pressure |
 | B-18 | [US-AI-033](epics/phase-4-backlog/EPIC-AI-08/stories/US-AI-033/STORY.md) — Synthetic-content guard (moved from EPIC-AI-06 / M-AI-17, 2026-08-11). **Scope under review since 2026-08-07 — no agreed scope to build.** Was holding M-AI-17 open via a DoD line only this story could satisfy | AI | TBD — resize after the scope review resolves | Real user demand for synthetic-content controls |
+| B-20 | [EPIC-AI-01](epics/phase-4-backlog/EPIC-AI-01/EPIC.md) — Conversational AI Core (moved from Phase 2, 2026-10-29) | AI | ~27h | Agents ask for conversation after using the V3 Assistant |
+| B-21 | [EPIC-MKT-01](epics/phase-4-backlog/EPIC-MKT-01/EPIC.md) — Market-Aware Generation (moved from Phase 1, 2026-10-29) | MKT | ~25–28h | Beta shows a market whose output is wrong |
+| B-22 | [EPIC-DEPLOY-02](epics/phase-4-backlog/EPIC-DEPLOY-02/EPIC.md) — Deployment Velocity remainder (from EPIC-DEPLOY-01, 2026-10-29) | DEPLOY | ~4 days | The pain is real (e.g. BL-36) |
+| B-23 | [US-AI-027](epics/phase-4-backlog/EPIC-AI-08/stories/US-AI-027/STORY.md) — Market data enrichment (from EPIC-AI-05, 2026-10-29) | AI | ~12h | Agents ask for it |
+| B-24 | [M-PAY-05](epics/phase-1-ai-core/EPIC-PAY-05/milestones/M-PAY-05-founding-promo-activation.md) — Founding promo activation (on hold since 2026-10-21) | PAY | — | Payment traction |
+| B-25 | Speed & Batch — caching · pre-rendering · progressive generation UI · batch CSV upload · job queue · volume pricing (legacy PHASE_TRACKER Phase 3, moved 2026-10-29) | EDIT/INFRA/PAY | ~30–40h | Batch / volume demand |
 | B-19 | [EPIC-AI-09](epics/phase-4-backlog/EPIC-AI-09/EPIC.md) — Sample Template Format Expansion (added 2026-08-20). 18 of 23 `formatTaxonomy.ts` formats have zero admin_curated template; likely prerequisite/trigger-adjacent to EPIC-KIT-01 (Kit's own Goal names "WhatsApp card" as a deliverable, no WhatsApp template exists). Stories not yet drafted | AI | ~27-36h (XL — must split ~5-6 stories) | EPIC-KIT-01 pulled forward, or Phase 3 gate closes |
 
 ---
@@ -119,9 +138,10 @@ docs/agile/
   epics/
     phase-0-mvp/            ← EPIC-DESIGN-01, EPIC-DESIGN-02 (v1.0)
     phase-0.5-foundation/   ← EPIC-AI-00 (runs parallel to Phase 0 close)
-    phase-1-ai-core/        ← EPIC-AI-01, EPIC-AI-02 (post-launch)
-    phase-2-ai-refine/      ← EPIC-AI-03 (month 3–6)
-    phase-3-ai-advanced/    ← EPIC-AI-04, EPIC-AI-05 (month 6–12)
+    phase-1-ai-core/        ← ✅ closed 2026-10-29 — LAUNCH-01, AI-02, AI-06, INFRA-02, PAY-05, EDIT-03, DEPLOY-01
+    phase-1.5-foundation-v3/← OBS-00, PROP-01, EDIT-04 (Property foundation + V3 editor)
+    phase-2-ai-refine/      ← KIT-01, AI-03 (kits + asset quality)
+    phase-3-ai-advanced/    ← AI-04, AI-05, ORG-01
     phase-4-backlog/        ← All deferred items after Phase 3 (15 items, B-01–B-15)
       README.md             ← phase scope, gate criteria, epic list
       {EPIC-ID}/
@@ -148,7 +168,7 @@ docs/agile/
 | PR branch | `feat/{domain}-{story-slug}` | `feat/design-us-design-002-editor-tokens` |
 | Linear issue | Sync with story ID in title | `[US-DESIGN-002] Editor token replacement` |
 
-Domain prefixes: `DESIGN` · `PAY` · `AUTH` · `EDIT` · `AI` · `USAGE` · `INFRA` · `ORG` · `KIT` (listing kits) · `GEN` (generation quality) · `LAUNCH` (go-live & revenue readiness) · `DEPLOY` (deployment velocity & safety — in use since EPIC-DEPLOY-01, 2026-07-13; not yet added to `PROJECT_CONTEXT.yaml`'s `domains:`/`counters:` lists, flagged 2026-08-15)
+Domain prefixes: `DESIGN` · `PAY` · `AUTH` · `EDIT` · `AI` · `USAGE` · `INFRA` · `ORG` · `KIT` (listing kits) · `PROP` (property & brand records, added 2026-10-29) · `GEN` (generation quality) · `LAUNCH` (go-live & revenue readiness) · `DEPLOY` (deployment velocity & safety — in use since EPIC-DEPLOY-01, 2026-07-13; not yet added to `PROJECT_CONTEXT.yaml`'s `domains:`/`counters:` lists, flagged 2026-08-15)
 
 ---
 

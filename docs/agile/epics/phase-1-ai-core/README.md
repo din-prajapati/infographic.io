@@ -1,5 +1,7 @@
 # Phase 1 — Revenue Strategy
 
+> ✅ **Closed 2026-10-29 at its delivered scope — 60/60 stories.** Beta live and revenue on (2026-10-19), real-photo pipeline (EPIC-AI-06), durable storage (EPIC-INFRA-02), pricing relaunch V1 (EPIC-PAY-05), one source of truth for listing facts (M-EDIT-05). The open remainder moved: EPIC-OBS-00 and the onboarding / brand-layer / editor stories → [Phase 1.5](../phase-1.5-foundation-v3/README.md); EPIC-KIT-01 → [Phase 2](../phase-2-ai-refine/README.md); EPIC-ORG-01 → Phase 3; EPIC-MKT-01 and the open EPIC-DEPLOY-01 stories → the backlog. Decision: [ADR-003](../../decisions/ADR-003-phase-1-close-and-phase-1.5.md). The tables below are the plan as it stood, kept as history.
+
 > **Timing:** Starts after MVP launch (Phase 0 gate) + Phase 0.5 foundation fixes done
 > **Outcome:** The product earns its price against Canva/Ideogram-direct: real listing photos (not synthetic), one listing → complete multi-format marketing kit, retention content between listings — built on the verified exact-text pipeline (EPIC-GEN-01).
 > **Reprioritized 2026-07-03:** Conversational AI polish (EPIC-AI-01) moved to Phase 2; revenue-strategy epics promoted. Rationale: [docs/research/2026-07-03-V4-PIPELINE-FIX-AND-PRODUCT-STRATEGY.md](../../../research/2026-07-03-V4-PIPELINE-FIX-AND-PRODUCT-STRATEGY.md)
@@ -12,8 +14,8 @@
 | 2 | [EPIC-AI-06](EPIC-AI-06/EPIC.md) | Hybrid Real-Photo Pipeline (real photo background · editable overlay · synthetic guard) | 🔲 Not Started | ~15–25h |
 | 3 | [EPIC-INFRA-02](EPIC-INFRA-02/EPIC.md) | Durable Asset Storage (Cloudflare R2) — revenue-on gate blocker | 🔲 Not Started | ~1 day |
 | 4 | [EPIC-PAY-05](EPIC-PAY-05/EPIC.md) | Pricing Relaunch (Founding Customer launch, campaign/discount architecture) — revenue-on gate, should ship before US-LAUNCH-005 AC6's real ₹ transaction | 🔲 Not Started | ~4–6 days |
-| 5 | [EPIC-KIT-01](EPIC-KIT-01/EPIC.md) | Listing Marketing Kits (multi-format batch · lifecycle · recurring content · compliance) | 🔲 Not Started | ~21–31h |
-| — | [EPIC-OBS-00](EPIC-OBS-00/EPIC.md) | Structured Observability (Sentry) — runs parallel, protects the above | 🔲 Not Started | ~12h |
+| 5 | [EPIC-KIT-01](../phase-2-ai-refine/EPIC-KIT-01/EPIC.md) | Listing Marketing Kits (multi-format batch · lifecycle · recurring content · compliance) | 🔲 Not Started | ~21–31h |
+| — | [EPIC-OBS-00](../phase-1.5-foundation-v3/EPIC-OBS-00/EPIC.md) | Structured Observability (Sentry) — runs parallel, protects the above | 🔲 Not Started | ~12h |
 
 ## Phase Gate (Phase 1 → Phase 2)
 - [ ] A generation with an uploaded listing photo uses that real photo as background (no synthetic property imagery)

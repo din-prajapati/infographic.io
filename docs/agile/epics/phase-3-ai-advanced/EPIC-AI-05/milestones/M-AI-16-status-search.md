@@ -1,7 +1,7 @@
 # M-AI-16-status-search — Listing Status Tone Routing + In-Chat Search
 
 > **Epic:** [EPIC-AI-05](../EPIC.md)
-> **Status:** 🔲 Not Started | **Target date:** 2027-03-31
+> **Status:** 🔲 Not Started | **Target date:** 2027-03-31 — US-AI-030 superseded 2026-10-29; US-AI-029 remains (fold into Campaign goals when the Campaign layer is designed)
 
 ## Goal
 

@@ -241,7 +241,7 @@ These are product calls. No agent can make them, and US-EDIT-012 cannot start wi
   made alongside it sits outside the history system, so a naive D2 implementation gives the user an
   Undo that restores their layers and silently keeps the overwritten price.
 - **Cross-milestone:** hour zero's photo test closes [BL-26](../../../../BACKLOG.md), which is one of
-  the two open items on [M-EDIT-03](M-EDIT-03-single-editable-path.md) (currently 5/7). It also
+  the two open items on [M-EDIT-03](../../../phase-1.5-foundation-v3/EPIC-EDIT-04/milestones/M-EDIT-03-single-editable-path.md) (currently 5/7). It also
   answers D4. Highest-leverage single hour available.
 - **BL-27 is P2.** This milestone is not a launch blocker; revenue-on closed 2026-10-19. It is
   sequenced here because the defect is the default result of "Use This Design" onto a template.

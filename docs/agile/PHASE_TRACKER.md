@@ -3,7 +3,7 @@
 > **Audience:** Executives, product owners, stakeholders  
 > **Purpose:** Single-page view of delivery progress across all product phases — from MVP to B2B scale.  
 > **Update cadence:** After each milestone closes or phase gate decision.  
-> **Last updated:** 2026-10-26 — stale-status sweep: EPIC-EDIT-03 added (it was missing from this page), Phase 1 recounted from the story cards, EPIC-DEPLOY-01 corrected to 2/7. Previous full recalculation: 2026-08-15.
+> **Last updated:** 2026-10-29 — **Phase 1 closed at its delivered scope; Phase 1.5 opened; kits moved to Phase 2** ([ADR-003](decisions/ADR-003-phase-1-close-and-phase-1.5.md)). Before that: 2026-10-26 stale-status sweep.
 
 ---
 
@@ -12,14 +12,13 @@
 | Phase | Release | Business Outcome | Status | Complete | Target |
 |-------|---------|-----------------|--------|----------|--------|
 | [Phase 0](#phase-0--mvp-launch) | v1.0 | Working product in production | ✅ Done 2026-10-29 | **9/9 stories**; all three human tasks signed off PASS (Task 3 on 2026-10-29, after the production smoke test) | Live |
-| [Phase 1](#phase-1--release-11-revenue-strategy) | v1.1 | **Revenue strategy** — go-live/revenue readiness (EPIC-LAUNCH-01), real-photo hybrid, listing kits | 🟡 In Progress | **73%** (61/84 stories — recounted 2026-10-26 from the story cards in `phase-1-ai-core/`, superseded stories excluded; now includes EPIC-EDIT-03) | Beta: live again on `7044a44` after a 15-day outage ([[BL-34]]) · Revenue: one story from the gate (US-LAUNCH-005 AC5/6) |
-| [Phase 2](#phase-2--release-12-polish--self-serve) | v1.2 | Conversational polish, refine loop, usage/billing self-serve | 🔲 Not Started | 0% | After Phase 1 gate |
-| [Phase 3](#phase-3--release-13-speed--batch) | v1.3 | Fast generation, batch uploads, volume pricing | 🔲 Not Started | 0% | Month 3 |
-| [Phase 4](#phase-4--release-20-b2b-api) | v2.0 | Developers can build on InfographicAI via API | 🔲 Not Started | 0% | Month 3–4 |
-| [Phase 5](#phase-5--release-21-analytics--optimization) | v2.1 | Admin visibility, AI cost optimization, performance | 🔲 Not Started | 0% | Month 5–6 |
-| [Phase 6](#phase-6--release-22-production-hardening) | v2.2 | Enterprise-grade reliability, test coverage, mobile | 🔲 Not Started | 0% | Month 7+ |
+| [Phase 1](#phase-1--release-11-revenue-strategy) | v1.1 | **Revenue strategy** — beta live, revenue on, real-photo pipeline, durable storage, pricing relaunch, one source of truth for listing facts | ✅ Closed 2026-10-29 | **60/60 stories** at delivered scope (open work moved by [ADR-003](decisions/ADR-003-phase-1-close-and-phase-1.5.md)) | Beta live · Revenue on |
+| [Phase 1.5](#phase-15--release-111-property-foundation--v3-editor) | v1.1.1 | **Property foundation + V3 editor** — Property · Brand profile · template contract · linked editing · Design tab · AI Assistant | 🟡 Opened 2026-10-29 | 0/26 stories | ≈ 7–9 weeks |
+| [Phase 2](#phase-2--release-12-kits--asset-quality) | v1.2 | **Kits & asset quality** — listing kits on proven templates, background removal, print upscale, element edit | 🔲 Not Started | 0/10 | After Phase 1.5 gate |
+| [Phase 3](#phase-3--release-13-campaigns--team-operations) | v1.3 | **Campaigns & team operations** — Campaign Mode, mockups, outpainting, photo cleanup, org roles | 🔲 Not Started | 0/6 | After Phase 2 gate |
+| [Phase 4](#phase-4--backlog-promoted-by-trigger-not-calendar) | v2.0+ | **Backlog** — B2B API, analytics, hardening, mobile, speed & batch, deferred AI — promoted by trigger | 🔲 Not Started | 0/17 + B-items | By trigger |
 
-**Current Focus (2026-10-26):** Beta is live and revenue is on — M-LAUNCH-01 and M-LAUNCH-02 closed 2026-10-19 after a real ₹5,499 charge; EPIC-PAY-05 V1 closed 2026-10-21; EPIC-INFRA-02 closed 2026-10-19. On the editor, M-EDIT-04 (AI composition over a template, BL-27) closed 2026-10-25 and M-EDIT-05 (one source of truth for listing facts) shipped 2026-10-26. **The one open P1 is BL-34** (no outage alerting): US-OBS-005 is merged and needs only its operator step ([HUMAN_TASKS #9](HUMAN_TASKS.md)). Next candidates: M-OBS-01 (Sentry), EPIC-KIT-01, US-LAUNCH-016/017.
+**Current Focus (2026-10-29):** Phase 0 closed (Task 3 signed off) and **Phase 1 closed at its delivered scope**. **Phase 1.5 — Property Foundation & V3 Editor** is open: Wave 0 is M-OBS-01 (Sentry reconcile + US-OBS-005 T5, which closes BL-34 — the one open P1) in parallel with finishing M-EDIT-03 (US-EDIT-009, BL-26); then M-PROP-01 ∥ M-PROP-03. See the [Phase 1.5 plan](epics/phase-1.5-foundation-v3/README.md).
 
 **Every task in this whole tree that only a human can do — dashboard clicks, DNS, legal review, real-money go-aheads — is tracked in one place: [HUMAN_TASKS.md](HUMAN_TASKS.md).** (2026-08-22: the "Phase 0 3 HUMAN deploy tasks" staleness flagged in the note this replaces has been checked directly against `docs/testing/PHASE_0_HUMAN_QA_CHECKLIST.md` — Tasks 1 and 2 are in fact ✅ signed off (2026-06-20, 2026-07-11); Task 3 is mostly done, with 2 rows genuinely still open. See that file for the full breakdown.)
 
@@ -32,11 +31,11 @@ Each phase requires a gate decision before the next phase starts:
 | Gate | Criteria | Owner |
 |------|----------|-------|
 | **G0 → G1** | Phase 0 deployed to production + Sentry live | Dinesh |
-| **G1 → G2** | Phase 1 epics closed + usage analytics visible to users | Dinesh |
-| **G2 → G3** | Stripe live + billing portal tested | Dinesh |
-| **G3 → G4** | Batch processing < 5s per item + volume pricing live | Dinesh |
-| **G4 → G5** | B2B API key management + developer portal live | Dinesh |
-| **G5 → G6** | Admin dashboard live + AI cost per request < target | Dinesh |
+| **G1 → G1.5** | ✅ Phase 1 closed at delivered scope 2026-10-29 (beta live, revenue on) | Dinesh |
+| **G1.5 → G2** | Phase 1.5 gate — see the [phase README](epics/phase-1.5-foundation-v3/README.md#phase-gate-phase-15--phase-2) | Dinesh |
+| **G2 → G3** | Phase 2 gate — see [phase-2 README](epics/phase-2-ai-refine/README.md#phase-gate-phase-2--phase-3) | Dinesh |
+| **G3 → done** | Phase 3 gate — see [phase-3 README](epics/phase-3-ai-advanced/README.md) | Dinesh |
+| **Backlog** | Each item is promoted by its own trigger, not by a gate | Dinesh |
 
 ---
 
@@ -105,7 +104,7 @@ far past this point). **Full detail, all phases: [HUMAN_TASKS.md](HUMAN_TASKS.md
 
 ## Phase 1 — Release 1.1: Revenue Strategy
 
-> **Release:** v1.1 · **Status:** 🟡 In Progress — 73% (61/84 stories, recounted 2026-10-26) · **Re-ranked 2026-07-07 (launch-readiness assessment)** · **Recalculated 2026-08-15**  
+> **Release:** v1.1 · **Status:** ✅ **Closed 2026-10-29 at its delivered scope — 60/60 stories.** The open remainder moved to Phase 1.5, Phase 2, Phase 3 or the backlog ([ADR-003](decisions/ADR-003-phase-1-close-and-phase-1.5.md)). *Before:* 73% (61/84, recounted 2026-10-26 — that count included US-EDIT-009 as done; it is not).
 > **Outcome:** The product is publicly live as a free beta, then earns its price against Canva/Ideogram-direct: agents market with their REAL listing photos, revenue is collected on live RazorPay with receipts and password recovery, and listing kits retain subscribers.  
 > **Rationale:** [docs/research/2026-07-03-V4-PIPELINE-FIX-AND-PRODUCT-STRATEGY.md](../research/2026-07-03-V4-PIPELINE-FIX-AND-PRODUCT-STRATEGY.md) + 2026-07-07 verdict: code is done, but the product is operationally unlaunchable (test-mode RazorPay, no email, no legal pages) and not honestly chargeable until real-photo pipeline ships. · **Effort:** ~70–90 hours  
 > **Full sequenced path:** [ROADMAP.md](ROADMAP.md)
@@ -128,30 +127,46 @@ far past this point). **Full detail, all phases: [HUMAN_TASKS.md](HUMAN_TASKS.md
 | 2 | [EPIC-AI-02](epics/phase-1-ai-core/EPIC-AI-02/EPIC.md) | AI | **M-AI-06 complete 2026-08-05** — US-AI-010/036/037/038/039/040/042 Done (2026-08-03), US-PANEL-01 Done (PR #26); US-AI-011/041 superseded. Quality tiers/Campaign UI moved to EPIC-AI-08 backlog | ✅ 10/10 |
 | 3 | [EPIC-AI-06](epics/phase-1-ai-core/EPIC-AI-06/EPIC.md) | AI | Hybrid Real-Photo Pipeline — **the chargeability gate** (real photo background, editable overlay). **Both milestones fully closed 2026-08-15** — M-AI-18 (editable overlay, 10 stories) and M-AI-17 (real-photo composition, US-AI-031/031b — credit topped up same day, both ACs live-verified) | ✅ **Fully Done** |
 | 4 | [EPIC-LAUNCH-01](epics/phase-1-ai-core/EPIC-LAUNCH-01/EPIC.md) · M-LAUNCH-02 | LAUNCH | **Revenue on** — RazorPay live activation, receipt email, BROKERAGE gate (PT-06), metering guard, editable-design monetization (US-LAUNCH-015, closed 2026-08-15) | ✅ **7/7 Done — closed 2026-10-19** (US-LAUNCH-005 AC6: real ₹ txn run end to end) |
-| 5 | [EPIC-KIT-01](epics/phase-1-ai-core/EPIC-KIT-01/EPIC.md) | KIT | Listing Marketing Kits — multi-format batch, lifecycle, recurring content, compliance | 🔲 0/6, not started |
-| — | [EPIC-MKT-01](epics/phase-1-ai-core/EPIC-MKT-01/EPIC.md) | MKT | Market-Aware Generation — MarketProfile, market-aware extraction, three-axis offshore authoring, persona. Drafted 2026-09-07 from BL-22 steps 2–5; **unscheduled on purpose** — trigger is beta showing a market whose output is wrong, not a date | 🔲 0/6, not started |
-| ∥ | [EPIC-OBS-00](epics/phase-1-ai-core/EPIC-OBS-00/EPIC.md) | INFRA | Sentry observability — M-OBS-01 belongs with the beta gate (first user bug must arrive via Sentry, not WhatsApp) | 🔲 0/4, not started |
-| ∥ | [EPIC-DEPLOY-01](epics/phase-1-ai-core/EPIC-DEPLOY-01/EPIC.md) | INFRA | Deployment velocity (CI gate, preview envs, feature flags, migrations, progressive delivery) — explicitly non-blocking to beta/revenue, runs rolling | 🟡 2/7 Done — US-DEPLOY-007 (client test infra, closed 2026-08-15) and US-DEPLOY-004 (migrations as a Railway `preDeployCommand`, closed 2026-10-01 — BL-33) |
+| 5 | [EPIC-KIT-01](epics/phase-2-ai-refine/EPIC-KIT-01/EPIC.md) | KIT | Listing Marketing Kits | ➡️ **Moved to Phase 2** — re-scope on Property + proven templates |
+| — | [EPIC-MKT-01](epics/phase-4-backlog/EPIC-MKT-01/EPIC.md) | MKT | Market-Aware Generation | ➡️ **Moved to the backlog** (parked, trigger unchanged) |
+| ∥ | [EPIC-OBS-00](epics/phase-1.5-foundation-v3/EPIC-OBS-00/EPIC.md) | INFRA | Sentry observability | ➡️ **Moved to Phase 1.5** (first gate) |
+| ∥ | [EPIC-DEPLOY-01](epics/phase-1-ai-core/EPIC-DEPLOY-01/EPIC.md) | INFRA | Deployment velocity | ✅ **Closed at Phase 1 scope — 2/7** (US-DEPLOY-004, 007); five open stories → [EPIC-DEPLOY-02](epics/phase-4-backlog/EPIC-DEPLOY-02/EPIC.md) (backlog) |
 | 6 | [EPIC-INFRA-02](epics/phase-1-ai-core/EPIC-INFRA-02/EPIC.md) | INFRA | Durable Asset Storage (Cloudflare R2) — **revenue-on gate blocker, added 2026-08-19** | ✅ **3/3 Done — epic closed 2026-10-19** (M-INFRA-01 verified on production) |
 | 7 | [EPIC-PAY-05](epics/phase-1-ai-core/EPIC-PAY-05/EPIC.md) | PAY | Pricing Relaunch — Founding Customer launch, feasibility-checked 75-80% margin, generic campaign/discount architecture — **added 2026-08-21, real ₹ transaction should run against relaunched prices** | 🟢 **V1 COMPLETE — 12/12 stories merged, all 4 V1 milestones closed 2026-10-21.** V2 (M-PAY-05, founding/promo) ⏸ held until payment traction |
-| 8 | [EPIC-EDIT-03](epics/phase-1-ai-core/EPIC-EDIT-03/EPIC.md) | EDIT | Editable Design Discoverability — editable layers easy to find, AI composition over templates, one source of truth for listing facts | 🟡 **10/14 Done** — M-EDIT-01 (2026-08-26), M-EDIT-04 (2026-10-25, BL-27) and M-EDIT-05 (2026-10-26, one source of truth for listing facts, #73) closed; M-EDIT-03 code merged, not closed (US-EDIT-009 Gate 2 step 5 — BL-26); M-EDIT-02 (brand layers, US-EDIT-006–008) not started |
+| 8 | [EPIC-EDIT-03](epics/phase-1-ai-core/EPIC-EDIT-03/EPIC.md) | EDIT | Editable Design Discoverability | ✅ **Closed at Phase 1 scope — 10/10** (M-EDIT-01/04/05); US-EDIT-008/009 + M-EDIT-03 → EPIC-EDIT-04, US-EDIT-006/007 → EPIC-PROP-01 (Phase 1.5) |
 
-> Former Phase 1 scope (usage dashboard, payment method UI, EPIC-AI-01 conversational core) moved to Phase 2 — polish follows revenue.
+> EPIC-LAUNCH-01 is ✅ 15/15 (US-LAUNCH-016/017 → EPIC-PROP-01); EPIC-ORG-01 moved to Phase 3. Full move table: [ADR-003](decisions/ADR-003-phase-1-close-and-phase-1.5.md).
 
 ---
 
-## Phase 2 — Release 1.2: Polish & Self-Serve
+## Phase 1.5 — Release 1.1.1: Property Foundation & V3 Editor
 
-> **Release:** v1.2 · **Status:** 🔲 Not Started · **Rescoped 2026-07-03**  
-> **Outcome:** Conversational UX polish, refine loop, usage dashboard, payment self-serve — the polish that follows the Phase 1 revenue push.  
+> **Release:** v1.1.1 · **Status:** 🟡 Opened 2026-10-29 — 0/26 stories ([ADR-003](decisions/ADR-003-phase-1-close-and-phase-1.5.md))
+> **Outcome:** A saved Property (structured price, Sale/Rent intent), a saved Brand profile and an explicit element-to-fact template contract — plus the V3 editor that makes them visible: linked editing, a simple Design tab, one AI Assistant, an export check.
+> **Plan, waves and gate:** [epics/phase-1.5-foundation-v3/README.md](epics/phase-1.5-foundation-v3/README.md) · **Effort:** ≈ 30–42 working days (7–9 weeks)
+
+| # | Epic | Domain | Focus | Status |
+|---|------|--------|-------|--------|
+| 0 | [EPIC-OBS-00](epics/phase-1.5-foundation-v3/EPIC-OBS-00/EPIC.md) | INFRA | Observability — M-OBS-01 first; reconcile the partly-built Sentry cards; US-OBS-005 T5 closes BL-34 | 🟡 0/5 |
+| 1 | [EPIC-PROP-01](epics/phase-1.5-foundation-v3/EPIC-PROP-01/EPIC.md) | PROP | Property record · structured price + intent · Auto-Fill · Brand profile · template contract | 🔲 0/10 |
+| 2 | [EPIC-EDIT-04](epics/phase-1.5-foundation-v3/EPIC-EDIT-04/EPIC.md) | EDIT | Single editable path (BL-26) · linked editing · Design tab · AI Assistant · export review · V3 shell (light + dark) · Property/Contact tabs · autosave · Edit Elements review | 🟡 0/11 (US-EDIT-009 code merged) |
+
+
+---
+
+## Phase 2 — Release 1.2: Kits & Asset Quality
+
+> **Release:** v1.2 · **Status:** 🔲 Not Started · **Rescoped 2026-10-29** ([ADR-003](decisions/ADR-003-phase-1-close-and-phase-1.5.md)) — was "Polish & Self-Serve" (rescoped 2026-07-03)
+> **Outcome:** One Property → a coordinated kit of assets from proven templates, plus the asset-quality tools (background removal, print upscale, element edit). Usage and payment self-serve placeholders stay here.
 > **Timeline:** After Phase 1 gate · **Effort:** ~60–80 hours
 
 ### Planned Epics
 
 | Epic | Domain | Focus | Status |
 |------|--------|-------|--------|
-| [EPIC-AI-01](epics/phase-2-ai-refine/EPIC-AI-01/EPIC.md) | AI | Conversational AI Core (intent · pre-plan · chips) — moved from Phase 1 | 🔲 |
-| [EPIC-AI-03](epics/phase-2-ai-refine/EPIC-AI-03/EPIC.md) | AI | Refine loop, element edit, R2 storage | 🔲 |
+| [EPIC-KIT-01](epics/phase-2-ai-refine/EPIC-KIT-01/EPIC.md) | KIT | Listing Marketing Kits — moved from Phase 1; ⚠️ re-scope on Property + proven templates first | 🔲 0/6 |
+| ~~EPIC-AI-01~~ | AI | Conversational AI Core — ➡️ moved to the [backlog](epics/phase-4-backlog/EPIC-AI-01/EPIC.md) | — |
+| [EPIC-AI-03](epics/phase-2-ai-refine/EPIC-AI-03/EPIC.md) | AI | Asset quality — element edit (US-AI-017), semantic layer remainder (US-AI-019), background removal (US-AI-021), print upscale (US-AI-022). US-AI-015 → Phase 1.5; 016/018/020 superseded | 🔲 0/4 |
 | EPIC-USAGE-01 | Usage | Monthly chart, cost breakdown, usage alerts — moved from old Phase 1 | 🔲 Plan |
 | EPIC-PAY-02 | Payments | Payment method management UI — moved from old Phase 1 | 🔲 Plan |
 | EPIC-PAY-03 | Payments | Stripe activation + billing portal | 🔲 Plan |
@@ -162,84 +177,50 @@ far past this point). **Full detail, all phases: [HUMAN_TASKS.md](HUMAN_TASKS.md
 
 ---
 
-## Phase 3 — Release 1.3: Speed & Batch
+## Phase 3 — Release 1.3: Campaigns & Team Operations
 
-> **Release:** v1.3 · **Status:** 🔲 Not Started  
-> **Outcome:** Generation is 3× faster; brokerages can bulk-generate from CSV; volume pricing unlocks API-tier customers.  
-> **Timeline:** Month 3 · **Effort:** ~30–40 hours
-
-### Planned Epics
+> **Release:** v1.3 · **Status:** 🔲 Not Started — 0/6 stories · **Realigned 2026-10-29** to the `phase-3-ai-advanced/` folder ([ADR-003](decisions/ADR-003-phase-1-close-and-phase-1.5.md)). The
+> legacy "Speed & Batch" plan that sat here has moved to the backlog as B-25 (see Phase 4).
+> **Outcome:** One Property runs **Campaigns** — a goal (Just Listed · Open House · Price Improved · Rented/Sold) with coordinated assets —
+> backed by advanced asset tools and organization roles for agencies.
+> **Timing:** After the Phase 2 gate · **Phase plan:** [epics/phase-3-ai-advanced/README.md](epics/phase-3-ai-advanced/README.md)
 
 | Epic | Domain | Focus | Status |
 |------|--------|-------|--------|
-| EPIC-AI-03 | AI | Caching, parallel processing, pre-rendering | 🔲 Plan |
-| EPIC-EDIT-02 | Editor | Batch upload UI, progressive generation UX | 🔲 Plan |
-| EPIC-PAY-04 | Payments | Volume-based pricing tiers | 🔲 Plan |
-
-### Scope Summary
-
-| # | Feature | Domain | Effort |
-|---|---------|--------|--------|
-| 3.1 | Intelligent Caching (prompt → result) | AI | 4–6 h |
-| 3.2 | Template Pre-rendering | EDIT | 4–6 h |
-| 3.3 | Progressive Generation UI | EDIT | 4–6 h |
-| 3.4 | Batch CSV/Excel Upload | EDIT | 4–6 h |
-| 3.5 | Parallel Processing & Job Queue | INFRA | 4–6 h |
-| 3.6 | Volume-based Pricing | PAY | 8–10 h |
+| [EPIC-AI-04](epics/phase-3-ai-advanced/EPIC-AI-04/EPIC.md) | AI | Campaign Mode backend (US-AI-026) · real-estate mockups · format expand / outpainting · photo cleanup | 🔲 0/4 |
+| [EPIC-AI-05](epics/phase-3-ai-advanced/EPIC-AI-05/EPIC.md) | AI | Listing-status tone routing (US-AI-029) — to fold into Campaign goals | 🔲 0/1 |
+| [EPIC-ORG-01](epics/phase-3-ai-advanced/EPIC-ORG-01/EPIC.md) | ORG | Organization roles + permission enforcement — moved from Phase 1 | 🔲 0/1 |
+| *not drafted* | AI | **AI campaign agent** — one action prepares a whole campaign for approval (property-campaign PRD phase B4) | 📋 Idea |
 
 ---
 
-## Phase 4 — Release 2.0: B2B API
+## Phase 4 — Backlog (promoted by trigger, not calendar)
 
-> **Release:** v2.0 · **Status:** 🔲 Not Started  
-> **Outcome:** Developers and PropTech companies can integrate InfographicAI generation into their own products via a documented REST API with key management, rate limiting, and webhooks.  
-> **Timeline:** Month 3–4 · **Effort:** ~85–125 hours
+> **Release:** v2.0+ · **Status:** 🔲 Not Started — 0/17 stories plus scoped B-items · folder [`phase-4-backlog/`](epics/phase-4-backlog/README.md)
+> **Realigned 2026-10-29:** the legacy Phases 4–6 (B2B API, Analytics & Optimization, Production Hardening) and the legacy Phase 3 (Speed & Batch)
+> were plans written before the epic folders existed. Their items already live in the backlog index, so this tracker now points there.
 
-### Planned Epics
+### Epics in the backlog folder
 
-| Epic | Domain | Focus | Status |
-|------|--------|-------|--------|
-| EPIC-API-01 | API | Key management, rate limiting, scoping | 🔲 Plan |
-| EPIC-API-02 | API | Webhook delivery, retries, dev portal | 🔲 Plan |
+| Epic | Focus | Stories | Trigger |
+|------|-------|:--:|---------|
+| [EPIC-AI-01](epics/phase-4-backlog/EPIC-AI-01/EPIC.md) | Conversational AI core (moved from Phase 2, 2026-10-29) | 0/2 | Agents ask for conversation after using the V3 Assistant |
+| [EPIC-AI-08](epics/phase-4-backlog/EPIC-AI-08/EPIC.md) | Quality tiers + Campaign Mode UI · image-model swap · synthetic guard · market data (US-AI-027) | 0/7 | First revenue / cost pressure |
+| [EPIC-AI-09](epics/phase-4-backlog/EPIC-AI-09/EPIC.md) | Sample-template format expansion (stories not drafted) | — | EPIC-KIT-01 starts |
+| [EPIC-DESIGN-03](epics/phase-4-backlog/EPIC-DESIGN-03/EPIC.md) | Component visual polish | 0/3 | — |
+| [EPIC-MKT-01](epics/phase-4-backlog/EPIC-MKT-01/EPIC.md) | Market-aware generation (moved from Phase 1, 2026-10-29) | — | A market's output is wrong |
+| [EPIC-DEPLOY-02](epics/phase-4-backlog/EPIC-DEPLOY-02/EPIC.md) | Deployment velocity remainder (from EPIC-DEPLOY-01, 2026-10-29) | 0/5 | The pain is real (e.g. BL-36) |
 
-### Scope Summary
+### Where the legacy phase plans went
 
-| # | Feature | Domain | Effort |
-|---|---------|--------|--------|
-| 4.1–4.5 | API Key Management (gen, rotate, scope, rate-limit, analytics) | API | 19–28 h |
-| 4.6–4.7 | Webhook Configuration + Delivery & Retries | API | 12–16 h |
-| 4.8 | Developer Portal (docs, playground) | API | 37–56 h |
+| Legacy phase | Item | Now |
+|---|---|---|
+| 3 — Speed & Batch | Intelligent caching, template pre-rendering, progressive generation UI, batch CSV/Excel upload, job queue, volume pricing | **B-25** (added 2026-10-29); caching + job queue overlap B-12 |
+| 4 — B2B API | Key management · webhooks + retries · developer portal | B-08 · B-09 · B-10 |
+| 5 — Analytics & Optimization | Admin dashboard · performance instrumentation · AI cost optimization | B-11 · B-12 · B-13 |
+| 6 — Production Hardening | Security audit, load testing, 99.9% SLA, full test coverage · mobile app | B-14 · B-15 |
 
----
-
-## Phase 5 — Release 2.1: Analytics & Optimization
-
-> **Release:** v2.1 · **Status:** 🔲 Not Started  
-> **Outcome:** Operators have a real-time admin dashboard showing revenue, usage, and error rates; AI cost per generation is optimized below target margins.  
-> **Timeline:** Month 5–6 · **Effort:** ~110–170 hours
-
-### Planned Epics
-
-| Epic | Domain | Focus | Status |
-|------|--------|-------|--------|
-| EPIC-INFRA-02 | Infra | Admin dashboard, performance instrumentation | 🔲 Plan |
-| EPIC-AI-04 | AI | Model cost optimization | 🔲 Plan |
-
----
-
-## Phase 6 — Release 2.2: Production Hardening
-
-> **Release:** v2.2 · **Status:** 🔲 Not Started  
-> **Outcome:** Enterprise-grade reliability — 99.9% uptime, full test coverage (unit + integration + E2E), security audit passed, mobile app available.  
-> **Timeline:** Month 7+ · **Effort:** ~200–300 hours
-
-### Planned Epics
-
-| Epic | Domain | Focus | Status |
-|------|--------|-------|--------|
-| EPIC-INFRA-03 | Infra | Security audit, load testing, 99.9% SLA | 🔲 Plan |
-| EPIC-TEST-01 | Testing | Full unit/integration/E2E coverage | 🔲 Plan |
-| EPIC-MOBILE-01 | Mobile | React Native or PWA mobile app | 🔲 Plan |
+Full list with effort and triggers: [phase-4-backlog/README.md](epics/phase-4-backlog/README.md) · also mirrored in [AGILE_INDEX.md](AGILE_INDEX.md#phase-4-backlog--deferred-after-phase-3).
 
 ---
 

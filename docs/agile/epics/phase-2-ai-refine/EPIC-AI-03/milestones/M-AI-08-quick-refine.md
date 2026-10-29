@@ -1,7 +1,7 @@
 # M-AI-08-quick-refine — Quick Refine Chips + Refine with AI from Canvas
 
 > **Epic:** [EPIC-AI-03](../EPIC.md)
-> **Status:** 🔲 Not Started
+> **Status:** ⏭️ Dissolved 2026-10-29 — US-AI-015 moved to [M-EDIT-08](../../../phase-1.5-foundation-v3/EPIC-EDIT-04/milestones/M-EDIT-08-ai-assistant.md) (Phase 1.5); US-AI-016 superseded. See [ADR-003](../../../../decisions/ADR-003-phase-1-close-and-phase-1.5.md).
 > **Target date:** 2026-08-31
 
 ---
@@ -16,7 +16,7 @@ After a generation is complete, agents can tap a chip ("More luxurious", "Darker
 
 | Story | Title | Status | PR |
 |-------|-------|--------|----|
-| [US-AI-015](../stories/US-AI-015/STORY.md) | Quick Refine chips post-generation (CAP-11) | 🔲 | — |
+| [US-AI-015](../../../phase-1.5-foundation-v3/EPIC-EDIT-04/stories/US-AI-015/STORY.md) | Quick Refine chips post-generation (CAP-11) | 🔲 | — |
 | [US-AI-016](../stories/US-AI-016/STORY.md) | "Refine with AI" from canvas editor (CAP-12) | 🔲 | — |
 
 ---

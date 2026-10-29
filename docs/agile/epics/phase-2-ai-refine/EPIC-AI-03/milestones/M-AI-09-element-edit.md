@@ -1,7 +1,7 @@
 # M-AI-09-element-edit — Element Edit Mode + Edit Listing Details in Image
 
 > **Epic:** [EPIC-AI-03](../EPIC.md)
-> **Status:** 🔲 Not Started
+> **Status:** 🔲 Not Started — US-AI-018 superseded 2026-10-29; US-AI-017 remains
 > **Target date:** 2026-09-30
 
 ---

@@ -1,7 +1,7 @@
 # EPIC-AI-05 — Intelligence Enrichment
 
 > **Phase:** Phase 3 — Production Tools (Month 6–12, parallel with EPIC-AI-04)
-> **Status:** 🔲 Not Started
+> **Status:** 🔲 Not Started — re-scoped 2026-10-29: US-AI-028 → EPIC-PROP-01 (Phase 1.5), US-AI-027 → EPIC-AI-08 (backlog), US-AI-030 superseded; US-AI-029 remains ([ADR-003](../../../decisions/ADR-003-phase-1-close-and-phase-1.5.md))
 > **Depends on:** EPIC-AI-01 + EPIC-AI-02 complete
 > **Linear Project:** LIN-EPIC-AI-05
 > **Target date:** 2027-03-31
@@ -32,10 +32,10 @@
 
 | Story ID | Title | Milestone | Status | PR |
 |----------|-------|-----------|--------|----|
-| [US-AI-027](stories/US-AI-027/STORY.md) | Market data enrichment toggle (CAP-21) | M-AI-15 | 🔲 | — |
-| [US-AI-028](stories/US-AI-028/STORY.md) | Agent profile persistence (CAP-22) | M-AI-15 | 🔲 | — |
+| [US-AI-027](../../phase-4-backlog/EPIC-AI-08/stories/US-AI-027/STORY.md) | Market data enrichment toggle (CAP-21) | M-AI-15 | ➡️ → EPIC-AI-08 (backlog) | — |
+| [US-AI-028](../../phase-1.5-foundation-v3/EPIC-PROP-01/stories/US-AI-028/STORY.md) | Agent profile persistence (CAP-22) | M-AI-15 | ➡️ → EPIC-PROP-01 (Phase 1.5) | — |
 | [US-AI-029](stories/US-AI-029/STORY.md) | Listing status-aware tone routing (CAP-23) | M-AI-16 | 🔲 | — |
-| [US-AI-030](stories/US-AI-030/STORY.md) | In-chat search (CAP-24) | M-AI-16 | 🔲 | — |
+| [US-AI-030](stories/US-AI-030/STORY.md) | In-chat search (CAP-24) | M-AI-16 | ⏭️ Superseded | — |
 
 ---
 
