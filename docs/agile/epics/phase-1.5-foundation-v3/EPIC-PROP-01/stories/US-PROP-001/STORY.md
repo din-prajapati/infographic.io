@@ -164,6 +164,14 @@ ACs checked, test output.
 
 > Appended by code-agent during/after implementation. Newest entries on top.
 
+### 2026-10-30 — code-agent (Opus) — T1 (schema) – T4 implemented
+- **Files:** `api/prisma/schema.prisma` (Property model, `Organization.properties`, `Infographic.propertyId` + relation + index) · `api/src/modules/properties/**` (module, controller, service, create/update DTOs) · `api/src/app.module.ts` · `api/src/modules/designs/dto/create-design.dto.ts` · `api/src/modules/designs/services/designs.service.ts`.
+- **Migration not generated here** — `prisma generate` only; no DB connection made. `migrate dev` (T1 second box) is left for the orchestrator (staging DB = dev DB, BL-37).
+- Property controller uses `@ValidatedBody(...)` like designs (the global pipe is inert, BL-30), so `forbidNonWhitelisted` rejects `id`/`organizationId`/`createdAt`/`updatedAt` (AC4). Service also copies an allow-list of fields, so ownership fields cannot reach Prisma even if the DTO is bypassed.
+- `beds`/`baths` are `@IsInt() @Min(0)`; `CreateDesignDto.propertyId` is `@IsString() @IsNotEmpty() @IsOptional()` so `""` is a 400, never a silent clear (TC-PROP-001-19).
+- `save()` runs the org check once, after the template lookup and before any infographic write; update carries `existing.propertyId` forward when omitted. `findAdminCuratedTemplates` unchanged.
+- Gates: `npm run check` clean · `npm run test:unit` backend 61 files / 826 tests passed, client 21 files / 375 passed + 1 skipped.
+
 ### 2026-10-30 — Opus review of PR #83
 - AC6 now covers all four routes into `save()` (designs and canvas-templates, create and update) and names its unit test; AC4 states that ownership fields in the body are rejected.
 
