@@ -19,7 +19,7 @@ updated: 2026-10-29
 - [x] **Brain** — Read the `Organization` and `Infographic` models in `api/prisma/schema.prisma`. Confirm (a) `Infographic.organizationId` comes from `req.user.organizationId || req.user.id`; (b) the canvas design lives in the `propertyData` JSON — `propertyId` is a separate FK column, not a key in that JSON; (c) services use the `prisma` singleton, not an injected `PrismaService`.
 - [x] **Muscle** — In `designs.service.ts` confirm `save`, `findOne` and `findAll` don't return `propertyId` today, and that `CreateDesignDto` has no `propertyId`.
 - [x] **Map** — `npx prisma migrate status --schema=api/prisma/schema.prisma`: note the last migration and confirm no `Property` table exists. Remember staging DB = dev DB (BL-37).
-- [ ] **Env** — `npm run dev` starts; `npm run check` is clean; `GET /api/v1/designs` returns 200 with a JWT.
+- [x] **Env** — `npm run dev` starts; `npm run check` is clean; `GET /api/v1/designs` returns 200 with a JWT.
 
 ---
 
@@ -62,7 +62,7 @@ updated: 2026-10-29
 
 ### T6 — Verify
 - [x] `npm run check`, `npm run test:unit`.
-- [ ] Manual TC-PROP-001-01 to -06 with two accounts in different orgs; record results in STORY.md.
+- [x] Manual TC-PROP-001-01 to -06 with two accounts in different orgs; record results in STORY.md.
 
 ---
 
