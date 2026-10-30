@@ -391,9 +391,9 @@
 **Phase:** 1.5 · **Domain added:** 2026-10-29 ([ADR-003](decisions/ADR-003-phase-1-close-and-phase-1.5.md))
 
 ### Now
-> **2026-10-30 — current state:** 0/12. Hardened 2026-10-29 by /new-story; an Opus review on 2026-10-30 found 6 blockers, all fixed in PR #83 (US-PROP-002 split into 002 + new US-PROP-007; US-AI-028 owns the one profile write endpoint). Wave 1 starts with M-PROP-01 (US-PROP-001 Property record backend → US-PROP-006 client ∥ 002 structured price + listing intent →
-> 003 Auto-Fill with review) in parallel with M-PROP-03 (US-PROP-004 binding types, US-PROP-005 template version + proven flag). M-PROP-02
-> (Brand profile: US-AI-028, US-LAUNCH-016/017, US-EDIT-006/007 — all moved in) follows in Wave 2. Each story needs `/new-story` before implementation.
+> **2026-10-30 — current state:** 0/12. Hardened 2026-10-29 by /new-story; an Opus review on 2026-10-30 found 6 blockers, all fixed in PR #83 (US-PROP-002 split into 002 + new US-PROP-007; US-AI-028 owns the one profile write endpoint). Wave 1 starts with M-PROP-01 (US-PROP-001 Property record backend → 002 structured price → 006 client ∥ 007 intent + price in the editor →
+> 003 Auto-Fill with review) in parallel with M-PROP-03 (US-PROP-004 binding types from day 1; US-PROP-005 template version + proven flag after 001). M-PROP-02
+> (Brand profile: US-AI-028, US-LAUNCH-016/017, US-EDIT-006/007 — all moved in) follows in Wave 2. Every card is hardened; US-LAUNCH-016 still needs a split (4–7 h).
 
 | Milestone | Stories | Wave |
 |-----------|---------|:----:|

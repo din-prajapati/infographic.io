@@ -11,7 +11,7 @@ updated: 2026-10-29
 > **Epic:** [EPIC-PROP-01](../../EPIC.md)
 > **Milestone:** [M-PROP-03-template-contract](../../milestones/M-PROP-03-template-contract.md)
 > **Size:** S
-> **Depends on:** — (parallel with US-PROP-004 on the same milestone branch)
+> **Depends on:** [US-PROP-001](../US-PROP-001/STORY.md) merged — both change `DesignsService.save()` and `create-design.dto.ts`. Parallel with US-PROP-004.
 > **Created:** 2026-10-29 | **Closed:** —
 > **Source:** Phase 1.5 restructure — [ADR-003](../../../../../decisions/ADR-003-phase-1-close-and-phase-1.5.md)
 

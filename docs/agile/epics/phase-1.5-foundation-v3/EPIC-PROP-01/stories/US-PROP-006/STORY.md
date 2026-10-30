@@ -13,7 +13,7 @@ updated: 2026-10-29
 > **Milestone:** [M-PROP-01-property-record](../../milestones/M-PROP-01-property-record.md)
 > **Linear:** LIN-XXX
 > **Size:** M *(split from the original US-PROP-001 L card)*
-> **Depends on:** [US-PROP-001](../US-PROP-001/STORY.md) must be merged first.
+> **Depends on:** [US-PROP-001](../US-PROP-001/STORY.md) and [US-PROP-002](../US-PROP-002/STORY.md) must be merged first (002 adds the four price fields to the DTOs and `PropertyInfo`, so this story's payload whitelist includes them from the start).
 > **Created:** 2026-10-29 | **Closed:** —
 > **Source:** Phase 1.5 restructure — [ADR-003](../../../../../decisions/ADR-003-phase-1-close-and-phase-1.5.md)
 
@@ -29,7 +29,7 @@ updated: 2026-10-29
 
 ## Acceptance Criteria
 
-- [ ] **AC1 [happy-path]:** When a design with a non-null `propertyId` is opened, the client calls `GET /api/v1/properties/:propertyId` after `restoreCanvasData` runs, and on success overwrites the property fields in `usePropertyStore` with every `PROPERTY_PAYLOAD_FIELDS` field the server returns (`type, headline, price, beds, baths, sqft, address, description, features, locale`, plus `amount, currency, transaction, rentalPeriod` once US-PROP-002 has added them); canvas slots then reflect them.
+- [ ] **AC1 [happy-path]:** When a design with a non-null `propertyId` is opened, the client calls `GET /api/v1/properties/:propertyId` after `restoreCanvasData` runs, and on success overwrites the property fields in `usePropertyStore` with every `PROPERTY_PAYLOAD_FIELDS` field the server returns (`type, headline, price, beds, baths, sqft, address, description, features, locale, amount, currency, transaction, rentalPeriod`); canvas slots then reflect them.
 - [ ] **AC2 [happy-path]:** While `usePropertyStore.activePropertyId` is non-null, any property-store change (typed in the Property tab or coming from a canvas slot edit) triggers a debounced `PUT /api/v1/properties/:activePropertyId` 800 ms after the last change; the local store updates immediately. Store changes made while a design is loading (`restoreCanvasData`, the AC1 overwrite) do not schedule a PUT.
 - [ ] **AC10 [security]:** Every `POST`/`PUT /api/v1/properties` body is built by `toPropertyPayload(property)` in `client/src/lib/propertyPayload.ts`, which copies only `PROPERTY_PAYLOAD_FIELDS` (the fields the server DTOs whitelist) — never `id`, `organizationId`, `activePropertyId` or client-only keys such as `fieldOrigins`. The API runs `forbidNonWhitelisted: true` (`api/src/main.ts`), so any extra key would make the request fail with 400. Unit test: a store object with extra keys produces a payload with exactly the whitelisted keys.
 - [ ] **AC11 [concurrent]:** Open design A (Property P1), then design B (Property P2) without reloading the page: no `PUT /api/v1/properties/P1` is sent after B starts loading, and B's facts are never written to P1. `setPropertyId(null)` runs before `restoreCanvasData`, and any pending debounced PUT for P1 is flushed or cancelled before the switch.

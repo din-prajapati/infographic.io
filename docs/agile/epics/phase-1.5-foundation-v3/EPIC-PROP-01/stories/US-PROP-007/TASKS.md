@@ -33,7 +33,7 @@ updated: 2026-10-30
 
 ### T2 — Price parsing in the binding + back-fill
 - [ ] `patchFor('price', v)`: keep setting `price`; set `amount`/`currency` only when `parseIndianPrice(v)` succeeds.
-- [ ] Rent: the slot value is `formatPriceForLocale(amount, …) + " / " + rentalPeriod`.
+- [ ] Export `formatListingPrice(property)`: `formatPriceForLocale(amount, locale, currencyToken)`, plus `" / " + rentalPeriod` for rent. It is the only formatter for the price slot (AC6).
 - [ ] `applySavedListing`: if `price` is set and `amount` missing, parse and set `amount`/`currency`; leave `amount` undefined on failure.
 
 **ACs:** AC2, AC3, AC4 · **Effort:** S
@@ -41,9 +41,10 @@ updated: 2026-10-30
 ### T3 — `PropertyDetailsForm.tsx`
 - [ ] Intent select; on change: `setProperty({ transaction, amount: undefined, currency: undefined, price: '' })`, `writeFieldToCanvas('price', '')` (the only history entry), `writeFieldToCanvas('listingIntent', …)`.
 - [ ] Label per intent; period select for rent (`setProperty({ rentalPeriod })` only, then rewrite the price slot without a history entry).
+- [ ] Price input: keep the typed text as the buffer; on a successful `parseIndianPrice`, `setProperty({ price, amount, currency, rentalPeriod? })` and write the slot with `formatListingPrice` (AC6).
 - [ ] Validate on blur; AC3 error text. `price-legacy-warning` when `price` is non-empty, `amount` undefined and unparseable.
 
-**ACs:** AC1, AC3, AC4 · **Effort:** M
+**ACs:** AC1, AC3, AC4, AC6 · **Effort:** M
 
 ### T4 — Tests
 - [ ] `client/src/lib/__tests__/listingBindings.price.spec.ts`: the AC5 cases. Existing `listingBindings.spec.ts` stays green.

@@ -11,7 +11,7 @@ updated: 2026-10-29
 > **Epic:** [EPIC-PROP-01](../../EPIC.md)
 > **Milestone:** [M-PROP-03-template-contract](../../milestones/M-PROP-03-template-contract.md)
 > **Size:** M
-> **Depends on:** — (independent of US-PROP-001)
+> **Depends on:** — (independent of US-PROP-001; additive exports in `listingBindings.ts`, so it runs in parallel with US-PROP-007/003 and rebases if it merges second)
 > **Created:** 2026-10-29 | **Closed:** —
 > **Source:** Phase 1.5 restructure — [ADR-003](../../../../../decisions/ADR-003-phase-1-close-and-phase-1.5.md); V3 canvas mockup (`Mockups/buildographic-canvas-simplification-v3/`, untracked)
 

@@ -28,7 +28,7 @@ updated: 2026-10-29
 ### T1 — `propertiesApi` in `api.ts` + `propertyPayload.ts`
 - [ ] `PropertyRecord` interface mirroring the server response.
 - [ ] `propertiesApi.create / getAll / getOne / update`, same `getApiUrl` + `apiRequest<T>` pattern as `designsApi`.
-- [ ] `client/src/lib/propertyPayload.ts`: `PROPERTY_PAYLOAD_FIELDS` (the create/update DTO fields — copy the list from US-PROP-001's DTOs, plus US-PROP-002's four if merged) and `toPropertyPayload(p)` that copies only those keys, skipping `undefined`. `create`/`update` take its result, never the raw store.
+- [ ] `client/src/lib/propertyPayload.ts`: `PROPERTY_PAYLOAD_FIELDS` (the create/update DTO fields — US-PROP-001's list plus US-PROP-002's `amount`, `currency`, `transaction`, `rentalPeriod`) and `toPropertyPayload(p)` that copies only those keys, skipping `undefined`. `create`/`update` take its result, never the raw store.
 - [ ] `client/src/lib/__tests__/propertyPayload.spec.ts` — TC-PROP-006-09.
 
 **ACs:** AC1, AC2, AC4, AC6, AC9, AC10 · **Effort:** S
