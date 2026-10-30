@@ -17,9 +17,9 @@ updated: 2026-10-29
 ## Four-Pillars Pre-flight
 
 - [x] **Brain** — Read `listingBindings.ts`. Be able to say (a) why `slot` must stay the write channel, (b) why `stats` → compound while every other field → field (see `STORE_TO_CANVAS_ONLY` and the Q1 note), (c) why `reconnectBinding` must never call `writeCanvasToField`.
-- [ ] **Muscle** — Baseline `npm run test:unit` green, including `api/tests/canvas/template-one-fact-per-element.spec.ts`.
+- [x] **Muscle** — Baseline `npm run test:unit` green, including `api/tests/canvas/template-one-fact-per-element.spec.ts`.
 - [x] **Map** — Find `BaseElement` (and `slot?`, `frameOf?`, `slotFormat?`) in `canvasTypes.ts`; confirm `captureCanvasData()` serialises elements verbatim; confirm `restoreCanvasData()` (`canvasState.ts`) is the single load path for designs and templates (the migration call site).
-- [ ] **Env** — `npm run dev`, `npm run check`, `npm run test:unit` all green before the first edit.
+- [x] **Env** — `npm run dev`, `npm run check`, `npm run test:unit` all green before the first edit.
 
 ---
 
@@ -55,7 +55,7 @@ updated: 2026-10-29
 **ACs:** AC5 · **Effort:** S
 
 ### T6 — Round-trip check
-- [ ] Open a curated template, check bindings in devtools, save, reopen, compare (TC-01, TC-02). Record in STORY.md.
+- [x] Open a curated template, check bindings in devtools, save, reopen, compare (TC-01, TC-02). Record in STORY.md.
 
 **ACs:** AC4 · **Effort:** XS
 

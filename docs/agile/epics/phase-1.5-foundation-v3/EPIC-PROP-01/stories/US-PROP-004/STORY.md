@@ -114,8 +114,8 @@ Rules: touch only these files; run `npm run check` and `npm run test:unit`; repo
 
 | TC ID | Type | Priority | Scenario | Status | Finding |
 |-------|------|:--------:|----------|:------:|---------|
-| TC-PROP-004-01 | Manual | P0 | Given a design saved before this story (slot-tagged text, no `binding`), when it is opened in the editor, then every text element in the canvas store has a `binding` (devtools): a slot in `SLOT_TO_FIELD` gives field or compound, any other text gives independent; non-text elements get none. | 🔲 | |
-| TC-PROP-004-02 | Manual | P0 | Given a price element with `binding: { type: 'field', key: 'price' }`, when the design is saved, closed and reopened, then its `binding` is deep-identical (devtools before and after). | 🔲 | |
+| TC-PROP-004-01 | Manual | P0 | Given a design saved before this story (slot-tagged text, no `binding`), when it is opened in the editor, then every text element in the canvas store has a `binding` (devtools): a slot in `SLOT_TO_FIELD` gives field or compound, any other text gives independent; non-text elements get none. | ✅ | price→field:price, headline→field:headline, specs→compound[beds,baths,sqft], agent.cta→independent, untagged text→independent, slot-tagged shape→none (live `useCanvasStore` read in Chrome) — Chrome, local dev, 2026-10-30 |
+| TC-PROP-004-02 | Manual | P0 | Given a price element with `binding: { type: 'field', key: 'price' }`, when the design is saved, closed and reopened, then its `binding` is deep-identical (devtools before and after). | ✅ | Saved via editor Save dialog (same design id), full reload: all 6 elements' bindings deep-equal before/after (key-order-insensitive; JSONB reorders keys) — Chrome, local dev, 2026-10-30 |
 | TC-PROP-004-03 | Unit | P1 | Given a text element with `slot: 'property.price'` and no binding, when `migrateElementBinding(el)` runs, then it returns `binding: { type: 'field', key: 'price' }` with `content`, `slot`, `slotFormat` unchanged. | ✅ | |
 | TC-PROP-004-04 | Unit | P1 | Given a text element with `slot: 'property.specs'`, when `migrateElementBinding(el)` runs, then `binding` is `{ type: 'compound', parts: ['beds', 'baths', 'sqft'] }` (not `area`). | ✅ | |
 | TC-PROP-004-05 | Unit | P1 | Given (a) a text element with no slot and (b) a shape, when `migrateElementBinding` runs on each, then (a) is independent and (b) is returned unchanged with no `binding`. | ✅ | |
@@ -140,8 +140,8 @@ Rules: touch only these files; run `npm run check` and `npm run test:unit`; repo
 ## Definition of Done
 
 - [ ] All ACs checked ✅ · all test cases run and recorded
-- [ ] `npm run check` · `npm run test:unit` pass
-- [ ] TC-PROP-004-01/02 confirmed in the browser
+- [x] `npm run check` · `npm run test:unit` pass
+- [x] TC-PROP-004-01/02 confirmed in the browser
 - [ ] PR merged (PR #_____)
 - [ ] [TASKS.md](./TASKS.md) fully checked ✅ · STORY.md status `✅ Done`
 
@@ -154,7 +154,7 @@ Rules: touch only these files; run `npm run check` and `npm run test:unit`; repo
 ### 2026-10-30 — Codex review of PR #87 (REQUEST CHANGES — evidence only)
 - Codex found every AC met and scope respected; both BLOCKING items are missing evidence, not defects.
 - **Evidence item 1 closed:** orchestrator re-ran Gate 1 on `feat/prop/us-prop-004-binding-types` @ `2f7b288` — `npm run check` **exit 0**; `npm run test:unit` **exit 0** — API 61 files / 815 tests passed; client 22 files / 407 passed, 1 pre-existing skip (`loadVariation.spec.ts:176`). (Codex's own rerun failed with EPERM in its read-only sandbox.)
-- **Evidence item 2 open:** T6 / TC-01, TC-02 browser round trip still to run.
+- **Evidence item 2 closed:** TC-PROP-004-01/02 run in Chrome — see Test Cases table. Seeded a pre-story design (no `binding`) via the API on a throwaway account; test rows deleted afterwards.
 
 
 ### 2026-10-30 — US-PROP-004 implementation
