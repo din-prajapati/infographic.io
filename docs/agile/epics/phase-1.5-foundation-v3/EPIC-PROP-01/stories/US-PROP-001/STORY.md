@@ -141,7 +141,7 @@ ACs checked, test output.
 | TC-PROP-001-22 | Manual | P1 | Given Property rows linked to designs, when the owning Organization is deleted (`onDelete: Cascade`), then its Property rows are gone. Deleting a referenced Property sets the design's `propertyId` null (Prisma's default for an optional relation) and the design row survives | 🔲 | |
 | TC-PROP-001-23 | Manual | P0 | Given no `Authorization` header, when `POST /api/v1/properties`, `GET /api/v1/properties`, `GET /api/v1/properties/:id` and `PUT /api/v1/properties/:id` are each called, then every one returns 401 and nothing is written | 🔲 | |
 | TC-PROP-001-24 | Manual | P1 | Given an expired JWT, a malformed token (`Bearer abc`) and a token signed with the wrong secret, when `GET /api/v1/properties` is called with each, then every one returns 401, not 500 or 200 | 🔲 | |
-| TC-PROP-001-25 | Code check | P1 | *Revised 2026-10-30 (product owner).* An authenticated user with no `organizationId` cannot occur: both live signup paths create an Organization (`auth.service.ts:153` local, `:279` Google) and the only org-less `user.create` (`subscription-storage.service.ts:23`) has no callers. AC1's required FK means the `req.user.id` fallback can't produce a valid Property, same as `Infographic` today. Check: no `user.create` call site without `organizationId` | ✅ | grep 2026-10-30 |
+| TC-PROP-001-25 | Unit | P1 | *Revised 2026-10-30 (product owner, after Codex re-review).* Given a JWT whose user has `organizationId = null` (a removed team member — `users.service.ts:189`), when any Properties endpoint is called, then 403 "not part of an organization" and nothing is read or written. Never the `user.id` fallback: org ids are generated, so it would violate AC1's FK and 500 | ✅ | `properties.service.spec.ts` |
 | TC-PROP-001-26 | Manual | P1 | Given a JWT for org A, when `POST /api/v1/properties` is sent `{ beds: "three" }`, `{ beds: 2.5 }`, `{ features: "pool" }` or `{ features: [1] }`, then each returns 400 and no row is created; `{ beds: 0, features: [] }` returns 201 | 🔲 | |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
@@ -164,10 +164,16 @@ ACs checked, test output.
 
 > Appended by code-agent during/after implementation. Newest entries on top.
 
+### 2026-10-30 — Codex re-review → TC-PROP-001-25 decided: 403
+- Codex re-review found the org-less path is live: `removeUserFromOrganization` (`users.service.ts:189`) nulls `organizationId` and the JWT stays valid. My earlier note that org-less users cannot occur was wrong.
+- **Decision (product owner):** Properties endpoints answer **403** for a caller with no organization (`callerOrganizationId()` in `properties.controller.ts`); the `|| req.user.id` fallback is gone from this module. AC2 deviation recorded here: the fallback could never satisfy AC1's FK.
+- **Follow-up, out of scope:** designs have the same 500 for removed members (`Infographic.organizationId` FK) — file in BACKLOG.md.
+
+
 ### 2026-10-30 — Codex review of PR #88 (REQUEST CHANGES) → fixes
 - **Fixed (trust edge):** `@IsOptional()` let an explicit `null` through to non-nullable Prisma columns (500). `CreatePropertyDto` (so also `UpdatePropertyDto`) and `CreateDesignDto.propertyId` now use `@ValidateIf(v !== undefined)` — `null` is a 400, omitted is still fine.
 - **Tests added:** TC-PROP-001-11 (partial update writes only the sent field, full record back), TC-PROP-001-17 (template path, create + update), TC-PROP-001-26 at DTO level, null rejection for all 12 Property fields and `propertyId`.
-- **Not changed — needs a product decision:** Codex's BLOCKING "no-organization user → FK failure". Both live signup paths (`auth.service.ts:153` local, `:279` Google) create an Organization; the only org-less `user.create` (`subscription-storage.service.ts:23`) has no callers. `Infographic.organizationId` has the same required FK, so the `|| req.user.id` fallback fails identically for designs today. TC-PROP-001-25 as written (expects 201) cannot pass under AC1's FK — the test case, not the code, needs revising.
+- **Superseded by the entry above — premise was wrong:** Codex's BLOCKING "no-organization user → FK failure". Both live signup paths (`auth.service.ts:153` local, `:279` Google) create an Organization; the only org-less `user.create` (`subscription-storage.service.ts:23`) has no callers. `Infographic.organizationId` has the same required FK, so the `|| req.user.id` fallback fails identically for designs today. TC-PROP-001-25 as written (expects 201) cannot pass under AC1's FK — the test case, not the code, needs revising.
 - Gate 1 (orchestrator, `feat/prop/us-prop-001-backend`): `npm run check` exit 0; `npm run test:unit` exit 0 — API 61 files / 850 tests passed; client 21 files / 375 passed, 1 pre-existing skip.
 
 
