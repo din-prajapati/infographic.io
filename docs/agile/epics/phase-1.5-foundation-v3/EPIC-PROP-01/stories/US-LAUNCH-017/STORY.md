@@ -7,9 +7,9 @@
 > **Milestone:** [M-PROP-02-brand-profile](../../milestones/M-PROP-02-brand-profile.md)
 > **Moved 2026-10-29:** from EPIC-LAUNCH-01 backlog (Phase 1) to EPIC-PROP-01 / M-PROP-02 (Phase 1.5) by the Phase 1.5 restructure — [ADR-003](../../../../../decisions/ADR-003-phase-1-close-and-phase-1.5.md). The onboarding screens write the saved Brand profile from US-AI-028.
 > **Size:** M (4–7 h)
-> **Depends on:** [US-LAUNCH-016](../US-LAUNCH-016/STORY.md) merged (`UserProfile` model, `/onboarding` route, Screen 1 hand-off). US-INFRA-001 `StorageService` (R2) — already Done.
-> **Related:** Delivers the persistence half of US-AI-028 ("Agent profile persistence", Phase 3 stub with no real ACs) — review that stub for supersession at closeout. Gives US-EDIT-007 the `headshotUrl` field it noted was missing; placing the headshot on canvas remains US-EDIT-007's job. Org-level brand sync stays B-07.
-> **Note:** Adds columns to `UserProfile` — run `npx prisma generate --schema=api/prisma/schema.prisma` after the schema change.
+> **Depends on:** [US-AI-028](../US-AI-028/STORY.md) merged (`UserProfile` model, `GET`/`PUT /users/me/profile` — the only profile write endpoint) and [US-LAUNCH-016](../US-LAUNCH-016/STORY.md) merged (`/onboarding` route, Screen 1 hand-off). US-INFRA-001 `StorageService` (R2) — already Done.
+> **Related:** Gives US-EDIT-007 the `headshotUrl` field it noted was missing; placing the headshot on canvas remains US-EDIT-007's job. Org-level brand sync stays B-07.
+> **Note:** Adds columns to `UserProfile` — generate the migration with `npx prisma migrate dev --name brand_kit_fields` (never `db push`; migrations deploy via `migrate deploy`, BL-33).
 > **Linear:** LIN-XXX
 > **Created:** 2026-09-14 | **Closed:** —
 
@@ -25,7 +25,7 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC1 — Schema.** `UserProfile` gains: `brokerageName String?`, `phone String?`, `licenseNumber String?`, `logoUrl String?`, `headshotUrl String?`, `brandColors String[] @default([])`, `equalHousing Boolean @default(false)`, `channels String[] @default([])`, `brandKitCompletedAt DateTime?`. No change to `Organization.brandColors` / `Organization.logoUrl` (org-level brand sync is B-07).
+- [ ] **AC1 — Schema.** `UserProfile` gains the brand-kit-only additions: `headshotUrl String?`, `equalHousing Boolean @default(false)`, `channels String[] @default([])`, `brandKitCompletedAt DateTime?`. The fields `brokerageName`, `phone`, `licenseNumber`, `logoUrl` and `brandColors` already exist in the base model (US-AI-028) — do not re-add them. No change to `Organization.brandColors` / `Organization.logoUrl` (org-level brand sync is B-07).
 
 - [ ] **AC2 — Asset upload endpoint.** `POST /api/v1/users/me/brand-assets` (guarded by `AuthGuard('jwt')`; 401 without JWT), `multipart/form-data` with field `file` and field `kind` ∈ `logo | headshot`:
   - accepts only `image/png`, `image/jpeg`, `image/webp` up to **5 MB** (`ParseFilePipe` with `MaxFileSizeValidator` + `FileTypeValidator`, mirroring `infographics.controller.ts` `uploadPhoto`); anything else — including `image/svg+xml` — returns HTTP 400
@@ -33,13 +33,11 @@
   - uploads via `StorageService.upload(buffer, key, mimetype)` with key `brand-assets/{req.user.id}/{kind}-{randomUUID()}.{ext}` and returns HTTP 201 `{ url }`
   - if `StorageService.upload` throws (e.g. R2 not configured), returns HTTP 503 `{ message: 'Upload is temporarily unavailable' }` and logs the error with the key — it never returns 500 with the raw storage error
 
-- [ ] **AC3 — Save / read endpoints.** `PUT /api/v1/users/me/brand-kit` (JWT-guarded) accepts `BrandKitDto`, all fields optional:
-  - `brokerageName` ≤ 120 chars · `phone` ≤ 30 chars, matching `/^[0-9+()\-.\s]*$/` · `licenseNumber` ≤ 60 chars
-  - `logoUrl`, `headshotUrl` — each either `null` or a string starting with `StorageService.getPublicUrl('brand-assets/' + req.user.id + '/')`; any other URL (another user's prefix, external host) → HTTP 400
-  - `brandColors` — array of ≤ 5 strings matching `/^#[0-9a-fA-F]{6}$/`
+- [ ] **AC3 — Save / read through the one profile endpoint.** No new save endpoint: US-AI-028's `PUT`/`GET /api/v1/users/me/profile` is the only writer of profile and brand fields. This story extends its `ProfileDto` and `saveProfile`:
+  - `headshotUrl` — `null` or a string starting with `StorageService.getPublicUrl('brand-assets/' + req.user.id + '/')`, checked by the same function as `logoUrl` (US-AI-028 AC4); any other URL → HTTP 400
   - `equalHousing` — boolean · `channels` — array, each ∈ `instagram | facebook | linkedin | email | print`, no duplicates
-  On success it updates the `UserProfile` of `req.user.id`, sets `brandKitCompletedAt = new Date()`, and returns HTTP 200 with the saved brand-kit fields. If the user has no `UserProfile` row, returns HTTP 409 `{ message: 'Complete onboarding first' }`.
-  `GET /api/v1/users/me/brand-kit` (JWT-guarded) returns the same field set (nulls / empty arrays when unset), or all-empty values if no profile exists. The user id is taken only from `req.user.id`.
+  - `brandKitCompleted` — optional boolean, not stored; when `true`, `saveProfile` sets `brandKitCompletedAt = new Date()`
+  The existing validators for `brokerageName`, `phone`, `licenseNumber`, `logoUrl` and `brandColors` (US-AI-028 AC3/AC4) apply unchanged. `saveProfile` upserts, so a user without a profile row gets one (no 409). `GET /users/me/profile` returns the new fields too (nulls / `false` / `[]` when unset). The user id is taken only from `req.user.id`.
 
 - [ ] **AC4 — Screen 2 UI.** `client/src/pages/onboarding/BrandKitPage.tsx` at route `/onboarding/brand-kit` (app-only, auth-required, not behind the onboarding redirect) shows the title "Set up your brand kit" and:
   - **Logo** upload (click or drop). On file select, before uploading, dominant colors are extracted client-side from the local file (object URL → offscreen `<canvas>` → `extractBrandColors()` in `client/src/lib/brandColors.ts`), returning 1–3 hex colors that ignore near-white (all channels ≥ 240), near-black (all ≤ 15) and fully transparent pixels. The colors show as swatches, each removable; **no color picker** is rendered. The file is then uploaded (kind `logo`).
@@ -50,16 +48,16 @@
   - buttons **Save and continue** and **Skip for now**
   If an upload returns 503 or fails, an inline message "Upload unavailable — you can add this later" shows next to that field, and Save still works for the other fields.
 
-- [ ] **AC5 — Flow.** US-LAUNCH-016's Screen 1 hand-off changes to navigate to `/onboarding/brand-kit?next=<the /templates URL it previously navigated to>`. On this page, **Skip for now** navigates to `next` without any API call. **Save and continue** calls `PUT /users/me/brand-kit`; on 200 it hydrates the agent store (AC6) and navigates to `next`; on error it shows an inline error and stays. `next` is only honoured when it starts with `/templates`; anything else falls back to `/templates` (no open redirect).
+- [ ] **AC5 — Flow.** US-LAUNCH-016's Screen 1 hand-off changes to navigate to `/onboarding/brand-kit?next=<the /templates URL it previously navigated to>`. On this page, **Skip for now** navigates to `next` without any API call. **Save and continue** calls `PUT /users/me/profile` with the form fields and `brandKitCompleted: true`; on 200 it hydrates the agent store (AC6) and navigates to `next`; on error it shows an inline error and stays. `next` is only honoured when it starts with `/templates`; anything else falls back to `/templates` (no open redirect).
 
-- [ ] **AC6 — Generation picks it up.** A `useBrandKitHydration()` hook, mounted once inside `AuthProvider` in `App.tsx`, calls `GET /users/me/brand-kit` when the user becomes authenticated and calls `useAgentStore.getState().setAgent()` for each of `brokerage ← brokerageName`, `phone`, `license ← licenseNumber`, `brandColors`, `logoPreview ← logoUrl`, `name ← user.name`, `email ← user.email` **only where the current store value is empty** (`''`, `null` or `[]`), so edits made in the editor this session are not overwritten. Because `AIChatBox.tsx` (`agentInfo`) and `RightSidebar.tsx` (`useAgentStore.getState().agent`) already read this store, a new generation after hydration sends the saved `brandColors` without any change to those files. A failed GET is swallowed (logged to console in dev only) and the app renders normally.
+- [ ] **AC6 — Generation picks it up.** A `useBrandKitHydration()` hook, mounted once inside `AuthProvider` in `App.tsx`, calls `GET /users/me/profile` when the user becomes authenticated and calls `useAgentStore.getState().setAgent()` for each of `brokerage ← brokerageName`, `phone`, `license ← licenseNumber`, `brandColors`, `logoPreview ← logoUrl`, `name ← user.name`, `email ← user.email` **only where the current store value is empty** (`''`, `null` or `[]`), so edits made in the editor this session are not overwritten. Because `AIChatBox.tsx` (`agentInfo`) and `RightSidebar.tsx` (`useAgentStore.getState().agent`) already read this store, a new generation after hydration sends the saved `brandColors` without any change to those files. A failed GET is swallowed (logged to console in dev only) and the app renders normally.
 
 - [ ] **AC7 — No cross-user leak.** `AuthProvider.logout()` in `client/src/lib/auth.tsx` calls `useAgentStore.getState().resetAgent()` alongside the existing `clearCanvas()`. Given User A (with a brand kit) logs out and User B logs in within the same tab, User B's agent store contains none of User A's values (the PT-07 class of bug).
 
 - [ ] **AC8 — Layout.** `BrandKitPage` has no horizontal overflow at 375px and 1440px; upload areas, switch and chips are keyboard-operable.
 
 - [ ] **AC9 — Tests.**
-  `api/tests/users/brand-kit.spec.ts` (mock-based) covers: (a) valid DTO → `userProfile.update` with `where: { userId }` and `brandKitCompletedAt` a Date; (b) `logoUrl` with another user's prefix → `BadRequestException`, no update; (c) `brandColors: ['red']` and `channels: ['tiktok']` fail DTO validation; (d) no profile row → 409 `ConflictException`; (e) upload with `StorageService.upload` rejecting → 503 `ServiceUnavailableException`, and on success the key matches `^brand-assets/{userId}/logo-[0-9a-f-]{36}\.png$`.
+  `api/tests/users/brand-kit.spec.ts` (mock-based) covers: (a) `brandKitCompleted: true` → `userProfile.upsert` with `where: { userId }` and `brandKitCompletedAt` a Date; without it, no `brandKitCompletedAt`; (b) `headshotUrl` with another user's prefix → `BadRequestException`, no upsert; (c) `channels: ['tiktok']` and duplicate channels fail DTO validation; (d) `brandKitCompleted` is never written as a column; (e) upload with `StorageService.upload` rejecting → 503 `ServiceUnavailableException`, and on success the key matches `^brand-assets/{userId}/logo-[0-9a-f-]{36}\.png$`.
   `client/src/lib/brandColors.test.ts` **(TBC — only if a client vitest config exists; otherwise move these cases into a pure-function test under `api/tests/` importing via `@shared` or document as manual)** covers `extractBrandColors()` on a synthetic pixel array: returns the dominant non-white color as `#rrggbb`, ignores transparent/white/black, returns ≤ 3 colors.
 
 ---
@@ -79,13 +77,14 @@
 
 ## Engineering / PR
 
-- **Branch:** `feat/launch/us-launch-017-onboarding-brand-kit`
+- **Branch:** `feat/prop/m-02-brand-profile` (the M-PROP-02 milestone branch)
 - **PR:** #_____ (fill when opened)
 - **Primary files touched:**
   - `api/prisma/schema.prisma` — brand-kit columns on `UserProfile`
-  - `api/src/modules/users/dto/brand-kit.dto.ts` — NEW
-  - `api/src/modules/users/users.controller.ts` — `POST me/brand-assets`, `PUT me/brand-kit`, `GET me/brand-kit`
-  - `api/src/modules/users/users.service.ts` — `getBrandKit`, `saveBrandKit`, `uploadBrandAsset`
+  - `api/prisma/migrations/<ts>_brand_kit_fields/` — generated
+  - `api/src/modules/users/dto/profile.dto.ts` — add `headshotUrl`, `equalHousing`, `channels`, `brandKitCompleted` (created by US-AI-028)
+  - `api/src/modules/users/users.controller.ts` — `POST me/brand-assets` only (save/read use US-AI-028's `me/profile`)
+  - `api/src/modules/users/users.service.ts` — `uploadBrandAsset`; extend `getProfile`/`saveProfile` (headshot check, `brandKitCompletedAt`)
   - `api/src/modules/users/users.module.ts` — import `StorageModule` **(TBC — check whether it is `@Global()`)**
   - `client/src/lib/brandColors.ts` — NEW: `extractBrandColors(pixels: Uint8ClampedArray, max = 3): string[]`
   - `client/src/pages/onboarding/BrandKitPage.tsx` — NEW
@@ -106,7 +105,9 @@ Context: Buildographic (code name InfographicAI) — NestJS API (port 3001) + Re
 Stack: React 18 + Vite, NestJS 11, Prisma 6, Tailwind v3 + shadcn/ui, Wouter, Zustand + React Query. See CLAUDE.md.
 
 Story: US-LAUNCH-017 — Onboarding Screen 2: optional brand kit, persisted and fed into generation.
-PREREQUISITE: US-LAUNCH-016 is merged (UserProfile model, /onboarding page, users/me/onboarding endpoint).
+PREREQUISITE: US-AI-028 merged (UserProfile model, GET/PUT users/me/profile — the ONLY profile write endpoint, with the
+logoUrl prefix check) and US-LAUNCH-016 merged (/onboarding page, users/me/onboarding endpoint).
+Do NOT add a second save endpoint (no PUT me/brand-kit): extend ProfileDto and saveProfile instead.
 
 Verified facts (2026-09-14):
 - StorageService (api/src/modules/storage/services/storage.service.ts): upload(buffer, key, contentType) → public URL,
@@ -123,25 +124,21 @@ Verified facts (2026-09-14):
 - JWT guard: req.user.id.
 
 Schema: add to UserProfile
-  brokerageName String?  phone String?  licenseNumber String?  logoUrl String?  headshotUrl String?
-  brandColors String[] @default([])  equalHousing Boolean @default(false)  channels String[] @default([])
-  brandKitCompletedAt DateTime?
-Then npx prisma generate --schema=api/prisma/schema.prisma
+  headshotUrl String?  // brokerageName, phone, licenseNumber, logoUrl, brandColors exist in the base model (US-AI-028) — do not re-add
+  equalHousing Boolean @default(false)  channels String[] @default([])  brandKitCompletedAt DateTime?
+Then: npx prisma migrate dev --name brand_kit_fields (never db push — migrations deploy via `migrate deploy`, BL-33).
 
 Backend:
-1. brand-kit.dto.ts per AC3 (class-validator: @IsOptional, @MaxLength, @Matches, @IsArray, @ArrayMaxSize(5),
-   @Matches(/^#[0-9a-fA-F]{6}$/, { each: true }), @IsIn([...], { each: true }), @ArrayUnique, @IsBoolean).
-   logoUrl/headshotUrl: @IsOptional @IsString — prefix check is done in the service (needs req.user.id).
+1. profile.dto.ts (from US-AI-028): add headshotUrl (@IsOptional, string|null), equalHousing (@IsBoolean),
+   channels (@IsArray, @IsIn([...], { each: true }), @ArrayUnique), brandKitCompleted (@IsOptional @IsBoolean — not a column).
 2. users.service.ts:
    - uploadBrandAsset(userId, kind, file): key = `brand-assets/${userId}/${kind}-${randomUUID()}.${ext}`
      (ext from mimetype: png|jpg|webp); try storage.upload; catch → log + throw ServiceUnavailableException('Upload is temporarily unavailable').
-   - saveBrandKit(userId, dto): prefix = storage.getPublicUrl(`brand-assets/${userId}/`); reject logoUrl/headshotUrl
-     that are non-null and don't start with prefix (BadRequestException). findUnique profile → none → ConflictException('Complete onboarding first').
-     update with dto fields + brandKitCompletedAt: new Date(). Return brand-kit field set.
-   - getBrandKit(userId): select brand-kit fields; defaults when no row.
+   - saveProfile(userId, dto): run US-AI-028's prefix check on headshotUrl too; strip brandKitCompleted from the data and,
+     when true, set brandKitCompletedAt: new Date(). Upsert as before.
+   - getProfile(userId): include the new fields; defaults when no row.
 3. users.controller.ts: POST me/brand-assets (FileInterceptor('file'), 5MB, /image\/(png|jpeg|webp)/, @Body('kind') validated ∈ logo|headshot),
-   PUT me/brand-kit, GET me/brand-kit — all @UseGuards(AuthGuard('jwt')).
-   Declare static 'me/...' routes so they do not collide with 'organization/members/:userId'.
+   @UseGuards(AuthGuard('jwt')). Declare it with the other static 'me/...' routes so it does not collide with ':userId' routes.
 4. users.module.ts: make StorageService injectable (import StorageModule unless it is @Global).
 
 Frontend:
@@ -151,7 +148,7 @@ Frontend:
 6. BrandKitPage.tsx per AC4/AC5. Extract colors from the LOCAL file first (no CORS), then upload.
    `next` param: use only if it startsWith('/templates'), else '/templates'.
 7. OnboardingPage.tsx: change success navigation to `/onboarding/brand-kit?next=${encodeURIComponent(previousTarget)}`.
-8. useBrandKitHydration.ts: when isAuthenticated && token, fetch GET brand-kit once per user id; setAgent only for empty fields (AC6).
+8. useBrandKitHydration.ts: when isAuthenticated && token, fetch GET /users/me/profile once per user id; setAgent only for empty fields (AC6).
    Mount it in App.tsx inside AuthProvider (e.g. a tiny <BrandKitHydrator /> component rendering null).
 9. auth.tsx logout(): add useAgentStore.getState().resetAgent().
 10. App.tsx: <Route path="/onboarding/brand-kit"> BEFORE "/onboarding" (Wouter Switch matches in order), app-only + auth-required.
@@ -175,11 +172,11 @@ Rules: prisma generate after schema change · npm run check && npm run test:unit
 
 | TC ID | Type | Priority | Scenario | Status | Finding |
 |-------|------|----------|----------|--------|---------|
-| TC-LAUNCH-017-01 | Auto (unit) | P0 | Given a valid BrandKitDto and an existing profile, when saveBrandKit runs, then userProfile.update uses the JWT user id and sets brandKitCompletedAt | 🔲 | |
-| TC-LAUNCH-017-02 | Auto (unit) | P0 | Given logoUrl under another user's brand-assets prefix, when saveBrandKit runs, then BadRequestException is thrown and nothing is written | 🔲 | |
+| TC-LAUNCH-017-01 | Auto (unit) | P0 | Given `brandKitCompleted: true`, when saveProfile runs, then userProfile.upsert uses the JWT user id and sets brandKitCompletedAt | 🔲 | |
+| TC-LAUNCH-017-02 | Auto (unit) | P0 | Given headshotUrl under another user's brand-assets prefix, when saveProfile runs, then BadRequestException is thrown and nothing is written | 🔲 | |
 | TC-LAUNCH-017-03 | Auto (unit) | P0 | Given StorageService.upload rejects, when uploadBrandAsset runs, then ServiceUnavailableException is thrown (not a raw 500) | 🔲 | |
 | TC-LAUNCH-017-04 | Auto (unit) | P1 | Given brandColors ['red'] or channels ['tiktok'], when the DTO is validated, then errors are returned | 🔲 | |
-| TC-LAUNCH-017-05 | Auto (unit) | P1 | Given no UserProfile row, when saveBrandKit runs, then ConflictException is thrown | 🔲 | |
+| TC-LAUNCH-017-05 | Auto (unit) | P1 | Given no UserProfile row, when saveProfile runs with brand-kit fields, then the row is created (upsert) and no exception is thrown | 🔲 | |
 | TC-LAUNCH-017-06 | Manual | P0 | Given Screen 1 completed, then /onboarding/brand-kit shows; "Skip for now" lands on the same /templates URL Screen 1 would have used, with no network call | 🔲 | |
 | TC-LAUNCH-017-07 | Manual | P0 | Given a PNG logo with a strong brand color on white, when selected, then 1–3 swatches appear, none white/black, and no color picker is shown | 🔲 | |
 | TC-LAUNCH-017-08 | Manual | P0 | Given the brand kit saved, when a new AI generation is started, then the request payload's agent.brandColors equals the saved colors (network tab) | 🔲 | |
@@ -199,12 +196,20 @@ Rules: prisma generate after schema change · npm run check && npm run test:unit
 - [ ] All test cases run and recorded
 - [ ] `npm run check` passes (0 new TypeScript errors)
 - [ ] `npm run test:unit` passes (no regressions)
-- [ ] `npx prisma generate` run; `prisma db push` applied to staging before deploy
+- [ ] Migration generated with `prisma migrate dev`, committed, and applied on staging by the Railway pre-deploy `migrate deploy` (no `db push`); no drift
 - [ ] Manual flow verified on staging with real R2 (TC-LAUNCH-017-06, -07, -08, -09 minimum)
-- [ ] US-AI-028 stub reviewed for supersession (note in closeout)
+- [ ] No second writer of `UserProfile` brand fields exists (only `PUT /users/me/profile`)
 - [ ] PR merged (PR #_____)
 - [ ] [TASKS.md](./TASKS.md) task list fully checked
 
 ---
 
-*Story created: 2026-09-14*
+## Implementation Update (log)
+
+### 2026-10-30 — Opus review of PR #83
+- Removed the second save endpoint (`PUT/GET me/brand-kit`). US-AI-028's `PUT /users/me/profile` is the only writer of profile and brand fields; this story extends its DTO, reuses its logo-URL prefix check for `headshotUrl`, and sets `brandKitCompletedAt` via a `brandKitCompleted` flag. The 409 "Complete onboarding first" rule is gone — the save upserts.
+- Migration via `prisma migrate dev` + Railway `migrate deploy`; no `db push` (BL-33). Branch is the M-PROP-02 milestone branch.
+
+---
+
+*Story created: 2026-09-14 · hardened: 2026-10-30*

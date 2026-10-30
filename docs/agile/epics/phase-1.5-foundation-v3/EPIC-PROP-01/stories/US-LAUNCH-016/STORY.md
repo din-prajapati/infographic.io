@@ -6,10 +6,10 @@
 > **Epic:** [EPIC-PROP-01](../../EPIC.md)
 > **Milestone:** [M-PROP-02-brand-profile](../../milestones/M-PROP-02-brand-profile.md)
 > **Moved 2026-10-29:** from EPIC-LAUNCH-01 backlog (Phase 1) to EPIC-PROP-01 / M-PROP-02 (Phase 1.5) by the Phase 1.5 restructure — [ADR-003](../../../../../decisions/ADR-003-phase-1-close-and-phase-1.5.md). The onboarding screens write the saved Brand profile from US-AI-028.
-> **Size:** M (4–7 h)
-> **Depends on:** None logically. **File overlap with US-LAUNCH-014** (`auth.service.ts`, `App.tsx`, `shared/schema.ts`) — do not run the two in parallel worktrees; whichever lands second rebases.
+> **Size:** M (4–7 h) — **over the 4 h story limit; split before implementation** (flagged by the 2026-10-30 Opus review: e.g. backend flag + endpoint vs. Screen 1 UI + routing gate)
+> **Depends on:** [US-AI-028](../US-AI-028/STORY.md) merged (UserProfile base model + User.profile relation already in the schema). **File overlap with US-LAUNCH-014** (`auth.service.ts`, `App.tsx`, `shared/schema.ts`) — do not run the two in parallel worktrees; whichever lands second rebases.
 > **Split from:** the post-signup onboarding request (2026-09-14). Screen 2 (brand kit) is [US-LAUNCH-017](../US-LAUNCH-017/STORY.md), which depends on this story.
-> **Note:** Introduces a new `UserProfile` model and one new `User` field (`onboardingRequired`) — run `npx prisma generate --schema=api/prisma/schema.prisma` after the schema change.
+> **Note:** Extends the existing `UserProfile` model (created by US-AI-028) with nullable onboarding fields, and adds one new `User` field (`onboardingRequired Boolean @default(false)`) — generate the migration with `npx prisma migrate dev --name onboarding_fields` (never `db push`).
 > **Linear:** LIN-XXX
 > **Created:** 2026-09-14 | **Closed:** —
 
@@ -26,8 +26,9 @@
 ## Acceptance Criteria
 
 - [ ] **AC1 — Schema.** `api/prisma/schema.prisma` has:
-  - on `User`: `onboardingRequired Boolean @default(false)` and the relation `profile UserProfile?`
-  - a new model `UserProfile` with `id String @id @default(cuid())`, `userId String @unique` (relation to `User`, `onDelete: Cascade`), `role String`, `teamSize String`, `primaryMarket String`, `firstAssetType String`, `acquisitionSource String?`, `acquisitionSourceOther String?`, `marketingOptIn Boolean @default(false)`, `marketingOptInAt DateTime?`, `createdAt DateTime @default(now())`, `updatedAt DateTime @updatedAt`.
+  - on `User`: `onboardingRequired Boolean @default(false)` (the `profile UserProfile?` relation already exists from US-AI-028)
+  - the existing `UserProfile` model (created by US-AI-028) gains the onboarding fields, **all nullable**: `role String?`, `teamSize String?`, `primaryMarket String?`, `firstAssetType String?`, `acquisitionSource String?`, `acquisitionSourceOther String?`, `marketingOptIn Boolean @default(false)`, `marketingOptInAt DateTime?`. They are nullable because profile rows created by US-AI-028's `PUT me/profile` exist before onboarding; "required" is enforced by `OnboardingDto` (AC3), not the column — a `NOT NULL` column without a default would fail the migration on a populated table and break US-AI-028's upsert-create. Do not re-add `id`, `userId`, the User relation, `createdAt` or `updatedAt`.
+  - The migration is generated with `npx prisma migrate dev --name onboarding_fields` and committed; it deploys via the Railway pre-deploy `migrate deploy` (BL-33). No `db push`.
   The `@default(false)` on `onboardingRequired` is deliberate: **existing users are never sent through onboarding** — no backfill is needed.
 
 - [ ] **AC2 — Only new signups are flagged.** `AuthService.register()` creates the user with `onboardingRequired: true`. In `AuthService.googleLogin()`, **only** the branch that creates a brand-new user (neither `googleId` nor `email` matched) sets `onboardingRequired: true`; the "link Google to an existing email account" branch does not change it. The `user` object returned by `register()`, `login()` and the Google exchange (`googleLogin()` → `exchangeOAuthCode()`) includes `onboardingRequired` with the database value.
@@ -85,10 +86,11 @@
 
 ## Engineering / PR
 
-- **Branch:** `feat/launch/us-launch-016-signup-onboarding` (escape-hatch story branch; or the milestone branch if taken together with 014/017)
+- **Branch:** `feat/prop/m-02-brand-profile` (the M-PROP-02 milestone branch)
 - **PR:** #_____ (fill when opened)
 - **Primary files touched:**
-  - `api/prisma/schema.prisma` — `User.onboardingRequired`, `User.profile`, new `UserProfile` model
+  - `api/prisma/schema.prisma` — `User.onboardingRequired`; nullable onboarding columns on the existing `UserProfile`
+  - `api/prisma/migrations/<ts>_onboarding_fields/` — generated
   - `api/src/modules/auth/services/auth.service.ts` — set `onboardingRequired: true` on new users in `register()` and `googleLogin()` new-user branch; include `onboardingRequired` in all returned `user` objects
   - `api/src/modules/users/dto/onboarding.dto.ts` — NEW: `OnboardingDto` with `@IsIn`, `@IsString`, `@Length`, `@IsOptional`, `@IsBoolean`
   - `api/src/modules/users/users.controller.ts` — `POST me/onboarding`
@@ -135,23 +137,18 @@ Verified facts about the current code (2026-09-14):
 - TemplatesPage.tsx already has tag chips: state activeChips, derived availableChips, toggleChip().
 
 Schema (api/prisma/schema.prisma):
-  model User { ... onboardingRequired Boolean @default(false)  profile UserProfile? }
-  model UserProfile {
-    id                     String    @id @default(cuid())
-    userId                 String    @unique
-    user                   User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-    role                   String
-    teamSize               String
-    primaryMarket          String
-    firstAssetType         String
+  model User { ... onboardingRequired Boolean @default(false) }  // User.profile relation already exists from US-AI-028
+  // Extend the existing UserProfile model (US-AI-028 created it). ADD ONLY these lines — all nullable, because profile
+  // rows already exist (US-AI-028's PUT me/profile); OnboardingDto enforces "required":
+    role                   String?
+    teamSize               String?
+    primaryMarket          String?
+    firstAssetType         String?
     acquisitionSource      String?
     acquisitionSourceOther String?
     marketingOptIn         Boolean   @default(false)
     marketingOptInAt       DateTime?
-    createdAt              DateTime  @default(now())
-    updatedAt              DateTime  @updatedAt
-  }
-Then: npx prisma generate --schema=api/prisma/schema.prisma
+Then: npx prisma migrate dev --name onboarding_fields (never db push — migrations deploy via `migrate deploy`, BL-33)
 
 Backend:
 1. auth.service.ts: onboardingRequired: true in register() create data and googleLogin() new-user create data
@@ -233,11 +230,20 @@ Rules:
 - [ ] All test cases run and recorded
 - [ ] `npm run check` passes (0 new TypeScript errors)
 - [ ] `npm run test:unit` passes (no regressions)
-- [ ] `npx prisma generate --schema=api/prisma/schema.prisma` run; `prisma db push` applied to staging before deploy
+- [ ] Migration generated with `prisma migrate dev`, committed, and applied on staging by the Railway pre-deploy `migrate deploy` (no `db push`); no drift
 - [ ] Manual flow verified (TC-LAUNCH-016-07, -08, -09, -10 minimum)
 - [ ] PR merged (PR #_____)
 - [ ] [TASKS.md](./TASKS.md) task list fully checked
 
 ---
 
-*Story created: 2026-09-14*
+## Implementation Update (log)
+
+### 2026-10-30 — Opus review of PR #83
+- Onboarding columns are now nullable: `UserProfile` rows exist before onboarding (US-AI-028's `PUT me/profile`), so `NOT NULL` columns without defaults would fail the migration on a populated table and break US-AI-028's upsert-create. `OnboardingDto` still requires them.
+- The prompt no longer pastes the full model with `id`/`userId`/relation; migration via `prisma migrate dev` + `migrate deploy`, no `db push` (BL-33). Branch is the M-PROP-02 milestone branch.
+- Still sized 4–7 h — split it when M-PROP-02 starts.
+
+---
+
+*Story created: 2026-09-14 · hardened: 2026-10-30*

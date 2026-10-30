@@ -23,9 +23,11 @@ A listing is a saved Property with structured price and Sale/Rent intent, filled
 
 | Order | Story | Title | Size | Blocked By | Status | PR |
 |:-----:|-------|-------|:----:|------------|:------:|:--:|
-| 1 | [US-PROP-001](../stories/US-PROP-001/STORY.md) | Property as a saved record | L | — | 🔲 | — |
-| 2 | [US-PROP-002](../stories/US-PROP-002/STORY.md) | Structured price and listing intent | M | US-PROP-001 | 🔲 | — |
-| 3 | [US-PROP-003](../stories/US-PROP-003/STORY.md) | Auto-Fill from a listing message, with review | M | US-PROP-002 | 🔲 | — |
+| 1 | [US-PROP-001](../stories/US-PROP-001/STORY.md) | Property as a saved record (backend) | M | — | 🔲 | — |
+| 3 | [US-PROP-006](../stories/US-PROP-006/STORY.md) | Property as a saved record (client) | M | US-PROP-001, US-PROP-002 | 🔲 | — |
+| 2 | [US-PROP-002](../stories/US-PROP-002/STORY.md) | Structured price: parser, schema and generation | M | US-PROP-001 | 🔲 | — |
+| 3 | [US-PROP-007](../stories/US-PROP-007/STORY.md) | Listing intent and price in the editor — *split from US-PROP-002 on 2026-10-30* | M | US-PROP-002 | 🔲 | — |
+| 4 | [US-PROP-003](../stories/US-PROP-003/STORY.md) | Auto-Fill from a listing message, with review | M | US-PROP-002, US-PROP-007 | 🔲 | — |
 
 ---
 
@@ -41,7 +43,8 @@ A listing is a saved Property with structured price and Sale/Rent intent, filled
 
 ## Notes / Blockers
 
-- US-PROP-001 includes a Prisma migration — runs as the Railway `preDeployCommand`; staging DB is the dev DB (BL-37).
+- Order: US-PROP-001 → US-PROP-002 → (US-PROP-006 ∥ US-PROP-007) → US-PROP-003. US-PROP-006 waits for 002 so its payload whitelist includes the price fields; 006 and 007 share no files. US-PROP-003 needs both 002 and 007.
+- US-PROP-001 and US-PROP-002 each add a Prisma migration (in that order); US-PROP-001 — runs as the Railway `preDeployCommand`; staging DB is the dev DB (BL-37).
 
 ---
 

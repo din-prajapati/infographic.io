@@ -14,11 +14,11 @@
 
 | Phase | Open | Sized | Est. (low) | Est. (high) | Weeks @ ~37 h/wk (high) |
 |---|:--:|:--:|--:|--:|:--:|
-| **Phase 1.5** — property foundation + V3 editor | 26 | 20/26 | 98 h | **196 h** | 5.3 |
+| **Phase 1.5** — property foundation + V3 editor | 28 | 24/28 | 108 h | **215 h** | 5.8 |
 | **Phase 2** — kits + asset quality | 10 | 6/10 | 40 h | **80 h** | 2.2 |
 | **Phase 3** — campaigns + team operations | 6 | 1/6 | 21 h | **42 h** | 1.1 |
 | **Phase 4** — backlog (stories only) | 17 | 6/17 | 58 h | **115 h** | 3.1 |
-| **Total** | **59** | 33/59 | **217 h** | **433 h** | **≈ 11.7** |
+| **Total** | **60** | 36/60 | **225 h** | **449 h** | **≈ 12.1** |
 
 Phases 0, 0.5 and 1 are closed. The backlog's B-items without story cards (B-02 to B-15, B-25 …) are **not** in these totals; the backlog index
 sizes them in weeks.
@@ -34,7 +34,7 @@ The only phase with committed open work.
 
 | Epic | Open | Sizes | Estimate | TASKS.md (none / stub / real) |
 |---|:--:|---|--:|:--:|
-| [EPIC-PROP-01](epics/phase-1.5-foundation-v3/EPIC-PROP-01/EPIC.md) — Property & Brand Foundation | 10 | 7M, 1L, 1S, 1 unsized | 36–72 h | 5 / 1 / 4 |
+| [EPIC-PROP-01](epics/phase-1.5-foundation-v3/EPIC-PROP-01/EPIC.md) — Property & Brand Foundation | 12 | 10M, 2S | 44–88 h | 0 / 0 / 12 |
 | [EPIC-EDIT-04](epics/phase-1.5-foundation-v3/EPIC-EDIT-04/EPIC.md) — V3 Editor Simplification (incl. V3 shell, tabs, autosave, Edit Elements review) | 11 | 7M, 3L, 1 unsized | 46–92 h | 8 / 1 / 2 |
 | [EPIC-OBS-00](epics/phase-1.5-foundation-v3/EPIC-OBS-00/EPIC.md) — Observability | 5 | 1S, 4 unsized | 16–32 h | 4 / 1 / 0 |
 
@@ -106,4 +106,4 @@ Task readiness counts checklist items in each sibling `TASKS.md`: absent → non
 
 ---
 
-*Created 2026-09-08. Regenerated 2026-10-29 for the Phase 1.5 restructure; updated the same day for US-EDIT-024–027.*
+*Created 2026-09-08. Regenerated 2026-10-29 for the Phase 1.5 restructure; updated the same day for US-EDIT-024–027. Updated 2026-10-30: EPIC-PROP-01 hardened after the Opus review of PR #83 — US-PROP-002 split (new US-PROP-007), US-AI-028 sized S, every PROP card has a real TASKS.md.*

@@ -12,8 +12,7 @@ updated: 2026-08-26
 > **Milestone:** [M-PROP-02-brand-profile](../../milestones/M-PROP-02-brand-profile.md)
 > **Moved 2026-10-29:** from EPIC-EDIT-03 / M-EDIT-02 (Phase 1) to EPIC-PROP-01 / M-PROP-02 (Phase 1.5) by the Phase 1.5 restructure — [ADR-003](../../../../../decisions/ADR-003-phase-1-close-and-phase-1.5.md). ACs unchanged — re-check them against the saved Brand profile (US-AI-028) before implementing.
 > **Size:** M
-> **Depends on:** [US-EDIT-006](../US-EDIT-006/STORY.md) must be merged first — this story reuses
-> its placement mechanism and `brand-` provenance convention.
+> **Depends on:** [US-EDIT-006](../US-EDIT-006/STORY.md) and [US-LAUNCH-017](../US-LAUNCH-017/STORY.md) must be merged first — US-EDIT-006 provides the placement mechanism and `brand-` provenance convention; US-LAUNCH-017 provides `POST /api/v1/users/me/brand-assets` (`kind: headshot`) and `UserProfile.headshotUrl` for server-side headshot persistence.
 > **Created:** 2026-08-26 | **Closed:** —
 
 ---
@@ -66,9 +65,7 @@ Unlike US-EDIT-006's assets, neither exists as data yet:
 
 ## Out of Scope
 
-- **Durable server-side brand storage / a `brandKit` model.** If US-EDIT-006 left brand data in a
-  client store, headshot persistence may need a real storage decision — flag it, do not silently
-  build a new storage layer inside this story.
+- **Durable server-side headshot storage.** US-LAUNCH-017 provides `POST /api/v1/users/me/brand-assets` (`kind: headshot`) and `UserProfile.headshotUrl`. Upload through that endpoint, keep the returned URL in `useAgentStore` as `headshotPreview`, and save `UserProfile.headshotUrl` so it survives a reload. Do not build a new storage layer.
 - **Background removal or cropping of the headshot.** Agents upload what they upload; a circular
   mask is a style choice for a later story.
 - **QR analytics / tracking URLs.** Encoding a plain `website` value only. Redirects, UTM tagging
@@ -80,7 +77,7 @@ Unlike US-EDIT-006's assets, neither exists as data yet:
 
 ## Engineering / PR
 
-- **Branch:** `feat/edit/m-02-brand-layers` (same milestone branch as US-EDIT-006)
+- **Branch:** `feat/prop/m-02-brand-profile` (same milestone branch as US-EDIT-006)
 - **PR:** #_____
 - **Primary files touched:**
   - `client/src/hooks/useAgentStore.ts` — add `headshotPreview: string | null`

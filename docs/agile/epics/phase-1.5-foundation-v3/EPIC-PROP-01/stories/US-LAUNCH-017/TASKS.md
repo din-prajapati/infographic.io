@@ -1,12 +1,12 @@
 # PR Task List — US-LAUNCH-017
 
-> **Story:** [STORY.md](./STORY.md) | **Branch:** `feat/launch/us-launch-017-onboarding-brand-kit` | **Type:** feat
+> **Story:** [STORY.md](./STORY.md) | **Branch:** `feat/prop/m-02-brand-profile` | **Type:** feat
 
 ```
 feat(launch): onboarding brand kit screen — US-LAUNCH-017
 ```
 
-Backlog item — not launch-blocking. Depends on US-LAUNCH-016. Adds brand-kit columns to `UserProfile`, three JWT-guarded endpoints (one multipart upload to R2), an optional onboarding screen, and store hydration so saved branding reaches generation.
+Backlog item — not launch-blocking. Depends on US-AI-028 and US-LAUNCH-016. Adds brand-kit columns to `UserProfile`, one JWT-guarded multipart upload endpoint (R2), extends the single `PUT/GET me/profile` endpoint, an optional onboarding screen, and store hydration so saved branding reaches generation.
 
 ## Four Pillars Pre-flight
 
@@ -21,8 +21,8 @@ One-liner: optional, skippable brand-kit step after Screen 1 — logo (auto-extr
 
 ## Task Breakdown
 
-- **T1** — `api/prisma/schema.prisma`: brand-kit columns on `UserProfile`; `npx prisma generate`
-- **T2** — `api/src/modules/users/dto/brand-kit.dto.ts` (new) + `users.service.ts` + `users.controller.ts` + `users.module.ts`: upload / save / read endpoints
+- **T1** — `api/prisma/schema.prisma`: brand-kit columns on `UserProfile`; `npx prisma migrate dev --name brand_kit_fields` (never `db push`)
+- **T2** — `api/src/modules/users/dto/profile.dto.ts` (extend) + `users.service.ts` + `users.controller.ts` + `users.module.ts`: upload endpoint; extend `saveProfile`/`getProfile`
 - **T3** — `api/tests/users/brand-kit.spec.ts` (new): AC9 backend cases
 - **T4** — `client/src/lib/brandColors.ts` (new): pure color extraction + file-to-pixels helper
 - **T5** — `client/src/pages/onboarding/BrandKitPage.tsx` (new) + `OnboardingPage.tsx` hand-off + `App.tsx` route
@@ -33,7 +33,7 @@ One-liner: optional, skippable brand-kit step after Screen 1 — logo (auto-extr
 | File | Task |
 |---|---|
 | `api/prisma/schema.prisma` | T1 |
-| `api/src/modules/users/dto/brand-kit.dto.ts` | T2 |
+| `api/src/modules/users/dto/profile.dto.ts` | T2 |
 | `api/src/modules/users/users.service.ts` | T2 |
 | `api/src/modules/users/users.controller.ts` | T2 |
 | `api/src/modules/users/users.module.ts` | T2 |

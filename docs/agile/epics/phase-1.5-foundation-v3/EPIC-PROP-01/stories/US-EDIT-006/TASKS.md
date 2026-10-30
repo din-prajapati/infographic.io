@@ -8,7 +8,7 @@ updated: 2026-08-26
 # Tasks — US-EDIT-006
 
 > **Story:** [US-EDIT-006](./STORY.md) — Brand layers from existing data (logo + licence)
-> **Branch:** `feat/edit/m-02-brand-layers`
+> **Branch:** `feat/prop/m-02-brand-profile`
 > **PR:** #_____
 > **PR scope:** Place an agent's saved logo and licence on generated designs as real, movable
 > canvas layers. No prompt changes, no extraction changes, no credit path touched.
@@ -19,7 +19,7 @@ updated: 2026-08-26
 
 Fill before writing code. A story without this is not ready to implement.
 
-- [ ] **Brain** — read `M-EDIT-02` §"Which mechanism, when" and the
+- [ ] **Brain** — read the M-PROP-02 milestone doc and the
       [findings doc](../../../../../PRD/2026-08-26-compose-forward-findings.md). Confirm you can
       state why brand furniture is composed forward while typography stays with extraction.
 - [ ] **Muscle** — confirm `useAgentStore.agent.logoPreview` / `.license` are populated in the
