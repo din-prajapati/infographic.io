@@ -2,13 +2,13 @@
 title: EPIC-EDIT-04 — V3 Editor Simplification
 type: epic
 tags: [orion, epic, edit, phase-1.5]
-updated: 2026-10-29
+updated: 2026-10-30
 ---
 
 # EPIC-EDIT-04 — V3 Editor Simplification
 
 > **Phase:** Phase 1.5 — Property Foundation & V3 Editor
-> **Status:** 🟡 In Progress — 1/11. M-EDIT-03 (moved in from EPIC-EDIT-03) ✅ closed 2026-10-29 — US-EDIT-009 done after BL-26; the rest drafted (US-EDIT-024–027 added 2026-10-29) 2026-10-29
+> **Status:** 🟡 In Progress — 1/14. M-EDIT-03 (moved in from EPIC-EDIT-03) ✅ closed 2026-10-29 — US-EDIT-009 done after BL-26; the rest drafted (US-EDIT-024–027 added 2026-10-29) 2026-10-29; US-EDIT-024 hardened and split into 024/028/029/030 on 2026-10-30
 > **Owner:** Dinesh
 > **Decision:** [ADR-003](../../../decisions/ADR-003-phase-1-close-and-phase-1.5.md) · **Design source:** V3 canvas mockup (`Mockups/buildographic-canvas-simplification-v3/`, untracked)
 
@@ -54,10 +54,13 @@ facts, generate a background without touching the text, and is stopped at Export
 | 5 | [US-EDIT-023](stories/US-EDIT-023/STORY.md) | AI Assistant — Create design or Generate Background | M-EDIT-08 | L | 🔲 |
 | 6 | [US-AI-015](stories/US-AI-015/STORY.md) | Quick Refine chips — *moved from EPIC-AI-03, re-scope before implementing* | M-EDIT-08 | M | 🔲 |
 | 7 | [US-EDIT-008](stories/US-EDIT-008/STORY.md) | Editable quota badge + charge confirmation — *moved from EPIC-EDIT-03* | M-EDIT-08 | M | 🔲 |
-| 8 | [US-EDIT-024](stories/US-EDIT-024/STORY.md) | Editor shell in the V3 layout, light and dark | M-EDIT-09 | L | 🔲 |
-| 9 | [US-EDIT-027](stories/US-EDIT-027/STORY.md) | Autosave and save status | M-EDIT-09 | M | 🔲 |
-| 10 | [US-EDIT-025](stories/US-EDIT-025/STORY.md) | Property and Contact tabs in the V3 layout | M-EDIT-09 | M | 🔲 |
-| 11 | [US-EDIT-026](stories/US-EDIT-026/STORY.md) | Edit Elements review — confirm links before a poster becomes editable | M-EDIT-10 | L | 🔲 |
+| 8 | [US-EDIT-024](stories/US-EDIT-024/STORY.md) | V3 top bar and canvas header, light and dark — *hardened + split 2026-10-30* | M-EDIT-09 | M | 🔲 |
+| 9 | [US-EDIT-028](stories/US-EDIT-028/STORY.md) | Guide bar: the four steps, light and dark — *split from US-EDIT-024* | M-EDIT-09 | M | 🔲 |
+| 10 | [US-EDIT-029](stories/US-EDIT-029/STORY.md) | V3 tool rail, with Quick Styles in the Text tool — *split from US-EDIT-024* | M-EDIT-09 | M | 🔲 |
+| 11 | [US-EDIT-027](stories/US-EDIT-027/STORY.md) | Autosave and save status | M-EDIT-09 | M | 🔲 |
+| 12 | [US-EDIT-030](stories/US-EDIT-030/STORY.md) | For sale / For rent badge in the canvas header — *split from US-EDIT-024* | M-EDIT-09 | XS | 🔲 |
+| 13 | [US-EDIT-025](stories/US-EDIT-025/STORY.md) | Property and Contact tabs in the V3 layout | M-EDIT-09 | M | 🔲 |
+| 14 | [US-EDIT-026](stories/US-EDIT-026/STORY.md) | Edit Elements review — confirm links before a poster becomes editable | M-EDIT-10 | L | 🔲 |
 
 ---
 

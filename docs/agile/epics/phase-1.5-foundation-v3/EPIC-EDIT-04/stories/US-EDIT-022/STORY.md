@@ -33,7 +33,7 @@ updated: 2026-10-29
 - [ ] **AC2 [happy-path]:** **Look** shows the proven templates for the current format (US-PROP-005) as preview cards; choosing one re-applies the template and refills it from the Property and Brand profile in one undo step.
 - [ ] **AC3 [edge-case]:** For a flat AI poster, Look is hidden with a hint: "This design is one image — regenerate it to change the look."
 - [ ] **AC4 [happy-path]:** **Accent colour** (5 swatches + custom) replaces the Brand Styles grid and "None Selected"; a saved palette maps to its accent on load. **Property photo** offers recent photos and Upload. **Format & brand logo** is collapsed by default.
-- [ ] **AC5 [happy-path]:** Quick Styles moves to the left rail's **Text** tool; nothing is removed from the canvas tools.
+- [ ] **AC5 [happy-path]:** Quick Styles moves to the left rail's **Text** tool; nothing is removed from the canvas tools. *(2026-10-30: moved to [US-EDIT-029](../US-EDIT-029/STORY.md) by the US-EDIT-024 hardening — drop this AC and the `LeftSidebar.tsx` entry below, which is dead code, when this card is hardened. US-EDIT-029 must reach `main` before this story.)*
 
 ---
 
