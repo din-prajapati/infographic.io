@@ -114,14 +114,24 @@ Rules: touch only these files; run `npm run check` and `npm run test:unit`; repo
 
 | TC ID | Type | Priority | Scenario | Status | Finding |
 |-------|------|:--------:|----------|:------:|---------|
-| TC-PROP-004-01 | Manual | P0 | Given a design saved before this story (slots, no bindings), when it is opened, then every text element in the canvas store has a `binding` (devtools) | 🔲 | |
-| TC-PROP-004-02 | Manual | P0 | Given a price element with a field binding, when the design is saved and reopened, then its `binding` is identical | 🔲 | |
-| TC-PROP-004-03 | Unit | P1 | `migrateElementBinding` on `slot: 'property.price'` → field/price; content and slot unchanged | 🔲 | |
-| TC-PROP-004-04 | Unit | P1 | `migrateElementBinding` on `slot: 'property.specs'` → compound beds/baths/sqft | 🔲 | |
-| TC-PROP-004-05 | Unit | P1 | `migrateElementBinding` on untagged text → independent; on a shape → unchanged | 🔲 | |
-| TC-PROP-004-06 | Unit | P1 | `detachBinding` → independent, same content, no `setProperty`/`setAgent` call | 🔲 | |
-| TC-PROP-004-07 | Unit | P1 | `reconnectBinding(el, 'price')` with store "₹2.5 Cr" → key price, content "₹2.5 Cr", no store write | 🔲 | |
-| TC-PROP-004-08 | Unit | P1 | Seed data: all compound slots compound, all field slots field with the right key — `element-binding-migration.spec.ts` | 🔲 | |
+| TC-PROP-004-01 | Manual | P0 | Given a design saved before this story (slot-tagged text, no `binding`), when it is opened in the editor, then every text element in the canvas store has a `binding` (devtools): a slot in `SLOT_TO_FIELD` gives field or compound, any other text gives independent; non-text elements get none. | 🔲 | |
+| TC-PROP-004-02 | Manual | P0 | Given a price element with `binding: { type: 'field', key: 'price' }`, when the design is saved, closed and reopened, then its `binding` is deep-identical (devtools before and after). | 🔲 | |
+| TC-PROP-004-03 | Unit | P1 | Given a text element with `slot: 'property.price'` and no binding, when `migrateElementBinding(el)` runs, then it returns `binding: { type: 'field', key: 'price' }` with `content`, `slot`, `slotFormat` unchanged. | 🔲 | |
+| TC-PROP-004-04 | Unit | P1 | Given a text element with `slot: 'property.specs'`, when `migrateElementBinding(el)` runs, then `binding` is `{ type: 'compound', parts: ['beds', 'baths', 'sqft'] }` (not `area`). | 🔲 | |
+| TC-PROP-004-05 | Unit | P1 | Given (a) a text element with no slot and (b) a shape, when `migrateElementBinding` runs on each, then (a) is independent and (b) is returned unchanged with no `binding`. | 🔲 | |
+| TC-PROP-004-06 | Unit | P1 | Given a field-bound text element and spies on `setProperty` / `setAgent`, when `detachBinding(el)` runs, then it returns `binding: { type: 'independent' }` with identical `content`, and neither spy is called. | 🔲 | |
+| TC-PROP-004-07 | Unit | P1 | Given an independent text element (no `slotFormat`), the store price "₹2.5 Cr" and spies on `setProperty` / `setAgent`, when `reconnectBinding(el, 'price')` runs, then `binding` is `{ type: 'field', key: 'price' }`, `content === '₹2.5 Cr'`, and neither spy is called. | 🔲 | |
+| TC-PROP-004-08 | Unit | P1 | Given the seed data and the spec's own slot→field map, when `element-binding-migration.spec.ts` runs, then every specs/facts element is compound and every other `SLOT_TO_FIELD` slot is field with the mapped key. | 🔲 | |
+| TC-PROP-004-09 | Unit | P1 | Given a text element with `slot: 'property.facts'`, when `migrateElementBinding(el)` runs, then it is compound `beds, baths, sqft`, same as `property.specs`. | 🔲 | |
+| TC-PROP-004-10 | Unit | P1 | Given an element that already has a `binding` (e.g. `property.price` detached to independent), when `migrateElementBinding(el)` runs (twice), then the binding is not overwritten and the result is unchanged (idempotent). | 🔲 | |
+| TC-PROP-004-11 | Unit | P1 | Given a frozen element, when `migrateElementBinding`, `detachBinding` and `reconnectBinding` run on it, then none throws, the input is unchanged, and a changed result is a new object. | 🔲 | |
+| TC-PROP-004-12 | Unit | P1 | Given `slot: 'property.price'`, `slotFormat: 'From {}'`, content "From ₹2.5 Cr", when `migrateElementBinding(el)` runs, then `content`, `slot`, `slotFormat` are strictly equal to the originals; only `binding` is added. | 🔲 | |
+| TC-PROP-004-13 | Unit | P1 | Given text elements with slots `agent.cta`, `openHouse.*`, `report.*` (not in `SLOT_TO_FIELD`), when `migrateElementBinding` runs, then each is independent and keeps its `slot`. | 🔲 | |
+| TC-PROP-004-14 | Unit | P1 | Given `slot: 'agent.rera'`, `slotFormat: 'RERA {}'` and the agent store license set, when `reconnectBinding(el, 'agentLicense')` runs, then `content === 'RERA <license>'` via `applySlotFormat` and `binding` is field `agentLicense`. | 🔲 | |
+| TC-PROP-004-15 | Unit | P1 | Given legacy canvasData (price text, specs text, untagged text, shape), when `restoreCanvasData()` loads it, then the store's elements carry field/price, compound, independent and no binding respectively — the one path for design and template loads. | 🔲 | |
+| TC-PROP-004-16 | Unit | P0 | Given an element with `binding: { type: 'field', key: 'price' }` in the store, when `captureCanvasData()` → `restoreCanvasData()` runs, then the restored `binding` deep-equals the original. | 🔲 | |
+| TC-PROP-004-17 | Unit | P1 | Given the seed data, when `element-binding-migration.spec.ts` runs, then every slot-tagged text whose slot is not in `SLOT_TO_FIELD` is independent; compound/field/independent counts are computed in the test, each > 0, and sum to the slot-tagged text total. | 🔲 | |
+| TC-PROP-004-18 | Unit | P1 | Given the spec's copy of the slot→field map (comment points at `FIELD_TO_SLOTS` in `listingBindings.ts`), when `npm run test:unit` runs, then `template-one-fact-per-element.spec.ts` still passes alongside the new spec. | 🔲 | |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 
