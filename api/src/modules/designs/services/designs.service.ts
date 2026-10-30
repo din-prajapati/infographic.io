@@ -18,6 +18,16 @@ export class DesignsService {
       throw new BadRequestException('No default template found');
     }
 
+    // US-PROP-001 AC6 — the single org check for every route into save(); runs before any write.
+    if (designDto.propertyId !== undefined) {
+      const property = await prisma.property.findFirst({
+        where: { id: designDto.propertyId, organizationId },
+      });
+      if (!property) {
+        throw new NotFoundException(`Property ${designDto.propertyId} not found`);
+      }
+    }
+
     if (designId) {
       // Update existing design
       const existing = await prisma.infographic.findFirst({
@@ -35,6 +45,7 @@ export class DesignsService {
       const updated = await prisma.infographic.update({
         where: { id: designId },
         data: {
+          propertyId: designDto.propertyId ?? existing.propertyId,
           propertyData: {
             ...(existing.propertyData as any || {}),
             canvasDesign: {
@@ -61,6 +72,7 @@ export class DesignsService {
         canvasData: canvasDesign.canvasData,
         tags: canvasDesign.tags,
         visibility: canvasDesign.visibility || 'private',
+        propertyId: updated.propertyId ?? null,
         createdAt: updated.createdAt instanceof Date ? updated.createdAt.toISOString() : String(updated.createdAt),
         updatedAt: updated.updatedAt instanceof Date ? updated.updatedAt.toISOString() : String(updated.updatedAt),
       };
@@ -71,6 +83,7 @@ export class DesignsService {
           userId,
           organizationId,
           templateId: defaultTemplate.id,
+          propertyId: designDto.propertyId ?? null,
           propertyData: {
             canvasDesign: {
               name: designDto.name,
@@ -98,6 +111,7 @@ export class DesignsService {
         canvasData: canvasDesign.canvasData,
         tags: canvasDesign.tags,
         visibility: canvasDesign.visibility || 'private',
+        propertyId: created.propertyId ?? null,
         createdAt: created.createdAt instanceof Date ? created.createdAt.toISOString() : String(created.createdAt),
         updatedAt: created.updatedAt instanceof Date ? created.updatedAt.toISOString() : String(created.updatedAt),
       };
@@ -129,6 +143,7 @@ export class DesignsService {
         canvasData: canvasDesign.canvasData,
         tags: canvasDesign.tags,
         visibility: canvasDesign.visibility || 'private',
+        propertyId: inf.propertyId ?? null,
         createdAt: inf.createdAt instanceof Date ? inf.createdAt.toISOString() : String(inf.createdAt),
         updatedAt: inf.updatedAt instanceof Date ? inf.updatedAt.toISOString() : String(inf.updatedAt),
       };
@@ -207,6 +222,7 @@ export class DesignsService {
       visibility: canvasDesign.visibility || 'private',
       description: canvasDesign.description,
       badge: canvasDesign.badge,
+      propertyId: infographic.propertyId ?? null,
       createdAt: infographic.createdAt instanceof Date ? infographic.createdAt.toISOString() : String(infographic.createdAt),
       updatedAt: infographic.updatedAt instanceof Date ? infographic.updatedAt.toISOString() : String(infographic.updatedAt),
     };

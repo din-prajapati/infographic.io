@@ -16,53 +16,53 @@ updated: 2026-10-29
 
 ## Four-Pillars Pre-flight
 
-- [ ] **Brain** — Read the `Organization` and `Infographic` models in `api/prisma/schema.prisma`. Confirm (a) `Infographic.organizationId` comes from `req.user.organizationId || req.user.id`; (b) the canvas design lives in the `propertyData` JSON — `propertyId` is a separate FK column, not a key in that JSON; (c) services use the `prisma` singleton, not an injected `PrismaService`.
-- [ ] **Muscle** — In `designs.service.ts` confirm `save`, `findOne` and `findAll` don't return `propertyId` today, and that `CreateDesignDto` has no `propertyId`.
-- [ ] **Map** — `npx prisma migrate status --schema=api/prisma/schema.prisma`: note the last migration and confirm no `Property` table exists. Remember staging DB = dev DB (BL-37).
-- [ ] **Env** — `npm run dev` starts; `npm run check` is clean; `GET /api/v1/designs` returns 200 with a JWT.
+- [x] **Brain** — Read the `Organization` and `Infographic` models in `api/prisma/schema.prisma`. Confirm (a) `Infographic.organizationId` comes from `req.user.organizationId || req.user.id`; (b) the canvas design lives in the `propertyData` JSON — `propertyId` is a separate FK column, not a key in that JSON; (c) services use the `prisma` singleton, not an injected `PrismaService`.
+- [x] **Muscle** — In `designs.service.ts` confirm `save`, `findOne` and `findAll` don't return `propertyId` today, and that `CreateDesignDto` has no `propertyId`.
+- [x] **Map** — `npx prisma migrate status --schema=api/prisma/schema.prisma`: note the last migration and confirm no `Property` table exists. Remember staging DB = dev DB (BL-37).
+- [x] **Env** — `npm run dev` starts; `npm run check` is clean; `GET /api/v1/designs` returns 200 with a JWT.
 
 ---
 
 ## Tasks
 
 ### T1 — Schema + migration
-- [ ] Add `Property` (AC1 fields, `@@index([organizationId])`), `Organization.properties`, `Infographic.propertyId` + relation + `@@index([propertyId])`.
-- [ ] `npx prisma migrate dev --name add_property_model --schema=api/prisma/schema.prisma` — generated SQL only.
-- [ ] `npx prisma generate`; `npm run check` clean.
+- [x] Add `Property` (AC1 fields, `@@index([organizationId])`), `Organization.properties`, `Infographic.propertyId` + relation + `@@index([propertyId])`.
+- [x] `npx prisma migrate dev --name add_property_model --schema=api/prisma/schema.prisma` — generated SQL only. → `20261030104842_add_property_model`, applied to the shared dev/staging DB 2026-10-30 (no drift; 191 Infographic rows, 0 with propertyId).
+- [x] `npx prisma generate`; `npm run check` clean.
 
 **ACs:** AC1, AC8 · **Effort:** S
 
 ### T2 — `PropertiesService`
-- [ ] `create(orgId, dto)` — `orgId` from the caller only.
-- [ ] `findAll(orgId)` ordered by `updatedAt desc`.
-- [ ] `findOne(id, orgId)` via `findFirst({ where: { id, organizationId } })` → `NotFoundException` if null (never reveal "other org").
-- [ ] `update(id, orgId, dto)` — `findOne` first, then update.
+- [x] `create(orgId, dto)` — `orgId` from the caller only.
+- [x] `findAll(orgId)` ordered by `updatedAt desc`.
+- [x] `findOne(id, orgId)` via `findFirst({ where: { id, organizationId } })` → `NotFoundException` if null (never reveal "other org").
+- [x] `update(id, orgId, dto)` — `findOne` first, then update.
 
 **ACs:** AC2–AC5 · **Effort:** S
 
 ### T3 — Controller, DTOs, module, registration
-- [ ] `CreatePropertyDto` / `UpdatePropertyDto` — all optional, class-validator types (`@IsInt` for beds/baths, `@IsArray @IsString({each})` for arrays).
-- [ ] `PropertiesController` (`@Controller('properties')`, JWT guard on every handler): `POST` (201), `GET`, `GET :id`, `PUT :id`.
-- [ ] `PropertiesModule`; add it to `app.module.ts` imports.
+- [x] `CreatePropertyDto` / `UpdatePropertyDto` — all optional, class-validator types (`@IsInt` for beds/baths, `@IsArray @IsString({each})` for arrays).
+- [x] `PropertiesController` (`@Controller('properties')`, JWT guard on every handler): `POST` (201), `GET`, `GET :id`, `PUT :id`.
+- [x] `PropertiesModule`; add it to `app.module.ts` imports.
 
 **ACs:** AC2–AC5, AC9 · **Effort:** S
 
 ### T4 — Designs: expose and guard `propertyId`
-- [ ] `CreateDesignDto`: `@IsString() @IsOptional() propertyId?`.
-- [ ] `save()`: when `dto.propertyId` is set, check it belongs to the caller's org (404 otherwise); carry the existing value forward when omitted.
-- [ ] Add `propertyId` to the create/update/findAll/findOne response mappings.
+- [x] `CreateDesignDto`: `@IsString() @IsOptional() propertyId?`.
+- [x] `save()`: when `dto.propertyId` is set, check it belongs to the caller's org (404 otherwise); carry the existing value forward when omitted.
+- [x] Add `propertyId` to the create/update/findAll/findOne response mappings.
 
 **ACs:** AC6, AC7 · **Effort:** S
 
 ### T5 — Unit tests
-- [ ] `api/tests/properties/properties.service.spec.ts` (mock `prisma.property.*` with `vi.hoisted`, as in the designs spec): org id from argument; `findAll` filter; `findOne` other-org → 404 and no update; `update` other-org → 404.
-- [ ] `api/tests/designs/designs.service.spec.ts`: TC-PROP-001-07 — other-org `propertyId` on create and update → `NotFoundException`, nothing written; own-org → saved.
+- [x] `api/tests/properties/properties.service.spec.ts` (mock `prisma.property.*` with `vi.hoisted`, as in the designs spec): org id from argument; `findAll` filter; `findOne` other-org → 404 and no update; `update` other-org → 404.
+- [x] `api/tests/designs/designs.service.spec.ts`: TC-PROP-001-07 — other-org `propertyId` on create and update → `NotFoundException`, nothing written; own-org → saved.
 
 **ACs:** AC5 · **Effort:** S
 
 ### T6 — Verify
-- [ ] `npm run check`, `npm run test:unit`.
-- [ ] Manual TC-PROP-001-01 to -06 with two accounts in different orgs; record results in STORY.md.
+- [x] `npm run check`, `npm run test:unit`.
+- [x] Manual TC-PROP-001-01 to -06 with two accounts in different orgs; record results in STORY.md.
 
 ---
 

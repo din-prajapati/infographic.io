@@ -68,6 +68,7 @@ model Organization {
   infographics         Infographic[]
   usageRecords         UsageRecord[]
   subscriptions        Subscription[]
+  properties           Property[]
 
   @@index([planTier])
   @@index([activeSubscriptionId])
@@ -120,6 +121,8 @@ model Infographic {
   /// Written on the first successful extraction for each variation; reused on all subsequent
   /// compose requests to avoid repeat Ideogram layerize-text calls ($0.09/call — US-AI-048).
   composedDesigns Json?
+  propertyId      String?
+  property        Property?    @relation(fields: [propertyId], references: [id])
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @default(now()) @updatedAt
   usageRecord     UsageRecord?
@@ -128,6 +131,31 @@ model Infographic {
   @@index([organizationId])
   @@index([status])
   @@index([createdAt])
+  @@index([propertyId])
+}
+
+/// US-PROP-001 — a saved listing. Designs reference it via Infographic.propertyId.
+model Property {
+  id             String        @id @default(cuid())
+  organizationId String
+  organization   Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  type           String        @default("residential")
+  headline       String        @default("")
+  price          String        @default("")
+  beds           Int           @default(0)
+  baths          Int           @default(0)
+  sqft           String        @default("")
+  address        String        @default("")
+  description    String        @default("")
+  features       String[]      @default([])
+  locale         String        @default("")
+  photoRefs      String[]      @default([])
+  status         String        @default("active")
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  infographics   Infographic[]
+
+  @@index([organizationId])
 }
 
 model UsageRecord {

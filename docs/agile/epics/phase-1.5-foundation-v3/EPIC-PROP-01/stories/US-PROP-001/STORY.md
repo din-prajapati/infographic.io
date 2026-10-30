@@ -117,13 +117,32 @@ ACs checked, test output.
 
 | TC ID | Type | Priority | Scenario | Status | Finding |
 |-------|------|:--------:|----------|:------:|---------|
-| TC-PROP-001-01 | Manual | P0 | Given a JWT for org A, when `POST /api/v1/properties` is sent `{ headline: "3BHK Bandra" }`, then 201 with a non-empty `id` and `organizationId` = org A | 🔲 | |
-| TC-PROP-001-02 | Manual | P0 | Given a Property owned by org B, when org A calls `GET /api/v1/properties/:id`, then 404 with no Property data | 🔲 | |
-| TC-PROP-001-03 | Manual | P0 | Given a design saved before the migration with an embedded listing price, when `GET /api/v1/designs/:id` is called after deploy, then `propertyId` is `null` and `canvasData` is unchanged | 🔲 | |
-| TC-PROP-001-04 | Unit | P1 | `PropertiesService.create('org_A', { headline: 'Test' })` writes `organizationId = 'org_A'` and returns the record with `id` | 🔲 | |
-| TC-PROP-001-05 | Unit | P1 | `findOne(id, 'org_B')` for an org-A property throws `NotFoundException`; `update` is never called | 🔲 | |
+| TC-PROP-001-01 | Manual | P0 | Given a JWT for org A, when `POST /api/v1/properties` is sent `{ headline: "3BHK Bandra" }`, then 201 with a non-empty `id` and `organizationId` = org A | ✅ | 201, id set, organizationId = org A — manual run 2026-10-30, local dev → shared dev DB |
+| TC-PROP-001-02 | Manual | P0 | Given a Property owned by org B, when org A calls `GET /api/v1/properties/:id`, then 404 with no Property data | ✅ | 404 `Property … not found`, no data — manual run 2026-10-30, local dev → shared dev DB |
+| TC-PROP-001-03 | Manual | P0 | Given a design saved before the migration with an embedded listing price, when `GET /api/v1/designs/:id` is called after deploy, then `propertyId` is `null` and `canvasData` is unchanged | ✅ | GET → `propertyId: null`; canvasData deep-equal (key-order-insensitive; JSONB reorders keys), ₹ intact — manual run 2026-10-30, local dev → shared dev DB |
+| TC-PROP-001-04 | Unit | P1 | `PropertiesService.create('org_A', { headline: 'Test' })` writes `organizationId = 'org_A'` and returns the record with `id` | ✅ | unit — manual run 2026-10-30, local dev → shared dev DB |
+| TC-PROP-001-05 | Unit | P1 | `findOne(id, 'org_B')` for an org-A property throws `NotFoundException`; `update` is never called | ✅ | unit — manual run 2026-10-30, local dev → shared dev DB |
 | TC-PROP-001-07 | Unit | P0 | `designs.service.spec.ts`: `save()` with another org's `propertyId` on create and on update → `NotFoundException`, no `infographic.create`/`update`; own-org id → saved | 🔲 | |
-| TC-PROP-001-06 | Manual | P1 | Given a Property owned by org B, when org A sends `PUT /api/v1/designs/:id` with that `propertyId`, then 404 and the design still has `propertyId: null` | 🔲 | |
+| TC-PROP-001-06 | Manual | P1 | Given a Property owned by org B, when org A sends `PUT /api/v1/designs/:id` with that `propertyId`, then 404 and the design still has `propertyId: null` | ✅ | PUT with org B id → 404; design still `propertyId: null`; own-org id → 200 and linked — manual run 2026-10-30, local dev → shared dev DB |
+| TC-PROP-001-08 | Manual | P0 | Given org A has 2 Properties and org B has 1, when org A calls `GET /api/v1/properties`, then 200 with an array of exactly 2 items, every `organizationId` = org A, and org B's id is absent | 🔲 | |
+| TC-PROP-001-09 | Unit | P1 | `PropertiesService.findAll('org_A')` calls `prisma.property.findMany` with `where: { organizationId: 'org_A' }` and `orderBy: { updatedAt: 'desc' }`; returns an empty array (not an error) when org A has none | 🔲 | |
+| TC-PROP-001-10 | Manual | P0 | Given a JWT for org A, when `POST /api/v1/properties` is sent `{ headline: "X", organizationId: "org_B" }`, then 400 from `forbidNonWhitelisted` and no Property is created in either org. Also, with an empty body `{}`, 201 and the saved record has the AC1 defaults (`type: "residential"`, `beds: 0`, `features: []`, `status: "active"`) | ✅ | 400; no row — manual run 2026-10-30, local dev → shared dev DB |
+| TC-PROP-001-11 | Unit | P1 | `PropertiesService.update(id, 'org_A', { price: '5Cr' })` on an owned Property calls `prisma.property.update` with `data` containing only `price`, and returns the full record including `updatedAt`; fields not in the dto (e.g. `beds`, `headline`) are not in `data` | 🔲 | |
+| TC-PROP-001-12 | Manual | P0 | Given org A owns Property P (`headline: "Old"`, `beds: 3`), when `PUT /api/v1/properties/P` is sent `{ headline: "New" }`, then 200, `headline = "New"`, `beds = 3` unchanged, and `updatedAt` is later than before | 🔲 | |
+| TC-PROP-001-13 | Manual | P0 | Given org A owns Property P, when `PUT /api/v1/properties/P` is sent a body containing `id`, `organizationId`, `createdAt` or `updatedAt` (four separate requests, each alongside a valid field), then each returns 400 and P is unchanged on a following `GET` | ✅ | `id`/`organizationId`/`createdAt`/`updatedAt` → 400 on PUT and POST (8 requests); record and row count unchanged — HTTP run 2026-10-30 |
+| TC-PROP-001-14 | Manual | P0 | Given Property P is owned by org B, when org A sends `PUT /api/v1/properties/P` with `{ headline: "Hijack" }`, then 404 with no Property data, and `GET` as org B shows `headline` unchanged. A nonexistent id returns the same 404 body as the other-org id (existence is not leaked) | ✅ | 404; org B headline unchanged — manual run 2026-10-30, local dev → shared dev DB |
+| TC-PROP-001-15 | Unit | P1 | `PropertiesService.update(id, 'org_B', dto)` for an org-A property throws `NotFoundException` and `prisma.property.update` is never called; the error message is identical to the one for a nonexistent id | 🔲 | |
+| TC-PROP-001-16 | Manual | P0 | Given org A owns Property P and org B owns Property Q, when each of `POST /api/v1/designs`, `PUT /api/v1/designs/:id`, `POST /api/v1/canvas-templates` and `PUT /api/v1/canvas-templates/:id` is sent `propertyId: Q` as org A, then every one returns 404; no Infographic row is created or changed, and a following `GET` shows the previous `propertyId` (`null` or P) | 🔲 | |
+| TC-PROP-001-17 | Unit | P0 | `designs.service.spec.ts`: `save()` with a template dto (`type: 'template'`, the canvas-templates path) and another org's `propertyId`, on create and on update, throws `NotFoundException`; `infographic.create`/`update` not called; `prisma.property.findFirst` is called with the caller's `{ id, organizationId }` | 🔲 | |
+| TC-PROP-001-18 | Unit | P0 | `designs.service.spec.ts`: update of a design that already has `propertyId = 'prop_1'`, with `propertyId` omitted from the dto → `prisma.property.findFirst` not called, the link is not cleared, and the returned `propertyId` = `'prop_1'` | 🔲 | |
+| TC-PROP-001-19 | Manual | P1 | Given design D saved with own-org `propertyId` P, when `PUT /api/v1/designs/D` is sent without `propertyId`, then 200 and `GET /api/v1/designs/D` still returns `propertyId: P`. A PUT with `propertyId: ""` returns 400 or 404 and never silently clears the link | 🔲 | |
+| TC-PROP-001-20 | Unit | P1 | `designs.service.spec.ts`: `findAll` and `findOne` map `propertyId` onto every returned design — the value when set and `null` (never missing) when the row has none; `save()` create and update responses include the same key | 🔲 | |
+| TC-PROP-001-21 | Manual | P0 | Given N Infographic rows exist before `prisma migrate deploy` (record N plus a hash of each `propertyData`), when the migration is applied, then `SELECT count(*) FROM "Infographic" WHERE "propertyId" IS NOT NULL` = 0, `GET /api/v1/designs` returns N designs, all hashes match, and a second `migrate deploy` is a no-op | ⏸ | Deferred by product owner 2026-10-30 → **BL-50**, run at the M-PROP-01 production deploy (runbook §5). Dev/staging: 191 designs before/after, 0 linked, `migrate status` up to date |
+| TC-PROP-001-22 | Manual | P1 | Given Property rows linked to designs, when the owning Organization is deleted (`onDelete: Cascade`), then its Property rows are gone. Deleting a referenced Property sets the design's `propertyId` null (Prisma's default for an optional relation) and the design row survives | 🔲 | |
+| TC-PROP-001-23 | Manual | P0 | Given no `Authorization` header, when `POST /api/v1/properties`, `GET /api/v1/properties`, `GET /api/v1/properties/:id` and `PUT /api/v1/properties/:id` are each called, then every one returns 401 and nothing is written | ✅ | POST, GET list, GET :id, PUT :id without token → 401 each; nothing written — HTTP run 2026-10-30 |
+| TC-PROP-001-24 | Manual | P1 | Given an expired JWT, a malformed token (`Bearer abc`) and a token signed with the wrong secret, when `GET /api/v1/properties` is called with each, then every one returns 401, not 500 or 200 | ⚠️ | malformed `Bearer abc` and wrong-secret-signed token → 401 on all four endpoints; expired token not run (needs the real secret) — HTTP run 2026-10-30 |
+| TC-PROP-001-25 | Unit | P1 | *Revised 2026-10-30 (product owner, after Codex re-review).* Given a JWT whose user has `organizationId = null` (a removed team member — `users.service.ts:189`), when any Properties endpoint is called, then 403 "not part of an organization" and nothing is read or written. Never the `user.id` fallback: org ids are generated, so it would violate AC1's FK and 500 | ✅ | `properties.service.spec.ts` |
+| TC-PROP-001-26 | Manual | P1 | Given a JWT for org A, when `POST /api/v1/properties` is sent `{ beds: "three" }`, `{ beds: 2.5 }`, `{ features: "pool" }` or `{ features: [1] }`, then each returns 400 and no row is created; `{ beds: 0, features: [] }` returns 201 | 🔲 | |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 
@@ -144,6 +163,40 @@ ACs checked, test output.
 ## Implementation Update (log)
 
 > Appended by code-agent during/after implementation. Newest entries on top.
+
+### 2026-10-30 — Codex final review → AC4 / AC9 HTTP evidence
+- Codex final verdict: implementation sound; REQUEST CHANGES for evidence only (AC4, AC9, AC1/AC8).
+- **AC4 closed:** 8 forbidden-field requests (PUT + POST × `id`, `organizationId`, `createdAt`, `updatedAt`) all 400; record and count unchanged.
+- **AC9 closed:** 12 unauthenticated requests (4 endpoints × no / malformed / wrong-secret token) all 401; nothing written. Throwaway accounts deleted in the same script.
+- **AC1/AC8 deferred → BL-50 (product owner, 2026-10-30), run at milestone §5:** a repeat `migrate deploy` on a disposable pre-migration DB was not run (running deploy against the shared staging DB was blocked). Production deploy runs it via `preDeployCommand`; verify counts/hashes there.
+
+
+### 2026-10-30 — Manual API run (orchestrator) + Codex third review
+- Two throwaway accounts (one org each) against local dev → shared dev DB. TC-01, -02, -03, -06, -10, -14 pass; -23 partial; null `headline` → 400 confirmed over HTTP. Test rows deleted afterwards (3 designs, 2 properties, 2 users, 2 orgs); DB back to 191 designs / 0 properties.
+- Codex third review: **no implementation defect**; blockers were missing HTTP/migration evidence — the HTTP evidence is above; TC-21 repeat-deploy is deferred to the milestone production deploy (runbook §5), where `migrate deploy` runs anyway.
+- Note for testers: Git Bash on Windows mangles non-ASCII in `curl -d` arguments (₹ → `?`). Send bodies with `--data-binary @file.json`.
+
+
+### 2026-10-30 — Codex re-review → TC-PROP-001-25 decided: 403
+- Codex re-review found the org-less path is live: `removeUserFromOrganization` (`users.service.ts:189`) nulls `organizationId` and the JWT stays valid. My earlier note that org-less users cannot occur was wrong.
+- **Decision (product owner):** Properties endpoints answer **403** for a caller with no organization (`callerOrganizationId()` in `properties.controller.ts`); the `|| req.user.id` fallback is gone from this module. AC2 deviation recorded here: the fallback could never satisfy AC1's FK.
+- **Follow-up, out of scope:** designs have the same 500 for removed members (`Infographic.organizationId` FK) — file in BACKLOG.md.
+
+
+### 2026-10-30 — Codex review of PR #88 (REQUEST CHANGES) → fixes
+- **Fixed (trust edge):** `@IsOptional()` let an explicit `null` through to non-nullable Prisma columns (500). `CreatePropertyDto` (so also `UpdatePropertyDto`) and `CreateDesignDto.propertyId` now use `@ValidateIf(v !== undefined)` — `null` is a 400, omitted is still fine.
+- **Tests added:** TC-PROP-001-11 (partial update writes only the sent field, full record back), TC-PROP-001-17 (template path, create + update), TC-PROP-001-26 at DTO level, null rejection for all 12 Property fields and `propertyId`.
+- **Superseded by the entry above — premise was wrong:** Codex's BLOCKING "no-organization user → FK failure". Both live signup paths (`auth.service.ts:153` local, `:279` Google) create an Organization; the only org-less `user.create` (`subscription-storage.service.ts:23`) has no callers. `Infographic.organizationId` has the same required FK, so the `|| req.user.id` fallback fails identically for designs today. TC-PROP-001-25 as written (expects 201) cannot pass under AC1's FK — the test case, not the code, needs revising.
+- Gate 1 (orchestrator, `feat/prop/us-prop-001-backend`): `npm run check` exit 0; `npm run test:unit` exit 0 — API 61 files / 850 tests passed; client 21 files / 375 passed, 1 pre-existing skip.
+
+
+### 2026-10-30 — code-agent (Opus) — T1 (schema) – T4 implemented
+- **Files:** `api/prisma/schema.prisma` (Property model, `Organization.properties`, `Infographic.propertyId` + relation + index) · `api/src/modules/properties/**` (module, controller, service, create/update DTOs) · `api/src/app.module.ts` · `api/src/modules/designs/dto/create-design.dto.ts` · `api/src/modules/designs/services/designs.service.ts`.
+- **Migration not generated here** — `prisma generate` only; no DB connection made. `migrate dev` (T1 second box) is left for the orchestrator (staging DB = dev DB, BL-37).
+- Property controller uses `@ValidatedBody(...)` like designs (the global pipe is inert, BL-30), so `forbidNonWhitelisted` rejects `id`/`organizationId`/`createdAt`/`updatedAt` (AC4). Service also copies an allow-list of fields, so ownership fields cannot reach Prisma even if the DTO is bypassed.
+- `beds`/`baths` are `@IsInt() @Min(0)`; `CreateDesignDto.propertyId` is `@IsString() @IsNotEmpty() @IsOptional()` so `""` is a 400, never a silent clear (TC-PROP-001-19).
+- `save()` runs the org check once, after the template lookup and before any infographic write; update carries `existing.propertyId` forward when omitted. `findAdminCuratedTemplates` unchanged.
+- Gates: `npm run check` clean · `npm run test:unit` backend 61 files / 826 tests passed, client 21 files / 375 passed + 1 skipped.
 
 ### 2026-10-30 — Opus review of PR #83
 - AC6 now covers all four routes into `save()` (designs and canvas-templates, create and update) and names its unit test; AC4 states that ownership fields in the body are rejected.
