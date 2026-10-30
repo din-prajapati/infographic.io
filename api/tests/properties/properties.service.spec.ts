@@ -3,7 +3,7 @@
  * Covers TC-PROP-001-04 (org id from caller only) and TC-PROP-001-05 (cross-org update -> 404).
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { NotFoundException } from '@nestjs/common';
+import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { validate } from 'class-validator';
 import { plainToInstance } from 'class-transformer';
 
@@ -26,6 +26,7 @@ vi.mock('../../src/database/prisma.client', () => ({ prisma: mockPrisma }));
 
 import { PropertiesService } from '../../src/modules/properties/services/properties.service';
 import { CreatePropertyDto } from '../../src/modules/properties/dto/create-property.dto';
+import { PropertiesController } from '../../src/modules/properties/controllers/properties.controller';
 
 describe('PropertiesService', () => {
   let service: PropertiesService;
@@ -191,4 +192,32 @@ describe('CreatePropertyDto — null is not "omitted"', () => {
       expect((await validate(plainToInstance(CreatePropertyDto, body))).length).toBeGreaterThan(0);
     },
   );
+});
+
+// TC-PROP-001-25 Contract (revised 2026-10-30, product owner):
+//   Expected: a caller whose organizationId is null (removed team member) gets ForbiddenException on every
+//             handler and the service is never called; never a fallback to user.id (FK → 500)
+//   Location: PropertiesController
+describe('PropertiesController — caller without an organization (TC-PROP-001-25)', () => {
+  const svc = { create: vi.fn(), findAll: vi.fn(), findOne: vi.fn(), update: vi.fn() };
+  const ctrl = new PropertiesController(svc as any);
+  const orgless = { user: { id: 'user_1', organizationId: null } };
+
+  beforeEach(() => vi.clearAllMocks());
+
+  it.each([
+    ['create', () => ctrl.create({ headline: 'X' }, orgless)],
+    ['findAll', () => ctrl.findAll(orgless)],
+    ['findOne', () => ctrl.findOne('p1', orgless)],
+    ['update', () => ctrl.update('p1', { headline: 'X' }, orgless)],
+  ])('%s -> ForbiddenException, service untouched', async (_name, call) => {
+    await expect(call()).rejects.toThrow(ForbiddenException);
+    expect(Object.values(svc).every((f) => f.mock.calls.length === 0)).toBe(true);
+  });
+
+  it('a caller with an organization reaches the service with that org id', async () => {
+    svc.findAll.mockResolvedValue([]);
+    await ctrl.findAll({ user: { id: 'user_1', organizationId: 'org_A' } });
+    expect(svc.findAll).toHaveBeenCalledWith('org_A');
+  });
 });
