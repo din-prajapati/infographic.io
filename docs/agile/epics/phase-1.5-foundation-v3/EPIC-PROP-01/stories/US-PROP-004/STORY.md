@@ -151,6 +151,12 @@ Rules: touch only these files; run `npm run check` and `npm run test:unit`; repo
 
 > Appended by code-agent during/after implementation. Newest entries on top.
 
+### 2026-10-30 — Codex review of PR #87 (REQUEST CHANGES — evidence only)
+- Codex found every AC met and scope respected; both BLOCKING items are missing evidence, not defects.
+- **Evidence item 1 closed:** orchestrator re-ran Gate 1 on `feat/prop/us-prop-004-binding-types` @ `2f7b288` — `npm run check` **exit 0**; `npm run test:unit` **exit 0** — API 61 files / 815 tests passed; client 22 files / 407 passed, 1 pre-existing skip (`loadVariation.spec.ts:176`). (Codex's own rerun failed with EPERM in its read-only sandbox.)
+- **Evidence item 2 open:** T6 / TC-01, TC-02 browser round trip still to run.
+
+
 ### 2026-10-30 — US-PROP-004 implementation
 - Added BindingDescriptor and optional BaseElement.binding; moved BoundField to canvasTypes.ts with a compatible re-export.
 - Added immutable migration, detach and read-only reconnect helpers. restoreCanvasData migrates each loaded element; captureCanvasData remains unchanged. Slot-based write/hydration functions are unchanged.
