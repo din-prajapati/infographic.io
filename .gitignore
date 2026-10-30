@@ -78,3 +78,6 @@ archive/Images/
 
 # Local-only working notes (never committed — repo is public, see BL-38)
 /local-notes/
+
+# Multi-engine run logs (scripts/agents/run-engine.sh) — full engine transcripts, local only
+.agent-logs/
