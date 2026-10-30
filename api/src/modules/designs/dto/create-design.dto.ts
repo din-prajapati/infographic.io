@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsObject, IsArray, IsIn } from 'class-validator';
+import { IsString, IsOptional, IsObject, IsArray, IsIn, IsNotEmpty } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateDesignDto {
@@ -42,5 +42,12 @@ export class CreateDesignDto {
   @IsIn(['private', 'admin_curated', 'for_sale'])
   @IsOptional()
   visibility?: 'private' | 'admin_curated' | 'for_sale';
+
+  // IsNotEmpty: an empty string must be rejected, never treated as "clear the link".
+  @ApiProperty({ description: "Linked Property id (must belong to the caller's organization)", required: false })
+  @IsString()
+  @IsNotEmpty()
+  @IsOptional()
+  propertyId?: string;
 }
 
