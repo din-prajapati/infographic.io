@@ -10,6 +10,7 @@ import { InfographicsModule } from './modules/infographics/infographics.module';
 import { TemplatesModule } from './modules/templates/templates.module';
 import { AiGenerationModule } from './modules/ai-generation/ai-generation.module';
 import { DesignsModule } from './modules/designs/designs.module';
+import { PropertiesModule } from './modules/properties/properties.module';
 import { ConversationsModule } from './modules/conversations/conversations.module';
 import { PaymentsModule } from './modules/payments/payments.module';
 import { UsersModule } from './modules/users/users.module';
@@ -50,6 +51,7 @@ import { validate } from './config/env.validation';
     TemplatesModule,
     AiGenerationModule,
     DesignsModule,
+    PropertiesModule,
     ConversationsModule,
     PaymentsModule,
     UsersModule,
