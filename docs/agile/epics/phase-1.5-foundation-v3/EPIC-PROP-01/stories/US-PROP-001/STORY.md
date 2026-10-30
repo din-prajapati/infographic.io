@@ -164,6 +164,13 @@ ACs checked, test output.
 
 > Appended by code-agent during/after implementation. Newest entries on top.
 
+### 2026-10-30 — Codex review of PR #88 (REQUEST CHANGES) → fixes
+- **Fixed (trust edge):** `@IsOptional()` let an explicit `null` through to non-nullable Prisma columns (500). `CreatePropertyDto` (so also `UpdatePropertyDto`) and `CreateDesignDto.propertyId` now use `@ValidateIf(v !== undefined)` — `null` is a 400, omitted is still fine.
+- **Tests added:** TC-PROP-001-11 (partial update writes only the sent field, full record back), TC-PROP-001-17 (template path, create + update), TC-PROP-001-26 at DTO level, null rejection for all 12 Property fields and `propertyId`.
+- **Not changed — needs a product decision:** Codex's BLOCKING "no-organization user → FK failure". Both live signup paths (`auth.service.ts:153` local, `:279` Google) create an Organization; the only org-less `user.create` (`subscription-storage.service.ts:23`) has no callers. `Infographic.organizationId` has the same required FK, so the `|| req.user.id` fallback fails identically for designs today. TC-PROP-001-25 as written (expects 201) cannot pass under AC1's FK — the test case, not the code, needs revising.
+- Gate 1 (orchestrator, `feat/prop/us-prop-001-backend`): `npm run check` exit 0; `npm run test:unit` exit 0 — API 61 files / 850 tests passed; client 21 files / 375 passed, 1 pre-existing skip.
+
+
 ### 2026-10-30 — code-agent (Opus) — T1 (schema) – T4 implemented
 - **Files:** `api/prisma/schema.prisma` (Property model, `Organization.properties`, `Infographic.propertyId` + relation + index) · `api/src/modules/properties/**` (module, controller, service, create/update DTOs) · `api/src/app.module.ts` · `api/src/modules/designs/dto/create-design.dto.ts` · `api/src/modules/designs/services/designs.service.ts`.
 - **Migration not generated here** — `prisma generate` only; no DB connection made. `migrate dev` (T1 second box) is left for the orchestrator (staging DB = dev DB, BL-37).
