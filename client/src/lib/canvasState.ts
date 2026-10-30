@@ -21,6 +21,7 @@ import {
   captureListing,
   fillStoresFromPrintedListing,
   hydrateStoresFromCanvas,
+  migrateElementBinding,
   type BoundField,
   type PrintedListing,
 } from './listingBindings';
@@ -195,7 +196,8 @@ export function restoreCanvasData(canvasData: any): boolean {
     const { loadCanvas } = useCanvasStore.getState();
     
     loadCanvas({
-      elements: canvasData.elements || [],
+      // US-PROP-004: annotate legacy text only on load, never on save.
+      elements: (canvasData.elements as CanvasElement[]).map((el) => migrateElementBinding(el)),
       selectedElementIds: [],
       canvasWidth: canvasData.canvasWidth || 1200,
       canvasHeight: canvasData.canvasHeight || 800,

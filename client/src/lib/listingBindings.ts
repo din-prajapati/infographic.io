@@ -19,25 +19,11 @@ import { formatAreaForLocale, formatRoomsForLocale } from '@shared/locale';
 import { useCanvasStore } from '../hooks/useCanvasStore';
 import { usePropertyStore, type PropertyInfo } from '../hooks/usePropertyStore';
 import { useAgentStore, type AgentInfo } from '../hooks/useAgentStore';
-import type { CanvasElement, TextElement } from './canvasTypes';
+import type { BoundField, CanvasElement, TextElement } from './canvasTypes';
 import type { SlotId } from './slotIds';
 
-/**
- * Listing facts that have a home on the canvas. The first six use the
- * server's extraction vocabulary (ListingField); the rest are store fields.
- */
-export type BoundField =
-  | 'headline'
-  | 'address'
-  | 'price'
-  | 'stats'
-  | 'agentName'
-  | 'brokerage'
-  | 'description'
-  | 'features'
-  | 'agentPhone'
-  | 'agentEmail'
-  | 'agentLicense';
+// Preserve existing type imports without making canvasTypes depend on stores.
+export type { BoundField } from './canvasTypes';
 
 /** Field → the slot(s) it is shown in. First entry is canonical. */
 export const FIELD_TO_SLOTS: Readonly<Record<BoundField, readonly SlotId[]>> = {
@@ -64,6 +50,46 @@ export const FIELD_TO_SLOT: Readonly<Record<BoundField, SlotId>> = Object.fromEn
 export const SLOT_TO_FIELD: Readonly<Partial<Record<SlotId, BoundField>>> = Object.fromEntries(
   Object.entries(FIELD_TO_SLOTS).flatMap(([field, slots]) => slots.map((slot) => [slot, field])),
 ) as Partial<Record<SlotId, BoundField>>;
+
+/** US-PROP-004: migrate legacy text on load, preserving explicit links. */
+export function migrateElementBinding<T extends CanvasElement>(el: T): T {
+  if (el.type !== 'text' || el.binding !== undefined) return el;
+  const field = el.slot && Object.prototype.hasOwnProperty.call(SLOT_TO_FIELD, el.slot)
+    ? SLOT_TO_FIELD[el.slot as SlotId]
+    : undefined;
+  return {
+    ...el,
+    binding: field === 'stats'
+      ? { type: 'compound', parts: ['beds', 'baths', 'sqft'] }
+      : field ? { type: 'field', key: field } : { type: 'independent' },
+  };
+}
+
+/** Detaching preserves the element's text and never writes listing stores. */
+export function detachBinding<T extends CanvasElement>(el: T): T {
+  return { ...el, binding: { type: 'independent' } };
+}
+
+/** Reconnect from the current listing value, never from stale canvas text. */
+export function reconnectBinding<T extends CanvasElement>(el: T, key: BoundField): T {
+  if (el.type !== 'text') return el;
+  const { property } = usePropertyStore.getState();
+  const { agent } = useAgentStore.getState();
+  const values: Record<BoundField, string> = {
+    headline: property.headline,
+    address: property.address,
+    price: property.price,
+    stats: formatStatsLine(property),
+    description: property.description,
+    features: property.features.join('\n'),
+    agentName: agent.name,
+    brokerage: agent.brokerage,
+    agentPhone: agent.phone,
+    agentEmail: agent.email,
+    agentLicense: agent.license,
+  };
+  return { ...el, binding: { type: 'field', key }, content: applySlotFormat(el.slotFormat, values[key]) };
+}
 
 /**
  * Fields a canvas edit never writes back. Q1 (2026-10-26): the specs line is
