@@ -261,3 +261,43 @@ describe('DesignsService — propertyId (US-PROP-001)', () => {
     expect(((await service.findOne('inf_001', 'user_1')) as any).propertyId).toBeNull();
   });
 });
+
+// TC-PROP-001-17 Contract:
+//   Expected: the canvas-templates path (type 'template') gets the same org guard — NotFoundException, no write
+//   Location: DesignsService.save() — the single entry point both /designs and /canvas-templates use
+describe('DesignsService — propertyId guard on the template path (TC-PROP-001-17)', () => {
+  const templateDto = { name: 'T', type: 'template', canvasData: { version: '1.0', elements: [] }, propertyId: 'prop_other' } as any;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockPrisma.template.findFirst.mockResolvedValue(DEFAULT_TEMPLATE);
+    mockPrisma.property.findFirst.mockResolvedValue(null);
+  });
+
+  it('create: other-org propertyId -> NotFoundException, nothing created', async () => {
+    await expect(new DesignsService().save('user_1', 'org_1', templateDto)).rejects.toThrow(NotFoundException);
+    expect(mockPrisma.infographic.create).not.toHaveBeenCalled();
+  });
+
+  it('update: other-org propertyId -> NotFoundException, nothing updated', async () => {
+    mockPrisma.infographic.findFirst.mockResolvedValue({ ...BASE_INFOGRAPHIC, propertyData: { canvasDesign: { type: 'template' } } });
+    await expect(new DesignsService().save('user_1', 'org_1', templateDto, 'inf_001')).rejects.toThrow(NotFoundException);
+    expect(mockPrisma.infographic.update).not.toHaveBeenCalled();
+  });
+});
+
+// Trust-edge Contract (Codex review, PR #88):
+//   Expected: propertyId null and "" are validation errors; omitted is fine
+//   Location: CreateDesignDto.propertyId
+describe('CreateDesignDto — propertyId validation', () => {
+  const base = { name: 'D', type: 'design', canvasData: {} };
+
+  it.each([null, ''])('propertyId %o is rejected', async (propertyId) => {
+    const errors = await validate(plainToInstance(CreateDesignDto, { ...base, propertyId }));
+    expect(errors.map((e) => e.property)).toEqual(['propertyId']);
+  });
+
+  it('omitted propertyId is valid', async () => {
+    expect(await validate(plainToInstance(CreateDesignDto, base))).toEqual([]);
+  });
+});

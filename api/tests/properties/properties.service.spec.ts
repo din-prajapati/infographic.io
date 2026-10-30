@@ -4,6 +4,8 @@
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { NotFoundException } from '@nestjs/common';
+import { validate } from 'class-validator';
+import { plainToInstance } from 'class-transformer';
 
 const { mockPrisma } = vi.hoisted(() => {
   const mockPrisma = {
@@ -23,6 +25,7 @@ const { mockPrisma } = vi.hoisted(() => {
 vi.mock('../../src/database/prisma.client', () => ({ prisma: mockPrisma }));
 
 import { PropertiesService } from '../../src/modules/properties/services/properties.service';
+import { CreatePropertyDto } from '../../src/modules/properties/dto/create-property.dto';
 
 describe('PropertiesService', () => {
   let service: PropertiesService;
@@ -135,4 +138,57 @@ describe('PropertiesService', () => {
       expect(result.beds).toBe(4);
     });
   });
+});
+
+// TC-PROP-001-11 Contract:
+//   Expected: update data holds ONLY the field sent (no beds/headline defaults leak in); full record returned
+//   Location: PropertiesService.update()
+//   Condition: owned property, dto = { price } only
+describe('PropertiesService.update — partial body (TC-PROP-001-11)', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('writes only the sent field and returns the full record including updatedAt', async () => {
+    const service = new PropertiesService();
+    const stored = { id: 'p1', organizationId: 'org_A', headline: 'Old', beds: 3, price: '', updatedAt: new Date('2026-10-30T10:00:00Z') };
+    mockPrisma.property.findFirst.mockResolvedValue(stored);
+    mockPrisma.property.update.mockImplementation(({ data }: any) =>
+      Promise.resolve({ ...stored, ...data, updatedAt: new Date('2026-10-30T11:00:00Z') }),
+    );
+
+    const result: any = await service.update('p1', 'org_A', { price: '5Cr' });
+
+    expect(mockPrisma.property.update.mock.calls[0][0].data).toEqual({ price: '5Cr' });
+    expect(result).toMatchObject({ price: '5Cr', headline: 'Old', beds: 3 });
+    expect(result.updatedAt.getTime()).toBeGreaterThan(stored.updatedAt.getTime());
+  });
+});
+
+// Trust-edge Contract (Codex review, PR #88):
+//   Expected: an explicit null on any optional field is a validation error (→ 400), never a Prisma 500;
+//             an omitted field is not an error
+//   Location: CreatePropertyDto (UpdatePropertyDto extends it)
+describe('CreatePropertyDto — null is not "omitted"', () => {
+  it.each(['type', 'headline', 'price', 'beds', 'baths', 'sqft', 'address', 'description', 'features', 'locale', 'photoRefs', 'status'])(
+    '%s: null is rejected',
+    async (field) => {
+      const errors = await validate(plainToInstance(CreatePropertyDto, { [field]: null }));
+      expect(errors.map((e) => e.property)).toEqual([field]);
+    },
+  );
+
+  it('an empty body is valid (every field optional)', async () => {
+    expect(await validate(plainToInstance(CreatePropertyDto, {}))).toEqual([]);
+  });
+
+  it('valid values pass; beds 0 and empty features are allowed (TC-PROP-001-26)', async () => {
+    const errors = await validate(plainToInstance(CreatePropertyDto, { headline: 'X', beds: 0, baths: 2, features: [] }));
+    expect(errors).toEqual([]);
+  });
+
+  it.each([{ beds: 'three' }, { beds: 2.5 }, { features: 'pool' }, { features: [1] }])(
+    'malformed %o is rejected (TC-PROP-001-26)',
+    async (body) => {
+      expect((await validate(plainToInstance(CreatePropertyDto, body))).length).toBeGreaterThan(0);
+    },
+  );
 });
