@@ -159,6 +159,7 @@ Fix BLOCKING findings, then: `gh pr create --base main --title "[M-PROP-01] Prop
 
 - Product owner reviews the milestone PR and says "merge". A merge to `main` is a production deploy — check
   `railway variables --environment production --kv` against `env.validation.ts` first.
+- **Before merging — BL-50 (deferred US-PROP-001 AC1/AC8 check):** on production record `SELECT count(*), md5(string_agg("propertyData"::text, '' ORDER BY id)) FROM "Infographic"`. Repeat it after the deploy: count and hash must match, `propertyId IS NOT NULL` = 0, and `prisma migrate status` must say *up to date*. Record in TC-PROP-001-21.
 - Both migrations run on production through the Railway `preDeployCommand` (`migrate deploy`). Verify afterwards at the
   data layer: `Property` table present, `Infographic.propertyId` all null, design count unchanged (US-PROP-001 AC8).
 - Rebase-merge. Wake staging, then e2e-test-agent (Sonnet) runs Gate 2, one run at a time.
