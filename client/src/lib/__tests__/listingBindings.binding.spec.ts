@@ -11,12 +11,13 @@ import {
   detachBinding,
   migrateElementBinding,
   reconnectBinding,
+  SLOT_TO_FIELD,
 } from '../listingBindings';
 import { captureCanvasData, restoreCanvasData } from '../canvasState';
 import { useCanvasStore } from '../../hooks/useCanvasStore';
 import { usePropertyStore } from '../../hooks/usePropertyStore';
 import { useAgentStore } from '../../hooks/useAgentStore';
-import type { BindingDescriptor, CanvasElement } from '../canvasTypes';
+import type { BindingDescriptor, CanvasElement, TextElement } from '../canvasTypes';
 
 const COMPOUND: BindingDescriptor = { type: 'compound', parts: ['beds', 'baths', 'sqft'] };
 
@@ -68,8 +69,19 @@ describe('migrateElementBinding — AC2', () => {
     expect(bindingOf(migrateElementBinding(text('t', undefined, 'Hello')))).toEqual({ type: 'independent' });
   });
 
-  it.each(['agent.cta', 'openHouse.date'])('text with unmapped slot %s -> independent', (slot) => {
+  it.each(['agent.cta', 'openHouse.date', 'report.period', 'toString'])('text with unmapped slot %s -> independent', (slot) => {
     expect(bindingOf(migrateElementBinding(text('t', slot, 'x')))).toEqual({ type: 'independent' });
+  });
+
+  it.each(Object.entries(SLOT_TO_FIELD))('mapped slot %s migrates to its exact descriptor', (slot, field) => {
+    const el = Object.freeze(text('mapped', slot, 'From [value]', { slotFormat: 'From {}' }));
+    const out = migrateElementBinding(el);
+    expect(out).toEqual({
+      ...el,
+      binding: field === 'stats' ? COMPOUND : { type: 'field', key: field },
+    });
+    expect(out).not.toBe(el);
+    expect(migrateElementBinding(out)).toBe(out);
   });
 
   it('non-text elements come back unchanged, even when slot-tagged (no binding added)', () => {
@@ -105,6 +117,19 @@ describe('migrateElementBinding — AC2', () => {
 
 // AC3 Contract
 describe('detachBinding / reconnectBinding — AC3', () => {
+  it('both helpers accept frozen input and leave content, slot and format on the input intact', () => {
+    usePropertyStore.setState({ property: { ...usePropertyStore.getState().property, price: '₹2.5 Cr' } });
+    const el = Object.freeze(text('p', 'property.price', 'stale', { slotFormat: 'From {}' }));
+    expect(detachBinding(el)).toEqual({ ...el, binding: { type: 'independent' } });
+    expect(reconnectBinding(el, 'price')).toEqual({
+      ...el, binding: { type: 'field', key: 'price' }, content: 'From ₹2.5 Cr',
+    });
+    expect((el as TextElement).content).toBe('stale');
+    expect(el.binding).toBeUndefined();
+    expect(setPropertySpy).not.toHaveBeenCalled();
+    expect(setAgentSpy).not.toHaveBeenCalled();
+  });
+
   it('detachBinding -> independent, same content, nothing written to any store', () => {
     const el = text('p', 'property.price', '₹9 Cr', { binding: { type: 'field', key: 'price' } });
     useCanvasStore.setState({ elements: [el] });
@@ -161,6 +186,7 @@ describe('restoreCanvasData / captureCanvasData — AC2, AC4', () => {
       elements: [
         text('price', 'property.price', 'Price: [x]', { slotFormat: 'Price: {}' }),
         text('free', undefined, 'Hello'),
+        text('specs', 'property.specs', '[Specs]'),
         shape('box'),
       ],
       canvasWidth: 800, canvasHeight: 600,
@@ -172,6 +198,7 @@ describe('restoreCanvasData / captureCanvasData — AC2, AC4', () => {
     expect(price.slot).toBe('property.price');
     expect(price.slotFormat).toBe('Price: {}');
     expect(bindingOf(byId('free'))).toEqual({ type: 'independent' });
+    expect(bindingOf(byId('specs'))).toEqual(COMPOUND);
     expect(bindingOf(byId('box'))).toBeUndefined();
   });
 
