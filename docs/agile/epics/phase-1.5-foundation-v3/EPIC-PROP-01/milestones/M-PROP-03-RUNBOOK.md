@@ -17,6 +17,18 @@ every known blocker carries its fix inline.
 
 ---
 
+## Wave status
+
+| Day | Story | State |
+|:-:|---|---|
+| 1 | US-PROP-004 | ✅ squash-merged into the milestone branch — [#87](https://github.com/din-prajapati/infographic.io/pull/87) (`39b4cf0`), 2026-10-30. Authored by a Claude agent, so Codex reviewed (APPROVE) |
+| 2 | US-PROP-005 | 🔲 next |
+| 3 | milestone verify + PR → `main` | 🔲 |
+
+Handoff and day-1 lessons: [2026-10-30_prop-wave1-handoff](../../../../sessions/2026-10-30_prop-wave1-handoff.md).
+
+---
+
 ## 0 · Decisions settled before starting
 
 | | Decision | Answer |

@@ -17,6 +17,20 @@ every known blocker carries its fix inline.
 
 ---
 
+## Wave status
+
+| Day | Story | State |
+|:-:|---|---|
+| 1 | US-PROP-001 | ✅ squash-merged into the milestone branch — [#88](https://github.com/din-prajapati/infographic.io/pull/88) (`8d41493`), 2026-10-30. TC-PROP-001-21 deferred → BL-50 (§5) |
+| 2 | US-PROP-002 | 🔲 next |
+| 3 | US-PROP-006 ∥ US-PROP-007 | 🔲 |
+| 3→4 | D1 rebase onto `main` | 🔲 waits for M-PROP-03 |
+| 4 | US-PROP-003 | 🔲 |
+
+Handoff and day-1 lessons: [2026-10-30_prop-wave1-handoff](../../../../sessions/2026-10-30_prop-wave1-handoff.md).
+
+---
+
 ## 0 · Decisions settled before starting
 
 | | Decision | Answer |
