@@ -41,15 +41,17 @@ so a design's source canvas template is recorded as `canvasDesign.sourceTemplate
 
 - [ ] **AC1 [happy-path]:** `StarterCanvasTemplate` in `api/scripts/data/premium-templates.data.ts` gains `version: number` and `proven: boolean`; all curated premium templates have `version: 1` and `proven: true`. `npm run check` and `npm run test:unit` pass.
 - [ ] **AC2 [happy-path]:** `seed-premium-templates.ts` writes `version` and `proven` on create, and on `--refresh` writes `version + 1` to each refreshed canvas-template row (only `aiModel: 'canvas-template'` rows); a user design created earlier with `sourceTemplateVersion: 1` still has `1` afterwards.
-- [ ] **AC3 [happy-path]:** `GET /api/v1/canvas-templates?visibility=admin_curated` returns numeric `version` and boolean `proven` on every item; the curated items show `proven: true` and `version ≥ 1`.
-- [ ] **AC4 [security]:** `POST` / `PUT /api/v1/canvas-templates` with `proven: true` in the body still respond 200/201, but the stored `canvasDesign` has `proven` absent or `false` — only the seed script can set it.
+- [ ] **AC3 [happy-path]:** `GET /api/v1/canvas-templates?visibility=admin_curated` returns numeric `version` and boolean `proven` on every item; the curated items show `proven: true` and `version ≥ 1`. A row seeded before this story (no `version` in its JSON) is returned as `version: 1` (`version ?? 1`), so the AC holds before the first `--refresh`.
+- [ ] **AC4 [security]:** `POST` / `PUT /api/v1/canvas-templates` with `proven: true` in the body still respond 200/201, but the stored `canvasDesign` has `proven` absent or `false` — only the seed script can set it. (The global `forbidNonWhitelisted` pipe may instead reject the unknown key with 400 — either outcome passes, as long as nothing is stored.)
 - [ ] **AC5 [happy-path]:** `POST /api/v1/designs` with `sourceTemplateId` and `sourceTemplateVersion: 1` stores both in `canvasDesign`, and `GET /api/v1/designs/:id` returns them.
+- [ ] **AC6 [rollback]:** `DesignsService.save()` rebuilds `canvasDesign` on every `PUT` — it must carry `version`, `proven`, `sourceTemplateId` and `sourceTemplateVersion` forward from the existing row (the same way it carries `visibility`). A design created with `sourceTemplateVersion: 1`, then `PUT` without those fields, still returns them; a curated template re-saved through `PUT /api/v1/canvas-templates/:id` keeps its `version` and `proven`. Covered in `template-version-proven.spec.ts` with a mocked prisma update.
 
 ---
 
 ## Out of Scope
 
 - The Look picker — US-EDIT-022 filters by `proven`; this story only exposes it
+- The client sending `sourceTemplateId`/`sourceTemplateVersion` when a template is used — `designsApi.save` builds a fixed body today; wiring it belongs to US-EDIT-022, where the template is picked. This story makes the API accept, store, return and keep them.
 - Versioning user-saved templates
 - Any Prisma migration
 - Kit definitions (EPIC-KIT-01, Phase 2)
@@ -58,7 +60,7 @@ so a design's source canvas template is recorded as `canvasDesign.sourceTemplate
 
 ## Engineering / PR
 
-- **Branch:** `feat/prop/m-prop-03-template-contract`
+- **Branch:** `feat/prop/m-03-template-contract`
 - **PR:** #_____
 - **Primary files touched:**
   - `api/scripts/data/premium-templates.data.ts` — `version`, `proven` on the interface and curated templates
@@ -85,6 +87,8 @@ AC2: Seed writes both on create; --refresh increments version on canvas-template
 AC3: GET /api/v1/canvas-templates?visibility=admin_curated returns version + proven on every item.
 AC4: POST/PUT /api/v1/canvas-templates never persists proven from the request body (still 200/201).
 AC5: POST /api/v1/designs stores sourceTemplateId + sourceTemplateVersion in canvasDesign; GET returns them.
+AC6: save() rebuilds canvasDesign on PUT — carry version, proven, sourceTemplateId, sourceTemplateVersion forward from the
+     existing row (like visibility). AC3: return version ?? 1 for rows seeded before this story.
 
 Constraints:
 - NO Prisma migration — version/proven live in canvasDesign JSON. Do not touch the Template Prisma model (it is AI template
@@ -111,6 +115,7 @@ Rules: touch only these files; run `npm run check` and `npm run test:unit`; repo
 | TC-PROP-005-02 | Manual | P0 | `POST /api/v1/canvas-templates` with `proven: true` → response and stored row have `proven` absent or `false` | 🔲 | |
 | TC-PROP-005-03 | Manual | P1 | A design created with `sourceTemplateVersion: 1`, then `seed --refresh`, then `GET` → still `1` | 🔲 | |
 | TC-PROP-005-04 | Unit | P1 | Every curated entry has `proven === true` and an integer `version ≥ 1` — `template-version-proven.spec.ts` | 🔲 | |
+| TC-PROP-005-05 | Unit | P0 | `save()` update path: existing `canvasDesign` has `sourceTemplateVersion: 1`, `version: 2`, `proven: true`; a DTO without them → the prisma update data keeps all three (AC6) | 🔲 | |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 
@@ -129,6 +134,10 @@ Rules: touch only these files; run `npm run check` and `npm run test:unit`; repo
 ## Implementation Update (log)
 
 > Appended by code-agent during/after implementation. Newest entries on top.
+
+### 2026-10-30 — Opus review of PR #83
+- AC6 added: `save()` rebuilds `canvasDesign` on every PUT, so provenance — and a curated template's `version`/`proven` — would be lost on the first re-save.
+- AC3 returns `version ?? 1` so it holds before the first `--refresh`. Client wiring of provenance is out of scope (US-EDIT-022).
 
 ### 2026-10-29 — hardened by /new-story
 - Found against the code: the draft put `version`/`proven` on the `Template` Prisma model — the wrong table. Gallery templates are `Infographic` rows; both fields go in `canvasDesign` JSON, with no migration.

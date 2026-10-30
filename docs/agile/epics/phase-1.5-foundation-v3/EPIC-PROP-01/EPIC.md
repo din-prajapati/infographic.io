@@ -58,9 +58,10 @@ generated poster.
 |:-:|-------|-------|-----------|:----:|:------:|
 | 1 | [US-PROP-001](stories/US-PROP-001/STORY.md) | Property as a saved record (backend) | M-PROP-01 | M | 🔲 |
 | 1b | [US-PROP-006](stories/US-PROP-006/STORY.md) | Property as a saved record (client) — *split from US-PROP-001 on 2026-10-29* | M-PROP-01 | M | 🔲 |
-| 2 | [US-PROP-002](stories/US-PROP-002/STORY.md) | Structured price and listing intent | M-PROP-01 | M | 🔲 |
+| 2 | [US-PROP-002](stories/US-PROP-002/STORY.md) | Structured price: parser, schema and generation | M-PROP-01 | M | 🔲 |
+| 2b | [US-PROP-007](stories/US-PROP-007/STORY.md) | Listing intent and price in the editor — *split from US-PROP-002 on 2026-10-30* | M-PROP-01 | M | 🔲 |
 | 3 | [US-PROP-003](stories/US-PROP-003/STORY.md) | Auto-Fill from a listing message, with review | M-PROP-01 | M | 🔲 |
-| 4 | [US-AI-028](stories/US-AI-028/STORY.md) | Agent profile persistence — *moved from EPIC-AI-05* | M-PROP-02 | M | 🔲 |
+| 4 | [US-AI-028](stories/US-AI-028/STORY.md) | Saved agent profile — the one profile endpoint — *moved from EPIC-AI-05* | M-PROP-02 | S | 🔲 |
 | 5 | [US-LAUNCH-016](stories/US-LAUNCH-016/STORY.md) | Post-signup onboarding — Screen 1 required profile — *moved from EPIC-LAUNCH-01* | M-PROP-02 | M | 🔲 |
 | 6 | [US-LAUNCH-017](stories/US-LAUNCH-017/STORY.md) | Onboarding brand kit — Screen 2 — *moved from EPIC-LAUNCH-01* | M-PROP-02 | M | 🔲 |
 | 7 | [US-EDIT-006](stories/US-EDIT-006/STORY.md) | Brand layers from existing data — logo + licence — *moved from EPIC-EDIT-03* | M-PROP-02 | M | 🔲 |

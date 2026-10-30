@@ -8,7 +8,7 @@ updated: 2026-10-29
 # Tasks — US-PROP-005
 
 > **Story:** [US-PROP-005](./STORY.md) — Template version and proven flag
-> **Branch:** `feat/prop/m-prop-03-template-contract`
+> **Branch:** `feat/prop/m-03-template-contract`
 > **PR:** #_____
 > **PR scope:** `version` + `proven` on curated canvas templates (JSON), seed write/increment, API exposure, `proven` never accepted from requests, design source-template provenance, unit test. No migration.
 
@@ -36,18 +36,18 @@ updated: 2026-10-29
 **ACs:** AC2 · **Effort:** S
 
 ### T3 — Expose in `findAdminCuratedTemplates()`
-- [ ] Map `version` and `proven` (default `false`); rows seeded before this story return no `version` until the next `--refresh` (comment it).
+- [ ] Map `version ?? 1` and `proven ?? false`, so rows seeded before this story still return a numeric `version` (AC3).
 
 **ACs:** AC3 · **Effort:** XS
 
 ### T4 — `proven` stripped; source-template provenance
 - [ ] DTO: optional `sourceTemplateId` (`@IsString`), `sourceTemplateVersion` (`@IsInt @Min(1)`); no `proven`.
-- [ ] `save()`: never write `proven` from the request; store `sourceTemplateId`/`Version` on create; return them from `findOne`/`findAll`.
+- [ ] `save()`: never write `proven` from the request; store `sourceTemplateId`/`Version` on create; on update carry `version`, `proven`, `sourceTemplateId`, `sourceTemplateVersion` forward from `existingCanvasDesign` (AC6); return them from `findOne`/`findAll`.
 
-**ACs:** AC4, AC5 · **Effort:** S
+**ACs:** AC4, AC5, AC6 · **Effort:** S
 
 ### T5 — Unit test
-- [ ] `api/tests/canvas/template-version-proven.spec.ts`: every curated template `proven === true`, integer `version ≥ 1`, none undefined.
+- [ ] `api/tests/canvas/template-version-proven.spec.ts`: every curated template `proven === true`, integer `version ≥ 1`, none undefined; plus TC-PROP-005-05 (update carries the four fields forward; mocked prisma).
 
 **ACs:** AC1 · **Effort:** XS
 

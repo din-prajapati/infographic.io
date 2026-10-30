@@ -1,12 +1,12 @@
 # PR Task List — US-LAUNCH-016
 
-> **Story:** [STORY.md](./STORY.md) | **Branch:** `feat/launch/us-launch-016-signup-onboarding` | **Type:** feat
+> **Story:** [STORY.md](./STORY.md) | **Branch:** `feat/prop/m-02-brand-profile` | **Type:** feat
 
 ```
 feat(launch): post-signup onboarding screen 1 — US-LAUNCH-016
 ```
 
-Backlog item — not launch-blocking. Adds a `UserProfile` model + `User.onboardingRequired` flag, one JWT-guarded endpoint, and a routing gate. Shares files with US-LAUNCH-014 — sequence, don't parallelize.
+Backlog item — not launch-blocking. Adds nullable onboarding columns to the existing `UserProfile` (US-AI-028) + `User.onboardingRequired` flag, one JWT-guarded endpoint, and a routing gate. Shares files with US-LAUNCH-014 — sequence, don't parallelize.
 
 ## Four Pillars Pre-flight
 
@@ -21,7 +21,7 @@ One-liner: new signups (email + Google) must answer a 4-question profile screen 
 
 ## Task Breakdown
 
-- **T1** — `api/prisma/schema.prisma`: `User.onboardingRequired Boolean @default(false)` + onboarding fields on the existing `UserProfile` (base model owned by US-AI-028); `npx prisma generate`
+- **T1** — `api/prisma/schema.prisma`: `User.onboardingRequired Boolean @default(false)` + nullable onboarding fields on the existing `UserProfile` (base model owned by US-AI-028); `npx prisma migrate dev --name onboarding_fields` (never `db push`)
 - **T2** — `api/src/modules/auth/services/auth.service.ts`: flag new users in `register()` + `googleLogin()` new-user branch; expose `onboardingRequired` in returned user objects
 - **T3** — `api/src/modules/users/dto/onboarding.dto.ts` (new) + `users.service.ts` + `users.controller.ts`: `POST /users/me/onboarding`
 - **T4** — `api/tests/users/onboarding.spec.ts` (new): AC10 (a)–(f)

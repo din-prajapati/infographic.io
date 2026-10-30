@@ -25,8 +25,9 @@ A listing is a saved Property with structured price and Sale/Rent intent, filled
 |:-----:|-------|-------|:----:|------------|:------:|:--:|
 | 1 | [US-PROP-001](../stories/US-PROP-001/STORY.md) | Property as a saved record (backend) | M | — | 🔲 | — |
 | 2 | [US-PROP-006](../stories/US-PROP-006/STORY.md) | Property as a saved record (client) | M | US-PROP-001 | 🔲 | — |
-| 2 | [US-PROP-002](../stories/US-PROP-002/STORY.md) | Structured price and listing intent | M | US-PROP-001 | 🔲 | — |
-| 3 | [US-PROP-003](../stories/US-PROP-003/STORY.md) | Auto-Fill from a listing message, with review | M | US-PROP-002 | 🔲 | — |
+| 2 | [US-PROP-002](../stories/US-PROP-002/STORY.md) | Structured price: parser, schema and generation | M | US-PROP-001 | 🔲 | — |
+| 3 | [US-PROP-007](../stories/US-PROP-007/STORY.md) | Listing intent and price in the editor — *split from US-PROP-002 on 2026-10-30* | M | US-PROP-002 | 🔲 | — |
+| 4 | [US-PROP-003](../stories/US-PROP-003/STORY.md) | Auto-Fill from a listing message, with review | M | US-PROP-002, US-PROP-007 | 🔲 | — |
 
 ---
 

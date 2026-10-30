@@ -22,7 +22,7 @@
 
 | Domain | Active Epic | Status | Blocked | Upcoming |
 |--------|-------------|--------|---------|----------|
-| [Property (PROP)](#-property--brand-prop) | [EPIC-PROP-01](epics/phase-1.5-foundation-v3/EPIC-PROP-01/EPIC.md) — Phase 1.5 | 🔲 0/11, hardened 2026-10-29 | — | Wave 1: M-PROP-01 (US-PROP-001 → 002 → 003) ∥ M-PROP-03 (US-PROP-004, 005) |
+| [Property (PROP)](#-property--brand-prop) | [EPIC-PROP-01](epics/phase-1.5-foundation-v3/EPIC-PROP-01/EPIC.md) — Phase 1.5 | 🔲 0/12, hardened 2026-10-29, re-checked 2026-10-30 | — | Wave 1: M-PROP-01 (US-PROP-001 → 002 → 003) ∥ M-PROP-03 (US-PROP-004, 005) |
 | [Canvas Editor (EDIT)](#-canvas-editor-edit) | [EPIC-EDIT-04](epics/phase-1.5-foundation-v3/EPIC-EDIT-04/EPIC.md) — Phase 1.5 | 🟡 1/11 — M-EDIT-03 ✅ 2026-10-29 (US-EDIT-009, BL-26 fixed) | — | V3 shell (light + dark) · M-EDIT-06 linking · M-EDIT-07 Design tab → Property/Contact tabs · M-EDIT-10 Edit Elements review · M-EDIT-08 AI Assistant |
 | [Infrastructure (INFRA)](#-infrastructure-infra) | [EPIC-OBS-00](epics/phase-1.5-foundation-v3/EPIC-OBS-00/EPIC.md) — Phase 1.5 Wave 0 | 🟡 0/5 — US-OBS-005 merged; US-OBS-002/003 partly built outside their cards | **US-OBS-005 T5 (HUMAN)** — closes **BL-34 (P1)** | Reconcile US-OBS-002/003 · US-OBS-001 · BL-35/36/37/48 |
 | [AI Generation (AI)](#-ai-generation-ai) | none in flight | ✅ Phase 1 AI work closed (EPIC-AI-02, EPIC-AI-06) | — | AI Assistant + refine chips live in EPIC-EDIT-04 (Phase 1.5); EPIC-AI-03 asset quality (Phase 2) |
@@ -391,7 +391,7 @@
 **Phase:** 1.5 · **Domain added:** 2026-10-29 ([ADR-003](decisions/ADR-003-phase-1-close-and-phase-1.5.md))
 
 ### Now
-> **2026-10-29 — current state:** 0/11, all hardened 2026-10-29 by /new-story. Wave 1 starts with M-PROP-01 (US-PROP-001 Property record backend → US-PROP-006 client ∥ 002 structured price + listing intent →
+> **2026-10-30 — current state:** 0/12. Hardened 2026-10-29 by /new-story; an Opus review on 2026-10-30 found 6 blockers, all fixed in PR #83 (US-PROP-002 split into 002 + new US-PROP-007; US-AI-028 owns the one profile write endpoint). Wave 1 starts with M-PROP-01 (US-PROP-001 Property record backend → US-PROP-006 client ∥ 002 structured price + listing intent →
 > 003 Auto-Fill with review) in parallel with M-PROP-03 (US-PROP-004 binding types, US-PROP-005 template version + proven flag). M-PROP-02
 > (Brand profile: US-AI-028, US-LAUNCH-016/017, US-EDIT-006/007 — all moved in) follows in Wave 2. Each story needs `/new-story` before implementation.
 

@@ -29,8 +29,10 @@ updated: 2026-10-29
 
 ## Acceptance Criteria
 
-- [ ] **AC1 [happy-path]:** When a design with a non-null `propertyId` is opened, the client calls `GET /api/v1/properties/:propertyId` after `restoreCanvasData` runs, and on success overwrites the property fields in `usePropertyStore` (`type, headline, price, beds, baths, sqft, address, description, features, locale`) with the server values; canvas slots then reflect them.
-- [ ] **AC2 [happy-path]:** While `usePropertyStore.activePropertyId` is non-null, any property-store change (typed in the Property tab or coming from a canvas slot edit) triggers a debounced `PUT /api/v1/properties/:activePropertyId` 800 ms after the last change; the local store updates immediately.
+- [ ] **AC1 [happy-path]:** When a design with a non-null `propertyId` is opened, the client calls `GET /api/v1/properties/:propertyId` after `restoreCanvasData` runs, and on success overwrites the property fields in `usePropertyStore` with every `PROPERTY_PAYLOAD_FIELDS` field the server returns (`type, headline, price, beds, baths, sqft, address, description, features, locale`, plus `amount, currency, transaction, rentalPeriod` once US-PROP-002 has added them); canvas slots then reflect them.
+- [ ] **AC2 [happy-path]:** While `usePropertyStore.activePropertyId` is non-null, any property-store change (typed in the Property tab or coming from a canvas slot edit) triggers a debounced `PUT /api/v1/properties/:activePropertyId` 800 ms after the last change; the local store updates immediately. Store changes made while a design is loading (`restoreCanvasData`, the AC1 overwrite) do not schedule a PUT.
+- [ ] **AC10 [security]:** Every `POST`/`PUT /api/v1/properties` body is built by `toPropertyPayload(property)` in `client/src/lib/propertyPayload.ts`, which copies only `PROPERTY_PAYLOAD_FIELDS` (the fields the server DTOs whitelist) — never `id`, `organizationId`, `activePropertyId` or client-only keys such as `fieldOrigins`. The API runs `forbidNonWhitelisted: true` (`api/src/main.ts`), so any extra key would make the request fail with 400. Unit test: a store object with extra keys produces a payload with exactly the whitelisted keys.
+- [ ] **AC11 [concurrent]:** Open design A (Property P1), then design B (Property P2) without reloading the page: no `PUT /api/v1/properties/P1` is sent after B starts loading, and B's facts are never written to P1. `setPropertyId(null)` runs before `restoreCanvasData`, and any pending debounced PUT for P1 is flushed or cancelled before the switch.
 - [ ] **AC3 [rollback]:** A design with no `propertyId` opens exactly as before (`applySavedListing` + `hydrateStoresFromCanvas` via `restoreCanvasData`); no Property request is sent and `activePropertyId` stays null.
 - [ ] **AC4 [rollback]:** The first explicit save of a legacy design (no `propertyId`) calls `POST /api/v1/properties` with the current property store, then includes the returned `propertyId` in the design save; a later `GET /api/v1/designs/:id` returns it. If the Property create fails, the design still saves without `propertyId`.
 - [ ] **AC5 [concurrent]:** With designs A and B sharing one `propertyId`, a price change saved from A shows in B's Property tab the next time B is opened.
@@ -53,14 +55,16 @@ updated: 2026-10-29
 
 ## Engineering / PR
 
-- **Branch:** `feat/prop/m-prop-01-property-record`
+- **Branch:** `feat/prop/m-01-property-record`
 - **PR:** #_____
 - **Primary files touched:**
   - `client/src/lib/api.ts` — `PropertyRecord` type + `propertiesApi` (create, getAll, getOne, update)
   - `client/src/lib/storage.ts` — `propertyId?: string | null` on `DesignMetadata`
   - `client/src/hooks/usePropertyStore.ts` — `activePropertyId` + `setPropertyId`
+  - `client/src/lib/propertyPayload.ts` — new: `PROPERTY_PAYLOAD_FIELDS` + `toPropertyPayload()`
+  - `client/src/lib/__tests__/propertyPayload.spec.ts` — new
   - `client/src/components/editor/EditorLayout.tsx` — fetch on open, debounced save, lazy migration on save
-  - `client/src/pages/MyPropertiesPage.tsx` — new
+  - `client/src/components/pages/MyPropertiesPage.tsx` — new (beside `MyDesignsPage.tsx`)
   - `client/src/App.tsx` — `/my-properties` route
 
 ---
@@ -87,18 +91,25 @@ AC6: /my-properties page (protected, app header, like /my-designs): cards with h
 AC7: New design → set store facts + activePropertyId → navigate('/editor').
 AC8: No horizontal scroll at 375 px; ≥ 2 columns at 1440 px.
 AC9: Fetch failure → toast "Could not load property — using saved values." and keep embedded values.
+AC10: POST/PUT bodies come from toPropertyPayload() (client/src/lib/propertyPayload.ts), which copies only PROPERTY_PAYLOAD_FIELDS.
+      The API rejects unknown keys (forbidNonWhitelisted) — never send id, organizationId, activePropertyId or fieldOrigins.
+AC11: Opening design B after design A never sends a PUT to A's Property: setPropertyId(null) before restoreCanvasData, cancel/flush
+      the pending debounce, and ignore store changes while loading.
 
 Architecture notes:
 - API pattern: getApiUrl('/properties') + apiRequest<T>() — follow designsApi in api.ts.
 - EditorLayout loads via loadDesignById → restoreCanvasData (which calls applySavedListing + hydrateStoresFromCanvas). Do NOT call
   applySavedListing again after the fetch — it resets both stores; just setProperty() the server fields.
+- resetProperty() keeps activePropertyId, and applySavedListing() calls it. That is why AC11 needs setPropertyId(null) FIRST and a
+  loading guard (e.g. an isLoadingDesign ref checked by the subscription) around restoreCanvasData and the AC1 overwrite.
 - Do NOT change captureCanvasData() in canvasState.ts.
-- Route: follow the /my-designs pattern in App.tsx.
+- Route: follow the /my-designs pattern in App.tsx; the page lives in client/src/components/pages/ beside MyDesignsPage.tsx.
 
 Out of Scope: property detail page · delete · pagination/search · captureCanvasData changes · US-PROP-002/003 work.
 
 Primary files (do NOT touch others): client/src/lib/api.ts · client/src/lib/storage.ts · client/src/hooks/usePropertyStore.ts ·
-client/src/components/editor/EditorLayout.tsx · client/src/pages/MyPropertiesPage.tsx (new) · client/src/App.tsx
+client/src/lib/propertyPayload.ts (new) · client/src/lib/__tests__/propertyPayload.spec.ts (new) ·
+client/src/components/editor/EditorLayout.tsx · client/src/components/pages/MyPropertiesPage.tsx (new) · client/src/App.tsx
 
 Rules: touch only these files; run `npm run check` and `npm run test:unit`; report files changed, ACs checked, test output.
 ```
@@ -116,6 +127,8 @@ Rules: touch only these files; run `npm run check` and `npm run test:unit`; repo
 | TC-PROP-006-05 | Manual | P1 | Given a legacy design, when Save is clicked, then `POST /api/v1/properties` fires before the design save and the design then has a `propertyId` | 🔲 | |
 | TC-PROP-006-06 | Manual | P1 | Given 2 Properties, when `/my-properties` loads at 375 px, then 2 cards with New design buttons show and there is no horizontal scroll | 🔲 | |
 | TC-PROP-006-07 | Manual | P1 | Given `GET /api/v1/properties/:id` returns 500 on open, then the toast "Could not load property — using saved values." shows and the embedded values load | 🔲 | |
+| TC-PROP-006-08 | Manual | P0 | Given design A (Property P1) is open, when design B (Property P2) is opened from My Designs, then the network shows no `PUT /api/v1/properties/P1` after B starts loading, and P1's headline is unchanged when A is reopened | 🔲 | |
+| TC-PROP-006-09 | Unit | P0 | `toPropertyPayload({ ...facts, id: 'x', organizationId: 'o', activePropertyId: 'p', fieldOrigins: {} })` returns exactly the `PROPERTY_PAYLOAD_FIELDS` keys — `propertyPayload.spec.ts` | 🔲 | |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 
@@ -134,6 +147,11 @@ Rules: touch only these files; run `npm run check` and `npm run test:unit`; repo
 ## Implementation Update (log)
 
 > Appended by code-agent during/after implementation. Newest entries on top.
+
+### 2026-10-30 — Opus review of PR #83
+- AC11 added: `resetProperty()` keeps `activePropertyId`, so opening design B after A would have PUT B's facts onto A's Property.
+- AC10 added: the API runs `forbidNonWhitelisted: true`; sending the whole store would 400 every save and silently drop the AC4 link.
+- AC1 now also loads the structured price fields once US-PROP-002 adds them. The page moves to `client/src/components/pages/`.
 
 ### 2026-10-29 — created by /new-story (split from US-PROP-001)
 - Found against the code: the draft said edits save to the Property "not to the embedded listing". Wrong — `captureCanvasData()` always writes `listing`, and it must keep doing so as the fallback for legacy designs and failed fetches. The Property is written in addition.

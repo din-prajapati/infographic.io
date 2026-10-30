@@ -77,7 +77,7 @@ Unlike US-EDIT-006's assets, neither exists as data yet:
 
 ## Engineering / PR
 
-- **Branch:** `feat/prop/m-prop-02-brand-profile` (same milestone branch as US-EDIT-006)
+- **Branch:** `feat/prop/m-02-brand-profile` (same milestone branch as US-EDIT-006)
 - **PR:** #_____
 - **Primary files touched:**
   - `client/src/hooks/useAgentStore.ts` — add `headshotPreview: string | null`

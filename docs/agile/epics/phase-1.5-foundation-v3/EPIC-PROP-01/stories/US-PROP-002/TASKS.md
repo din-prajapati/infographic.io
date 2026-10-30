@@ -2,24 +2,24 @@
 title: Tasks — US-PROP-002
 type: tasks
 tags: [orion, prop, price, intent]
-updated: 2026-10-29
+updated: 2026-10-30
 ---
 
 # Tasks — US-PROP-002
 
-> **Story:** [US-PROP-002](./STORY.md) — Structured price and listing intent
-> **Branch:** `feat/prop/m-prop-01-property-record`
+> **Story:** [US-PROP-002](./STORY.md) — Structured price: parser, schema and generation
+> **Branch:** `feat/prop/m-01-property-record`
 > **PR:** #_____
-> **PR scope:** Indian price parsing, the listing-intent select, and FOR SALE / FOR RENT through canvas, prompt and printed listing. Extends `shared/locale.ts`, `listingBindings.ts` and `infographic-prompt.builder.ts`. No template, extraction or export changes.
+> **PR scope:** `parseIndianPrice` in `shared/locale.ts`; four `Property` columns + both properties DTOs + `PropertyInfo`; `transaction`/`rentalPeriod` through the generation DTO, service, prompt builder and the two client senders. No editor UI (US-PROP-007).
 
 ---
 
 ## Four-Pillars Pre-flight
 
-- [ ] **Brain** — Read `shared/locale.ts`. `parseIndianPrice` is the inverse of `formatPriceForLocale`: strip the symbol with `extractCurrencyToken`, strip a period hint, strip commas, multiply by the magnitude. Reuse — don't re-implement the tables.
-- [ ] **Muscle** — In the running app, typing in the Property tab price calls `writeFieldToCanvas('price', …)` per keystroke and the run coalesces into one undo step; `hydrateStoresFromCanvas` is subscribed to Undo/Redo at the bottom of `listingBindings.ts`.
-- [ ] **Map** — Trace typed price → `parseIndianPrice` → `amount` → `formatPriceForLocale` → `property.price` slot → `buildImagePrompt` (the builder gets the number; locale and currency token arrive separately on the DTO).
-- [ ] **Env** — US-PROP-001 migration applied (`Property` table visible in Prisma Studio); `npm run test:unit` green at baseline.
+- [ ] **Brain** — Read `shared/locale.ts`. `parseIndianPrice` is the inverse of `formatPriceForLocale`: strip the symbol with `extractCurrencyToken`, strip a period hint, strip commas, multiply by the magnitude. Reuse the tables.
+- [ ] **Muscle** — Find where `generations.service.ts` builds `propertyData` (it sets `listingType` from the extraction) and where `ai-orchestrator.service.ts` calls `buildImagePrompt(propertyData, headline)`.
+- [ ] **Map** — Trace store → `RightSidebar.tsx` / `AIChatBox.tsx` request → `GenerateFromChatDto` → `propertyData` → `buildImagePrompt` / `buildPrintedListing`.
+- [ ] **Env** — US-PROP-001 merged and its migration applied (`Property` visible in Prisma Studio); `npm run test:unit` green at baseline.
 
 ---
 
@@ -30,48 +30,41 @@ updated: 2026-10-29
 - [ ] Symbol via `extractCurrencyToken`; period from `/`, `per` or `a` + month/week/year/day (incl. monthly/annual forms, canonicalised); commas stripped; `Cr|Crore` 10⁷, `Lakh|Lac|L` 10⁵, `K` 10³ as whole words.
 - [ ] `null` for no number or 0; never throws.
 
-**Effort:** S
+**ACs:** AC2 · **Effort:** S
 
 ### T2 — Parser tests
-- [ ] `api/tests/ai-generation/locale-price-parser.spec.ts`: the five AC2 parses, two format round-trips (incl. `"₹12.3 Lakh"`), three `null` cases. Pure functions, no mocks.
+- [ ] `api/tests/ai-generation/locale-price-parser.spec.ts`: the AC2 parses, two format round-trips (incl. `"₹12.3 Lakh"`), three `null` cases. Pure functions, no mocks.
 
-**Effort:** XS
+**ACs:** AC2 · **Effort:** XS
 
-### T3 — Store fields
-- [ ] `PropertyInfo`: `amount?`, `currency?`, `transaction?`, `rentalPeriod?`; `undefined` in `DEFAULT_PROPERTY`. Keep `price: string`. `npm run check`.
+### T3 — Schema, migration, DTOs, store type
+- [ ] `schema.prisma`: four `Property` columns; `npx prisma migrate dev --name prop_price_fields` (after US-PROP-001's migration). Never `db push`.
+- [ ] `create-property.dto.ts` **and** `update-property.dto.ts`: the four optional validated fields (AC1 decorators).
+- [ ] `PropertyInfo`: `amount?`, `currency?`, `transaction?`, `rentalPeriod?`; `undefined` in `DEFAULT_PROPERTY`. `npm run check`.
 
-**Effort:** XS
+**ACs:** AC1 · **Effort:** S
 
-### T4 — Migration + DTO
-- [ ] `schema.prisma`: the four `Property` columns; `npx prisma migrate dev --name prop_price_fields` (generated, after US-PROP-001's migration).
-- [ ] `update-property.dto.ts`: four optional validated fields.
+### T4 — Generation path
+- [ ] `GenerateFromChatDto`: optional `transaction`, `rentalPeriod` with `@IsIn`.
+- [ ] `generations.service.ts`: copy both into `propertyData`; when `transaction` is set, `listingType = transaction === 'rent' ? 'for_rent' : 'for_sale'`. Otherwise unchanged.
 
-**Effort:** XS
+**ACs:** AC3, AC6 · **Effort:** XS
 
-### T5 — `PropertyDetailsForm.tsx`
-- [ ] Intent select; on change: `setProperty({ transaction, amount: undefined, currency: undefined, price: '' })`, `writeFieldToCanvas('price', '')` (the only history entry — no extra `pushToHistory`), `writeFieldToCanvas('listingIntent', 'FOR SALE'|'FOR RENT')`.
-- [ ] Label per intent; period select for rent (`setProperty({ rentalPeriod })` only).
-- [ ] Price input: keep the buffer; on a parse, set `amount`/`currency` and write the slot value (`formatPriceForLocale` + " / period" for rent). Validate on blur; error text per AC5.
-- [ ] `price-legacy-warning` when `price` is non-empty, `amount` undefined and unparseable.
+### T5 — Prompt builder
+- [ ] `intent` in `PromptParts`; "- Listing type: …" line; rent price line with period.
+- [ ] `listingIntent` in `ExpectedText['key']` + `REPAIR_LOCATORS` (`/\bFOR\s+(SALE|RENT)\b/i`); `buildExpectedTexts` and `buildPrintedListing` carry it.
+- [ ] New cases in `infographic-prompt.builder.spec.ts` (TC-03, TC-04) and `printed-listing.spec.ts`; existing cases unchanged.
 
-**Effort:** M
+**ACs:** AC4, AC6 · **Effort:** S
 
-### T6 — Slot + bindings
-- [ ] `slotIds.ts`: `property.intent`. `listingBindings.ts`: `listingIntent` in `BoundField` / `FIELD_TO_SLOTS`; `patchFor('price')` parses and returns `undefined` on failure; `patchFor('listingIntent')` → `transaction`; `PrintedListing.intent`.
+### T6 — Client senders
+- [ ] `api.ts` request type: `transaction?`, `rentalPeriod?`.
+- [ ] `RightSidebar.tsx` and `AIChatBox.tsx`: add both from `usePropertyStore.getState().property` when set — beside the existing `currencyToken` line; omit when `undefined`.
 
-**Effort:** S
+**ACs:** AC5, AC6 · **Effort:** XS
 
-### T7 — Prompt builder
-- [ ] `intent` in `PromptParts`; "- Listing type: …" line; rent price line with period; `listingIntent` in `ExpectedText['key']` + `REPAIR_LOCATORS` (`/\bFOR\s+(SALE|RENT)\b/i`); `buildExpectedTexts` and `buildPrintedListing` carry it.
-- [ ] Existing prompt-builder and printed-listing specs stay green.
-
-**Effort:** S
-
-### T8 — Back-fill on load
-- [ ] `applySavedListing`: if `price` is set and `amount` missing, parse and set `amount`/`currency`; leave `amount` undefined on failure (T5 shows the warning).
-- [ ] Verify both AC6 cases; no warning for fresh designs.
-
-**Effort:** XS
+### T7 — Verify
+- [ ] `npm run check`, `npm run test:unit`; TC-PROP-002-05 and -06 by hand; record in STORY.md.
 
 ---
 
@@ -81,13 +74,18 @@ updated: 2026-10-29
 |---|:--:|---|
 | `shared/locale.ts` | T1 | new exports |
 | `api/tests/ai-generation/locale-price-parser.spec.ts` | T2 | new |
-| `client/src/hooks/usePropertyStore.ts` | T3 | fields |
-| `api/prisma/schema.prisma` + migration | T4 | 4 columns |
-| `api/src/modules/properties/dto/update-property.dto.ts` | T4 | DTO fields |
-| `client/src/components/editor/PropertyDetailsForm.tsx` | T5 | UI |
-| `client/src/lib/slotIds.ts` | T6 | slot id |
-| `client/src/lib/listingBindings.ts` | T6, T8 | binding, parsing, back-fill |
-| `api/src/modules/ai-generation/services/infographic-prompt.builder.ts` | T7 | prompt + printed listing |
+| `api/prisma/schema.prisma` | T3 | 4 columns (+ generated migration) |
+| `api/src/modules/properties/dto/create-property.dto.ts` | T3 | DTO fields |
+| `api/src/modules/properties/dto/update-property.dto.ts` | T3 | DTO fields |
+| `client/src/hooks/usePropertyStore.ts` | T3 | type fields |
+| `api/src/modules/infographics/dto/generate-from-chat.dto.ts` | T4 | 2 fields |
+| `api/src/modules/infographics/services/generations.service.ts` | T4 | copy + listingType |
+| `api/src/modules/ai-generation/services/infographic-prompt.builder.ts` | T5 | prompt + printed listing |
+| `api/tests/ai-generation/infographic-prompt.builder.spec.ts` | T5 | new cases |
+| `api/tests/ai-generation/printed-listing.spec.ts` | T5 | new cases |
+| `client/src/lib/api.ts` | T6 | request type |
+| `client/src/components/editor/RightSidebar.tsx` | T6 | send fields |
+| `client/src/components/ai-chat/AIChatBox.tsx` | T6 | send fields |
 
 ---
 
@@ -96,20 +94,17 @@ updated: 2026-10-29
 ```bash
 npm run check
 npm run test:unit
-cd api && npx vitest run tests/ai-generation/locale-price-parser.spec.ts --reporter=verbose
-cd api && npx vitest run tests/ai-generation/locale.spec.ts tests/ai-generation/printed-listing.spec.ts --reporter=verbose
+cd api && npx vitest run tests/ai-generation/locale-price-parser.spec.ts tests/ai-generation/locale.spec.ts tests/ai-generation/printed-listing.spec.ts tests/ai-generation/infographic-prompt.builder.spec.ts --reporter=verbose
 ```
-
-> Playwright defaults to **staging** — set `PLAYWRIGHT_BASE_URL=http://localhost:5000` for local runs.
 
 ---
 
 ## Anti-patterns for this story
 
 - **Creating `shared/priceParser.ts`.** The magnitude table already lives in `shared/locale.ts`; a second copy drifts.
-- **Calling `pushToHistory` in the intent handler.** `writeFieldToCanvas` already records the entry; a second one breaks the one-Undo rule (AC3).
-- **Removing `price: string`.** Saved designs carry it, and `applySavedListing` / `hydrateStoresFromCanvas` read it; `amount` is the new canonical number, `price` stays as the buffer.
+- **Adding the fields to only one properties DTO.** `forbidNonWhitelisted` rejects the whole request; US-PROP-006 sends them on both POST and PUT.
+- **`prisma db push`.** Migrations deploy through `migrate deploy` (BL-33); a pushed column is drift the next deploy trips over.
 
 ---
 
-*Tasks created: 2026-10-29*
+*Tasks created: 2026-10-29 · rewritten for the split: 2026-10-30*

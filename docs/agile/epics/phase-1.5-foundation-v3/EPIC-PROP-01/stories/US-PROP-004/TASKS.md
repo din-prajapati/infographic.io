@@ -8,7 +8,7 @@ updated: 2026-10-29
 # Tasks — US-PROP-004
 
 > **Story:** [US-PROP-004](./STORY.md) — Element binding types on the template contract
-> **Branch:** `feat/prop/m-prop-03-template-contract`
+> **Branch:** `feat/prop/m-03-template-contract`
 > **PR:** #_____
 > **PR scope:** `BindingDescriptor`; `migrateElementBinding` / `detachBinding` / `reconnectBinding`; load-time migration; explicit bindings in the curated seed data; tests. No UI, no change to the three write functions.
 
@@ -18,7 +18,7 @@ updated: 2026-10-29
 
 - [ ] **Brain** — Read `listingBindings.ts`. Be able to say (a) why `slot` must stay the write channel, (b) why `stats` → compound while every other field → field (see `STORE_TO_CANVAS_ONLY` and the Q1 note), (c) why `reconnectBinding` must never call `writeCanvasToField`.
 - [ ] **Muscle** — Baseline `npm run test:unit` green, including `api/tests/canvas/template-one-fact-per-element.spec.ts`.
-- [ ] **Map** — Find `BaseElement` (and `slot?`, `frameOf?`, `slotFormat?`) in `canvasTypes.ts`; confirm `captureCanvasData()` serialises elements verbatim; find the function that loads a design/template into the canvas store (the migration call site).
+- [ ] **Map** — Find `BaseElement` (and `slot?`, `frameOf?`, `slotFormat?`) in `canvasTypes.ts`; confirm `captureCanvasData()` serialises elements verbatim; confirm `restoreCanvasData()` (`canvasState.ts`) is the single load path for designs and templates (the migration call site).
 - [ ] **Env** — `npm run dev`, `npm run check`, `npm run test:unit` all green before the first edit.
 
 ---
@@ -32,7 +32,7 @@ updated: 2026-10-29
 
 ### T2 — `migrateElementBinding` + load call
 - [ ] Rules per the table in STORY.md; idempotent; spread, never mutate.
-- [ ] Call it on every element when a design or template loads (one place, in `canvasState.ts`).
+- [ ] Call it on every element inside `restoreCanvasData()` in `canvasState.ts` (the one load path for designs and templates).
 
 **ACs:** AC2 · **Effort:** S
 
@@ -45,12 +45,12 @@ updated: 2026-10-29
 
 ### T4 — Seed data bindings
 - [ ] `binding?` on `TextOpts`; `text()` passes it through.
-- [ ] Every slot-tagged `text()` call gets its binding (compound for specs/facts, field otherwise). Untagged elements stay without one — load-time migration covers them.
+- [ ] Every slot-tagged `text()` call gets its binding: compound for specs/facts, field for slots in `SLOT_TO_FIELD`, independent for other slots (`agent.cta`, `openHouse.*`, `report.*`). Untagged elements stay without one — load-time migration covers them.
 
 **ACs:** AC5 · **Effort:** S
 
 ### T5 — Seed-data spec
-- [ ] `api/tests/canvas/element-binding-migration.spec.ts`: import `PREMIUM_CANVAS_TEMPLATES`; assert compound/field per slot; compare field count with the counted non-compound slot-tagged elements.
+- [ ] `api/tests/canvas/element-binding-migration.spec.ts`: import `PREMIUM_CANVAS_TEMPLATES`; keep a local copy of the slot→field map (comment: mirrors `listingBindings.ts`); assert compound / field / independent per slot; counts computed in the test.
 
 **ACs:** AC5 · **Effort:** S
 

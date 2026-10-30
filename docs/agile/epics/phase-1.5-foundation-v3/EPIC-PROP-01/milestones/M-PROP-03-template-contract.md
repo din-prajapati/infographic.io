@@ -31,7 +31,7 @@ Every text element carries an explicit link type, and templates carry a version 
 ## Acceptance (Milestone Done When…)
 
 - [ ] Every curated template element has an explicit binding
-- [ ] Designs record the template version they came from
+- [ ] The API stores, returns and keeps (across re-saves) the template a design came from; the client starts sending it in US-EDIT-022
 - [ ] All stories above have status ✅ Done
 - [ ] Verification gates pass for affected domains
 
@@ -40,6 +40,10 @@ Every text element carries an explicit link type, and templates carry a version 
 ## Notes / Blockers
 
 - US-PROP-004 is a prerequisite of the linking UI (US-EDIT-020); US-PROP-005 of the Look picker (US-EDIT-022).
+- **Shared files with M-PROP-01 — sequence, don't run in parallel:**
+  - US-PROP-005 edits `designs.service.ts` and `create-design.dto.ts`, which US-PROP-001 also edits (the cross-org `propertyId` guard). Start US-PROP-005 after US-PROP-001 merges, and rebase.
+  - US-PROP-004 edits `listingBindings.ts`, which US-PROP-007 and US-PROP-003 also edit. Start US-PROP-004 after US-PROP-003 merges (or rebase onto whichever merged last).
+- Within this milestone, US-PROP-004 and US-PROP-005 share only `api/scripts/data/premium-templates.data.ts` — merge one, rebase the other.
 
 ---
 

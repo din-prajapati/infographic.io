@@ -8,7 +8,7 @@ updated: 2026-08-26
 # Tasks — US-EDIT-006
 
 > **Story:** [US-EDIT-006](./STORY.md) — Brand layers from existing data (logo + licence)
-> **Branch:** `feat/prop/m-prop-02-brand-profile`
+> **Branch:** `feat/prop/m-02-brand-profile`
 > **PR:** #_____
 > **PR scope:** Place an agent's saved logo and licence on generated designs as real, movable
 > canvas layers. No prompt changes, no extraction changes, no credit path touched.

@@ -8,7 +8,7 @@ updated: 2026-08-26
 # Tasks — US-EDIT-007
 
 > **Story:** [US-EDIT-007](./STORY.md) — Agent headshot + QR code
-> **Branch:** `feat/prop/m-prop-02-brand-profile`
+> **Branch:** `feat/prop/m-02-brand-profile`
 > **PR:** #_____
 > **Depends on:** [US-EDIT-006](../US-EDIT-006/STORY.md) merged.
 > **PR scope:** Add headshot capture and client-side QR generation, placed through US-EDIT-006's

@@ -8,7 +8,7 @@ updated: 2026-10-29
 # Tasks — US-PROP-003
 
 > **Story:** [US-PROP-003](./STORY.md) — Auto-Fill from a listing message, with review
-> **Branch:** `feat/prop/m-prop-01-property-record`
+> **Branch:** `feat/prop/m-01-property-record`
 > **PR:** #_____
 > **PR scope:** Add Auto-fill to the Property tab; extend the extractor with `rentalPeriod`; add the batch `applyExtractedFacts()` to `listingBindings.ts`; add `fieldOrigins` to `usePropertyStore`. No credit path touched. No other tabs, services or Prisma migrations modified.
 
@@ -18,10 +18,10 @@ updated: 2026-10-29
 
 Fill before writing code. A story without this is not ready to implement.
 
-- [ ] **Brain** — Re-read `listingBindings.ts` around `writeFieldToCanvas` and `lastWrite`. Be able to explain (1) why applying five fields one by one with `writeFieldToCanvas` would create five undo entries, and (2) why `applyExtractedFacts` must call `pushToHistory` once, collect all element changes, then `setState` once before resetting `lastWrite`. Confirm US-PROP-002's `transaction`, `rentalPeriod` and `amount` exist in `PropertyInfo` and `FIELD_TO_SLOTS` before writing any mapping code.
+- [ ] **Brain** — Re-read `listingBindings.ts` around `writeFieldToCanvas` and `lastWrite`. Be able to explain (1) why applying five fields one by one with `writeFieldToCanvas` would create five undo entries, and (2) why `applyExtractedFacts` must call `pushToHistory` once, collect all element changes, then `setState` once before resetting `lastWrite`. Confirm `transaction`, `rentalPeriod` and `amount` exist in `PropertyInfo` (US-PROP-002) and `listingIntent` in `FIELD_TO_SLOTS` (US-PROP-007) before writing any mapping code.
 - [ ] **Muscle** — `npm run dev`; open the editor's Property tab with no console errors. From the browser console call `extractionsApi.extract({ prompt: '3BHK in Bandra West for ₹2.5 Cr' })` and confirm the response shape `{ id, extractedData: { listingType, price, beds }, confidence, missingFields, suggestions }`.
 - [ ] **Map** — In `prompt-extractor.service.ts` confirm (a) `ExtractedPropertyData` has no `rentalPeriod` yet, (b) the system-prompt JSON schema does not list it; in `extractions.controller.ts` confirm there is no `assertCanGenerate` call; in `client/src/lib/api.ts` confirm `ExtractionResult.extractedData` has no `rentalPeriod`.
-- [ ] **Env** — Baseline `npm run check` and `npm run test:unit` both pass; US-PROP-002 is ✅ Done (or its fields are confirmed present in `usePropertyStore.ts`).
+- [ ] **Env** — Baseline `npm run check` and `npm run test:unit` both pass; US-PROP-002 and US-PROP-007 are ✅ Done.
 
 ---
 
@@ -39,8 +39,8 @@ Fill before writing code. A story without this is not ready to implement.
 
 ### T2 — `fieldOrigins` on `usePropertyStore`
 
-- [ ] Add `fieldOrigins: Partial<Record<string, string>>` to `PropertyInfo` and `fieldOrigins: {}` to `DEFAULT_PROPERTY`.
-- [ ] Confirm `resetProperty()` resets it through the `DEFAULT_PROPERTY` spread (no extra code).
+- [ ] Add a top-level `fieldOrigins: Partial<Record<string, string>>` (default `{}`) and `setFieldOrigins` to the store — beside `property`, **not** inside `PropertyInfo`.
+- [ ] `resetProperty()` also sets `fieldOrigins: {}`.
 - [ ] `npm run check` — 0 new errors.
 
 **Covers:** AC8 · **Effort:** XS
@@ -81,7 +81,7 @@ Fill before writing code. A story without this is not ready to implement.
 |---|:--:|---|
 | `api/src/modules/infographics/services/prompt-extractor.service.ts` | T1 | extend interface + LLM schema |
 | `client/src/lib/api.ts` | T1 | extend `ExtractionResult.extractedData` type |
-| `client/src/hooks/usePropertyStore.ts` | T2 | add `fieldOrigins` + default |
+| `client/src/hooks/usePropertyStore.ts` | T2 | top-level `fieldOrigins` + setter |
 | `client/src/lib/listingBindings.ts` | T3 | new type + new function |
 | `client/src/lib/__tests__/listingBindings.applyExtractedFacts.spec.ts` | T3 | new |
 | `client/src/components/editor/PropertyDetailsForm.tsx` | T4 | new UI section |

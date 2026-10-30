@@ -8,7 +8,7 @@ updated: 2026-10-29
 # Tasks — US-PROP-001
 
 > **Story:** [US-PROP-001](./STORY.md) — Property as a saved record (backend)
-> **Branch:** `feat/prop/m-prop-01-property-record`
+> **Branch:** `feat/prop/m-01-property-record`
 > **PR:** #_____
 > **PR scope:** Prisma `Property` model + migration + org-scoped Property endpoints + `propertyId` on design responses. No client files.
 
@@ -56,6 +56,7 @@ updated: 2026-10-29
 
 ### T5 — Unit tests
 - [ ] `api/tests/properties/properties.service.spec.ts` (mock `prisma.property.*` with `vi.hoisted`, as in the designs spec): org id from argument; `findAll` filter; `findOne` other-org → 404 and no update; `update` other-org → 404.
+- [ ] `api/tests/designs/designs.service.spec.ts`: TC-PROP-001-07 — other-org `propertyId` on create and update → `NotFoundException`, nothing written; own-org → saved.
 
 **ACs:** AC5 · **Effort:** S
 
@@ -76,6 +77,7 @@ updated: 2026-10-29
 | `api/src/modules/designs/dto/create-design.dto.ts` | T4 | optional `propertyId` |
 | `api/src/modules/designs/services/designs.service.ts` | T4 | expose + org guard |
 | `api/tests/properties/properties.service.spec.ts` | T5 | new |
+| `api/tests/designs/designs.service.spec.ts` | T5 | cross-org `propertyId` cases (AC6) |
 
 ---
 

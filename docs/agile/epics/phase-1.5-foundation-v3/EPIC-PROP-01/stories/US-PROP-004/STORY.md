@@ -43,10 +43,10 @@ Legacy elements get a `binding` on load from their `slot`; elements that already
 ## Acceptance Criteria
 
 - [ ] **AC1 [happy-path]:** `client/src/lib/canvasTypes.ts` exports `BindingDescriptor = { type: 'field'; key: BoundField } | { type: 'compound'; parts: string[] } | { type: 'independent' }`, and `BaseElement` gains optional `binding?: BindingDescriptor` (move `BoundField` into `canvasTypes.ts` and re-export it if importing it creates a cycle). `npm run check` has no new errors.
-- [ ] **AC2 [rollback]:** `migrateElementBinding(el)` exported from `listingBindings.ts` returns: `field`/`price` for `slot: 'property.price'`; `compound` with parts `beds, baths, sqft` for `slot: 'property.specs'`; `independent` for text with no slot; the element unchanged for non-text or when `binding` is already set. It never mutates its input and never changes `content`, `slot` or `slotFormat`. It runs on design and template load.
+- [ ] **AC2 [rollback]:** `migrateElementBinding(el)` exported from `listingBindings.ts` returns: `field`/`price` for `slot: 'property.price'`; `compound` with parts `beds, baths, sqft` for `slot: 'property.specs'`; `independent` for text with no slot; the element unchanged for non-text or when `binding` is already set. It never mutates its input and never changes `content`, `slot` or `slotFormat`. It runs inside `restoreCanvasData()` (`client/src/lib/canvasState.ts`), which every design and template load goes through.
 - [ ] **AC3 [happy-path]:** `detachBinding(el)` returns the element with `binding: { type: 'independent' }` and the same `content`, writing nothing to any store. `reconnectBinding(el, 'price')` with the store price "₹2.5 Cr" returns `binding: { type: 'field', key: 'price' }` and `content === applySlotFormat(el.slotFormat, '₹2.5 Cr')`, and never calls `setProperty` / `setAgent` — element text is never imported into a field.
-- [ ] **AC4 [happy-path]:** An element with `binding: { type: 'field', key: 'price' }` keeps exactly that `binding` after `captureCanvasData()` → `loadCanvas()` (save and reopen).
-- [ ] **AC5 [edge-case]:** `api/scripts/data/premium-templates.data.ts` gives every slot-tagged `text()` an explicit `binding`, and a new `api/tests/canvas/element-binding-migration.spec.ts` asserts on the seed data: every `property.specs` / `property.facts` element is `compound`; every other slot-tagged element is `field` with the key its slot maps to; the number of `field` elements equals the number of non-compound slot-tagged text elements (counted in the test, not hard-coded). `npm run test:unit` passes, including `template-one-fact-per-element.spec.ts`.
+- [ ] **AC4 [happy-path]:** An element with `binding: { type: 'field', key: 'price' }` keeps exactly that `binding` after `captureCanvasData()` → `restoreCanvasData()` (save and reopen).
+- [ ] **AC5 [edge-case]:** `api/scripts/data/premium-templates.data.ts` gives every slot-tagged `text()` an explicit `binding`, and a new `api/tests/canvas/element-binding-migration.spec.ts` asserts on the seed data: every `property.specs` / `property.facts` element is `compound`; every element whose slot is in `SLOT_TO_FIELD` (and is not specs/facts) is `field` with the key its slot maps to; every slot-tagged element whose slot is **not** in `SLOT_TO_FIELD` (`agent.cta`, `openHouse.*`, `report.*`, …) is `independent` — matching the design table above. The spec cannot import client code, so it carries its own copy of the slot→field map with a comment pointing at `listingBindings.ts`; counts are computed in the test, not hard-coded. `npm run test:unit` passes, including `template-one-fact-per-element.spec.ts`.
 
 ---
 
@@ -61,12 +61,12 @@ Legacy elements get a `binding` on load from their `slot`; elements that already
 
 ## Engineering / PR
 
-- **Branch:** `feat/prop/m-prop-03-template-contract`
+- **Branch:** `feat/prop/m-03-template-contract`
 - **PR:** #_____
 - **Primary files touched:**
   - `client/src/lib/canvasTypes.ts` — `BindingDescriptor`, `binding?` on `BaseElement`
   - `client/src/lib/listingBindings.ts` — `migrateElementBinding`, `detachBinding`, `reconnectBinding`
-  - `client/src/lib/canvasState.ts` — call `migrateElementBinding` when designs/templates load (TBC: the exact load function)
+  - `client/src/lib/canvasState.ts` — call `migrateElementBinding` on every element inside `restoreCanvasData()`
   - `client/src/lib/__tests__/listingBindings.binding.spec.ts` — unit tests for the three helpers (new)
   - `api/scripts/data/premium-templates.data.ts` — `binding?` on `TextOpts`; explicit bindings on slot-tagged elements
   - `api/tests/canvas/element-binding-migration.spec.ts` — seed-data assertions (new)
@@ -85,12 +85,14 @@ Story: US-PROP-004 — Element binding types on the template contract
 Acceptance Criteria:
 AC1: BindingDescriptor in canvasTypes.ts; binding? on BaseElement; no new type errors.
 AC2: migrateElementBinding(el): property.specs/property.facts → compound (beds, baths, sqft); other SLOT_TO_FIELD slots → field;
-     untagged text → independent; non-text or already-bound → unchanged; never mutates; content/slot/slotFormat unchanged; runs on load.
+     untagged text → independent; non-text or already-bound → unchanged; never mutates; content/slot/slotFormat unchanged; runs inside
+     restoreCanvasData() (canvasState.ts), which every design and template load goes through.
 AC3: detachBinding → independent, same content, no store write. reconnectBinding(el, key) → field + store value via applySlotFormat;
      never writes the store.
-AC4: binding survives captureCanvasData → loadCanvas unchanged.
-AC5: premium-templates.data.ts slot-tagged text() calls carry explicit bindings; api/tests/canvas/element-binding-migration.spec.ts
-     asserts them on the seed data (count computed in the test).
+AC4: binding survives captureCanvasData → restoreCanvasData unchanged.
+AC5: premium-templates.data.ts slot-tagged text() calls carry explicit bindings: specs/facts → compound; slots in SLOT_TO_FIELD →
+     field; other slots (agent.cta, openHouse.*, report.*) → independent. api/tests/canvas/element-binding-migration.spec.ts asserts
+     them with its own copy of the slot→field map (it cannot import client code); counts computed in the test.
 
 Constraints:
 - binding is ADDITIVE beside slot. Never remove slot. Do not change writeFieldToCanvas / writeCanvasToField / hydrateStoresFromCanvas.
@@ -138,6 +140,10 @@ Rules: touch only these files; run `npm run check` and `npm run test:unit`; repo
 ## Implementation Update (log)
 
 > Appended by code-agent during/after implementation. Newest entries on top.
+
+### 2026-10-30 — Opus review of PR #83
+- AC5 fixed: the seed data also tags `agent.cta`, `openHouse.*` and `report.*`, which are not in `SLOT_TO_FIELD`; those are `independent`, as the design table says. The API-side spec needs its own copy of the slot→field map.
+- The load point is `restoreCanvasData()`; the AC4 round trip is `captureCanvasData()` → `restoreCanvasData()`.
 
 ### 2026-10-29 — hardened by /new-story
 - Decided `binding` sits beside `slot` (the three write functions find elements by slot).

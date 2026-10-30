@@ -13,7 +13,7 @@ updated: 2026-10-29
 > **Milestone:** [M-PROP-01-property-record](../../milestones/M-PROP-01-property-record.md)
 > **Linear:** LIN-XXX
 > **Size:** M
-> **Depends on:** US-PROP-002 — must have added `transaction: 'sale' | 'rent'`, `rentalPeriod: 'month' | 'week' | 'year' | 'day'` and `amount: number` to `PropertyInfo` and to `FIELD_TO_SLOTS` in `listingBindings.ts` before this story starts
+> **Depends on:** [US-PROP-002](../US-PROP-002/STORY.md) (`PropertyInfo` has `amount`, `currency`, `transaction`, `rentalPeriod`; `parseIndianPrice` exists) and [US-PROP-007](../US-PROP-007/STORY.md) (`FIELD_TO_SLOTS` has `listingIntent`; `patchFor('price')` sets `amount`). Both must be merged first. `transaction`, `rentalPeriod` and `amount` are **store fields**, not `BoundField`s — only `listingIntent` and `price` have canvas slots.
 > **Created:** 2026-10-29 | **Closed:** —
 > **Source:** Phase 1.5 restructure — [ADR-003](../../../../../decisions/ADR-003-phase-1-close-and-phase-1.5.md); V3 canvas mockup (`Mockups/buildographic-canvas-simplification-v3/`, untracked)
 
@@ -35,7 +35,7 @@ updated: 2026-10-29
 
 - [ ] **AC3 [happy-path]:** The review list shows one checkable row for each mappable detected fact present in `extractedData`: address, price (displayed as a formatted string), beds, baths, sqft, propertyType, transaction (derived from `listingType`), rentalPeriod and features. Each row shows the fact label, the detected value, the current store value (or the literal string "Empty"), and a checkbox. Fields whose current store value is empty-string / 0 / empty-array are pre-checked; fields with a non-empty current value are pre-unchecked. `listingType: 'sold'` does NOT produce a checkable row (it appears in suggestions only, per AC6).
 
-- [ ] **AC4 [happy-path]:** When the user clicks "Apply selected", all currently checked facts are written to the property store AND to canvas slots via a new `applyExtractedFacts()` function in `listingBindings.ts`; that function calls `useCanvasStore.pushToHistory` exactly once before all element mutations, then issues a single `useCanvasStore.setState({ elements })` for the canvas batch; a single Ctrl+Z from the state after Apply reverts all applied field values together; after Apply the review panel closes.
+- [ ] **AC4 [happy-path]:** When the user clicks "Apply selected", all currently checked facts are written to the property store AND to canvas slots via a new `applyExtractedFacts()` function in `listingBindings.ts`; that function calls `useCanvasStore.pushToHistory` exactly once before all element mutations, then issues a single `useCanvasStore.setState({ elements })` for the canvas batch; a single Ctrl+Z from the state after Apply reverts all applied field values together; after Apply the review panel closes. A ticked **price** writes `amount` (the extracted number), `currency`, and `price` = `formatPriceForLocale(amount, locale, currencyToken)` — the same string the `property.price` slot shows. A ticked **Listing intent** writes `transaction` and the `property.intent` slot; a ticked **rentalPeriod** writes the store field only (it changes the price slot's "/ month" suffix, no slot of its own).
 
 - [ ] **AC5 [edge-case]:** A field whose checkbox is not ticked when Apply is clicked is never written to the property store or the canvas. When Apply is clicked with zero checkboxes ticked, the store and canvas are unchanged and the review panel stays open.
 
@@ -43,7 +43,7 @@ updated: 2026-10-29
 
 - [ ] **AC7 [security]:** The `agent` sub-object from the extraction response (`name`, `brokerage`, `brandColors`, `logoUrl`) is never written to `useAgentStore` or `usePropertyStore` by any Apply code path; those detected values appear below the checkable fact rows as non-interactive text inside an element with `data-testid="autofill-suggestions"`; that element is not rendered when there are no suggestions and no agent data.
 
-- [ ] **AC8 [happy-path]:** Each field accepted through Apply sets `fieldOrigins[fieldName] = 'accepted-source-text'` in a new `fieldOrigins: Partial<Record<string, string>>` map on `PropertyInfo` (added to `usePropertyStore.ts`); `resetProperty()` resets `fieldOrigins` to `{}` as part of the `DEFAULT_PROPERTY` spread.
+- [ ] **AC8 [happy-path]:** Each field accepted through Apply sets `fieldOrigins[fieldName] = 'accepted-source-text'` in a new **top-level** store key `fieldOrigins: Partial<Record<string, string>>` on `usePropertyStore` — a sibling of `property`, **not** a field of `PropertyInfo` — with a `setFieldOrigins` action; `resetProperty()` also resets it to `{}`. Because it is outside `PropertyInfo`, `captureListing()` (which spreads `property` into the saved design) does not save it, and US-PROP-006's `toPropertyPayload()` never sends it.
 
 - [ ] **AC9 [rate-limit]:** `POST /api/v1/infographics/generations/extractions` does not consume a monthly generation credit: `ExtractionsController` has no call to `assertCanGenerate`, `assertCanGenerateForUser` or any `UsageRecord` increment, and a FREE-tier user with 3/3 credits used can run Extract & review and receive a 200 response with extracted data.
 
@@ -59,7 +59,7 @@ updated: 2026-10-29
 - Reading facts from listing photos
 - Changes to the AI chat (retired by US-EDIT-023, a later wave)
 - Auto-apply without review — the agent must tick checkboxes and click Apply every time
-- Persisting `fieldOrigins` to the database — Property persistence is US-PROP-001/006; this story keeps `fieldOrigins` in Zustand state only
+- Persisting `fieldOrigins` — to the database or to the saved design. It lives in Zustand only, as a top-level key outside `PropertyInfo` (AC8)
 - Applying `sold` as a `transaction` value — `sold` is a suggestion per AC6
 - Retry logic after a timeout — after "Could not extract" the agent clicks Extract & review again
 - Any change to credit / usage behaviour on `ExtractionsController` — extraction stays free
@@ -68,12 +68,12 @@ updated: 2026-10-29
 
 ## Engineering / PR
 
-- **Branch:** `feat/prop/m-prop-01-property-record`
+- **Branch:** `feat/prop/m-01-property-record`
 - **PR:** #_____ (fill when opened)
 - **Primary files touched:**
   - `api/src/modules/infographics/services/prompt-extractor.service.ts` — add `rentalPeriod` to the `ExtractedPropertyData` interface and the LLM system-prompt JSON schema
   - `client/src/lib/api.ts` — add `rentalPeriod` to the `ExtractionResult.extractedData` type
-  - `client/src/hooks/usePropertyStore.ts` — add `fieldOrigins: Partial<Record<string, string>>` to `PropertyInfo` and `DEFAULT_PROPERTY`
+  - `client/src/hooks/usePropertyStore.ts` — add a top-level `fieldOrigins` key (outside `PropertyInfo`) + `setFieldOrigins`; `resetProperty()` clears it
   - `client/src/lib/listingBindings.ts` — add the `ExtractedFact` type and the `applyExtractedFacts()` export
   - `client/src/components/editor/PropertyDetailsForm.tsx` — add the "Auto-fill from listing" collapsible section
   - `client/src/lib/__tests__/listingBindings.applyExtractedFacts.spec.ts` — unit test for `applyExtractedFacts` (new)
@@ -94,9 +94,9 @@ Story: US-PROP-003 — Auto-Fill from a listing message, with review
 As an agent who receives listings as WhatsApp messages, I want to paste the message and review what was found
 before it fills my Property, so that I stop retyping listings and nothing changes without my say-so.
 
-Pre-condition: US-PROP-002 has already added `transaction: 'sale' | 'rent'`, `rentalPeriod: 'month' | 'week' |
-'year' | 'day'` and `amount: number` to PropertyInfo and to FIELD_TO_SLOTS in listingBindings.ts. This story
-uses those fields and must NOT re-add them.
+Pre-condition: US-PROP-002 added amount/currency/transaction/rentalPeriod to PropertyInfo (store fields, NOT
+BoundFields) and parseIndianPrice; US-PROP-007 added listingIntent to FIELD_TO_SLOTS and made patchFor('price') set
+amount. This story uses them and must NOT re-add them.
 
 Acceptance Criteria:
 AC1: The Property tab renders a collapsible "Auto-fill from listing" section at the top of the form, containing a
@@ -112,14 +112,17 @@ AC3: The review list shows one checkable row per mappable fact present in extrac
 AC4: "Apply selected" calls applyExtractedFacts(checkedFacts) from listingBindings.ts, which calls
      useCanvasStore.pushToHistory exactly once before all element mutations, then useCanvasStore.setState({elements})
      once for the batch; one Ctrl+Z reverts all applied facts; the review panel closes after Apply.
+     Ticked price → amount + currency + price = formatPriceForLocale(amount, locale, currencyToken). Ticked intent →
+     transaction + property.intent slot. Ticked rentalPeriod → store only.
 AC5: Unchecked fields are never written to store or canvas; Apply with zero ticked checkboxes is a no-op.
 AC6: prompt-extractor.service.ts ExtractedPropertyData gains rentalPeriod ('month'|'week'|'year'|'day'|null) in the
      interface and the LLM schema; listingType 'for_sale' → transaction 'sale', 'for_rent' → 'rent'; 'sold' is a
      suggestion only.
 AC7: The agent sub-object (name, brokerage, brandColors, logoUrl) is never written to useAgentStore or
      usePropertyStore; it appears as non-interactive text in data-testid="autofill-suggestions".
-AC8: Each accepted field sets fieldOrigins[fieldName]='accepted-source-text' in a new
-     fieldOrigins: Partial<Record<string,string>> on usePropertyStore; resetProperty() resets it to {}.
+AC8: Each accepted field sets fieldOrigins[fieldName]='accepted-source-text' in a new TOP-LEVEL store key
+     fieldOrigins (sibling of `property`, NOT inside PropertyInfo) + setFieldOrigins; resetProperty() clears it.
+     Keeping it out of PropertyInfo keeps it out of the saved design and out of Property API requests.
 AC9: ExtractionsController has no assertCanGenerate or UsageRecord increment — do NOT add one. Extraction stays free.
 AC10: Non-2xx or > 15 s timeout shows a message starting "Could not extract"; form fields unchanged; button re-enabled.
 AC11: The Auto-fill section renders without horizontal overflow at 375 px and 1440 px widths.
@@ -179,6 +182,11 @@ Rules:
 ## Implementation Update (log)
 
 > Appended by code-agent during/after implementation. Newest entries on top.
+
+### 2026-10-30 — Opus review of PR #83
+- `fieldOrigins` moved out of `PropertyInfo` to a top-level store key: `captureListing()` spreads `property` into the saved design, and the Property API rejects unknown keys (`forbidNonWhitelisted`).
+- The precondition was wrong: `transaction`, `rentalPeriod` and `amount` are store fields, not `BoundField`s; only `listingIntent` is (added by the new US-PROP-007). AC4 now says what a ticked price writes.
+- Now depends on US-PROP-007 as well as US-PROP-002.
 
 ### 2026-10-29 — hardened by /new-story
 - Found against the code: BL-06 is already fixed — the extractor routes through `resolvePlanTier` + `openAiService.extractStructuredData`, not a hard-coded GPT-4o call. No change needed here.

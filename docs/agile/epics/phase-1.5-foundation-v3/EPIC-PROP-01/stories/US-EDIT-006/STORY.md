@@ -68,7 +68,7 @@ furniture is composed forward while typography stays with extraction.
 
 - **Agent headshot and QR code** — `AgentInfo` has no headshot field and no QR exists anywhere;
   both need new capture or a new dependency. That is [US-EDIT-007](../US-EDIT-007/STORY.md).
-- **Durable brand storage.** Server-side persistence is provided by US-AI-028 / US-LAUNCH-017 (`UserProfile.logoUrl`, hydrated into the store on login). This story reads `useAgentStore.agent.logoPreview`; no additional storage work is needed here.
+- **Durable brand storage.** Server-side persistence is US-AI-028 (`UserProfile.logoUrl` via `PUT /users/me/profile`); hydrating it into the agent store on login is US-LAUNCH-017 AC6 (`useBrandKitHydration`). This story reads `useAgentStore.agent.logoPreview`; no additional storage work is needed here.
 - **`brandColors` → canvas palette.** Already on `AgentInfo`, already unused. Related, but that
   is palette work, not layer work.
 - **Any change to the image prompt.** We are not asking the model to leave space, reserve a
@@ -95,7 +95,7 @@ better answer and this is its natural first job, but it should not be what makes
 
 ## Engineering / PR
 
-- **Branch:** `feat/prop/m-prop-02-brand-profile`
+- **Branch:** `feat/prop/m-02-brand-profile`
 - **PR:** #_____
 - **Primary files touched:**
   - `client/src/lib/canvasState.ts` — new `placeBrandLayers()`, called after an AI variation lands
