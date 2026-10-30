@@ -8,6 +8,25 @@ export type TextAlign = 'left' | 'center' | 'right';
 export type TextTransform = 'none' | 'uppercase' | 'lowercase' | 'capitalize';
 export type ListStyle = 'none' | 'bullet' | 'numbered';
 
+/** Listing facts with a home on the canvas (US-PROP-004). */
+export type BoundField =
+  | 'headline'
+  | 'address'
+  | 'price'
+  | 'stats'
+  | 'agentName'
+  | 'brokerage'
+  | 'description'
+  | 'features'
+  | 'agentPhone'
+  | 'agentEmail'
+  | 'agentLicense';
+
+export type BindingDescriptor =
+  | { type: 'field'; key: BoundField }
+  | { type: 'compound'; parts: string[] }
+  | { type: 'independent' };
+
 export interface BaseElement {
   id: string;
   type: ElementType;
@@ -28,6 +47,8 @@ export interface BaseElement {
    * all elements and absent on legacy designs.
    */
   slot?: string;
+  /** US-PROP-004: additive link metadata; slot remains the write channel. */
+  binding?: BindingDescriptor;
   /**
    * BL-44 — the slot whose text this element exists to hold (a price pill, a
    * CTA bar, a readability scrim). When an AI poster displaces slot layers, a
