@@ -1,0 +1,84 @@
+# PR checks — ADR-004 (multi-engine guardrails).
+#
+# Every PR is judged by the same deterministic checks, whichever engine (Claude, Codex, Gemini, a human)
+# wrote it. deploy.yml's "Build & Unit Tests" job already runs the API unit tests; this workflow adds
+# what it leaves out:
+#   gate-1  — the full Gate 1: `npm run check` (client + API type-check, failures fail the PR) and
+#             `npm run test:unit` (API + client unit tests).
+#   scope   — files changed must be listed in the stories' TASKS.md / STORY.md (scripts/check-task-scope.mjs).
+#             Escape hatch: add the `scope-override` label and give the reason in the PR body.
+
+name: PR Checks
+
+on:
+  pull_request:
+    branches: [main, 'feat/**']
+    types: [opened, synchronize, reopened, edited, labeled, unlabeled]
+
+concurrency:
+  group: pr-checks-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '22'
+
+jobs:
+  gate-1:
+    name: Gate 1 (type-check + unit tests)
+    # Title edits and label changes don't change code; only the scope job needs to re-run for them.
+    if: github.event.action != 'edited' && github.event.action != 'labeled' && github.event.action != 'unlabeled'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: |
+            package-lock.json
+            api/package-lock.json
+
+      - name: Install dependencies (root + API)
+        run: |
+          npm ci
+          npm ci --prefix api
+
+      - name: Generate Prisma client
+        run: npm run prisma:generate
+
+      - name: npm run check
+        run: npm run check
+
+      - name: npm run test:unit
+        run: npm run test:unit
+        env:
+          NODE_ENV: test
+          JWT_SECRET: test-jwt-secret-32chars-minimum
+          RAZORPAY_KEY_SECRET: test-key-secret
+          RAZORPAY_PLAN_SOLO_MONTHLY: plan_solo_monthly_test
+          RAZORPAY_PLAN_TEAM_MONTHLY: plan_team_monthly_test
+
+  scope:
+    name: Scope (files listed in TASKS.md)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Scope override
+        if: contains(github.event.pull_request.labels.*.name, 'scope-override')
+        run: echo "::warning::scope-override label set — scope check skipped. The PR body must say why."
+
+      - name: Check changed files against the story file lists
+        if: ${{ !contains(github.event.pull_request.labels.*.name, 'scope-override') }}
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BRANCH: ${{ github.event.pull_request.head.ref }}
+          BASE_REF: origin/${{ github.event.pull_request.base.ref }}
+        run: node scripts/check-task-scope.mjs --head HEAD
