@@ -2,13 +2,13 @@
 title: EPIC-EDIT-04 — V3 Editor Simplification
 type: epic
 tags: [orion, epic, edit, phase-1.5]
-updated: 2026-10-29
+updated: 2026-10-31
 ---
 
 # EPIC-EDIT-04 — V3 Editor Simplification
 
 > **Phase:** Phase 1.5 — Property Foundation & V3 Editor
-> **Status:** 🟡 In Progress — 1/11. M-EDIT-03 (moved in from EPIC-EDIT-03) ✅ closed 2026-10-29 — US-EDIT-009 done after BL-26; the rest drafted (US-EDIT-024–027 added 2026-10-29) 2026-10-29
+> **Status:** 🟡 In Progress — 1/12. M-EDIT-03 (moved in from EPIC-EDIT-03) ✅ closed 2026-10-29 — US-EDIT-009 done after BL-26; the rest drafted (US-EDIT-024–027 added 2026-10-29) 2026-10-29
 > **Owner:** Dinesh
 > **Decision:** [ADR-003](../../../decisions/ADR-003-phase-1-close-and-phase-1.5.md) · **Design source:** V3 canvas mockup (`Mockups/buildographic-canvas-simplification-v3/`, untracked)
 
@@ -40,6 +40,7 @@ facts, generate a background without touching the text, and is stopped at Export
 | [M-EDIT-08-ai-assistant](milestones/M-EDIT-08-ai-assistant.md) | AI Assistant (Create design / Generate Background) · refine chips · quota badge | 🔲 |
 | [M-EDIT-09-v3-shell](milestones/M-EDIT-09-v3-shell.md) | V3 shell (top bar · guide bar · canvas header · tool rail), Property and Contact tabs, autosave — light and dark | 🔲 |
 | [M-EDIT-10-extraction-review](milestones/M-EDIT-10-extraction-review.md) | Edit Elements review — confirm links before a poster becomes editable | 🔲 |
+| [M-EDIT-11-v3-editor-slice](milestones/M-EDIT-11-v3-editor-slice.md) | Opt-in fresh V3 shell: open → edit → save → reload → PNG export | 🟡 locally verified |
 
 ---
 
@@ -58,6 +59,7 @@ facts, generate a background without touching the text, and is stopped at Export
 | 9 | [US-EDIT-027](stories/US-EDIT-027/STORY.md) | Autosave and save status | M-EDIT-09 | M | 🔲 |
 | 10 | [US-EDIT-025](stories/US-EDIT-025/STORY.md) | Property and Contact tabs in the V3 layout | M-EDIT-09 | M | 🔲 |
 | 11 | [US-EDIT-026](stories/US-EDIT-026/STORY.md) | Edit Elements review — confirm links before a poster becomes editable | M-EDIT-10 | L | 🔲 |
+| 12 | [US-EDIT-031](stories/US-EDIT-031/STORY.md) | Opt-in V3 editor vertical slice | M-EDIT-11 | L | 🟡 locally verified |
 
 ---
 
@@ -71,3 +73,10 @@ facts, generate a background without touching the text, and is stopped at Export
 ---
 
 *Epic created: 2026-10-29*
+
+
+
+
+## Implementation Update — 2026-10-31
+
+US-EDIT-031 / M-EDIT-11 implemented in an isolated branch, with fresh V3 shell and reused canvas/backend. Local gates and authenticated save/reload/export passed; Opus code/security review approved. [Evidence](stories/US-EDIT-031/VERIFICATION.md). Not formally Done: milestone verification, PR and human merge approval remain pending. This pilot does not close the broader V3 shell/panel stories.
