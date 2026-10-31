@@ -2,6 +2,8 @@
   <style>
     #bg-appearance-review .appearance-bar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:12px;color:light-dark(#303b34,#e7ece8);font:12px/1.4 Inter,system-ui,sans-serif}#bg-appearance-review .appearance-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap}#bg-appearance-review .appearance-controls label{display:flex;align-items:center;gap:8px}#bg-appearance-review .appearance-controls select,#bg-appearance-review .appearance-controls button{font:inherit;padding:7px 10px;border:1px solid light-dark(#d9ded8,#424a45);border-radius:7px;color:light-dark(#29372d,#e8ede9);background:light-dark(#fffefa,#232a25);cursor:pointer}#bg-appearance-review .appearance-controls button[aria-pressed=true]{background:light-dark(#e6ebe3,#465548);border-color:light-dark(#7e8d7c,#9fae9d)}#bg-appearance-review .appearance-label{font-weight:600}#bg-appearance-review .appearance-themes{display:flex;gap:4px}#bg-appearance-review .appearance-themes button{display:flex;align-items:center;gap:6px}#bg-appearance-review .appearance-themes svg{width:14px;height:14px}
     #bg-editor-sketch .bg-poster .bg-headline[data-selected="false"]{border-color:transparent}
+    #bg-editor-sketch .bg-shapes-symbol{position:relative;display:block;width:21px;height:21px}#bg-editor-sketch .bg-tool-capsule .bg-shapes-symbol svg{position:absolute;width:14px;height:14px;fill:currentColor;stroke-width:1.5}#bg-editor-sketch .bg-symbol-square{right:0;bottom:0;color:var(--bg-ink)}#bg-editor-sketch .bg-symbol-circle{left:0;top:0;color:var(--bg-soft)}#bg-editor-sketch .bg-line-flyout{position:absolute;left:66px;top:115px;width:190px;padding:7px;border:1px solid var(--bg-line);border-radius:13px;background:var(--bg-surface);box-shadow:0 4px 16px #0002}
+    #bg-editor-sketch[data-look] .bg-tool-capsule{gap:4px}
   </style>
   <div class="appearance-bar" aria-label="Appearance review controls">
     <span class="appearance-label">Approved layout · Logo-inspired theme</span>
@@ -47,14 +49,16 @@
           <button data-tool="Select" aria-label="Select" aria-pressed="true" data-tooltip="Select (V)"><i data-lucide="mouse-pointer-2"></i></button>
           <button data-tool="Hand" aria-label="Hand" aria-pressed="false" data-tooltip="Hand (H)"><i data-lucide="hand"></i></button>
           <div class="bg-tool-divider"></div>
-          <button aria-label="Undo" data-note="Undo uses the existing canvas history." data-tooltip="Undo"><i data-lucide="undo-2"></i></button>
-          <button aria-label="Redo" data-note="Redo uses the existing canvas history." data-tooltip="Redo"><i data-lucide="redo-2"></i></button>
-          <div class="bg-tool-divider"></div>
-          <button data-shapes aria-label="Add element" aria-expanded="false" data-tooltip="Add element" hidden><i data-lucide="plus"></i></button>
+          <button data-lines aria-label="Line" aria-expanded="false" data-tooltip="Line"><i data-lucide="slash"></i></button>
+          <button data-shapes aria-label="Shapes" aria-expanded="false" data-tooltip="Shapes"><span class="bg-shapes-symbol" aria-hidden="true"><i data-lucide="square" class="bg-symbol-square"></i><i data-lucide="circle" class="bg-symbol-circle"></i></span></button>
+          <button data-note="Adds a text element using the old editor's existing text operation. This is a UI preview." aria-label="Add text" data-tooltip="Text"><i data-lucide="type"></i></button>
+          <button data-note="Opens the old editor's existing image picker. This is a UI preview." aria-label="Add image" data-tooltip="Image"><i data-lucide="image"></i></button>
+          <div class="bg-tool-divider" data-selection-action></div>
           <button data-selection-action data-note="Uses the old editor's existing duplicate operation for the selected element. This is a UI preview." aria-label="Duplicate selected element" data-tooltip="Duplicate (Ctrl+D)"><i data-lucide="copy"></i></button>
           <button data-selection-action data-note="Uses the old editor's existing delete operation for the selected element. This is a UI preview." aria-label="Delete selected element" data-tooltip="Delete (Del)"><i data-lucide="trash-2"></i></button>
         </div>
-        <section class="bg-shape-flyout" aria-label="Add element menu" hidden><div class="bg-add-heading">Basic</div><div class="bg-add-menu"><button data-note="Adds a text element using the existing canvas operation."><i data-lucide="type"></i>Text</button><button data-note="Opens the existing image picker."><i data-lucide="image"></i>Image</button></div><div class="bg-add-separator"></div><div class="bg-add-heading">Shapes</div><div class="bg-add-menu"><button data-note="Adds the existing rectangle shape, labelled Square in the old menu."><i data-lucide="square"></i>Square</button><button data-note="Adds the existing circle shape."><i data-lucide="circle"></i>Circle</button><button data-note="Adds the existing triangle shape."><i data-lucide="triangle"></i>Triangle</button><button data-note="Adds the existing star shape."><i data-lucide="star"></i>Star</button></div></section>
+        <section class="bg-line-flyout" aria-label="Line menu" hidden><div class="bg-add-heading">Line</div><div class="bg-add-menu"><button data-note="Straight line is a newly requested UI control; production line support is planned separately."><i data-lucide="slash"></i>Straight line</button></div></section>
+        <section class="bg-shape-flyout" aria-label="Shapes menu" hidden><div class="bg-add-heading">Shapes</div><div class="bg-add-menu"><button data-note="Adds the existing rectangle shape, labelled Square in the old menu."><i data-lucide="square"></i>Square</button><button data-note="Adds the existing circle shape."><i data-lucide="circle"></i>Circle</button><button data-note="Adds the existing triangle shape."><i data-lucide="triangle"></i>Triangle</button><button data-note="Adds the existing star shape."><i data-lucide="star"></i>Star</button></div></section>
       </div>
       <aside class="bg-panel" aria-label="Active tool panel">
         <div class="bg-panel-title"><h3 id="bg-panel-heading">Property details</h3><button data-collapse aria-label="Collapse tool panel"><i data-lucide="panel-left-close"></i></button></div>
@@ -108,7 +112,7 @@
       const panels={'Property':['Property details','bg-property'],'Agent':['Agent information','bg-agent'],'Brand':['Brand palettes','bg-brand'],'Text':['Text','bg-text'],'Tools':['Tools','bg-tools'],'Uploads':['Uploads','bg-uploads'],'Templates':['Templates','bg-templates'],'AI design':['AI design','bg-ai']};
       let active='Tools', preview=false,zoom=100,selection='text';
       function icons(){if(globalThis.lucide)lucide.createIcons({attrs:{width:16,height:16}});}
-      function openPanel(name){active=name;root.classList.remove('bg-collapsed');root.classList.toggle('bg-tools-open',name==='Tools');root.querySelector('.bg-floating-tools').hidden=name!=='Tools';root.querySelector('.bg-shape-flyout').hidden=true;root.querySelector('[data-shapes]').setAttribute('aria-expanded','false');if(name!=='Tools'){heading.textContent=panels[name][0];content.replaceChildren(root.querySelector('#'+panels[name][1]).content.cloneNode(true));}root.querySelectorAll('.bg-rail [data-panel]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.panel===name)));note.hidden=true;icons();requestAnimationFrame(positionToolbar);}
+      function openPanel(name){active=name;root.classList.remove('bg-collapsed');root.classList.toggle('bg-tools-open',name==='Tools');root.querySelector('.bg-floating-tools').hidden=name!=='Tools';root.querySelector('.bg-shape-flyout').hidden=true;root.querySelector('[data-shapes]').setAttribute('aria-expanded','false');root.querySelector('.bg-line-flyout').hidden=true;root.querySelector('[data-lines]').setAttribute('aria-expanded','false');if(name!=='Tools'){heading.textContent=panels[name][0];content.replaceChildren(root.querySelector('#'+panels[name][1]).content.cloneNode(true));}root.querySelectorAll('.bg-rail [data-panel]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.panel===name)));note.hidden=true;icons();requestAnimationFrame(positionToolbar);}
       function closeTools(){root.classList.remove('bg-tools-open');root.classList.add('bg-collapsed');root.querySelector('.bg-floating-tools').hidden=true;root.querySelector('.bg-rail [data-panel="Tools"]').setAttribute('aria-pressed','false');requestAnimationFrame(positionToolbar);}
       function positionToolbar(){
         const area=root.querySelector('.bg-canvas-area'),target=root.querySelector('.bg-poster [data-select="'+selection+'"]');
@@ -129,9 +133,8 @@
       }
       function syncToolActions(){
         const selected=selection!==null;
-        root.querySelector('[data-shapes]').hidden=selected;
         root.querySelectorAll('[data-selection-action]').forEach(button=>{button.hidden=!selected;});
-        if(selected){root.querySelector('.bg-shape-flyout').hidden=true;root.querySelector('[data-shapes]').setAttribute('aria-expanded','false');}
+        if(selected){root.querySelector('.bg-shape-flyout').hidden=true;root.querySelector('[data-shapes]').setAttribute('aria-expanded','false');root.querySelector('.bg-line-flyout').hidden=true;root.querySelector('[data-lines]').setAttribute('aria-expanded','false');}
       }
       function markSelection(type){selection=type;context.hidden=false;root.querySelectorAll('.bg-poster [data-select]').forEach(el=>el.setAttribute('data-selected',String(el.dataset.select===type)));syncToolActions();requestAnimationFrame(positionToolbar);}
       function select(type){context.innerHTML=type==='text'?'<span>Text</span><button data-note="Existing font-family control.">Inter ▾</button><button data-note="Existing font-size control.">48 ▾</button><button data-note="Existing bold control."><strong>B</strong></button><button data-note="Existing text-color control.">Color</button><button data-note="Existing text alignment control.">Align</button>':'<span>Image</span><button data-note="Existing crop panel.">Crop</button><button data-note="Existing image adjustments.">Adjust</button><button data-note="Existing horizontal/vertical flip controls.">Flip</button><button data-note="Existing transparency control.">Opacity</button>';}
@@ -141,7 +144,8 @@
       root.addEventListener('click',event=>{
         const button=event.target.closest('button');
         if(button?.hasAttribute('data-close-tools'))closeTools();
-        if(button?.hasAttribute('data-shapes'))togglePopover('.bg-shape-flyout','[data-shapes]');
+        if(button?.hasAttribute('data-shapes')){togglePopover('.bg-shape-flyout','[data-shapes]');root.querySelector('.bg-line-flyout').hidden=true;root.querySelector('[data-lines]').setAttribute('aria-expanded','false');}
+        if(button?.hasAttribute('data-lines')){togglePopover('.bg-line-flyout','[data-lines]');root.querySelector('.bg-shape-flyout').hidden=true;root.querySelector('[data-shapes]').setAttribute('aria-expanded','false');}
         if(button?.hasAttribute('data-save-status'))togglePopover('.bg-save-popover','[data-save-status]');
         else if(!event.target.closest('.bg-title-group')){root.querySelector('.bg-save-popover').hidden=true;root.querySelector('[data-save-status]').setAttribute('aria-expanded','false');}
         if(button?.hasAttribute('data-zoom-menu'))togglePopover('.bg-zoom-menu','[data-zoom-menu]');
@@ -150,7 +154,7 @@
           zoom=Number(button.dataset.zoomTo);root.querySelector('#bg-zoom-label').textContent=zoom+'%';
           root.querySelector('[aria-label="Zoom out"]').disabled=zoom<=10;root.querySelector('[aria-label="Zoom in"]').disabled=zoom>=400;
         }
-        if(button?.dataset.note&&button.closest('.bg-shape-flyout')){root.querySelector('.bg-shape-flyout').hidden=true;root.querySelector('[data-shapes]').setAttribute('aria-expanded','false');}
+        if(button?.dataset.note&&button.closest('.bg-shape-flyout, .bg-line-flyout')){root.querySelector('.bg-shape-flyout').hidden=true;root.querySelector('[data-shapes]').setAttribute('aria-expanded','false');root.querySelector('.bg-line-flyout').hidden=true;root.querySelector('[data-lines]').setAttribute('aria-expanded','false');}
       });
       root.addEventListener('click',event=>{const button=event.target.closest('button');if(!button)return;if(button.hasAttribute('data-layers'))togglePopover('.bg-layer-popover','.bg-canvas-layers');else if(button.hasAttribute('data-assistant'))togglePopover('.bg-assistant-popover','.bg-assistant-row button');else if(button.dataset.tool){root.querySelectorAll('.bg-tool-capsule [data-tool]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));}else if(button.dataset.panel)openPanel(button.dataset.panel);else if(button.hasAttribute('data-collapse')){root.classList.add('bg-collapsed');requestAnimationFrame(positionToolbar);}else if(button.hasAttribute('data-preview'))setPreview(!preview);else if(button.dataset.select&&!preview){select(button.dataset.select);markSelection(button.dataset.select);}else if(button.dataset.note){note.textContent=button.dataset.note;note.hidden=false;}else if(button.dataset.zoom){zoom=Math.max(10,Math.min(400,zoom+Number(button.dataset.zoom)));root.querySelector('#bg-zoom-label').textContent=zoom+'%';root.querySelector('[data-zoom="-10"]').disabled=zoom<=10;root.querySelector('[data-zoom="10"]').disabled=zoom>=400;}else if(button.hasAttribute('data-fit')){zoom=100;root.querySelector('#bg-zoom-label').textContent='100%';root.querySelectorAll('[data-zoom]').forEach(b=>b.disabled=false);}});
       root.addEventListener('input',event=>{if(event.target.hasAttribute('data-price'))root.querySelector('#bg-poster-price').textContent=event.target.value;if(event.target.hasAttribute('data-agent'))root.querySelector('#bg-poster-agent').textContent=event.target.value;if(event.target.hasAttribute('data-headline'))root.querySelector('.bg-headline').textContent=event.target.value;});
@@ -172,6 +176,7 @@
       root.addEventListener('keydown',event=>{if(event.key==='Escape'){root.querySelector('.bg-zoom-menu').hidden=true;root.querySelector('[data-zoom-menu]').setAttribute('aria-expanded','false');}});
       root.addEventListener('keydown',event=>{if(event.key==='Escape'){root.querySelector('.bg-save-popover').hidden=true;root.querySelector('[data-save-status]').setAttribute('aria-expanded','false');root.querySelector('.bg-shape-flyout').hidden=true;root.querySelector('[data-shapes]').setAttribute('aria-expanded','false');}});
       new ResizeObserver(positionToolbar).observe(root.querySelector('.bg-canvas-area'));
+      root.addEventListener('keydown',event=>{if(event.key==='Escape'){root.querySelector('.bg-line-flyout').hidden=true;root.querySelector('[data-lines]').setAttribute('aria-expanded','false');}});
     })();
   </script>
 </div>
