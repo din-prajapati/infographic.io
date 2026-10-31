@@ -31,7 +31,7 @@ An authenticated agent can open an existing saved design, edit text, undo/redo, 
 - Approved first experiment on 2026-10-31. Does not supersede or close US-EDIT-024/028/029/030 or promise full V3 parity; reconcile their remaining scope after reviewing this slice.
 - No dependency on unfinished Property, Brand, template or Assistant stories. No production default switch or deployment is part of the slice.
 - Milestone number follows the existing EDIT sequence (11); historical global milestone IDs already overlap across domains. Global next-ID mirror remains at least 22.
-- Reference mockup is untracked in the primary checkout and supplies composition only.
+- Approved skeleton and Navy & Teal design are now retained in the [tracked design bundle](../../../../../../Mockups/approved-v3-editor/README.md). See its integration plan before reconciling US-EDIT-024/025/027; this approval does not claim those runtime capabilities are implemented.
 
 *Milestone created: 2026-10-31*
 
@@ -39,3 +39,5 @@ An authenticated agent can open an existing saved design, edit text, undo/redo, 
 ## Local verification — 2026-10-31
 
 [US-EDIT-031 verification](../stories/US-EDIT-031/VERIFICATION.md): TypeScript, 1,210 unit tests, 25 browser tests, four painted-artboard/contrast checks, production build and authenticated API/browser/database smoke passed. One existing client skip retained. Opus approved code/security; Gemini whole-milestone verification and human-approved delivery remain pending. The existing editor is still the default.
+
+The later Preview amendment raised the scoped browser suite to 27 passing tests. Its final independent re-review remains pending after reviewer usage limits; see the story's current VERIFICATION.md. Design approval on 2026-10-31 accepts the saved presentation, not a runtime review/merge waiver.

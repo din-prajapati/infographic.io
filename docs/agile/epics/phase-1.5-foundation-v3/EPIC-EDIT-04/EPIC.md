@@ -10,7 +10,7 @@ updated: 2026-10-31
 > **Phase:** Phase 1.5 — Property Foundation & V3 Editor
 > **Status:** 🟡 In Progress — 1/12. M-EDIT-03 (moved in from EPIC-EDIT-03) ✅ closed 2026-10-29 — US-EDIT-009 done after BL-26; the rest drafted (US-EDIT-024–027 added 2026-10-29) 2026-10-29
 > **Owner:** Dinesh
-> **Decision:** [ADR-003](../../../decisions/ADR-003-phase-1-close-and-phase-1.5.md) · **Design source:** V3 canvas mockup (`Mockups/buildographic-canvas-simplification-v3/`, untracked)
+> **Decision:** [ADR-003](../../../decisions/ADR-003-phase-1-close-and-phase-1.5.md) · **Approved visual source:** [V3 editor design bundle](../../../../../Mockups/approved-v3-editor/README.md), saved 2026-10-31. Earlier untracked V3 mockups are historical references.
 
 ---
 
