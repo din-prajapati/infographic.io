@@ -94,6 +94,71 @@ async function expectReadable(locator: Locator, label: string) {
 }
 
 test.describe('US-EDIT-031 — mocked browser integration', () => {
+  // AC12 Preview Contract: entering Preview shows the same live design without
+  // editing chrome or interactions; returning restores the draft and save state.
+  test('TC-EDIT-031-20 [P1] Preview isolates the live canvas and Exit restores editor draft', async ({ page }, info) => {
+    const model = await mockedSession(page); await open(page); await edit(page);
+    await page.getByRole('textbox', { name: 'Text content', exact: true }).fill('DRAFT ONLY');
+    const downloadReady = page.waitForEvent('download');
+    await page.getByRole('button', { name: 'Export', exact: true }).click();
+    expect((await downloadReady).suggestedFilename()).toMatch(/\.png$/i);
+    await expect(page.getByText('PNG exported', { exact: true })).toBeVisible();
+    const beforeIds = await canvas(page).locator('[data-element-id]').evaluateAll(nodes => nodes.map(el => el.getAttribute('data-element-id')));
+    await expect(page.getByText('Unsaved', { exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Preview', exact: true })).toBeVisible();
+    await page.getByRole('button', { name: 'Preview', exact: true }).click();
+    const preview = page.getByRole('main', { name: 'Design preview', exact: true });
+    await expect(preview).toBeVisible();
+    await expect(page.getByText('PNG exported', { exact: true })).toBeHidden();
+    await expect(canvas(page)).toHaveAttribute('data-preview', 'true');
+    await expect(canvas(page)).toHaveAttribute('role', 'img');
+    expect(await canvas(page).evaluate(el => getComputedStyle(el).pointerEvents)).toBe('none');
+    await expect(page.getByRole('button', { name: 'Exit preview', exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Save', exact: true })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Text', exact: true })).toHaveCount(0);
+    await expect(page.getByRole('complementary', { name: 'Text inspector', exact: true })).toBeHidden();
+    await expect(page.getByRole('navigation', { name: 'Editing workflow', exact: true })).toBeHidden();
+    await expect(page.getByText('640 × 480', { exact: true })).toBeHidden();
+    await expect(page.getByText('Select text on the canvas or in the inspector. Apply your changes when ready.', { exact: true })).toBeHidden();
+    await expect(page.getByRole('button', { name: 'Zoom in', exact: true })).toHaveCount(0);
+    expect(await canvas(page).locator('[data-element-id]').evaluateAll(nodes => nodes.map(el => el.getAttribute('data-element-id')))).toEqual(beforeIds);
+    await expect(canvas(page).getByText(EDITED, { exact: true })).toBeVisible();
+    await expect(canvas(page).getByText('DRAFT ONLY', { exact: true })).toHaveCount(0);
+    const text = canvas(page).locator('[data-element-id="text-1"]');
+    const box = await text.boundingBox(); expect(box).not.toBeNull();
+    await page.mouse.click(box!.x + box!.width / 2, box!.y + box!.height / 2);
+    await page.mouse.dblclick(box!.x + box!.width / 2, box!.y + box!.height / 2);
+    expect(await page.evaluate(() => window.getSelection()?.toString())).toBe('');
+    await expect(canvas(page).locator('textarea, input, [contenteditable="true"]')).toHaveCount(0);
+    await page.screenshot({ path: info.outputPath('v3-preview.png'), fullPage: true });
+    expect(model.writes).toEqual([]);
+    await page.getByRole('button', { name: 'Exit preview', exact: true }).click();
+    await expect(page.getByRole('main', { name: 'Design preview', exact: true })).toHaveCount(0);
+    await expect(page.getByRole('textbox', { name: 'Text content', exact: true })).toHaveValue('DRAFT ONLY');
+    await expect(canvas(page).getByText(EDITED, { exact: true })).toBeVisible();
+    await expect(page.getByText('Unsaved', { exact: true })).toBeVisible();
+    expect(model.writes).toEqual([]);
+  });
+
+  // AC12 keyboard Contract: typing P in an input remains native typing; P with
+  // focus outside fields enters Preview and Escape restores the same editor.
+  test('TC-EDIT-031-21 [P1] Preview shortcut ignores fields and Escape returns', async ({ page }) => {
+    const model = await mockedSession(page); await open(page);
+    await canvas(page).locator('[data-element-id="text-1"]').click();
+    const draft = page.getByRole('textbox', { name: 'Text content', exact: true });
+    await draft.fill('DRAFT'); await draft.press('End'); await draft.press('p');
+    await expect(draft).toHaveValue('DRAFTp');
+    await expect(page.getByRole('main', { name: 'Design preview', exact: true })).toHaveCount(0);
+    await page.getByText('640 × 480', { exact: true }).click();
+    await page.keyboard.press('p');
+    await expect(page.getByRole('main', { name: 'Design preview', exact: true })).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('main', { name: 'Design preview', exact: true })).toHaveCount(0);
+    await expect(draft).toHaveValue('DRAFTp');
+    await expect(page.getByText('Saved', { exact: true })).toBeVisible();
+    expect(model.writes).toEqual([]);
+  });
+
   // AC1/AC4: saved text/image/shape content survives UI edit → history → server
   // acknowledgement → reload, and existing metadata/record ID remain intact.
   test('TC-EDIT-031-01 [P0] open edit undo redo save reload retains all elements', async ({ page }) => {
@@ -287,6 +352,11 @@ test.describe('US-EDIT-031 — mocked browser integration', () => {
     await canvas(page).locator('[data-element-id="text-1"]').click();
     await expect(page.getByText('Saved', { exact: true })).toBeVisible();
     await page.getByRole('button', { name: 'Zoom in', exact: true }).click();
+    for (let step = 0; step < 10; step++) await page.getByRole('button', { name: 'Zoom in', exact: true }).click();
+    const zoomLabel = page.locator('footer [aria-live="polite"]');
+    const manualZoom = await zoomLabel.textContent();
+    await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+    await expect(zoomLabel).toHaveText(manualZoom!);
     await expect(page.getByText('Saved', { exact: true })).toBeVisible();
     await page.getByRole('button', { name: 'Zoom out', exact: true }).click();
     await expect(page.getByText('Saved', { exact: true })).toBeVisible();

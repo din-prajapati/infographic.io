@@ -9,3 +9,4 @@ Validation: TypeScript and production build pass; 811 backend and 399 client uni
 [Story and scope](STORY.md) · [Verification and evidence](VERIFICATION.md)
 
 Delivery remains pending Gemini whole-milestone verification (CLI unavailable on this host) and human approval for main merge. No production deployment or default switch has occurred.
+Preview amendment (2026-10-31): canvas-only Preview now hides editing panels, fits the artboard and restores drafts through Exit/Escape. The scoped browser suite now passes 27 tests; see VERIFICATION.md for amendment evidence and review status.

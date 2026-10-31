@@ -47,3 +47,13 @@ Browser integration uses mocked HTTP boundaries and actual UI, renderer, history
 Start the isolated Vite preview on 5181 with its API proxy targeting 3181, sign in normally, then open `/editor?editor=v3`. For an existing server-saved design use `/editor?editor=v3&designId=<id>`. The ordinary `/editor` route continues to select the existing editor.
 
 Final local file-scope check passed: 30 changed files, all covered by US-EDIT-031 or allowed agile documentation. The checker also reads the milestone note mentioning US-EDIT-024 and warns that its older main card lacks a file list; no runtime scope was taken from that card.
+
+## Preview repair — 2026-10-31
+
+User requested the old canvas Preview approach. Compared runtime EditorLayout/CenterCanvas: hide editor chrome and selection controls, expand the canvas workspace, and use Escape to return. V3 now follows that composition with its existing theme tokens and adds an explicit Exit preview button. The same mounted canvas and inspector retain applied content, selection and unapplied drafts. P enters outside fields; Preview makes no API write. Manual zoom survives scrollbar changes; entering/exiting Preview refits the available space.
+
+Final scoped browser run: **27 passed**, including AC12 cases TC-20/TC-21 and persistent zoom. [Run output](evidence/preview-browser.log) and [Preview screenshot](evidence/v3-preview.png). Agent visual inspection confirms a centered artboard, readable Exit control and no blue native text selection or editing controls. The open in-app V3 tab was also checked for entering and exiting Preview without modifying its document.
+
+The original 25-test evidence and Opus APPROVE above describe the earlier slice. The Preview amendment has separate review evidence; formal milestone approval/merge remains pending. Gate 4 is not triggered by this amendment: no backend changes. Existing authenticated persistence evidence remains applicable.
+
+Final Preview Gate 1 passed: TypeScript, 811 backend tests and 399 client tests (1 existing skip). Production build completed with existing warnings. See evidence/preview-gates.log. Independent re-review is pending because the configured reviewer reached its usage limit; see OPUS-REVIEW.md. The earlier Preview review's zoom finding was fixed and regression-tested.

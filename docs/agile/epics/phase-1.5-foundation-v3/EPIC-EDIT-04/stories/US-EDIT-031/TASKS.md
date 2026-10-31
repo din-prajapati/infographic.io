@@ -48,6 +48,8 @@ Gate 4: no backend edits; backend health/read/write availability still required 
 
 ## Task Checklist
 
+- [x] T10 — user-requested canvas-only Preview; existing V3Editor/V3Canvas and browser-test scope, AC12; 30m. Match old Preview composition and fit, preserve drafts/history, read-only canvas and Escape/exit recovery.
+
 - [x] T1 — independent unit contracts.
 - [x] T2 — independent browser acceptance tests.
 - [x] T3 — isolated browser config.
@@ -93,7 +95,7 @@ Implement AC1–AC11, including persisted-document revisions, metadata preservat
 - Size L, same integrated slice and nine-file scope; independent Opus approved keeping the end-to-end proof together.
 - Existing dimensions must be numbers, finite and >0; types exactly text/shape/image; missing background uses existing white default.
 - V3Editor owns its sole keyboard handler, guarded for input/textarea/contenteditable; no legacy hook mounted or modified.
-- Apply text uses one existing updateElement call; it already pushes history, so never push again. TC-12 asserts history.past +1.
+- Apply text uses one existing updateElement call; it already pushes history, so never push again. Inspector-draft browser case asserts history.past +1.
 - Initial session design ID is stable, independent of live Wouter search after replaceState adoption.
 - Baseline after successful synchronous restore; accepted blank-POST retry duplicate risk stays documented without API workarounds.
 - Browser fixtures use data images; PNG pixels differ from background inside scaled text bounds; contrast uses existing design-contrast.spec.ts browser luminance probe.

@@ -35,6 +35,12 @@
 
 ---
 
+## Preview amendment — 2026-10-31
+
+User requested the existing editor's Preview approach. This explicitly extends the pilot within its existing V3Editor/V3Canvas/browser-test file scope.
+
+- [x] **AC12 [happy-path]:** When an opened design's Preview button is clicked, V3 uses the same canvas-only composition as EditorLayout's preview: top bar, workflow, tool rail, inspector, canvas header/hint and zoom footer are hidden, the existing artboard fits the expanded viewport and selection handles/editing are disabled. Exit preview or Escape restores the editing workspace, selected element, inspector draft, canvas content/history and save status without a server write. P toggles Preview only outside editable fields and without modifier keys; Escape exits regardless of focus. Preview is unavailable until the design is ready.
+
 ## Out of Scope
 
 - Does not implement Property/Contact panels, Brand, linking UI, templates/gallery entry changes, AI Assistant, generation, extraction, autosave or export-review validation.
@@ -115,6 +121,7 @@ Done or checked gates without evidence.
 | TC-EDIT-031-09 | Unit | P0 | error-path: When `downloadCanvas` returns false or throws, V3 shows E… | ✅ | See VERIFICATION.md and retained evidence |
 | TC-EDIT-031-10 | Unit | P1 | theme: Given V3 at desktop widths 1280px and 1440px, switching t… | ✅ | See VERIFICATION.md and retained evidence |
 | TC-EDIT-031-11 | Unit | P1 | regression: Given or without `editor=v3`, App still renders existing … | ✅ | See VERIFICATION.md and retained evidence |
+| TC-EDIT-031-20 | E2E | P0 | AC12: canvas-only Preview; TC-21 additionally verifies P/Escape | ✅ | evidence/preview-browser.log |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 
