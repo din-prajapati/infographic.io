@@ -45,3 +45,5 @@ Browser integration uses mocked HTTP boundaries and actual UI, renderer, history
 ## Preview
 
 Start the isolated Vite preview on 5181 with its API proxy targeting 3181, sign in normally, then open `/editor?editor=v3`. For an existing server-saved design use `/editor?editor=v3&designId=<id>`. The ordinary `/editor` route continues to select the existing editor.
+
+Final local file-scope check passed: 30 changed files, all covered by US-EDIT-031 or allowed agile documentation. The checker also reads the milestone note mentioning US-EDIT-024 and warns that its older main card lacks a file list; no runtime scope was taken from that card.

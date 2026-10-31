@@ -17,4 +17,3 @@ feat(edit): T9 opt into V3 under editor auth — US-EDIT-031
 ```
 
 T4 is mandatory; unit tests target its public revision/session contract. Closeout is a separate docs commit only after evidence supports the status.
-

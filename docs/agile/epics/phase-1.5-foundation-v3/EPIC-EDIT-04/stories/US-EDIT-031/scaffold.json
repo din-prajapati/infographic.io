@@ -14,4 +14,3 @@
   ],
   "ac_coverage": {"required": ["happy-path", "error-path"], "present": ["happy-path", "error-path", "theme", "regression"], "verified": false}
 }
-
