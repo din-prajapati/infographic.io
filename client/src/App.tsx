@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { Switch, Route, Redirect, useLocation, useSearch } from "wouter";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient, REDIRECT_TO_AUTH_KEY } from "./lib/queryClient";
@@ -31,6 +31,8 @@ import { VersionBadge } from "./components/VersionBadge";
 import { FormatPickerDialog } from "./components/pages/FormatPickerDialog";
 import { useCanvasStore } from "./hooks/useCanvasStore";
 
+const V3Editor = lazy(() => import('./components/editor/v3/V3Editor'));
+
 function ProtectedRoute({ component: Component }: { component: () => JSX.Element }) {
   const { isAuthenticated, isLoading } = useAuth();
   if (isLoading) return null;
@@ -58,6 +60,10 @@ function EditorInner() {
   const handleBackFromEditor = () => {
     navigate('/templates');
   };
+
+  if (params.get('editor') === 'v3') {
+    return <Suspense fallback={<div role="status" className="p-6">Opening design…</div>}><V3Editor designId={designId} /></Suspense>;
+  }
 
   return (
     <EditorLayout
