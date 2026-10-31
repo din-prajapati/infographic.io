@@ -10,7 +10,7 @@
     },
     {
       "path": "approved-brand-theme.html",
-      "sha256": "63e48cecc0d050c0d1333287879296abedd20b8f890b5c2c2924aa5982f685e1"
+      "sha256": "032331f2e6aca8255934d401ae41f39361ebed97e726adf21fcd5634fd77c6b7"
     },
     {
       "path": "approved-skeleton.html",
@@ -18,7 +18,7 @@
     },
     {
       "path": "index.html",
-      "sha256": "366d08b1aa38400482dae58763e34f99aac5ae62dfa486e95166a22e2cd80ffc"
+      "sha256": "603a5538095c2364f0930712e05df62e896c494ee417d2a68934c9b83d2c5f78"
     },
     {
       "path": "skeleton-preview.html",
@@ -28,5 +28,6 @@
   "status": "Visual design approved; runtime integration pending",
   "baselineBranch": "feat/edit/m-11-v3-editor-slice",
   "savedAtUtc": "2026-10-31T11:32:24.3930899Z",
-  "baselineCommit": "99e0288"
+  "baselineCommit": "99e0288",
+  "amendedAtUtc": "2026-10-31T15:11:23.7159997Z"
 }

@@ -13,3 +13,8 @@
 - Formal milestone completion, independent re-review and PR/main merge remain pending.
 
 Full verification logs for this save are retained in the workspace's ignored `.agent-logs/v3-approved-save-{check,backend,client}.log`; no secrets or environment values are included in this bundle.
+
+## Selection-tools amendment — 2026-10-31
+
+User-requested amendment to the canonical brand preview: remove standalone Text/Image capsule shortcuts, show + only without a selection, and show Duplicate/Delete icons when text or an image is selected. Formatting stays in the proximity toolbar. Browser inspection verified no-selection Add submenu, text and image selection actions, and selection coordinates. The historical skeleton and appearance alternatives remain the earlier snapshots; the canonical approved-brand-theme.html and index.html include this amendment. Snapshot hashes are refreshed for the new canonical bytes.
+Amendment Gate 1: npm run check passed; backend 811 passed; client 399 passed with one existing skip. No application runtime files changed. Logs: .agent-logs/v3-selection-tools-{check,backend,client}.log.

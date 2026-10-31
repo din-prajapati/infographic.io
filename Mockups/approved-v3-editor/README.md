@@ -21,7 +21,7 @@ The controls above the product are review controls only. Do not add the appearan
 
 - Top: actual product logo, Projects, editable title with content-sized width, adjacent cloud save-status icon, Undo/Redo, Preview, Save, Export.
 - Rail: Templates, Tools, Text, Uploads, Brand, Property, Agent.
-- Tools: narrow floating vertical capsule; Add opens a vertical Basic (Text, Image) / Shapes (Square, Circle, Triangle, Star) menu.
+- Tools: narrow floating vertical capsule. With no selection, + opens a vertical Basic (Text, Image) / Shapes (Square, Circle, Triangle, Star) menu. Selecting a canvas element replaces + with Duplicate and Delete icons; clearing selection restores +. Text and Image have no separate shortcuts in the capsule. Selection actions live in the capsule; the nearby element toolbar holds formatting controls.
 - Context: element toolbar near the selected element; no permanent format bar above the workspace.
 - Bottom of canvas: selected-element width × height in px and x/y coordinates at left; AI Assistant at right, above zoom controls.
 - Footer: Layers before Canvas settings; element count; zoom minus, percentage dropdown, plus and Fit. Layers is not in the rail or floating mid-canvas.
