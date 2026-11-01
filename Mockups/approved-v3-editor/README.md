@@ -1,6 +1,6 @@
 # Approved V3 editor design
 
-Saved: 2026-10-31. Owner: Dinesh. Status: approved UI skeleton and logo-derived visual direction; production integration pending.
+Saved: 2026-10-31. Owner: Dinesh. Runtime integration: implemented locally on 2026-11-01; verification evidence, remaining features and delivery status are in [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md). Formal review and merge remain pending.
 
 The approval applies to the existing product's editor capabilities and the layout refined in this chat. It does not add Canva features or approve a deployment.
 
@@ -23,7 +23,7 @@ The controls above the product are review controls only. Do not add the appearan
 - Rail: Templates, Tools, Text, Uploads, Brand, Property, Agent.
 - Tools (latest approved revision): narrow floating vertical capsule with Select, Hand, Line, Shapes, Text and Image entries. Undo/Redo remain only in the top bar; + is removed. Shapes uses an overlapping circle-and-square symbol and opens a vertical list of the four current choices: Square/Rectangle, Circle, Triangle and Star. Duplicate/Delete appear below these tools whenever an element is selected and disappear when selection clears. The proximity toolbar holds type-specific formatting. This latest revision supersedes the earlier + submenu arrangement.
 - Selection actions are universal: Text, Image and every supported Shape (Square/Rectangle, Circle, Triangle, Star) use the same Duplicate/Delete strip buttons. Match the old FloatingToolbar's `selectedElementIds.length > 0` rule, including multiple selections; do not gate these actions by element type. Duplicate/Delete operate on the selected IDs, while proximity formatting changes with the selected element type.
-- Line is a user-requested new UI entry. The old editor's ShapeType and tool creation paths do not currently expose a line tool. The preview shows a Straight line menu choice; runtime support needs its own scoped implementation contract. No curve/connector capability is claimed.
+- Line is a user-requested new UI entry. The old editor's ShapeType and tool creation paths do not currently expose a line tool. The preview shows Straight line, Curved line and Elbow line choices in a vertical menu, matching the latest reference. Runtime support for these three line types needs its own scoped implementation contract.
 - Context: element toolbar near the selected element; no permanent format bar above the workspace.
 - Bottom of canvas: selected-element width × height in px and x/y coordinates at left; AI Assistant at right, above zoom controls.
 - Footer: Layers before Canvas settings; element count; zoom minus, percentage dropdown, plus and Fit. Layers is not in the rail or floating mid-canvas.
