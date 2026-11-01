@@ -74,6 +74,9 @@ facts, generate a background without touching the text, and is stopped at Export
 | 10 | [US-EDIT-025](stories/US-EDIT-025/STORY.md) | Property and Contact tabs in the V3 layout | M-EDIT-09 | M | 🔲 |
 | 11 | [US-EDIT-026](stories/US-EDIT-026/STORY.md) | Edit Elements review — confirm links before a poster becomes editable | M-EDIT-10 | L | 🔲 |
 | 12 | [US-EDIT-031](stories/US-EDIT-031/STORY.md) | Opt-in V3 editor vertical slice | M-EDIT-11 | L | 🟡 locally verified |
+| 13 | [US-EDIT-032](stories/US-EDIT-032/STORY.md) | Standalone straight, curved and elbow drawing | M-EDIT-11 | M | Implemented; merge pending |
+| 14 | [US-EDIT-033](stories/US-EDIT-033/STORY.md) | Modern element toolbars and image Edit sidebar | M-EDIT-11 | M | Implemented; merge pending |
+| 15 | [US-EDIT-034](stories/US-EDIT-034/STORY.md) | Rotation handles, borders and local shape shadows | M-EDIT-11 | M | Implemented; merge pending |
 
 ---
 
@@ -98,3 +101,7 @@ US-EDIT-031 / M-EDIT-11 implemented in an isolated branch, with fresh V3 shell a
 ### 2026-11-01 — Approved design integration (US-EDIT-024 / US-EDIT-027)
 
 Reconciled the obsolete shell contract to the approved Navy/Teal layout and implemented its React shell, real existing-capability adapters and guarded autosave on the dependent V3 foundation branch. Type checks, 1,237 unit tests (one existing skip), production build and fresh authenticated browser/API/database save/reload/export smoke pass. Final browser regression evidence and remaining feature details are recorded in `Mockups/approved-v3-editor/IMPLEMENTATION_STATUS.md`. Line drawing and the archived crop workspace remain explicit gaps; US-EDIT-020/021/022/023/025/026 are not completed by shell composition. Independent review, milestone PR and main merge remain pending.
+
+### 2026-11-01 — Modern element editing (US-EDIT-032/033/034)
+
+Implemented and verified locally: standalone lines, old-editor toolbar parity, image Edit sidebar/replacement, rotation handles, border styles and local shape shadows. The approved Navy/Teal skeleton and legacy default route remain. 48 browser cases, 811 backend +465 client unit tests (one existing skip), type checks, build and authenticated API/database save/reload/export smoke pass. Independent code-review findings corrected. [Evidence](../../../../../Mockups/approved-v3-editor/TOOLBAR_VERIFICATION.md). PR/main merge, Crop, attached connectors and unrelated V3 roadmap work remain pending.

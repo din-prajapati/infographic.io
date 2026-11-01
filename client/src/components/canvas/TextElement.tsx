@@ -173,7 +173,7 @@ export function TextElement({ element, isSelected, onSelect }: TextElementProps)
       <div
         className="w-full h-full"
         style={{
-          transform: `rotate(${element.rotation}deg)`,
+          transform: `rotate(var(--element-rotation-preview, ${element.rotation}deg))`,
           ...(isSelected ? {
             outline: `${2 / zoom}px solid #3b82f6`,
             outlineOffset: `${1 / zoom}px`,

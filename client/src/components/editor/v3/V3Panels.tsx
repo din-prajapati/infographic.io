@@ -5,6 +5,7 @@ import { useCanvasStore } from '../../../hooks/useCanvasStore';
 import { canvasTemplatesApi } from '../../../lib/api';
 import type { DesignMetadata } from '../../../lib/storage';
 import { createImageElement, createTextElement } from '../../../lib/canvasUtils';
+import { isValidLineElement } from '../../../lib/lineGeometry';
 import { restoreCanvasData } from '../../../lib/canvasState';
 import { pickCanvasBackground } from '../../../lib/brandPalette';
 import { PropertyDetailsForm } from '../PropertyDetailsForm';
@@ -80,12 +81,13 @@ function hasCanvasLayout(data: unknown): boolean {
   return canvas.elements.every((value: unknown) => {
     if (!value || typeof value !== 'object') return false;
     const element = value as Record<string, unknown>;
-    if (typeof element.id !== 'string' || ids.has(element.id) || !['text', 'image', 'shape'].includes(String(element.type))) return false;
+    if (typeof element.id !== 'string' || ids.has(element.id) || !['text', 'image', 'shape', 'line'].includes(String(element.type))) return false;
     ids.add(element.id);
     if (['x', 'y', 'width', 'height'].some(key => typeof element[key] !== 'number' || !Number.isFinite(element[key]))) return false;
     if (Number(element.width) <= 0 || Number(element.height) <= 0) return false;
     if (element.type === 'text') return typeof element.content === 'string';
     if (element.type === 'image') return typeof element.src === 'string';
+    if (element.type === 'line') return isValidLineElement(element);
     return ['rectangle', 'circle', 'ellipse', 'triangle', 'star', 'speechBubble', 'arrowLeft', 'arrowRight'].includes(String(element.shapeType));
   });
 }

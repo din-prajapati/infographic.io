@@ -4,6 +4,7 @@ import React from 'react';
 import { Rnd } from 'react-rnd';
 import { ImageElement as ImageElementType } from '../../lib/canvasTypes';
 import { useCanvasStore } from '../../hooks/useCanvasStore';
+import { finiteClamp, strokeDash } from '../../lib/elementStyles';
 import { useTransparencyGrid } from '../../lib/transparencyGridState';
 
 interface ImageElementProps {
@@ -42,13 +43,15 @@ export function ImageElement({ element, isSelected, onSelect }: ImageElementProp
         style={{
           zIndex: element.zIndex,
           opacity: element.opacity,
-          backgroundImage: `url(${JSON.stringify(element.src)})`,
-          backgroundSize: 'contain',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
-          filter: filterStyle || 'none',
+          borderRadius: element.cornerRadius,
+          transform: `rotate(var(--element-rotation-preview, ${element.rotation}deg)) scaleX(${element.flipHorizontal ? -1 : 1}) scaleY(${element.flipVertical ? -1 : 1})`,
         }}
-      />
+      >
+        <div style={{position:'absolute',inset:0,borderRadius:element.cornerRadius,backgroundImage:`url(${JSON.stringify(element.src)})`,backgroundSize:'contain',backgroundPosition:'center',backgroundRepeat:'no-repeat',filter:`var(--element-filter-preview, ${filterStyle || 'none'})`}}/>
+        {(element.borderWidth ?? 0)>0 && <svg data-artwork-svg="true" width="100%" height="100%" viewBox={`0 0 ${element.width} ${element.height}`} style={{position:'absolute',inset:0,overflow:'visible'}}>
+          <rect x="0" y="0" width={element.width} height={element.height} rx={Math.min(element.cornerRadius,element.width/2,element.height/2)} fill="none" stroke={element.borderColor ?? '#123e62'} strokeWidth={finiteClamp(element.borderWidth,0,20)} strokeDasharray={strokeDash(element.borderStyle,element.borderWidth ?? 0).join(' ')} strokeLinecap={element.borderStyle==='dotted'?'round':'butt'}/>
+        </svg>}
+      </div>
     );
   }
 
@@ -71,7 +74,7 @@ export function ImageElement({ element, isSelected, onSelect }: ImageElementProp
   `.trim();
 
   // Build transform with rotation and flip
-  const transform = `rotate(${element.rotation}deg) scaleX(${element.flipHorizontal ? -1 : 1}) scaleY(${element.flipVertical ? -1 : 1})`;
+  const transform = `scaleX(${element.flipHorizontal ? -1 : 1}) scaleY(${element.flipVertical ? -1 : 1})`;
 
   // Calculate crop rendering
   const hasCrop = element.crop && (
@@ -147,7 +150,8 @@ export function ImageElement({ element, isSelected, onSelect }: ImageElementProp
       <div
         className="w-full h-full relative"
         style={{
-          overflow: 'hidden',
+          overflow: 'visible',
+          transform: `rotate(var(--element-rotation-preview, ${element.rotation}deg))`,
           borderRadius: `${element.cornerRadius}px`,
           ...(isSelected ? {
             outline: `${2 / zoom}px solid #3b82f6`,
@@ -155,6 +159,7 @@ export function ImageElement({ element, isSelected, onSelect }: ImageElementProp
           } : {}),
         }}
       >
+        <div style={{position:'absolute',inset:0,overflow:'hidden',borderRadius:element.cornerRadius,transform}}>
         {/* Checkerboard background (when transparency grid is enabled) */}
         {showTransparencyGrid && (
           <div
@@ -180,7 +185,7 @@ export function ImageElement({ element, isSelected, onSelect }: ImageElementProp
             alt={element.name}
             style={{
               ...getCroppedImageStyle(),
-              filter: filterStyle || 'none',
+              filter: `var(--element-filter-preview, ${filterStyle || 'none'})`,
               objectFit: 'cover',
               zIndex: 1,
             }}
@@ -192,10 +197,8 @@ export function ImageElement({ element, isSelected, onSelect }: ImageElementProp
             alt={element.name}
             className="absolute inset-0 w-full h-full pointer-events-none"
             style={{
-              filter: filterStyle || 'none',
-              ...(element.rotation !== 0 || element.flipHorizontal || element.flipVertical
-                ? { transform }
-                : {}),
+              filter: `var(--element-filter-preview, ${filterStyle || 'none'})`,
+
               objectFit: element.objectFit ?? 'contain',
               objectPosition: 'center',
             }}
@@ -215,6 +218,13 @@ export function ImageElement({ element, isSelected, onSelect }: ImageElementProp
             }}
           />
         )}
+        </div>
+        {(element.borderWidth ?? 0) > 0 && <svg data-artwork-svg="true" aria-hidden="true" width="100%" height="100%" viewBox={`0 0 ${element.width} ${element.height}`}
+          style={{position:'absolute',inset:0,pointerEvents:'none',overflow:'visible'}}>
+          <rect x="0" y="0" width={element.width} height={element.height} rx={Math.min(element.cornerRadius,element.width/2,element.height/2)} fill="none"
+            stroke={element.borderColor ?? '#123e62'} strokeWidth={finiteClamp(element.borderWidth,0,20)}
+            strokeDasharray={strokeDash(element.borderStyle,element.borderWidth ?? 0).join(' ')} strokeLinecap={element.borderStyle==='dotted'?'round':'butt'}/>
+        </svg>}
       </div>
     </Rnd>
   );

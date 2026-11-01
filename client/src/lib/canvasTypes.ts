@@ -2,7 +2,12 @@
 
 import type { AiComposition } from './api';
 
-export type ElementType = 'text' | 'shape' | 'image';
+export type ElementType = 'text' | 'shape' | 'image' | 'line';
+export type StrokeStyle = 'solid' | 'dashed' | 'dotted';
+export type LineType = 'straight' | 'curved' | 'elbow';
+export type LineDecoration = 'none' | 'arrow' | 'circle' | 'bar';
+export interface Point { x: number; y: number }
+export interface ElementShadow { color: string; opacity: number; blur: number; offsetX: number; offsetY: number }
 export type ShapeType = 'rectangle' | 'circle' | 'ellipse' | 'triangle' | 'star' | 'speechBubble' | 'arrowLeft' | 'arrowRight';
 export type TextAlign = 'left' | 'center' | 'right';
 export type TextTransform = 'none' | 'uppercase' | 'lowercase' | 'capitalize';
@@ -68,6 +73,8 @@ export interface ShapeElement extends BaseElement {
   fill: string;
   stroke: string;
   strokeWidth: number;
+  strokeStyle?: StrokeStyle;
+  shadow?: ElementShadow;
   cornerRadius: number;
   /** Optional text rendered inside the shape */
   textContent?: string;
@@ -83,6 +90,9 @@ export interface ShapeElement extends BaseElement {
 export interface ImageElement extends BaseElement {
   type: 'image';
   src: string;
+  borderColor?: string;
+  borderWidth?: number;
+  borderStyle?: StrokeStyle;
   /** How the image fills its element box. */
   objectFit?: 'contain' | 'cover' | 'fill';
   /** AI-generated full-bleed import — uses background-image for reliable fit */
@@ -128,7 +138,22 @@ export interface ImageElement extends BaseElement {
   };
 }
 
-export type CanvasElement = TextElement | ShapeElement | ImageElement;
+export interface LineElement extends BaseElement {
+  type: 'line';
+  lineType: LineType;
+  start: Point;
+  end: Point;
+  control: Point;
+  elbowAxis: 'horizontal' | 'vertical';
+  elbowOffset: number;
+  stroke: string;
+  strokeWidth: number;
+  strokeStyle: StrokeStyle;
+  startDecoration: LineDecoration;
+  endDecoration: LineDecoration;
+}
+
+export type CanvasElement = TextElement | ShapeElement | ImageElement | LineElement;
 
 export interface CanvasState {
   elements: CanvasElement[];
@@ -137,7 +162,7 @@ export interface CanvasState {
   canvasHeight: number;
   zoom: number;
   backgroundColor: string;
-  activeTool: 'select' | 'text' | 'image' | 'rectangle' | 'circle' | 'hand' | 'delete' | 'pen';
+  activeTool: 'select' | 'text' | 'image' | 'rectangle' | 'circle' | 'hand' | 'delete' | 'pen' | 'line-straight' | 'line-curved' | 'line-elbow';
   clipboard: CanvasElement[];
   selectedThemeColors: string[] | null; // Colors from selected theme for placeholder
   canvasPanX: number;

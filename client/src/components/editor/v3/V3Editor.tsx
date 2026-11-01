@@ -15,6 +15,7 @@ import { V3Canvas } from './V3Canvas';
 import { V3TextInspector } from './V3TextInspector';
 import { V3Tools } from './V3Tools';
 import { V3Panels, type V3Panel } from './V3Panels';
+import { V3ImageEditor } from './V3ImageEditor';
 import './v3-editor.css';
 
 const rail=[['Templates',LayoutTemplate],['Tools',MousePointer2],['Text',Type],['Uploads',Upload],['Brand',Palette],['Property',House],['Agent',ContactRound]] as const;
@@ -24,6 +25,9 @@ export default function V3Editor({designId}:{designId?:string}) {
   const {undo,redo,history,addElement,selectElement}=useCanvasStore();
   const {resolvedTheme}=useTheme();
   const [panel,setPanel]=useState<V3Panel|'Tools'|null>('Templates');
+  const [imageEditing,setImageEditing]=useState(false);
+  const selectedImage=useCanvasStore(state=>state.selectedElementIds.length===1?state.elements.find(element=>element.id===state.selectedElementIds[0]&&element.type==='image'):undefined);
+  useEffect(()=>{if(!selectedImage)setImageEditing(false);},[selectedImage]);
   const [cloud,setCloud]=useState(false);
   const [assistant,setAssistant]=useState(false);
   const [assistantError,setAssistantError]=useState<string|null>(null);
@@ -80,12 +84,13 @@ export default function V3Editor({designId}:{designId?:string}) {
       {exportStatus==='exported'&&<p role="status" className="v3-alert">PNG exported</p>}
     </div>
     <div className="v3-body">
-      <nav aria-label="Editor sections" className="v3-rail" hidden={isPreviewMode}>{rail.map(([name,Icon])=><button key={name} disabled={!ready} aria-pressed={panel===name} onClick={()=>setPanel(panel===name?null:name)}><Icon/>{name}</button>)}</nav>
-      <aside className="v3-panel" hidden={!ready||isPreviewMode||panel===null||panel==='Tools'} aria-label={panel&&panel!=='Tools'?`${panel} panel`:undefined}>
-        {ready&&panel&&panel!=='Tools'&&<V3Panels panel={panel} userId={user?String(user.id):''} onClose={()=>setPanel(null)}/>}
-        <div hidden={panel!=='Text'}>{ready&&<V3TextInspector suspended={isPreviewMode} isSuspended={()=>previewIntent.current}/>}</div>
+      <nav aria-label="Editor sections" className="v3-rail" hidden={isPreviewMode}>{rail.map(([name,Icon])=><button key={name} disabled={!ready} aria-pressed={!imageEditing&&panel===name} onClick={()=>{setImageEditing(false);setPanel(panel===name?null:name);}}><Icon/>{name}</button>)}</nav>
+      <aside className="v3-panel" hidden={!ready||isPreviewMode||(!imageEditing&&(panel===null||panel==='Tools'))} aria-label={imageEditing?'Image editing panel':panel&&panel!=='Tools'?`${panel} panel`:undefined}>
+        <div hidden={imageEditing}>{ready&&panel&&panel!=='Tools'&&<V3Panels panel={panel} userId={user?String(user.id):''} onClose={()=>setPanel(null)}/>}</div>
+        <div hidden={imageEditing||panel!=='Text'}>{ready&&<V3TextInspector suspended={isPreviewMode} isSuspended={()=>previewIntent.current}/>}</div>
+        {ready&&imageEditing&&selectedImage?.type==='image'&&<V3ImageEditor key={selectedImage.id} element={selectedImage} onBack={()=>setImageEditing(false)}/>}
       </aside>
-      <div className="v3-stage">{ready?<V3Canvas isPreviewMode={isPreviewMode} onAssistant={()=>setAssistant(!assistant)}/>:<main aria-label="Opening workspace" className="v3-opening"><p>{session.error?'Retry opening to load your design.':'Loading your workspace…'}</p></main>}
+      <div className="v3-stage">{ready?<V3Canvas isPreviewMode={isPreviewMode} onAssistant={()=>setAssistant(!assistant)} onEditImage={()=>setImageEditing(true)}/>:<main aria-label="Opening workspace" className="v3-opening"><p>{session.error?'Retry opening to load your design.':'Loading your workspace…'}</p></main>}
         {!isPreviewMode&&ready&&panel==='Tools'&&<V3Tools onClose={()=>setPanel(null)} onText={addText} onImage={()=>setPanel('Uploads')}/>}
         <div hidden={isPreviewMode||!ready||!assistant} className="v3-ai-panel">{assistant&&ready&&<><button aria-label="Close Assistant" className="v3-icon" onClick={()=>setAssistant(false)}><X/></button>{assistantError&&<p role="alert">{assistantError}</p>}<AIChatBox isExpanded={assistant&&!isPreviewMode} onClose={()=>setAssistant(false)} onTemplateLoad={template=>void placeTemplate(template)}/></>}</div>
       </div>

@@ -4,7 +4,9 @@
  */
 
 import { useCanvasStore } from '../hooks/useCanvasStore';
-import { CanvasElement, TextElement, ShapeElement, ImageElement } from './canvasTypes';
+import { CanvasElement, TextElement, ShapeElement, ImageElement, LineElement } from './canvasTypes';
+import { colorWithOpacity, finiteClamp, normalizeShadow, strokeDash } from './elementStyles';
+import { lineCommands, lineDecorations } from './lineGeometry';
 import {
   getTrianglePath,
   getStarPath,
@@ -71,16 +73,14 @@ export async function exportCanvasToImage(
         const centerY = element.y + element.height / 2;
         ctx.translate(centerX, centerY);
         
-        // Apply flip transformations first (to match CSS transform order)
+        // Match the DOM's outer rotation and inner flip: R × S.
+        if (element.rotation !== 0) {
+          ctx.rotate((element.rotation * Math.PI) / 180);
+        }
         ctx.scale(
           imageElement.flipHorizontal ? -1 : 1,
           imageElement.flipVertical ? -1 : 1
         );
-        
-        // Then apply rotation
-        if (element.rotation !== 0) {
-          ctx.rotate((element.rotation * Math.PI) / 180);
-        }
         
         ctx.translate(-centerX, -centerY);
       } else if (element.rotation !== 0) {
@@ -99,6 +99,8 @@ export async function exportCanvasToImage(
         renderShapeElement(ctx, element as ShapeElement);
       } else if (element.type === 'image') {
         await renderImageElement(ctx, element as ImageElement);
+      } else if (element.type === 'line') {
+        renderLineElement(ctx, element);
       }
       
       ctx.restore();
@@ -344,10 +346,40 @@ function drawSvgPath(
  */
 function renderShapeElement(ctx: CanvasRenderingContext2D, element: ShapeElement): void {
   ctx.save();
-  
+  // Composite shadow into a local layer before artwork rotation/retina scaling.
+  // Canvas shadow offsets are device-space, unlike transformed CSS drop-shadow.
+  if (element.shadow) {
+    const shadow = normalizeShadow(element.shadow);
+    const pad = Math.ceil(shadow.blur * 2 + Math.max(Math.abs(shadow.offsetX), Math.abs(shadow.offsetY)) + finiteClamp(element.strokeWidth, 0, 20) + 2);
+    const matrix = ctx.getTransform();
+    const resolution = Math.max(1, Math.hypot(matrix.a, matrix.b));
+    const width = element.width + pad * 2, height = element.height + pad * 2;
+    const layer = document.createElement('canvas');
+    layer.width = Math.ceil(width * resolution);
+    layer.height = Math.ceil(height * resolution);
+    const painter = layer.getContext('2d');
+    const composite = document.createElement('canvas');
+    composite.width = layer.width; composite.height = layer.height;
+    const shadowPainter = composite.getContext('2d');
+    if (painter && shadowPainter) {
+      painter.scale(resolution, resolution);
+      renderShapeElement(painter, { ...element, x: pad, y: pad, shadow: undefined });
+      shadowPainter.shadowColor = colorWithOpacity(shadow.color, shadow.opacity);
+      shadowPainter.shadowBlur = shadow.blur * resolution;
+      shadowPainter.shadowOffsetX = shadow.offsetX * resolution;
+      shadowPainter.shadowOffsetY = shadow.offsetY * resolution;
+      shadowPainter.drawImage(layer, 0, 0);
+      ctx.drawImage(composite, element.x - pad, element.y - pad, width, height);
+      ctx.restore();
+      return;
+    }
+  }
+  ctx.setLineDash(strokeDash(element.strokeStyle, element.strokeWidth));
+  ctx.lineCap = element.strokeStyle === 'dotted' ? 'round' : 'butt';
+
   ctx.fillStyle = element.fill;
   ctx.strokeStyle = element.stroke;
-  ctx.lineWidth = element.strokeWidth;
+  ctx.lineWidth = finiteClamp(element.strokeWidth, 0, 20);
   
   const x = element.x;
   const y = element.y;
@@ -415,6 +447,7 @@ function renderShapeElement(ctx: CanvasRenderingContext2D, element: ShapeElement
   }
   
   // Render text content if present
+  ctx.shadowColor = 'transparent';
   if (element.textContent !== undefined && element.textContent.trim() !== '') {
     const textStyle = element.textStyle || {
       fontFamily: 'Inter',
@@ -437,6 +470,38 @@ function renderShapeElement(ctx: CanvasRenderingContext2D, element: ShapeElement
     ctx.restore();
   }
   
+  ctx.restore();
+}
+
+/** Shared line geometry is used by both the interactive SVG and native export. */
+function renderLineElement(ctx: CanvasRenderingContext2D, element: LineElement): void {
+  ctx.save();
+  ctx.translate(element.x, element.y);
+  ctx.strokeStyle = element.stroke;
+  ctx.fillStyle = element.stroke;
+  ctx.lineWidth = finiteClamp(element.strokeWidth, 1, 20, 2);
+  ctx.lineCap = element.strokeStyle === 'dotted' ? 'round' : 'butt';
+  ctx.lineJoin = 'round';
+  ctx.setLineDash(strokeDash(element.strokeStyle, ctx.lineWidth));
+  ctx.beginPath();
+  for (const command of lineCommands(element)) {
+    if (command.type === 'quadratic') ctx.quadraticCurveTo(command.control.x, command.control.y, command.point.x, command.point.y);
+    else if (command.type === 'move') ctx.moveTo(command.point.x, command.point.y);
+    else ctx.lineTo(command.point.x, command.point.y);
+  }
+  ctx.stroke();
+  ctx.setLineDash([]);
+  for (const decoration of lineDecorations(element)) {
+    ctx.save();
+    ctx.translate(decoration.tip.x, decoration.tip.y);
+    ctx.rotate(decoration.angle);
+    const size = decoration.size;
+    ctx.beginPath();
+    if (decoration.kind === 'circle') { ctx.arc(0, 0, size / 2, 0, Math.PI * 2); ctx.fill(); }
+    else if (decoration.kind === 'bar') { ctx.moveTo(0, -size / 2); ctx.lineTo(0, size / 2); ctx.stroke(); }
+    else { ctx.moveTo(0, 0); ctx.lineTo(-size, size / 2); ctx.lineTo(-size, -size / 2); ctx.closePath(); ctx.fill(); }
+    ctx.restore();
+  }
   ctx.restore();
 }
 
@@ -647,12 +712,24 @@ async function renderImageElement(ctx: CanvasRenderingContext2D, element: ImageE
         ctx.save();
         ctx.globalCompositeOperation = 'multiply';
         ctx.fillStyle = element.colorOverlay.color;
-        ctx.globalAlpha = element.colorOverlay.opacity;
+        ctx.globalAlpha *= element.colorOverlay.opacity;
         ctx.fillRect(drawX, drawY, drawWidth, drawHeight);
         ctx.restore();
       }
 
       ctx.restore();
+      const borderWidth = finiteClamp(element.borderWidth, 0, 20);
+      if (borderWidth > 0) {
+        ctx.save();
+        ctx.strokeStyle = element.borderColor ?? '#123e62';
+        ctx.lineWidth = borderWidth;
+        ctx.setLineDash(strokeDash(element.borderStyle, borderWidth));
+        ctx.lineCap = element.borderStyle === 'dotted' ? 'round' : 'butt';
+        ctx.beginPath();
+        ctx.roundRect(element.x, element.y, element.width, element.height, Math.min(element.cornerRadius, element.width / 2, element.height / 2));
+        ctx.stroke();
+        ctx.restore();
+      }
       resolve();
     };
     

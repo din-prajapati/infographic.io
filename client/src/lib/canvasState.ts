@@ -4,6 +4,7 @@
  */
 
 import { exportCanvasToImage } from './canvasExport';
+import { isValidLineElement } from './lineGeometry';
 import { useCanvasStore } from '../hooks/useCanvasStore';
 import type { CanvasElement, ImageElement, TextElement, TextAlign } from './canvasTypes';
 import type { AiComposition, ComposedDesign, ComposedTextElementGeometry } from './api';
@@ -187,7 +188,8 @@ function generatePlaceholderThumbnail(): string {
  */
 export function restoreCanvasData(canvasData: any): boolean {
   try {
-    if (!canvasData || !canvasData.elements) {
+    if (!canvasData || !Array.isArray(canvasData.elements) || canvasData.elements.some((element: unknown) =>
+      !!element && typeof element === 'object' && (element as {type?:unknown}).type === 'line' && !isValidLineElement(element))) {
       console.error('Invalid canvas data');
       return false;
     }

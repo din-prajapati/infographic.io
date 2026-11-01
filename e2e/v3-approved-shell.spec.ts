@@ -31,8 +31,8 @@ async function setup(page: Page, theme = 'light', withTemplate = false) {
   return state;
 }
 
-// Contract: approved seven rail entries, direct creation tools and three honest
-// unavailable line choices at their named toolbars after opening Tools/Line.
+// Contract: approved seven rail entries, direct creation tools and three available
+// line drawing choices at their named toolbars after opening Tools/Line.
 test('approved rail, direct tools and three line choices', async ({ page }) => {
   await setup(page);
   for (const name of ['Templates', 'Tools', 'Text', 'Uploads', 'Brand', 'Property', 'Agent']) await expect(page.getByRole('button', { name, exact: true })).toBeVisible();
@@ -40,7 +40,7 @@ test('approved rail, direct tools and three line choices', async ({ page }) => {
   const strip = page.getByRole('toolbar', { name: 'Canvas tools', exact: true });
   for (const name of ['Select', 'Hand', 'Line', 'Shapes', 'Add text', 'Add image']) await expect(strip.getByRole('button', { name, exact: true })).toBeVisible();
   await strip.getByRole('button', { name: 'Line', exact: true }).click();
-  for (const name of ['Straight line', 'Curved line', 'Elbow line']) await expect(page.getByRole('button', { name, exact: true })).toBeDisabled();
+  for (const name of ['Straight line', 'Curved line', 'Elbow line']) await expect(page.getByRole('button', { name, exact: true })).toBeEnabled();
   await expect(page.getByRole('button', { name: 'Undo', exact: true })).toHaveCount(1);
 });
 

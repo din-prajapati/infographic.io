@@ -56,15 +56,16 @@ const click = (name: string) => act(() => {
   if (!button) throw new Error(`Missing ${name}`); button.click();
 });
 describe('approved tools contract', () => {
-  // AC4: the Line menu names exactly three unavailable choices and creates zero elements.
-  it('explains pending line support without inserting substitutes', () => {
+  // US-EDIT-032 AC1: the Line menu arms real drawing tools without inserting a substitute on choice.
+  it('offers three enabled line drawing choices', () => {
     act(() => root.render(<V3Tools onText={() => {}} onImage={() => {}} onClose={() => {}} />));
     click('Line');
     for (const name of ['Straight line', 'Curved line', 'Elbow line']) {
       const button = [...node.querySelectorAll('button')].find(item => item.textContent?.includes(name));
-      expect(button?.disabled).toBe(true);
+      expect(button?.disabled).toBe(false);
     }
-    expect(node.textContent).toContain('Drawing support is pending');
+    click('Curved line');
+    expect(useCanvasStore.getState().activeTool).toBe('line-curved');
     expect(useCanvasStore.getState().elements).toHaveLength(0);
   });
   // AC5: all three element types in a multi-selection duplicate; deletion skips locked members.

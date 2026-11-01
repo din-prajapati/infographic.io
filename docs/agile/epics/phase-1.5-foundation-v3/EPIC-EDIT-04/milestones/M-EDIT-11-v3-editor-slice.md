@@ -2,7 +2,7 @@
 
 > **Epic:** [EPIC-EDIT-04](../EPIC.md)
 > **Feature:** N/A — validation slice
-> **Status:** 🟡 Implemented and locally verified — delivery pending
+> **Status:** 🟡 In Progress — original slice locally verified; approved toolbar/drawing extension in implementation
 > **Target date:** Not committed; validate effort after first working slice.
 > **Branch:** `feat/edit/m-11-v3-editor-slice`
 
@@ -12,11 +12,16 @@
 
 An authenticated agent can open an existing saved design, edit text, undo/redo, save to the same server record, reload and export PNG in a fresh V3 shell while the current editor remains the default.
 
+Approved extension (2026-11-01): draw and edit standalone straight/curved/elbow lines, restore old text/shape/image toolbar capabilities in modern contextual controls, and add image Edit sidebar, rotation handles, borders and local shadows without changing the approved shell.
+
 ## Stories in this Milestone
 
 | Order | Story | Title | Size | Blocked By | Status | PR |
 |:-----:|-------|-------|:----:|------------|:------:|:--:|
 | 1 | [US-EDIT-031](../stories/US-EDIT-031/STORY.md) | V3 shell: open → edit → save → reload → export | L | harden lock + independent tests | 🟡 locally verified | — |
+| 2 | [US-EDIT-032](../stories/US-EDIT-032/STORY.md) | Standalone straight, curved and elbow drawing | M | US-EDIT-031 | Implemented; merge pending | — |
+| 3 | [US-EDIT-033](../stories/US-EDIT-033/STORY.md) | Modern element toolbars and image Edit sidebar | M | shared 032/034 interfaces | Implemented; merge pending | — |
+| 4 | [US-EDIT-034](../stories/US-EDIT-034/STORY.md) | Rotation handles, borders and local shape shadows | M | shared 032/034 interfaces | Implemented; merge pending | — |
 
 ## Acceptance (Milestone Done When…)
 
@@ -27,6 +32,8 @@ An authenticated agent can open an existing saved design, edit text, undo/redo, 
 - [ ] All stories above have status ✅ Done; applicable gates and independent review pass.
 
 ## Notes / Blockers
+
+- 2026-11-01 approved extension: [toolbar/drawing plan](../../../../../../Mockups/approved-v3-editor/TOOLBAR_DRAWING_PLAN.md), implemented through hardened US-EDIT-032–034. The original slice evidence does not verify these new capabilities. Milestone remains in progress until all added stories meet acceptance and delivery gates.
 
 - Approved first experiment on 2026-10-31. Does not supersede or close US-EDIT-024/028/029/030 or promise full V3 parity; reconcile their remaining scope after reviewing this slice.
 - No dependency on unfinished Property, Brand, template or Assistant stories. No production default switch or deployment is part of the slice.
@@ -41,3 +48,7 @@ An authenticated agent can open an existing saved design, edit text, undo/redo, 
 [US-EDIT-031 verification](../stories/US-EDIT-031/VERIFICATION.md): TypeScript, 1,210 unit tests, 25 browser tests, four painted-artboard/contrast checks, production build and authenticated API/browser/database smoke passed. One existing client skip retained. Opus approved code/security; Gemini whole-milestone verification and human-approved delivery remain pending. The existing editor is still the default.
 
 The later Preview amendment raised the scoped browser suite to 27 passing tests. Its final independent re-review remains pending after reviewer usage limits; see the story's current VERIFICATION.md. Design approval on 2026-10-31 accepts the saved presentation, not a runtime review/merge waiver.
+
+### 2026-11-01 — Modern element editing (US-EDIT-032/033/034)
+
+Implemented and verified locally: standalone lines, old-editor toolbar parity, image Edit sidebar/replacement, rotation handles, border styles and local shape shadows. The approved Navy/Teal skeleton and legacy default route remain. 48 browser cases, 811 backend +465 client unit tests (one existing skip), type checks, build and authenticated API/database save/reload/export smoke pass. Independent code-review findings corrected. [Evidence](../../../../../../Mockups/approved-v3-editor/TOOLBAR_VERIFICATION.md). PR/main merge, Crop, attached connectors and unrelated V3 roadmap work remain pending.

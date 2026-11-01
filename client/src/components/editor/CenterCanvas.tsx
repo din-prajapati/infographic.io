@@ -8,6 +8,7 @@ import { useCanvasStore } from "../../hooks/useCanvasStore";
 import { TextElement } from "../canvas/TextElement";
 import { ShapeElement } from "../canvas/ShapeElement";
 import { ImageElement } from "../canvas/ImageElement";
+import { LineElement } from "../canvas/LineElement";
 import { sortByZIndex } from "../../lib/canvasUtils";
 import { DimensionsDisplay } from "./DimensionsDisplay";
 import { ContextualToolbar } from "./ContextualToolbar";
@@ -372,6 +373,8 @@ export function CenterCanvas({ isPreviewMode = false }: CenterCanvasProps) {
                   isSelected,
                   onSelect: handleSelect,
                 });
+              } else if (element.type === 'line') {
+                return React.createElement(LineElement, {key:element.id,element,isSelected:!isPreviewMode&&isSelected,onSelect:handleSelect,readOnly:isPreviewMode});
               } else if (element.type === 'image') {
                 return React.createElement(ImageElement, {
                   key: element.id,

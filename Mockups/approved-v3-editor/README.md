@@ -10,6 +10,7 @@ The approval applies to the existing product's editor capabilities and the layou
 - [Approved skeleton source](approved-skeleton.html) and [standalone skeleton](skeleton-preview.html) — the agreed layout before appearance alternatives.
 - [Approved brand theme source](approved-brand-theme.html) — editable inline source of the latest preview.
 - [Earlier Warm Gold / Cool Slate variations](appearance-preview.html) and [their source](appearance-variations.html) — comparison history.
+- [Approved toolbar/drawing extension](TOOLBAR_DRAWING_PLAN.md) and [runtime verification](TOOLBAR_VERIFICATION.md) — latest implemented element controls, sidebar and line drawing.
 - [Integration plan](INTEGRATION_PLAN.md) — how the design connects to the working V3 slice.
 - [Snapshot manifest](SNAPSHOT.json) — source snapshot hashes and baseline Git commit.
 

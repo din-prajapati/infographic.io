@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { ChevronDown, Layers, Minus, Plus, Scan, Sparkles, FlipHorizontal, FlipVertical, Bold, Italic, Underline } from 'lucide-react';
+import { ChevronDown, Layers, Minus, Plus, Scan, Sparkles } from 'lucide-react';
 import { useCanvasStore } from '../../../hooks/useCanvasStore';
 import { fitCanvasZoomToViewport } from '../../../lib/canvasState';
 import { useTheme } from '../../../lib/theme-provider';
@@ -7,8 +7,13 @@ import { TextElement } from '../../canvas/TextElement';
 import { ShapeElement } from '../../canvas/ShapeElement';
 import { ImageElement } from '../../canvas/ImageElement';
 import { LayersTab } from '../sidebar/LayersTab';
+import { LineElement } from '../../canvas/LineElement';
+import { RotationHandle } from '../../canvas/RotationHandle';
+import { V3ElementToolbar } from './V3ElementToolbar';
+import { createLineElement, linePath, snapLineEnd, type LinePoint } from '../../../lib/lineGeometry';
+import type { LineElement as LineElementType, LineType } from '../../../lib/canvasTypes';
 
-export function V3Canvas({isPreviewMode=false,onAssistant}: {isPreviewMode?:boolean;onPreview?:()=>void;onAssistant?:()=>void}) {
+export function V3Canvas({isPreviewMode=false,onAssistant,onEditImage}: {isPreviewMode?:boolean;onPreview?:()=>void;onAssistant?:()=>void;onEditImage?:()=>void}) {
   const store=useCanvasStore();
   const {elements,selectedElementIds,selectElement,clearSelection,canvasWidth,canvasHeight,backgroundColor,zoom,setZoom}=store;
   const {resolvedTheme,setTheme}=useTheme();
@@ -16,6 +21,16 @@ export function V3Canvas({isPreviewMode=false,onAssistant}: {isPreviewMode?:bool
   const [settings,setSettings]=useState({width:canvasWidth,height:canvasHeight});
   useEffect(()=>{const close=(event:KeyboardEvent)=>{if(event.key==='Escape')setPopover(null);};window.addEventListener('keydown',close);return()=>window.removeEventListener('keydown',close);},[]);
   const pan=useRef<{x:number;y:number;left:number;top:number}|null>(null);
+  const artboard=useRef<HTMLDivElement>(null);
+  const drawing=useRef<{start:LinePoint;clientX:number;clientY:number;type:LineType}|null>(null);
+  const [drawPreview,setDrawPreview]=useState<LineElementType|null>(null);
+  const suppressClick=useRef(false);
+  const drawType:LineType|null=store.activeTool==='line-straight'?'straight':store.activeTool==='line-curved'?'curved':store.activeTool==='line-elbow'?'elbow':null;
+  const cancelDrawing=()=>{drawing.current=null;setDrawPreview(null);};
+  useEffect(()=>{const cancel=(event:KeyboardEvent)=>{if(event.key==='Escape'&&drawing.current){event.preventDefault();cancelDrawing();useCanvasStore.getState().setActiveTool('select');}};window.addEventListener('keydown',cancel);return()=>window.removeEventListener('keydown',cancel);},[]);
+  useEffect(()=>{if(isPreviewMode||!drawType)cancelDrawing();},[isPreviewMode,drawType]);
+  const canvasPoint=(event:React.PointerEvent):LinePoint=>{const bounds=artboard.current?.getBoundingClientRect();return {x:Math.max(0,Math.min(canvasWidth,(event.clientX-(bounds?.left??0))/zoom)),y:Math.max(0,Math.min(canvasHeight,(event.clientY-(bounds?.top??0))/zoom))};};
+  const drawingLine=(event:React.PointerEvent)=>{const gesture=drawing.current;if(!gesture)return null;let end=canvasPoint(event);if(event.shiftKey&&gesture.type==='straight')end=snapLineEnd(gesture.start,end);return createLineElement(gesture.type,gesture.start,end);};
   const selected=selectedElementIds.length===1?elements.find(el=>el.id===selectedElementIds[0]):undefined;
   useEffect(()=>{
     fitCanvasZoomToViewport();
@@ -24,35 +39,33 @@ export function V3Canvas({isPreviewMode=false,onAssistant}: {isPreviewMode?:bool
     if(viewport)observer.observe(viewport);return()=>observer.disconnect();
   },[canvasWidth,canvasHeight,isPreviewMode]);
   const toggle=(name:typeof popover)=>{setPopover(popover===name?null:name);if(name==='settings')setSettings({width:canvasWidth,height:canvasHeight});};
-  const update=(change:Parameters<typeof store.updateElement>[1])=>{if(selected&&!selected.locked)store.updateElement(selected.id,change);};
   return <main aria-label={isPreviewMode?'Design preview':'Canvas workspace'} className="v3-workspace">
     <div data-canvas-viewport className={`v3-viewport ${isPreviewMode?'v3-preview':''}`} style={{cursor:store.activeTool==='hand'?'grab':undefined}}
-      onClick={()=>{if(!isPreviewMode&&store.activeTool!=='hand')clearSelection();}}
+      onClick={()=>{if(suppressClick.current){suppressClick.current=false;return;}if(!isPreviewMode&&store.activeTool!=='hand'&&!drawType)clearSelection();}}
       onPointerDown={event=>{if(!isPreviewMode&&store.activeTool==='hand'){event.preventDefault();event.currentTarget.setPointerCapture(event.pointerId);pan.current={x:event.clientX,y:event.clientY,left:event.currentTarget.scrollLeft,top:event.currentTarget.scrollTop};}}}
       onPointerMove={event=>{if(pan.current){event.currentTarget.scrollLeft=pan.current.left-event.clientX+pan.current.x;event.currentTarget.scrollTop=pan.current.top-event.clientY+pan.current.y;}}}
       onPointerUp={()=>{pan.current=null;}} onPointerCancel={()=>{pan.current=null;}}>
       <div className="v3-canvas-center"><div className="v3-artboard-wrap" style={{width:canvasWidth*zoom,height:canvasHeight*zoom}}>
         {!isPreviewMode&&<div className="v3-canvas-caption"><span>Design canvas</span><span>{canvasWidth} × {canvasHeight}</span></div>}
-        <div data-canvas-container data-canvas-content="true" data-testid="design-canvas" data-preview={isPreviewMode} role={isPreviewMode?'img':'application'} aria-label="Design canvas"
+        <div ref={artboard} data-canvas-container data-canvas-content="true" data-testid="design-canvas" data-preview={isPreviewMode} role={isPreviewMode?'img':'application'} aria-label="Design canvas"
           className="v3-artboard" style={{width:canvasWidth,height:canvasHeight,backgroundColor,transform:`scale(${zoom})`,pointerEvents:isPreviewMode||store.activeTool==='hand'?'none':undefined}}>
           {[...elements].sort((a,b)=>a.zIndex-b.zIndex).map(element=>{
             const props={isSelected:!isPreviewMode&&selectedElementIds.includes(element.id),onSelect:(event:React.MouseEvent)=>{event.stopPropagation();selectElement(element.id,event.shiftKey);}};
             if(element.type==='text')return <TextElement key={element.id} element={element} {...props}/>;
             if(element.type==='shape')return <ShapeElement key={element.id} element={element} {...props}/>;
+            if(element.type==='line')return <LineElement key={element.id} element={element} {...props} readOnly={isPreviewMode}/>;
             return <ImageElement key={element.id} element={element} {...props}/>;
           })}
+          {!isPreviewMode&&drawType&&<div aria-label="Line drawing surface" role="application" style={{position:'absolute',inset:0,zIndex:100000,cursor:'crosshair',touchAction:'none'}}
+            onClick={event=>event.stopPropagation()}
+            onPointerDown={event=>{if(event.button!==0)return;event.preventDefault();event.stopPropagation();event.currentTarget.setPointerCapture(event.pointerId);drawing.current={start:canvasPoint(event),clientX:event.clientX,clientY:event.clientY,type:drawType};setDrawPreview(drawingLine(event));}}
+            onPointerMove={event=>{if(drawing.current){event.stopPropagation();setDrawPreview(drawingLine(event));}}}
+            onPointerUp={event=>{const gesture=drawing.current;if(!gesture)return;event.preventDefault();event.stopPropagation();const line=drawingLine(event);if(line&&Math.hypot(line.end.x-line.start.x,line.end.y-line.start.y)*zoom>=4){store.addElement(line);store.selectElement(line.id);suppressClick.current=true;}cancelDrawing();store.setActiveTool('select');}}
+            onPointerCancel={()=>{cancelDrawing();store.setActiveTool('select');}} onLostPointerCapture={()=>{if(drawing.current){cancelDrawing();store.setActiveTool('select');}}}>
+            {drawPreview&&<svg data-artwork-svg="true" width={canvasWidth} height={canvasHeight} style={{position:'absolute',inset:0,width:canvasWidth,height:canvasHeight,pointerEvents:'none'}}><path transform={`translate(${drawPreview.x} ${drawPreview.y})`} d={linePath(drawPreview)} style={{fill:'none',stroke:drawPreview.stroke,strokeWidth:drawPreview.strokeWidth,strokeLinecap:'butt',strokeLinejoin:'round'}}/></svg>}
+          </div>}
         </div>
-        {!isPreviewMode&&selected&&<div role="toolbar" aria-label={`${selected.type} formatting`} className="v3-proximity" style={{top:Math.max(-52,selected.y*zoom-52),left:Math.max(0,Math.min(selected.x*zoom,canvasWidth*zoom-280))}} onClick={event=>event.stopPropagation()}>
-          <span>{selected.type}</span><fieldset disabled={selected.locked}>
-          {selected.type==='text'&&<><select aria-label="Font family" value={selected.fontFamily} onChange={event=>update({fontFamily:event.target.value})}>{[...new Set([selected.fontFamily,'Inter','Arial','Georgia','Times New Roman'])].map(font=><option key={font}>{font}</option>)}</select>
-            <input aria-label="Font size" type="number" min="8" max="200" value={selected.fontSize} onChange={event=>{const size=Number(event.target.value);if(size>=8&&size<=200)update({fontSize:size});}}/>
-            <button aria-label="Bold" aria-pressed={selected.bold} onClick={()=>update({bold:!selected.bold,fontWeight:selected.bold?400:700})}><Bold/></button><button aria-label="Italic" aria-pressed={selected.italic} onClick={()=>update({italic:!selected.italic})}><Italic/></button><button aria-label="Underline" aria-pressed={selected.underline} onClick={()=>update({underline:!selected.underline})}><Underline/></button>
-            <input aria-label="Text color" type="color" value={selected.color} onChange={event=>update({color:event.target.value})}/><select aria-label="Text alignment" value={selected.align} onChange={event=>update({align:event.target.value as 'left'|'center'|'right'})}><option>left</option><option>center</option><option>right</option></select></>}
-          {selected.type==='shape'&&<><label>Fill<input aria-label="Shape fill" type="color" value={selected.fill} onChange={event=>update({fill:event.target.value})}/></label><label>Stroke<input aria-label="Shape stroke" type="color" value={selected.stroke} onChange={event=>update({stroke:event.target.value})}/></label><input aria-label="Stroke width" type="number" min="0" max="30" value={selected.strokeWidth} onChange={event=>update({strokeWidth:Number(event.target.value)})}/></>}
-          {selected.type==='image'&&<><button aria-label="Flip horizontal" onClick={()=>update({flipHorizontal:!selected.flipHorizontal})}><FlipHorizontal/></button><button aria-label="Flip vertical" onClick={()=>update({flipVertical:!selected.flipVertical})}><FlipVertical/></button><select aria-label="Image fit" value={selected.objectFit??'cover'} onChange={event=>update({objectFit:event.target.value as 'cover'|'contain'|'fill'})}><option>cover</option><option>contain</option><option>fill</option></select><details className="v3-image-adjust"><summary>Adjust</summary><div className="v3-popover">{(["brightness","contrast","saturation"] as const).map(filter=><label key={filter}>{filter}<input aria-label={`Image ${filter}`} type="range" min="0" max="200" value={selected.filters[filter]} onChange={event=>update({filters:{...selected.filters,[filter]:Number(event.target.value)}})}/></label>)}<button onClick={()=>update({filters:{brightness:100,contrast:100,saturation:100}})}>Reset adjustments</button></div></details></>}
-          <label>Opacity<input aria-label="Element opacity" type="range" min="0" max="1" step="0.05" value={selected.opacity} onChange={event=>update({opacity:Number(event.target.value)})}/></label>
-          </fieldset>
-        </div>}
+        {!isPreviewMode&&selected&&<><V3ElementToolbar element={selected} onEditImage={onEditImage??(()=>{})}/><RotationHandle element={selected}/></>}
       </div></div>
     </div>
     {!isPreviewMode&&<><div className="v3-canvas-bottom">{selectedElementIds.length>0?<output aria-label="Selection geometry">{selectedElementIds.length===1&&selected?`${Math.round(selected.width)} × ${Math.round(selected.height)} px · x ${Math.round(selected.x)}, y ${Math.round(selected.y)}`:`${selectedElementIds.length} elements selected`}</output>:<span/>}<button className="v3-assistant" onClick={onAssistant}><Sparkles/>AI Assistant</button></div>

@@ -1,6 +1,6 @@
 // Layer item component
 
-import { Type, Square, Circle, Image as ImageIcon, Eye, EyeOff, Lock, Unlock } from "lucide-react";
+import { Type, Square, Circle, Image as ImageIcon, Eye, EyeOff, Lock, Unlock, Slash } from "lucide-react";
 import { CanvasElement } from "../../../lib/canvasTypes";
 import { useCanvasStore } from "../../../hooks/useCanvasStore";
 
@@ -21,6 +21,8 @@ export function LayerItem({ element, isSelected, onSelect }: LayerItemProps) {
         return element.shapeType === 'circle' ? Circle : Square;
       case 'image':
         return ImageIcon;
+      case 'line':
+        return Slash;
       default:
         return Square;
     }

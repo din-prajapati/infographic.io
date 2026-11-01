@@ -9,6 +9,7 @@ import { createV3DraftStore } from '../lib/v3Autosave';
 import { useCanvasStore } from './useCanvasStore';
 import { usePropertyStore } from './usePropertyStore';
 import { useAgentStore } from './useAgentStore';
+import { isValidLineElement } from '../lib/lineGeometry';
 
 interface CanvasDocument {
   elements: CanvasElement[];
@@ -22,7 +23,7 @@ function validateCanvas(value: unknown): asserts value is CanvasDocument {
   if (!value || typeof value !== 'object') throw new Error('Invalid canvas data');
   const data = value as Partial<CanvasDocument>;
   if (!Array.isArray(data.elements) || data.elements.some(element =>
-    !element || !['text', 'shape', 'image'].includes(element.type)) ||
+    !element || !['text', 'shape', 'image', 'line'].includes(element.type) || (element.type === 'line' && !isValidLineElement(element))) ||
     typeof data.canvasWidth !== 'number' || !Number.isFinite(data.canvasWidth) || data.canvasWidth <= 0 ||
     typeof data.canvasHeight !== 'number' || !Number.isFinite(data.canvasHeight) || data.canvasHeight <= 0) {
     throw new Error('Invalid canvas data');

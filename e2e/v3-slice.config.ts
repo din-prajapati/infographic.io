@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 export default defineConfig({
   testDir: '.',
-  testMatch: ['us-edit-031-v3-slice.spec.ts', 'v3-approved-shell.spec.ts'],
+  testMatch: ['us-edit-031-v3-slice.spec.ts', 'v3-approved-shell.spec.ts', 'v3-element-toolbars.spec.ts'],
   outputDir: '../.e2e-artifacts/us-edit-031',
   timeout: 45_000,
   expect: { timeout: 12_000 },
