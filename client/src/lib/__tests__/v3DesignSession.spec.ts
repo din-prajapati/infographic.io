@@ -9,14 +9,16 @@ const hookBoundary = vi.hoisted(() => ({
   restore: vi.fn(() => true), loadCanvas: vi.fn(),
   thumbnail: vi.fn(async () => 'data:image/png;base64,mocked'),
   listeners: new Set<(next: Record<string, unknown>, previous: Record<string, unknown>) => void>(),
+  propertyListeners: new Set<(next: Record<string, unknown>, previous: Record<string, unknown>) => void>(),
+  agentListeners: new Set<(next: Record<string, unknown>, previous: Record<string, unknown>) => void>(),
   capture: vi.fn(() => ({ elements: [] as unknown[], canvasWidth: 640, canvasHeight: 480, backgroundColor: '#ffffff' })),
 }));
 vi.mock('../api', () => ({ designsApi: { getOne: hookBoundary.getOne, save: hookBoundary.save } }));
 vi.mock('../canvasState', () => ({ captureCanvasData: hookBoundary.capture, restoreCanvasData: hookBoundary.restore, generateThumbnail: hookBoundary.thumbnail }));
 vi.mock('../queryClient', () => ({ queryClient: { fetchQuery: ({ queryFn }: { queryFn: () => unknown }) => queryFn() } }));
 vi.mock('../../hooks/useCanvasStore', () => ({ useCanvasStore: { getState: () => ({ ...hookBoundary.capture(), loadCanvas: hookBoundary.loadCanvas }), subscribe: (listener: (next: Record<string, unknown>, previous: Record<string, unknown>) => void) => { hookBoundary.listeners.add(listener); return () => hookBoundary.listeners.delete(listener); } } }));
-vi.mock('../../hooks/usePropertyStore', () => ({ usePropertyStore: { getState: () => ({ resetProperty: hookBoundary.resetProperty }) } }));
-vi.mock('../../hooks/useAgentStore', () => ({ useAgentStore: { getState: () => ({ resetAgent: hookBoundary.resetAgent }) } }));
+vi.mock('../../hooks/usePropertyStore', () => ({ usePropertyStore: { getState: () => ({ resetProperty: hookBoundary.resetProperty }), subscribe: (listener: (next: Record<string, unknown>, previous: Record<string, unknown>) => void) => { hookBoundary.propertyListeners.add(listener); return () => hookBoundary.propertyListeners.delete(listener); } } }));
+vi.mock('../../hooks/useAgentStore', () => ({ useAgentStore: { getState: () => ({ resetAgent: hookBoundary.resetAgent }), subscribe: (listener: (next: Record<string, unknown>, previous: Record<string, unknown>) => void) => { hookBoundary.agentListeners.add(listener); return () => hookBoundary.agentListeners.delete(listener); } } }));
 
 const ID = 'c123456789012345678901234';
 const OTHER = 'c987654321098765432109876';
@@ -228,6 +230,8 @@ describe('US-EDIT-031 StrictMode session lifecycle', () => {
     vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
     vi.clearAllMocks();
     hookBoundary.listeners.clear();
+    hookBoundary.propertyListeners.clear();
+    hookBoundary.agentListeners.clear();
     hookBoundary.capture.mockReturnValue({ elements: [], canvasWidth: 640, canvasHeight: 480, backgroundColor: '#ffffff' });
     hookBoundary.restore.mockReturnValue(true);
     hookBoundary.thumbnail.mockResolvedValue('data:image/png;base64,mocked');
@@ -304,6 +308,39 @@ describe('US-EDIT-031 StrictMode session lifecycle', () => {
     try {
       expect(hookBoundary.resetProperty.mock.invocationCallOrder[0]).toBeLessThan(hookBoundary.loadCanvas.mock.invocationCallOrder[0]);
       expect(hookBoundary.resetAgent.mock.invocationCallOrder[0]).toBeLessThan(hookBoundary.loadCanvas.mock.invocationCallOrder[0]);
+    } finally { await view.close(); }
+  });
+
+  // AC4 Contract: dirty hook prevents beforeunload and returns the user's explicit navigation decision.
+  it('guards browser unload and explicit route navigation while changes are unsaved', async () => {
+    hookBoundary.getOne.mockResolvedValue({ id: ID, name: 'Property', canvasData: hookBoundary.capture() });
+    const view = await probe(ID);
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
+    try {
+      const clean = new Event('beforeunload', { cancelable: true }); window.dispatchEvent(clean);
+      expect(clean.defaultPrevented).toBe(false);
+      expect(view.current().confirmNavigation()).toBe(true);
+      await act(async () => { view.current().setTitle('Unsaved title'); });
+      const dirty = new Event('beforeunload', { cancelable: true }); window.dispatchEvent(dirty);
+      expect(dirty.defaultPrevented).toBe(true);
+      expect(view.current().confirmNavigation()).toBe(false);
+      expect(confirm).toHaveBeenCalledWith('You have unsaved changes. Leave this design?');
+      confirm.mockReturnValue(true); expect(view.current().confirmNavigation()).toBe(true);
+    } finally { confirm.mockRestore(); await view.close(); }
+  });
+
+  // AC1 Contract: Property/Agent store notifications dirty listing snapshots even when element references stay unchanged.
+  it.each(['property', 'agent'] as const)('captures %s-only changes through its store subscription', async source => {
+    hookBoundary.getOne.mockResolvedValue({ id: ID, name: 'Property', canvasData: hookBoundary.capture() });
+    const view = await probe(ID);
+    try {
+      const next = { ...hookBoundary.capture(), listing: { [source]: { name: 'Updated listing field' } } };
+      await act(async () => {
+        hookBoundary.capture.mockReturnValue(next);
+        const listeners = source === 'property' ? hookBoundary.propertyListeners : hookBoundary.agentListeners;
+        for (const listener of listeners) listener({ [source]: { name: 'Updated listing field' } }, { [source]: {} });
+      });
+      expect(view.current()).toMatchObject({ status: 'unsaved', hasUnsavedChanges: true });
     } finally { await view.close(); }
   });
 

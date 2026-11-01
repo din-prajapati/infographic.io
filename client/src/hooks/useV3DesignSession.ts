@@ -5,6 +5,7 @@ import type { CanvasElement } from '../lib/canvasTypes';
 import { queryClient } from '../lib/queryClient';
 import type { DesignMetadata } from '../lib/storage';
 import { createV3DesignSession, type V3SessionState } from '../lib/v3DesignSession';
+import { createV3DraftStore } from '../lib/v3Autosave';
 import { useCanvasStore } from './useCanvasStore';
 import { usePropertyStore } from './usePropertyStore';
 import { useAgentStore } from './useAgentStore';
@@ -33,16 +34,23 @@ function resetListing() {
   useAgentStore.getState().resetAgent();
 }
 
-export function useV3DesignSession(designId?: string) {
+export function useV3DesignSession(designId?: string, userId?: string) {
   const initialId = useRef(designId);
   const requestedId = useRef(initialId.current);
   const adoptedId = useRef<string>();
   const controller = useRef<ReturnType<typeof createV3DesignSession<CanvasDocument>> | null>(null);
-  const [state, setState] = useState<V3SessionState>({ title: 'Untitled design', status: 'idle', ready: false, error: null });
+  const [state, setState] = useState<V3SessionState>({ title: 'Untitled design', status: 'idle', ready: false, error: null,
+    lastSavedAt: null, hasUnsavedChanges: false, recoveredDraft: null, draftError: null });
 
   useEffect(() => {
     let canvasRevision = 0;
     const session = createV3DesignSession<CanvasDocument>({
+    autosaveDelay: 2000,
+    drafts: userId ? createV3DraftStore<CanvasDocument>({
+      getItem: key => window.localStorage.getItem(key),
+      setItem: (key, value) => window.localStorage.setItem(key, value),
+      removeItem: key => window.localStorage.removeItem(key),
+    }, userId) : undefined,
     capture: () => structuredClone(captureCanvasData() as CanvasDocument),
     restore(data) {
       validateCanvas(data);
@@ -103,8 +111,24 @@ export function useV3DesignSession(designId?: string) {
         session.markDirty();
       }
     });
-    return () => { unsubscribe(); session.dispose(); controller.current = null; };
-  }, []);
+    const unsubscribeProperty = usePropertyStore.subscribe((next, previous) => {
+      if (next.property !== previous.property) { canvasRevision++; session.markDirty(); }
+    });
+    const unsubscribeAgent = useAgentStore.subscribe((next, previous) => {
+      if (next.agent !== previous.agent) { canvasRevision++; session.markDirty(); }
+    });
+    const beforeUnload = (event: BeforeUnloadEvent) => {
+      if (session.getState().hasUnsavedChanges) {
+        event.preventDefault();
+        event.returnValue = '';
+      }
+    };
+    window.addEventListener('beforeunload', beforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', beforeUnload);
+      unsubscribe(); unsubscribeProperty(); unsubscribeAgent(); session.dispose(); controller.current = null;
+    };
+  }, [userId]);
 
   useEffect(() => {
     const session = controller.current;
@@ -125,5 +149,9 @@ export function useV3DesignSession(designId?: string) {
     setTitle: (title: string) => controller.current?.setTitle(title),
     save: () => controller.current?.save(),
     retryLoad: () => controller.current?.retryLoad(),
+    restoreDraft: () => controller.current?.restoreDraft(),
+    discardDraft: () => controller.current?.discardDraft(),
+    confirmNavigation: () => !controller.current?.getState().hasUnsavedChanges ||
+      window.confirm('You have unsaved changes. Leave this design?'),
   };
 }
