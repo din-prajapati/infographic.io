@@ -30,6 +30,10 @@ function deferred() {
   return { promise, resolve };
 }
 async function mockedSession(page: Page, theme: 'light' | 'dark' = 'light') {
+  // Retained manual-save contracts run before the new two-second idle window.
+  // Freeze browser time, not the production autosave policy or network behavior.
+  await page.clock.install({ time: new Date('2026-01-01T00:00:00Z') });
+  await page.clock.pauseAt(new Date('2026-01-01T00:00:01Z'));
   await page.addInitScript(({ theme }) => {
     localStorage.setItem('auth_token', 'mocked-v3-browser-token');
     localStorage.setItem('auth_user', JSON.stringify({ id: 'mocked-agent', name: 'Mocked Agent', email: 'mocked@example.test', plan: 'SOLO' }));
@@ -55,21 +59,26 @@ async function mockedSession(page: Page, theme: 'light' | 'dark' = 'light') {
         return route.fulfill({ json: model.design });
       }
     }
-    return route.fulfill({ json: {} });
+    return route.fulfill({ json: [] });
   });
   return model;
 }
 const canvas = (page: Page) => page.getByTestId('design-canvas');
 async function open(page: Page) {
-  await page.goto(URL);
-  await expect(page.getByRole('heading', { name: 'V3 Editor', exact: true })).toBeVisible();
+  await page.goto(URL, { waitUntil: 'domcontentloaded' });
+  await expect(page.getByRole('textbox', { name: 'Design title', exact: true })).toBeVisible();
   await expect(canvas(page).getByText(TEXT, { exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Save', exact: true })).toBeEnabled();
+  // Restore schedules Fit at 350/700ms and two animation frames. Settle those
+  // document-open callbacks before exercising manual view controls.
+  await page.clock.runFor(750);
 }
 async function edit(page: Page, content = EDITED) {
+  if (!await page.getByRole('textbox', { name: 'Text content', exact: true }).isVisible())
+    await page.getByRole('button', { name: 'Text', exact: true }).click();
   await canvas(page).locator('[data-element-id="text-1"]').click();
   await page.getByRole('textbox', { name: 'Text content', exact: true }).fill(content);
-  await page.getByRole('button', { name: 'Apply text', exact: true }).click();
+  await page.getByRole('textbox', { name: 'Text content', exact: true }).press('Tab');
   await expect(canvas(page).getByText(content, { exact: true })).toBeVisible();
 }
 
@@ -85,10 +94,25 @@ async function expectReadable(locator: Locator, label: string) {
     function lum(c: number[]) { return c.slice(0, 3).map(n => { n /= 255; return n <= .04045 ? n / 12.92 : ((n + .055) / 1.055) ** 2.4; }).reduce((v, n, i) => v + n * [.2126, .7152, .0722][i], 0); }
     const chain: Element[] = []; let el: Element | null = node;
     while (el) { chain.unshift(el); el = el.parentElement; }
-    let bg = [255, 255, 255, 255];
-    for (const ancestor of chain) bg = over(color(getComputedStyle(ancestor).backgroundColor), bg);
-    const fg = over(color(getComputedStyle(node).color), bg);
-    const a = lum(fg); const b = lum(bg); return (Math.max(a, b) + .05) / (Math.min(a, b) + .05);
+    let backgrounds = [[255, 255, 255, 255]];
+    for (const ancestor of chain) {
+      const style = getComputedStyle(ancestor);
+      backgrounds = backgrounds.map(bg => over(color(style.backgroundColor), bg));
+      // The approved header is a real gradient. Measure every stop (plus its
+      // interpolated midpoint) rather than treating its transparent base as white.
+      const stops = style.backgroundImage.match(/rgba?\([^)]*\)|#[0-9a-f]{3,8}/gi);
+      if (stops?.length) {
+        const samples = stops.map(color);
+        for (let i = 1; i < stops.length; i++)
+          samples.push(samples[i - 1].map((v, channel) => (v + samples[i][channel]) / 2));
+        backgrounds = backgrounds.flatMap(bg => samples.map(sample => over(sample, bg)));
+      }
+    }
+    return Math.min(...backgrounds.map(bg => {
+      const fg = over(color(getComputedStyle(node).color), bg);
+      const a = lum(fg); const b = lum(bg);
+      return (Math.max(a, b) + .05) / (Math.min(a, b) + .05);
+    }));
   });
   expect(ratio, `${label} text contrast`).toBeGreaterThanOrEqual(4.5);
 }
@@ -98,11 +122,11 @@ test.describe('US-EDIT-031 — mocked browser integration', () => {
   // editing chrome or interactions; returning restores the draft and save state.
   test('TC-EDIT-031-20 [P1] Preview isolates the live canvas and Exit restores editor draft', async ({ page }, info) => {
     const model = await mockedSession(page); await open(page); await edit(page);
-    await page.getByRole('textbox', { name: 'Text content', exact: true }).fill('DRAFT ONLY');
     const downloadReady = page.waitForEvent('download');
     await page.getByRole('button', { name: 'Export', exact: true }).click();
     expect((await downloadReady).suggestedFilename()).toMatch(/\.png$/i);
     await expect(page.getByText('PNG exported', { exact: true })).toBeVisible();
+    await page.getByRole('textbox', { name: 'Text content', exact: true }).fill('DRAFT ONLY');
     const beforeIds = await canvas(page).locator('[data-element-id]').evaluateAll(nodes => nodes.map(el => el.getAttribute('data-element-id')));
     await expect(page.getByText('Unsaved', { exact: true })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Preview', exact: true })).toBeVisible();
@@ -144,12 +168,13 @@ test.describe('US-EDIT-031 — mocked browser integration', () => {
   // focus outside fields enters Preview and Escape restores the same editor.
   test('TC-EDIT-031-21 [P1] Preview shortcut ignores fields and Escape returns', async ({ page }) => {
     const model = await mockedSession(page); await open(page);
+    await page.getByRole('button', { name: 'Text', exact: true }).click();
     await canvas(page).locator('[data-element-id="text-1"]').click();
     const draft = page.getByRole('textbox', { name: 'Text content', exact: true });
     await draft.fill('DRAFT'); await draft.press('End'); await draft.press('p');
     await expect(draft).toHaveValue('DRAFTp');
     await expect(page.getByRole('main', { name: 'Design preview', exact: true })).toHaveCount(0);
-    await page.getByText('640 × 480', { exact: true }).click();
+    await page.getByRole('button', { name: 'Preview', exact: true }).focus();
     await page.keyboard.press('p');
     await expect(page.getByRole('main', { name: 'Design preview', exact: true })).toBeVisible();
     await page.keyboard.press('Escape');
@@ -178,7 +203,7 @@ test.describe('US-EDIT-031 — mocked browser integration', () => {
     expect(model.writes[0].body.thumbnail).toMatch(/^data:image\/png;base64,/);
     expect(model.writes[0].body).toMatchObject({ name: 'Updated mocked listing', category: 'residential', tags: ['v3-fixture'], canvasData: { canvasWidth: 640, canvasHeight: 480, backgroundColor: '#ffffff', listing: fixture().canvasData.listing, elements: expect.arrayContaining([expect.objectContaining({ id: 'text-1', content: EDITED }), expect.objectContaining(fixture().canvasData.elements[1]), expect.objectContaining(fixture().canvasData.elements[2])]) } });
     expect(new globalThis.URL(page.url()).searchParams.get('designId')).toBe(ID);
-    await page.reload();
+    await page.reload({ waitUntil: 'domcontentloaded' });
     await expect(page.getByRole('textbox', { name: 'Design title', exact: true })).toHaveValue('Updated mocked listing');
     await expect(canvas(page).getByText(EDITED, { exact: true })).toBeVisible();
     await expect(canvas(page).locator('[data-element-id="image-1"]')).toBeVisible();
@@ -230,7 +255,7 @@ test.describe('US-EDIT-031 — mocked browser integration', () => {
   // AC2: initial load blocks actions, rejected GET stays blocked, retry hydrates.
   test('TC-EDIT-031-04 [P1] failed initial load remains blocked until retry succeeds', async ({ page }) => {
     const model = await mockedSession(page); model.readGate = deferred(); model.rejectRead = true;
-    await page.goto(URL);
+    await page.goto(URL, { waitUntil: 'domcontentloaded' });
     await expect(page.getByRole('status')).toHaveText(/Opening design/);
     await expect(page.getByRole('button', { name: 'Save', exact: true })).toBeDisabled();
     await expect(page.getByRole('button', { name: 'Export', exact: true })).toBeDisabled();
@@ -249,7 +274,7 @@ test.describe('US-EDIT-031 — mocked browser integration', () => {
     test(`TC-EDIT-031-11 [P0] invalid canvas ${JSON.stringify(invalid)} stays blocked`, async ({ page }) => {
       const model = await mockedSession(page);
       model.design.canvasData = invalid as unknown as ReturnType<typeof fixture>['canvasData'];
-      await page.goto(URL);
+      await page.goto(URL, { waitUntil: 'domcontentloaded' });
       await expect(page.getByRole('button', { name: 'Retry opening', exact: true })).toBeVisible();
       await expect(page.getByRole('button', { name: 'Save', exact: true })).toBeDisabled();
       await expect(page.getByRole('button', { name: 'Export', exact: true })).toBeDisabled();
@@ -260,9 +285,10 @@ test.describe('US-EDIT-031 — mocked browser integration', () => {
   }
 
   // AC3: drafts and native editing shortcuts cannot mutate the selected element;
-  // explicit Apply is exactly one history operation for the complete text.
-  test('TC-EDIT-031-12 [P0] inspector draft is isolated until one Apply undo step', async ({ page }) => {
+  // one blur is exactly one history operation for the complete text.
+  test('TC-EDIT-031-12 [P0] text draft is isolated until one blur undo step', async ({ page }) => {
     await mockedSession(page); await open(page);
+    await page.getByRole('button', { name: 'Text', exact: true }).click();
     await canvas(page).locator('[data-element-id="text-1"]').click();
     const input = page.getByRole('textbox', { name: 'Text content', exact: true });
     await input.fill('DRAFT ONLY');
@@ -270,11 +296,11 @@ test.describe('US-EDIT-031 — mocked browser integration', () => {
     await expect(page.getByText('Saved', { exact: true })).toBeVisible();
     await input.press('Control+a'); await input.press('Backspace');
     await expect(canvas(page).getByText(TEXT, { exact: true })).toBeVisible();
-    await input.fill(EDITED); await page.getByRole('button', { name: 'Apply text', exact: true }).click();
+    await input.fill(EDITED); await page.getByRole('textbox', { name: 'Text content', exact: true }).press('Tab');
     await expect(canvas(page).getByText(EDITED, { exact: true })).toBeVisible();
     await page.getByRole('button', { name: 'Undo', exact: true }).click();
     await expect(canvas(page).getByText(TEXT, { exact: true })).toBeVisible();
-    // With an initially empty history, disabled Undo proves Apply added exactly
+    // With an initially empty history, disabled Undo proves blur added exactly
     // one history entry, rather than a separate entry for each draft keystroke.
     await expect(page.getByRole('button', { name: 'Undo', exact: true })).toBeDisabled();
     await expect(page.getByText('Unsaved', { exact: true })).toBeVisible();
@@ -303,11 +329,13 @@ test.describe('US-EDIT-031 — mocked browser integration', () => {
     const model = await mockedSession(page); await open(page);
     await expect(canvas(page).locator('[data-element-id]')).toHaveCount(3);
     await page.getByRole('button', { name: 'Text', exact: true }).click();
+    await page.getByRole('button', { name: 'Add text', exact: true }).click();
     await expect(canvas(page).locator('[data-element-id]')).toHaveCount(4);
     await page.getByRole('button', { name: 'Undo', exact: true }).click();
     await expect(canvas(page).locator('[data-element-id]')).toHaveCount(3);
     await page.getByRole('button', { name: 'Redo', exact: true }).click();
     await expect(canvas(page).locator('[data-element-id]')).toHaveCount(4);
+    await page.getByRole('button', { name: 'Tools', exact: true }).click();
     await page.getByRole('button', { name: 'Select', exact: true }).click();
     await page.getByRole('button', { name: 'Save', exact: true }).click();
     await expect(page.getByText('Saved', { exact: true })).toBeVisible();
@@ -335,11 +363,36 @@ test.describe('US-EDIT-031 — mocked browser integration', () => {
     await expect(page.getByText('Unsaved', { exact: true })).toBeVisible();
   });
 
+  // Contract: every selected type and mixed selection uses the same strip
+  // actions. Each duplicate/delete acts on all selected IDs as one history step.
+  test('selected text image and shape share duplicate and delete actions', async ({ page }) => {
+    await mockedSession(page); await open(page);
+    await page.getByRole('button', { name: 'Tools', exact: true }).click();
+    const elements = canvas(page).locator('[data-element-id]');
+    for (const id of ['text-1', 'image-1', 'shape-1']) {
+      await canvas(page).locator(`[data-element-id="${id}"]`).click();
+      await page.getByRole('toolbar', { name: 'Canvas tools', exact: true }).getByRole('button', { name: 'Duplicate', exact: true }).click();
+      await expect(elements).toHaveCount(4);
+      await page.getByRole('toolbar', { name: 'Canvas tools', exact: true }).getByRole('button', { name: 'Delete', exact: true }).click();
+      await expect(elements).toHaveCount(3);
+    }
+    await canvas(page).locator('[data-element-id="text-1"]').click();
+    await canvas(page).locator('[data-element-id="image-1"]').click({ modifiers: ['Shift'] });
+    await canvas(page).locator('[data-element-id="shape-1"]').click({ modifiers: ['Shift'] });
+    await expect(page.getByText('3 elements selected', { exact: true })).toBeVisible();
+    await page.getByRole('toolbar', { name: 'Canvas tools', exact: true }).getByRole('button', { name: 'Duplicate', exact: true }).click();
+    await expect(elements).toHaveCount(6);
+    await page.getByRole('toolbar', { name: 'Canvas tools', exact: true }).getByRole('button', { name: 'Delete', exact: true }).click();
+    await expect(elements).toHaveCount(3);
+    await page.getByRole('button', { name: 'Undo', exact: true }).click();
+    await expect(elements).toHaveCount(6);
+  });
+
   // AC5: unsupported IDs are rejected before any designs request or POST.
   test('TC-EDIT-031-13 [P0] local-only design ID cannot become an accidental server create', async ({ page }) => {
     const model = await mockedSession(page); const requests: string[] = [];
     page.on('request', request => { if (/\/designs(?:\/|$)/.test(new globalThis.URL(request.url()).pathname)) requests.push(request.method()); });
-    await page.goto('/editor?editor=v3&designId=local-only-draft');
+    await page.goto('/editor?editor=v3&designId=local-only-draft', { waitUntil: 'domcontentloaded' });
     await expect(page.getByText('Unsupported design ID', { exact: true })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Save', exact: true })).toBeDisabled();
     await expect(page.getByRole('button', { name: 'Export', exact: true })).toBeDisabled();
@@ -353,9 +406,9 @@ test.describe('US-EDIT-031 — mocked browser integration', () => {
     await expect(page.getByText('Saved', { exact: true })).toBeVisible();
     await page.getByRole('button', { name: 'Zoom in', exact: true }).click();
     for (let step = 0; step < 10; step++) await page.getByRole('button', { name: 'Zoom in', exact: true }).click();
-    const zoomLabel = page.locator('footer [aria-live="polite"]');
+    const zoomLabel = page.getByRole('button', { name: 'Zoom level', exact: true });
     const manualZoom = await zoomLabel.textContent();
-    await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+    await page.clock.runFor(50);
     await expect(zoomLabel).toHaveText(manualZoom!);
     await expect(page.getByText('Saved', { exact: true })).toBeVisible();
     await page.getByRole('button', { name: 'Zoom out', exact: true }).click();
@@ -367,7 +420,7 @@ test.describe('US-EDIT-031 — mocked browser integration', () => {
 
   // AC7: first POST ID is carried in the opt-in URL and next save uses PUT.
   test('TC-EDIT-031-08 [P1] first blank save retains editor=v3 and server identity', async ({ page }) => {
-    const model = await mockedSession(page); await page.goto('/editor?editor=v3');
+    const model = await mockedSession(page); await page.goto('/editor?editor=v3', { waitUntil: 'domcontentloaded' });
     await expect(page.getByRole('button', { name: 'Save', exact: true })).toBeEnabled();
     expect(model.reads).toBe(0);
     await page.getByRole('textbox', { name: 'Design title', exact: true }).fill('Blank session');
@@ -381,7 +434,7 @@ test.describe('US-EDIT-031 — mocked browser integration', () => {
     expect(model.writes.map(w => w.method)).toEqual(['POST', 'PUT']);
     expect(model.writes[0].body).toMatchObject({ type: 'design', category: 'real-estate', tags: [], canvasData: { canvasWidth: 1200, canvasHeight: 800, elements: [] } });
     expect(model.writes[0].body.canvasData.backgroundColor.toLowerCase()).toBe('#ffffff');
-    await page.reload();
+    await page.reload({ waitUntil: 'domcontentloaded' });
     await expect(page.getByRole('textbox', { name: 'Design title', exact: true })).toHaveValue('Second save');
     expect(model.reads).toBe(1);
   });
@@ -431,12 +484,12 @@ test.describe('US-EDIT-031 — mocked browser integration', () => {
 // AC11: default route still exposes the existing canvas and excludes V3 shell;
 // both variants without browser authentication follow ProtectedRoute to /auth.
 for (const route of ['/editor', `/editor?designId=${ID}`]) test(`TC-EDIT-031-07 [P1] legacy remains default at ${route}`, async ({ page }) => {
-  await mockedSession(page); await page.goto(route);
+  await mockedSession(page); await page.goto(route, { waitUntil: 'domcontentloaded' });
   await expect(canvas(page)).toBeVisible();
   await expect(page.getByRole('heading', { name: 'V3 Editor', exact: true })).toHaveCount(0);
 });
 for (const route of ['/editor', URL]) test(`TC-EDIT-031-10 [P1] unauthenticated ${route} redirects to auth`, async ({ page }) => {
-  await page.goto(route); await expect(page).toHaveURL(/\/auth(?:\?|$)/);
+  await page.goto(route, { waitUntil: 'domcontentloaded' }); await expect(page).toHaveURL(/\/auth(?:\?|$)/);
   await expect(page.getByRole('heading', { name: 'V3 Editor', exact: true })).toHaveCount(0);
 });
 
@@ -450,7 +503,7 @@ for (const width of [1280, 1440]) for (const theme of ['light', 'dark'] as const
     const save = page.getByRole('button', { name: 'Save', exact: true });
     await title.focus();
     const keyboardVisited: string[] = [];
-    for (let i = 0; i < 35; i++) {
+    for (let i = 0; i < 80; i++) {
       keyboardVisited.push(await page.evaluate(() => document.activeElement?.getAttribute('aria-label') || document.activeElement?.textContent?.trim() || document.activeElement?.getAttribute('title') || ''));
       await page.keyboard.press('Tab');
     }
@@ -466,32 +519,33 @@ for (const width of [1280, 1440]) for (const theme of ['light', 'dark'] as const
       expect(box!.x).toBeGreaterThanOrEqual(0); expect(box!.x + box!.width).toBeLessThanOrEqual(width + 1);
     }
     for (const [label, locator] of [
-      ['Design title', title], ['V3 Editor heading', page.getByRole('heading', { name: 'V3 Editor', exact: true })],
+      ['Design title', title],
       ['Projects', page.getByRole('link', { name: 'Projects', exact: true })],
       ['Saved status', page.getByText('Saved', { exact: true })],
       ['Save', save], ['Export', page.getByRole('button', { name: 'Export', exact: true })],
-      ['Select rail', page.getByRole('button', { name: 'Select', exact: true })],
+      ['Tools rail', page.getByRole('button', { name: 'Tools', exact: true })],
       ['Text rail', page.getByRole('button', { name: 'Text', exact: true })],
       ['Actual dimensions', page.getByText('640 × 480', { exact: true })],
       ['Zoom footer', page.getByText(/^\d+%$/).first()],
     ] as const) await expectReadable(locator, label);
-    const workflow = page.getByRole('navigation', { name: 'Editing workflow', exact: true });
-    await expect(workflow).toBeVisible();
-    const workflowText = workflow.locator('span').filter({ hasText: /\S/ });
-    expect(await workflowText.count()).toBeGreaterThan(0);
-    for (const text of await workflowText.all()) await expectReadable(text, 'Workflow step');
+    const rail = page.getByRole('navigation', { name: 'Editor sections', exact: true });
+    await expect(rail).toBeVisible();
+    for (const name of ['Templates', 'Tools', 'Text', 'Uploads', 'Brand', 'Property', 'Agent'])
+      await expectReadable(rail.getByRole('button', { name, exact: true }), `${name} rail`);
+    await expectReadable(page.getByRole('button', { name: 'Layers', exact: true }), 'Layers footer');
+    await expectReadable(page.getByRole('button', { name: 'Canvas settings', exact: true }), 'Canvas settings footer');
+    await page.getByRole('button', { name: 'Text', exact: true }).click();
     await canvas(page).locator('[data-element-id="text-1"]').click();
-    const textLabel = page.locator('label').filter({ has: page.getByRole('textbox', { name: 'Text content', exact: true }) });
-    await expect(textLabel).toContainText('Text content');
-    await expectReadable(textLabel, 'Inspector label');
-    await expectReadable(page.getByRole('textbox', { name: 'Text content', exact: true }), 'Inspector content');
-    await page.getByRole('textbox', { name: 'Text content', exact: true }).fill('Contrast draft');
-    await expectReadable(page.getByRole('button', { name: 'Apply text', exact: true }), 'Apply text');
-    const inspector = page.getByRole('complementary', { name: 'Text inspector', exact: true });
-    await expectReadable(inspector.getByRole('heading', { name: 'Text', exact: true }), 'Inspector heading');
-    const artboard = await canvas(page).boundingBox(); const panel = await inspector.boundingBox();
-    expect(artboard).not.toBeNull(); expect(panel).not.toBeNull();
-    expect(artboard!.x + artboard!.width).toBeLessThanOrEqual(panel!.x + 1);
+    const input = page.getByRole('textbox', { name: 'Text content', exact: true });
+    await expectReadable(input, 'Text panel content');
+    const label = page.locator('label').filter({ has: input });
+    await expect(label).toContainText('Text content');
+    await expectReadable(label, 'Text panel label');
+    const panel = page.getByRole('complementary', { name: 'Text panel', exact: true });
+    await expectReadable(panel.getByRole('heading', { name: 'Text', exact: true }), 'Text panel heading');
+    const artboard = await canvas(page).boundingBox(); const panelBox = await panel.boundingBox();
+    expect(artboard).not.toBeNull(); expect(panelBox).not.toBeNull();
+    expect(panelBox!.x + panelBox!.width).toBeLessThanOrEqual(artboard!.x + 1);
     // Verify painted canvas content too: DOM visibility alone can miss an
     // artboard covered by its background or clipped after keyboard navigation.
     const painted = await canvas(page).screenshot();
@@ -506,6 +560,7 @@ for (const width of [1280, 1440]) for (const theme of ['light', 'dark'] as const
     }, painted.toString('base64'));
     expect(redPixels, 'The existing red shape must be painted on the live artboard').toBeGreaterThan(500);
     await page.screenshot({ path: info.outputPath(`v3-${width}-${theme}.png`), fullPage: true });
+    await page.getByRole('button', { name: 'Canvas settings', exact: true }).click();
     await page.getByRole('button', { name: 'Toggle theme', exact: true }).click();
     await expect(page.locator('html')).toHaveClass(new RegExp(theme === 'light' ? 'dark' : 'light'));
     await expectReadable(title, 'Design title after theme switch');
