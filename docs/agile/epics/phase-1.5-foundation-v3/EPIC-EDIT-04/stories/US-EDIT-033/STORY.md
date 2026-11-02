@@ -40,6 +40,15 @@
 - Toolbar anchors near selection and clamps to visible viewport, flips below if necessary and uses overflow for narrow space. Rounded Lucide icons, Navy/Teal tokens, subtle hover, selected states and keyboard focus apply in light/dark/system; artwork stays unchanged by UI theme.
 - Duplicate/Delete remain in the approved strip. Multiple selection shows count/universal actions. Desktop-only: verify 1191x668 and 1440px width; no new mobile skeleton.
 
+### Approved toolbar refinement — 2026-11-02
+
+- Image toolbar keeps Edit/Replace text and exposes separate icon-only horizontal/vertical flip actions with pressed states; no Flip submenu.
+- Overflow triggers across all element toolbars show only three dots, with accessible names and tooltips retained. Existing More actions remain reachable.
+- Existing opacity control is a checkerboard icon on Text, Image, Shape and Line toolbars. Its compact Transparency popover pairs the existing0–100 opacity slider with an editable value;100 retains fully opaque semantics.
+- Use stateful colour swatches, a text colour A/underline icon and compact themed border/corner controls, matching the approved visual reference without importing Canva features.
+- Hide native number input spinner arrows for every number field within V3, including font size, adjustments, border/radius/shadow, rotation and canvas size; preserve typed input, keyboard operation and explicit font± buttons.
+- Keep existing feature set, Navy/Teal tokens, light/dark/system support, shell placement and safe commit/history behaviour.
+
 ## Out of Scope
 
 - Does not implement Crop, attached connectors, line labels, Animate, Position or Style.
@@ -52,6 +61,9 @@
 - **Branch:** `feat/edit/m-11-v3-editor-slice`
 - **PR:** #_____ (fill when opened)
 - **Primary files touched:**
+  - `e2e/v3-element-toolbars.spec.ts`
+  - `Mockups/approved-v3-editor/TOOLBAR_DRAWING_PLAN.md`
+  - `Mockups/approved-v3-editor/TOOLBAR_VERIFICATION.md`
   - `client/src/components/editor/v3/V3ElementToolbar.tsx`
   - `client/src/components/editor/v3/V3ImageEditor.tsx`
   - `client/src/lib/v3ElementEditing.ts`
@@ -98,3 +110,7 @@ Run npm run check, npm run test:unit, npm run test:unit:client and applicable br
 ## Implementation evidence — 2026-11-01
 
 [Toolbar verification](../../../../../../../Mockups/approved-v3-editor/TOOLBAR_VERIFICATION.md): 811 backend +465 client tests pass, one existing skip; 48 browser regressions pass, plus final sidebar/theme and legacy-line compatibility subsets. Real authenticated API/database save/reload/export smoke passes with cleanup. All independent code-review findings corrected. Formal Done and PR merge remain pending.
+
+## Presentation refinement evidence — 2026-11-02
+
+T4 implements the approved compact toolbar refinement above. Final frontend/API type checks and 811 backend +475 client unit tests pass, with one existing skip. Complete browser suite: 51 passed; final affected Escape/sidebar/theme subset: four passed. Saved themed and text transparency screenshots visually inspected. Historical real API/database smoke remains recorded separately above. No backend changes, added Canva features, main merge or deployment.

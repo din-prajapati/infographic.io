@@ -6,12 +6,18 @@ Approved by Dinesh on 2026-11-01. This extends the approved Navy/Teal V3 shell w
 
 | Element | Visible controls | Secondary controls |
 |---|---|---|
-| Text | Font, size, colour, bold, italic, alignment, More | Underline, strikethrough, case, lists, opacity |
+| Text | Font, size, text-colour icon, bold, italic, alignment, checkerboard transparency, dots-only overflow | Underline, strikethrough, case, lists |
 | Shape | Edit, Fill, Border, supported Corners, Opacity, Effects | Shadow details |
-| Image | Edit, Replace, Flip, Corners, Opacity, More | Fit, Border, Reset |
+| Image | Edit, Replace, separate horizontal/vertical flip icons, Corners icon, checkerboard transparency, dots-only overflow | Fit, Border, Reset |
 | Line | Type, Colour, Stroke, Start/end decorations, Opacity | Swap ends |
 
 Keep Duplicate/Delete universal in the vertical strip. Preserve rounded icons, quiet hover surfaces, teal selected/focus states and light/dark/system tokens. Toolbars anchor near selection, measure viewport boundaries, flip/clamp and overflow secondary controls. Locked/mixed selections cannot edit individual properties. Artwork is never recoloured by a UI theme switch.
+
+## Approved presentation refinement — 2026-11-02
+
+Use the supplied Canva screenshots for compact grouping and sub-toolbar presentation only; add no Canva features. Overflow controls show only three dots with accessible names/tooltips. Image flip icons are separate direct actions using the existing old-editor icons. Text colour uses an A/colour underline; fill/stroke controls show their current colour. Transparency uses a checkerboard icon on all four element toolbars and opens a compact slider/value popover, with100 fully opaque. Popovers use the product's existing Navy/Teal light/dark tokens and rounded controls.
+
+Hide native up/down spinner UI for every number field within V3: font, adjustment, radius/border/shadow, rotation and canvas dimensions. Retain typed values, keyboard arrows and explicit font-size minus/plus actions. Numeric sliders use a slim rounded teal track and circular thumb, without changing commit/cancel/history semantics.
 
 ## Existing editor parity and image sidebar
 

@@ -1,9 +1,11 @@
 import React, { createContext, useContext, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import * as Popover from '@radix-ui/react-popover';
-import { AlignCenter, AlignLeft, AlignRight, Bold, Italic, Minus, Plus, Palette, MoreHorizontal, Underline, Strikethrough, List, ListOrdered, SlidersHorizontal, Replace, FlipHorizontal, FlipVertical, Square, Circle, Triangle, Star, Droplets, ScanLine, Sparkles, ArrowLeftRight } from 'lucide-react';
+import { AlignCenter, AlignLeft, AlignRight, Bold, Italic, Minus, Plus, MoreHorizontal, Underline, Strikethrough, List, ListOrdered, SlidersHorizontal, Replace, Square, Circle, Triangle, Star, Radius, SquareDashed, ScanLine, Sparkles, ArrowLeftRight } from 'lucide-react';
 import type { CanvasElement, ImageElement, ShapeElement, TextElement, LineElement } from '../../../lib/canvasTypes';
 import { useCanvasStore } from '../../../hooks/useCanvasStore';
 import { clampNumeric, commitElementPatch, readReplacementImage, replacementImagePatch, resetImageAppearancePatch } from '../../../lib/v3ElementEditing';
+import { FlipHorizontalIcon } from '../../ui/icons/FlipHorizontalIcon';
+import { FlipVerticalIcon } from '../../ui/icons/FlipVerticalIcon';
 import '../../../styles/v3-element-toolbar.css';
 
 const Disabled = createContext(false);
@@ -13,29 +15,36 @@ function Action({ label, children, onClick, pressed }: { label: string; children
   return <button type="button" aria-label={label} title={label} aria-pressed={pressed} disabled={useContext(Disabled)} onClick={onClick}>{children}</button>;
 }
 
-function Menu({ label, text, icon, children }: { label: string; text?: string; icon?: ReactNode; children: ReactNode }) {
+function Menu({ label, text, heading = label, iconOnly = false, compact = false, icon, children }: { label: string; text?: string; heading?: string; iconOnly?: boolean; compact?: boolean; icon?: ReactNode; children: ReactNode }) {
   const anchor = useRef<HTMLButtonElement>(null);
   const [container, setContainer] = useState<HTMLElement | null>(null);
   const disabled = useContext(Disabled);
   useLayoutEffect(() => setContainer(anchor.current?.closest<HTMLElement>('.v3-editor') ?? null), []);
-  return <Popover.Root><Popover.Trigger asChild><button ref={anchor} type="button" disabled={disabled} aria-label={label} title={label}>{icon}<span>{text ?? label}</span></button></Popover.Trigger>
-    <Popover.Portal container={container}><Popover.Content className="v3-element-popover" sideOffset={9} collisionPadding={12} onClick={event => event.stopPropagation()}>
-      <h3>{label}</h3><fieldset disabled={disabled}>{children}</fieldset><Popover.Close className="v3-popover-close" aria-label={`Close ${label}`}>Done</Popover.Close>
+  return <Popover.Root><Popover.Trigger asChild><button ref={anchor} type="button" disabled={disabled} className={iconOnly ? 'v3-toolbar-icon' : undefined} aria-label={label} title={label}>{icon}{!iconOnly && <span>{text ?? label}</span>}</button></Popover.Trigger>
+    <Popover.Portal container={container}><Popover.Content className={`v3-element-popover${compact ? ' v3-element-popover--compact' : ''}`} sideOffset={9} collisionPadding={12} onClick={event => event.stopPropagation()} onEscapeKeyDown={event => {
+      if (event.target instanceof HTMLElement && event.target.closest('[data-v3-draft-dirty="true"]')) event.preventDefault();
+    }}>
+      <h3>{heading}</h3><fieldset disabled={disabled}>{children}</fieldset>{!compact && <Popover.Close className="v3-popover-close" aria-label={`Close ${label}`}>Done</Popover.Close>}
     </Popover.Content></Popover.Portal></Popover.Root>;
 }
 
-export function NumericControl({ label, value, min, max, step = 1, onCommit, onDraft, icon }: { label: string; value: number; min: number; max: number; step?: number; onCommit: (value: number) => void; onDraft?: (value: number) => void; icon?: ReactNode }) {
+export function NumericControl({ label, value, min, max, step = 1, onCommit, onDraft, icon, compact = false, hideLabel = false }: { label: string; value: number; min: number; max: number; step?: number; onCommit: (value: number) => void; onDraft?: (value: number) => void; icon?: ReactNode; compact?: boolean; hideLabel?: boolean }) {
   const [draft, setDraft] = useState(String(value));
+  const [committed, setCommitted] = useState(value);
   const cancelled = useRef(false);
   const disabled = useContext(Disabled);
-  useEffect(() => setDraft(String(value)), [value]);
+  const rangeValue = clampNumeric(draft, min, max) ?? value;
+  const rangeStyle = { '--v3-range-progress': `${max > min ? (rangeValue - min) / (max - min) * 100 : 0}%` } as React.CSSProperties;
+  useEffect(() => { setDraft(String(value)); setCommitted(value); }, [value]);
   const change = (value: string) => { setDraft(value); const numeric = clampNumeric(value, min, max); if (numeric !== null) onDraft?.(numeric); };
-  const commit = (raw = draft) => { if (cancelled.current) return; const numeric = clampNumeric(raw, min, max); if (numeric === null) { setDraft(String(value)); onDraft?.(value); return; } setDraft(String(numeric)); onCommit(numeric); };
-  const cancel = () => { cancelled.current = true; setDraft(String(value)); onDraft?.(value); };
-  return <label className="v3-numeric-control"><span style={{display:'flex',alignItems:'center',gap:8}}>{icon}{label}</span><div><input type="range" aria-label={label} min={min} max={max} step={step} disabled={disabled} value={clampNumeric(draft, min, max) ?? value}
+  const commit = (raw = draft) => { if (cancelled.current) return; const numeric = clampNumeric(raw, min, max); if (numeric === null) { setDraft(String(committed)); onDraft?.(committed); return; } setDraft(String(numeric)); setCommitted(numeric); onCommit(numeric); };
+  const cancel = () => { cancelled.current = true; setDraft(String(committed)); onDraft?.(committed); };
+  const dirty = !draft.trim() || !Number.isFinite(Number(draft)) || Number(draft) !== committed;
+  const escape = (event: React.KeyboardEvent<HTMLInputElement>) => { if (dirty) { event.preventDefault(); event.stopPropagation(); cancel(); } };
+  return <label className={`v3-numeric-control${compact ? ' v3-numeric-control--compact' : ''}`} data-v3-draft-dirty={dirty}>{!hideLabel && <span style={{display:'flex',alignItems:'center',gap:8}}>{icon}{label}</span>}<div><input type="range" aria-label={label} style={rangeStyle} min={min} max={max} step={step} disabled={disabled} value={rangeValue}
     onChange={event => { if (!cancelled.current) change(event.target.value); }} onPointerDown={() => { cancelled.current = false; }} onPointerUp={event => commit(event.currentTarget.value)} onPointerCancel={cancel} onBlur={() => commit()}
-    onKeyDown={event => { if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); cancel(); } else cancelled.current = false; }} onKeyUp={event => { if (['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End','PageUp','PageDown'].includes(event.key)) commit(event.currentTarget.value); }}/>
-    <input type="number" aria-label={`${label} value`} disabled={disabled} value={draft} min={min} max={max} step={step} onChange={event => { cancelled.current = false; change(event.target.value); }} onBlur={() => commit()} onKeyDown={event => { if (event.key === 'Enter') { event.preventDefault(); commit(); } if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); cancel(); } }}/></div></label>;
+    onKeyDown={event => { if (event.key === 'Escape') escape(event); else cancelled.current = false; }} onKeyUp={event => { if (['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End','PageUp','PageDown'].includes(event.key)) commit(event.currentTarget.value); }}/>
+    <input type="number" aria-label={`${label} value`} disabled={disabled} value={draft} min={min} max={max} step={step} onChange={event => { cancelled.current = false; change(event.target.value); }} onBlur={() => commit()} onKeyDown={event => { if (event.key === 'Enter') { event.preventDefault(); commit(); } if (event.key === 'Escape') escape(event); }}/></div></label>;
 }
 
 function ColorControl({ label, value, onCommit, transparent = false }: { label: string; value: string; onCommit: (value: string) => void; transparent?: boolean }) {
@@ -51,7 +60,7 @@ function ColorControl({ label, value, onCommit, transparent = false }: { label: 
 }
 
 function Opacity({ element }: { element: CanvasElement }) {
-  return <Menu label="Opacity" icon={<Droplets/>}><NumericControl label="Opacity" value={Math.round(element.opacity * 100)} min={0} max={100} onCommit={opacity => commitElementPatch(element.id, { opacity: opacity / 100 })}/></Menu>;
+  return <Menu label="Opacity" heading="Transparency" iconOnly compact icon={<span aria-hidden="true" className="v3-transparency-icon"/>}><NumericControl label="Opacity" compact hideLabel value={Math.round(element.opacity * 100)} min={0} max={100} onCommit={opacity => commitElementPatch(element.id, { opacity: opacity / 100 })}/></Menu>;
 }
 
 function TextToolbar({ element }: { element: TextElement }) {
@@ -61,13 +70,12 @@ function TextToolbar({ element }: { element: TextElement }) {
   const commitSize = () => { const value = clampNumeric(size, 1, 500); if (value !== null) update({ fontSize: value }); setSize(String(value ?? element.fontSize)); };
   return <><select aria-label="Font family" value={element.fontFamily} onChange={event => update({ fontFamily: event.target.value })}>{Array.from(new Set([element.fontFamily, ...fonts])).map(font => <option key={font}>{font}</option>)}</select>
     <div className="v3-font-size"><Action label="Decrease font size" onClick={() => update({ fontSize: Math.max(1, element.fontSize - 1) })}><Minus/></Action><input aria-label="Font size" type="number" min={1} max={500} value={size} onChange={event => setSize(event.target.value)} onBlur={commitSize} onKeyDown={event => { if (event.key === 'Enter') commitSize(); if (event.key === 'Escape') { event.stopPropagation(); setSize(String(element.fontSize)); } }}/><Action label="Increase font size" onClick={() => update({ fontSize: Math.min(500, element.fontSize + 1) })}><Plus/></Action></div>
-    <Menu label="Text color" icon={<Palette/>}><ColorControl label="Text" value={element.color} onCommit={color => update({ color })}/></Menu>
+    <Menu label="Text color" iconOnly icon={<span aria-hidden="true" className="v3-text-color-icon">A<span style={{ backgroundColor: element.color }}/></span>}><ColorControl label="Text" value={element.color} onCommit={color => update({ color })}/></Menu>
     <Action label="Bold" pressed={element.bold} onClick={() => update({ bold: !element.bold, fontWeight: element.bold ? 400 : 700 })}><Bold/></Action>
     <Action label="Italic" pressed={element.italic} onClick={() => update({ italic: !element.italic })}><Italic/></Action>
     <div className="v3-alignment">{([['left', AlignLeft], ['center', AlignCenter], ['right', AlignRight]] as const).map(([align, Icon]) => <Action key={align} label={`Align ${align}`} pressed={element.align === align} onClick={() => update({ align })}><Icon/></Action>)}</div>
-    <Menu label="More text options" text="More" icon={<MoreHorizontal/>}><div className="v3-option-row"><Action label="Underline" pressed={element.underline} onClick={() => update({ underline: !element.underline })}><Underline/></Action><Action label="Strikethrough" pressed={element.strikethrough} onClick={() => update({ strikethrough: !element.strikethrough })}><Strikethrough/></Action><Action label="Bullet list" pressed={element.listStyle === 'bullet'} onClick={() => update({ listStyle: element.listStyle === 'bullet' ? 'none' : 'bullet' })}><List/></Action><Action label="Numbered list" pressed={element.listStyle === 'numbered'} onClick={() => update({ listStyle: element.listStyle === 'numbered' ? 'none' : 'numbered' })}><ListOrdered/></Action></div>
+    <Opacity element={element}/><Menu label="More text options" iconOnly icon={<MoreHorizontal/>}><div className="v3-option-row"><Action label="Underline" pressed={element.underline} onClick={() => update({ underline: !element.underline })}><Underline/></Action><Action label="Strikethrough" pressed={element.strikethrough} onClick={() => update({ strikethrough: !element.strikethrough })}><Strikethrough/></Action><Action label="Bullet list" pressed={element.listStyle === 'bullet'} onClick={() => update({ listStyle: element.listStyle === 'bullet' ? 'none' : 'bullet' })}><List/></Action><Action label="Numbered list" pressed={element.listStyle === 'numbered'} onClick={() => update({ listStyle: element.listStyle === 'numbered' ? 'none' : 'numbered' })}><ListOrdered/></Action></div>
       <label>Case<select aria-label="Text case" value={element.textTransform} onChange={event => update({ textTransform: event.target.value as TextElement['textTransform'] })}>{['none','uppercase','lowercase','capitalize'].map(value => <option key={value}>{value}</option>)}</select></label>
-      <NumericControl label="Opacity" min={0} max={100} value={Math.round(element.opacity * 100)} onCommit={opacity => update({ opacity: opacity / 100 })}/>
     </Menu></>;
 }
 
@@ -89,9 +97,9 @@ function Border({ element }: { element: ShapeElement | ImageElement }) {
 function ShapeToolbar({ element }: { element: ShapeElement }) {
   const shadow = element.shadow ?? { color: '#000000', opacity: 0.25, blur: 12, offsetX: 4, offsetY: 4 };
   return <><Menu label="Edit shape" text="Edit" icon={<Square/>}>{([['rectangle', Square], ['circle', Circle], ['triangle', Triangle], ['star', Star]] as const).map(([shapeType, Icon]) => <button key={shapeType} type="button" onClick={() => commitElementPatch(element.id, { shapeType })}><Icon/>{shapeType === 'rectangle' ? 'Rectangle / Square' : shapeType[0].toUpperCase() + shapeType.slice(1)}</button>)}</Menu>
-    <Menu label="Fill" icon={<Palette/>}><ColorControl label="Fill" value={element.fill} transparent onCommit={fill => commitElementPatch(element.id, { fill })}/></Menu>
-    <Menu label="Border" icon={<ScanLine/>}><Border element={element}/></Menu>
-    {element.shapeType === 'rectangle' && <Menu label="Corners" icon={<Square/>}><NumericControl label="Corner radius" min={0} max={100} value={element.cornerRadius} onCommit={cornerRadius => commitElementPatch(element.id, { cornerRadius })}/></Menu>}
+    <Menu label="Fill" iconOnly icon={<span aria-hidden="true" className={`v3-color-swatch${element.fill === 'transparent' ? ' v3-color-swatch--transparent' : ''}`} style={{ backgroundColor: element.fill }}/>}><ColorControl label="Fill" value={element.fill} transparent onCommit={fill => commitElementPatch(element.id, { fill })}/></Menu>
+    <Menu label="Border" iconOnly icon={<SquareDashed/>}><Border element={element}/></Menu>
+    {element.shapeType === 'rectangle' && <Menu label="Corners" iconOnly icon={<Radius/>}><NumericControl label="Corner radius" min={0} max={100} value={element.cornerRadius} onCommit={cornerRadius => commitElementPatch(element.id, { cornerRadius })}/></Menu>}
     <Opacity element={element}/><Menu label="Effects" icon={<Sparkles/>}><button type="button" aria-pressed={!element.shadow} onClick={() => commitElementPatch(element.id, { shadow: undefined })}>None</button><button type="button" aria-pressed={!!element.shadow} onClick={() => commitElementPatch(element.id, { shadow })}>Shadow</button>
       {element.shadow && <><ColorControl label="Shadow" value={shadow.color} onCommit={color => commitElementPatch(element.id, { shadow: { ...shadow, color } })}/>
         <NumericControl label="Shadow opacity" min={0} max={100} value={Math.round(shadow.opacity * 100)} onCommit={opacity => commitElementPatch(element.id, { shadow: { ...shadow, opacity: opacity / 100 } })}/>
@@ -115,16 +123,16 @@ function ImageToolbar({ element, onEditImage }: { element: ImageElement; onEditI
   return <><Action label="Edit image" onClick={onEditImage}><SlidersHorizontal/><span>Edit</span></Action>
     <input ref={fileInput} hidden type="file" accept="image/*" aria-label="Replace image file" onChange={event => void replace(event.target.files?.[0])}/>
     <button type="button" disabled={busy || useContext(Disabled)} aria-label="Replace image" onClick={() => fileInput.current?.click()}><Replace/>{busy ? 'Replacing…' : 'Replace'}</button>
-    <Menu label="Flip" icon={<FlipHorizontal/>}><Action label="Flip horizontal" pressed={element.flipHorizontal} onClick={() => commitElementPatch(element.id, { flipHorizontal: !element.flipHorizontal })}><FlipHorizontal/>Horizontal</Action><Action label="Flip vertical" pressed={element.flipVertical} onClick={() => commitElementPatch(element.id, { flipVertical: !element.flipVertical })}><FlipVertical/>Vertical</Action></Menu>
-    <Menu label="Corners" icon={<Square/>}><NumericControl label="Corner radius" min={0} max={100} value={element.cornerRadius} onCommit={cornerRadius => commitElementPatch(element.id, { cornerRadius })}/></Menu><Opacity element={element}/>
-    <Menu label="More image options" text="More" icon={<MoreHorizontal/>}><label>Fit<select aria-label="Image fit" value={element.objectFit ?? 'cover'} onChange={event => commitElementPatch(element.id, { objectFit: event.target.value as ImageElement['objectFit'] })}>{['cover','contain','fill'].map(value => <option key={value}>{value}</option>)}</select></label><h4>Border</h4><Border element={element}/><button type="button" onClick={() => commitElementPatch(element.id, resetImageAppearancePatch())}>Reset image</button></Menu>
+    <Action label="Flip horizontal" pressed={element.flipHorizontal} onClick={() => commitElementPatch(element.id, { flipHorizontal: !element.flipHorizontal })}><FlipHorizontalIcon/></Action><Action label="Flip vertical" pressed={element.flipVertical} onClick={() => commitElementPatch(element.id, { flipVertical: !element.flipVertical })}><FlipVerticalIcon/></Action>
+    <Menu label="Corners" iconOnly icon={<Radius/>}><NumericControl label="Corner radius" min={0} max={100} value={element.cornerRadius} onCommit={cornerRadius => commitElementPatch(element.id, { cornerRadius })}/></Menu><Opacity element={element}/>
+    <Menu label="More image options" iconOnly icon={<MoreHorizontal/>}><label>Fit<select aria-label="Image fit" value={element.objectFit ?? 'cover'} onChange={event => commitElementPatch(element.id, { objectFit: event.target.value as ImageElement['objectFit'] })}>{['cover','contain','fill'].map(value => <option key={value}>{value}</option>)}</select></label><h4>Border</h4><Border element={element}/><button type="button" onClick={() => commitElementPatch(element.id, resetImageAppearancePatch())}>Reset image</button></Menu>
     {error && <div className="v3-replace-error" role="alert">{error}<button type="button" onClick={() => fileInput.current?.click()}>Retry replacement</button></div>}
   </>;
 }
 
 function LineToolbar({ element }: { element: LineElement }) {
   return <><label>Type<select aria-label="Line type" value={element.lineType} onChange={event => commitElementPatch(element.id, { lineType: event.target.value as LineElement['lineType'] })}>{['straight','curved','elbow'].map(value => <option key={value}>{value}</option>)}</select></label>
-    <Menu label="Line color" icon={<Palette/>}><ColorControl label="Line" value={element.stroke} onCommit={stroke => commitElementPatch(element.id, { stroke })}/></Menu>
+    <Menu label="Line color" iconOnly icon={<span aria-hidden="true" className="v3-color-swatch" style={{ backgroundColor: element.stroke }}/>}><ColorControl label="Line" value={element.stroke} onCommit={stroke => commitElementPatch(element.id, { stroke })}/></Menu>
     <Menu label="Stroke" icon={<ScanLine/>}><NumericControl label="Line width" min={1} max={20} value={element.strokeWidth} onCommit={strokeWidth => commitElementPatch(element.id, { strokeWidth })}/><label>Pattern<select aria-label="Line stroke style" value={element.strokeStyle} onChange={event => commitElementPatch(element.id, { strokeStyle: event.target.value as LineElement['strokeStyle'] })}>{['solid','dashed','dotted'].map(value => <option key={value}>{value}</option>)}</select></label></Menu>
     <Menu label="Line endings" icon={<ArrowLeftRight/>}>{(['startDecoration','endDecoration'] as const).map((key, index) => <label key={key}>{index ? 'End' : 'Start'}<select aria-label={index ? 'End decoration' : 'Start decoration'} value={element[key]} onChange={event => commitElementPatch(element.id, { [key]: event.target.value })}>{['none','arrow','circle','bar'].map(value => <option key={value}>{value}</option>)}</select></label>)}<button type="button" onClick={() => commitElementPatch(element.id, { startDecoration: element.endDecoration, endDecoration: element.startDecoration })}>Swap ends</button></Menu><Opacity element={element}/></>;
 }

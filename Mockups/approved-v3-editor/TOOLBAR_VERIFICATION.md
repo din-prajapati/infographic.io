@@ -1,5 +1,15 @@
 # Toolbar and drawing verification
 
+## Presentation refinement — 2026-11-02
+
+Approved shell and existing actions retained. Overflow triggers now show three dots only; image flips are separate direct icon buttons. Text, image, shape and line toolbars expose checkerboard transparency controls in compact themed popovers. Stateful color swatches and rounded sliders follow the Navy/Teal palette. Native numeric spinners are hidden throughout V3; keyboard input and explicit font-size buttons remain available.
+
+Final frontend/API type checks passed. Unit tests: **811 backend +475 client passed**, one existing skip. The complete browser suite passed **51/51**; after the final Escape-handling correction, the affected sidebar, light/dark presentation and compact transparency/history subset passed **4/4**. Dirty numeric drafts cancel on first Escape; the next Escape dismisses the popover. Enter commits and permits immediate Escape dismissal. Production build passed before this final keyboard correction. Gate2 visual inspection passed for both themes and the text transparency popover. Gate4 is not triggered by these frontend-only changes; the Nov1 authenticated API/DB proof below remains historical evidence.
+
+[Text transparency](evidence/text-transparency.png) · [Light transparency](evidence/transparency-light.png) · [Dark transparency](evidence/transparency-dark.png)
+
+Current ignored logs: `.agent-logs/v3-toolbar-refinement-{check-final,unit-final,browser-final,browser-focused,build}.log` in the main workspace. An initial browser run stalled waiting for full-page load despite the rendered editor; readiness now waits for DOM content and an explicit editor assertion. The clean 51-case run and final four-case run above passed. No added Canva features, main merge or deployment.
+
 Date: 2026-11-01. Branch: `feat/edit/m-11-v3-editor-slice`. Stories US-EDIT-032/033/034. Implementation is verified locally; milestone PR/main merge and default-route rollout remain pending.
 
 ## Delivered

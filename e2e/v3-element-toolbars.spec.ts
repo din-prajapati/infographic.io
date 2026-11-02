@@ -22,7 +22,7 @@ async function setup(page: Page, theme = 'light') {
     }
     return route.fulfill({json:[]});
   });
-  await page.goto(`/editor?editor=v3&designId=${id}`);
+  await page.goto(`/editor?editor=v3&designId=${id}`,{waitUntil:'domcontentloaded'});
   await expect(page.getByTestId('design-canvas').getByText('Modern listing')).toBeVisible();
   return model;
 }
@@ -46,7 +46,7 @@ test('text More preserves old formatting through save and reload',async({page})=
   await page.keyboard.press('Escape');
   const elements=await save(page,model);
   expect(elements.find(el=>el.id==='text')).toMatchObject({bold:true,fontWeight:700,strikethrough:true,textTransform:'uppercase',listStyle:'bullet'});
-  await page.reload();await element(page,'text').click();
+  await page.reload({waitUntil:'domcontentloaded'});await element(page,'text').click();
   await expect(toolbar(page,'text').getByRole('button',{name:'Bold',exact:true})).toHaveAttribute('aria-pressed','true');
 });
 
@@ -80,7 +80,7 @@ test('image replacement preserves geometry and supports flip and border',async({
   const model=await setup(page);await element(page,'image').click();
   await page.getByLabel('Replace image file',{exact:true}).setInputFiles({name:'replacement.svg',mimeType:'image/svg+xml',buffer:Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"><rect width="40" height="40" fill="#ff0000"/></svg>')});
   await expect(element(page,'image').locator('img')).toHaveAttribute('src',/^data:image\/svg\+xml;base64,/);
-  await toolbar(page,'image').getByRole('button',{name:'Flip',exact:true}).click();await page.getByRole('button',{name:'Flip horizontal',exact:true}).click();await page.keyboard.press('Escape');
+  await toolbar(page,'image').getByRole('button',{name:'Flip horizontal',exact:true}).click();
   expect((await save(page,model)).find(el=>el.id==='image')).toMatchObject({id:'image',x:500,y:260,width:160,height:120,objectFit:'contain',flipHorizontal:true,name:'replacement.svg'});
 });
 
@@ -99,7 +99,7 @@ for(const type of ['Straight','Curved','Elbow']) test(`${type} line draws, saves
   await page.mouse.move(box.x+box.width*.35,box.y+box.height*.75);await page.mouse.down();await page.mouse.move(box.x+box.width*.75,box.y+box.height*.85,{steps:8});await page.mouse.up();
   await expect(toolbar(page,'line')).toBeVisible();
   const saved=(await save(page,model)).find(el=>el.type==='line');expect(saved).toMatchObject({lineType:type.toLowerCase(),strokeWidth:2,visible:true});
-  await page.reload();await expect(page.getByTestId('design-canvas').locator('[data-element-type="line"]')).toHaveCount(1);
+  await page.reload({waitUntil:'domcontentloaded'});await expect(page.getByTestId('design-canvas').locator('[data-element-type="line"]')).toHaveCount(1);
   const download=page.waitForEvent('download');await page.getByRole('button',{name:'Export',exact:true}).click();expect((await download).suggestedFilename()).toMatch(/\.png$/);
   await page.goto(`/editor?designId=${id}`,{waitUntil:'domcontentloaded'});
   await expect(page.getByTestId('design-canvas').locator('[data-element-type="line"]')).toHaveCount(1);
@@ -110,7 +110,11 @@ for(const theme of ['light','dark']) test(`${theme} modern toolbar and sidebar p
   await element(page,'image').click();await toolbar(page,'image').getByRole('button',{name:'Edit image',exact:true}).click();
   const box=await toolbar(page,'image').boundingBox();expect(box!.x).toBeGreaterThanOrEqual(0);expect(box!.x+box!.width).toBeLessThanOrEqual(1191);
   await expect(page.getByTestId('design-canvas')).toHaveCSS('background-color','rgb(255, 255, 255)');
-  await page.screenshot({path:info.outputPath(`modern-${theme}.png`),fullPage:true});expect(errors).toEqual([]);
+  await page.screenshot({path:info.outputPath(`modern-${theme}.png`),fullPage:true});
+  await toolbar(page,'image').getByRole('button',{name:'Opacity',exact:true}).click();
+  await expect(page.getByRole('heading',{name:'Transparency',exact:true})).toBeVisible();
+  await expect(page.getByLabel('Opacity value',{exact:true})).toHaveValue('100');
+  await page.screenshot({path:info.outputPath(`transparency-${theme}.png`),fullPage:true});expect(errors).toEqual([]);
 });
 
 // Contract: R × S maps a horizontally flipped left-red source to the lower half
@@ -119,7 +123,7 @@ test('rotated flipped image exports with the same orientation as the canvas',asy
   await setup(page);await element(page,'image').click();
   await page.getByLabel('Replace image file',{exact:true}).setInputFiles({name:'two-colours.svg',mimeType:'image/svg+xml',buffer:Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="160" height="120"><rect width="80" height="120" fill="#ff0000"/><rect x="80" width="80" height="120" fill="#0000ff"/></svg>')});
   await expect(element(page,'image').locator('img')).toHaveAttribute('src',/^data:image\/svg\+xml;base64,/);
-  await toolbar(page,'image').getByRole('button',{name:'Flip',exact:true}).click();await page.getByRole('button',{name:'Flip horizontal',exact:true}).click();await page.keyboard.press('Escape');
+  await toolbar(page,'image').getByRole('button',{name:'Flip horizontal',exact:true}).click();
   await page.getByRole('button',{name:'Rotate element',exact:true}).click();await page.getByLabel('Rotation degrees',{exact:true}).fill('90');await page.getByRole('button',{name:'Apply angle',exact:true}).click();
   const pending=page.waitForEvent('download');await page.getByRole('button',{name:'Export',exact:true}).click();const downloaded=await pending;
   const png=(await readFile((await downloaded.path())!)).toString('base64');
@@ -136,4 +140,54 @@ test('cancelled line drawing leaves the document and history unchanged',async({p
   await page.mouse.move(box.x+box.width*.3,box.y+box.height*.7);await page.mouse.down();await page.mouse.move(box.x+box.width*.7,box.y+box.height*.8);await page.keyboard.press('Escape');await page.mouse.up();
   await expect(page.getByTestId('design-canvas').locator('[data-element-type="line"]')).toHaveCount(0);
   await expect(page.getByRole('button',{name:'Undo',exact:true})).toBeDisabled();
+});
+
+// Contract: More triggers are dots-only; the existing opacity value moves to a
+// primary checkerboard control and still records exactly one undoable change.
+test('compact overflow and transparency retain accessible controls and history',async({page})=>{
+  const model=await setup(page);await page.getByRole('button',{name:'Text',exact:true}).click();await element(page,'text').click();
+  const more=toolbar(page,'text').getByRole('button',{name:'More text options',exact:true});
+  await expect(more).toHaveText('');await expect(more.locator('svg')).toHaveCount(1);
+  await more.click();await expect(page.getByRole('button',{name:'Strikethrough',exact:true})).toBeVisible();await page.keyboard.press('Escape');
+  const opacity=toolbar(page,'text').getByRole('button',{name:'Opacity',exact:true});
+  await expect(opacity).toHaveText('');await opacity.click();
+  await expect(page.getByRole('heading',{name:'Transparency',exact:true})).toBeVisible();
+  await page.screenshot({path:test.info().outputPath('text-transparency.png'),fullPage:true});
+  const value=page.getByLabel('Opacity value',{exact:true});await value.fill('37');await value.press('Enter');await page.keyboard.press('Escape');
+  await expect(page.getByRole('heading',{name:'Transparency',exact:true})).toHaveCount(0);
+  expect((await save(page,model)).find(el=>el.id==='text').opacity).toBe(.37);
+  await page.getByRole('button',{name:'Undo',exact:true}).click();
+  expect((await save(page,model)).find(el=>el.id==='text').opacity).toBe(1);
+  await element(page,'image').click();await expect(toolbar(page,'image').getByRole('button',{name:'More image options',exact:true})).toHaveText('');
+});
+
+// Contract: both image flip controls are directly actionable; each click is one
+// history boundary and flips only the selected image without opening a submenu.
+test('separate flip icons toggle both axes directly and undo independently',async({page})=>{
+  const model=await setup(page);await element(page,'image').click();
+  const imageToolbar=toolbar(page,'image');
+  const horizontal=imageToolbar.getByRole('button',{name:'Flip horizontal',exact:true});
+  const vertical=imageToolbar.getByRole('button',{name:'Flip vertical',exact:true});
+  await expect(horizontal).toHaveText('');await expect(vertical).toHaveText('');
+  await horizontal.click();await expect(horizontal).toHaveAttribute('aria-pressed','true');
+  await vertical.click();await expect(vertical).toHaveAttribute('aria-pressed','true');
+  expect((await save(page,model)).find(el=>el.id==='image')).toMatchObject({flipHorizontal:true,flipVertical:true});
+  await page.getByRole('button',{name:'Undo',exact:true}).click();await expect(vertical).toHaveAttribute('aria-pressed','false');await expect(horizontal).toHaveAttribute('aria-pressed','true');
+  await page.getByRole('button',{name:'Undo',exact:true}).click();await expect(horizontal).toHaveAttribute('aria-pressed','false');
+});
+
+// Contract: all V3 numeric fields retain numeric entry while their computed
+// appearance is textfield; the explicit font-size minus/plus actions remain.
+test('number fields suppress native spinner UI across the V3 editor',async({page})=>{
+  await setup(page);await element(page,'text').click();
+  await expect(page.getByLabel('Font size',{exact:true})).toHaveCSS('appearance','textfield');
+  await expect(toolbar(page,'text').getByRole('button',{name:'Increase font size',exact:true})).toBeVisible();
+  await page.getByRole('button',{name:'Canvas settings',exact:true}).click();
+  for(const label of ['Canvas width','Canvas height'])await expect(page.getByLabel(label,{exact:true})).toHaveCSS('appearance','textfield');
+  await page.getByRole('button',{name:'Canvas settings',exact:true}).click();
+  await page.getByRole('button',{name:'Rotate element',exact:true}).click();await expect(page.getByLabel('Rotation degrees',{exact:true})).toHaveCSS('appearance','textfield');await page.keyboard.press('Escape');
+  await element(page,'shape').click();await toolbar(page,'shape').getByRole('button',{name:'Border',exact:true}).click();
+  await expect(page.getByLabel('Border width value',{exact:true})).toHaveCSS('appearance','textfield');await page.keyboard.press('Escape');
+  await element(page,'image').click();await toolbar(page,'image').getByRole('button',{name:'Edit image',exact:true}).click();
+  for(const label of ['Brightness value','Contrast value','Saturation value'])await expect(page.getByLabel(label,{exact:true})).toHaveCSS('appearance','textfield');
 });
