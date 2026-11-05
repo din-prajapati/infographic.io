@@ -1,6 +1,7 @@
 // Canvas utility functions
 
 import { CanvasElement, TextElement, ShapeElement, ImageElement, ShapeType } from './canvasTypes';
+import { isValidElementPaints } from './paint';
 
 // Generate unique ID
 export function generateId(): string {
@@ -212,7 +213,7 @@ export function exportToJSON(elements: CanvasElement[]): string {
 export function importFromJSON(json: string): CanvasElement[] {
   try {
     const parsed = JSON.parse(json);
-    if (Array.isArray(parsed)) {
+    if (Array.isArray(parsed) && parsed.every(isValidElementPaints)) {
       return parsed;
     }
     return [];

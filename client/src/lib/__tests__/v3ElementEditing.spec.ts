@@ -34,6 +34,18 @@ describe('approved element edit boundaries', () => {
     expect(commitElementPatch(element.id, { content: 'Changed' })).toBe(false);
     expect(useCanvasStore.getState().history.past).toHaveLength(0);
   });
+  // Contract: line spacing outside 0.5..3 never commits; a valid 2.5 value makes exactly one Undo revision.
+  it('uses the same line spacing bounds for final style commits', () => {
+    const element = createTextElement();
+    useCanvasStore.setState({ elements: [element], selectedElementIds: [element.id] });
+    expect(commitElementPatch(element.id, { lineHeight: 0.4 })).toBe(false);
+    expect(commitElementPatch(element.id, { lineHeight: 3.1 })).toBe(false);
+    expect(commitElementPatch(element.id, { lineHeight: 2.5 })).toBe(true);
+    expect(useCanvasStore.getState().elements[0]).toMatchObject({ lineHeight: 2.5 });
+    expect(useCanvasStore.getState().history.past).toHaveLength(1);
+    useCanvasStore.getState().undo();
+    expect(useCanvasStore.getState().elements[0]).toMatchObject({ lineHeight: 1.5 });
+  });
   // Contract: successful replacement retains identity, geometry, fit and style while clearing old source metadata.
   it('replaces only source dependent image fields', () => {
     const element = { ...createImageElement('old', 80, 120, 200, 40), rotation: 35, opacity: 0.5, objectFit: 'contain' as const, slot: 'property.heroImage', isAiImport: true, aiSourceUrl: 'provider', crop: { x: 2, y: 3, width: 20, height: 10 } };

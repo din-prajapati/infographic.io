@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { ArrowLeft, RotateCcw, Sun, Contrast, Droplet } from 'lucide-react';
 import type { ImageElement } from '../../../lib/canvasTypes';
 import { commitElementPatch, storedToImageAdjustment } from '../../../lib/v3ElementEditing';
-import { NumericControl } from './V3ElementToolbar';
+import { NumericControl,V3ColorButton } from './V3ElementToolbar';
 
 export function V3ImageEditor({ element, onBack }: { element: ImageElement; onBack: () => void }) {
   const [filters, setFilters] = useState(element.filters);
@@ -15,6 +15,7 @@ export function V3ImageEditor({ element, onBack }: { element: ImageElement; onBa
   return <section className="v3-image-editor" aria-label="Edit image panel">
     <header><button type="button" aria-label="Back from image editing" onClick={onBack}><ArrowLeft/>Back</button><h2>Edit image</h2></header>
     <div className="v3-image-editor-preview"><img src={element.src} alt={`Preview of ${element.name}`} style={{ filter: `brightness(${filters.brightness}%) contrast(${filters.contrast}%) saturate(${filters.saturation}%)`, transform: `scaleX(${element.flipHorizontal ? -1 : 1}) scaleY(${element.flipVertical ? -1 : 1})`, opacity: element.opacity, borderRadius: element.cornerRadius }}/></div>
+    <div className="v3-overlay-control"><span>Overlay color</span><V3ColorButton element={element} slot="overlay" label="Overlay color"/></div>
     <h3>Adjustments</h3><p>Changes preview here while you adjust. Release or confirm a value to apply it to the canvas.</p>
     <fieldset disabled={element.locked}>
       {(['brightness','contrast','saturation'] as const).map(filter => <NumericControl key={`${element.id}:${filter}`} label={filter[0].toUpperCase() + filter.slice(1)} min={-100} max={100} value={storedToImageAdjustment(element.filters[filter])}

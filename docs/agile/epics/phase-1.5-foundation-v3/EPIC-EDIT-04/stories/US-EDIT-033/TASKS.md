@@ -51,3 +51,13 @@ Gate1 mandatory. Gate2 themed desktop visuals/focus/edge placement. Gate3 browse
 Nov2 T4: final type checks and 1,286 unit tests passed (one existing skip); 51 browser cases passed, then four affected cases passed after the final Escape correction. Light/dark and text transparency screenshots inspected and saved. See TOOLBAR_VERIFICATION.md for exact sequence and logs. Merge remains pending.
 
 Acceptance-derived tests, runtime and verification completed. Shared model/dispatch/toolbars are delivered atomically because isolated intermediate union changes fail compilation or omit line rendering. Commit carries T1–T3 and all three story IDs. See TOOLBAR_VERIFICATION.md for logs, review fixes and exclusions. Story stays merge-pending.
+
+- [x] T5 (45m) — Nov4 Canva-inspected toolbar correction per AC3 in existing toolbar/CSS/unit/browser/plan/verification paths. No added capabilities.
+
+Nov4 retained visual evidence scope: Mockups/approved-v3-editor/evidence/nov4-light-corners.png, nov4-light-border.png, nov4-dark-corners.png, nov4-dark-border.png.
+
+- [x] T6 (90m) — Detailed cross-element Canva presentation and safe live style previews, AC4/AC5. Additional exact paths: client/src/hooks/useV3ElementPreview.ts; client/src/hooks/__tests__/useV3ElementPreview.spec.ts; client/src/components/editor/v3/V3Canvas.tsx; existing toolbar/CSS/helper/unit/browser/plan/report paths. Keep all previous uncommitted work intact.
+
+Detailed follow-up evidence scope: Mockups/approved-v3-editor/evidence/details-text-overflow-dark.png, details-line-live-stroke.png, details-image-border-dark.png. Font picker remains within existing fonts; no external font loading.
+
+- [x] T7 (60m) — AC6/7 exact text controls: seamless font-size capsule, screenshot-matched spacing/anchor panel and three-state case toggle. Existing toolbar/CSS/unit/browser, preview validation/tests, plan/report paths and evidence/text-ref-light.png + text-ref-dark.png.

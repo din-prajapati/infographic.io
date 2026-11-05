@@ -1,6 +1,8 @@
 import { useCanvasStore } from '../hooks/useCanvasStore';
 import type { CanvasStore, ImageElement } from './canvasTypes';
 import { normalizeLineElement } from './lineGeometry';
+import { clearElementPreview, isValidElementPatch } from '../hooks/useV3ElementPreview';
+import {isValidElementPaints} from './paint';
 
 export function clampNumeric(value: string | number, min: number, max: number): number | null {
   if (typeof value === 'string' && !value.trim()) return null;
@@ -18,16 +20,13 @@ export function storedToImageAdjustment(value: number): number {
 }
 
 export function commitElementPatch(id: string, patch: Parameters<CanvasStore['updateElement']>[1]): boolean {
+  clearElementPreview(id);
   const state = useCanvasStore.getState();
   const element = state.elements.find(value => value.id === id);
   if (!element || element.locked || !element.visible || state.selectedElementIds.length !== 1 || state.selectedElementIds[0] !== id) return false;
   const entries = Object.entries(patch);
   if (!entries.length || entries.every(([key, value]) => JSON.stringify(element[key as keyof typeof element]) === JSON.stringify(value))) return false;
-  const invalidNumber = (value: unknown): boolean => typeof value === 'number' ? !Number.isFinite(value)
-    : !!value && typeof value === 'object' && Object.values(value).some(invalidNumber);
-  if (entries.some(([, value]) => invalidNumber(value))) return false;
-  const limits: Record<string, [number, number]> = { fontSize: [1, 500], opacity: [0, 1], cornerRadius: [0, 100], strokeWidth: [0, 20], borderWidth: [0, 20] };
-  if (entries.some(([key, value]) => typeof value === 'number' && limits[key] && (value < limits[key][0] || value > limits[key][1]))) return false;
+  if (!isValidElementPatch(patch)||!isValidElementPaints({...element,...patch})) return false;
   state.updateElement(id, element.type === 'line' ? normalizeLineElement({ ...element, ...patch, type: 'line' }) : patch);
   return true;
 }
@@ -35,7 +34,7 @@ export function commitElementPatch(id: string, patch: Parameters<CanvasStore['up
 export function resetImageAppearancePatch(): Partial<ImageElement> {
   return { filters: { brightness: 100, contrast: 100, saturation: 100 }, colorOverlay: null,
     flipHorizontal: false, flipVertical: false, opacity: 1, cornerRadius: 0,
-    borderWidth: 0, borderColor: undefined, borderStyle: undefined };
+    borderWidth: 0, borderColor: undefined, borderStyle: undefined,paints:undefined };
 }
 
 export function replacementImagePatch(src: string, name: string): Partial<ImageElement> {

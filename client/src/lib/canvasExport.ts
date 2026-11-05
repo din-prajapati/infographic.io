@@ -3,10 +3,13 @@
  * Bypasses html2canvas to avoid oklch color parsing issues
  */
 
+import { getElementPaint, paintDecorationColor, paintToCanvas } from './paint';
 import { useCanvasStore } from '../hooks/useCanvasStore';
 import { CanvasElement, TextElement, ShapeElement, ImageElement, LineElement } from './canvasTypes';
-import { colorWithOpacity, finiteClamp, normalizeShadow, strokeDash } from './elementStyles';
+import { colorWithOpacity, finiteClamp, strokeDash } from './elementStyles';
 import { lineCommands, lineDecorations } from './lineGeometry';
+import { formatTextContent, textLetterSpacingPx, textAnchorOffset } from './textLayout';
+import { shapeEffectPadding, shapeEffectShadows } from './shapeEffects';
 import {
   getTrianglePath,
   getStarPath,
@@ -51,7 +54,7 @@ export async function exportCanvasToImage(
     ctx.scale(effectiveScale, effectiveScale);
     
     // Fill background
-    ctx.fillStyle = state.backgroundColor;
+    ctx.fillStyle = paintToCanvas(ctx, state.backgroundPaint, state.backgroundColor, {x:0,y:0,width:state.canvasWidth,height:state.canvasHeight});
     ctx.fillRect(0, 0, state.canvasWidth, state.canvasHeight);
     
     // Sort elements by z-index
@@ -200,30 +203,23 @@ function renderTextElement(ctx: CanvasRenderingContext2D, element: TextElement):
   const fontStyle = element.italic ? 'italic' : 'normal';
 
   ctx.font = `${fontStyle} ${fontWeight} ${element.fontSize}px ${element.fontFamily}`;
-  ctx.fillStyle = element.color;
+  ctx.fillStyle = paintToCanvas(ctx, getElementPaint(element, 'color'), element.color, element);
   ctx.textAlign = element.align;
   ctx.textBaseline = 'top';
 
-  // Apply text transform
-  let content = element.content;
-  switch (element.textTransform) {
-    case 'uppercase':
-      content = content.toUpperCase();
-      break;
-    case 'lowercase':
-      content = content.toLowerCase();
-      break;
-    case 'capitalize':
-      content = content.charAt(0).toUpperCase() + content.slice(1).toLowerCase();
-      break;
-  }
-
-  // Apply list formatting
-  if (element.listStyle === 'bullet') {
-    content = `• ${content}`;
-  } else if (element.listStyle === 'numbered') {
-    content = `1. ${content}`;
-  }
+  const content = formatTextContent(element);
+  const spacing = textLetterSpacingPx(element.fontSize, element.letterSpacing);
+  const nativeSpacing = typeof ctx.letterSpacing === 'string';
+  // Measure without native tracking, then add only the gaps between glyphs.
+  // Native fillText still handles glyph positioning when the browser supports it.
+  const measure = (text:string) => {
+    if(nativeSpacing)ctx.letterSpacing='0px';
+    const width=ctx.measureText(text).width+Math.max(0,Array.from(text).length-1)*spacing;
+    if(nativeSpacing)ctx.letterSpacing=`${spacing}px`;
+    return width;
+  };
+  if(nativeSpacing)ctx.letterSpacing=`${spacing}px`;
+  const wrapContext={measureText:(text:string)=>({width:measure(text)})} as CanvasRenderingContext2D;
 
   // Padding values mirroring the TextElement.tsx preview (px-2 py-1).
   const padH = TEXT_PAD_H;
@@ -232,13 +228,14 @@ function renderTextElement(ctx: CanvasRenderingContext2D, element: TextElement):
   // Word-wrap within the inset width (full width minus left + right padding)
   // so long lines don't overflow the element box, matching the CSS
   // `whitespace-pre-wrap break-words` behaviour of the preview.
-  const insetWidth = element.width - padH * 2;
+  const padLeft = element.listStyle !== 'none' ? 24 : padH;
+  const insetWidth = element.width - padLeft - padH;
 
   // Build the final line list: honour explicit newlines AND word-wrap.
   const paragraphs = content.split('\n');
   const lines: string[] = [];
   for (const paragraph of paragraphs) {
-    const wrapped = wrapTextToWidth(ctx, paragraph, insetWidth);
+    const wrapped = wrapTextToWidth(wrapContext, paragraph, insetWidth);
     if (wrapped.length === 0) {
       lines.push(''); // preserve blank lines
     } else {
@@ -254,7 +251,7 @@ function renderTextElement(ctx: CanvasRenderingContext2D, element: TextElement):
   if (element.align === 'center') {
     // Equal left+right padding — centre of the padded box is the same as the
     // centre of the full element box.
-    textX = element.x + element.width / 2;
+    textX = element.x + padLeft + insetWidth / 2;
   } else if (element.align === 'right') {
     textX = element.x + element.width - padH;
   } else {
@@ -262,14 +259,31 @@ function renderTextElement(ctx: CanvasRenderingContext2D, element: TextElement):
     textX = element.x + (element.listStyle !== 'none' ? 24 : padH);
   }
 
+  const anchorOffset=textAnchorOffset(element.height,lines.length*lineHeight,element.textAnchor,padTop);
   // Draw each line
   lines.forEach((line, index) => {
-    const textY = element.y + padTop + index * lineHeight;
-    ctx.fillText(line, textX, textY);
+    const textY = element.y + anchorOffset + index * lineHeight;
+    const width=measure(line);
+    const startX=textX-(element.align==='center'?width/2:element.align==='right'?width:0);
+    if(spacing===0)ctx.fillText(line,textX,textY);
+    else {
+      // Left alignment avoids the native API including a trailing tracking gap
+      // in centered/right alignment. Both paths use identical measured extents.
+      ctx.textAlign='left';
+      if(nativeSpacing)ctx.fillText(line,startX,textY);
+      else {
+        const characters=Array.from(line);
+        characters.forEach((character,index)=>{
+          const prefix=characters.slice(0,index).join('');
+          ctx.fillText(character,startX+ctx.measureText(prefix).width+index*spacing,textY);
+        });
+      }
+      ctx.textAlign=element.align;
+    }
     
     // Draw underline if needed
     if (element.underline) {
-      const metrics = ctx.measureText(line);
+      const metrics = {width};
       let underlineX = textX;
       if (element.align === 'center') {
         underlineX = textX - metrics.width / 2;
@@ -278,7 +292,7 @@ function renderTextElement(ctx: CanvasRenderingContext2D, element: TextElement):
       }
       
       ctx.beginPath();
-      ctx.strokeStyle = element.color;
+      ctx.strokeStyle = paintDecorationColor(getElementPaint(element, 'color'));
       ctx.lineWidth = Math.max(1, element.fontSize / 16);
       ctx.moveTo(underlineX, textY + element.fontSize + 2);
       ctx.lineTo(underlineX + metrics.width, textY + element.fontSize + 2);
@@ -287,7 +301,7 @@ function renderTextElement(ctx: CanvasRenderingContext2D, element: TextElement):
     
     // Draw strikethrough if needed
     if (element.strikethrough) {
-      const metrics = ctx.measureText(line);
+      const metrics = {width};
       let strikeX = textX;
       if (element.align === 'center') {
         strikeX = textX - metrics.width / 2;
@@ -296,7 +310,7 @@ function renderTextElement(ctx: CanvasRenderingContext2D, element: TextElement):
       }
       
       ctx.beginPath();
-      ctx.strokeStyle = element.color;
+      ctx.strokeStyle = paintDecorationColor(getElementPaint(element, 'color'));
       ctx.lineWidth = Math.max(1, element.fontSize / 16);
       const strikeY = textY + element.fontSize / 2;
       ctx.moveTo(strikeX, strikeY);
@@ -316,8 +330,8 @@ function drawSvgPath(
   pathString: string,
   x: number,
   y: number,
-  fillStyle: string,
-  strokeStyle: string,
+  fillStyle: string | CanvasGradient,
+  strokeStyle: string | CanvasGradient,
   strokeWidth: number
 ): void {
   ctx.save();
@@ -348,9 +362,9 @@ function renderShapeElement(ctx: CanvasRenderingContext2D, element: ShapeElement
   ctx.save();
   // Composite shadow into a local layer before artwork rotation/retina scaling.
   // Canvas shadow offsets are device-space, unlike transformed CSS drop-shadow.
-  if (element.shadow) {
-    const shadow = normalizeShadow(element.shadow);
-    const pad = Math.ceil(shadow.blur * 2 + Math.max(Math.abs(shadow.offsetX), Math.abs(shadow.offsetY)) + finiteClamp(element.strokeWidth, 0, 20) + 2);
+  const shadows = shapeEffectShadows(element);
+  if (shadows.length) {
+    const pad = shapeEffectPadding(element);
     const matrix = ctx.getTransform();
     const resolution = Math.max(1, Math.hypot(matrix.a, matrix.b));
     const width = element.width + pad * 2, height = element.height + pad * 2;
@@ -363,12 +377,30 @@ function renderShapeElement(ctx: CanvasRenderingContext2D, element: ShapeElement
     const shadowPainter = composite.getContext('2d');
     if (painter && shadowPainter) {
       painter.scale(resolution, resolution);
-      renderShapeElement(painter, { ...element, x: pad, y: pad, shadow: undefined });
-      shadowPainter.shadowColor = colorWithOpacity(shadow.color, shadow.opacity);
-      shadowPainter.shadowBlur = shadow.blur * resolution;
-      shadowPainter.shadowOffsetX = shadow.offsetX * resolution;
-      shadowPainter.shadowOffsetY = shadow.offsetY * resolution;
-      shadowPainter.drawImage(layer, 0, 0);
+      renderShapeElement(painter, { ...element, x: pad, y: pad, shadow: undefined, shadowLayers: undefined });
+      if (element.shadowLayers?.length) {
+        // Paint each shadow from the untouched source, never from a previous
+        // shadow. Move the source off-canvas so only its shadow is drawn.
+        const sourceShift = layer.width * 2;
+        for (const shadow of shadows) {
+          shadowPainter.shadowColor = colorWithOpacity(shadow.color, shadow.opacity);
+          shadowPainter.shadowBlur = shadow.blur * resolution;
+          shadowPainter.shadowOffsetX = shadow.offsetX * resolution - sourceShift;
+          shadowPainter.shadowOffsetY = shadow.offsetY * resolution;
+          shadowPainter.drawImage(layer, sourceShift, 0);
+        }
+        shadowPainter.shadowColor = 'transparent';
+        shadowPainter.shadowBlur = 0;
+        shadowPainter.shadowOffsetX = 0; shadowPainter.shadowOffsetY = 0;
+        shadowPainter.drawImage(layer, 0, 0);
+      } else {
+        const shadow = shadows[0];
+        shadowPainter.shadowColor = colorWithOpacity(shadow.color, shadow.opacity);
+        shadowPainter.shadowBlur = shadow.blur * resolution;
+        shadowPainter.shadowOffsetX = shadow.offsetX * resolution;
+        shadowPainter.shadowOffsetY = shadow.offsetY * resolution;
+        shadowPainter.drawImage(layer, 0, 0);
+      }
       ctx.drawImage(composite, element.x - pad, element.y - pad, width, height);
       ctx.restore();
       return;
@@ -377,8 +409,8 @@ function renderShapeElement(ctx: CanvasRenderingContext2D, element: ShapeElement
   ctx.setLineDash(strokeDash(element.strokeStyle, element.strokeWidth));
   ctx.lineCap = element.strokeStyle === 'dotted' ? 'round' : 'butt';
 
-  ctx.fillStyle = element.fill;
-  ctx.strokeStyle = element.stroke;
+  ctx.fillStyle = paintToCanvas(ctx, getElementPaint(element, 'fill'), element.fill, element);
+  ctx.strokeStyle = paintToCanvas(ctx, getElementPaint(element, 'stroke'), element.stroke, element);
   ctx.lineWidth = finiteClamp(element.strokeWidth, 0, 20);
   
   const x = element.x;
@@ -427,23 +459,23 @@ function renderShapeElement(ctx: CanvasRenderingContext2D, element: ShapeElement
   } else if (element.shapeType === 'triangle') {
     // Draw triangle using SVG path
     const path = getTrianglePath(w, h);
-    drawSvgPath(ctx, path, x, y, element.fill, element.stroke, element.strokeWidth);
+    drawSvgPath(ctx, path, x, y, ctx.fillStyle, ctx.strokeStyle, element.strokeWidth);
   } else if (element.shapeType === 'star') {
     // Draw star using SVG path
     const path = getStarPath(w, h);
-    drawSvgPath(ctx, path, x, y, element.fill, element.stroke, element.strokeWidth);
+    drawSvgPath(ctx, path, x, y, ctx.fillStyle, ctx.strokeStyle, element.strokeWidth);
   } else if (element.shapeType === 'speechBubble') {
     // Draw speech bubble using SVG path
     const path = getSpeechBubblePath(w, h, element.cornerRadius);
-    drawSvgPath(ctx, path, x, y, element.fill, element.stroke, element.strokeWidth);
+    drawSvgPath(ctx, path, x, y, ctx.fillStyle, ctx.strokeStyle, element.strokeWidth);
   } else if (element.shapeType === 'arrowLeft') {
     // Draw left arrow using SVG path
     const path = getArrowLeftPath(w, h);
-    drawSvgPath(ctx, path, x, y, element.fill, element.stroke, element.strokeWidth);
+    drawSvgPath(ctx, path, x, y, ctx.fillStyle, ctx.strokeStyle, element.strokeWidth);
   } else if (element.shapeType === 'arrowRight') {
     // Draw right arrow using SVG path
     const path = getArrowRightPath(w, h);
-    drawSvgPath(ctx, path, x, y, element.fill, element.stroke, element.strokeWidth);
+    drawSvgPath(ctx, path, x, y, ctx.fillStyle, ctx.strokeStyle, element.strokeWidth);
   }
   
   // Render text content if present
@@ -477,10 +509,10 @@ function renderShapeElement(ctx: CanvasRenderingContext2D, element: ShapeElement
 function renderLineElement(ctx: CanvasRenderingContext2D, element: LineElement): void {
   ctx.save();
   ctx.translate(element.x, element.y);
-  ctx.strokeStyle = element.stroke;
-  ctx.fillStyle = element.stroke;
+  ctx.strokeStyle = paintToCanvas(ctx, getElementPaint(element, 'stroke'), element.stroke, {...element,x:0,y:0});
+  ctx.fillStyle = paintToCanvas(ctx, getElementPaint(element, 'stroke'), element.stroke, {...element,x:0,y:0});
   ctx.lineWidth = finiteClamp(element.strokeWidth, 1, 20, 2);
-  ctx.lineCap = element.strokeStyle === 'dotted' ? 'round' : 'butt';
+  ctx.lineCap = element.lineCap ?? (element.strokeStyle === 'dotted' ? 'round' : 'butt');
   ctx.lineJoin = 'round';
   ctx.setLineDash(strokeDash(element.strokeStyle, ctx.lineWidth));
   ctx.beginPath();
@@ -590,7 +622,7 @@ export function computeCropSourceRect(crop: {
  * Three divergences from the original (T6 of US-AI-032):
  *  - objectFit: honours 'contain' / 'cover' (previously always stretched)
  *  - crop:      applies element.crop when present (previously ignored)
- *  - isAiImport: treated as objectFit:'contain' (matches preview background-size:contain)
+ *  - isAiImport: explicit fit is honored; absent fit retains historical contain
  */
 /**
  * BL-41 — resolve an element's `src` to something the export canvas can
@@ -694,11 +726,9 @@ async function renderImageElement(ctx: CanvasRenderingContext2D, element: ImageE
         const { sx, sy, sw, sh } = computeCropSourceRect(element.crop);
         ctx.drawImage(img, sx, sy, sw, sh, drawX, drawY, drawWidth, drawHeight);
       } else {
-        // isAiImport uses background-size:contain in the preview; treat as
-        // objectFit:'contain'. Explicit objectFit defaults to 'contain' (same
-        // as the CSS fallback in ImageElement.tsx:199).
-        const fit: 'contain' | 'cover' | 'fill' =
-          element.isAiImport ? 'contain' : (element.objectFit ?? 'contain');
+        // Ordinary and AI-imported previews honor explicit fit; old records
+        // without fit keep their established contain appearance.
+        const fit = element.objectFit ?? 'contain';
         const d = computeObjectFitDraw(
           img.naturalWidth, img.naturalHeight,
           drawX, drawY, drawWidth, drawHeight,
@@ -708,11 +738,12 @@ async function renderImageElement(ctx: CanvasRenderingContext2D, element: ImageE
       }
 
       // Apply color overlay if present
-      if (element.colorOverlay) {
+      const overlay = getElementPaint(element, 'overlay');
+      if (overlay.type !== 'none') {
         ctx.save();
+        ctx.filter = 'none';
         ctx.globalCompositeOperation = 'multiply';
-        ctx.fillStyle = element.colorOverlay.color;
-        ctx.globalAlpha *= element.colorOverlay.opacity;
+        ctx.fillStyle = paintToCanvas(ctx, overlay, 'transparent', element);
         ctx.fillRect(drawX, drawY, drawWidth, drawHeight);
         ctx.restore();
       }
@@ -721,7 +752,7 @@ async function renderImageElement(ctx: CanvasRenderingContext2D, element: ImageE
       const borderWidth = finiteClamp(element.borderWidth, 0, 20);
       if (borderWidth > 0) {
         ctx.save();
-        ctx.strokeStyle = element.borderColor ?? '#123e62';
+        ctx.strokeStyle = paintToCanvas(ctx, getElementPaint(element, 'stroke'), element.borderColor ?? '#123e62', element);
         ctx.lineWidth = borderWidth;
         ctx.setLineDash(strokeDash(element.borderStyle, borderWidth));
         ctx.lineCap = element.borderStyle === 'dotted' ? 'round' : 'butt';

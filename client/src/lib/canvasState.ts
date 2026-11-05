@@ -4,6 +4,7 @@
  */
 
 import { exportCanvasToImage } from './canvasExport';
+import { isValidPaint, isValidElementPaints } from './paint';
 import { isValidLineElement } from './lineGeometry';
 import { useCanvasStore } from '../hooks/useCanvasStore';
 import type { CanvasElement, ImageElement, TextElement, TextAlign } from './canvasTypes';
@@ -47,6 +48,7 @@ export function captureCanvasData(): any {
     canvasWidth: state.canvasWidth,
     canvasHeight: state.canvasHeight,
     backgroundColor: state.backgroundColor,
+    backgroundPaint: state.backgroundPaint,
     zoom: state.zoom,
     // US-EDIT-018 AC1 — the listing facts travel with the design, so a fact
     // with no element on this template (Brokerage on the Story template,
@@ -188,7 +190,7 @@ function generatePlaceholderThumbnail(): string {
  */
 export function restoreCanvasData(canvasData: any): boolean {
   try {
-    if (!canvasData || !Array.isArray(canvasData.elements) || canvasData.elements.some((element: unknown) =>
+    if (!canvasData || !Array.isArray(canvasData.elements) || (canvasData.backgroundPaint !== undefined && !isValidPaint(canvasData.backgroundPaint)) || canvasData.elements.some((element: unknown) => !isValidElementPaints(element) ||
       !!element && typeof element === 'object' && (element as {type?:unknown}).type === 'line' && !isValidLineElement(element))) {
       console.error('Invalid canvas data');
       return false;
@@ -202,6 +204,7 @@ export function restoreCanvasData(canvasData: any): boolean {
       canvasWidth: canvasData.canvasWidth || 1200,
       canvasHeight: canvasData.canvasHeight || 800,
       backgroundColor: canvasData.backgroundColor || '#FFFFFF',
+      backgroundPaint: canvasData.backgroundPaint,
       zoom: canvasData.zoom || 1,
       canvasPanX: 0,
       canvasPanY: 0,
@@ -257,8 +260,25 @@ export function fitCanvasZoomToViewport(): void {
 }
 
 /** Run fit after layout settles (e.g. AI chat panel closing changes viewport width). */
+let scheduledFitGeneration = 0;
 export function scheduleFitCanvasZoomToViewport(): void {
-  const run = () => fitCanvasZoomToViewport();
+  const generation = ++scheduledFitGeneration;
+  const scheduled = useCanvasStore.getState();
+  let expectedZoom = scheduled.zoom;
+  let expectedPanX = scheduled.canvasPanX, expectedPanY = scheduled.canvasPanY;
+  let cancelled = false;
+  const run = () => {
+    const current = useCanvasStore.getState();
+    if (cancelled || generation !== scheduledFitGeneration) return;
+    if (current.elements !== scheduled.elements || current.canvasWidth !== scheduled.canvasWidth || current.canvasHeight !== scheduled.canvasHeight ||
+      current.zoom !== expectedZoom || current.canvasPanX !== expectedPanX || current.canvasPanY !== expectedPanY) {
+      cancelled = true;
+      return;
+    }
+    fitCanvasZoomToViewport();
+    const fitted = useCanvasStore.getState();
+    expectedZoom = fitted.zoom; expectedPanX = fitted.canvasPanX; expectedPanY = fitted.canvasPanY;
+  };
   requestAnimationFrame(() => requestAnimationFrame(run));
   setTimeout(run, 350);
   setTimeout(run, 700);

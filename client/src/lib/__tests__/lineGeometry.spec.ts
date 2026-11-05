@@ -68,3 +68,19 @@ describe('standalone line geometry — US-EDIT-032', () => {
     expect(isValidLineElement({...line,lineType:'unsupported'})).toBe(false);
   });
 });
+
+// AC4: saved optional caps accept only the two supported values; old lines stay valid.
+describe('US-EDIT-034 optional line caps', () => {
+  it('accepts absent, butt and round but rejects any other explicit cap', () => {
+    const line=createLineElement('straight',{x:0,y:0},{x:200,y:0});
+    expect(isValidLineElement(line)).toBe(true);
+    expect(isValidLineElement({...line,lineCap:'butt'})).toBe(true);
+    expect(isValidLineElement({...line,lineCap:'round'})).toBe(true);
+    expect(isValidLineElement({...line,lineCap:'square'})).toBe(false);
+    expect(isValidLineElement({...line,lineCap:null})).toBe(false);
+  });
+  it('retains explicit caps when normalizing and serializing a line', () => {
+    const line={...createLineElement('straight',{x:0,y:0},{x:200,y:0}),lineCap:'round' as const};
+    expect(JSON.parse(JSON.stringify(normalizeLineElement(line))).lineCap).toBe('round');
+  });
+});

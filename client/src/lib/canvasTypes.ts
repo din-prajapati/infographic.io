@@ -3,7 +3,13 @@
 import type { AiComposition } from './api';
 
 export type ElementType = 'text' | 'shape' | 'image' | 'line';
-export type StrokeStyle = 'solid' | 'dashed' | 'dotted';
+export type StrokeStyle = 'solid' | 'dashed' | 'short-dashed' | 'dotted';
+export interface PaintStop { color: string; opacity: number }
+export type Paint = { type: 'none' } | ({ type: 'solid' } & PaintStop)
+  | { type: 'linear'; angle: 0 | 90 | 135; stops: PaintStop[] }
+  | { type: 'radial'; center: 'center' | 'corner'; stops: PaintStop[] };
+export type PaintSlot = 'color' | 'fill' | 'stroke' | 'overlay';
+export interface BackgroundSnapshot { color: string; paint?: Paint }
 export type LineType = 'straight' | 'curved' | 'elbow';
 export type LineDecoration = 'none' | 'arrow' | 'circle' | 'bar';
 export interface Point { x: number; y: number }
@@ -14,6 +20,7 @@ export type TextTransform = 'none' | 'uppercase' | 'lowercase' | 'capitalize';
 export type ListStyle = 'none' | 'bullet' | 'numbered';
 
 export interface BaseElement {
+  paints?: Partial<Record<PaintSlot, Paint>>;
   id: string;
   type: ElementType;
   x: number;
@@ -63,6 +70,10 @@ export interface TextElement extends BaseElement {
   color: string;
   align: TextAlign;
   lineHeight: number;
+  /** Tracking in thousandths of an em; absent means zero. */
+  letterSpacing?: number;
+  /** Vertical content anchor within the existing fixed text box. */
+  textAnchor?: 'start' | 'middle' | 'end';
   textTransform: TextTransform;
   listStyle: ListStyle;
 }
@@ -75,6 +86,8 @@ export interface ShapeElement extends BaseElement {
   strokeWidth: number;
   strokeStyle?: StrokeStyle;
   shadow?: ElementShadow;
+  /** Independent additional shadow copies; absent preserves legacy single-shadow artwork. */
+  shadowLayers?: ElementShadow[];
   cornerRadius: number;
   /** Optional text rendered inside the shape */
   textContent?: string;
@@ -149,6 +162,8 @@ export interface LineElement extends BaseElement {
   stroke: string;
   strokeWidth: number;
   strokeStyle: StrokeStyle;
+  /** Absent keeps legacy dotted-round / otherwise-butt rendering. */
+  lineCap?: 'butt' | 'round';
   startDecoration: LineDecoration;
   endDecoration: LineDecoration;
 }
@@ -162,6 +177,7 @@ export interface CanvasState {
   canvasHeight: number;
   zoom: number;
   backgroundColor: string;
+  backgroundPaint?: Paint;
   activeTool: 'select' | 'text' | 'image' | 'rectangle' | 'circle' | 'hand' | 'delete' | 'pen' | 'line-straight' | 'line-curved' | 'line-elbow';
   clipboard: CanvasElement[];
   selectedThemeColors: string[] | null; // Colors from selected theme for placeholder
@@ -170,6 +186,8 @@ export interface CanvasState {
   history: {
     past: CanvasElement[][];
     future: CanvasElement[][];
+    pastBackgrounds?: BackgroundSnapshot[];
+    futureBackgrounds?: BackgroundSnapshot[];
   };
   /**
    * Tracks the deliberate origin of the current canvas (set when a template is
@@ -214,6 +232,7 @@ export interface CanvasActions {
   // Canvas settings
   setZoom: (zoom: number) => void;
   setBackgroundColor: (color: string) => void;
+  setBackgroundPaint: (paint: Paint) => void;
   setSelectedThemeColors: (colors: string[] | null) => void;
   setPan: (x: number, y: number) => void;
   resetPan: () => void;

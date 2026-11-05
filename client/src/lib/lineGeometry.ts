@@ -76,6 +76,7 @@ export function isValidLineElement(value: unknown): value is LineElement {
     ['x','y','width','height','rotation','opacity','strokeWidth','elbowOffset'].every(key=>typeof element[key]==='number'&&Number.isFinite(element[key])) &&
     Number(element.width)>0&&Number(element.height)>0&&Number(element.strokeWidth)>0&&Number(element.opacity)>=0&&Number(element.opacity)<=1 &&
     point(element.start)&&point(element.end)&&point(element.control)&&['horizontal','vertical'].includes(String(element.elbowAxis)) &&
-    ['solid','dashed','dotted'].includes(String(element.strokeStyle)) && typeof element.stroke==='string' &&
+    ['solid','dashed','short-dashed','dotted'].includes(String(element.strokeStyle)) && typeof element.stroke==='string' &&
+    (element.lineCap===undefined||element.lineCap==='butt'||element.lineCap==='round') &&
     ['none','arrow','circle','bar'].includes(String(element.startDecoration))&&['none','arrow','circle','bar'].includes(String(element.endDecoration));
 }

@@ -40,3 +40,35 @@ First-class LineElement extends base with lineType,start/end/control local coord
 Create/harden scoped cards, then implement032geometry/drawing,033toolbars/sidebar,034rotation/styles/export/integration. Gate1frontend/API typechecks plusbackend/clientunit suites; Gate2light/dark/system1191x668/1440visual/focus/edges; Gate3draw/edit/undo/redo/save/reload/export/cancel/errorbrowser journeys. Retain authenticated real-server smoke separately from route mocks. All cards remain Not Started/In Progress until evidence and formal PR merge; independent review remains required.
 
 Explicitly desktop-only: no375pxshell redesign. Exclude Crop, attached connectors, line labels, Animate, Position, Style, AI image modification, BG remover, eraser, Magictools, upscale, generation/video/StyleMatch and automatic segmentation. No inactive AI placeholders. Update IMPLEMENTATION_STATUS with delivered versus outstanding scope.
+
+## Approved browser-feedback corrections — 2026-11-04
+
+Inspected the owner's existing Canva editor tab, including text formatting, Transparency, image Corner rounding, Stroke style and Flip. This is presentation guidance for existing controls only.
+
+- Retain separate direct horizontal/vertical flip buttons; replace the mirrored diamonds with independently oriented curved-arrow icons.
+- Promote image Border to a direct icon with a single visual none/solid/dashed/dotted chooser and weight slider/value. Retain border color in a compact expandable section. More retains Fit and Reset.
+- Corners opens a compact Corner rounding slider/value popover. Keep keyboard/Escape, focus and single-history boundaries; use Navy/Teal tokens and viewport collision sizing.
+- Stabilize saved-line stroke selection, pointer capture/release, repeated clicks and Shift selection for straight/curved/elbow. Preserve locked/Preview behavior.
+- Selection geometry updates during text/image/shape drag/resize and line endpoint/body gestures. Values are design pixels; transient preview stays outside document/history/autosave. Completion retains the existing single write and cancellation clears preview.
+
+Contracts: US-EDIT-032 AC3/T4, US-EDIT-033 AC3/T5, US-EDIT-034 AC3/T4. No default-route change or additional Canva capabilities.
+
+## Detailed Canva-style controls and live style drafts — 2026-11-04 follow-up
+
+The owner requested a second, detailed pass across all element toolbars and authorized straightforward additions, excluding Crop. Inspected the existing Canva text advanced settings and More strip, native image border/corners controls, line stroke/rounded-end flyout, separate endpoint pickers, line-type picker and available vector controls. Preserve the approved V3 shell and Navy/Teal palette rather than adopting Canva's overall page layout.
+
+- Text: searchable existing-font picker, grouped size, color, Bold/Italic, one alignment picker, direct list picker, existing lineHeight under Text spacing, Transparency and a compact Underline/Strike/Case icon strip. No new font assets, letter-spacing engine, copy-style, Animate or Position implementation.
+- Image: keep Edit/Replace, flips, border/corners and opacity; put Fit and Reset directly after a separator. Fit offers Cover/Contain/Stretch and now works for explicit AI-import fits as well as ordinary images. Reset changes documented appearance only and preserves fit/source/geometry/rotation.
+- Shape: retain supported shape editing/fill/border/corners/local shadow and give numeric/color controls the same safe live preview behavior.
+- Line: color, visual stroke patterns, Rounded end points, stroke weight, separate start/end marker pickers, Swap ends, visual type picker and opacity. Retain existing marker and dash vocabulary. Add only optional lineCap butt/round, honoring SVG/PNG and old-record defaults.
+- Numeric/color drafts render immediately through ephemeral V3 UI state. Persisted elements, history, autosave and exporter remain canonical. Completed gestures/numeric confirmation commit once. Cancellation/selection/Preview/lock/visibility/unmount clear unfinished drafts; a rounded percentage display must never round stored fractional opacity on blur or cancellation.
+
+Contracts and exact file scopes: US-EDIT-033 AC4/AC5 T6 and US-EDIT-034 AC4 T5. Existing previous Nov4 selection/geometry changes remain intact. All work remains opt-in and locally reviewable; no push/merge/deploy approval is implied.
+
+## Exact text control references — 2026-11-04
+
+The latest owner screenshots extend the earlier text scope: implement letter tracking and fixed-box vertical anchors, while keeping More Settings excluded. Font minus/value/plus share one continuous rounded outline. The spacing popup has no heading: Letter spacing slider/value, Line spacing slider/value, separator, then the two-line Anchor text box label and three arrow/bar icons. Use neutral tracks and larger circular thumbs with the approved Navy/Teal colors and pressed state.
+
+Text case is one More-strip button cycling AA → aa → Aa, with current/next mode described accessibly. Legacy original-case text enters uppercase on first click; original content stays stored. Title Case formats every word. Letter tracking uses thousandths of an em and anchors operate within the existing box; DOM and PNG honor both. No automatic box resizing or More Settings.
+
+Contracts: US-EDIT-033 AC6/AC7 T7; US-EDIT-034 AC5 T6. Existing preview, Undo, keyboard, saved-design and export behavior remains required.

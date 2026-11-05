@@ -1,10 +1,12 @@
 // Text element component
 
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { Rnd } from 'react-rnd';
 import { TextElement as TextElementType } from '../../lib/canvasTypes';
 import { useCanvasStore } from '../../hooks/useCanvasStore';
 import { writeCanvasToField } from '../../lib/listingBindings';
+import { getElementPaint, paintDecorationColor, paintToCss } from '../../lib/paint';
+import { formatTextContent, textLetterSpacingPx } from '../../lib/textLayout';
 
 /**
  * Applies a committed text edit: updates the canvas element and, when the
@@ -30,14 +32,20 @@ interface TextElementProps {
   element: TextElementType;
   isSelected: boolean;
   onSelect: (e: React.MouseEvent) => void;
+  onGeometryChange?: (id:string, geometry:Pick<TextElementType,'x'|'y'|'width'|'height'>|null)=>void;
 }
 
-export function TextElement({ element, isSelected, onSelect }: TextElementProps) {
+export function TextElement({ element, isSelected, onSelect, onGeometryChange }: TextElementProps) {
   const updateElement = useCanvasStore((state) => state.updateElement);
   const zoom = useCanvasStore((state) => state.zoom);
+  const textPaint = getElementPaint(element, 'color');
+  const gradientText = textPaint.type === 'linear' || textPaint.type === 'radial';
+  const textColor = paintDecorationColor(textPaint);
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(element.content);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  useEffect(()=>()=>onGeometryChange?.(element.id,null),[element.id,onGeometryChange]);
+  useEffect(()=>{if(!isSelected||element.locked||!element.visible)onGeometryChange?.(element.id,null);},[isSelected,element.locked,element.visible,element.id,onGeometryChange]);
 
   useEffect(() => {
     if (isEditing && textareaRef.current) {
@@ -78,6 +86,12 @@ export function TextElement({ element, isSelected, onSelect }: TextElementProps)
     }
   };
 
+  useLayoutEffect(()=>{
+    const textarea=textareaRef.current;if(!isEditing||!textarea)return;
+    textarea.style.height='0px';
+    textarea.style.height=`${Math.max(element.fontSize*element.lineHeight,textarea.scrollHeight)}px`;
+  },[isEditing,editValue,element.width,element.fontSize,element.fontFamily,element.fontWeight,element.bold,element.italic,element.lineHeight,element.letterSpacing]);
+
   if (!element.visible) return null;
 
   // Resize handles must be sized in canvas pixels (inverse of zoom) so they
@@ -93,35 +107,6 @@ export function TextElement({ element, isSelected, onSelect }: TextElementProps)
     zIndex: 10,
   };
 
-  // Helper function to apply text transform and list formatting
-  const formatContent = (content: string) => {
-    let formatted = content;
-    
-    // Apply text transform
-    switch (element.textTransform) {
-      case 'uppercase':
-        formatted = formatted.toUpperCase();
-        break;
-      case 'lowercase':
-        formatted = formatted.toLowerCase();
-        break;
-      case 'capitalize':
-        formatted = formatted.charAt(0).toUpperCase() + formatted.slice(1).toLowerCase();
-        break;
-      default:
-        break;
-    }
-    
-    // Apply list formatting
-    if (element.listStyle === 'bullet') {
-      formatted = `• ${formatted}`;
-    } else if (element.listStyle === 'numbered') {
-      formatted = `1. ${formatted}`;
-    }
-    
-    return formatted;
-  };
-
   // Build text decoration string
   const getTextDecoration = () => {
     const decorations: string[] = [];
@@ -135,10 +120,14 @@ export function TextElement({ element, isSelected, onSelect }: TextElementProps)
       scale={zoom}
       size={{ width: element.width, height: element.height }}
       position={{ x: element.x, y: element.y }}
+      onDrag={(e,d)=>onGeometryChange?.(element.id,{x:d.x,y:d.y,width:element.width,height:element.height})}
+      onResize={(e,direction,ref,delta,position)=>onGeometryChange?.(element.id,{width:parseFloat(ref.style.width),height:parseFloat(ref.style.height),...position})}
+      onPointerCancel={()=>onGeometryChange?.(element.id,null)}
       onDragStop={(e, d) => {
         if (d.x !== element.x || d.y !== element.y) {
           updateElement(element.id, { x: d.x, y: d.y });
         }
+        onGeometryChange?.(element.id,null);
       }}
       onResizeStop={(e, direction, ref, delta, position) => {
         updateElement(element.id, {
@@ -146,6 +135,7 @@ export function TextElement({ element, isSelected, onSelect }: TextElementProps)
           height: parseInt(ref.style.height),
           ...position,
         });
+        onGeometryChange?.(element.id,null);
       }}
       disableDragging={element.locked || isEditing}
       enableResizing={isSelected && !element.locked && !isEditing}
@@ -174,6 +164,9 @@ export function TextElement({ element, isSelected, onSelect }: TextElementProps)
         className="w-full h-full"
         style={{
           transform: `rotate(var(--element-rotation-preview, ${element.rotation}deg))`,
+          display:'flex',flexDirection:'column',padding:'4px 0',boxSizing:'border-box',
+          ...(!isEditing && gradientText ? {backgroundImage:paintToCss(textPaint, 'transparent', element),backgroundClip:'text',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'} : {}),
+          justifyContent:element.textAnchor==='middle'?'safe center':element.textAnchor==='end'?'safe flex-end':'flex-start',
           ...(isSelected ? {
             outline: `${2 / zoom}px solid #3b82f6`,
             outlineOffset: `${1 / zoom}px`,
@@ -187,37 +180,42 @@ export function TextElement({ element, isSelected, onSelect }: TextElementProps)
             onChange={(e) => setEditValue(e.target.value)}
             onBlur={handleBlur}
             onKeyDown={handleKeyDown}
-            className="w-full h-full resize-none border-2 border-blue-500 rounded px-2 py-1 outline-none"
+            className="w-full resize-none rounded px-2 outline-none"
             style={{
               fontFamily: element.fontFamily,
               fontSize: `${element.fontSize}px`,
               fontWeight: element.bold ? 700 : element.fontWeight,
               fontStyle: element.italic ? 'italic' : 'normal',
               textDecoration: getTextDecoration(),
-              color: element.color,
+              color: textColor,
+              textDecorationColor:textColor,
               textAlign: element.align,
               lineHeight: element.lineHeight,
+              letterSpacing:`${textLetterSpacingPx(element.fontSize,element.letterSpacing)}px`,
               backgroundColor: 'transparent',
+              flexShrink:0,maxHeight:'100%',paddingTop:0,paddingBottom:0,border:0,outline:'2px solid #3b82f6',
               textTransform: element.textTransform,
             }}
           />
         ) : (
           <div
-            className="w-full h-full px-2 py-1 whitespace-pre-wrap break-words"
+            className="w-full px-2 whitespace-pre-wrap break-words"
             style={{
               fontFamily: element.fontFamily,
               fontSize: `${element.fontSize}px`,
               fontWeight: element.bold ? 700 : element.fontWeight,
               fontStyle: element.italic ? 'italic' : 'normal',
               textDecoration: getTextDecoration(),
-              color: element.color,
+              color: textColor,
+              textDecorationColor:textColor,
               textAlign: element.align,
               lineHeight: element.lineHeight,
-              textTransform: element.textTransform,
+              letterSpacing:`${textLetterSpacingPx(element.fontSize,element.letterSpacing)}px`,
+              flexShrink:0,
               paddingLeft: element.listStyle !== 'none' ? '1.5rem' : '0.5rem',
             }}
           >
-            {formatContent(element.content) || 'Double click to edit'}
+            {formatTextContent(element) || 'Double click to edit'}
           </div>
         )}
       </div>

@@ -2,6 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { colorWithOpacity, finiteClamp, normalizeShadow, normalizedAngle, pointerRotation, shadowFilter, strokeDash } from '../elementStyles';
 
 describe('US-EDIT-034 shared artwork styling contract', () => {
+  it('keeps the new short dash distinct from legacy long dashes',()=>{
+    expect(strokeDash('short-dashed',2)).toEqual([4,3]);
+    expect(strokeDash('dashed',2)).toEqual([8,6]);
+  });
   // Contract: design-pixel dash lengths are shared by SVG and native export.
   it('uses an 8/6 dash pattern for a 2px dashed border', () => {
     expect(strokeDash('dashed', 2)).toEqual([8, 6]);

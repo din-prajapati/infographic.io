@@ -15,7 +15,12 @@
  *
  * All assertions target specific numeric values, not "does not throw".
  */
-import { describe, it, expect } from 'vitest';
+import { afterEach, describe, it, expect, vi } from 'vitest';
+import { exportCanvasToImage } from '../canvasExport';
+import { useCanvasStore } from '../../hooks/useCanvasStore';
+import { createImageElement, createTextElement, createShapeElement } from '../canvasUtils';
+import { shapeEffectPatch } from '../shapeEffects';
+import { createLineElement } from '../lineGeometry';
 import {
   TEXT_PAD_H,
   TEXT_PAD_TOP,
@@ -301,5 +306,135 @@ describe('toLoadableImageSrc (BL-41)', () => {
 
   it('returns empty string unchanged', () => {
     expect(toLoadableImageSrc('')).toBe('');
+  });
+});
+
+// AC4: exercise the public PNG exporter with a minimal native-context recorder.
+describe('US-EDIT-034 committed artwork export',()=>{
+  afterEach(()=>{vi.restoreAllMocks();vi.unstubAllGlobals();});
+  function context() {
+    const ctx={save:vi.fn(),restore:vi.fn(),scale:vi.fn(),fillRect:vi.fn(),translate:vi.fn(),rotate:vi.fn(),
+      beginPath:vi.fn(),moveTo:vi.fn(),lineTo:vi.fn(),stroke:vi.fn(),setLineDash:vi.fn(),drawImage:vi.fn(),lineCap:'butt'};
+    vi.spyOn(HTMLCanvasElement.prototype,'getContext').mockReturnValue(ctx as unknown as CanvasRenderingContext2D);
+    vi.spyOn(HTMLCanvasElement.prototype,'toDataURL').mockReturnValue('data:image/png;base64,test');
+    Object.defineProperty(document,'fonts',{configurable:true,value:{ready:Promise.resolve()}});
+    vi.stubGlobal('Image',class {naturalWidth=800;naturalHeight=400;onload=()=>{};set src(_value:string){this.onload();}});
+    return ctx;
+  }
+  it.each([
+    ['contain',[0,0,800,400,10,45,300,150]],
+    ['cover',[100,0,600,400,10,20,300,200]],
+    ['fill',[0,0,800,400,10,20,300,200]],
+    [undefined,[0,0,800,400,10,45,300,150]],
+  ] as const)('exports AI image fit %s with matching draw geometry',async(fit,expected)=>{
+    const ctx=context();
+    const image={...createImageElement('/test.png',10,20,300,200),isAiImport:true,objectFit:fit};
+    useCanvasStore.setState({elements:[image],canvasWidth:500,canvasHeight:500});
+    expect(await exportCanvasToImage()).toBe('data:image/png;base64,test');
+    expect(ctx.drawImage.mock.calls[0].slice(1)).toEqual(expected);
+  });
+  it('retains crop source coordinates even with explicit AI fit',async()=>{
+    const ctx=context();
+    useCanvasStore.setState({elements:[{...createImageElement('/test.png',10,20,300,200),isAiImport:true,objectFit:'cover',crop:{x:25,y:35,width:400,height:200}}]});
+    await exportCanvasToImage();
+    expect(ctx.drawImage.mock.calls[0].slice(1)).toEqual([25,35,400,200,10,20,300,200]);
+  });
+  it.each([
+    ['solid',undefined,'butt'],['dotted',undefined,'round'],['solid','round','round'],['dotted','butt','butt'],
+  ] as const)('exports %s line cap %s as %s',async(strokeStyle,lineCap,expected)=>{
+    const ctx=context();
+    useCanvasStore.setState({elements:[{...createLineElement('straight',{x:0,y:0},{x:200,y:0}),strokeStyle,lineCap}]});
+    await exportCanvasToImage();
+    expect(ctx.lineCap).toBe(expected);
+  });
+});
+
+describe('US-EDIT-034 text PNG layout',()=>{
+  afterEach(()=>vi.restoreAllMocks());
+  function textContext(nativeSpacing=false){
+    const ctx={save:vi.fn(),restore:vi.fn(),scale:vi.fn(),fillRect:vi.fn(),translate:vi.fn(),rotate:vi.fn(),
+      beginPath:vi.fn(),moveTo:vi.fn(),lineTo:vi.fn(),stroke:vi.fn(),fillText:vi.fn(),textAlign:'left',
+      measureText:vi.fn((text:string)=>({width:text.length*10}))};
+    if(nativeSpacing)Object.assign(ctx,{letterSpacing:'0px'});
+    vi.spyOn(HTMLCanvasElement.prototype,'getContext').mockReturnValue(ctx as unknown as CanvasRenderingContext2D);
+    vi.spyOn(HTMLCanvasElement.prototype,'toDataURL').mockReturnValue('data:image/png;base64,test');
+    Object.defineProperty(document,'fonts',{configurable:true,value:{ready:Promise.resolve()}});
+    return ctx;
+  }
+  it.each([['start',24],['middle',90],['end',156]] as const)('exports %s anchor at padded fixed-box position',async(textAnchor,y)=>{
+    const ctx=textContext();
+    const text={...createTextElement(),content:'AB',x:10,y:20,width:100,height:160,fontSize:20,lineHeight:1,textAnchor};
+    useCanvasStore.setState({elements:[text]});await exportCanvasToImage();
+    expect(ctx.fillText).toHaveBeenCalledWith('AB',18,y);
+  });
+  it('wraps tracking and draws fallback glyphs plus underline at spaced extents',async()=>{
+    const ctx=textContext();
+    const text={...createTextElement(),content:'ABCD',x:0,y:0,width:42,height:100,fontSize:20,lineHeight:1,letterSpacing:100,underline:true};
+    useCanvasStore.setState({elements:[text]});await exportCanvasToImage();
+    expect(ctx.fillText.mock.calls).toEqual([['A',8,4],['B',20,4],['C',8,24],['D',20,24]]);
+    expect(ctx.lineTo).toHaveBeenNthCalledWith(1,30,26);
+  });
+  it('exports title case for every word and preserves raw source',async()=>{
+    const ctx=textContext();const text={...createTextElement(),content:'hello WORLD',width:500,textTransform:'capitalize' as const};
+    useCanvasStore.setState({elements:[text]});await exportCanvasToImage();
+    expect(ctx.fillText).toHaveBeenCalledWith('Hello World',text.x+8,text.y+4);
+    expect(useCanvasStore.getState().elements[0]).toMatchObject({content:'hello WORLD'});
+  });
+  it('uses native Canvas tracking when supported',async()=>{
+    const ctx=textContext(true);const text={...createTextElement(),content:'AB',width:500,fontSize:20,letterSpacing:100};
+    useCanvasStore.setState({elements:[text]});await exportCanvasToImage();
+    expect((ctx as typeof ctx&{letterSpacing:string}).letterSpacing).toBe('2px');
+    expect(ctx.fillText).toHaveBeenCalledWith('AB',text.x+8,text.y+4);
+  });
+});
+
+describe('US-EDIT-035 paint PNG output',()=>{
+  afterEach(()=>vi.restoreAllMocks());
+  it('uses gradient fills, first-stop decoration color and a transparent page',async()=>{
+    const gradient={addColorStop:vi.fn()};
+    const paints:unknown[]=[];
+    const ctx={save:vi.fn(),restore:vi.fn(),scale:vi.fn(),translate:vi.fn(),rotate:vi.fn(),fillRect:vi.fn(),
+      beginPath:vi.fn(),moveTo:vi.fn(),lineTo:vi.fn(),stroke:vi.fn(),fillText:vi.fn(()=>paints.push(ctx.fillStyle)),
+      measureText:vi.fn((text:string)=>({width:text.length*10})),createLinearGradient:vi.fn(()=>gradient),fillStyle:'' as unknown,strokeStyle:''};
+    vi.spyOn(HTMLCanvasElement.prototype,'getContext').mockReturnValue(ctx as unknown as CanvasRenderingContext2D);
+    vi.spyOn(HTMLCanvasElement.prototype,'toDataURL').mockReturnValue('data:image/png;base64,test');
+    Object.defineProperty(document,'fonts',{configurable:true,value:{ready:Promise.resolve()}});
+    const text={...createTextElement(),content:'AB',underline:true,paints:{color:{type:'linear' as const,angle:0 as const,stops:[{color:'#ff0000',opacity:.5},{color:'#0000ff',opacity:1}]}}};
+    useCanvasStore.setState({elements:[text],backgroundColor:'#ffffff',backgroundPaint:{type:'none'}});
+    expect(await exportCanvasToImage()).toBe('data:image/png;base64,test');
+    expect(paints).toEqual([gradient]);
+    expect(gradient.addColorStop.mock.calls).toEqual([[0,'rgba(255, 0, 0, 0.5)'],[1,'rgba(0, 0, 255, 1)']]);
+    expect(ctx.strokeStyle).toBe('rgba(255, 0, 0, 0.5)');
+    useCanvasStore.setState({backgroundPaint:undefined});
+  });
+});
+
+describe('US-EDIT-038 independent effect PNG output',()=>{
+  afterEach(()=>vi.restoreAllMocks());
+  it('composites exactly two original-source glitch shadows followed by unchanged artwork',async()=>{
+    const contexts:Array<ReturnType<typeof context>>=[];
+    function context(){
+      const shadows:Array<{color:string;x:number;y:number}>=[];
+      const ctx={save:vi.fn(),restore:vi.fn(),scale:vi.fn(),translate:vi.fn(),rotate:vi.fn(),fillRect:vi.fn(),beginPath:vi.fn(),
+        moveTo:vi.fn(),lineTo:vi.fn(),quadraticCurveTo:vi.fn(),rect:vi.fn(),fill:vi.fn(),stroke:vi.fn(),setLineDash:vi.fn(),
+        getTransform:()=>({a:2,b:0}),shadowColor:'transparent',shadowOffsetX:0,shadowOffsetY:0,
+        drawImage:vi.fn((_source:unknown,_x:number,_y:number)=>shadows.push({color:ctx.shadowColor,x:ctx.shadowOffsetX,y:ctx.shadowOffsetY})),shadows};
+      return ctx;
+    }
+    vi.spyOn(HTMLCanvasElement.prototype,'getContext').mockImplementation(()=>{
+      const ctx=context();contexts.push(ctx);return ctx as unknown as CanvasRenderingContext2D;
+    });
+    vi.spyOn(HTMLCanvasElement.prototype,'toDataURL').mockReturnValue('data:image/png;base64,effects');
+    Object.defineProperty(document,'fonts',{configurable:true,value:{ready:Promise.resolve()}});
+    const shape={...createShapeElement('rectangle',20,30),cornerRadius:0,...shapeEffectPatch('glitch')};
+    useCanvasStore.setState({elements:[shape],backgroundPaint:undefined});
+    expect(await exportCanvasToImage()).toBe('data:image/png;base64,effects');
+    const composite=contexts[2];
+    expect(composite.drawImage).toHaveBeenCalledTimes(3);
+    expect(composite.shadows.map(value=>value.color)).toEqual(['rgba(0, 212, 255, 0.8)','rgba(255, 45, 149, 0.8)','transparent']);
+    expect(composite.drawImage.mock.calls[0][0]).toBe(composite.drawImage.mock.calls[1][0]);
+    expect(composite.drawImage.mock.calls[0][1]).toBeGreaterThan(0);
+    expect(composite.drawImage.mock.calls[2].slice(1)).toEqual([0,0]);
+    expect(useCanvasStore.getState().elements[0]).toMatchObject({fill:shape.fill});
   });
 });

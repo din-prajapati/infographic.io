@@ -50,3 +50,5 @@ Gate1 mandatory. Gate2 themed desktop visuals/focus/edge placement. Gate3 browse
 ## Delivery evidence
 
 Acceptance-derived tests, runtime and verification completed. Shared model/dispatch/toolbars are delivered atomically because isolated intermediate union changes fail compilation or omit line rendering. Commit carries T1–T3 and all three story IDs. See TOOLBAR_VERIFICATION.md for logs, review fixes and exclusions. Story stays merge-pending.
+
+- [x] T4 (30m) — Nov4 correction: stable line pointer/click selection and toolbar; live line geometry preview, cancellation and one history boundary. Existing scoped LineElement/V3Canvas/V3Lines tests; root browser evidence in e2e/v3-element-toolbars.spec.ts.

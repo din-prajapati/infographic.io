@@ -9,6 +9,7 @@ import { createV3DraftStore } from '../lib/v3Autosave';
 import { useCanvasStore } from './useCanvasStore';
 import { usePropertyStore } from './usePropertyStore';
 import { useAgentStore } from './useAgentStore';
+import { isValidPaint, isValidElementPaints } from '../lib/paint';
 import { isValidLineElement } from '../lib/lineGeometry';
 
 interface CanvasDocument {
@@ -23,7 +24,8 @@ function validateCanvas(value: unknown): asserts value is CanvasDocument {
   if (!value || typeof value !== 'object') throw new Error('Invalid canvas data');
   const data = value as Partial<CanvasDocument>;
   if (!Array.isArray(data.elements) || data.elements.some(element =>
-    !element || !['text', 'shape', 'image', 'line'].includes(element.type) || (element.type === 'line' && !isValidLineElement(element))) ||
+    !element || !isValidElementPaints(element) || !['text', 'shape', 'image', 'line'].includes(element.type) || (element.type === 'line' && !isValidLineElement(element))) ||
+    (data.backgroundPaint !== undefined && !isValidPaint(data.backgroundPaint)) ||
     typeof data.canvasWidth !== 'number' || !Number.isFinite(data.canvasWidth) || data.canvasWidth <= 0 ||
     typeof data.canvasHeight !== 'number' || !Number.isFinite(data.canvasHeight) || data.canvasHeight <= 0) {
     throw new Error('Invalid canvas data');
@@ -107,7 +109,7 @@ export function useV3DesignSession(designId?: string, userId?: string) {
     void session.open(requestedId.current);
     const unsubscribe = useCanvasStore.subscribe((next, previous) => {
       if (next.elements !== previous.elements || next.canvasWidth !== previous.canvasWidth ||
-        next.canvasHeight !== previous.canvasHeight || next.backgroundColor !== previous.backgroundColor) {
+        next.canvasHeight !== previous.canvasHeight || next.backgroundColor !== previous.backgroundColor || next.backgroundPaint !== previous.backgroundPaint) {
         canvasRevision++;
         session.markDirty();
       }

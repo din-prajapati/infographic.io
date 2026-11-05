@@ -49,6 +49,24 @@
 - Hide native number input spinner arrows for every number field within V3, including font size, adjustments, border/radius/shadow, rotation and canvas size; preserve typed input, keyboard operation and explicit font± buttons.
 - Keep existing feature set, Navy/Teal tokens, light/dark/system support, shell placement and safe commit/history behaviour.
 
+## Approved toolbar correction — 2026-11-04
+
+- [x] **AC3 [happy-path]:** When text/image formatting is opened, preserve the approved floating Navy/Teal toolbar and all existing features while following the inspected Canva presentation: direct horizontal/vertical flip buttons use clear curved-arrow icons; image Border is a direct icon/popover with one visual none/solid/dashed/dotted chooser, weight slider/value and retained color editing; Corners is a compact Corner rounding slider/value popover; More retains Fit/Reset. Text controls remain grouped and compact. Popovers fit the visible workspace at 1242×668 and 1440px in both themes, support keyboard dismissal and retain one-commit history. No Canva-only feature is added.
+
+## Approved detailed toolbar and live-preview extension — 2026-11-04
+
+- [x] **AC4 [happy-path]:** When the owner formats text, image, shape or line in V3ElementToolbar, existing capabilities use the inspected Canva arrangement: text font/size/color/Bold/Italic, one alignment picker, direct list picker, text-spacing control for existing lineHeight, transparency and compact icons-only overflow for underline/strike/case. Images expose Fit (cover/contain/fill) and Reset as separate icon controls behind a separator. Shapes retain existing edit/fill/border/corners/effects. Lines expose color, visual stroke pattern/weight/rounded-end toggle, separate start/end decoration pickers with existing none/arrow/circle/bar choices, swap ends and visual straight/curved/elbow picker. Every icon has a name/tooltip and selected state; light/dark Navy/Teal and compact viewport-clamped menus apply. Crop, paid AI, Animate, Position and copy-style remain excluded.
+- [x] **AC5 [error-path]:** When toolbar numeric/range/color controls preview opacity, border/line weight, corner radius, font size, line spacing or shape shadow values, artwork updates immediately while persisted canvas data, autosave and history stay unchanged. Pointer release, keyboard completion or numeric confirmation commits once; Escape/pointer cancellation, menu dismissal, selection/lock/visibility change, Preview/unmount remove unfinished preview. Invalid values and locked/multiple selection never preview or commit. Undo restores the original complete style and saved/reloaded/exported artwork uses committed data only; no extra tweening that lags pointer input.
+
+Additional scoped implementation: `client/src/hooks/useV3ElementPreview.ts`, its unit tests, `client/src/components/editor/v3/V3Canvas.tsx`, existing v3ElementEditing helper/tests and existing toolbar/browser/CSS paths. The preview state is transient UI state, not a second document store.
+
+## Approved exact text-controls correction — 2026-11-04
+
+- [x] **AC6 [happy-path]:** When text formatting is shown, font minus/value/plus form one seamless rounded outline without inner boxes, separators or focus-layout shifts, retaining decimal input, keyboard entry and1–500 bounds. Text spacing opens the attached composition: no redundant heading, Letter spacing and Line spacing each with a label, slim slider and rounded value box; divider; two-line Anchor text box label followed by start/middle/end arrow-and-bar icons with pressed state. Keep More Settings absent. Letter spacing uses tracking units−200..800 (1000=1em),0 neutral; line spacing retains existing0.5..3 support with0.01 entry; anchors operate within existing fixed text bounds. Navy/Teal supplies light/dark colors while sizes/spacing/icon arrangement follow the reference. All numeric previews/cancellation/history protection remain.
+- [x] **AC7 [error-path]:** When Text case is clicked in More, it cycles uppercase→lowercase→capitalize→uppercase (legacy none starts at uppercase), changes its visible AA/aa/Aa icon and accessible current-mode description, and creates one undo step per click without opening another menu. Title Case capitalizes each word without rewriting stored content; existing legacy none remains readable and Undo restores it. Invalid spacing/anchor values and locked/multiple selection cannot preview or commit; saved/reloaded/exported artwork retains confirmed values. No More Settings, Crop or unrelated capabilities.
+
+Additional exact scope: existing useV3ElementPreview.ts/shared validation and its tests; V3ElementToolbar.tsx/CSS/unit/browser/plan/report paths; `Mockups/approved-v3-editor/evidence/text-ref-{light,dark}.png`.
+
 ## Out of Scope
 
 - Does not implement Crop, attached connectors, line labels, Animate, Position or Style.
@@ -86,10 +104,13 @@ Run npm run check, npm run test:unit, npm run test:unit:client and applicable br
 
 | TC ID | Type | Priority | Scenario | Status | Finding |
 |-------|------|----------|----------|--------|---------|
-| TC-EDIT-033-01 | Unit | P0 | happy-path: When one unlocked text, shape, image or line is selected,… | ✅ | |
-| TC-EDIT-033-02 | Unit | P0 | error-path: When image replacement is cancelled or fails to decode, n… | ✅ | |
-| TC-EDIT-033-03 | Auto (unit) | P1 | Replacement cancel/failure preserves original; successful replacement retains ID/style and clears stale source metadata. | ✅ | |
-| TC-EDIT-033-04 | Manual | P1 | Keyboard/popover edges, locked/mixed selection and both themes preserve approved skeleton. | ✅ | |
+| TC-EDIT-033-01 | Unit | P0 | happy-path: When one unlocked text, shape, image or line is selected,… | ✅ |  |
+| TC-EDIT-033-02 | Unit | P0 | error-path: When image replacement is cancelled or fails to decode, n… | ✅ |  |
+| TC-EDIT-033-03 | Unit | P0 | happy-path: When text/image formatting is opened, preserve the approv… | ✅ |  |
+| TC-EDIT-033-04 | Unit | P0 | happy-path: When the owner formats text, image, shape or line in V3El… | ✅ | Full local unit/browser evidence below |
+| TC-EDIT-033-05 | Unit | P0 | error-path: When toolbar numeric/range/color controls preview opacity… | ✅ | Full local unit/browser evidence below |
+| TC-EDIT-033-06 | Unit | P0 | happy-path: When text formatting is shown, font minus/value/plus form… | ✅ | Full local unit/browser evidence below |
+| TC-EDIT-033-07 | Unit | P0 | error-path: When Text case is clicked in More, it cycles uppercase→lo… | ✅ | Full local unit/browser evidence below |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 
@@ -114,3 +135,17 @@ Run npm run check, npm run test:unit, npm run test:unit:client and applicable br
 ## Presentation refinement evidence — 2026-11-02
 
 T4 implements the approved compact toolbar refinement above. Final frontend/API type checks and 811 backend +475 client unit tests pass, with one existing skip. Complete browser suite: 51 passed; final affected Escape/sidebar/theme subset: four passed. Saved themed and text transparency screenshots visually inspected. Historical real API/database smoke remains recorded separately above. No backend changes, added Canva features, main merge or deployment.
+
+
+## Nov4 browser feedback verification
+
+AC3 locally verified. Final frontend/API type checks and 811 backend +486 client unit tests pass (one existing skip); complete V3 browser runner:56/56 pass, including live drag/resize, saved-line selection and compact menus. See TOOLBAR_VERIFICATION.md in the approved bundle for logs and limitations. Formal Done, PR merge and deployment remain pending.
+
+
+## Detailed toolbar follow-up verification — 2026-11-04
+
+Implemented the approved detailed extension locally. Final frontend/API type checks pass; unit suites811 backend +534 client =1,345 pass, one existing client skip; final complete V3 browser runner67/67 passes after final cancellation fixes. Actual checks include live style previews without history writes, safe Escape/fractional opacity, Fit/Reset including AI imports, visual line picker/caps, text spacing/font/More, retained geometry/history/save/reload/export and both themes. See approved bundle TOOLBAR_VERIFICATION.md for logs and limitations. No formal Done, commit, merge, push or deployment is claimed.
+
+## Exact text-reference verification - 2026-11-04
+
+Latest screenshot controls implemented locally. Final frontend/API type checks pass; 811 backend +555 client =1,366 passing unit tests, one existing client skip. Complete V3 browser runner69/69 passes. Both themes visually inspected at1242x668; retained evidence/text-ref-light.png and text-ref-dark.png in the approved bundle. Tracking/anchors/title-case cover DOM, wrapping, inline editing, PNG, save/reload and history boundaries. More Settings remains excluded. See TOOLBAR_VERIFICATION.md for logs and limits. No formal Done, commit, merge, push or deployment.

@@ -188,7 +188,7 @@ function Uploads() {
   </div>;
 }
 
-const builtInPalettes: BrandPalette[] = [
+export const builtInPalettes: BrandPalette[] = [
   { id: 'luxury-gold', name: 'Luxury Gold', colors: ['#1F1F1F', '#D4AF37', '#FFFFFF', '#F5F5F5', '#8B7355'], description: 'Premium & sophisticated' },
   { id: 'modern-blue', name: 'Modern Blue', colors: ['#0F172A', '#3B82F6', '#60A5FA', '#DBEAFE', '#FFFFFF'], description: 'Professional & trustworthy' },
   { id: 'natural-green', name: 'Natural Green', colors: ['#14532D', '#16A34A', '#86EFAC', '#F0FDF4', '#FFFFFF'], description: 'Fresh & eco-friendly' },
@@ -197,7 +197,7 @@ const builtInPalettes: BrandPalette[] = [
   { id: 'royal-purple', name: 'Royal Purple', colors: ['#4C1D95', '#7C3AED', '#A78BFA', '#EDE9FE', '#FFFFFF'], description: 'Bold & creative' },
 ];
 
-function loadPalettes(): BrandPalette[] {
+export function loadPalettes(): BrandPalette[] {
   try {
     const parsed: unknown = JSON.parse(localStorage.getItem('custom-brand-palettes') ?? '[]');
     if (!Array.isArray(parsed)) return [];

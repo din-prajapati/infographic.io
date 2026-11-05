@@ -32,6 +32,10 @@
 - Each completed gesture adds exactly one undo entry; Escape restores the prior state. Save/autosave receives completed data only. Legacy text/image/shape records remain loadable without migration.
 - Desktop-only scope: verify 1191x668 and 1440px width, light/dark/system; no new phone layout. No theme switch changes artwork colours.
 
+## Approved correction — 2026-11-04
+
+- [x] **AC3 [happy-path]:** When a previously drawn line is clicked or dragged in `LineElement.tsx` inside V3Canvas, its selection and formatting toolbar remain visible after pointer release and subsequent clicks; Shift selection toggles exactly once. Curved/elbow/straight, horizontal/vertical, locked and Preview semantics remain intact. Live endpoint/body geometry may update the V3 readout transiently; only completion creates one undo/save revision and cancellation restores the previous geometry.
+
 ## Out of Scope
 
 - Does not implement Crop, attached connectors, line labels, Animate, Position or Style.
@@ -72,10 +76,9 @@ Run npm run check, npm run test:unit, npm run test:unit:client and applicable br
 
 | TC ID | Type | Priority | Scenario | Status | Finding |
 |-------|------|----------|----------|--------|---------|
-| TC-EDIT-032-01 | Unit | P0 | happy-path: When an authenticated agent chooses Straight, Curved or E… | ✅ | |
-| TC-EDIT-032-02 | Unit | P0 | error-path: When Escape cancels an in-progress line, a gesture is sho… | ✅ | |
-| TC-EDIT-032-03 | Auto (unit) | P1 | Shift draws 45-degree straight line; Undo/Redo restores one complete gesture. | ✅ | |
-| TC-EDIT-032-04 | Manual | P1 | Horizontal/vertical/reversed lines, zoom/pan, locked lines and legacy reopening preserve data. | ✅ | |
+| TC-EDIT-032-01 | Unit | P0 | happy-path: When an authenticated agent chooses Straight, Curved or E… | ✅ |  |
+| TC-EDIT-032-02 | Unit | P0 | error-path: When Escape cancels an in-progress line, a gesture is sho… | ✅ |  |
+| TC-EDIT-032-03 | Unit | P0 | happy-path: When a previously drawn line is clicked or dragged in `Li… | ✅ |  |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 
@@ -96,3 +99,8 @@ Run npm run check, npm run test:unit, npm run test:unit:client and applicable br
 ## Implementation evidence — 2026-11-01
 
 [Toolbar verification](../../../../../../../Mockups/approved-v3-editor/TOOLBAR_VERIFICATION.md): 811 backend +465 client tests pass, one existing skip; 48 browser regressions pass, plus final sidebar/theme and legacy-line compatibility subsets. Real authenticated API/database save/reload/export smoke passes with cleanup. All independent code-review findings corrected. Formal Done and PR merge remain pending.
+
+
+## Nov4 browser feedback verification
+
+AC3 locally verified. Final frontend/API type checks and 811 backend +486 client unit tests pass (one existing skip); complete V3 browser runner:56/56 pass, including live drag/resize, saved-line selection and compact menus. See TOOLBAR_VERIFICATION.md in the approved bundle for logs and limitations. Formal Done, PR merge and deployment remain pending.

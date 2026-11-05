@@ -6,6 +6,10 @@ import { V3Canvas } from '../V3Canvas';
 import { LineElement } from '../../../canvas/LineElement';
 import { useCanvasStore } from '../../../../hooks/useCanvasStore';
 import { createLineElement } from '../../../../lib/lineGeometry';
+import type { CanvasElement } from '../../../../lib/canvasTypes';
+
+const rndProps = vi.hoisted(()=>new Map<string, any>());
+vi.mock('react-rnd',()=>({Rnd:(props:any)=>{rndProps.set(props['data-element-id'],props);return <div data-element-id={props['data-element-id']}>{props.children}</div>;}}));
 
 vi.mock('../../../../lib/theme-provider',()=>({useTheme:()=>({resolvedTheme:'light',setTheme:vi.fn()})}));
 vi.mock('../../../../lib/canvasState',()=>({fitCanvasZoomToViewport:vi.fn()}));
@@ -26,6 +30,80 @@ const surface=()=>node.querySelector('[aria-label="Line drawing surface"]')!;
 const pointer=(target:Element,type:'pointerDown'|'pointerMove'|'pointerUp',clientX:number,clientY:number,shiftKey=false)=>act(()=>Simulate[type](target,{clientX,clientY,button:0,shiftKey}));
 
 describe('line gestures — US-EDIT-032',()=>{
+  // Contract: the captured SVG click stays inside each line; Shift toggles selection exactly once.
+  it.each(['straight','curved','elbow'] as const)('keeps %s selected after captured release and toggles Shift once',lineType=>{
+    const line=createLineElement(lineType,{x:50,y:60},{x:250,y:160});
+    useCanvasStore.setState({elements:[line],selectedElementIds:[],activeTool:'select'});
+    act(()=>root.render(<V3Canvas/>));
+    const path=node.querySelector('path[role="button"]')!;
+    pointer(path,'pointerDown',150,140);pointer(path,'pointerUp',150,140);
+    act(()=>Simulate.click(node.querySelector('[data-element-type="line"]')!));
+    expect(useCanvasStore.getState().selectedElementIds).toEqual([line.id]);
+    pointer(path,'pointerDown',150,140);pointer(path,'pointerUp',150,140);
+    act(()=>Simulate.click(path));
+    expect(useCanvasStore.getState().selectedElementIds).toEqual([line.id]);
+    pointer(path,'pointerDown',150,140,true);pointer(path,'pointerUp',150,140,true);
+    act(()=>Simulate.click(node.querySelector('[data-element-type="line"]')!,{shiftKey:true}));
+    expect(useCanvasStore.getState().selectedElementIds).toEqual([]);
+  });
+  // Contract: line body at 50% zoom reports design coordinates while history remains untouched, then cancels back.
+  it('reports live line body geometry and restores it on cancellation',()=>{
+    const line=createLineElement('straight',{x:50,y:60},{x:250,y:60});
+    useCanvasStore.setState({elements:[line],selectedElementIds:[line.id],activeTool:'select',zoom:0.5});
+    act(()=>root.render(<V3Canvas/>));const path=node.querySelector('path[role="button"]')!;
+    pointer(path,'pointerDown',125,110);pointer(path,'pointerMove',150,125);
+    expect(node.querySelector('[aria-label="Selection geometry"]')!.textContent).toBe('200 × 1 px · x 100, y 90');
+    expect(useCanvasStore.getState().elements[0]).toEqual(line);expect(useCanvasStore.getState().history.past).toHaveLength(0);
+    act(()=>Simulate.pointerCancel(path));
+    expect(node.querySelector('[aria-label="Selection geometry"]')!.textContent).toBe('200 × 1 px · x 50, y 60');
+  });
+  // Contract: at 200% the endpoint's 100x80 screen movement previews 250x40 design bounds, committing one history entry.
+  it('reports live endpoint bounds in design pixels and commits once',()=>{
+    const line=createLineElement('straight',{x:50,y:60},{x:250,y:60});
+    useCanvasStore.setState({elements:[line],selectedElementIds:[line.id],activeTool:'select',zoom:2});
+    act(()=>root.render(<V3Canvas/>));const handle=node.querySelector('[aria-label="Line end endpoint"]')!;
+    pointer(handle,'pointerDown',600,200);pointer(handle,'pointerMove',700,280);
+    expect(node.querySelector('[aria-label="Selection geometry"]')!.textContent).toBe('250 × 40 px · x 50, y 60');
+    expect(useCanvasStore.getState().elements[0]).toEqual(line);expect(useCanvasStore.getState().history.past).toHaveLength(0);
+    pointer(handle,'pointerUp',700,280);
+    expect(node.querySelector('[aria-label="Selection geometry"]')!.textContent).toBe('250 × 40 px · x 50, y 60');
+    expect(useCanvasStore.getState().history.past).toHaveLength(1);
+    act(()=>useCanvasStore.getState().undo());
+    expect(node.querySelector('[aria-label="Selection geometry"]')!.textContent).toBe('200 × 1 px · x 50, y 60');
+  });
+  // Contract: Rnd reports design pixels directly; all three adapters preview at 50% and 200% without document writes.
+  it.each(['text','image','shape'] as const)('reports transient %s drag and resize bounds, commits only on stop',type=>{
+    const element={...createLineElement('straight',{x:50,y:60},{x:250,y:160}),id:type,type,content:'Text',fontSize:16,fontFamily:'Inter',fontWeight:400,listStyle:'none',textTransform:'none',filters:{brightness:100,contrast:100,saturation:100},src:'data:image/png;base64,',shapeType:'rectangle',cornerRadius:0} as unknown as CanvasElement;
+    useCanvasStore.setState({elements:[element],selectedElementIds:[element.id],activeTool:'select',zoom:0.5});
+    act(()=>root.render(<V3Canvas/>));
+    act(()=>rndProps.get(type).onDrag({}, {x:80,y:90}));
+    expect(node.querySelector('[aria-label="Selection geometry"]')!.textContent).toBe('200 × 100 px · x 80, y 90');
+    expect(useCanvasStore.getState().elements[0]).toEqual(element);expect(useCanvasStore.getState().history.past).toHaveLength(0);
+    act(()=>useCanvasStore.setState({zoom:2}));
+    const ref={style:{width:'240px',height:'120px'}};
+    act(()=>rndProps.get(type).onResize({},'bottomRight',ref,{}, {x:80,y:90}));
+    expect(node.querySelector('[aria-label="Selection geometry"]')!.textContent).toBe('240 × 120 px · x 80, y 90');
+    expect(useCanvasStore.getState().history.past).toHaveLength(0);
+    act(()=>rndProps.get(type).onResizeStop({},'bottomRight',ref,{}, {x:80,y:90}));
+    expect(useCanvasStore.getState().elements[0]).toMatchObject({x:80,y:90,width:240,height:120});
+    expect(useCanvasStore.getState().history.past).toHaveLength(1);
+  });
+  // Contract: cancellation, deselection and Preview discard a shape's 80/90 preview without changing its stored 50/60 origin.
+  it('clears box geometry on pointer cancellation, selection change, and Preview',()=>{
+    const element={...createLineElement('straight',{x:50,y:60},{x:250,y:160}),id:'shape',type:'shape',shapeType:'rectangle',cornerRadius:0} as unknown as CanvasElement;
+    useCanvasStore.setState({elements:[element],selectedElementIds:[element.id],activeTool:'select'});
+    act(()=>root.render(<V3Canvas/>));
+    act(()=>rndProps.get('shape').onDrag({}, {x:80,y:90}));
+    act(()=>rndProps.get('shape').onPointerCancel());
+    expect(node.querySelector('[aria-label="Selection geometry"]')!.textContent).toBe('200 × 100 px · x 50, y 60');
+    act(()=>rndProps.get('shape').onDrag({}, {x:80,y:90}));
+    act(()=>useCanvasStore.getState().clearSelection());act(()=>useCanvasStore.getState().selectElement(element.id));
+    expect(node.querySelector('[aria-label="Selection geometry"]')!.textContent).toBe('200 × 100 px · x 50, y 60');
+    act(()=>rndProps.get('shape').onDrag({}, {x:80,y:90}));
+    act(()=>root.render(<V3Canvas isPreviewMode/>));act(()=>root.render(<V3Canvas/>));
+    expect(node.querySelector('[aria-label="Selection geometry"]')!.textContent).toBe('200 × 100 px · x 50, y 60');
+    expect(useCanvasStore.getState().elements[0]).toEqual(element);expect(useCanvasStore.getState().history.past).toHaveLength(0);
+  });
   // Contract: preview changes zero store elements/history; completing a 200px drag adds one selected line and one undo entry.
   it('commits a completed draw only once',()=>{
     act(()=>root.render(<V3Canvas/>));const target=surface();

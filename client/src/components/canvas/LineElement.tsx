@@ -3,12 +3,15 @@ import type { LineElement as LineElementType } from '../../lib/canvasTypes';
 import { useCanvasStore } from '../../hooks/useCanvasStore';
 import { isValidLineElement, lineDecorations, linePath, normalizeLineElement, snapLineEnd, type LinePoint } from '../../lib/lineGeometry';
 import { strokeDash } from '../../lib/elementStyles';
+import { getElementPaint } from '../../lib/paint';
+import { PaintSvg, svgPaint } from './PaintSvg';
 
 type DragMode = 'body' | 'start' | 'end' | 'control' | 'elbow';
-interface Drag { mode: DragMode; element: LineElementType; clientX: number; clientY: number; moved: boolean }
+interface Drag { mode: DragMode; element: LineElementType; clientX: number; clientY: number; moved: boolean; target: Element; pointerId: number }
 
-export function LineElement({element,isSelected,onSelect,readOnly=false}: {
+export function LineElement({element,isSelected,onSelect,readOnly=false,onGeometryChange}: {
   element: LineElementType; isSelected: boolean; onSelect: (event: React.MouseEvent) => void; readOnly?: boolean;
+  onGeometryChange?: (id:string, geometry:Pick<LineElementType,'x'|'y'|'width'|'height'>|null)=>void;
 }) {
   const zoom = useCanvasStore(state=>state.zoom);
   const [preview,setPreview] = useState<LineElementType|null>(null);
@@ -17,7 +20,13 @@ export function LineElement({element,isSelected,onSelect,readOnly=false}: {
   const skipClick = useRef(false);
   const svg = useRef<SVGSVGElement>(null);
   const shown = preview ?? element;
-  const cancel = () => { drag.current=null; draft.current=null; setPreview(null); };
+  const paint = getElementPaint(shown, 'stroke'), paintId = `paint-${element.id}-stroke`;
+  const stroke = svgPaint(paint, paintId);
+  const cancel = () => {
+    const gesture=drag.current;drag.current=null;draft.current=null;setPreview(null);onGeometryChange?.(element.id,null);
+    if(gesture?.target.hasPointerCapture(gesture.pointerId))gesture.target.releasePointerCapture(gesture.pointerId);
+  };
+  useEffect(()=>()=>onGeometryChange?.(element.id,null),[element.id,onGeometryChange]);
   useEffect(()=>{
     const key=(event:KeyboardEvent)=>{if(event.key==='Escape'&&drag.current){event.preventDefault();cancel();}};
     window.addEventListener('keydown',key);return()=>window.removeEventListener('keydown',key);
@@ -35,9 +44,14 @@ export function LineElement({element,isSelected,onSelect,readOnly=false}: {
   function start(event: React.PointerEvent, mode: DragMode) {
     event.stopPropagation();
     if(readOnly||element.locked||event.button!==0)return;
-    event.preventDefault(); svg.current?.setPointerCapture(event.pointerId);
-    if(!isSelected&&!event.shiftKey)useCanvasStore.getState().selectElement(element.id);
-    drag.current={mode,element,clientX:event.clientX,clientY:event.clientY,moved:false};
+    event.preventDefault();
+    // Capture the hit path/handle itself. Capturing the non-interactive outer SVG
+    // retargets the release click away from the hit path and used to clear selection.
+    event.currentTarget.setPointerCapture(event.pointerId);
+    skipClick.current=true;
+    if(mode==='body'&&(!isSelected||event.shiftKey))useCanvasStore.getState().selectElement(element.id,event.shiftKey);
+    else if(!isSelected)useCanvasStore.getState().selectElement(element.id);
+    drag.current={mode,element,clientX:event.clientX,clientY:event.clientY,moved:false,target:event.currentTarget,pointerId:event.pointerId};
   }
   function move(event: React.PointerEvent) {
     const gesture=drag.current;if(!gesture)return;event.stopPropagation();
@@ -51,7 +65,7 @@ export function LineElement({element,isSelected,onSelect,readOnly=false}: {
       next=gesture.mode==='elbow'?{...original,elbowOffset:original.elbowAxis==='horizontal'?point.x:point.y}:{...original,[gesture.mode]:point};
       next=normalizeLineElement(next);
     }
-    draft.current=next;setPreview(next);
+    draft.current=next;setPreview(next);onGeometryChange?.(element.id,next);
   }
   function finish(event: React.PointerEvent) {
     const gesture=drag.current;if(!gesture)return;event.stopPropagation();
@@ -66,8 +80,7 @@ export function LineElement({element,isSelected,onSelect,readOnly=false}: {
       const {x,y,width,height,start,end,control,elbowOffset}=next;
       state.updateElement(element.id,{x,y,width,height,start,end,control,elbowOffset});
     }
-    skipClick.current=gesture.moved;cancel();
-    if(svg.current?.hasPointerCapture(event.pointerId))svg.current.releasePointerCapture(event.pointerId);
+    cancel();
   }
   function keyMove(event: React.KeyboardEvent) {
     if(readOnly||element.locked||event.ctrlKey||event.metaKey||event.altKey)return;
@@ -84,16 +97,26 @@ export function LineElement({element,isSelected,onSelect,readOnly=false}: {
   return <svg ref={svg} data-element-id={element.id} data-element-type="line" data-artwork-svg="true"
     width={shown.width} height={shown.height} style={{position:'absolute',left:shown.x,top:shown.y,width:shown.width,height:shown.height,overflow:'visible',zIndex:shown.zIndex,
       transform:`rotate(${shown.rotation}deg)`,transformOrigin:'center',pointerEvents:'none'}}
-    onPointerMove={move} onPointerUp={finish} onPointerCancel={cancel} onLostPointerCapture={()=>{if(drag.current)cancel();}}>
+    onPointerMove={move} onPointerUp={finish} onPointerCancel={cancel} onLostPointerCapture={()=>{if(drag.current)cancel();}}
+    onClick={event=>{event.stopPropagation();if(readOnly)return;if(skipClick.current){skipClick.current=false;return;}onSelect(event);}}>
+    <PaintSvg paint={paint} id={paintId} width={shown.width} height={shown.height}/>
     <g style={{opacity:shown.opacity,pointerEvents:'none'}}>
-      <path d={linePath(shown)} style={{fill:'none',stroke:shown.stroke,strokeWidth:shown.strokeWidth,strokeDasharray:strokeDash(shown.strokeStyle,shown.strokeWidth).join(' '),strokeLinecap:shown.strokeStyle==='dotted'?'round':'butt',strokeLinejoin:'round'}}/>
-      {lineDecorations(shown).map((decoration,index)=><g key={index} transform={`translate(${decoration.tip.x} ${decoration.tip.y}) rotate(${decoration.angle*180/Math.PI})`}>
-        {decoration.kind==='circle'?<circle r={decoration.size/2} style={{fill:shown.stroke,stroke:'none'}}/>:decoration.kind==='bar'?<path d={`M 0 ${-decoration.size/2} L 0 ${decoration.size/2}`} style={{fill:'none',stroke:shown.stroke,strokeWidth:shown.strokeWidth}}/>:<path d={`M 0 0 L ${-decoration.size} ${-decoration.size/2} L ${-decoration.size} ${decoration.size/2} Z`} style={{fill:shown.stroke,stroke:'none'}}/>}
-      </g>)}
+      <path d={linePath(shown)} style={{fill:'none',stroke,strokeWidth:shown.strokeWidth,strokeDasharray:strokeDash(shown.strokeStyle,shown.strokeWidth).join(' '),strokeLinecap:shown.lineCap??(shown.strokeStyle==='dotted'?'round':'butt'),strokeLinejoin:'round'}}/>
+      {lineDecorations(shown).map((decoration,index)=>{
+        // Keep every decoration in the line's coordinate space: transforming
+        // a gradient-filled child would also transform its paint server.
+        const point=(x:number,y:number)=>`${decoration.tip.x+x*Math.cos(decoration.angle)-y*Math.sin(decoration.angle)} ${decoration.tip.y+x*Math.sin(decoration.angle)+y*Math.cos(decoration.angle)}`;
+        const size=decoration.size;
+        return <g key={index}>
+          {decoration.kind==='circle'?<circle cx={decoration.tip.x} cy={decoration.tip.y} r={size/2} style={{fill:stroke,stroke:'none'}}/>
+            :decoration.kind==='bar'?<path d={`M ${point(0,-size/2)} L ${point(0,size/2)}`} style={{fill:'none',stroke,strokeWidth:shown.strokeWidth}}/>
+            :<path d={`M ${point(0,0)} L ${point(-size,-size/2)} L ${point(-size,size/2)} Z`} style={{fill:stroke,stroke:'none'}}/>}
+        </g>;
+      })}
     </g>
     <path role="button" tabIndex={readOnly||element.locked?-1:0} aria-label={element.name||'Line'} d={linePath(shown)}
       style={{fill:'none',stroke:'transparent',strokeWidth:Math.max(shown.strokeWidth,12/zoom),pointerEvents:readOnly?'none':'stroke',cursor:element.locked?'default':'move'}}
-      onPointerDown={event=>start(event,'body')} onClick={event=>{event.stopPropagation();if(readOnly)return;if(skipClick.current){skipClick.current=false;return;}onSelect(event);}} onKeyDown={keyMove}/>
+      onPointerDown={event=>start(event,'body')} onKeyDown={keyMove}/>
     {isSelected&&!element.locked&&!readOnly&&<g style={{pointerEvents:'all'}}>
       {handle('Line start endpoint',shown.start,'start')}{handle('Line end endpoint',shown.end,'end')}
       {shown.lineType==='curved'&&<><path d={`M ${shown.start.x} ${shown.start.y} L ${shown.control.x} ${shown.control.y} L ${shown.end.x} ${shown.end.y}`} style={{fill:'none',stroke:'#3b82f6',strokeWidth:1/zoom,strokeDasharray:`${3/zoom} ${3/zoom}`,pointerEvents:'none'}}/>{handle('Curve bend',shown.control,'control')}</>}

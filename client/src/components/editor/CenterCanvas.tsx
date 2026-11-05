@@ -10,6 +10,7 @@ import { ShapeElement } from "../canvas/ShapeElement";
 import { ImageElement } from "../canvas/ImageElement";
 import { LineElement } from "../canvas/LineElement";
 import { sortByZIndex } from "../../lib/canvasUtils";
+import {paintToCss} from '../../lib/paint';
 import { DimensionsDisplay } from "./DimensionsDisplay";
 import { ContextualToolbar } from "./ContextualToolbar";
 import { CanvasEditToolbar } from "./CanvasEditToolbar";
@@ -40,6 +41,7 @@ export function CenterCanvas({ isPreviewMode = false }: CenterCanvasProps) {
   const canvasWidth = useCanvasStore((state) => state.canvasWidth);
   const canvasHeight = useCanvasStore((state) => state.canvasHeight);
   const backgroundColor = useCanvasStore((state) => state.backgroundColor);
+  const backgroundPaint = useCanvasStore((state) => state.backgroundPaint);
   const selectedThemeColors = useCanvasStore((state) => state.selectedThemeColors);
   const zoom = useCanvasStore((state) => state.zoom);
   const activeTool = useCanvasStore((state) => state.activeTool);
@@ -337,7 +339,7 @@ export function CenterCanvas({ isPreviewMode = false }: CenterCanvasProps) {
             transform: `scale(${zoom})`,
             transformOrigin: '0 0',
             transition: isPanning ? 'none' : "background-color 0.3s ease-in-out",
-            backgroundColor: backgroundColor,
+            background: paintToCss(backgroundPaint,backgroundColor,{width:canvasWidth,height:canvasHeight}),
           }}
         >
 

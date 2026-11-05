@@ -1,7 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ChevronDown, Layers, Minus, Plus, Scan, Sparkles } from 'lucide-react';
 import { useCanvasStore } from '../../../hooks/useCanvasStore';
+import { clearElementPreview, useV3ElementPreview } from '../../../hooks/useV3ElementPreview';
 import { fitCanvasZoomToViewport } from '../../../lib/canvasState';
+import {useV3ColorPanel,openColorPanel} from '../../../hooks/useV3ColorPanel';
+import {paintToCss} from '../../../lib/paint';
 import { useTheme } from '../../../lib/theme-provider';
 import { TextElement } from '../../canvas/TextElement';
 import { ShapeElement } from '../../canvas/ShapeElement';
@@ -13,12 +16,23 @@ import { V3ElementToolbar } from './V3ElementToolbar';
 import { createLineElement, linePath, snapLineEnd, type LinePoint } from '../../../lib/lineGeometry';
 import type { LineElement as LineElementType, LineType } from '../../../lib/canvasTypes';
 
-export function V3Canvas({isPreviewMode=false,onAssistant,onEditImage}: {isPreviewMode?:boolean;onPreview?:()=>void;onAssistant?:()=>void;onEditImage?:()=>void}) {
+export function V3Canvas({isPreviewMode=false,onAssistant,onEditImage,onEditEffects}: {isPreviewMode?:boolean;onPreview?:()=>void;onAssistant?:()=>void;onEditImage?:()=>void;onEditEffects?:()=>void}) {
   const store=useCanvasStore();
+  const stylePreview=useV3ElementPreview(state=>state.preview);
+  useEffect(()=>{if(isPreviewMode)clearElementPreview();return()=>clearElementPreview();},[isPreviewMode]);
   const {elements,selectedElementIds,selectElement,clearSelection,canvasWidth,canvasHeight,backgroundColor,zoom,setZoom}=store;
+  const colorPanel=useV3ColorPanel();
+  const canvasPaint=!isPreviewMode&&colorPanel.target?.slot==='background'&&colorPanel.draft?colorPanel.draft:store.backgroundPaint;
+  const canvasBackground=paintToCss(canvasPaint,backgroundColor,{width:canvasWidth,height:canvasHeight});
   const {resolvedTheme,setTheme}=useTheme();
   const [popover,setPopover]=useState<'layers'|'settings'|'zoom'|null>(null);
   const [settings,setSettings]=useState({width:canvasWidth,height:canvasHeight});
+  const [geometryPreview,setGeometryPreview]=useState<{id:string;x:number;y:number;width:number;height:number}|null>(null);
+  const onGeometryChange=useCallback((id:string,geometry:{x:number;y:number;width:number;height:number}|null)=>{
+    if(!geometry){setGeometryPreview(current=>current?.id===id?null:current);return;}
+    const state=useCanvasStore.getState();
+    if(state.selectedElementIds.length===1&&state.selectedElementIds[0]===id)setGeometryPreview({id,...geometry});
+  },[]);
   useEffect(()=>{const close=(event:KeyboardEvent)=>{if(event.key==='Escape')setPopover(null);};window.addEventListener('keydown',close);return()=>window.removeEventListener('keydown',close);},[]);
   const pan=useRef<{x:number;y:number;left:number;top:number}|null>(null);
   const artboard=useRef<HTMLDivElement>(null);
@@ -32,6 +46,8 @@ export function V3Canvas({isPreviewMode=false,onAssistant,onEditImage}: {isPrevi
   const canvasPoint=(event:React.PointerEvent):LinePoint=>{const bounds=artboard.current?.getBoundingClientRect();return {x:Math.max(0,Math.min(canvasWidth,(event.clientX-(bounds?.left??0))/zoom)),y:Math.max(0,Math.min(canvasHeight,(event.clientY-(bounds?.top??0))/zoom))};};
   const drawingLine=(event:React.PointerEvent)=>{const gesture=drawing.current;if(!gesture)return null;let end=canvasPoint(event);if(event.shiftKey&&gesture.type==='straight')end=snapLineEnd(gesture.start,end);return createLineElement(gesture.type,gesture.start,end);};
   const selected=selectedElementIds.length===1?elements.find(el=>el.id===selectedElementIds[0]):undefined;
+  useEffect(()=>{setGeometryPreview(null);},[selected?.id,selected?.locked,selected?.visible,isPreviewMode]);
+  const geometry=geometryPreview?.id===selected?.id?geometryPreview:selected;
   useEffect(()=>{
     fitCanvasZoomToViewport();
     const viewport=document.querySelector('[data-canvas-viewport]');let bounds=viewport?.getBoundingClientRect();
@@ -48,13 +64,15 @@ export function V3Canvas({isPreviewMode=false,onAssistant,onEditImage}: {isPrevi
       <div className="v3-canvas-center"><div className="v3-artboard-wrap" style={{width:canvasWidth*zoom,height:canvasHeight*zoom}}>
         {!isPreviewMode&&<div className="v3-canvas-caption"><span>Design canvas</span><span>{canvasWidth} × {canvasHeight}</span></div>}
         <div ref={artboard} data-canvas-container data-canvas-content="true" data-testid="design-canvas" data-preview={isPreviewMode} role={isPreviewMode?'img':'application'} aria-label="Design canvas"
-          className="v3-artboard" style={{width:canvasWidth,height:canvasHeight,backgroundColor,transform:`scale(${zoom})`,pointerEvents:isPreviewMode||store.activeTool==='hand'?'none':undefined}}>
-          {[...elements].sort((a,b)=>a.zIndex-b.zIndex).map(element=>{
-            const props={isSelected:!isPreviewMode&&selectedElementIds.includes(element.id),onSelect:(event:React.MouseEvent)=>{event.stopPropagation();selectElement(element.id,event.shiftKey);}};
+          className="v3-artboard" style={{width:canvasWidth,height:canvasHeight,background:canvasBackground,transform:`scale(${zoom})`,pointerEvents:isPreviewMode||store.activeTool==='hand'?'none':undefined}}>
+          {[...elements].sort((a,b)=>a.zIndex-b.zIndex).map(committed=>{
+            const element=!isPreviewMode&&stylePreview?.id===committed.id&&stylePreview.baseElement===committed
+              ? {...committed,...stylePreview.patch,type:committed.type} as typeof committed:committed;
+            const props={isSelected:!isPreviewMode&&selectedElementIds.includes(element.id),onGeometryChange,onSelect:(event:React.MouseEvent)=>{event.stopPropagation();selectElement(element.id,event.shiftKey);}};
             if(element.type==='text')return <TextElement key={element.id} element={element} {...props}/>;
             if(element.type==='shape')return <ShapeElement key={element.id} element={element} {...props}/>;
             if(element.type==='line')return <LineElement key={element.id} element={element} {...props} readOnly={isPreviewMode}/>;
-            return <ImageElement key={element.id} element={element} {...props}/>;
+            return <ImageElement key={element.id} element={element} {...props} allowFrameResize/>;
           })}
           {!isPreviewMode&&drawType&&<div aria-label="Line drawing surface" role="application" style={{position:'absolute',inset:0,zIndex:100000,cursor:'crosshair',touchAction:'none'}}
             onClick={event=>event.stopPropagation()}
@@ -65,15 +83,15 @@ export function V3Canvas({isPreviewMode=false,onAssistant,onEditImage}: {isPrevi
             {drawPreview&&<svg data-artwork-svg="true" width={canvasWidth} height={canvasHeight} style={{position:'absolute',inset:0,width:canvasWidth,height:canvasHeight,pointerEvents:'none'}}><path transform={`translate(${drawPreview.x} ${drawPreview.y})`} d={linePath(drawPreview)} style={{fill:'none',stroke:drawPreview.stroke,strokeWidth:drawPreview.strokeWidth,strokeLinecap:'butt',strokeLinejoin:'round'}}/></svg>}
           </div>}
         </div>
-        {!isPreviewMode&&selected&&<><V3ElementToolbar element={selected} onEditImage={onEditImage??(()=>{})}/><RotationHandle element={selected}/></>}
+        {!isPreviewMode&&selected&&<><V3ElementToolbar element={selected} onEditImage={onEditImage??(()=>{})} onEditEffects={onEditEffects}/><RotationHandle element={selected}/></>}
       </div></div>
     </div>
-    {!isPreviewMode&&<><div className="v3-canvas-bottom">{selectedElementIds.length>0?<output aria-label="Selection geometry">{selectedElementIds.length===1&&selected?`${Math.round(selected.width)} × ${Math.round(selected.height)} px · x ${Math.round(selected.x)}, y ${Math.round(selected.y)}`:`${selectedElementIds.length} elements selected`}</output>:<span/>}<button className="v3-assistant" onClick={onAssistant}><Sparkles/>AI Assistant</button></div>
+    {!isPreviewMode&&<><div className="v3-canvas-bottom">{selectedElementIds.length>0?<output aria-label="Selection geometry">{selectedElementIds.length===1&&geometry?`${Math.round(geometry.width)} × ${Math.round(geometry.height)} px · x ${Math.round(geometry.x)}, y ${Math.round(geometry.y)}`:`${selectedElementIds.length} elements selected`}</output>:<span/>}<button className="v3-assistant" onClick={onAssistant}><Sparkles/>AI Assistant</button></div>
     <footer className="v3-footer"><div className="v3-footer-left"><button aria-expanded={popover==='layers'} onClick={()=>toggle('layers')}><Layers/>Layers</button><button aria-expanded={popover==='settings'} onClick={()=>toggle('settings')}>Canvas settings</button><span>{elements.length} {elements.length===1?'element':'elements'}</span></div>
       <div className="v3-zoom"><button aria-label="Zoom out" disabled={zoom<=0.1} onClick={()=>setZoom(zoom-0.1)}><Minus/></button><button aria-label="Zoom level" aria-expanded={popover==='zoom'} onClick={()=>toggle('zoom')}>{Math.round(zoom*100)}%<ChevronDown/></button><button aria-label="Zoom in" disabled={zoom>=4} onClick={()=>setZoom(zoom+0.1)}><Plus/></button><button aria-label="Fit canvas" onClick={fitCanvasZoomToViewport}><Scan/></button></div>
       {popover==='zoom'&&<div className="v3-popover v3-zoom-menu"><button onClick={()=>setZoom(zoom+0.1)}>Zoom in</button><button onClick={()=>setZoom(zoom-0.1)}>Zoom out</button><button onClick={()=>{fitCanvasZoomToViewport();setPopover(null);}}>Fit to Screen</button>{[0.5,1,2].map(value=><button key={value} onClick={()=>{setZoom(value);setPopover(null);}}>Zoom to {value*100}%</button>)}</div>}
       {popover==='layers'&&<section className="v3-popover v3-layers" aria-label="Layers panel"><h2>Layers</h2><LayersTab/></section>}
-      {popover==='settings'&&<section className="v3-popover v3-settings" aria-label="Canvas settings"><h2>Canvas settings</h2><form onSubmit={event=>{event.preventDefault();if(settings.width>=100&&settings.height>=100&&settings.width<=10000&&settings.height<=10000)store.loadCanvas({canvasWidth:settings.width,canvasHeight:settings.height});}}><label>Width<input aria-label="Canvas width" type="number" min="100" max="10000" value={settings.width} onChange={event=>setSettings({...settings,width:Number(event.target.value)})}/></label><label>Height<input aria-label="Canvas height" type="number" min="100" max="10000" value={settings.height} onChange={event=>setSettings({...settings,height:Number(event.target.value)})}/></label><button type="submit">Apply size</button></form><label>Background<input aria-label="Canvas background" type="color" value={backgroundColor} onChange={event=>store.setBackgroundColor(event.target.value)}/></label><button aria-label="Toggle theme" onClick={()=>setTheme(resolvedTheme==='dark'?'light':'dark')}>Switch to {resolvedTheme==='dark'?'light':'dark'} theme</button><button onClick={()=>setTheme('system')}>Use system theme</button></section>}
+      {popover==='settings'&&<section className="v3-popover v3-settings" aria-label="Canvas settings"><h2>Canvas settings</h2><form onSubmit={event=>{event.preventDefault();if(settings.width>=100&&settings.height>=100&&settings.width<=10000&&settings.height<=10000)store.loadCanvas({canvasWidth:settings.width,canvasHeight:settings.height});}}><label>Width<input aria-label="Canvas width" type="number" min="100" max="10000" value={settings.width} onChange={event=>setSettings({...settings,width:Number(event.target.value)})}/></label><label>Height<input aria-label="Canvas height" type="number" min="100" max="10000" value={settings.height} onChange={event=>setSettings({...settings,height:Number(event.target.value)})}/></label><button type="submit">Apply size</button></form><label>Background<button type="button" aria-label="Canvas background" onClick={()=>{setPopover(null);openColorPanel({slot:'background'});}}><span className="v3-color-swatch" style={{background:canvasBackground}}/>Change color</button></label><button aria-label="Toggle theme" onClick={()=>setTheme(resolvedTheme==='dark'?'light':'dark')}>Switch to {resolvedTheme==='dark'?'light':'dark'} theme</button><button onClick={()=>setTheme('system')}>Use system theme</button></section>}
     </footer></>}
   </main>;
 }

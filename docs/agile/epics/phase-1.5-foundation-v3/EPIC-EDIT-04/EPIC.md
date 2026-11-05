@@ -77,6 +77,10 @@ facts, generate a background without touching the text, and is stopped at Export
 | 13 | [US-EDIT-032](stories/US-EDIT-032/STORY.md) | Standalone straight, curved and elbow drawing | M-EDIT-11 | M | Implemented; merge pending |
 | 14 | [US-EDIT-033](stories/US-EDIT-033/STORY.md) | Modern element toolbars and image Edit sidebar | M-EDIT-11 | M | Implemented; merge pending |
 | 15 | [US-EDIT-034](stories/US-EDIT-034/STORY.md) | Rotation handles, borders and local shape shadows | M-EDIT-11 | M | Implemented; merge pending |
+| 16 | [US-EDIT-035](stories/US-EDIT-035/STORY.md) | Shared paint model, rendering and document persistence | M-EDIT-11 | M | In Progress - locally verified; merge pending |
+| 17 | [US-EDIT-036](stories/US-EDIT-036/STORY.md) | Shared color sidebar, picker and transient paint editing | M-EDIT-11 | M | In Progress - locally verified; merge pending |
+| 18 | [US-EDIT-037](stories/US-EDIT-037/STORY.md) | Compact stroke styling and line-type menus | M-EDIT-11 | M | In Progress - locally verified; merge pending |
+| 19 | [US-EDIT-038](stories/US-EDIT-038/STORY.md) | Annotated Effects, opacity, text-anchor and image-Fit refinements | M-EDIT-11 | M | 🔲 |
 
 ---
 
@@ -105,3 +109,7 @@ Reconciled the obsolete shell contract to the approved Navy/Teal layout and impl
 ### 2026-11-01 — Modern element editing (US-EDIT-032/033/034)
 
 Implemented and verified locally: standalone lines, old-editor toolbar parity, image Edit sidebar/replacement, rotation handles, border styles and local shape shadows. The approved Navy/Teal skeleton and legacy default route remain. 48 browser cases, 811 backend +465 client unit tests (one existing skip), type checks, build and authenticated API/database save/reload/export smoke pass. Independent code-review findings corrected. [Evidence](../../../../../Mockups/approved-v3-editor/TOOLBAR_VERIFICATION.md). PR/main merge, Crop, attached connectors and unrelated V3 roadmap work remain pending.
+
+- 2026-11-05: US-EDIT-035-037 implemented locally against the approved color/paint plan. Type checks, 1,425 unit tests and 89 browser cases pass; six themed screenshots retained. [Evidence](../../../../../Mockups/approved-v3-editor/COLOR_PAINT_VERIFICATION.md). Existing work preserved; no commit, push, merge or deployment. Formal Done remains pending milestone merge.
+
+- 2026-11-05: US-EDIT-038 implemented locally for the four browser annotations. Shape Effects sidebar and seven named presets, clean opacity suffix, anchor guidance and V3 image-frame resizing are verified. Frontend/API type checks, 1,445 unit tests and 98 browser cases passed; five captures retained in Mockups/approved-v3-editor/evidence. Formal Done and milestone merge remain pending. No commit, push, merge or deployment.

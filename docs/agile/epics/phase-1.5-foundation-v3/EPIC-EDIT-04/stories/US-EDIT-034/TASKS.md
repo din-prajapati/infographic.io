@@ -54,3 +54,9 @@ Gate1 mandatory. Gate2 themed desktop visuals/focus/edge placement. Gate3 browse
 ## Delivery evidence
 
 Acceptance-derived tests, runtime and verification completed. Shared model/dispatch/toolbars are delivered atomically because isolated intermediate union changes fail compilation or omit line rendering. Commit carries T1–T3 and all three story IDs. See TOOLBAR_VERIFICATION.md for logs, review fixes and exclusions. Story stays merge-pending.
+
+- [x] T4 (45m) — Nov4 transient geometry per AC3. Additional exact scope: client/src/components/editor/v3/V3Canvas.tsx; client/src/components/editor/v3/__tests__/V3Lines.spec.tsx; e2e/v3-element-toolbars.spec.ts. Existing TextElement/ImageElement/ShapeElement/LineElement adapters may report transient bounds to V3; legacy defaults remain unchanged. No store/session/renderer/export schema edits.
+
+- [x] T5 (45m) — AC4 optional lineCap SVG/PNG/validation and AI-import explicit Fit correctness. Exact paths: client/src/lib/canvasTypes.ts; client/src/lib/lineGeometry.ts; client/src/lib/__tests__/lineGeometry.spec.ts; client/src/components/canvas/LineElement.tsx; client/src/components/canvas/ImageElement.tsx; client/src/components/canvas/__tests__/ImageElement.spec.tsx; client/src/lib/canvasExport.ts; client/src/lib/__tests__/canvasExport.spec.ts. Preserve previous edits; root owns toolbar and browser files.
+
+- [x] T6 (60m) — AC5 tracking/anchors/title-case DOM/PNG parity. Exact paths: client/src/lib/canvasTypes.ts; client/src/lib/textLayout.ts; client/src/lib/__tests__/textLayout.spec.ts; client/src/components/canvas/TextElement.tsx; client/src/components/canvas/__tests__/TextElement.spec.tsx; client/src/lib/canvasExport.ts; client/src/lib/__tests__/canvasExport.spec.ts. Preserve existing uncommitted changes.

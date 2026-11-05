@@ -6,7 +6,7 @@ export function finiteClamp(value: number | undefined, min: number, max: number,
 
 export function strokeDash(style: StrokeStyle | undefined, width: number): number[] {
   const weight = finiteClamp(width, 0, 100);
-  return style === 'dashed' ? [weight * 4, weight * 3] : style === 'dotted' ? [0, weight * 2.5] : [];
+  return style === 'dashed' ? [weight * 4, weight * 3] : style === 'short-dashed' ? [weight * 2, weight * 1.5] : style === 'dotted' ? [0, weight * 2.5] : [];
 }
 
 export function colorWithOpacity(color: string, opacity: number): string {

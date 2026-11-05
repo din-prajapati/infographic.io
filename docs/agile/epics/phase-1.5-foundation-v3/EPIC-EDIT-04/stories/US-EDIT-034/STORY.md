@@ -32,6 +32,22 @@
 - Shared elementStyles helpers supply CSS and Canvas rendering semantics for border dashes/shadows. PNG export renders line geometry, image borders and shape shadows consistently with canvas, including rotation and opacity. No SVG/PDF addition.
 - Desktop-only verification at 1191x668 and 1440px width in light/dark/system; this story does not introduce a mobile shell. UI themes do not recolour artwork.
 
+## Approved live geometry correction — 2026-11-04
+
+- [x] **AC3 [happy-path]:** When selected text, image or shape moves or resizes in V3, the Selection geometry output in `V3Canvas.tsx` updates width/height/x/y during the gesture in design pixels at any zoom. Transient preview never writes document state/history/autosave; completion uses the existing single commit. End/cancel/selection change/unmount clears preview. Legacy editor behavior remains unchanged. This amendment additionally scopes V3Canvas.tsx, V3Lines.spec.tsx and e2e/v3-element-toolbars.spec.ts for the preview adapter and regression evidence.
+
+## Approved small styling and image-fit extension — 2026-11-04
+
+- [x] **AC4 [happy-path]:** When an image uses explicit cover/contain/fill, `ImageElement.tsx` and canvasExport.ts honor the same fit for ordinary and AI-imported images without clearing source/AI metadata; absent AI-import fit retains its previous contain appearance. Existing crop records retain their established crop behavior without exposing Crop. Reset still preserves source, fit, geometry and rotation while resetting documented appearance. A new optional lineCap butt/round supports rounded end points in SVG and PNG; absent lineCap preserves prior dotted-round/otherwise-butt semantics and old documents need no migration. Invalid lineCap is rejected by existing line validation; save/reload retains valid optional caps. New native-shape, text-letter-spacing, connectors and other engine features are excluded.
+
+Additional exact scope: existing lineGeometry.ts/lineGeometry.spec.ts validation; existing canvasTypes.ts, LineElement.tsx, ImageElement.tsx, canvasExport.ts/canvasExport.spec.ts, and `client/src/components/canvas/__tests__/ImageElement.spec.tsx` for fit regression. Root owns toolbar integration and browser evidence under US-EDIT-033.
+
+## Approved text spacing/anchor rendering — 2026-11-04
+
+- [x] **AC5 [happy-path]:** When text has optional letterSpacing tracking−200..800 (1000=1em) and textAnchor start/middle/end, TextElement and canvasExport honor tracking and align the content at top/center/bottom inside its fixed element bounds, including wrapping and existing padding. Absence retains0 tracking/start and existing appearance. Title-case transformation capitalizes every word while preserving original stored content. Canvas and PNG share formatting/layout semantics; live previews never alter canonical document until completion. Existing inline editing, drag/resize, styles/list formatting/history, saved records and legacy callers remain usable; no automatic text-box resize or advanced More Settings.
+
+Additional exact scope: client/src/lib/canvasTypes.ts; client/src/lib/textLayout.ts; client/src/lib/__tests__/textLayout.spec.ts; client/src/components/canvas/TextElement.tsx; client/src/components/canvas/__tests__/TextElement.spec.tsx; client/src/lib/canvasExport.ts; client/src/lib/__tests__/canvasExport.spec.ts. Root owns toolbar and validation.
+
 ## Out of Scope
 
 - Does not implement Crop, attached connectors, line labels, Animate, Position or Style.
@@ -76,10 +92,11 @@ Run npm run check, npm run test:unit, npm run test:unit:client and applicable br
 
 | TC ID | Type | Priority | Scenario | Status | Finding |
 |-------|------|----------|----------|--------|---------|
-| TC-EDIT-034-01 | Unit | P0 | happy-path: When an unlocked text, shape or image is selected, provid… | ✅ | |
-| TC-EDIT-034-02 | Unit | P0 | error-path: When rotation is cancelled with Escape, the prior angle a… | ✅ | |
-| TC-EDIT-034-03 | Auto (unit) | P1 | Escape restores original angle with no history; locked and Preview selections cannot mutate. | ✅ | |
-| TC-EDIT-034-04 | Manual | P1 | Zoom/pan edge placement, keyboard numeric rotation and malformed style inputs remain finite. | ✅ | |
+| TC-EDIT-034-01 | Unit | P0 | happy-path: When an unlocked text, shape or image is selected, provid… | ✅ |  |
+| TC-EDIT-034-02 | Unit | P0 | error-path: When rotation is cancelled with Escape, the prior angle a… | ✅ |  |
+| TC-EDIT-034-03 | Unit | P0 | happy-path: When selected text, image or shape moves or resizes in V3… | ✅ |  |
+| TC-EDIT-034-04 | Unit | P0 | happy-path: When an image uses explicit cover/contain/fill, `ImageEle… | ✅ | Full local unit/browser evidence below |
+| TC-EDIT-034-05 | Unit | P0 | happy-path: When text has optional letterSpacing tracking−200..800 (1… | ✅ | Full local unit/browser evidence below |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 
@@ -100,3 +117,17 @@ Run npm run check, npm run test:unit, npm run test:unit:client and applicable br
 ## Implementation evidence — 2026-11-01
 
 [Toolbar verification](../../../../../../../Mockups/approved-v3-editor/TOOLBAR_VERIFICATION.md): 811 backend +465 client tests pass, one existing skip; 48 browser regressions pass, plus final sidebar/theme and legacy-line compatibility subsets. Real authenticated API/database save/reload/export smoke passes with cleanup. All independent code-review findings corrected. Formal Done and PR merge remain pending.
+
+
+## Nov4 browser feedback verification
+
+AC3 locally verified. Final frontend/API type checks and 811 backend +486 client unit tests pass (one existing skip); complete V3 browser runner:56/56 pass, including live drag/resize, saved-line selection and compact menus. See TOOLBAR_VERIFICATION.md in the approved bundle for logs and limitations. Formal Done, PR merge and deployment remain pending.
+
+
+## Detailed toolbar follow-up verification — 2026-11-04
+
+Implemented the approved detailed extension locally. Final frontend/API type checks pass; unit suites811 backend +534 client =1,345 pass, one existing client skip; final complete V3 browser runner67/67 passes after final cancellation fixes. Actual checks include live style previews without history writes, safe Escape/fractional opacity, Fit/Reset including AI imports, visual line picker/caps, text spacing/font/More, retained geometry/history/save/reload/export and both themes. See approved bundle TOOLBAR_VERIFICATION.md for logs and limitations. No formal Done, commit, merge, push or deployment is claimed.
+
+## Exact text-reference verification - 2026-11-04
+
+Latest screenshot controls implemented locally. Final frontend/API type checks pass; 811 backend +555 client =1,366 passing unit tests, one existing client skip. Complete V3 browser runner69/69 passes. Both themes visually inspected at1242x668; retained evidence/text-ref-light.png and text-ref-dark.png in the approved bundle. Tracking/anchors/title-case cover DOM, wrapping, inline editing, PNG, save/reload and history boundaries. More Settings remains excluded. See TOOLBAR_VERIFICATION.md for logs and limits. No formal Done, commit, merge, push or deployment.
