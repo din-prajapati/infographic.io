@@ -26,6 +26,26 @@ beforeEach(()=>{Object.assign(globalThis,{IS_REACT_ACT_ENVIRONMENT:true});vi.cle
 afterEach(()=>{act(()=>root.unmount());host.remove();});
 
 describe('V3 Arrange panel',()=>{
+ it('reference presentation: keeps exact stack and alignment order with distinct layered icons and Centre spelling',()=>{
+  const stack=host.querySelector('[role="group"][aria-label="Stacking"]')!;
+  expect(stack.querySelector('h3')).toBeNull();
+  expect([...stack.querySelectorAll('button')].map(item=>item.textContent)).toEqual(['Forward','Backward','To front','To back']);
+  expect([...stack.querySelectorAll('svg[data-arrange-stack-icon]')].map(item=>item.getAttribute('data-arrange-stack-icon'))).toEqual(['forward','backward','front','back']);
+  const alignment=host.querySelector('[role="group"][aria-label="Align to page"]')!;
+  expect([...alignment.querySelectorAll('button')].map(item=>[item.getAttribute('aria-label'),item.textContent])).toEqual([
+   ['Align top','Top'],['Align left','Left'],['Align middle','Middle'],['Align center','Centre'],['Align bottom','Bottom'],['Align right','Right'],
+  ]);
+ });
+ it('reference presentation: labels Advanced fields above their unit boxes and exposes open/closed ratio locks',()=>{
+  load(useCanvasStore.getState().elements,['back']);
+  const advanced=host.querySelector('[role="group"][aria-label="Size and position"]')!;
+  expect(advanced.querySelector('h3')?.textContent).toBe('Advanced');
+  expect([...advanced.querySelectorAll('.v3-arrange-fields>label,.v3-arrange-fields>.v3-arrange-ratio-field')].map(item=>item.firstElementChild?.textContent)).toEqual(['Width','Height','Ratio','X','Y','Rotate']);
+  for(const label of ['Width','Height','X position','Y position'])expect(input(label).parentElement?.textContent).toBe('px');
+  expect(input('Rotation').parentElement?.textContent).toBe('°');
+  const ratio=button('Lock aspect ratio');expect(ratio.querySelector('svg.lucide-lock-open')).not.toBeNull();
+  act(()=>Simulate.click(ratio));expect(ratio.querySelector('svg.lucide-lock')).not.toBeNull();expect(past()).toBe(0);
+ });
  it('A4/B2: is titled Arrange, explains an empty selection and disables every action and field',()=>{
   expect(host.querySelector('h2')?.textContent).toBe('Arrange');
   expect(host.querySelector('[role="tablist"][aria-label="Sidebar views"]')).not.toBeNull();

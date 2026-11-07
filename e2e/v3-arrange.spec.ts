@@ -128,3 +128,18 @@ for(const theme of ['dark','light'])test(`${theme} Arrange sidebar fits both des
   await page.screenshot({animations:'disabled',path:info.outputPath(`arrange-${theme}-${width}.png`)});
  }
 });
+
+
+// Reference annotation: two-column icon/text buttons and labelled three-column Advanced fields.
+for(const theme of ['dark','light'])test(`reference ${theme} Arrange layout and icons match the supplied panel`,async({page},info)=>{
+ await setup(page,theme);await page.setViewportSize({width:1242,height:668});await openArrange(page);await art(page,'shape').click();const panel=arrange(page);
+ const align=panel.getByRole('group',{name:'Align to page',exact:true});await expect(align.locator('button')).toHaveText(['Top','Left','Middle','Centre','Bottom','Right']);
+ const columns=await align.locator('.v3-arrange-align').evaluate(node=>getComputedStyle(node).gridTemplateColumns.split(' ').length);expect(columns).toBe(2);
+ const buttons=align.locator('button');for(let i=0;i<6;i++){await expect(buttons.nth(i).locator('svg')).toHaveCount(1);const box=(await buttons.nth(i).boundingBox())!;expect(box.height).toBeGreaterThanOrEqual(38);expect(box.height).toBeLessThanOrEqual(44);const icon=(await buttons.nth(i).locator('svg').boundingBox())!,text=(await buttons.nth(i).locator('span').boundingBox())!;expect(icon.x).toBeLessThan(text.x);expect(Math.abs(icon.y+icon.height/2-text.y-text.height/2)).toBeLessThan(3);}
+ const stack=panel.getByRole('group',{name:'Stacking',exact:true});await expect(stack.locator('button')).toHaveText(['Forward','Backward','To front','To back']);for(let i=0;i<4;i++)await expect(stack.locator('button').nth(i).locator('svg[data-arrange-stack-icon]')).toHaveCount(1);
+ await expect(panel.getByRole('heading',{name:'Advanced',exact:true})).toBeVisible();const advanced=panel.locator('.v3-arrange-fields');expect(await advanced.evaluate(node=>getComputedStyle(node).gridTemplateColumns.split(' ').length)).toBe(3);
+ const width=panel.getByRole('textbox',{name:'Width',exact:true}),height=panel.getByRole('textbox',{name:'Height',exact:true}),ratio=panel.getByRole('button',{name:'Lock aspect ratio',exact:true}),x=panel.getByRole('textbox',{name:'X position',exact:true}),y=panel.getByRole('textbox',{name:'Y position',exact:true}),rotation=panel.getByRole('textbox',{name:'Rotation',exact:true});
+ const boxes=await Promise.all([width,height,ratio,x,y,rotation].map(node=>node.boundingBox()));expect(Math.abs(boxes[0]!.y-boxes[1]!.y)).toBeLessThan(3);expect(Math.abs(boxes[1]!.y-boxes[2]!.y)).toBeLessThan(3);expect(boxes[0]!.x).toBeLessThan(boxes[1]!.x);expect(boxes[1]!.x).toBeLessThan(boxes[2]!.x);expect(boxes[3]!.y).toBeGreaterThan(boxes[0]!.y);expect(Math.abs(boxes[3]!.y-boxes[5]!.y)).toBeLessThan(3);
+ await expect(ratio.locator('svg.lucide-lock-open')).toHaveCount(1);await ratio.click();await expect(ratio).toHaveAttribute('aria-pressed','true');await expect(ratio.locator('svg.lucide-lock-keyhole,svg.lucide-lock')).toHaveCount(1);
+ const bounds=(await panel.boundingBox())!;expect(bounds.x).toBeGreaterThanOrEqual(0);expect(bounds.y+bounds.height).toBeLessThanOrEqual(668);await rotation.scrollIntoViewIfNeeded();await expect(rotation).toBeInViewport();await page.screenshot({animations:'disabled',path:info.outputPath(`arrange-reference-${theme}.png`)});
+});

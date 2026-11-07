@@ -135,3 +135,30 @@ The fixes have not been re-reviewed.
 - The Layers view now shows two adjacent tablists: `Sidebar views` (Arrange/Layers) and `Layer filters` (All/Overlapping). The Arrange and Layers sections are not marked as `role="tabpanel"`, to avoid changing the Layers landmark. Both points are open for a design decision.
 - Fields show values rounded to one decimal. Commits use the exact typed value.
 - No ORION story card or harden lock exists for this work, by user decision. Formal Done and merge remain unauthorized: no push, merge or deploy was done.
+
+
+## Reference annotation presentation contract — 2026-11-07
+
+Latest user request matches the attached Canva Arrange content layout/icons while preserving the Navy/Teal shell and current behavior. This revision preserves all pre-existing Claude fixes. No new story card/counter is introduced, following the existing Arrange workflow exception recorded above; ORION runtime-first, scoped ownership and verification rules still apply. No commit requested for this revision.
+
+- Stacking has two icon/text columns ordered Forward, Backward / To front, To back. Use layered-plane arrow icons like the supplied reference, with distinct front/back variants; the redundant visible Stacking heading is not needed (keep its accessible group name).
+- Align to page has two columns and three rows: Top / Left; Middle / Centre; Bottom / Right. Icons sit to the left of text. Keep existing accessible action names and commands (Align center remains the horizontal-centering action).
+- Advanced has three equal columns: Width, Height, Ratio; then X, Y, Rotate. Labels sit above outlined controls; dimensions/coordinates show px and rotation degrees. Ratio uses an open/closed padlock, retaining the current toggle name, state and behavior.
+- Buttons are approximately40px high, compactly spaced and use existing theme tokens, readable disabled/focus states, both themes and scroll-safe1242x668/1440px desktop bounds. Preserve the existing header and shared sidebar-tab behavior.
+- Preserve stacking/alignment/numeric/ratio/history/save/export semantics, selection guards, existing Claude fixes and all Layers behavior. Geometry helpers and backend are outside this presentation revision.
+
+File/task scope: V3ArrangePanel.tsx, v3-arrange-panel.css, its existing unit spec; root owns e2e/v3-arrange.spec.ts and this report. Tests assert exact button order, two/three-column layout, icon placement, ratio states and existing behavioral contracts. Mandatory gates: npm run check; npm run test:unit; Arrange/Layer browser regressions and both-theme screenshot inspection. Gate4 not triggered (presentation only).
+
+
+### Reference annotation verification result
+
+Implemented on `codex/v3-arrange-opus` above Claude checkpoint `2bc0f24`; no new commit was made for this presentation revision. Only Arrange component/style, its unit tests, the Arrange browser spec and this report changed, plus the two retained reference captures. Existing geometry helpers and Layers runtime remain untouched.
+
+- Gate1: frontend/API type checks pass;811 API +732 client unit tests pass (**1,543 total**), one pre-existing client skip retained. The two added panel tests first failed against the original presentation, then passed.
+- Gate2: inspected `arrange-reference-dark.png` and `arrange-reference-light.png` at1242x668. Existing Arrange browser checks also exercise1440x900. Buttons/labels/units remain bounded and readable; existing mobile fallback is unchanged.
+- Gate3: **17/17 scoped browser cases pass** in one run: all7 Arrange cases (including2 reference layout cases) plus10 Layers cases. These verify exact alignment order, horizontal icon placement,40px outlined buttons,three-column Advanced layout,padlock states,sidebar lifecycle,alignment/history/save/reload/PNG,numeric cancellation/validation,Layers drag and live overlap. The earlier full129-case Claude run above is historical; it is not represented as a fresh full-suite run for this styling revision.
+- Gate4: not triggered; no backend/schema/auth changes.
+
+Logs (ignored under the primary repository `.agent-logs`): `v3-arrange-reference-red.log`, `v3-arrange-reference-check.log`, `v3-arrange-reference-units.log`, `v3-arrange-reference-browser.log`. Browser API routes are mocked; no authenticated database-persistence claim is made. Formal Done, merge and deployment remain pending.
+
+Retained evidence: `Mockups/approved-v3-editor/evidence/arrange-reference-dark.png` and `arrange-reference-light.png`.

@@ -1,5 +1,5 @@
 import React,{useEffect,useRef,useState} from 'react';
-import {AlignCenterHorizontal,AlignCenterVertical,AlignEndHorizontal,AlignEndVertical,AlignStartHorizontal,AlignStartVertical,ArrowDown,ArrowDownToLine,ArrowUp,ArrowUpToLine,Link2,Link2Off,X} from 'lucide-react';
+import {AlignCenterHorizontal,AlignCenterVertical,AlignEndHorizontal,AlignEndVertical,AlignStartHorizontal,AlignStartVertical,Lock,LockOpen,X} from 'lucide-react';
 import {useCanvasStore} from '../../../hooks/useCanvasStore';
 import type {CanvasElement} from '../../../lib/canvasTypes';
 import {canMoveV3Layer,moveV3Layer,type V3LayerMove} from '../../../lib/v3LayerActions';
@@ -23,10 +23,19 @@ export function V3SidebarTabs({active,onChange}:{active:V3SidebarTab;onChange:(t
   </div>;
 }
 
-const stack=[['Forward','forward',ArrowUp],['Backward','backward',ArrowDown],['To front','front',ArrowUpToLine],['To back','back',ArrowDownToLine]] as const;
-const aligns=[['Left','left',AlignStartVertical],['Center','center',AlignCenterVertical],['Right','right',AlignEndVertical],['Top','top',AlignStartHorizontal],['Middle','middle',AlignCenterHorizontal],['Bottom','bottom',AlignEndHorizontal]] as const;
+const stack=[['Forward','forward'],['Backward','backward'],['To front','front'],['To back','back']] as const;
+const aligns=[['Top','top',AlignStartHorizontal],['Left','left',AlignStartVertical],['Middle','middle',AlignCenterHorizontal],['Centre','center',AlignCenterVertical],['Bottom','bottom',AlignEndHorizontal],['Right','right',AlignEndVertical]] as const;
 const blocked:Record<V3ArrangeBlock,string>={empty:'Select an element to arrange it.',missing:'The selection changed. Select an element again.',hidden:'Show the hidden selection to arrange it.',locked:'Unlock the selection to arrange it.',invalid:'This selection cannot be arranged.'};
 const format=(value:number|undefined)=>value===undefined?"":String(Math.round(value*10)/10);
+
+function StackIcon({direction}:{direction:V3LayerMove}){
+  const upward=direction==='forward'||direction==='front',extreme=direction==='front'||direction==='back';
+  return <svg data-arrange-stack-icon={direction} aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d={upward?'M8 12 3 15 12 20 21 15 16 12':'M8 11 3 8 12 3 21 8 16 11'}/>
+    <path d={upward?'M12 16V4m-4 4 4-4 4 4':'M12 7v13m-4-4 4 4 4-4'}/>
+    {extreme&&<path d={upward?'M8 2h8':'M8 22h8'}/>}
+  </svg>;
+}
 
 function GeometryField({label,prefix,suffix,value,disabled,title,onCommit}:{label:string;prefix:string;suffix?:string;value:number|undefined;disabled:boolean;title?:string;onCommit:(raw:string)=>boolean}){
   const [draft,setDraft]=useState(format(value));
@@ -34,13 +43,13 @@ function GeometryField({label,prefix,suffix,value,disabled,title,onCommit}:{labe
   useEffect(()=>{if(!dirty.current)setDraft(format(value));},[value]);
   useEffect(()=>{if(disabled){dirty.current=false;setDraft(format(latest.current));}},[disabled]);
   const commit=()=>{if(!dirty.current)return;dirty.current=false;if(!onCommit(draft))setDraft(format(latest.current));};
-  return <label className="v3-arrange-field" title={title}><span aria-hidden="true">{prefix}</span>
+  return <label className="v3-arrange-field" title={title}><span className="v3-arrange-field-label">{prefix}</span><span className="v3-arrange-field-box">
     <input aria-label={label} inputMode="decimal" autoComplete="off" spellCheck={false} value={draft} disabled={disabled}
       onChange={event=>{dirty.current=true;setDraft(event.target.value);}} onBlur={commit}
       onKeyDown={event=>{
         if(event.key==='Enter'){event.preventDefault();commit();}
         else if(event.key==='Escape'&&dirty.current){event.preventDefault();event.stopPropagation();dirty.current=false;setDraft(format(latest.current));}
-      }}/>{suffix&&<span aria-hidden="true">{suffix}</span>}</label>;
+      }}/>{suffix&&<span aria-hidden="true">{suffix}</span>}</span></label>;
 }
 
 export function V3ArrangePanel({onClose,tabs,presentation}:{onClose:()=>void;tabs?:React.ReactNode;presentation?:LayerPresentation|null}){
@@ -69,20 +78,20 @@ export function V3ArrangePanel({onClose,tabs,presentation}:{onClose:()=>void;tab
     {tabs}
     <div className="v3-arrange-body">
       {!eligibility.ok&&<p className="v3-arrange-status" role="status">{blocked[eligibility.reason]}</p>}
-      <div role="group" aria-label="Stacking" className="v3-arrange-group"><h3>Stacking</h3>
-        <div className="v3-arrange-stack">{stack.map(([name,direction,Icon])=><button key={direction} type="button" aria-label={name} disabled={!single||!canMoveV3Layer(single.id,direction)} onClick={()=>move(direction,name)}><Icon/><span>{name}</span></button>)}</div>
+      <div role="group" aria-label="Stacking" className="v3-arrange-group">
+        <div className="v3-arrange-stack">{stack.map(([name,direction])=><button key={direction} type="button" aria-label={name} disabled={!single||!canMoveV3Layer(single.id,direction)} onClick={()=>move(direction,name)}><StackIcon direction={direction}/><span>{name}</span></button>)}</div>
       </div>
       <div role="group" aria-label="Align to page" className="v3-arrange-group"><h3>Align to page</h3>
-        <div className="v3-arrange-align">{aligns.map(([name,value,Icon])=><button key={value} type="button" aria-label={`Align ${name.toLowerCase()}`} title={`Align ${name.toLowerCase()}`} disabled={!eligibility.ok} onClick={()=>align(value,name)}><Icon/><span>{name}</span></button>)}</div>
+        <div className="v3-arrange-align">{aligns.map(([name,value,Icon])=><button key={value} type="button" aria-label={`Align ${value}`} title={`Align ${value}`} disabled={!eligibility.ok} onClick={()=>align(value,name)}><Icon/><span>{name}</span></button>)}</div>
       </div>
-      <div role="group" aria-label="Size and position" className="v3-arrange-group"><h3>Size and position</h3>
+      <div role="group" aria-label="Size and position" className="v3-arrange-group"><h3>Advanced</h3>
         {eligibility.ok&&!single&&<p className="v3-arrange-note">Stacking, size and position apply to one element at a time.</p>}
         <div className="v3-arrange-fields">
-          {field('width','Width','W')}
-          <button type="button" className="v3-arrange-ratio" aria-label="Lock aspect ratio" title="Lock aspect ratio" aria-pressed={ratioLocked} disabled={!single} onClick={()=>setRatioLocked(value=>!value)}>{ratioLocked?<Link2/>:<Link2Off/>}</button>
-          {field('height','Height','H')}
-          {field('x','X position','X')}<span aria-hidden="true"/>{field('y','Y position','Y')}
-          {field('rotation','Rotation','↻','°')}
+          {field('width','Width','Width','px')}
+          {field('height','Height','Height','px')}
+          <div className="v3-arrange-ratio-field"><span className="v3-arrange-field-label">Ratio</span><button type="button" className="v3-arrange-ratio" aria-label="Lock aspect ratio" title="Lock aspect ratio" aria-pressed={ratioLocked} disabled={!single} onClick={()=>setRatioLocked(value=>!value)}>{ratioLocked?<Lock/>:<LockOpen/>}</button></div>
+          {field('x','X position','X','px')}{field('y','Y position','Y','px')}
+          {field('rotation','Rotation','Rotate','°')}
         </div>
         {error&&<p className="v3-arrange-error" role="alert">{error}</p>}
       </div>
