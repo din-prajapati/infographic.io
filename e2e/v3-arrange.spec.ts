@@ -143,3 +143,19 @@ for(const theme of ['dark','light'])test(`reference ${theme} Arrange layout and 
  await expect(ratio.locator('svg.lucide-lock-open')).toHaveCount(1);await ratio.click();await expect(ratio).toHaveAttribute('aria-pressed','true');await expect(ratio.locator('svg.lucide-lock-keyhole,svg.lucide-lock')).toHaveCount(1);
  const bounds=(await panel.boundingBox())!;expect(bounds.x).toBeGreaterThanOrEqual(0);expect(bounds.y+bounds.height).toBeLessThanOrEqual(668);await rotation.scrollIntoViewIfNeeded();await expect(rotation).toBeInViewport();await page.screenshot({animations:'disabled',path:info.outputPath(`arrange-reference-${theme}.png`)});
 });
+
+
+// Review regression: keyboard activation remounts the sidebar, so focus must follow the newly rendered tab.
+test('sidebar tab arrow Home and End keys keep focus on the active replacement tab',async({page})=>{
+ await setup(page);await footer(page).click();const layerTab=layers(page).getByRole('tab',{name:'Layers',exact:true});await layerTab.focus();await layerTab.press('ArrowLeft');let active=arrange(page).getByRole('tab',{name:'Arrange',exact:true});await expect(active).toHaveAttribute('aria-selected','true');await expect(active).toBeFocused();
+ await active.press('ArrowRight');let restored=layers(page).getByRole('tab',{name:'Layers',exact:true});await expect(restored).toBeFocused();await restored.press('Home');active=arrange(page).getByRole('tab',{name:'Arrange',exact:true});await expect(active).toBeFocused();await active.press('End');restored=layers(page).getByRole('tab',{name:'Layers',exact:true});await expect(restored).toBeFocused();await restored.press('Tab');await expect(layers(page).getByRole('tab',{name:'All',exact:true})).toBeFocused();
+});
+
+
+// Review regression: legacy stored frames and editable path spans must not normalize on no-op or origin edits.
+test('legacy rotated line fields keep unchanged spans and honor stored X Y and rotation',async({page})=>{
+ const model=await setup(page);const original=model.document.canvasData.elements.find((el:any)=>el.id==='line');Object.assign(original,{x:100,y:400,width:100,height:60,rotation:30,start:{x:10,y:10},end:{x:90,y:50},control:{x:50,y:30}});const before=structuredClone(original);await page.reload({waitUntil:'domcontentloaded'});await footer(page).click();await layers(page).getByRole('button',{name:'Select layer Blue line',exact:true}).click();await layers(page).getByRole('tab',{name:'Arrange',exact:true}).click();const panel=arrange(page),width=panel.getByRole('textbox',{name:'Width',exact:true}),height=panel.getByRole('textbox',{name:'Height',exact:true});
+ await expect(width).toHaveValue('80');await expect(height).toHaveValue('40');await width.fill('80');await width.press('Enter');await height.fill('40');await height.press('Tab');await expect(page.getByRole('button',{name:'Undo',exact:true})).toBeDisabled();expect(saved(await save(page,model),'line')).toMatchObject(before);
+ const x=panel.getByRole('textbox',{name:'X position',exact:true}),y=panel.getByRole('textbox',{name:'Y position',exact:true}),rotation=panel.getByRole('textbox',{name:'Rotation',exact:true});await x.fill('220');await x.press('Enter');await expect(x).toHaveValue('220');await y.fill('300');await y.press('Enter');await expect(y).toHaveValue('300');await rotation.fill('90');await rotation.press('Tab');let data=await save(page,model);expect(saved(data,'line')).toMatchObject({x:220,y:300,width:100,height:60,rotation:90,start:before.start,end:before.end,control:before.control});
+ await page.getByRole('button',{name:'Undo',exact:true}).click();await page.getByRole('button',{name:'Undo',exact:true}).click();await page.getByRole('button',{name:'Undo',exact:true}).click();data=await save(page,model);expect(saved(data,'line')).toMatchObject(before);await expect(page.getByRole('button',{name:'Undo',exact:true})).toBeDisabled();
+});

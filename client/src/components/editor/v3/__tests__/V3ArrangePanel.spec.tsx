@@ -122,9 +122,22 @@ describe('V3 Arrange panel',()=>{
   act(()=>root.render(<V3ArrangePanel onClose={onClose} presentation={{id:'back',baseElement:base,patch:{x:155,width:240}}}/>));
   expect(input('X position').value).toBe('155');expect(input('Width').value).toBe('240');
  });
+ it('review R2: line fields display editable path spans and retyping them creates no history',()=>{
+  const line={...createLineElement('straight',{x:0,y:0},{x:80,y:40}),id:'legacy',x:0,y:0,width:100,height:60,start:{x:10,y:10},end:{x:90,y:50},control:{x:50,y:30}} as CanvasElement;
+  load([line],['legacy']);expect(input('Width').value).toBe('80');expect(input('Height').value).toBe('40');
+  type(input('Width'),'80');key(input('Width'),'Enter');expect(get('legacy')).toBe(line);expect(past()).toBe(0);
+ });
 });
 
 describe('V3 sidebar tabs',()=>{
+ it('review R1: restores keyboard focus to the replacement tab after its former tablist unmounts',()=>{
+  const frames:FrameRequestCallback[]=[];vi.stubGlobal('requestAnimationFrame',(callback:FrameRequestCallback)=>{frames.push(callback);return frames.length;});
+  function ReplacingTabs(){const [active,setActive]=React.useState<'arrange'|'layers'>('layers');return <div key={active}><V3SidebarTabs active={active} onChange={setActive}/></div>;}
+  act(()=>root.render(<ReplacingTabs/>));
+  const previous=host.querySelector<HTMLButtonElement>('[data-sidebar-tab="layers"]')!;previous.focus();key(previous,'ArrowRight');expect(previous.isConnected).toBe(false);
+  act(()=>frames.shift()?.(0));expect(document.activeElement).toBe(host.querySelector('[data-sidebar-tab="arrange"]'));
+  vi.unstubAllGlobals();
+ });
  it('A2: exposes Arrange and Layers tabs with the active one selected',()=>{
   const onChange=vi.fn();
   act(()=>root.render(<V3SidebarTabs active="layers" onChange={onChange}/>));

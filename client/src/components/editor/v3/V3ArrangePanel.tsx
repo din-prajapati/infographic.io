@@ -3,7 +3,7 @@ import {AlignCenterHorizontal,AlignCenterVertical,AlignEndHorizontal,AlignEndVer
 import {useCanvasStore} from '../../../hooks/useCanvasStore';
 import type {CanvasElement} from '../../../lib/canvasTypes';
 import {canMoveV3Layer,moveV3Layer,type V3LayerMove} from '../../../lib/v3LayerActions';
-import {alignV3SelectionToPage,commitV3Geometry,v3ArrangeEligibility,v3GeometryFieldEnabled,type V3ArrangeBlock,type V3GeometryField,type V3PageAlign} from '../../../lib/v3Arrange';
+import {alignV3SelectionToPage,commitV3Geometry,v3ArrangeEligibility,v3EditableSize,v3GeometryFieldEnabled,type V3ArrangeBlock,type V3GeometryField,type V3PageAlign} from '../../../lib/v3Arrange';
 import type {LayerPresentation} from './V3LayersPanel';
 import './v3-arrange-panel.css';
 
@@ -15,8 +15,10 @@ export function V3SidebarTabs({active,onChange}:{active:V3SidebarTab;onChange:(t
   const tabs=['arrange','layers'] as const;
   const onKeyDown=(event:React.KeyboardEvent<HTMLDivElement>)=>{
     const index=tabs.indexOf(active),next=event.key==='ArrowRight'?tabs[(index+1)%tabs.length]:event.key==='ArrowLeft'?tabs[(index+tabs.length-1)%tabs.length]:event.key==='Home'?tabs[0]:event.key==='End'?tabs[tabs.length-1]:null;
-    if(!next)return;event.preventDefault();onChange(next);
-    requestAnimationFrame(()=>event.currentTarget?.querySelector<HTMLButtonElement>(`[data-sidebar-tab="${next}"]`)?.focus());
+    if(!next)return;
+    const editor=event.currentTarget.closest('.v3-editor');
+    event.preventDefault();onChange(next);
+    requestAnimationFrame(()=>editor?.querySelector<HTMLButtonElement>(`[data-sidebar-tab="${next}"]`)?.focus());
   };
   return <div className="v3-sidebar-tabs" role="tablist" aria-label="Sidebar views" onKeyDown={onKeyDown}>
     {tabs.map(tab=><button key={tab} type="button" role="tab" data-sidebar-tab={tab} aria-selected={active===tab} aria-controls={active===tab?V3_SIDEBAR_VIEW_ID:undefined} tabIndex={active===tab?0:-1} onClick={()=>onChange(tab)}>{tab==='arrange'?'Arrange':'Layers'}</button>)}
@@ -70,7 +72,8 @@ export function V3ArrangePanel({onClose,tabs,presentation}:{onClose:()=>void;tab
   }
   const field=(name:V3GeometryField,label:string,prefix:string,suffix?:string)=>{
     const enabled=!!single&&v3GeometryFieldEnabled(single,name);
-    return <GeometryField key={`${name}:${singleId??'none'}`} label={label} prefix={prefix} suffix={suffix} value={shown?.[name]} disabled={!enabled}
+    const value=shown&&(name==='width'||name==='height'?v3EditableSize(shown)[name]:shown[name]);
+    return <GeometryField key={`${name}:${singleId??'none'}`} label={label} prefix={prefix} suffix={suffix} value={value} disabled={!enabled}
       title={single&&!enabled?`This line is flat, so it has no ${name} to resize.`:undefined} onCommit={raw=>commit(name,raw)}/>;
   };
   return <section id={V3_SIDEBAR_VIEW_ID} className="v3-arrange-panel" aria-label="Arrange sidebar">

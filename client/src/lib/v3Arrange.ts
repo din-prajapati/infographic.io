@@ -91,10 +91,9 @@ function scaledLinePatch(element: LineElement, width: number, height: number): P
 }
 
 /** Width/height as shown to the user: the path span for lines, the frame for everything else. */
-function currentSize(element: CanvasElement): { width: number; height: number } {
+export function v3EditableSize(element: CanvasElement): { width: number; height: number } {
   if (element.type !== 'line') return { width: element.width, height: element.height };
-  const base = normalizeLineElement(element);
-  return { width: lineSpan(base, 'x') || base.width, height: lineSpan(base, 'y') || base.height };
+  return { width: lineSpan(element, 'x'), height: lineSpan(element, 'y') };
 }
 
 /** Validate one numeric field and commit it through the single-element edit path (one history entry). */
@@ -113,7 +112,8 @@ export function commitV3Geometry(id: string, field: V3GeometryField, raw: string
   } else {
     const range = `between ${SIZE_MIN} and ${SIZE_MAX}`;
     if (value < SIZE_MIN || value > SIZE_MAX) return { status: 'invalid', message: `Enter a ${LABELS[field]} ${range}.` };
-    const size = currentSize(element);
+    const size = v3EditableSize(element);
+    if(value===size[field])return {status:'unchanged'};
     let width = field === 'width' ? value : size.width, height = field === 'height' ? value : size.height;
     // The lock only scales an axis that can be resized; a flat line keeps its zero span.
     const other = field === 'width' ? 'height' : 'width';
@@ -124,5 +124,5 @@ export function commitV3Geometry(id: string, field: V3GeometryField, raw: string
     }
     patch = element.type === 'line' ? scaledLinePatch(element, width, height) : { width, height };
   }
-  return commitElementPatch(id, patch) ? { status: 'committed' } : { status: 'unchanged' };
+  return commitElementPatch(id, patch, {normalizeLine:field==='width'||field==='height'}) ? { status: 'committed' } : { status: 'unchanged' };
 }

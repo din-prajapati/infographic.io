@@ -114,6 +114,24 @@ describe('V3 Arrange page alignment (D1-D5)', () => {
 });
 
 describe('V3 Arrange size and position (E1-E7)', () => {
+  it('review R2: retyping an unchanged legacy path span leaves the exact saved line and history untouched',()=>{
+    const line={...createLineElement('straight',{x:0,y:0},{x:80,y:40}),id:'legacy',x:0,y:0,width:100,height:60,start:{x:10,y:10},end:{x:90,y:50},control:{x:50,y:30}} as LineElement;
+    load([line],['legacy']);
+    expect(commitV3Geometry('legacy','width','80',false)).toEqual({status:'unchanged'});
+    expect(commitV3Geometry('legacy','height','40',true)).toEqual({status:'unchanged'});
+    expect(get('legacy')).toBe(line);expect(past()).toBe(0);
+  });
+  it.each([0,37])('review R3: stored-origin edits retain the requested values and local geometry on legacy lines rotated %s degrees',rotation=>{
+    const line={...createLineElement('straight',{x:0,y:0},{x:80,y:40}),id:'legacy',x:0,y:0,width:100,height:60,start:{x:10,y:10},end:{x:90,y:50},control:{x:50,y:30},rotation} as LineElement;
+    load([line],['legacy']);
+    expect(commitV3Geometry('legacy','x','20',false)).toEqual({status:'committed'});
+    expect(get('legacy')).toEqual({...line,x:20});
+    expect(commitV3Geometry('legacy','y','-15',false)).toEqual({status:'committed'});
+    expect(get('legacy')).toEqual({...line,x:20,y:-15});
+    expect(commitV3Geometry('legacy','rotation','125',false)).toEqual({status:'committed'});
+    expect(get('legacy')).toEqual({...line,x:20,y:-15,rotation:125});expect(past()).toBe(3);
+    useCanvasStore.getState().undo();useCanvasStore.getState().undo();useCanvasStore.getState().undo();expect(get('legacy')).toEqual(line);
+  });
   it('commits stored-origin X/Y including off-page negatives, one history entry each', () => {
     expect(commitV3Geometry('a', 'x', '-40', false)).toEqual({ status: 'committed' });
     expect(commitV3Geometry('a', 'y', '12.5', false)).toEqual({ status: 'committed' });

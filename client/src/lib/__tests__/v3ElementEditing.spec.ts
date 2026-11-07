@@ -1,10 +1,27 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { useCanvasStore } from '../../hooks/useCanvasStore';
 import { createImageElement, createTextElement } from '../canvasUtils';
+import {createLineElement} from '../lineGeometry';
 import { clampNumeric, commitElementPatch, imageAdjustmentToStored, replacementImagePatch, resetImageAppearancePatch } from '../v3ElementEditing';
 
 beforeEach(() => useCanvasStore.setState({ elements: [], selectedElementIds: [], history: { past: [], future: [] } }));
 describe('approved element edit boundaries', () => {
+  it('retains the default normalization policy for legacy lines in other editing tools',()=>{
+    const line={...createLineElement('straight',{x:0,y:0},{x:80,y:0}),id:'legacy',x:0,width:100,start:{x:10,y:0},end:{x:90,y:0},control:{x:50,y:0}};
+    useCanvasStore.setState({elements:[line],selectedElementIds:[line.id]});
+    expect(commitElementPatch(line.id,{x:20})).toBe(true);
+    expect(useCanvasStore.getState().elements[0]).toMatchObject({x:30,width:80,start:{x:0,y:0},end:{x:80,y:0}});
+    expect(useCanvasStore.getState().history.past).toHaveLength(1);
+  });
+  it('keeps selection, finite-number and paint guards when line normalization is explicitly disabled',()=>{
+    const line=createLineElement('straight',{x:0,y:0},{x:80,y:40});
+    useCanvasStore.setState({elements:[line],selectedElementIds:[line.id]});
+    expect(commitElementPatch(line.id,{x:NaN},{normalizeLine:false})).toBe(false);
+    expect(commitElementPatch(line.id,{paints:{stroke:{type:'solid',color:'invalid',opacity:1}}},{normalizeLine:false})).toBe(false);
+    useCanvasStore.setState({elements:[{...line,locked:true}]});expect(commitElementPatch(line.id,{x:20},{normalizeLine:false})).toBe(false);
+    useCanvasStore.setState({elements:[line],selectedElementIds:[]});expect(commitElementPatch(line.id,{x:20},{normalizeLine:false})).toBe(false);
+    expect(useCanvasStore.getState().history.past).toHaveLength(0);
+  });
   // Contract: numeric input never writes NaN; supported font range clamps to 1..500.
   it('rejects invalid input and clamps supported numeric limits', () => {
     expect(clampNumeric('', 1, 500)).toBe(null);

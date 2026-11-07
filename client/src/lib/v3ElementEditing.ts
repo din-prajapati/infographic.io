@@ -19,7 +19,7 @@ export function storedToImageAdjustment(value: number): number {
   return (clampNumeric(value, 0, 200) ?? 100) - 100;
 }
 
-export function commitElementPatch(id: string, patch: Parameters<CanvasStore['updateElement']>[1]): boolean {
+export function commitElementPatch(id: string, patch: Parameters<CanvasStore['updateElement']>[1], options:{normalizeLine?:boolean}={}): boolean {
   clearElementPreview(id);
   const state = useCanvasStore.getState();
   const element = state.elements.find(value => value.id === id);
@@ -27,7 +27,7 @@ export function commitElementPatch(id: string, patch: Parameters<CanvasStore['up
   const entries = Object.entries(patch);
   if (!entries.length || entries.every(([key, value]) => JSON.stringify(element[key as keyof typeof element]) === JSON.stringify(value))) return false;
   if (!isValidElementPatch(patch)||!isValidElementPaints({...element,...patch})) return false;
-  state.updateElement(id, element.type === 'line' ? normalizeLineElement({ ...element, ...patch, type: 'line' }) : patch);
+  state.updateElement(id, element.type === 'line'&&options.normalizeLine!==false ? normalizeLineElement({ ...element, ...patch, type: 'line' }) : patch);
   return true;
 }
 
