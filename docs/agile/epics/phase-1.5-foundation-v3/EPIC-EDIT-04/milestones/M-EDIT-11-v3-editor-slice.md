@@ -2,9 +2,9 @@
 
 > **Epic:** [EPIC-EDIT-04](../EPIC.md)
 > **Feature:** N/A — validation slice
-> **Status:** 🟡 In Progress — original slice locally verified; approved toolbar/drawing extension in implementation
+> **Status:** 🟡 In Progress — local delivery packet prepared; Arrange independently approved after repair; whole-milestone closure/main merge remain unauthorized.
 > **Target date:** Not committed; validate effort after first working slice.
-> **Branch:** `feat/edit/m-11-v3-editor-slice`
+> **Branch:** `codex/v3-arrange-opus` (current delivery candidate); protected checkpoint `codex/v3-editor-checkpoint-2026-11-05` at `b69074b`
 
 ---
 
@@ -25,7 +25,7 @@ Approved extension (2026-11-01): draw and edit standalone straight/curved/elbow 
 | 5 | [US-EDIT-035](../stories/US-EDIT-035/STORY.md) | Shared paint model, rendering and document persistence | M | existing 031–034 runtime | In Progress - locally verified; merge pending | — |
 | 6 | [US-EDIT-036](../stories/US-EDIT-036/STORY.md) | Shared color sidebar, picker and transient paint editing | M | US-EDIT-035 | In Progress - locally verified; merge pending | — |
 | 7 | [US-EDIT-037](../stories/US-EDIT-037/STORY.md) | Compact stroke styling and line-type menus | M | US-EDIT-035/036 | In Progress - locally verified; merge pending | — |
-| 8 | [US-EDIT-038](../stories/US-EDIT-038/STORY.md) | Annotated Effects, opacity, text-anchor and image-Fit refinements | M | existing US-EDIT-031–037 runtime | 🔲 | — |
+| 8 | [US-EDIT-038](../stories/US-EDIT-038/STORY.md) | Annotated Effects, opacity, text-anchor and image-Fit refinements | M | existing US-EDIT-031–037 runtime | Locally verified; merge pending | — |
 | 9 | [US-EDIT-039](../stories/US-EDIT-039/STORY.md) | Common element actions and V3 keyboard parity | M | existing checkpoint and coordinated shared seams | 🟡 Locally verified; merge pending | — |
 | 10 | [US-EDIT-040](../stories/US-EDIT-040/STORY.md) | Compact shape editing and existing-shape library | M | existing checkpoint and coordinated shared seams | 🟡 Locally verified; merge pending | — |
 | 11 | [US-EDIT-041](../stories/US-EDIT-041/STORY.md) | Property SVG icon and emoji library | M | existing checkpoint and coordinated shared seams | 🟡 Locally verified; merge pending | — |
@@ -69,3 +69,14 @@ Implemented and verified locally: standalone lines, old-editor toolbar parity, i
 - 2026-11-05: US-EDIT-038 implemented locally for the four browser annotations. Shape Effects sidebar and seven named presets, clean opacity suffix, anchor guidance and V3 image-frame resizing are verified. Frontend/API type checks, 1,445 unit tests and 98 browser cases passed; five captures retained in Mockups/approved-v3-editor/evidence. Formal Done and milestone merge remain pending. No commit, push, merge or deployment.
 
 - 2026-11-07 annotation revision: footer Layers now opens the full sidebar, toolbar Layers shortcut removed, shared row/toolbar action menu implemented. Element-specific controls inventoried in LAYERS_VERIFICATION.md. Type checks +1,515 unit tests pass;124 distinct browser contracts verified across full run and final28/28 affected rerun. No Arrange, commit, push or merge; formal delivery pending.
+
+
+## Delivery preparation — 2026-11-07
+
+User authorized committing V3 work, independent Arrange review, US-EDIT-027 reconciliation and local milestone delivery preparation. **Do not merge to main.** Reference styling checkpoint:3b8a150. Arrange extends the local candidate under the documented no-new-story-card exception; it must be included in review/evidence without inventing US-EDIT-044/045 completion.
+
+Independent Arrange review initially found3 required issues (tab focus and legacy-line numeric semantics); repairs and final review are tracked in `Mockups/approved-v3-editor/ARRANGE_INDEPENDENT_REVIEW.md`. The complete local delivery checklist/draft PR text is `Mockups/approved-v3-editor/V3_DELIVERY_PACKET.md`. No PR is opened, branch pushed or deployment performed by preparation.
+
+US-EDIT-027 belongs to M-EDIT-09. Its autosave/recovery work is already implemented, but same-document navigation confirmation (AC4) remains incomplete. This is explicitly retained as a broader V3 release gap; M-EDIT-09 is not closed by M-EDIT-11/Arrange work. Historic authenticated smoke evidence is not a new current-branch database certification.
+
+Final local evidence: Arrange repairs `7ae0fe0` approved independently; frontend/API types,1,550 unit tests (1 existing skip) and production build pass. Browser full132 passes/1 timeout +passing isolatedPreview rerun covers133 distinct cases; not a single all-green invocation. Both theme captures inspected. See V3_DELIVERY_PACKET.md for exact logs, open US-EDIT-027 AC4, review-unit boundaries and main-merge prohibition.

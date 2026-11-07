@@ -32,3 +32,10 @@ Cloud status/recovery message appearance and Projects confirmation need combined
 ## Combined integration evidence — 2026-11-01
 
 Final full type checks, backend811/client426 unit tests (one existing skip) and production build pass. Guarded existing-design autosave with the same PUT identity passes its browser contract. Fresh authenticated real-server save/independent GET/database/reload/PNG smoke passes with disposable data cleaned up. Full browser regression evidence is recorded in the approved bundle implementation report; formal review/PR/merge remain pending.
+
+
+## Source/evidence reconciliation — 2026-11-07
+
+Audited current useV3DesignSession/V3Editor runtime and session/autosave unit contracts. The old unchecked all-in-one T1 obscured already implemented work; TASKS now separates completed autosave/recovery/explicit confirmation from the open same-document route guard. AC4 and TC-EDIT-027-04 remain partial. The historical authenticated smoke above is not represented as newly rerun. Fresh delivery unit/browser run results are linked from the current V3 delivery packet; mocked browser persistence does not certify authenticated database behavior. No runtime changes, story closure or main merge occurred during this reconciliation.
+
+Current candidate `7ae0fe0` fresh coordinator checks: frontend/API types;811 backend+739 client unit passes (1 existing skip); production build. Full133-browser execution132pass/1 timeout, with the unchanged Preview case1/1passing on rerun. These checks include retained autosave/session contracts; they do not implement or certify missing AC4 same-document interception.

@@ -15,6 +15,10 @@
 
 ---
 
+## V3-only update — 2026-11-07
+
+V3 work is committed on isolated branches, not merged to main. Current candidate: `codex/v3-arrange-opus`; protected checkpoint:b69074b; Arrange reference styling:3b8a150. M-EDIT-11 has13 locally verified story cards, with Arrange tracked under the approved no-new-card exception. Arrange review repairs `7ae0fe0` are independently approved; fresh type/unit/build checks pass, and133 browser cases are covered across the full run and a Preview rerun (one initial timeout retained). US-EDIT-027 remains7/8 ACs because same-document navigation confirmation is missing. No formal milestone/story closure or deployment. Other domain rows below retain their earlier dated status; this update does not claim a new cross-domain audit. Current checklist/draft review package: `Mockups/approved-v3-editor/V3_DELIVERY_PACKET.md`.
+
 ## Board Summary (All Domains)
 
 > **Rewritten 2026-10-29** after Phase 1 closed and Phase 1.5 opened ([ADR-003](decisions/ADR-003-phase-1-close-and-phase-1.5.md)). The domain sections below keep their history; each now
@@ -23,7 +27,7 @@
 | Domain | Active Epic | Status | Blocked | Upcoming |
 |--------|-------------|--------|---------|----------|
 | [Property (PROP)](#-property--brand-prop) | [EPIC-PROP-01](epics/phase-1.5-foundation-v3/EPIC-PROP-01/EPIC.md) — Phase 1.5 | 🔲 0/12, hardened 2026-10-29, re-checked 2026-10-30 | — | Wave 1: M-PROP-01 (US-PROP-001 → 002 → 003) ∥ M-PROP-03 (US-PROP-004, 005) |
-| [Canvas Editor (EDIT)](#-canvas-editor-edit) | [EPIC-EDIT-04](epics/phase-1.5-foundation-v3/EPIC-EDIT-04/EPIC.md) — Phase 1.5 | 🟡 1/11 — M-EDIT-03 ✅ 2026-10-29 (US-EDIT-009, BL-26 fixed) | — | V3 shell (light + dark) · M-EDIT-06 linking · M-EDIT-07 Design tab → Property/Contact tabs · M-EDIT-10 Edit Elements review · M-EDIT-08 AI Assistant |
+| [Canvas Editor (EDIT)](#-canvas-editor-edit) | [EPIC-EDIT-04](epics/phase-1.5-foundation-v3/EPIC-EDIT-04/EPIC.md) — Phase 1.5 | M-EDIT-11:13 locally verified cards; Arrange independent review repaired/approved | US-EDIT-027 AC4 same-document navigation remains open; formal delivery pending | Current local delivery packet; no main merge authorized |
 | [Infrastructure (INFRA)](#-infrastructure-infra) | [EPIC-OBS-00](epics/phase-1.5-foundation-v3/EPIC-OBS-00/EPIC.md) — Phase 1.5 Wave 0 | 🟡 0/5 — US-OBS-005 merged; US-OBS-002/003 partly built outside their cards | **US-OBS-005 T5 (HUMAN)** — closes **BL-34 (P1)** | Reconcile US-OBS-002/003 · US-OBS-001 · BL-35/36/37/48 |
 | [AI Generation (AI)](#-ai-generation-ai) | none in flight | ✅ Phase 1 AI work closed (EPIC-AI-02, EPIC-AI-06) | — | AI Assistant + refine chips live in EPIC-EDIT-04 (Phase 1.5); EPIC-AI-03 asset quality (Phase 2) |
 | [Payments (PAY)](#-payments-pay) | none in flight | ✅ EPIC-PAY-05 closed at Phase 1 scope (V1) | M-PAY-05 ⏸ on hold by decision (backlog B-24) | EPIC-PAY-02/03 placeholders (Phase 2) |

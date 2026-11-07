@@ -14,7 +14,7 @@ updated: 2026-10-31
 
 > **Phase:** Phase 1.5 — Property Foundation & V3 Editor
 
-> **Status:** 🟡 In Progress — 1/12. M-EDIT-03 (moved in from EPIC-EDIT-03) ✅ closed 2026-10-29 — US-EDIT-009 done after BL-26; the rest drafted (US-EDIT-024–027 added 2026-10-29) 2026-10-29
+> **Status:** In Progress — M-EDIT-03 closed; M-EDIT-11 local delivery packet prepared; Arrange independently approved after repairs. Broader V3 parity and milestone/main merges remain pending.
 
 > **Owner:** Dinesh
 
@@ -128,3 +128,10 @@ Compacted V3 Layers and added non-consuming outside-pointer dismissal; moved tex
 Added actual layer previews, row-specific menus, stable atomic ordering/drag/keyboard controls, fixed background and live Overlapping. Compact footer popup retained; full/sidebar views mutually exclusive. Arrange excluded. Type checks, 1,506 unit tests, 122 regression + 1 live-overlap browser checks pass; both themes visually reviewed. Existing uncommitted work preserved, no new commit/push/merge.
 
 - 2026-11-07 annotation revision: footer Layers now opens the full sidebar, toolbar Layers shortcut removed, shared row/toolbar action menu implemented. Element-specific controls inventoried in LAYERS_VERIFICATION.md. Type checks +1,515 unit tests pass;124 distinct browser contracts verified across full run and final28/28 affected rerun. No Arrange, commit, push or merge; formal delivery pending.
+
+
+### 2026-11-07 — Local V3 delivery preparation; main merge prohibited
+
+Current candidate branch `codex/v3-arrange-opus`; baseline V3 checkpoint `b69074b`, latest reference styling `3b8a150`. Independent Arrange review/required remediation and fresh verification are in progress; results belong to the current delivery packet, not historical Opus approvals. Reconciled US-EDIT-027 as7/8 ACs with explicit same-document routing remainder, not Done. Corrected the stale US-EDIT-038 milestone row to locally verified/merge pending. No new story number, main merge, push or deployment. See `Mockups/approved-v3-editor/V3_DELIVERY_PACKET.md` for remaining acceptance and draft review sequencing.
+
+2026-11-07 final local delivery record: styling `3b8a150`, required Arrange repairs `7ae0fe0`; independent Arrange APPROVE; type/unit/build gates pass,1,550 unit passes (1 existing skip),133 distinct browser cases verified across full run +Preview rerun. Packet retains the full-run timeout caveat and broader release/review gaps. US-EDIT-027 remains7/8 ACs. No main merge/push/PR publication/deployment or formal closure.

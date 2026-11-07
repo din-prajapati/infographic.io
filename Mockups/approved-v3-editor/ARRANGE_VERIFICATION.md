@@ -46,7 +46,7 @@ Every clause is binary and covered by at least one test listed in the evidence s
 ### E. Size and position (advanced)
 
 - E1. Fields `Width`, `Height`, `X position`, `Y position`, `Rotation`, plus a `Lock aspect ratio` toggle. They require exactly one eligible selected element. Otherwise they are disabled with an explanation. Multi-selection numeric transforms are out of scope.
-- E2. X/Y are the stored frame origin, not the rotated visual bounds. Width/Height are the local, unrotated dimensions. Fields show values rounded to one decimal.
+- E2. X/Y are the stored frame origin, not the rotated visual bounds. Width/Height are the local, unrotated dimensions; for lines, they are editable local geometry spans shared by display and commit (excluding stroke/decorations), rather than unused legacy frame padding. X/Y remain the stored frame origin. Fields show values rounded to one decimal.
 - E3. Valid ranges: X/Y from −10000 to 10000 (off-page negative values allowed); Width/Height from 1 to 10000; Rotation is any finite number, stored normalized to [0, 360). Blank, non-numeric or out-of-range input is rejected with an inline message, adds no history and reverts the field.
 - E4. Enter or blur commits one Undo entry through `commitElementPatch`. An unchanged value adds none. Escape reverts the field, adds no history and does not close the sidebar. The next Escape closes it as usual.
 - E5. With the ratio lock on, a Width or Height change scales the other dimension by the same factor. If the derived value falls outside 1–10000, the edit is rejected. The ratio lock is view state only: it is not persisted and resets when the selection changes.
@@ -152,7 +152,7 @@ File/task scope: V3ArrangePanel.tsx, v3-arrange-panel.css, its existing unit spe
 
 ### Reference annotation verification result
 
-Implemented on `codex/v3-arrange-opus` above Claude checkpoint `2bc0f24`; no new commit was made for this presentation revision. Only Arrange component/style, its unit tests, the Arrange browser spec and this report changed, plus the two retained reference captures. Existing geometry helpers and Layers runtime remain untouched.
+Implemented on `codex/v3-arrange-opus` above Claude checkpoint `2bc0f24`; reference presentation was later committed as `3b8a150`. Only Arrange component/style, its unit tests, the Arrange browser spec and this report changed, plus the two retained reference captures. Existing geometry helpers and Layers runtime remain untouched.
 
 - Gate1: frontend/API type checks pass;811 API +732 client unit tests pass (**1,543 total**), one pre-existing client skip retained. The two added panel tests first failed against the original presentation, then passed.
 - Gate2: inspected `arrange-reference-dark.png` and `arrange-reference-light.png` at1242x668. Existing Arrange browser checks also exercise1440x900. Buttons/labels/units remain bounded and readable; existing mobile fallback is unchanged.
@@ -162,3 +162,28 @@ Implemented on `codex/v3-arrange-opus` above Claude checkpoint `2bc0f24`; no new
 Logs (ignored under the primary repository `.agent-logs`): `v3-arrange-reference-red.log`, `v3-arrange-reference-check.log`, `v3-arrange-reference-units.log`, `v3-arrange-reference-browser.log`. Browser API routes are mocked; no authenticated database-persistence claim is made. Formal Done, merge and deployment remain pending.
 
 Retained evidence: `Mockups/approved-v3-editor/evidence/arrange-reference-dark.png` and `arrange-reference-light.png`.
+
+
+## Independent delivery review follow-up — 2026-11-07
+
+User authorized commit, independent review, US-EDIT-027 reconciliation and local delivery preparation, explicitly prohibiting merge to main. Reference styling committed as `3b8a150`. A fresh Codex reviewer (not the implementation agent; not represented as Opus) identified a keyboard-focus defect: arrow/Home/End switched the active sidebar component, but a delayed callback referenced the expired React event and unmounted tablist. Add an acceptance-derived browser test for actual active-tab focus through Layers/Arrange replacement, then fix focus against the retained editor scope. Existing Arrange contract A2 already requires keyboard-accessible tabs. Narrow runtime scope: V3ArrangePanel.tsx and its unit spec; root owns e2e/v3-arrange.spec.ts, verification/review/delivery records. No geometry change. Fresh type/unit/full-browser gates and independent re-review required before calling the revision verified.
+
+
+### Required review remediation scope
+
+R1: Restore focus to the newly mounted active sidebar tab using the retained editor scope, with real arrow/Home/End browser coverage.
+
+R2: Display line Width/Height using the same editable local path spans used by Arrange size commits (excluding stroke/end decorations). X/Y continue to mean stored frame origin. A dimension equal to its displayed/current span is a strict no-op before line normalization, retaining exact saved geometry and zero Undo entries. The original general E2 wording is clarified for legacy unnormalized line frames; the same representation must be used in rendering, ratio calculation and commit validation.
+
+R3: Editing a line X/Y/rotation must preserve the requested stored origin and local path/frame, rather than incidentally normalizing a legacy line. Keep existing normalization as the default for other tools. A narrowly scoped optional argument on the validated single-element commit helper is allowed if needed; it must not bypass eligibility, finite/paint validation or history safeguards. Add X/Y/rotated legacy-line and existing-default normalization coverage.
+
+Allowed remediation files: V3ArrangePanel.tsx and its unit spec; client/src/lib/v3Arrange.ts and its unit spec; client/src/lib/v3ElementEditing.ts and its existing unit spec; e2e/v3-arrange.spec.ts; this report and new independent-review/delivery documents. No other runtime scope, no main merge. Reviewer findings will be retained with resolutions and an independent final verdict.
+
+
+### Final reviewed delivery candidate — 2026-11-07
+
+Reference style committed as `3b8a150`; all 3 required review repairs committed as `7ae0fe0`. Fresh read-only Codex reviewer independently re-ran41 affected unit tests and returned **APPROVE**,0 required findings. Current frontend/API type checks pass;811 API +739 client unit tests pass (**1,550 total**,1 existing skip). Production build passes. Both current reference theme screenshots were visually inspected.
+
+Full browser run: **132 passes /1 Preview timeout**, then the unchanged Preview case passes its isolated rerun (1/1). This covers133 distinct browser contracts across runs, including all9Arrange cases and10Layers cases; it is explicitly not a single all-green133-case invocation. Two targeted review regressions also passed before the full run. No tests were weakened/skipped. Raw logs and artifacts are retained separately as listed in V3_DELIVERY_PACKET.md.
+
+US-EDIT-027 is reconciled to7/8 ACs, not closed; same-document navigation guarding remains open. Delivery draft, outstanding whole-milestone/release evidence and rollback refs are in V3_DELIVERY_PACKET.md. No main merge, push, PR publication or deployment. Formal story/milestone Done remains pending.

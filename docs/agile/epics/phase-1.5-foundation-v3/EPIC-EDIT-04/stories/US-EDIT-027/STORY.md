@@ -7,7 +7,7 @@ updated: 2026-10-29
 
 # Story Card — US-EDIT-027 — Autosave and save status
 
-> **Status:** In progress — reconciled 2026-10-31 against the approved V3 integration plan.
+> **Status:** In Progress — reconciled 2026-11-07: AC1–3/5–8 locally verified; AC4 remains partial for same-document routing; review/merge pending.
 > **Epic:** [EPIC-EDIT-04](../../EPIC.md)
 > **Milestone:** [M-EDIT-09-v3-shell](../../milestones/M-EDIT-09-v3-shell.md)
 > **Size:** M
@@ -91,3 +91,12 @@ Shell rendering of status/recovery/navigation lives in US-EDIT-024; no backend, 
 ## Local verification — 2026-11-01
 
 Autosave, acknowledgement timestamp, recovery, failures, serialization, account isolation and unload/Projects guarding are implemented and tested. AC4 remains partial for browser Back/Forward and other same-document route transitions; a central router guard is outside the supplied session API. Formal review/merge remains pending.
+
+
+## Reconciliation — 2026-11-07
+
+Current branch: `codex/v3-arrange-opus`. Source audit confirms the existing hook registers `beforeunload` against dirty session state and exposes `confirmNavigation`; V3Editor calls that API from its Projects/logo exits. `v3DesignSession.spec.ts` covers clean/dirty unload and accept/reject confirmation. Autosave/recovery/concurrency tests remain in the current mandatory unit suite.
+
+AC4 stays **unchecked**. Same-document browser Back/Forward and programmatic Wouter transitions are not intercepted centrally by this hook. A document unload can still invoke the existing browser guard; the missing behavior is the same-document router path. No new navigation-guard runtime was introduced by this reconciliation. The remaining task is explicitly separated in TASKS.md rather than marking the entire implementation unfinished or claiming AC4 passed.
+
+This is part of M-EDIT-09, separate from the M-EDIT-11/Arrange delivery package. It remains an open release gap when evaluating broader V3 parity. The legacy editor stays default, and formal Done/PR merge remain unchecked. User explicitly prohibits merging this work into main.
