@@ -14,7 +14,7 @@ type Direction='forward'|'backward'|'front'|'back';
 type DropTarget={id:string;placement:'before'|'after'};
 
 export interface LayerPresentation {id:string;baseElement:CanvasElement;patch:Partial<CanvasElement>}
-export function V3LayersPanel({onClose,onEditBackground,presentation}:{onClose:()=>void;onEditBackground:()=>void;presentation?:LayerPresentation|null}){
+export function V3LayersPanel({onClose,onEditBackground,presentation,tabs}:{onClose:()=>void;onEditBackground:()=>void;presentation?:LayerPresentation|null;tabs?:React.ReactNode}){
   const state=useCanvasStore();
   const [filter,setFilter]=useState<'all'|'overlapping'>('all');
   const [dropTarget,setDropTarget]=useState<DropTarget|null>(null);
@@ -69,6 +69,7 @@ export function V3LayersPanel({onClose,onEditBackground,presentation}:{onClose:(
   }
   return <section ref={panel} className="v3-layers-panel" aria-label="Layers sidebar">
     <header><h2>Layers</h2><button type="button" aria-label="Close Layers sidebar" onClick={onClose}><X/></button></header>
+    {tabs}
     <div className="v3-layers-filters" role="tablist" aria-label="Layer filters">{(['all','overlapping'] as const).map(value=><button type="button" role="tab" key={value} aria-label={value==='all'?'All':'Overlapping'} aria-selected={filter===value} onClick={()=>{cancelDrag();setFilter(value);}}>{value==='all'?'All':'Overlapping'}</button>)}</div>
     {filter==='overlapping'&&<div className="v3-layer-filter-help">{!visibleSelected.length?<p role="status">Select an element to see overlapping layers.</p>:rows.every(element=>state.selectedElementIds.includes(element.id))&&<p role="status">Only selected layers overlap.</p>}<p>Reorder in the complete layer list.</p><button type="button" aria-label="Switch to All to drag" onClick={()=>setFilter('all')}>Switch to All to drag</button></div>}
     <p className="v3-layer-order-label">Front / top</p>
