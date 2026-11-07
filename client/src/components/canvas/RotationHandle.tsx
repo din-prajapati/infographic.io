@@ -5,7 +5,7 @@ import { useCanvasStore } from '../../hooks/useCanvasStore';
 import { normalizedAngle, pointerRotation } from '../../lib/elementStyles';
 
 /** Mounted in the unscaled artboard wrapper so the handle stays 32 screen px. */
-export function RotationHandle({ element }: { element: CanvasElement }) {
+export function RotationHandle({ element,onPreview }: { element: CanvasElement;onPreview?:(id:string,rotation:number|null)=>void }) {
   const zoom = useCanvasStore(state => state.zoom);
   const [draft, setDraft] = useState<number | null>(null);
   const [open, setOpen] = useState(false);
@@ -20,13 +20,13 @@ export function RotationHandle({ element }: { element: CanvasElement }) {
   const clear = () => {
     drag.current?.node?.style.removeProperty('--element-rotation-preview');
     drag.current = null;
-    setDraft(null);
+    setDraft(null);onPreview?.(element.id,null);
   };
   useEffect(() => {
     const escape = (event: KeyboardEvent) => { if (event.key === 'Escape') { clear(); setOpen(false); const live = useCanvasStore.getState().elements.find(item => item.id === element.id); setValue(String(Math.round(live?.rotation ?? element.rotation))); } };
     window.addEventListener('keydown', escape);
-    return () => { window.removeEventListener('keydown', escape); drag.current?.node?.style.removeProperty('--element-rotation-preview'); drag.current = null; };
-  }, [element.id]);
+    return () => { window.removeEventListener('keydown', escape); drag.current?.node?.style.removeProperty('--element-rotation-preview'); drag.current = null;onPreview?.(element.id,null); };
+  }, [element.id,onPreview]);
   useEffect(() => { setValue(String(Math.round(element.rotation))); }, [element.rotation, element.id]);
 
   function commit(rotation: number) {
@@ -58,7 +58,7 @@ export function RotationHandle({ element }: { element: CanvasElement }) {
         if (Math.abs(delta) > 0.01) gesture.moved = true;
         gesture.angle = pointerRotation(gesture.start, delta, event.shiftKey);
         gesture.node?.style.setProperty('--element-rotation-preview', `${gesture.angle}deg`);
-        setDraft(gesture.angle);
+        setDraft(gesture.angle);onPreview?.(element.id,gesture.angle);
       }}
       onPointerUp={event => {
         const gesture = drag.current;

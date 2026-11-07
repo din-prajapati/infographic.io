@@ -9,3 +9,15 @@
 @media(prefers-reduced-motion:reduce){.v3-editor *{transition:none!important;animation:none!important}}
 .v3-image-adjust{position:relative}.v3-image-adjust summary{cursor:pointer;padding:5px;border-radius:7px}.v3-image-adjust summary:hover{background:var(--v3-hover)}.v3-image-adjust>.v3-popover{top:36px;left:0;width:240px}.v3-image-adjust label{justify-content:space-between;margin:12px 0;text-transform:capitalize}.v3-image-adjust input[type=range]{width:110px}
 .v3-title-wrap{display:grid;min-width:80px;max-width:28vw}.v3-title-measure{grid-area:1/1;visibility:hidden;white-space:pre;font-weight:600;padding:8px 3px;border:1px solid transparent}.v3-header .v3-title{grid-area:1/1;width:100%}
+.v3-editor .v3-layers{height:auto;max-height:320px;padding:8px;overflow:hidden}
+.v3-editor .v3-layers>h2{flex-shrink:0;margin:0 0 6px;font-size:13px;line-height:20px}
+.v3-editor .v3-layers>[data-slot=scroll-area]{height:auto;min-height:0;max-height:272px}
+.v3-editor .v3-layers [data-slot=scroll-area-viewport]{height:auto!important;max-height:272px;overflow-y:auto!important}
+.v3-editor .v3-layers [data-slot=scroll-area-viewport]>div>.p-2{padding:0}
+.v3-editor .v3-layers .group{height:36px;min-height:36px;padding:4px 6px;gap:8px;color:var(--v3-ink)}
+.v3-editor .v3-layers .group>span{font-size:12px;color:var(--v3-ink)}
+.v3-editor .v3-layers .group>svg{width:16px;height:16px;color:var(--v3-muted)}
+.v3-editor .v3-layers .group.bg-blue-50{background:var(--v3-selected);border-color:var(--v3-border)}
+.v3-editor .v3-layers .group.bg-blue-50>span,.v3-editor .v3-layers .group.bg-blue-50>svg{color:var(--v3-accent)}
+.v3-editor .v3-layers .group button{height:24px;min-height:24px;width:24px;min-width:24px;padding:4px;border-radius:5px}
+.v3-editor .v3-layers .group button svg{width:14px;height:14px}

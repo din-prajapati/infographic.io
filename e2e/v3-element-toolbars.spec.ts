@@ -52,12 +52,12 @@ for(const theme of ['light','dark']) test(`text reference controls match layout 
   await expect(popup.getByRole('button',{name:'Anchor middle',exact:true})).toHaveAttribute('aria-pressed','true');
   await expect(element(page,'text').locator('div[style*="justify-content"]').first()).toHaveCSS('justify-content','safe center');
   await page.screenshot({path:info.outputPath(`text-ref-${theme}.png`)});
-  await page.keyboard.press('Escape');await bar.getByRole('button',{name:'More text options',exact:true}).click();
-  const toggle=page.getByRole('button',{name:'Text case',exact:true});
+  await page.keyboard.press('Escape');
+  const toggle=bar.getByRole('button',{name:'Text case',exact:true});
   for(const [icon,text] of [['AA','MODERN LISTING'],['aa','modern listing'],['Aa','Modern Listing']]){
     await toggle.click();await expect(toggle).toHaveText(icon);
     await expect(element(page,'text').getByText(text,{exact:true})).toBeVisible();
-    await expect(page.locator('[data-radix-popper-content-wrapper]')).toHaveCount(1);
+    await expect(page.locator('[data-radix-popper-content-wrapper]')).toHaveCount(0);
   }
   await page.keyboard.press('Escape');
   expect((await save(page,model)).find(el=>el.id==='text')).toMatchObject({content:'Modern listing',fontSize:24.5,letterSpacing:100,lineHeight:1.4,textAnchor:'middle',textTransform:'capitalize'});
@@ -170,8 +170,7 @@ test('text spacing and compact overflow retain keyboard behavior',async({page},i
   await input.press('Escape');await expect(element(page,'text').getByText('Modern listing')).toHaveCSS('line-height','28.8px');
   await input.fill('1.5');await input.press('Enter');await page.keyboard.press('Escape');
   await page.getByRole('button',{name:'Undo',exact:true}).click();await expect(page.getByRole('button',{name:'Undo',exact:true})).toBeDisabled();
-  await bar.getByRole('button',{name:'More text options',exact:true}).click();
-  await expect(page.getByRole('button',{name:'Underline',exact:true})).toBeVisible();
+  await expect(bar.getByRole('button',{name:'Underline',exact:true})).toBeVisible();
   await page.screenshot({path:info.outputPath('details-text-overflow-dark.png')});
 });
 async function save(page:Page,model:Awaited<ReturnType<typeof setup>>) {
@@ -182,13 +181,12 @@ async function save(page:Page,model:Awaited<ReturnType<typeof setup>>) {
 }
 
 // Contract: restored text controls commit exact properties into the saved document.
-test('text More preserves old formatting through save and reload',async({page})=>{
+test('direct text formatting survives save and reload',async({page})=>{
   const model=await setup(page);await element(page,'text').click();
   await toolbar(page,'text').getByRole('button',{name:'Bold',exact:true}).click();
-  await toolbar(page,'text').getByRole('button',{name:'More text options',exact:true}).click();
-  await page.getByRole('button',{name:'Strikethrough',exact:true}).click();
-  await page.getByRole('button',{name:'Text case',exact:true}).click();
-  await expect(page.getByRole('button',{name:'Text case',exact:true})).toHaveText('AA');
+  await toolbar(page,'text').getByRole('button',{name:'Strikethrough',exact:true}).click();
+  await toolbar(page,'text').getByRole('button',{name:'Text case',exact:true}).click();
+  await expect(toolbar(page,'text').getByRole('button',{name:'Text case',exact:true})).toHaveText('AA');
   await page.keyboard.press('Escape');
   await toolbar(page,'text').getByRole('button',{name:'List style',exact:true}).click();
   await page.getByRole('button',{name:'Bullet list',exact:true}).click();await page.keyboard.press('Escape');
@@ -346,7 +344,7 @@ test('compact overflow and transparency retain accessible controls and history',
   const model=await setup(page);await page.getByRole('button',{name:'Text',exact:true}).click();await element(page,'text').click();
   const more=toolbar(page,'text').getByRole('button',{name:'More text options',exact:true});
   await expect(more).toHaveText('');await expect(more.locator('svg')).toHaveCount(1);
-  await more.click();await expect(page.getByRole('button',{name:'Strikethrough',exact:true})).toBeVisible();await page.keyboard.press('Escape');
+  await expect(toolbar(page,'text').getByRole('button',{name:'Strikethrough',exact:true})).toBeVisible();await more.click();await expect(page.getByRole('menu',{name:'Element actions'}).getByRole('menuitem',{name:'Copy',exact:true})).toBeVisible();await page.keyboard.press('Escape');
   const opacity=toolbar(page,'text').getByRole('button',{name:'Opacity',exact:true});
   await expect(opacity).toHaveText('');await opacity.click();
   await expect(page.getByRole('heading',{name:'Transparency',exact:true})).toBeVisible();

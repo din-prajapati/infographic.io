@@ -102,6 +102,8 @@ export interface ShapeElement extends BaseElement {
 
 export interface ImageElement extends BaseElement {
   type: 'image';
+  /** Curated self-contained SVG artwork; absent for ordinary photos and legacy images. */
+  icon?: { id: string; color: string; strokeWidth: number; version: 1; opacity?: number };
   src: string;
   borderColor?: string;
   borderWidth?: number;

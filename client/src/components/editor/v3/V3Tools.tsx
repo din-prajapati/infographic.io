@@ -4,8 +4,9 @@ import { useCanvasStore } from '../../../hooks/useCanvasStore';
 import { createShapeElement } from '../../../lib/canvasUtils';
 import { createLineElement } from '../../../lib/lineGeometry';
 import type { LineType } from '../../../lib/canvasTypes';
+import {duplicateV3Selection,deleteV3Selection} from '../../../lib/v3EditorActions';
 
-export function V3Tools({onText,onImage,onClose}: {onText:()=>void;onImage:()=>void;onClose:()=>void}) {
+export function V3Tools({onText,onImage,onClose,onElements}: {onText:()=>void;onImage:()=>void;onClose:()=>void;onElements?:()=>void}) {
   const store = useCanvasStore();
   const [menu,setMenu] = useState<'shapes'|'lines'|null>(null);
   const [lineType,setLineType] = useState<LineType>('straight');
@@ -19,17 +20,12 @@ export function V3Tools({onText,onImage,onClose}: {onText:()=>void;onImage:()=>v
       <button className="v3-icon" aria-label="Shapes" aria-expanded={menu==='shapes'} onClick={()=>setMenu(menu==='shapes'?null:'shapes')}><span className="v3-shapes-symbol"><Square /><Circle /></span></button>
       <button className="v3-icon" aria-label="Add text" onClick={()=>{store.setActiveTool('select');onText();}}><Type /></button>
       <button className="v3-icon" aria-label="Add image" onClick={()=>{store.setActiveTool('select');onImage();}}><Image /></button>
-      {store.selectedElementIds.length>0 && <><hr /><button className="v3-icon" aria-label="Duplicate" onClick={()=>{
-        const before = new Set(store.elements.map(element=>element.id));
-        [...store.selectedElementIds].forEach(id=>store.duplicateElement(id));
-        const state = useCanvasStore.getState();
-        state.selectElements(state.elements.filter(element=>!before.has(element.id)).map(element=>element.id));
-      }}><Copy /></button>
-        <button className="v3-icon" aria-label="Delete" onClick={()=>store.deleteElements(store.selectedElementIds.filter(id=>!store.elements.find(el=>el.id===id)?.locked))}><Trash2 /></button></>}
+      {store.selectedElementIds.length>0 && <><hr /><button className="v3-icon" aria-label="Duplicate" onClick={duplicateV3Selection}><Copy /></button>
+        <button className="v3-icon" aria-label="Delete" onClick={deleteV3Selection}><Trash2 /></button></>}
     </div>
     {menu==='shapes' && <div className="v3-tool-menu v3-popover" aria-label="Shapes menu"><h3>Shapes</h3>{([
       ['rectangle','Square / Rectangle',Square],['circle','Circle',Circle],['triangle','Triangle',Triangle],['star','Star',Star]
-    ] as const).map(([shape,label,Icon])=><button key={shape} onClick={()=>{const el=createShapeElement(shape);store.addElement(el);store.selectElement(el.id);store.setActiveTool('select');setMenu(null);}}><Icon />{label}</button>)}</div>}
+    ] as const).map(([shape,label,Icon])=><button key={shape} onClick={()=>{const el=createShapeElement(shape);store.addElement(el);store.selectElement(el.id);store.setActiveTool('select');setMenu(null);}}><Icon />{label}</button>)}{onElements&&<button onClick={()=>{setMenu(null);onElements();}}>Browse all shapes</button>}</div>}
     {menu==='lines' && <div className="v3-tool-menu v3-popover" aria-label="Line menu"><h3>Line</h3>{([
       [Slash,'Straight line','straight'],[Spline,'Curved line','curved'],[CornerUpRight,'Elbow line','elbow']
     ] as const).map(([Icon,label,type])=><button key={type} aria-pressed={store.activeTool===`line-${type}`} onClick={()=>{setLineType(type);store.setActiveTool(`line-${type}`);setMenu(null);}}><Icon/>{label}</button>)}

@@ -5,7 +5,7 @@ import { useCanvasStore } from "../../../hooks/useCanvasStore";
 import { LayerItem } from "./LayerItem";
 import { sortByZIndex } from "../../../lib/canvasUtils";
 
-export function LayersTab() {
+export function LayersTab({allowLockedSelection=false}:{allowLockedSelection?:boolean}) {
   const elements = useCanvasStore((state) => state.elements);
   const selectedElementIds = useCanvasStore((state) => state.selectedElementIds);
   const selectElement = useCanvasStore((state) => state.selectElement);
@@ -31,7 +31,7 @@ export function LayersTab() {
             key={element.id}
             element={element}
             isSelected={selectedElementIds.includes(element.id)}
-            onSelect={() => selectElement(element.id)}
+            onSelect={() => allowLockedSelection?useCanvasStore.getState().selectElements([element.id]):selectElement(element.id)}
           />
         ))}
       </div>

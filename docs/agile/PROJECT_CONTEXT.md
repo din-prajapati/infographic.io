@@ -101,7 +101,7 @@ npm run dev starts:
 | Design | DESIGN | UI/UX, design tokens, themes, components | 05 | 03 | 013 |
 | Payments | PAY | Subscription, billing, RazorPay/Stripe | 06 | 05 | 114 |
 | Auth | AUTH | Login, JWT, OAuth, sessions, API keys | 02 | 01 | 001 |
-| Editor | EDIT | Canvas editor, drag-resize, export | 05 | 01 | 039 |
+| Editor | EDIT | Canvas editor, drag-resize, export | 05 | 01 | 044 |
 | AI | AI | GPT-4o, Ideogram, generation pipeline, refinement | 10 | 35 | 052 |
 | Usage | USAGE | Usage tracking, analytics, limit alerts | 01 | 01 | 001 |
 | Infrastructure | INFRA | Railway, Sentry, DB migrations, CI/CD | 03 | 01 | 004 |

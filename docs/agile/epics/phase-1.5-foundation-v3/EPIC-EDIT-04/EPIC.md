@@ -81,6 +81,11 @@ facts, generate a background without touching the text, and is stopped at Export
 | 17 | [US-EDIT-036](stories/US-EDIT-036/STORY.md) | Shared color sidebar, picker and transient paint editing | M-EDIT-11 | M | In Progress - locally verified; merge pending |
 | 18 | [US-EDIT-037](stories/US-EDIT-037/STORY.md) | Compact stroke styling and line-type menus | M-EDIT-11 | M | In Progress - locally verified; merge pending |
 | 19 | [US-EDIT-038](stories/US-EDIT-038/STORY.md) | Annotated Effects, opacity, text-anchor and image-Fit refinements | M-EDIT-11 | M | 🔲 |
+| 20 | [US-EDIT-039](stories/US-EDIT-039/STORY.md) | Common element actions and V3 keyboard parity | M-EDIT-11 | M | 🟡 Locally verified; merge pending |
+| 21 | [US-EDIT-040](stories/US-EDIT-040/STORY.md) | Compact shape editing and existing-shape library | M-EDIT-11 | M | 🟡 Locally verified; merge pending |
+| 22 | [US-EDIT-041](stories/US-EDIT-041/STORY.md) | Property SVG icon and emoji library | M-EDIT-11 | M | 🟡 Locally verified; merge pending |
+| 23 | [US-EDIT-042](stories/US-EDIT-042/STORY.md) | Stable layer ordering, overlap geometry and row actions | M-EDIT-11 | M | 🟡 Locally verified; merge pending |
+| 24 | [US-EDIT-043](stories/US-EDIT-043/STORY.md) | Layers sidebar with actual previews, row menus and drag ordering | M-EDIT-11 | M | 🟡 Locally verified; merge pending |
 
 ---
 
@@ -113,3 +118,13 @@ Implemented and verified locally: standalone lines, old-editor toolbar parity, i
 - 2026-11-05: US-EDIT-035-037 implemented locally against the approved color/paint plan. Type checks, 1,425 unit tests and 89 browser cases pass; six themed screenshots retained. [Evidence](../../../../../Mockups/approved-v3-editor/COLOR_PAINT_VERIFICATION.md). Existing work preserved; no commit, push, merge or deployment. Formal Done remains pending milestone merge.
 
 - 2026-11-05: US-EDIT-038 implemented locally for the four browser annotations. Shape Effects sidebar and seven named presets, clean opacity suffix, anchor guidance and V3 image-frame resizing are verified. Frontend/API type checks, 1,445 unit tests and 98 browser cases passed; five captures retained in Mockups/approved-v3-editor/evidence. Formal Done and milestone merge remain pending. No commit, push, merge or deployment.
+
+### 2026-11-06 — US-EDIT-039 annotation follow-up
+
+Compacted V3 Layers and added non-consuming outside-pointer dismissal; moved text toggles directly after Italic. Type checks, 1,476 unit tests and 113 browser tests pass; light/dark visual evidence retained. Existing uncommitted work preserved; milestone merge pending.
+
+### 2026-11-07 — US-EDIT-042/043 Layers-only implementation
+
+Added actual layer previews, row-specific menus, stable atomic ordering/drag/keyboard controls, fixed background and live Overlapping. Compact footer popup retained; full/sidebar views mutually exclusive. Arrange excluded. Type checks, 1,506 unit tests, 122 regression + 1 live-overlap browser checks pass; both themes visually reviewed. Existing uncommitted work preserved, no new commit/push/merge.
+
+- 2026-11-07 annotation revision: footer Layers now opens the full sidebar, toolbar Layers shortcut removed, shared row/toolbar action menu implemented. Element-specific controls inventoried in LAYERS_VERIFICATION.md. Type checks +1,515 unit tests pass;124 distinct browser contracts verified across full run and final28/28 affected rerun. No Arrange, commit, push or merge; formal delivery pending.

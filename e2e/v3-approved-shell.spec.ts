@@ -129,7 +129,7 @@ test('listing panels persist their fields and canvas panels open', async ({ page
   expect(state.writes.at(-1).canvasData.listing.property.headline).toBe('Garden residence');
   expect(state.writes.at(-1).canvasData.listing.agent.name).toBe('Morgan Agent');
   await page.getByRole('button', { name: 'Layers', exact: true }).click();
-  await expect(page.getByRole('region', { name: 'Layers panel', exact: true })).toBeVisible();
+  await expect(page.getByRole('complementary', { name: 'Layers panel', exact: true })).toBeVisible();
   await page.keyboard.press('Escape');
   await page.getByRole('button', { name: 'AI Assistant', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Close Assistant', exact: true })).toBeVisible();

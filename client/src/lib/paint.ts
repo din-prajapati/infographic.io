@@ -1,6 +1,7 @@
 import type { CanvasElement, Paint, PaintSlot, PaintStop } from './canvasTypes';
 import { colorWithOpacity } from './elementStyles';
 import { isValidShadowLayers } from './shapeEffects';
+import {isValidPropertyIcon} from './propertyIcons';
 export type { Paint, PaintSlot, PaintStop } from './canvasTypes';
 
 const hex = (value: unknown): value is string => typeof value === 'string' && /^#[\da-f]{6}$/i.test(value);
@@ -51,6 +52,7 @@ function legacyPaint(color: string, opacity = 1): Paint {
 export function isValidElementPaints(value: unknown): boolean {
   if (!value || typeof value !== 'object') return false;
   const element = value as CanvasElement;
+  if('icon' in element&&element.icon!==undefined&&(element.type!=='image'||!isValidPropertyIcon(element.icon)))return false;
   if ('shadowLayers' in element && element.shadowLayers !== undefined && (element.type !== 'shape' || !isValidShadowLayers(element.shadowLayers))) return false;
   if (element.paints === undefined) return true;
   return !!element.paints && typeof element.paints === 'object' && !Array.isArray(element.paints)

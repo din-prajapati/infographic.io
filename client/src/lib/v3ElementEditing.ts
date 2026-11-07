@@ -38,7 +38,7 @@ export function resetImageAppearancePatch(): Partial<ImageElement> {
 }
 
 export function replacementImagePatch(src: string, name: string): Partial<ImageElement> {
-  return { src, name, crop: undefined, isAiImport: undefined, aiSourceUrl: undefined,
+  return { src, name, icon:undefined, crop: undefined, isAiImport: undefined, aiSourceUrl: undefined,
     aiOrientation: undefined, aiComposition: undefined };
 }
 

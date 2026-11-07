@@ -64,3 +64,12 @@ describe('US-EDIT-035 shared paints', () => {
     expect(isValidElementPaints({ type: 'text', paints: { color: { type: 'none' } } })).toBe(true);
   });
 });
+
+ describe('property icon document boundary',()=>{
+  const icon={id:'heating',version:1,color:'#123456',strokeWidth:2,opacity:1};
+  it('accepts a curated image icon and rejects invalid metadata',()=>{
+    expect(isValidElementPaints({type:'image',icon})).toBe(true);
+    for(const bad of [{...icon,id:'unknown'},{...icon,color:'url(example)'},{...icon,strokeWidth:9},{...icon,opacity:2}]) expect(isValidElementPaints({type:'image',icon:bad})).toBe(false);
+    expect(isValidElementPaints({type:'shape',icon})).toBe(false);
+  });
+ });

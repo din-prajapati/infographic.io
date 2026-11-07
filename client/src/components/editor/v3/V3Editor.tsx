@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'wouter';
-import { ArrowLeft, Cloud, CloudUpload, Download, LayoutTemplate, MousePointer2, Redo2, Save, Type, Undo2, Upload, Palette, House, ContactRound, Scan, X } from 'lucide-react';
+import { ArrowLeft, Cloud, CloudUpload, Download, LayoutTemplate, MousePointer2, Redo2, Save, Type, Undo2, Upload, Palette, House, ContactRound, Scan, X, Shapes } from 'lucide-react';
 import { useV3DesignSession } from '../../../hooks/useV3DesignSession';
 import { useCanvasStore } from '../../../hooks/useCanvasStore';
 import { downloadCanvas } from '../../../lib/canvasExport';
@@ -17,17 +17,21 @@ import { V3Tools } from './V3Tools';
 import { V3Panels, builtInPalettes, loadPalettes, type V3Panel } from './V3Panels';
 import { V3ImageEditor } from './V3ImageEditor';
 import { V3EffectsPanel } from './V3EffectsPanel';
+import {V3LayersPanel,type LayerPresentation} from './V3LayersPanel';
+import {V3ElementsPanel,type ElementsTab} from './V3ElementsPanel';
+import {useV3EditorShortcuts} from '../../../hooks/useV3EditorShortcuts';
+import {clearV3Clipboard} from '../../../lib/v3EditorActions';
 import {clearElementPreview} from '../../../hooks/useV3ElementPreview';
 import {clearV3StrokeMemory} from './V3ElementToolbar';
 import './v3-editor.css';
 import {V3ColorPanel} from './V3ColorPanel';
-import {useV3ColorPanel,closeColorPanel,getTargetPaint,getDesignColors,previewColorPaint,commitColorPaint,clearColorDraft,COLOR_TARGET_LABELS} from '../../../hooks/useV3ColorPanel';
+import {useV3ColorPanel,openColorPanel,closeColorPanel,getTargetPaint,getDesignColors,previewColorPaint,commitColorPaint,clearColorDraft,COLOR_TARGET_LABELS} from '../../../hooks/useV3ColorPanel';
 import type {Paint} from '../../../lib/canvasTypes';
 const defaultPaintColors:Paint[]=['#000000','#545454','#737373','#A6A6A6','#D9D9D9','#FFFFFF','#EF4444','#F97316','#FACC15','#22C55E','#14B8A6','#3B82F6','#8B5CF6','#EC4899'].map(color=>({type:'solid',color,opacity:1}));
 defaultPaintColors.push({type:'linear',angle:0,stops:[{color:'#123E62',opacity:1},{color:'#14B8A6',opacity:1}]},{type:'linear',angle:90,stops:[{color:'#000000',opacity:1},{color:'#FFFFFF',opacity:1}]},{type:'radial',center:'center',stops:[{color:'#FFFFFF',opacity:1},{color:'#3B82F6',opacity:1}]});
 
 
-const rail=[['Templates',LayoutTemplate],['Tools',MousePointer2],['Text',Type],['Uploads',Upload],['Brand',Palette],['Property',House],['Agent',ContactRound]] as const;
+const rail=[['Templates',LayoutTemplate],['Tools',MousePointer2],['Elements',Shapes],['Text',Type],['Uploads',Upload],['Brand',Palette],['Property',House],['Agent',ContactRound]] as const;
 export default function V3Editor({designId}:{designId?:string}) {
   const {user}=useAuth();
   const session=useV3DesignSession(designId,user?String(user.id):undefined);
@@ -36,6 +40,23 @@ export default function V3Editor({designId}:{designId?:string}) {
   const [panel,setPanel]=useState<V3Panel|'Tools'|null>('Templates');
   const [imageEditing,setImageEditing]=useState(false);
   const [effectsId,setEffectsId]=useState<string|null>(null);
+  const [layersOpen,setLayersOpen]=useState(false);
+  const [layerPresentation,setLayerPresentation]=useState<LayerPresentation|null>(null);
+  const onLayerPresentation=useCallback((id:string,patch:LayerPresentation['patch']|null)=>{
+    if(!patch){setLayerPresentation(current=>current?.id===id?null:current);return;}
+    const state=useCanvasStore.getState(),element=state.elements.find(item=>item.id===id);
+    if(element&&element.visible&&!element.locked&&state.selectedElementIds.length===1&&state.selectedElementIds[0]===id)setLayerPresentation({id,baseElement:element,patch});
+  },[]);
+
+  const beforeLayers=useRef<{panel:V3Panel|'Tools'|null;imageEditing:boolean;effectsId:string|null}|null>(null);
+  const openLayers=()=>{if(!layersOpen)beforeLayers.current={panel,imageEditing,effectsId};closeColorPanel();clearElementPreview();setImageEditing(false);setEffectsId(null);setLayersOpen(true);};
+  const closeLayers=()=>{const previous=beforeLayers.current;setLayersOpen(false);beforeLayers.current=null;if(previous){setPanel(previous.panel);setImageEditing(previous.imageEditing);setEffectsId(previous.effectsId);}};
+  const leaveLayers=()=>{setLayersOpen(false);beforeLayers.current=null;};
+  const [elementsTab,setElementsTab]=useState<ElementsTab>('shapes');
+  const [elementsReplaceId,setElementsReplaceId]=useState<string|null>(null);
+  const beforeElements=useRef<{panel:V3Panel|'Tools'|null;imageEditing:boolean;effectsId:string|null}|null>(null);
+  const openElements=(tab:ElementsTab,targetId?:string)=>{leaveLayers();if(panel!=='Elements')beforeElements.current={panel,imageEditing,effectsId};closeColorPanel();clearElementPreview();setEffectsId(null);setImageEditing(false);setPanel('Elements');setElementsTab(tab);setElementsReplaceId(targetId??null);};
+  const closeElements=()=>{const previous=beforeElements.current;setElementsReplaceId(null);beforeElements.current=null;setPanel(previous?.panel??null);setImageEditing(previous?.imageEditing??false);setEffectsId(previous?.effectsId??null);};
   const colorTarget=useV3ColorPanel(state=>state.target);
   const [editingBrandFromColor,setEditingBrandFromColor]=useState(false);
   const beforeBrandColor=useRef<{panel:V3Panel|'Tools'|null;imageEditing:boolean}|null>(null);
@@ -55,26 +76,30 @@ export default function V3Editor({designId}:{designId?:string}) {
   const [recoveryNotice,setRecoveryNotice]=useState(false);
   const [exportStatus,setExportStatus]=useState<'idle'|'exporting'|'exported'|'error'>('idle');
   const [isPreviewMode,setIsPreviewMode]=useState(false);
+  useEffect(()=>{if(!layersOpen||isPreviewMode)setLayerPresentation(null);},[layersOpen,isPreviewMode]);
   const wasPreview=useRef(false);
   const previewIntent=useRef(false);
   const ready=session.ready, save=session.save;
-  useEffect(()=>{setExportStatus('idle');setIsPreviewMode(false);setEffectsId(null);closeColorPanel();clearV3StrokeMemory();},[designId]);
+  useV3EditorShortcuts({enabled:ready&&!isPreviewMode});
+  useEffect(()=>{setExportStatus('idle');setIsPreviewMode(false);setLayersOpen(false);beforeLayers.current=null;setEffectsId(null);setElementsReplaceId(null);beforeElements.current=null;closeColorPanel();clearV3StrokeMemory();clearV3Clipboard();},[designId]);
   useEffect(()=>{if(isPreviewMode){closeColorPanel();setEffectsId(null);clearElementPreview();}},[isPreviewMode]);
   useEffect(()=>{previewIntent.current=isPreviewMode;if(isPreviewMode)window.getSelection()?.removeAllRanges();if(wasPreview.current&&!isPreviewMode)document.querySelector<HTMLButtonElement>('[data-v3-preview-trigger]')?.focus();wasPreview.current=isPreviewMode;},[isPreviewMode]);
   useEffect(()=>{
     function key(event:KeyboardEvent){
+      if(event.isComposing||event.keyCode===229)return;
       if(event.key==='Escape'&&isPreviewMode){event.preventDefault();setIsPreviewMode(false);return;}
       if(event.key==='Escape'&&!event.defaultPrevented&&useV3ColorPanel.getState().target&&!(event.target instanceof HTMLElement&&event.target.closest('.v3-element-popover,.v3-color-picker-popover'))){event.preventDefault();closeColorPanel();return;}
+      if(event.key==='Escape'&&!event.defaultPrevented&&layersOpen&&!document.querySelector('[role="menu"]')){event.preventDefault();closeLayers();return;}
       if(event.key==='Escape'&&!event.defaultPrevented&&effectsActive){event.preventDefault();clearElementPreview();setEffectsId(null);return;}
-      const target=event.target;if(target instanceof HTMLElement&&(target.closest('input,textarea,select')||target.isContentEditable))return;
-      if(ready&&event.key.toLowerCase()==='p'&&!event.ctrlKey&&!event.metaKey&&!event.altKey){event.preventDefault();setIsPreviewMode(value=>!value);return;}
+      const target=event.target;if(event.defaultPrevented||event.altKey||document.querySelector('[role="dialog"]:not([aria-hidden="true"]),[role="alertdialog"]:not([aria-hidden="true"]),[role="menu"]:not([aria-hidden="true"])')||target instanceof Element&&(target.closest('input,textarea,select,[contenteditable]:not([contenteditable="false"]),[role="menu"],[role="dialog"],[role="alertdialog"],[role="combobox"],[role="slider"],[role="spinbutton"]')))return;
+      if(ready&&event.key.toLowerCase()==='p'&&!event.ctrlKey&&!event.metaKey&&!event.altKey&&!event.shiftKey){event.preventDefault();setIsPreviewMode(value=>!value);return;}
       if(isPreviewMode||!ready||!(event.ctrlKey||event.metaKey))return;
       if(event.key.toLowerCase()==='s'){event.preventDefault();void save();}
       if(event.key.toLowerCase()==='z'){event.preventDefault();event.shiftKey?redo():undo();}
       if(event.key.toLowerCase()==='y'){event.preventDefault();redo();}
     }
     window.addEventListener('keydown',key);return()=>window.removeEventListener('keydown',key);
-  },[ready,save,undo,redo,isPreviewMode,effectsActive]);
+  },[ready,save,undo,redo,isPreviewMode,effectsActive,layersOpen]);
   async function exportDesign(){if(!ready||exportStatus==='exporting')return;setExportStatus('exporting');try{setExportStatus(await downloadCanvas(session.title||'design','png')?'exported':'error');}catch{setExportStatus('error');}}
   async function placeTemplate(template:Template){
     setAssistantError(null);
@@ -108,18 +133,19 @@ export default function V3Editor({designId}:{designId?:string}) {
       {exportStatus==='exported'&&<p role="status" className="v3-alert">PNG exported</p>}
     </div>
     <div className="v3-body">
-      <nav aria-label="Editor sections" className="v3-rail" hidden={isPreviewMode}>{rail.map(([name,Icon])=><button key={name} disabled={!ready} aria-pressed={!colorActive&&!imageEditing&&!effectsActive&&panel===name} onClick={()=>{closeColorPanel();closeEffects();setEditingBrandFromColor(false);setImageEditing(false);setPanel(panel===name?null:name);}}><Icon/>{name}</button>)}</nav>
-      <aside className="v3-panel" hidden={!ready||isPreviewMode||(!colorActive&&!imageEditing&&!effectsActive&&(panel===null||panel==='Tools'))} aria-label={colorActive?'Color panel':effectsActive?'Effects panel':imageEditing?'Image editing panel':panel&&panel!=='Tools'?`${panel} panel`:undefined}>
-        <div hidden={colorActive||imageEditing||effectsActive}>{ready&&panel&&panel!=='Tools'&&<V3Panels panel={panel} userId={user?String(user.id):''} onClose={()=>{if(editingBrandFromColor){const previous=beforeBrandColor.current;if(previous){setPanel(previous.panel);setImageEditing(previous.imageEditing);}beforeBrandColor.current=null;setEditingBrandFromColor(false);}else setPanel(null);}}/>}</div>
-        <div hidden={colorActive||imageEditing||effectsActive||panel!=='Text'}>{ready&&<V3TextInspector suspended={isPreviewMode} isSuspended={()=>previewIntent.current}/>}</div>
+      <nav aria-label="Editor sections" className="v3-rail" hidden={isPreviewMode}>{rail.map(([name,Icon])=><button key={name} disabled={!ready} aria-pressed={!layersOpen&&!colorActive&&!imageEditing&&!effectsActive&&panel===name} onClick={()=>{leaveLayers();if(name==='Elements'){panel==='Elements'&&!colorActive?closeElements():openElements('shapes');return;}closeColorPanel();closeEffects();setElementsReplaceId(null);beforeElements.current=null;setEditingBrandFromColor(false);setImageEditing(false);setPanel(panel===name?null:name);}}><Icon/>{name}</button>)}</nav>
+      <aside className="v3-panel" hidden={!ready||isPreviewMode||(!layersOpen&&!colorActive&&!imageEditing&&!effectsActive&&(panel===null||panel==='Tools'))} aria-label={colorActive?'Color panel':effectsActive?'Effects panel':imageEditing?'Image editing panel':layersOpen?'Layers panel':panel&&panel!=='Tools'?`${panel} panel`:undefined}>
+        <div hidden={layersOpen||colorActive||imageEditing||effectsActive}>{ready&&panel==='Elements'&&<V3ElementsPanel tab={elementsTab} replaceId={elementsReplaceId} onTabChange={tab=>{setElementsTab(tab);if(tab!==elementsTab)setElementsReplaceId(null);}} onClose={closeElements}/>}{ready&&panel&&panel!=='Tools'&&panel!=='Elements'&&<V3Panels panel={panel} userId={user?String(user.id):''} onClose={()=>{if(editingBrandFromColor){const previous=beforeBrandColor.current;if(previous){setPanel(previous.panel);setImageEditing(previous.imageEditing);}beforeBrandColor.current=null;setEditingBrandFromColor(false);}else setPanel(null);}}/>}</div>
+        <div hidden={layersOpen||colorActive||imageEditing||effectsActive||panel!=='Text'}>{ready&&<V3TextInspector suspended={isPreviewMode} isSuspended={()=>previewIntent.current}/>}</div>
+        {ready&&!isPreviewMode&&layersOpen&&!colorActive&&!imageEditing&&!effectsActive&&<V3LayersPanel presentation={layerPresentation} onClose={closeLayers} onEditBackground={()=>openColorPanel({slot:'background'})}/>}
         {ready&&effectsActive&&!colorActive&&selectedShape?.type==='shape'&&<V3EffectsPanel key={selectedShape.id} element={selectedShape} onClose={closeEffects}/>}
         {ready&&imageEditing&&!colorActive&&selectedImage?.type==='image'&&<V3ImageEditor key={selectedImage.id} element={selectedImage} onBack={()=>setImageEditing(false)}/>}
         {ready&&colorActive&&colorTarget&&<V3ColorPanel key={`${colorTarget.elementId??'canvas'}:${colorTarget.slot}`} targetLabel={COLOR_TARGET_LABELS[colorTarget.slot]} currentPaint={getTargetPaint(colorTarget)} designColors={getDesignColors()}
-          brandPalettes={[...builtInPalettes,...loadPalettes()].map(palette=>({...palette,colors:palette.colors.map(color=>({type:'solid' as const,color,opacity:1}))}))} defaultColors={defaultPaintColors} supportsGradients={colorTarget.slot!=='shadow'}
+          brandPalettes={[...builtInPalettes,...loadPalettes()].map(palette=>({...palette,colors:palette.colors.map(color=>({type:'solid' as const,color,opacity:1}))}))} defaultColors={defaultPaintColors} supportsGradients={colorTarget.slot!=='shadow'&&colorTarget.slot!=='icon'}
           onDraft={previewColorPaint} onCommit={commitColorPaint} onCancel={clearColorDraft} onClose={closeColorPanel} onEditBrand={()=>{clearColorDraft();beforeBrandColor.current={panel,imageEditing};setEditingBrandFromColor(true);setImageEditing(false);setPanel('Brand');}}/>}
       </aside>
-      <div className="v3-stage">{ready?<V3Canvas isPreviewMode={isPreviewMode} onAssistant={()=>setAssistant(!assistant)} onEditImage={()=>setImageEditing(true)} onEditEffects={()=>{if(selectedShape){closeColorPanel();setImageEditing(false);setEffectsId(selectedShape.id);}}}/>:<main aria-label="Opening workspace" className="v3-opening"><p>{session.error?'Retry opening to load your design.':'Loading your workspace…'}</p></main>}
-        {!isPreviewMode&&!colorActive&&!effectsActive&&ready&&panel==='Tools'&&<V3Tools onClose={()=>setPanel(null)} onText={addText} onImage={()=>setPanel('Uploads')}/>}
+      <div className="v3-stage">{ready?<V3Canvas isPreviewMode={isPreviewMode} onAssistant={()=>setAssistant(!assistant)} onLayerPresentation={layersOpen?onLayerPresentation:undefined} onOpenLayers={()=>{if(layersOpen&&!colorActive&&!imageEditing&&!effectsActive)closeLayers();else openLayers();}} isLayersSidebarOpen={layersOpen&&!colorActive&&!imageEditing&&!effectsActive} onEditImage={()=>{leaveLayers();setImageEditing(true);}} onEditEffects={()=>{leaveLayers();if(selectedShape){closeColorPanel();setImageEditing(false);setEffectsId(selectedShape.id);}}} onBrowseElements={()=>{const state=useCanvasStore.getState(),target=state.elements.find(el=>el.id===state.selectedElementIds[0]);if(target?.type==='shape')openElements('shapes',target.id);else if(target?.type==='image'&&target.icon)openElements('icons',target.id);}}/>:<main aria-label="Opening workspace" className="v3-opening"><p>{session.error?'Retry opening to load your design.':'Loading your workspace…'}</p></main>}
+        {!layersOpen&&!isPreviewMode&&!colorActive&&!effectsActive&&ready&&panel==='Tools'&&<V3Tools onClose={()=>setPanel(null)} onText={addText} onImage={()=>setPanel('Uploads')} onElements={()=>openElements('shapes')}/>}
         <div hidden={isPreviewMode||!ready||!assistant} className="v3-ai-panel">{assistant&&ready&&<><button aria-label="Close Assistant" className="v3-icon" onClick={()=>setAssistant(false)}><X/></button>{assistantError&&<p role="alert">{assistantError}</p>}<AIChatBox isExpanded={assistant&&!isPreviewMode} onClose={()=>setAssistant(false)} onTemplateLoad={template=>void placeTemplate(template)}/></>}</div>
       </div>
     </div>

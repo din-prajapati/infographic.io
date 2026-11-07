@@ -1,11 +1,22 @@
 import {beforeEach,describe,it,expect} from 'vitest';
 import {useCanvasStore} from '../useCanvasStore';
 import {createShapeElement} from '../../lib/canvasUtils';
-import {openColorPanel,closeColorPanel,previewColorPaint,commitColorPaint,useV3ColorPanel} from '../useV3ColorPanel';
+import {openColorPanel,closeColorPanel,previewColorPaint,commitColorPaint,getDesignColors,useV3ColorPanel} from '../useV3ColorPanel';
 import {useV3ElementPreview} from '../useV3ElementPreview';
+import {createPropertyIcon} from '../../lib/propertyIcons';
 
 beforeEach(()=>{closeColorPanel();useCanvasStore.setState({elements:[],selectedElementIds:[],backgroundColor:'#FFFFFF',backgroundPaint:undefined,history:{past:[],future:[]}});});
 describe('US-EDIT-036 color target controller',()=>{
+  // Contract: icon paint regenerates the embedded SVG, retains its identity, and creates only one completed edit.
+  it('edits icon color through the shared picker without recoloring photos',()=>{
+    const icon=createPropertyIcon('heating');useCanvasStore.setState({elements:[icon],selectedElementIds:[icon.id]});
+    expect(openColorPanel({elementId:icon.id,slot:'icon'})).toBe(true);
+    expect(previewColorPaint({type:'solid',color:'#FF0000',opacity:.5})).toBe(true);expect(useCanvasStore.getState().elements[0]).toBe(icon);
+    expect(commitColorPaint({type:'solid',color:'#FF0000',opacity:.5})).toBe(true);
+    expect(useCanvasStore.getState().elements[0]).toMatchObject({icon:{id:'heating',color:'#FF0000',opacity:.5}});
+    expect(getDesignColors()).toContainEqual({type:'solid',color:'#FF0000',opacity:.5});
+    expect(decodeURIComponent((useCanvasStore.getState().elements[0] as typeof icon).src)).toContain('#FF0000');expect(useCanvasStore.getState().history.past).toHaveLength(1);
+  });
   // Contract: No Color in the Effects color panel removes every colored copy in a layered effect in one undoable edit.
   it.each([true,false])('clears all shadow layers with No Color and restores them on Undo (primary=%s)',primary=>{
     const shadow={color:'#00FFFF',opacity:1,blur:0,offsetX:-6,offsetY:0};

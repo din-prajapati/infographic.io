@@ -14,7 +14,7 @@ import { TemplateSection, PROPERTY_SLOT_FIELDS, AGENT_SLOT_FIELDS, BRAND_SLOT_FI
 import { BrandPaletteDialog, type BrandPalette } from '../BrandPaletteDialog';
 import { AlertDialog, AlertDialogContent, AlertDialogTitle, AlertDialogDescription, AlertDialogCancel } from '../../ui/alert-dialog';
 
-export type V3Panel = 'Templates' | 'Text' | 'Uploads' | 'Brand' | 'Property' | 'Agent';
+export type V3Panel = 'Templates' | 'Text' | 'Uploads' | 'Brand' | 'Property' | 'Agent' | 'Elements';
 
 const textStyles = [
   { name: 'Headline Large', size: 48, weight: 700, color: '#1F1F1F' },

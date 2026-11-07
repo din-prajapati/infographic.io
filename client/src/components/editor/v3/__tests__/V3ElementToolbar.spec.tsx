@@ -15,6 +15,20 @@ Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
 beforeEach(() => { node = document.createElement('div'); document.body.append(node); root = createRoot(node); useCanvasStore.setState({ elements: [], selectedElementIds: [], history: { past: [], future: [] } }); });
 afterEach(() => { act(() => root.unmount()); node.remove(); vi.unstubAllGlobals(); });
 describe('approved compact text toolbar', () => {
+  // Contract: every toolbar keeps its direct common controls and ends in the shared ten-action menu, without a Layers shortcut.
+  it.each([
+    ['text',()=>createTextElement()],['shape',()=>createShapeElement('rectangle')],
+    ['image',()=>createImageElement('photo')],['line',()=>createLineElement('straight',{x:0,y:0},{x:100,y:20})],
+  ] as const)('uses the shared final More menu for %s',async(type,create)=>{
+    vi.stubGlobal('ResizeObserver',class{observe(){}unobserve(){}disconnect(){}});
+    const element=create();useCanvasStore.setState({elements:[element],selectedElementIds:[element.id]});
+    act(()=>root.render(<V3ElementToolbar element={element} onEditImage={()=>{}}/>));
+    const common=[...node.querySelectorAll('.v3-common-actions button')].map(button=>button.getAttribute('aria-label'));
+    expect(common).toEqual(['Lock','Duplicate','Delete',`More ${type} options`]);expect(node.querySelector('[aria-label="Open Layers sidebar"]')).toBeNull();
+    const pointerData={button:0,ctrlKey:false,pointerType:'mouse'};
+    await act(async()=>Simulate.pointerDown(node.querySelector(`[aria-label="More ${type} options"]`)!,pointerData));
+    expect([...document.querySelectorAll('[aria-label="Element actions"] [role="menuitem"]')].map(item=>item.textContent)).toEqual(['Copy','Paste','Duplicate','Delete','Bring forward','Send backward','Bring to front','Send to back','Hide','Lock']);
+  });
   // Contract: shape Effects routes to the sidebar callback instead of creating a local shadow popover.
   it('opens the shape Effects sidebar through the editor callback',async()=>{
     vi.stubGlobal('ResizeObserver', class { observe() {} unobserve() {} disconnect() {} });
@@ -43,12 +57,12 @@ describe('approved compact text toolbar', () => {
     vi.stubGlobal('ResizeObserver', class { observe() {} unobserve() {} disconnect() {} });
     const element={...createTextElement(),content:'miXeD hOME'};useCanvasStore.setState({elements:[element],selectedElementIds:[element.id]});
     const render=()=>root.render(<V3ElementToolbar element={useCanvasStore.getState().elements[0]} onEditImage={()=>{}}/>);
-    act(render);await act(async()=>Simulate.click(node.querySelector('[aria-label="More text options"]')!));
+    act(render);
     for(const [textTransform,icon] of [['uppercase','AA'],['lowercase','aa'],['capitalize','Aa']] as const){
       act(()=>Simulate.click(document.querySelector('button[aria-label="Text case"]')!));act(render);
       expect(useCanvasStore.getState().elements[0]).toMatchObject({textTransform,content:'miXeD hOME'});
       expect(document.querySelector('[aria-label="Text case"]')!.textContent).toBe(icon);
-      expect(document.querySelectorAll('.v3-element-popover')).toHaveLength(1);
+      expect(document.querySelectorAll('.v3-element-popover')).toHaveLength(0);
     }
     expect(useCanvasStore.getState().history.past).toHaveLength(3);
   });
@@ -88,15 +102,17 @@ describe('approved compact text toolbar', () => {
     act(()=>Simulate.click(node.querySelector('[aria-label="Reset image"]')!));
     expect(useCanvasStore.getState().elements[0]).toMatchObject({objectFit:'fill',opacity:1,src:'photo'});
   });
-  // Contract: text uses a single alignment picker, direct list/spacing controls and an inline More icon strip.
+  // Contract: text uses direct formatting buttons and keeps common actions in More.
   it('uses the inspected text control arrangement', async () => {
     vi.stubGlobal('ResizeObserver', class { observe() {} unobserve() {} disconnect() {} });
     const element=createTextElement();useCanvasStore.setState({elements:[element],selectedElementIds:[element.id]});
     act(()=>root.render(<V3ElementToolbar element={element} onEditImage={()=>{}}/>));
-    for(const label of ['Text alignment','List style','Text spacing'])expect(node.querySelector(`[aria-label="${label}"]`)).not.toBe(null);
-    await act(async()=>Simulate.click(node.querySelector('[aria-label="More text options"]')!));
-    expect(document.querySelector('.v3-element-popover--strip')).not.toBe(null);
-    expect(document.querySelector('[aria-label="Text case"]')).not.toBe(null);
+    for(const label of ['Text alignment','List style','Text spacing','Underline','Strikethrough','Text case'])expect(node.querySelector(`[aria-label="${label}"]`)).not.toBe(null);
+    const pointerData={button:0,ctrlKey:false,pointerType:'mouse'};
+    await act(async()=>Simulate.pointerDown(node.querySelector('[aria-label="More text options"]')!,pointerData));
+    expect(document.querySelector('.v3-layer-menu[role=menu]')).not.toBe(null);
+    expect(node.querySelector('[aria-label="Text case"]')).not.toBe(null);
+    expect(document.querySelector('.v3-layer-menu [aria-label="Text case"]')).toBe(null);
   });
   // Contract: line has independent start/end and type pickers and a focused visual stroke control.
   it('uses icon pickers for line controls', async () => {

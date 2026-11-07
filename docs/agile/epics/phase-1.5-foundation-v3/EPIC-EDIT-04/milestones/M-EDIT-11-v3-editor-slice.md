@@ -26,6 +26,11 @@ Approved extension (2026-11-01): draw and edit standalone straight/curved/elbow 
 | 6 | [US-EDIT-036](../stories/US-EDIT-036/STORY.md) | Shared color sidebar, picker and transient paint editing | M | US-EDIT-035 | In Progress - locally verified; merge pending | — |
 | 7 | [US-EDIT-037](../stories/US-EDIT-037/STORY.md) | Compact stroke styling and line-type menus | M | US-EDIT-035/036 | In Progress - locally verified; merge pending | — |
 | 8 | [US-EDIT-038](../stories/US-EDIT-038/STORY.md) | Annotated Effects, opacity, text-anchor and image-Fit refinements | M | existing US-EDIT-031–037 runtime | 🔲 | — |
+| 9 | [US-EDIT-039](../stories/US-EDIT-039/STORY.md) | Common element actions and V3 keyboard parity | M | existing checkpoint and coordinated shared seams | 🟡 Locally verified; merge pending | — |
+| 10 | [US-EDIT-040](../stories/US-EDIT-040/STORY.md) | Compact shape editing and existing-shape library | M | existing checkpoint and coordinated shared seams | 🟡 Locally verified; merge pending | — |
+| 11 | [US-EDIT-041](../stories/US-EDIT-041/STORY.md) | Property SVG icon and emoji library | M | existing checkpoint and coordinated shared seams | 🟡 Locally verified; merge pending | — |
+| 12 | [US-EDIT-042](../stories/US-EDIT-042/STORY.md) | Stable layer ordering, overlap geometry and row actions | M | existing checkpoint; 043 consumes042 helpers | 🟡 Locally verified; merge pending | — |
+| 13 | [US-EDIT-043](../stories/US-EDIT-043/STORY.md) | Layers sidebar with actual previews, row menus and drag ordering | M | existing checkpoint; 043 consumes042 helpers | 🟡 Locally verified; merge pending | — |
 
 ## Acceptance (Milestone Done When…)
 
@@ -62,3 +67,5 @@ Implemented and verified locally: standalone lines, old-editor toolbar parity, i
 - 2026-11-05: US-EDIT-035-037 implemented locally against the approved color/paint plan. Type checks, 1,425 unit tests and 89 browser cases pass; six themed screenshots retained. [Evidence](../../../../../../Mockups/approved-v3-editor/COLOR_PAINT_VERIFICATION.md). Existing work preserved; no commit, push, merge or deployment. Formal Done remains pending milestone merge.
 
 - 2026-11-05: US-EDIT-038 implemented locally for the four browser annotations. Shape Effects sidebar and seven named presets, clean opacity suffix, anchor guidance and V3 image-frame resizing are verified. Frontend/API type checks, 1,445 unit tests and 98 browser cases passed; five captures retained in Mockups/approved-v3-editor/evidence. Formal Done and milestone merge remain pending. No commit, push, merge or deployment.
+
+- 2026-11-07 annotation revision: footer Layers now opens the full sidebar, toolbar Layers shortcut removed, shared row/toolbar action menu implemented. Element-specific controls inventoried in LAYERS_VERIFICATION.md. Type checks +1,515 unit tests pass;124 distinct browser contracts verified across full run and final28/28 affected rerun. No Arrange, commit, push or merge; formal delivery pending.
