@@ -8,10 +8,18 @@ import type {LayerPresentation} from './V3LayersPanel';
 import './v3-arrange-panel.css';
 
 export type V3SidebarTab='arrange'|'layers';
+/** Shared by the Arrange and Layers views; only one is rendered at a time. */
+export const V3_SIDEBAR_VIEW_ID='v3-sidebar-view';
 
 export function V3SidebarTabs({active,onChange}:{active:V3SidebarTab;onChange:(tab:V3SidebarTab)=>void}){
-  return <div className="v3-sidebar-tabs" role="tablist" aria-label="Sidebar views">
-    {(['arrange','layers'] as const).map(tab=><button key={tab} type="button" role="tab" aria-selected={active===tab} onClick={()=>onChange(tab)}>{tab==='arrange'?'Arrange':'Layers'}</button>)}
+  const tabs=['arrange','layers'] as const;
+  const onKeyDown=(event:React.KeyboardEvent<HTMLDivElement>)=>{
+    const index=tabs.indexOf(active),next=event.key==='ArrowRight'?tabs[(index+1)%tabs.length]:event.key==='ArrowLeft'?tabs[(index+tabs.length-1)%tabs.length]:event.key==='Home'?tabs[0]:event.key==='End'?tabs[tabs.length-1]:null;
+    if(!next)return;event.preventDefault();onChange(next);
+    requestAnimationFrame(()=>event.currentTarget?.querySelector<HTMLButtonElement>(`[data-sidebar-tab="${next}"]`)?.focus());
+  };
+  return <div className="v3-sidebar-tabs" role="tablist" aria-label="Sidebar views" onKeyDown={onKeyDown}>
+    {tabs.map(tab=><button key={tab} type="button" role="tab" data-sidebar-tab={tab} aria-selected={active===tab} aria-controls={active===tab?V3_SIDEBAR_VIEW_ID:undefined} tabIndex={active===tab?0:-1} onClick={()=>onChange(tab)}>{tab==='arrange'?'Arrange':'Layers'}</button>)}
   </div>;
 }
 
@@ -53,10 +61,10 @@ export function V3ArrangePanel({onClose,tabs,presentation}:{onClose:()=>void;tab
   }
   const field=(name:V3GeometryField,label:string,prefix:string,suffix?:string)=>{
     const enabled=!!single&&v3GeometryFieldEnabled(single,name);
-    return <GeometryField label={label} prefix={prefix} suffix={suffix} value={shown?.[name]} disabled={!enabled}
+    return <GeometryField key={`${name}:${singleId??'none'}`} label={label} prefix={prefix} suffix={suffix} value={shown?.[name]} disabled={!enabled}
       title={single&&!enabled?`This line is flat, so it has no ${name} to resize.`:undefined} onCommit={raw=>commit(name,raw)}/>;
   };
-  return <section className="v3-arrange-panel" aria-label="Arrange sidebar">
+  return <section id={V3_SIDEBAR_VIEW_ID} className="v3-arrange-panel" aria-label="Arrange sidebar">
     <header><h2>Arrange</h2><button type="button" aria-label="Close Arrange sidebar" onClick={onClose}><X/></button></header>
     {tabs}
     <div className="v3-arrange-body">

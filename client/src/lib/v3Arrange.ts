@@ -2,7 +2,7 @@ import { useCanvasStore } from '../hooks/useCanvasStore';
 import { clearElementPreview } from '../hooks/useV3ElementPreview';
 import type { CanvasElement, LineElement } from './canvasTypes';
 import { normalizedAngle } from './elementStyles';
-import { lineCommands } from './lineGeometry';
+import { lineCommands, normalizeLineElement } from './lineGeometry';
 import { commitElementPatch } from './v3ElementEditing';
 import { getV3ElementBounds, type V3LayerBounds } from './v3LayerGeometry';
 
@@ -80,11 +80,21 @@ function parse(raw: string): number | null {
 
 const LABELS: Record<V3GeometryField, string> = { x: 'X', y: 'Y', width: 'width', height: 'height', rotation: 'rotation' };
 
+/** Scale a line's path to the requested span. Normalizing first keeps legacy, un-normalized paths fixed in the world. */
 function scaledLinePatch(element: LineElement, width: number, height: number): Partial<LineElement> {
-  const sx = width / element.width, sy = height / element.height;
+  const base = normalizeLineElement(element), spanX = lineSpan(base, 'x'), spanY = lineSpan(base, 'y');
+  const sx = spanX > EPSILON ? width / spanX : 1, sy = spanY > EPSILON ? height / spanY : 1;
   const scale = (point: { x: number; y: number }) => ({ x: point.x * sx, y: point.y * sy });
-  return { width, height, start: scale(element.start), end: scale(element.end), control: scale(element.control),
-    elbowOffset: element.elbowOffset * (element.elbowAxis === 'horizontal' ? sx : sy) };
+  return { x: base.x, y: base.y, width: spanX > EPSILON ? width : base.width, height: spanY > EPSILON ? height : base.height,
+    start: scale(base.start), end: scale(base.end), control: scale(base.control),
+    elbowOffset: base.elbowOffset * (base.elbowAxis === 'horizontal' ? sx : sy) };
+}
+
+/** Width/height as shown to the user: the path span for lines, the frame for everything else. */
+function currentSize(element: CanvasElement): { width: number; height: number } {
+  if (element.type !== 'line') return { width: element.width, height: element.height };
+  const base = normalizeLineElement(element);
+  return { width: lineSpan(base, 'x') || base.width, height: lineSpan(base, 'y') || base.height };
 }
 
 /** Validate one numeric field and commit it through the single-element edit path (one history entry). */
@@ -103,10 +113,13 @@ export function commitV3Geometry(id: string, field: V3GeometryField, raw: string
   } else {
     const range = `between ${SIZE_MIN} and ${SIZE_MAX}`;
     if (value < SIZE_MIN || value > SIZE_MAX) return { status: 'invalid', message: `Enter a ${LABELS[field]} ${range}.` };
-    let width = field === 'width' ? value : element.width, height = field === 'height' ? value : element.height;
-    if (ratioLocked) {
-      if (field === 'width') height = element.height * value / element.width;
-      else width = element.width * value / element.height;
+    const size = currentSize(element);
+    let width = field === 'width' ? value : size.width, height = field === 'height' ? value : size.height;
+    // The lock only scales an axis that can be resized; a flat line keeps its zero span.
+    const other = field === 'width' ? 'height' : 'width';
+    if (ratioLocked && v3GeometryFieldEnabled(element, other)) {
+      if (field === 'width') height = size.height * value / size.width;
+      else width = size.width * value / size.height;
       if (width < SIZE_MIN || width > SIZE_MAX || height < SIZE_MIN || height > SIZE_MAX) return { status: 'invalid', message: `Keeping the aspect ratio needs both sides ${range}.` };
     }
     patch = element.type === 'line' ? scaledLinePatch(element, width, height) : { width, height };

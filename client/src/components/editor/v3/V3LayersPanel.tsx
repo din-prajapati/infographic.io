@@ -67,7 +67,7 @@ export function V3LayersPanel({onClose,onEditBackground,presentation,tabs}:{onCl
     if(element&&!element.locked&&anchor&&source.order===orderedV3Layers(current.elements).map(item=>`${item.id}:${item.zIndex}`).join('|')&&reorderV3Layer(source.id,anchorId,placement))setAnnouncement(`Moved ${element.name} ${placement} ${anchor.name}.`);
     cancelDrag();
   }
-  return <section ref={panel} className="v3-layers-panel" aria-label="Layers sidebar">
+  return <section ref={panel} id="v3-sidebar-view" className="v3-layers-panel" aria-label="Layers sidebar">
     <header><h2>Layers</h2><button type="button" aria-label="Close Layers sidebar" onClick={onClose}><X/></button></header>
     {tabs}
     <div className="v3-layers-filters" role="tablist" aria-label="Layer filters">{(['all','overlapping'] as const).map(value=><button type="button" role="tab" key={value} aria-label={value==='all'?'All':'Overlapping'} aria-selected={filter===value} onClick={()=>{cancelDrag();setFilter(value);}}>{value==='all'?'All':'Overlapping'}</button>)}</div>

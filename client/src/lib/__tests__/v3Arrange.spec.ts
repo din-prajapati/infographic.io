@@ -176,6 +176,29 @@ describe('V3 Arrange size and position (E1-E7)', () => {
     expect(after.height).toBeCloseTo(before.height, 6);
   });
 
+  it('ignores the ratio lock on a flat line axis so a locked shrink still succeeds (review R2)', () => {
+    const flat = { ...createLineElement('straight', { x: 100, y: 100 }, { x: 300, y: 100 }), id: 'flat' } as LineElement;
+    load([flat], ['flat']);
+    expect(commitV3Geometry('flat', 'width', '100', true)).toEqual({ status: 'committed' });
+    expect([get('flat').width, (get('flat') as LineElement).end.x, get('flat').x]).toEqual([100, 100, 100]);
+  });
+
+  it('scales elbow offsets and keeps legacy un-normalized paths fixed in the world (review S3)', () => {
+    const elbow = { ...createLineElement('elbow', { x: 0, y: 0 }, { x: 200, y: 100 }), id: 'elbow' } as LineElement;
+    load([elbow], ['elbow']);
+    expect(commitV3Geometry('elbow', 'width', '400', false)).toEqual({ status: 'committed' });
+    expect((get('elbow') as LineElement).elbowOffset).toBeCloseTo(elbow.elbowOffset * 2, 6);
+    expect(get('elbow').width).toBeCloseTo(400, 6);
+    // Legacy line: path spans local x 10..90 inside a 100-wide frame at x=0, i.e. world x 10..90.
+    const legacy = { ...createLineElement('straight', { x: 0, y: 0 }, { x: 80, y: 0 }), id: 'legacy', x: 0, width: 100, start: { x: 10, y: 0 }, end: { x: 90, y: 0 }, control: { x: 50, y: 0 } } as LineElement;
+    load([legacy], ['legacy']);
+    expect(commitV3Geometry('legacy', 'width', '160', false)).toEqual({ status: 'committed' });
+    const after = get('legacy') as LineElement;
+    expect(after.width).toBeCloseTo(160, 6);
+    expect(after.x + after.start.x).toBeCloseTo(10, 6);
+    expect(after.x + after.end.x).toBeCloseTo(170, 6);
+  });
+
   it('blocks numeric edits for locked, hidden, multi or stale selections', () => {
     load([shape('a', 0, 0, 100, 100, { locked: true }), shape('b', 0, 0)], ['a']);
     expect(commitV3Geometry('a', 'x', '5', false).status).toBe('blocked');

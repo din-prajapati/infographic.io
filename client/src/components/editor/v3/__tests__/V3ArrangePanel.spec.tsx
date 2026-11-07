@@ -63,6 +63,7 @@ describe('V3 Arrange panel',()=>{
   load(useCanvasStore.getState().elements,['back']);
   const width=input('Width');expect(width.value).toBe('200');expect(input('X position').value).toBe('100');
   type(width,'300');key(width,'Enter');expect(get('back').width).toBe(300);expect(past()).toBe(1);expect(width.value).toBe('300');
+  act(()=>Simulate.blur(width));expect(past()).toBe(1); // Enter then blur is one entry
   type(width,'999');expect(key(width,'Escape')).toBe(false);
   expect(width.value).toBe('300');expect(get('back').width).toBe(300);expect(past()).toBe(1);
   expect(key(width,'Escape')).toBe(true); // a clean field lets Escape reach the sidebar
@@ -81,6 +82,14 @@ describe('V3 Arrange panel',()=>{
   expect([get('back').width,get('back').height]).toEqual([400,200]);expect(input('Height').value).toBe('200');
   load(useCanvasStore.getState().elements,['front']);
   expect(button('Lock aspect ratio').getAttribute('aria-pressed')).toBe('false');
+ });
+ it('review R1: a draft left in a field is discarded, never committed, when the selection changes',()=>{
+  load(useCanvasStore.getState().elements,['back']);
+  type(input('Width'),'250');
+  load(useCanvasStore.getState().elements,['front']);
+  expect(input('Width').value).toBe('200');
+  act(()=>Simulate.blur(input('Width')));key(input('Width'),'Enter');
+  expect([get('back').width,get('front').width]).toEqual([200,200]);expect(past()).toBe(0);
  });
  it('E7: disables the zero-span dimension of a flat line',()=>{
   const line={...createLineElement('straight',{x:100,y:100},{x:300,y:100}),id:'line'} as CanvasElement;
@@ -102,5 +111,8 @@ describe('V3 sidebar tabs',()=>{
   const tabs=[...host.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
   expect(tabs.map(tab=>[tab.textContent,tab.getAttribute('aria-selected')])).toEqual([['Arrange','false'],['Layers','true']]);
   act(()=>Simulate.click(tabs[0]));expect(onChange).toHaveBeenCalledWith('arrange');
+  expect(tabs.map(tab=>tab.tabIndex)).toEqual([-1,0]);expect(tabs[1].getAttribute('aria-controls')).toBe('v3-sidebar-view');
+  key(tabs[1],'ArrowRight');expect(onChange).toHaveBeenLastCalledWith('arrange');
+  key(tabs[1],'Home');expect(onChange).toHaveBeenLastCalledWith('arrange');
  });
 });
