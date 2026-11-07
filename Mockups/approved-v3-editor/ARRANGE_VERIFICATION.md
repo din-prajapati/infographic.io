@@ -74,6 +74,64 @@ Every clause is binary and covered by at least one test listed in the evidence s
 | `e2e/v3-layers-panel.spec.ts` | Replaces the "no Arrange tab" assertion with "no Arrange controls on the Layers tab" (A3) |
 | `e2e/v3-slice.config.ts` | Registers the new spec |
 
-## Evidence
+## Evidence — 2026-11-07
 
-_Filled in after the gates run._
+### Commits on `codex/v3-arrange-opus`
+
+| Commit | Task |
+|---|---|
+| `5388741` | T1: contract, `v3Arrange` module, unit tests |
+| `0b427a6` | T2: Arrange panel, sidebar tabs, V3Editor integration |
+| `25cc487` | T3: browser contracts, config, Layers assertion update |
+| `701415b` | T4: fixes from the Opus review, plus regression tests |
+| (this commit) | T5: this evidence record and retained screenshots |
+
+### Gates (final tree, after T4)
+
+| Gate | Result |
+|---|---|
+| Baseline at `9b8cc70`, before any change | `npm run check` passes; 811 API + 704 client unit tests, 1 existing skip |
+| Gate 1: `npm run check` | Pass (frontend + API) |
+| Gate 1: `npm run test:unit` | 811 API + **730** client unit tests pass, 1 existing skip. That is +26 new: 16 in `v3Arrange.spec.ts`, 10 in `V3ArrangePanel.spec.tsx` |
+| Gate 3: `npx playwright test --config=e2e/v3-slice.config.ts` | **129/129 passed in one full invocation** (6.7 min): the 124 prior contracts plus 5 new `v3-arrange.spec.ts` cases. Unlike the Layers baseline, this is a single all-green run |
+| Gate 2: visual | Dark and light at 1242×668 and 1440×900. Every Arrange control sits inside the sidebar, and the screenshots were inspected |
+| Gate 4 | Not applicable: no backend, schema or auth change |
+
+The same suite was also all green (129/129) before the review fixes. The T4 regression tests fail against the T2 code (4 failed) and pass after T4.
+
+### Clause coverage
+
+| Clauses | Tests |
+|---|---|
+| A1–A6 | e2e "footer Layers stays the entry…"; unit "A2 exposes Arrange and Layers tabs"; Layers e2e assertion update |
+| B1–B3 | unit eligibility; panel "B1/B2"; e2e locked selection |
+| C1–C2 | panel "C1/C2"; e2e To front plus saved zIndex |
+| D1–D5 | unit single, rotated, multi, preservation, line bounds, no-op; e2e alignment, one-step Undo, save/reload, PNG pixels |
+| E1–E8 | unit X/Y, invalid input, ratio, rotation, text, lines, locked, flat-line ratio, elbow/legacy lines; panel Enter/Escape/blur, ratio reset, flat line, live presentation, stale draft; e2e numeric fields |
+| F1 | the full prior 124-case V3 suite still passes, including Layers drag/menus/overlap, toolbar type-specific controls, shortcuts, Preview and the legacy-default route |
+
+### Retained evidence
+
+`evidence/arrange-dark-1242.png`, `arrange-dark-1440.png`, `arrange-light-1242.png`, `arrange-light-1440.png`, and `arrange-aligned-export.png` (the exported PNG checked by pixel sampling).
+
+### Independent review
+
+`reviewer-agent` ran with an explicit `model: opus` override, which takes precedence over its `claude-sonnet-4-6` pin. The report's first line states its own model ID: **`claude-opus-5-5`**.
+
+Verdict: Request Changes. Two required findings and three suggestions, all addressed in T4:
+
+1. A dirty field could commit to a newly selected element. Fix: fields are keyed by the target element, so the draft is discarded.
+2. The ratio lock rejected a locked shrink on a flat line. Fix: the lock now skips a zero-span axis.
+3. Line resize used the stored frame width instead of the path span. Fix: it now scales the normalized span, and legacy paths stay fixed in the world.
+4. Test gaps. Fix: added Enter-then-blur, elbow and legacy line tests.
+5. Tab accessibility. Fix: roving tabindex, arrow/Home/End keys and `aria-controls` added.
+
+The fixes have not been re-reviewed.
+
+### Limitations and open decisions
+
+- Save/reload is proven only against intercepted (mocked) API routes. That is not proof of authenticated database persistence.
+- A typed, uncommitted value is **discarded** if the selection changes before Enter or blur. This was chosen for safety and is open for a user decision.
+- The Layers view now shows two adjacent tablists: `Sidebar views` (Arrange/Layers) and `Layer filters` (All/Overlapping). The Arrange and Layers sections are not marked as `role="tabpanel"`, to avoid changing the Layers landmark. Both points are open for a design decision.
+- Fields show values rounded to one decimal. Commits use the exact typed value.
+- No ORION story card or harden lock exists for this work, by user decision. Formal Done and merge remain unauthorized: no push, merge or deploy was done.
