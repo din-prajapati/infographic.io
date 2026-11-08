@@ -1,0 +1,134 @@
+{
+  "outcome": "PASS",
+  "origin": "http://127.0.0.1:5000",
+  "checks": [
+    {
+      "label": "ui-created",
+      "id": "cmw7jxvgz0001gpf0t6gewl1d",
+      "artworkSha256": "da662d0f8891611a9092e8ace0f250baec47de8d45a59198d901c12c5472232a",
+      "exactDatabaseAndApiDocument": true,
+      "freshContextNoDraftOrQueryCache": true
+    },
+    "Real two-second idle autosave updates the same database row; no duplicate design",
+    {
+      "label": "rich-design",
+      "id": "cmw7jy2tg0003gpf0jybt92t9",
+      "artworkSha256": "1d8e416a312c1321c4a26f486733136ab4bb200925f5bf0d02e7497f54b33560",
+      "exactDatabaseAndApiDocument": true,
+      "freshContextNoDraftOrQueryCache": true
+    },
+    "Both designs listed by the real authenticated Projects API"
+  ],
+  "trace": [
+    {
+      "source": "independent-http",
+      "method": "GET",
+      "path": "/health",
+      "status": 200
+    },
+    {
+      "source": "independent-http",
+      "method": "POST",
+      "path": "/auth/login",
+      "status": 200
+    },
+    {
+      "source": "real-browser",
+      "method": "POST",
+      "path": "/api/v1/designs",
+      "status": 201
+    },
+    {
+      "source": "independent-http",
+      "method": "GET",
+      "path": "/designs/cmw7jxvgz0001gpf0t6gewl1d",
+      "status": 200
+    },
+    {
+      "source": "real-browser",
+      "method": "GET",
+      "path": "/api/v1/designs/cmw7jxvgz0001gpf0t6gewl1d",
+      "status": 200
+    },
+    {
+      "source": "real-browser",
+      "method": "PUT",
+      "path": "/api/v1/designs/cmw7jxvgz0001gpf0t6gewl1d",
+      "status": 200
+    },
+    {
+      "source": "independent-http",
+      "method": "POST",
+      "path": "/designs",
+      "status": 201
+    },
+    {
+      "source": "real-browser",
+      "method": "GET",
+      "path": "/api/v1/designs/cmw7jy2tg0003gpf0jybt92t9",
+      "status": 200
+    },
+    {
+      "source": "real-browser",
+      "method": "PUT",
+      "path": "/api/v1/designs/cmw7jy2tg0003gpf0jybt92t9",
+      "status": 200
+    },
+    {
+      "source": "independent-http",
+      "method": "GET",
+      "path": "/designs/cmw7jy2tg0003gpf0jybt92t9",
+      "status": 200
+    },
+    {
+      "source": "real-browser",
+      "method": "GET",
+      "path": "/api/v1/designs/cmw7jy2tg0003gpf0jybt92t9",
+      "status": 200
+    },
+    {
+      "source": "independent-http",
+      "method": "GET",
+      "path": "/designs",
+      "status": 200
+    }
+  ],
+  "comparisons": [
+    {
+      "label": "ui-created: editor artboard before/reopened",
+      "sameDimensions": true,
+      "width": 1200,
+      "height": 800,
+      "differentPixels": 0,
+      "totalPixels": 960000
+    },
+    {
+      "label": "ui-created: PNG export before/reopened",
+      "sameDimensions": true,
+      "width": 2400,
+      "height": 1600,
+      "differentPixels": 0,
+      "totalPixels": 3840000
+    },
+    {
+      "label": "rich-design: editor artboard before/reopened",
+      "sameDimensions": true,
+      "width": 800,
+      "height": 600,
+      "differentPixels": 0,
+      "totalPixels": 480000
+    },
+    {
+      "label": "rich-design: PNG export before/reopened",
+      "sameDimensions": true,
+      "width": 1600,
+      "height": 1200,
+      "differentPixels": 0,
+      "totalPixels": 1920000
+    }
+  ],
+  "browserErrors": [],
+  "galleryRouting": "Existing My Designs handler opens /editor?designId=… (legacy default). V3 reopen was verified explicitly with editor=v3; default routing was not changed.",
+  "cleanup": "Disposable account, organization and their designs removed; existing user data untouched",
+  "finishedAt": "2026-11-08T08:10:25.369Z"
+}

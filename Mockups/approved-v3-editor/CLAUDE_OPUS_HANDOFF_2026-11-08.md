@@ -81,3 +81,7 @@ Fresh verification: frontend/API type checks pass; 811 backend + 751 client unit
 The story's ACs are locally verified; formal Done remains pending review/milestone merge. This result supersedes the earlier 7/8 AC status in historical documents. No implementation of US-EDIT-020/021/022/023/025/026 occurred in this session. Use the latest scoped navigation commit in `git log` as the receiving session's checkpoint.
 
 Navigation checkpoints: initial implementation `0cc5f6a`; final reload-safe correction and evidence `01b6b49`. Final mandatory checks passed on the corrected runtime (1,562 unit passes, one existing skip).
+
+## Fresh real-backend persistence audit — 2026-11-08
+
+The current actual V3 editor has now passed a fresh real-auth/API/Prisma database save/reopen audit, including UI-created first save, same-ID idle autosave and a rich five-element specimen. Fresh browser contexts restored the exact saved artwork; before/reopened artboards and downloaded PNGs had zero differing RGBA pixels for both designs. See [the detailed evidence and limits](LIVE_PERSISTENCE_VERIFICATION_2026-11-08.md). This supersedes the earlier statement that no fresh authenticated persistence smoke was claimed. My Designs still opens the legacy editor by default; verified V3 reopen explicitly uses `editor=v3`. No default change or #4–#9 implementation occurred.
