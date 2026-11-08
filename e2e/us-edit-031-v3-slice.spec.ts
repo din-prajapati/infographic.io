@@ -684,3 +684,19 @@ test('US-EDIT-027 rapid traversals and native editor hashes retain the draft', a
   await expect.poll(() => prompts).toBeGreaterThan(0); await expect(page).toHaveURL(original);
   await expect(page.getByRole('textbox', { name: 'Design title', exact: true })).toHaveValue('RAPID DRAFT');
 });
+
+// Contract: reloading V3 retains consent when Back reaches an earlier same-document SPA entry.
+test('US-EDIT-027 reload preserves dirty Back protection and caller history state', async ({ page }) => {
+  await mockedSession(page); await page.goto('/templates');
+  await page.evaluate(url => history.pushState({ caller: 'survives-reload' }, '', url), URL);
+  await expect(page.getByRole('textbox', { name: 'Design title', exact: true })).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole('textbox', { name: 'Design title', exact: true })).toHaveValue('Mocked saved listing');
+  expect(await page.evaluate(() => history.state)).toEqual({ caller: 'survives-reload' });
+  await page.getByRole('textbox', { name: 'Design title', exact: true }).fill('RELOADED DRAFT');
+  const original = page.url(); let prompts = 0;
+  page.on('dialog', async dialog => { prompts++; await dialog.dismiss(); });
+  await page.evaluate(() => history.back());
+  await expect.poll(() => prompts, { timeout: 5000 }).toBe(1); await expect(page).toHaveURL(original);
+  await expect(page.getByRole('textbox', { name: 'Design title', exact: true })).toHaveValue('RELOADED DRAFT');
+});

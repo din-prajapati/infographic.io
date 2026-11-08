@@ -9,22 +9,30 @@ export function createV3NavigationGuard(target: Window) {
   const originalReplace = history.replaceState;
   const ownState = Object.getOwnPropertyDescriptor(history, 'state');
   const stateGetter = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(history), 'state')!.get!;
-  const key = `__v3History_${Math.random().toString(36).slice(2)}`;
+  const key = '__buildographicV3History';
+  let owner = Math.random().toString(36).slice(2);
   let index = 0;
   let href = target.location.href;
   let restoring: number | null = null;
   let internal = 0;
   let disposed = false;
   const guards = new Set<{ dirty: () => boolean; confirm: () => boolean }>();
-  const stamp = (value: unknown, position: number) => ({ [key]: position, value });
-  const position = (state: unknown): number | undefined => {
+  const stamp = (value: unknown, position: number) => ({ [key]: { owner, position }, value });
+  const metadata = (state: unknown): { owner: string; position: number } | undefined => {
     const value = state && typeof state === 'object' ? (state as Record<string, unknown>)[key] : undefined;
-    return typeof value === 'number' && Number.isSafeInteger(value) ? value : undefined;
+    if (!value || typeof value !== 'object') return;
+    const data = value as { owner?: unknown; position?: unknown };
+    return typeof data.owner === 'string' && typeof data.position === 'number' && Number.isSafeInteger(data.position)
+      ? data as { owner: string; position: number } : undefined;
   };
-  const unwrap = (state: unknown) => position(state) === undefined ? state : (state as { value: unknown }).value;
+  const position = (state: unknown) => { const data = metadata(state); return data?.owner === owner ? data.position : undefined; };
+  // State and same-document history entries persist across a reload.
+  const unwrap = (state: unknown) => metadata(state) ? (state as { value: unknown }).value : state;
   const address = (url: string) => { const value = new URL(url); return value.pathname + value.search; };
   const permitted = () => internal > 0 || [...guards].every(guard => !guard.dirty() || guard.confirm());
-  originalReplace.call(history, stamp(history.state, index), '', href);
+  const previous = metadata(history.state);
+  if (previous) { owner = previous.owner; index = previous.position; }
+  originalReplace.call(history, stamp(unwrap(history.state), index), '', href);
   Object.defineProperty(history, 'state', { configurable: true, get: () => unwrap(stateGetter.call(history)) });
 
   function write(method: 'pushState' | 'replaceState', state: unknown, unused: string, url?: string | URL | null) {
@@ -60,7 +68,7 @@ export function createV3NavigationGuard(target: Window) {
       href = target.location.href;
       return;
     }
-    // Entries from another document are covered by that document's unload.
+    // Entries outside the tracked SPA history chain use document unload.
     if (destination === undefined || destination === index) return;
     if (address(target.location.href) !== address(href) && !permitted()) {
       event.stopImmediatePropagation();

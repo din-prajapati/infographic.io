@@ -53,3 +53,10 @@ it.each([null, 42, 'legacy-state', ['a', 'b'], { app: true }])('preserves public
   const f = setup(); f.clean(); history.replaceState(value, '', location.href);
   expect(history.state).toEqual(value);
 });
+
+// Contract: a reloaded document decodes the previous history envelope without exposing it to application callers.
+it('retains caller state when initializing from a previous document envelope', () => {
+  history.replaceState({ __buildographicV3History: { owner: 'previous-document', position: 12 }, value: { app: 'persisted' } }, '', location.href);
+  const guard = createV3NavigationGuard(window); cleanups.push(guard.dispose);
+  expect(history.state).toEqual({ app: 'persisted' });
+});
