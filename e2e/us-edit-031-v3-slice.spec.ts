@@ -566,3 +566,121 @@ for (const width of [1280, 1440]) for (const theme of ['light', 'dark'] as const
     await expectReadable(title, 'Design title after theme switch');
   });
 }
+
+// AC4 contract: cancelled route/history transitions retain the exact URL and live draft.
+test.describe('US-EDIT-027 central dirty-navigation boundary', () => {
+  async function dirty(page: Page) {
+    await mockedSession(page); await page.goto('/templates');
+    await page.evaluate(url => history.pushState({ retained: 'editor-entry' }, '', url), URL);
+    await expect(page.getByRole('textbox', { name: 'Design title', exact: true })).toBeVisible();
+    await page.getByRole('textbox', { name: 'Design title', exact: true }).fill('KEEP THIS DRAFT');
+  }
+  for (const method of ['pushState', 'replaceState'] as const) {
+    for (const destination of ['/editor', '/editor?editor=v3&designId=c223456789012345678901234']) {
+      test(`${method} rejects dirty switch to ${destination}`, async ({ page }) => {
+        await dirty(page); const original = page.url(); let prompts = 0;
+        page.on('dialog', async dialog => { prompts++; await dialog.dismiss(); });
+        await page.evaluate(({ method, destination }) => history[method]({ retained: 'next' }, '', destination), { method, destination });
+        await expect(page).toHaveURL(original);
+        await expect(page.getByRole('textbox', { name: 'Design title', exact: true })).toHaveValue('KEEP THIS DRAFT');
+        expect(prompts).toBe(1); expect(await page.evaluate(() => history.state.retained)).toBe('editor-entry');
+      });
+    }
+  }
+  test('Back rejects then accepts and reattaches after return', async ({ page }) => {
+    await dirty(page); const original = page.url(); let prompts = 0;
+    const reject = async (dialog: import('@playwright/test').Dialog) => { prompts++; await dialog.dismiss(); };
+    page.on('dialog', reject); await page.evaluate(() => history.back());
+    await expect.poll(() => prompts).toBe(1); await expect(page).toHaveURL(original);
+    await expect(page.getByRole('textbox', { name: 'Design title', exact: true })).toHaveValue('KEEP THIS DRAFT');
+    expect(prompts).toBe(1);
+    page.off('dialog', reject); page.once('dialog', async dialog => { prompts++; await dialog.accept(); });
+    await page.evaluate(() => history.back()); await expect(page).toHaveURL(/\/templates$/); expect(prompts).toBe(2);
+    await page.evaluate(() => history.forward()); await expect(page).toHaveURL(original);
+    await expect(page.getByRole('textbox', { name: 'Design title', exact: true })).toHaveValue('Mocked saved listing');
+    await page.getByRole('textbox', { name: 'Design title', exact: true }).fill('SECOND DRAFT');
+    page.on('dialog', reject); await page.evaluate(() => history.back());
+    await expect.poll(() => prompts).toBe(3); await expect(page).toHaveURL(original);
+    await expect(page.getByRole('textbox', { name: 'Design title', exact: true })).toHaveValue('SECOND DRAFT'); expect(prompts).toBe(3);
+  });
+  test('Forward rejects then accepts; multi-entry go preserves both branches', async ({ page }) => {
+    await mockedSession(page); await page.goto('/templates');
+    await page.evaluate(url => history.pushState({ retained: 'editor-entry' }, '', url), URL);
+    await expect(page.getByRole('textbox', { name: 'Design title', exact: true })).toBeVisible();
+    await page.evaluate(() => history.pushState({}, '', '/account')); await expect(page).toHaveURL(/\/account$/);
+    await page.evaluate(() => history.back()); await expect(page).toHaveURL(new RegExp(`designId=${ID}`));
+    await page.getByRole('textbox', { name: 'Design title', exact: true }).fill('FORWARD DRAFT');
+    const original = page.url(); let prompts = 0;
+    const reject = async (dialog: import('@playwright/test').Dialog) => { prompts++; await dialog.dismiss(); };
+    page.on('dialog', reject); await page.evaluate(() => history.forward()); await expect.poll(() => prompts).toBe(1); await expect(page).toHaveURL(original);
+    await expect(page.getByRole('textbox', { name: 'Design title', exact: true })).toHaveValue('FORWARD DRAFT'); expect(prompts).toBe(1);
+    page.off('dialog', reject); page.once('dialog', async dialog => { prompts++; await dialog.accept(); });
+    await page.evaluate(() => history.forward()); await expect(page).toHaveURL(/\/account$/); expect(prompts).toBe(2);
+    await page.evaluate(() => history.go(-2)); await expect(page).toHaveURL(/\/templates$/);
+    await page.evaluate(() => history.forward()); await expect(page).toHaveURL(original);
+    await page.getByRole('textbox', { name: 'Design title', exact: true }).fill('MULTI DRAFT');
+    await page.evaluate(() => { history.pushState({ extra: 1 }, '', location.href); history.pushState({ extra: 2 }, '', location.href); });
+    page.on('dialog', reject); await page.evaluate(() => history.go(-3)); await expect.poll(() => prompts).toBe(3); await expect(page).toHaveURL(original);
+    await expect(page.getByRole('textbox', { name: 'Design title', exact: true })).toHaveValue('MULTI DRAFT');
+    expect(prompts).toBe(3); expect(await page.evaluate(() => history.state.extra)).toBe(2);
+  });
+  test('Projects prompts once and clean navigation prompts zero times', async ({ page }) => {
+    await dirty(page); let prompts = 0;
+    page.on('dialog', async dialog => { prompts++; await dialog.accept(); });
+    await page.getByRole('link', { name: 'Projects', exact: true }).click(); await expect(page).toHaveURL(/\/my-designs$/); expect(prompts).toBe(1);
+    await page.evaluate(url => history.pushState({}, '', url), URL);
+    await expect(page.getByRole('textbox', { name: 'Design title', exact: true })).toHaveValue('Mocked saved listing');
+    await page.evaluate(() => history.replaceState({}, '', '/templates')); await expect(page).toHaveURL(/\/templates$/); expect(prompts).toBe(1);
+  });
+});
+
+// Contract: native hash entries made before opening V3 remain guarded Back destinations.
+test('US-EDIT-027 native hash predecessor stays in history after cancelled Back', async ({ page }) => {
+  await mockedSession(page); await page.goto('/templates');
+  await page.evaluate(() => { location.hash = 'listing'; }); await expect(page).toHaveURL(/templates#listing$/);
+  await page.evaluate(url => history.pushState(null, '', url), URL);
+  await expect(page.getByRole('textbox', { name: 'Design title', exact: true })).toBeVisible();
+  await page.getByRole('textbox', { name: 'Design title', exact: true }).fill('HASH DRAFT');
+  const original = page.url(); let prompts = 0;
+  page.on('dialog', async dialog => { prompts++; await dialog.dismiss(); });
+  await page.evaluate(() => history.back()); await expect.poll(() => prompts).toBe(1); await expect(page).toHaveURL(original);
+  await expect(page.getByRole('textbox', { name: 'Design title', exact: true })).toHaveValue('HASH DRAFT'); expect(prompts).toBe(1);
+});
+
+
+
+// Contract: accepting programmatic transitions reaches the requested design or legacy editor once.
+test('US-EDIT-027 accepts programmatic design switch and legacy opt-out', async ({ page }) => {
+  await mockedSession(page); await open(page);
+  let prompts = 0; page.on('dialog', async dialog => { prompts++; await dialog.accept(); });
+  await page.getByRole('textbox', { name: 'Design title', exact: true }).fill('LEAVING');
+  const next = '/editor?editor=v3&designId=c223456789012345678901234';
+  await page.evaluate(next => history.pushState({ app: 8 }, '', next), next);
+  await expect(page).toHaveURL(new RegExp('designId=c223456789012345678901234$')); expect(prompts).toBe(1);
+  // Fixture deliberately returns the old ID: accepted route must open the new
+  // session and expose its canonical-ID safety error rather than reuse the draft.
+  await expect(page.getByRole('alert')).toContainText('The server returned a different design ID');
+  await page.evaluate(url => history.replaceState({}, '', url), URL);
+  await expect(page.getByRole('textbox', { name: 'Design title', exact: true })).toHaveValue('Mocked saved listing');
+  await page.getByRole('textbox', { name: 'Design title', exact: true }).fill('LEGACY EXIT');
+  await page.evaluate(() => history.replaceState(null, '', '/editor'));
+  await expect(page).toHaveURL(/\/editor$/); expect(prompts).toBe(2);
+});
+
+// Contract: two rapid Back requests cannot unmount a rejected dirty editor.
+test('US-EDIT-027 rapid traversals and native editor hashes retain the draft', async ({ page }) => {
+  await mockedSession(page); await page.goto('/templates');
+  await page.evaluate(() => history.pushState({}, '', '/account'));
+  await page.evaluate(url => history.pushState({}, '', url), URL);
+  await expect(page.getByRole('textbox', { name: 'Design title', exact: true })).toBeVisible();
+  await page.getByRole('textbox', { name: 'Design title', exact: true }).fill('RAPID DRAFT');
+  let prompts = 0; page.on('dialog', async dialog => { prompts++; await dialog.dismiss(); });
+  await page.evaluate(() => { location.hash = 'canvas'; }); await expect(page).toHaveURL(/#canvas$/);
+  expect(prompts).toBe(0);
+  await page.evaluate(() => history.back()); await expect(page).toHaveURL(new RegExp(`designId=${ID}$`));
+  expect(prompts).toBe(0);
+  const original = page.url();
+  await page.evaluate(() => { history.back(); history.back(); });
+  await expect.poll(() => prompts).toBeGreaterThan(0); await expect(page).toHaveURL(original);
+  await expect(page.getByRole('textbox', { name: 'Design title', exact: true })).toHaveValue('RAPID DRAFT');
+});

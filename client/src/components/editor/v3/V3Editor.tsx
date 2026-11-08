@@ -120,8 +120,8 @@ export default function V3Editor({designId}:{designId?:string}) {
   const addText=()=>{const el=createTextElement();addElement(el);selectElement(el.id);useCanvasStore.getState().setActiveTool('select');setPanel('Text');};
   return <div className="v3-editor" data-theme={resolvedTheme}>
     <h1 className="sr-only">V3 Editor</h1>
-    <header className="v3-header" hidden={isPreviewMode}><a href="/my-designs" className="v3-logo" onClick={event=>{if(!session.confirmNavigation())event.preventDefault();}}><img src="/logo-icon-option6-light.png" alt="" width="28" height="28"/>Buildographic</a>
-      <Link href="/my-designs" className="v3-projects" onClick={event=>{if(!session.confirmNavigation())event.preventDefault();}}><ArrowLeft/>Projects</Link>
+    <header className="v3-header" hidden={isPreviewMode}><Link href="/my-designs" className="v3-logo"><img src="/logo-icon-option6-light.png" alt="" width="28" height="28"/>Buildographic</Link>
+      <Link href="/my-designs" className="v3-projects"><ArrowLeft/>Projects</Link>
       <div className="v3-title-wrap"><span aria-hidden="true" className="v3-title-measure">{session.title || 'Untitled design'}</span><input aria-label="Design title" className="v3-title" size={1} value={session.title} disabled={!ready} onChange={event=>session.setTitle(event.target.value)}/></div>
       <div className="v3-cloud-wrap"><button className="v3-icon" aria-label="Save status" aria-expanded={cloud} onClick={()=>setCloud(!cloud)}>{status==='Saved'?<Cloud/>:<CloudUpload/>}</button><span className="sr-only" role="status">{status}</span>
         {cloud&&<section className="v3-popover v3-cloud" aria-label="Save status details"><h2>{status==='Saved'?'Changes saved':status==='Saving…'?'Saving changes…':'Changes not saved'}</h2><p>{session.lastSavedAt?`Last saved: ${new Date(session.lastSavedAt).toLocaleTimeString()}`:designId?'Loaded from saved design.':'Save this design to start automatic saving.'}</p>{session.error?.operation==='save'&&<button onClick={()=>void save()}>Retry save</button>}</section>}

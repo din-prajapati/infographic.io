@@ -30,6 +30,9 @@ import { ThemeProvider } from "./lib/theme-provider";
 import { VersionBadge } from "./components/VersionBadge";
 import { FormatPickerDialog } from "./components/pages/FormatPickerDialog";
 import { useCanvasStore } from "./hooks/useCanvasStore";
+import { initializeV3NavigationGuard } from './lib/v3NavigationGuard';
+
+initializeV3NavigationGuard();
 
 const V3Editor = lazy(() => import('./components/editor/v3/V3Editor'));
 

@@ -9,6 +9,13 @@
 
 ## Primary files touched
 
+- client/src/App.tsx — initialize history tracking before any SPA navigation
+- client/src/lib/v3NavigationGuard.ts — central Wouter-compatible history boundary
+- client/src/lib/__tests__/v3NavigationGuard.spec.ts — exact dirty/clean navigation contracts
+- client/src/components/editor/v3/V3Editor.tsx — route both Projects/logo through guarded Wouter navigation
+- e2e/us-edit-031-v3-slice.spec.ts — browser Back/Forward, go, push/replace, document-switch and consent regressions
+- ../../EPIC.md — implementation update only
+- .orion/state/_replay.log and .orion/state/_replay/ — invocation evidence
 - client/src/lib/v3DesignSession.ts
 - client/src/hooks/useV3DesignSession.ts
 - client/src/lib/v3Autosave.ts
@@ -19,7 +26,15 @@
 ## Tasks
 
 - [x] T1 — Existing guarded session implements two-second idle autosave, acknowledgement timestamp, user/design-scoped local recovery, beforeunload and the explicit navigation confirmation API. Covers AC1–3 and AC5–8 plus the unload/Projects portion of AC4; this records existing implementation, not new code in this reconciliation.
-- [ ] T2 — Remaining AC4: protect same-document browser Back/Forward and other programmatic route transitions with a central Wouter-compatible dirty-navigation guard. Define exact runtime file scope and browser acceptance tests before implementing; current source does not provide this interception. No speculative router rewrite is authorized by this checklist entry.
+- [x] T2 — Remaining AC4: protect same-document browser Back/Forward and other programmatic route transitions with a central Wouter-compatible dirty-navigation guard. Define exact runtime file scope and browser acceptance tests before implementing; current source does not provide this interception. No speculative router rewrite is authorized by this checklist entry.
+
+### T2 contract (2026-11-08, before implementation)
+
+App initializes a history boundary before routing; only a mounted V3 session supplies a dirty predicate. Rejected pushState/replaceState retain the exact editor URL and live title/elements; accepted navigation changes to the requested destination once. Capture-phase popstate checks consent before Wouter receives a transition; rejection traverses back to the original indexed history entry without replacing either entry or reloading the session. Back, Forward and multi-entry go preserve history order. Clean navigation and unmounted/legacy routes remain unrestricted. First-save canonical-ID replacement is an explicitly scoped internal operation and never prompts or reloads the active document. Existing beforeunload and confirmation API remain covered.
+
+Browser acceptance: reject/accept dirty Back and Forward; reject multi-entry go; reject/accept push and replace (including another design ID and legacy-editor query); reject/accept Projects with exactly one prompt; clean navigation/no prompt; first-save adoption/no prompt; returned editor guard is active. Unit contracts cover wrapper preservation/disposal and internal replacement.
+
+T2 commit: `feat(edit): T2 guard V3 same-document navigation — US-EDIT-027`
 - [x] T3 — Reconcile story/task/evidence state against current source and tests on2026-11-07, preserving AC4 as partial and formal Done/merge as pending.
 
 Commit: `feat(edit): T1 add guarded V3 autosave and draft recovery — US-EDIT-027`
@@ -33,4 +48,4 @@ Gate 2/3: shell integration browser checks coordinated under US-EDIT-024. Gate 4
 
 ## Current delivery boundary
 
-Current branch for reconciliation: `codex/v3-arrange-opus`. No US-EDIT-027 runtime changed. T2 is intentionally open. Existing tests can certify autosave/recovery/unload/explicit confirmation, not missing same-document routing. M-EDIT-09 cannot be marked complete from the Arrange work. No merge to main is permitted.
+Current branch for reconciliation: `codex/v3-arrange-opus`. T2 implemented and locally verified 2026-11-08; current evidence below supersedes the 2026-11-07 open-gap state. M-EDIT-09 cannot be marked complete from the Arrange work. No merge to main is permitted.

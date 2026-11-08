@@ -11,6 +11,7 @@ import { usePropertyStore } from './usePropertyStore';
 import { useAgentStore } from './useAgentStore';
 import { isValidPaint, isValidElementPaints } from '../lib/paint';
 import { isValidLineElement } from '../lib/lineGeometry';
+import { initializeV3NavigationGuard, V3_UNSAVED_MESSAGE } from '../lib/v3NavigationGuard';
 
 interface CanvasDocument {
   elements: CanvasElement[];
@@ -101,11 +102,16 @@ export function useV3DesignSession(designId?: string, userId?: string) {
       const url = new URL(window.location.href);
       url.searchParams.set('editor', 'v3');
       url.searchParams.set('designId', id);
-      window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}`);
+      initializeV3NavigationGuard().allowInternal(() =>
+        window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}`));
     },
     onChange: () => setState(session.getState()),
     });
     controller.current = session;
+    const removeNavigationGuard = initializeV3NavigationGuard().register(
+      () => session.getState().hasUnsavedChanges,
+      () => window.confirm(V3_UNSAVED_MESSAGE),
+    );
     void session.open(requestedId.current);
     const unsubscribe = useCanvasStore.subscribe((next, previous) => {
       if (next.elements !== previous.elements || next.canvasWidth !== previous.canvasWidth ||
@@ -128,6 +134,7 @@ export function useV3DesignSession(designId?: string, userId?: string) {
     };
     window.addEventListener('beforeunload', beforeUnload);
     return () => {
+      removeNavigationGuard();
       window.removeEventListener('beforeunload', beforeUnload);
       unsubscribe(); unsubscribeProperty(); unsubscribeAgent(); session.dispose(); controller.current = null;
     };
@@ -155,6 +162,6 @@ export function useV3DesignSession(designId?: string, userId?: string) {
     restoreDraft: () => controller.current?.restoreDraft(),
     discardDraft: () => controller.current?.discardDraft(),
     confirmNavigation: () => !controller.current?.getState().hasUnsavedChanges ||
-      window.confirm('You have unsaved changes. Leave this design?'),
+      window.confirm(V3_UNSAVED_MESSAGE),
   };
 }

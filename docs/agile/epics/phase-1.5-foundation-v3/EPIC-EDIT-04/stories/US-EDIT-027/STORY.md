@@ -7,7 +7,7 @@ updated: 2026-10-29
 
 # Story Card — US-EDIT-027 — Autosave and save status
 
-> **Status:** In Progress — reconciled 2026-11-07: AC1–3/5–8 locally verified; AC4 remains partial for same-document routing; review/merge pending.
+> **Status:** Locally verified — 2026-11-08: all eight ACs covered; independent review/PR/merge pending.
 > **Epic:** [EPIC-EDIT-04](../../EPIC.md)
 > **Milestone:** [M-EDIT-09-v3-shell](../../milestones/M-EDIT-09-v3-shell.md)
 > **Size:** M
@@ -32,7 +32,7 @@ updated: 2026-10-29
 - [x] **AC1 [happy-path]:** A design that already exists saves automatically about 2 seconds after the last change; a brand-new design starts autosaving after its first save.
 - [x] **AC2 [happy-path]:** The approved title-adjacent cloud exposes **Saving…**, **Changes saved** or **Changes not saved** in its status/popover; a failed save shows **Save failed** with **Retry save**. The manual Save button still works. Wording follows the approved cloud interaction.
 - [x] **AC3 [error-path]:** When a save fails, the edits stay in the editor and in the local draft, and Retry sends them again.
-- [ ] **AC4 [edge-case]:** Leaving the page with unsaved changes asks for confirmation.
+- [x] **AC4 [edge-case]:** Leaving the page with unsaved changes asks for confirmation.
 - [x] **AC5 [concurrent]:** Saves are sent one at a time and each sends the latest state, so a slow save never overwrites a newer one.
 - [x] **AC6 [security]:** `client/src/lib/v3Autosave.ts` scopes drafts to authenticated user ID and canonical design ID (or new); recovery is offered explicitly through `useV3DesignSession`, never automatically restored or uploaded. Restored drafts require explicit Save before autosave resumes.
 - [x] **AC7 [happy-path]:** `client/src/lib/v3DesignSession.ts` exposes lastSavedAt only from an acknowledged successful write; failed or stale responses never advance it. Load alone does not invent a last-save timestamp.
@@ -53,6 +53,7 @@ updated: 2026-10-29
 - **Branch:** milestone branch (see PROJECT_CONTEXT.yaml `git.branch_format`)
 - **PR:** #_____
 - **Primary files touched:**
+  - `client/src/lib/v3NavigationGuard.ts` / `client/src/App.tsx` — central Wouter history guard, initialized before routing
   - `client/src/lib/v3DesignSession.ts` — guarded debounce, acknowledgement status and recovery controller
   - `client/src/hooks/useV3DesignSession.ts` — authenticated draft adapter, beforeunload and navigation confirmation API
   - `client/src/lib/v3Autosave.ts` — scoped local draft serialization
@@ -80,9 +81,9 @@ Shell rendering of status/recovery/navigation lives in US-EDIT-024; no backend, 
 | TC ID | Type | Priority | Scenario | Status | Finding |
 |-------|------|:--------:|----------|:------:|---------|
 | TC-EDIT-027-01 | Unit | P0 | happy-path: A design that already exists saves automatically about 2 … | ✅ | Session/autosave contracts and combined browser/live smoke pass. |
-| TC-EDIT-027-02 | Unit | P0 | happy-path: The top bar shows **Saving…**, **All changes saved** or *… | ✅ | Session/autosave contracts and combined browser/live smoke pass. |
+| TC-EDIT-027-02 | Unit | P0 | happy-path: The approved title-adjacent cloud exposes **Saving…**, **… | ✅ | Session/autosave contracts and combined browser/live smoke pass. |
 | TC-EDIT-027-03 | Unit | P0 | error-path: When a save fails, the edits stay in the editor and in th… | ✅ | Session/autosave contracts and combined browser/live smoke pass. |
-| TC-EDIT-027-04 | Unit | P1 | edge-case: Leaving the page with unsaved changes asks for confirmation. | ⚠️ Partial | Unload/Projects covered; central Back/Forward guard remains. |
+| TC-EDIT-027-04 | Unit | P1 | edge-case: Leaving the page with unsaved changes asks for confirmation. | ✅ | Central push/replace, Back/Forward/go, query-only changes and native hash predecessor verified; retained unload coverage passes. |
 | TC-EDIT-027-05 | Integration | P1 | concurrent: Saves are sent one at a time and each sends the latest st… | ✅ | Session/autosave contracts and combined browser/live smoke pass. |
 | TC-EDIT-027-06 | Unit | P1 | security: scopes drafts to authenticated user ID and canonical desi… | ✅ | Session/autosave contracts and combined browser/live smoke pass. |
 | TC-EDIT-027-07 | Unit | P0 | happy-path: exposes lastSavedAt only from an acknowledged successful … | ✅ | Session/autosave contracts and combined browser/live smoke pass. |
@@ -100,3 +101,8 @@ Current branch: `codex/v3-arrange-opus`. Source audit confirms the existing hook
 AC4 stays **unchecked**. Same-document browser Back/Forward and programmatic Wouter transitions are not intercepted centrally by this hook. A document unload can still invoke the existing browser guard; the missing behavior is the same-document router path. No new navigation-guard runtime was introduced by this reconciliation. The remaining task is explicitly separated in TASKS.md rather than marking the entire implementation unfinished or claiming AC4 passed.
 
 This is part of M-EDIT-09, separate from the M-EDIT-11/Arrange delivery package. It remains an open release gap when evaluating broader V3 parity. The legacy editor stays default, and formal Done/PR merge remain unchecked. User explicitly prohibits merging this work into main.
+
+
+## AC4 completion — 2026-11-08
+
+The central same-document guard is implemented and locally verified; AC4 is now checked. Back/Forward/multi-entry and rapid traversal cancellation retain the live document, and push/replace guard design changes and V3 opt-out queries. First-save URL adoption, native anchors and clean/legacy navigation remain functional. Type checks, 811 backend +750 client unit passes (one existing skip), and 38 distinct browser contracts pass. See VERIFICATION.md for exact commands and the supported-desktop/manual-review boundary. All acceptance criteria are locally covered; formal Done, independent review and PR/merge remain pending. Main merge remains prohibited.
