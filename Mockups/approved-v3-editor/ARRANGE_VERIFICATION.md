@@ -131,7 +131,7 @@ The fixes have not been re-reviewed.
 ### Limitations and open decisions
 
 - Save/reload is proven only against intercepted (mocked) API routes. That is not proof of authenticated database persistence.
-- A typed, uncommitted value is **discarded** if the selection changes before Enter or blur. This was chosen for safety and is open for a user decision.
+- A typed, uncommitted value is **discarded** if the selection changes before Enter or blur. Chosen for safety; **confirmed by Dinesh on 2026-11-07** (keep current behavior).
 - The Layers view now shows two adjacent tablists: `Sidebar views` (Arrange/Layers) and `Layer filters` (All/Overlapping). The Arrange and Layers sections are not marked as `role="tabpanel"`, to avoid changing the Layers landmark. Both points are open for a design decision.
 - Fields show values rounded to one decimal. Commits use the exact typed value.
 - No ORION story card or harden lock exists for this work, by user decision. Formal Done and merge remain unauthorized: no push, merge or deploy was done.
