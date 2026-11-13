@@ -197,7 +197,7 @@ export function ImageElement({ element, isSelected, onSelect, onGeometryChange, 
         )}
         
         {/* Image with filters and transforms */}
-        {hasCrop && element.crop ? (
+        {!element.src ? <div role="img" aria-label="Add image" className="absolute inset-0 flex items-center justify-center" style={{background:'#e7ebef',color:'#344454',border:'1px dashed #6b7b8a',fontSize:14,textAlign:'center'}}>Add image</div> : hasCrop && element.crop ? (
           <img
             src={element.src}
             alt={element.name}
