@@ -12,6 +12,8 @@ import { useAgentStore } from './useAgentStore';
 import { isValidPaint, isValidElementPaints } from '../lib/paint';
 import { isValidLineElement } from '../lib/lineGeometry';
 import { initializeV3NavigationGuard, V3_UNSAVED_MESSAGE } from '../lib/v3NavigationGuard';
+import { activateV3ListingWorkflow, deactivateV3ListingWorkflow, resetV3ListingWorkflow, useV3ListingStore } from './useV3ListingWorkflow';
+import { validateListingSnapshot } from '../lib/v3ListingWorkflow';
 
 interface CanvasDocument {
   elements: CanvasElement[];
@@ -24,6 +26,7 @@ interface CanvasDocument {
 function validateCanvas(value: unknown): asserts value is CanvasDocument {
   if (!value || typeof value !== 'object') throw new Error('Invalid canvas data');
   const data = value as Partial<CanvasDocument>;
+  if (data.v3Listing !== undefined && validateListingSnapshot(data.v3Listing).length) throw new Error('Invalid listing workflow data');
   if (!Array.isArray(data.elements) || data.elements.some(element =>
     !element || !isValidElementPaints(element) || !['text', 'shape', 'image', 'line'].includes(element.type) || (element.type === 'line' && !isValidLineElement(element))) ||
     (data.backgroundPaint !== undefined && !isValidPaint(data.backgroundPaint)) ||
@@ -47,6 +50,7 @@ export function useV3DesignSession(designId?: string, userId?: string) {
     lastSavedAt: null, hasUnsavedChanges: false, recoveredDraft: null, draftError: null });
 
   useEffect(() => {
+    activateV3ListingWorkflow();
     let canvasRevision = 0;
     const session = createV3DesignSession<CanvasDocument>({
     autosaveDelay: 2000,
@@ -69,8 +73,10 @@ export function useV3DesignSession(designId?: string, userId?: string) {
         history: { past: [], future: [] }, clipboard: [], canvasOrigin: null, activeTool: 'select',
         selectedThemeColors: null,
       });
+      resetV3ListingWorkflow();
     },
     async load(id) {
+      resetV3ListingWorkflow();
       const design = await queryClient.fetchQuery({
         queryKey: ['v3-design', id], queryFn: () => designsApi.getOne(id), staleTime: 0, retry: false,
       });
@@ -79,6 +85,7 @@ export function useV3DesignSession(designId?: string, userId?: string) {
       return { id: recordId, title: name, canvasData, metadata };
     },
     async save({ id, title, canvasData, metadata }) {
+      validateCanvas(canvasData);
       const thumbnailRevision = canvasRevision;
       const thumbnail = await generateThumbnail();
       // The shared renderer reads the canvas asynchronously. Never attach a
@@ -126,6 +133,9 @@ export function useV3DesignSession(designId?: string, userId?: string) {
     const unsubscribeAgent = useAgentStore.subscribe((next, previous) => {
       if (next.agent !== previous.agent) { canvasRevision++; session.markDirty(); }
     });
+    const unsubscribeListing = useV3ListingStore.subscribe((next, previous) => {
+      if (next.snapshot !== previous.snapshot) { canvasRevision++; session.markDirty(); }
+    });
     const beforeUnload = (event: BeforeUnloadEvent) => {
       if (session.getState().hasUnsavedChanges) {
         event.preventDefault();
@@ -137,6 +147,7 @@ export function useV3DesignSession(designId?: string, userId?: string) {
       removeNavigationGuard();
       window.removeEventListener('beforeunload', beforeUnload);
       unsubscribe(); unsubscribeProperty(); unsubscribeAgent(); session.dispose(); controller.current = null;
+      unsubscribeListing(); deactivateV3ListingWorkflow();
     };
   }, [userId]);
 

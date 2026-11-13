@@ -1,5 +1,22 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createV3DesignSession } from '../v3DesignSession';
+import { createListingSnapshot } from '../v3ListingWorkflow';
+import { createEmptyListing } from '@shared/listingWorkflow';
+
+it('saves pending listing changes even when the artwork elements did not change', async () => {
+  const initial = { elements: [], canvasWidth: 640, canvasHeight: 480, v3Listing: createListingSnapshot(createEmptyListing()) };
+  let document = structuredClone(initial);
+  const save = vi.fn(async () => ({ id: 'c123456789012345678901234' }));
+  const session = createV3DesignSession({ capture: () => document, restore: value => { document = value; }, reset: () => {}, load: async id => ({ id, title: 'Saved', canvasData: initial }), save });
+  await session.open('c123456789012345678901234');
+  document = structuredClone(document);
+  document.v3Listing.pending.property.headline = 'Pending only';
+  session.markDirty();
+  expect(session.getState().hasUnsavedChanges).toBe(true);
+  await session.save();
+  expect(save).toHaveBeenCalledWith(expect.objectContaining({ canvasData: expect.objectContaining({ v3Listing: expect.objectContaining({ pending: expect.objectContaining({ property: expect.objectContaining({ headline: 'Pending only' }) }), applied: expect.objectContaining({ property: expect.objectContaining({ headline: '' }) }) }) }) }));
+  session.dispose();
+});
 import { act, createElement, StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 

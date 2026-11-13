@@ -1,6 +1,8 @@
 // Canvas element types and interfaces
 
 import type { AiComposition } from './api';
+export type { V3ListingSnapshot } from './v3ListingWorkflow';
+export type BindingDescriptor = { kind: 'field'; slot: string } | { kind: 'image'; slot: string } | { kind: 'compound'; slot: string; parts: ['beds', 'baths', 'area', 'areaUnit'] } | { kind: 'independent' };
 
 export type ElementType = 'text' | 'shape' | 'image' | 'line';
 export type StrokeStyle = 'solid' | 'dashed' | 'short-dashed' | 'dotted';
@@ -40,6 +42,7 @@ export interface BaseElement {
    * all elements and absent on legacy designs.
    */
   slot?: string;
+  binding?: BindingDescriptor;
   /**
    * BL-44 — the slot whose text this element exists to hold (a price pill, a
    * CTA bar, a readability scrim). When an AI poster displaces slot layers, a

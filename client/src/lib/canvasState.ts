@@ -15,6 +15,9 @@ import type { AiComposition, ComposedDesign, ComposedTextElementGeometry } from 
 // pushing that knowledge out to both callers would duplicate the condition in
 // two files, which is precisely the drift US-AI-047 was written to undo.
 import { toast } from 'sonner';
+import { captureV3ListingWorkflow, resetV3ListingWorkflow, restoreV3ListingWorkflow, useV3ListingStore } from '../hooks/useV3ListingWorkflow';
+import { validateListingSnapshot } from './v3ListingWorkflow';
+import { createEmptyListing, parseListingPrice } from '@shared/listingWorkflow';
 import { mapExtractedFont } from './fontMap';
 import { createMeasureText } from './layout/connectLayout';
 import {
@@ -54,6 +57,7 @@ export function captureCanvasData(): any {
     // with no element on this template (Brokerage on the Story template,
     // Website everywhere) survives a reopen.
     listing: captureListing(),
+    ...(useV3ListingStore.getState().active ? { v3Listing: captureV3ListingWorkflow() } : {}),
     timestamp: new Date().toISOString(),
   };
 }
@@ -190,6 +194,7 @@ function generatePlaceholderThumbnail(): string {
  */
 export function restoreCanvasData(canvasData: any): boolean {
   try {
+    if (canvasData?.v3Listing !== undefined && validateListingSnapshot(canvasData.v3Listing).length) return false;
     if (!canvasData || !Array.isArray(canvasData.elements) || (canvasData.backgroundPaint !== undefined && !isValidPaint(canvasData.backgroundPaint)) || canvasData.elements.some((element: unknown) => !isValidElementPaints(element) ||
       !!element && typeof element === 'object' && (element as {type?:unknown}).type === 'line' && !isValidLineElement(element))) {
       console.error('Invalid canvas data');
@@ -219,8 +224,29 @@ export function restoreCanvasData(canvasData: any): boolean {
     // US-EDIT-018 AC2 — a design saved with its listing restores it first;
     // slot text then wins where it exists. Without one (older designs, seeded
     // templates) this is a no-op and only the hydration below applies.
-    applySavedListing(canvasData.listing);
-    hydrateStoresFromCanvas();
+    if (canvasData.v3Listing !== undefined) {
+      restoreV3ListingWorkflow(canvasData.v3Listing);
+    } else {
+      applySavedListing(canvasData.listing);
+      hydrateStoresFromCanvas(true);
+      if (useV3ListingStore.getState().active) {
+        const legacy = captureListing();
+        const record = createEmptyListing();
+        const p = legacy.property;
+        const a = legacy.agent;
+        Object.assign(record.property, {
+          headline: p.headline ?? '', address: p.address ?? '', description: p.description ?? '',
+          type: p.type ?? '', country: p.locale === 'en-US' ? 'US' : 'IN', currency: p.locale === 'en-US' ? 'USD' : 'INR',
+          beds: p.beds ? String(p.beds) : '', baths: p.baths ? String(p.baths) : '',
+          area: /^\d+(?:\.\d+)?$/.test(p.sqft ?? '') ? p.sqft : '', features: p.features ?? [],
+        });
+        const parsed = p.price ? parseListingPrice(p.price, record.property.country) : null;
+        if (parsed) Object.assign(record.property, parsed);
+        Object.assign(record.agent, { name: a.name ?? '', phone: a.phone ?? '', email: a.email ?? '', agency: a.brokerage ?? '', license: a.license ?? '' });
+        record.brand.name = a.brokerage ?? '';
+        resetV3ListingWorkflow(record);
+      }
+    }
 
     // Ensure loaded templates/infographics are fully visible in the current viewport.
     scheduleFitCanvasZoomToViewport();

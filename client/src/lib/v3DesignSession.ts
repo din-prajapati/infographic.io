@@ -36,7 +36,7 @@ const canonicalId = /^c[a-z0-9]{24}$/;
 // Viewport state and capture timestamps must never create a document revision.
 function fingerprint(title: string, data: unknown): string {
   const canvas = data as Record<string, unknown>;
-  return JSON.stringify([title, canvas.elements, canvas.canvasWidth, canvas.canvasHeight, canvas.backgroundColor, canvas.backgroundPaint, canvas.listing]);
+  return JSON.stringify([title, canvas.elements, canvas.canvasWidth, canvas.canvasHeight, canvas.backgroundColor, canvas.backgroundPaint, canvas.listing, canvas.v3Listing]);
 }
 
 export function createV3DesignSession<T>(operations: SessionOperations<T>) {

@@ -7,6 +7,8 @@ import { useCanvasStore } from '../../hooks/useCanvasStore';
 import { writeCanvasToField } from '../../lib/listingBindings';
 import { getElementPaint, paintDecorationColor, paintToCss } from '../../lib/paint';
 import { formatTextContent, textLetterSpacingPx } from '../../lib/textLayout';
+import { stageV3LinkedTextEdit } from '../../hooks/useV3ListingWorkflow';
+import { toast } from 'sonner';
 
 /**
  * Applies a committed text edit: updates the canvas element and, when the
@@ -18,6 +20,12 @@ export function commitEdit(
   element: { id: string; slot?: string; slotFormat?: string },
   value: string,
 ): void {
+  const staged = stageV3LinkedTextEdit(element.id, value, element.slotFormat);
+  if (staged) {
+    if (!staged.ok) toast.error(staged.error);
+    else toast.info('Listing change is pending. Apply listing updates to update artwork.');
+    return;
+  }
   updateFn(element.id, { content: value });
   // D3: write back to the field when the element is slot-tagged.
   // writeCanvasToField returns false (never throws) for slots with no field
@@ -199,6 +207,7 @@ export function TextElement({ element, isSelected, onSelect, onGeometryChange }:
           />
         ) : (
           <div
+            data-text-content
             className="w-full px-2 whitespace-pre-wrap break-words"
             style={{
               fontFamily: element.fontFamily,

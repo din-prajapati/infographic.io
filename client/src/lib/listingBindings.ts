@@ -21,6 +21,7 @@ import { usePropertyStore, type PropertyInfo } from '../hooks/usePropertyStore';
 import { useAgentStore, type AgentInfo } from '../hooks/useAgentStore';
 import type { CanvasElement, TextElement } from './canvasTypes';
 import type { SlotId } from './slotIds';
+import { useV3ListingStore } from '../hooks/useV3ListingWorkflow';
 
 /**
  * Listing facts that have a home on the canvas. The first six use the
@@ -140,6 +141,7 @@ export function formatStatsLine(property: Pick<PropertyInfo, 'beds' | 'baths' | 
 let lastWrite: { field: BoundField; elements: CanvasElement[] } | null = null;
 
 export function writeFieldToCanvas(field: BoundField, value: string): boolean {
+  if (useV3ListingStore.getState().active) return false;
   const slots = FIELD_TO_SLOTS[field];
   if (!slots) return false;
   const state = useCanvasStore.getState();
@@ -188,6 +190,7 @@ function patchFor(field: BoundField, value: string):
  * throws. Pushes no history: the canvas edit that triggered it already did.
  */
 export function writeCanvasToField(slot: string, value: string, slotFormat?: string): boolean {
+  if (useV3ListingStore.getState().active) return false;
   const field = SLOT_TO_FIELD[slot as SlotId];
   if (!field || STORE_TO_CANVAS_ONLY.has(field)) return false;
   const result = patchFor(field, fieldValueOf(value, slotFormat));
@@ -206,7 +209,8 @@ export function writeCanvasToField(slot: string, value: string, slotFormat?: str
  * `stats` is not hydrated (Q1): beds/baths/sqft cannot be recovered from the
  * formatted line.
  */
-export function hydrateStoresFromCanvas(): boolean {
+export function hydrateStoresFromCanvas(legacyLoad = false): boolean {
+  if (useV3ListingStore.getState().active && !legacyLoad) return false;
   const bindable = useCanvasStore.getState().elements.filter(isBindableText);
   if (bindable.length === 0) return false;
 
