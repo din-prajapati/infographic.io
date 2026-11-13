@@ -23,7 +23,7 @@ identity is saved once as a **Brand profile**. Every design points at them, and 
 Property and a Brand profile; an AI campaign agent fills assets from them. Today the listing facts are stored *inside each
 design* (US-EDIT-018), so two designs for the same flat hold two copies, and the agent re-enters contact details per design.
 
-**Success metric:** Two designs created for one Property show the same price after either is edited; an agent sets up their
+**Success metric:** Two independent designs reference a Property while new facts remain pending until each design explicitly applies them; an agent sets up their
 brand once and it appears on every new design; a rental listing reads "FOR RENT · ₹50,000 / month" on the canvas and in the
 generated poster.
 
@@ -75,8 +75,26 @@ generated poster.
 
 - A Campaign record, campaign kits, the AI campaign agent — Phase 2 and later, built on top of this epic.
 - Team roles and shared brand profiles across an agency — EPIC-ORG-01 (Phase 3).
-- Market profiles beyond India's currency and units — EPIC-MKT-01 (backlog).
+- Live country/provider connectors and market enrichment — deferred. Basic IN/US/GB/CA country, currency and area-unit contracts are included in the reconciled manual workflow.
 
 ---
 
 *Epic created: 2026-10-29*
+
+## Approved listing integration reconciliation — 2026-11-13
+
+Authority: user approved integrating Mockups/listing-workflow-v1 into actual opt-in V3, stopping before AI Assistant. Existing IDs are retained and not counted twice. Status remains Not Started until implementation evidence exists.
+
+| Story | Reconciled scope | Execution |
+|---|---|---|
+| US-PROP-002 | Shared global structured listing/pricing + reviewed local import | 1 |
+| US-PROP-001 | Authenticated saved properties and per-user Agent/Brand profiles | 2 |
+| US-PROP-004 | Pending/applied bindings, customization, Apply/Undo and reopen isolation | 3 |
+| US-PROP-003 | Superseded slice scope → 002 + EDIT025; remote extraction deferred | No independent execution |
+| US-PROP-006 | Superseded slice scope → 001 + EDIT025 + EDIT022 | No independent execution |
+| US-PROP-007 | Superseded slice scope → 002 + 004 + EDIT025/020 | No independent execution |
+
+Profile persistence needed by this slice is owned by US-PROP-001; onboarding, QR and broader US-AI-028 work are not implicitly completed. US-PROP-005 proven-template/version extensions are not a prerequisite for reusing existing templates in US-EDIT-022. No photo ranking/roles/packs, AI Assistant, MLS/RERA, generation changes or default-route change. [Integration matrix](../../../../research/2026-11-13-LISTING-V3-INTEGRATION-MATRIX.md).
+
+## Implementation Update — 2026-11-13
+Canonical global Listing contract, authenticated properties/personal profiles and V3 pending/applied state implemented locally. Additive migration deployed to configured local DB; historical Property data retained. Actual verification in docs/research/2026-11-13-V3-LISTING-IMPLEMENTATION.md; no merge/Done claim.

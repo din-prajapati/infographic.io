@@ -13,6 +13,14 @@ updated: 2026-10-29
 
 ---
 
+## Reconciled integration scope — 2026-11-13
+
+**Sequence:** US-PROP-002 → US-PROP-001 → US-EDIT-025 (in EDIT epic).
+
+The active contracts are US-PROP-002 shared structured global listing/pricing/reviewed import and US-PROP-001 authenticated persistence. Historical US-PROP-003/006/007 overlap is superseded per explicit story notes; do not execute independently. No AI-generated poster/pricing change is required. Property changes remain pending in each Design until Apply.
+
+The reconciled story cards supersede conflicting historical acceptance/dependency notes below for this delivery. Historical rows are retained for traceability, not as claims of completion. Done requires actual scoped AC evidence and gates; deferred siblings do not become Done.
+
 ## Goal
 
 A listing is a saved Property with structured price and Sale/Rent intent, filled by typing or by pasting a message and reviewing what was found.

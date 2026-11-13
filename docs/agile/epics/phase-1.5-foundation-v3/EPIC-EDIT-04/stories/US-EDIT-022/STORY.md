@@ -1,76 +1,124 @@
----
-title: Story Card — US-EDIT-022
-type: story
-tags: [orion, story, phase-1.5]
-updated: 2026-10-29
----
+# Story Card — US-EDIT-022
 
-# Story Card — US-EDIT-022 — Design tab simplification
-
-> **Status:** 🔲 Not Started — drafted 2026-10-29. Harden with `/new-story` (test cases, Four-Pillars pre-flight, TASKS.md) before implementing.
+> **Status:** 🔲 Not Started — reconciled 2026-11-13; certification and implementation pending
+> **Feature:** F-EDIT-01 — Listing workflow integration
 > **Epic:** [EPIC-EDIT-04](../../EPIC.md)
 > **Milestone:** [M-EDIT-07-design-tab](../../milestones/M-EDIT-07-design-tab.md)
+> **Linear:** LIN-XXX (unassigned)
 > **Size:** M
-> **Depends on:** US-PROP-005 (proven looks), M-PROP-02 (logo)
 > **Created:** 2026-10-29 | **Closed:** —
-> **Source:** Phase 1.5 restructure — [ADR-003](../../../../../decisions/ADR-003-phase-1-close-and-phase-1.5.md); V3 canvas mockup (`Mockups/buildographic-canvas-simplification-v3/`, untracked)
+> **Prerequisites:** US-PROP-004, US-EDIT-025, US-EDIT-020
+> **Approved source:** Mockups/listing-workflow-v1/REFINEMENT.md and P1-ESSENTIALS.md; photo ranking excluded by user approval.
 
 ---
 
 ## Story
 
-*As* an agent styling a design
-*I want* the Design tab to ask only which look, which accent colour, which photo, and which format and logo
-*So that* styling is obvious, and changing it never loses my listing facts
+*As a* solo real estate agent preparing listings in India, the US, UK or Canada
+*I want* to save reusable templates and separate listing Designs
+*So that* one layout can produce independent marketing assets for different properties
 
 ---
 
 ## Acceptance Criteria
 
-> Drafted from the 2026-10-29 V3 gap analysis. File paths are the expected touch points, to be confirmed by `/new-story`.
-
-- [ ] **AC1 [happy-path]:** The right panel tabs are **Design / Property / Contact** (Agent renamed Contact).
-- [ ] **AC2 [happy-path]:** **Look** shows the proven templates for the current format (US-PROP-005) as preview cards; choosing one re-applies the template and refills it from the Property and Brand profile in one undo step.
-- [ ] **AC3 [edge-case]:** For a flat AI poster, Look is hidden with a hint: "This design is one image — regenerate it to change the look."
-- [ ] **AC4 [happy-path]:** **Accent colour** (5 swatches + custom) replaces the Brand Styles grid and "None Selected"; a saved palette maps to its accent on load. **Property photo** offers recent photos and Upload. **Format & brand logo** is collapsed by default.
-- [ ] **AC5 [happy-path]:** Quick Styles moves to the left rail's **Text** tool; nothing is removed from the canvas tools.
+- [ ] **AC1 [happy-path]:** When Save as Template succeeds through the existing authenticated template API, reusable layout, field links, geometry/styles/crops and independent static content persist while listing-specific linked values and listing association are stripped; Use this template creates a separate Design from pending listing facts without modifying the template or another Design.
+- [ ] **AC2 [error-path]:** When template/design save is pending duplicate saves are disabled; failure retains work with retry and never reports Saved; Save as Design explicitly discloses unapplied listing edits and persists pending/applied snapshots separately using the existing acknowledged session path.
+- [ ] **AC3 [regression]:** When two Designs are created from one Template with different Listings, saving/reopening and editing one retains the other artwork, property association and customizations; a new Design with a missing linked photo shows Add image instead of the prior property photograph; existing V3 image editing/crop and canvas tools remain available.
+- [ ] **AC4 [theme]:** When integrated Listing, Agent, Brand, Template Fields and save controls are used at 375px and 1440px in both themes, panel actions remain reachable and navigation preserves the expected overview; the opt-in V3 route remains opt-in and Assistant behavior is not changed.
 
 ---
 
 ## Out of Scope
 
-- The editor shell restyle (US-EDIT-024) and the phone layout
-- New templates
-- Removing shapes, fonts, crop or adjustments
+- Does not implement AI Assistant, generation changes, MLS/RERA or any live property connector.
+- Does not implement photo ranking, role assignment, lifecycle photo packs, automatic crop changes or template reflow.
+- Does not change the default editor route, existing payment/usage metering, onboarding or legacy editor behavior.
+- Does not add autosave redesign, arbitrary poster reconstruction, new billing restrictions or connector caching.
 
 ---
 
 ## Engineering / PR
 
-- **Branch:** milestone branch (see PROJECT_CONTEXT.yaml `git.branch_format`)
-- **PR:** #_____
-- **Expected files:**
-  - `client/src/components/editor/RightSidebar.tsx` — Design tab sections
-  - `client/src/components/editor/TemplatesPanel.tsx` — Look cards
-  - `client/src/components/editor/BrandPaletteDialog.tsx` — accent mapping
-  - `client/src/components/editor/LeftSidebar.tsx` — Text tool gets Quick Styles
+- **Branch:** `codex/v3-arrange-opus` (existing approved V3 integration branch)
+- **PR:** #_____ (fill when opened)
+- **Primary files touched:**
+  - `client/src/lib/v3TemplateWorkflow.ts` — Create reusable template payload and independent design from pending listing
+  - `client/src/components/editor/v3/V3Editor.tsx` — Integrate Listing/Template Fields/save actions into actual opt-in V3
+  - `client/src/components/editor/v3/V3Panels.tsx` — Route Listing/Agent/Brand/Template Fields and saved template/design actions
+  - `client/src/components/editor/v3/v3-editor.css` — Shell integration responsive states using existing tokens
+  - `client/src/lib/__tests__/v3TemplateWorkflow.spec.ts` — Template fact stripping, placeholders and independent snapshots
+  - `client/src/components/editor/v3/__tests__/V3Panels.spec.tsx` — Panel routing and save action integration regression tests
+  - `docs/agile/epics/phase-1.5-foundation-v3/EPIC-EDIT-04/stories/US-EDIT-022/STORY.md` — Record AC/test evidence and implementation status
+  - `docs/agile/epics/phase-1.5-foundation-v3/EPIC-EDIT-04/stories/US-EDIT-022/TASKS.md` — Record task progress and verification
+  - `docs/agile/epics/phase-1.5-foundation-v3/EPIC-EDIT-04/stories/US-EDIT-022/scaffold.json` — Maintain exact scope scaffold
 
 ---
 
-## Notes
+## AI Implementation Prompt
 
-Replaces the behaviour that production checks P-25/P-26 test — update those rows in `docs/testing/PHASE_0_HUMAN_QA_CHECKLIST.md` when this ships.
+> Paste this block into Codex to implement the story.
+
+```text
+Context: InfographicAI SaaS — NestJS API (port 3001) + React frontend (port 5000 via Express proxy).
+Stack: React 18 + Vite, NestJS 11, Prisma 6, Tailwind v3 + shadcn/ui, Wouter router, Zustand + React Query.
+Read AGENTS.md, this story, TASKS.md, scaffold.json and parent ARCHITECTURE.mmd / ENV.yaml.
+Story: US-EDIT-022 — Reusable templates and independent saved Designs
+Prerequisites: US-PROP-004, US-EDIT-025, US-EDIT-020
+As a solo real estate agent, I want to save reusable templates and separate listing Designs so that one layout can produce independent marketing assets for different properties.
+Acceptance Criteria:
+AC1 [happy-path]: When Save as Template succeeds through the existing authenticated template API, reusable layout, field links, geometry/styles/crops and independent static content persist while listing-specific linked values and listing association are stripped; Use this template creates a separate Design from pending listing facts without modifying the template or another Design.
+AC2 [error-path]: When template/design save is pending duplicate saves are disabled; failure retains work with retry and never reports Saved; Save as Design explicitly discloses unapplied listing edits and persists pending/applied snapshots separately using the existing acknowledged session path.
+AC3 [regression]: When two Designs are created from one Template with different Listings, saving/reopening and editing one retains the other artwork, property association and customizations; a new Design with a missing linked photo shows Add image instead of the prior property photograph; existing V3 image editing/crop and canvas tools remain available.
+AC4 [theme]: When integrated Listing, Agent, Brand, Template Fields and save controls are used at 375px and 1440px in both themes, panel actions remain reachable and navigation preserves the expected overview; the opt-in V3 route remains opt-in and Assistant behavior is not changed.
+Out of Scope: AI Assistant, live connectors, photo ranking/roles/packs, route default changes, billing or legacy-editor redesign.
+Primary files to touch (do NOT touch other files):
+client/src/lib/v3TemplateWorkflow.ts
+client/src/components/editor/v3/V3Editor.tsx
+client/src/components/editor/v3/V3Panels.tsx
+client/src/components/editor/v3/v3-editor.css
+client/src/lib/__tests__/v3TemplateWorkflow.spec.ts
+client/src/components/editor/v3/__tests__/V3Panels.spec.tsx
+docs/agile/epics/phase-1.5-foundation-v3/EPIC-EDIT-04/stories/US-EDIT-022/STORY.md
+docs/agile/epics/phase-1.5-foundation-v3/EPIC-EDIT-04/stories/US-EDIT-022/TASKS.md
+docs/agile/epics/phase-1.5-foundation-v3/EPIC-EDIT-04/stories/US-EDIT-022/scaffold.json
+Rules:
+- Touch ONLY the files listed above; do NOT implement Out of Scope.
+- Define contract assertions before implementation. Do not weaken existing tests.
+- Follow pending/applied snapshot isolation and reuse actual V3 render/save paths.
+- Run npm run check and npm run test:unit before declaring done.
+- Record browser/API verification where applicable. Never mark merged without a merge.
+- When done: list files changed, ACs checked, exact test output and remaining limitations.
+```
+
+---
+
+## Test Cases
+
+| TC ID | Type | Priority | Scenario | Status | Finding |
+|-------|------|----------|----------|--------|---------|
+| TC-EDIT-022-01 | Unit | P0 | happy-path: When Save as Template succeeds through the existing authe… | 🔲 | |
+| TC-EDIT-022-02 | Unit | P0 | error-path: When template/design save is pending duplicate saves are … | 🔲 | |
+| TC-EDIT-022-03 | Unit | P1 | regression: When two Designs are created from one Template with diffe… | 🔲 | |
+| TC-EDIT-022-04 | Unit | P1 | theme: When integrated Listing, Agent, Brand, Template Fields an… | 🔲 | |
+
+**Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 
 ---
 
 ## Definition of Done
 
 - [ ] All ACs checked ✅
-- [ ] Test cases written by `/new-story`, run and recorded
-- [ ] Gate 1 passes · Gate 2 (frontend) · Gate 4 (backend) as applicable
-- [ ] PR merged
-- [ ] STORY.md status updated to ✅ Done
+- [ ] All test cases run and recorded in table above
+- [ ] `npm run check` passes (0 new TypeScript errors)
+- [ ] `npm run test:unit` passes (no regressions)
+- [ ] Relevant visual/browser/API gates pass with recorded evidence
+- [ ] Manual flow verified on `localhost:5000` (actual opt-in V3 route)
+- [ ] PR merged (PR #_____)
+- [ ] No console errors in changed flow
+- [ ] [TASKS.md](./TASKS.md) task list fully checked ✅
+- [ ] STORY.md status updated to `✅ Done`
 
----
+## Reconciliation — 2026-11-13
 
-*Story drafted: 2026-10-29*
+This existing ID is retained. The approved listing mockup supersedes earlier draft paths and immediate canvas writes for the V3 slice. This card is a bounded M-sized implementation contract; follow-up product expansion remains deferred. Historical completion is not claimed. See docs/research/2026-11-13-LISTING-V3-INTEGRATION-MATRIX.md for sibling scope ownership.

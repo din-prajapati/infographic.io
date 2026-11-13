@@ -13,6 +13,14 @@ updated: 2026-10-29
 
 ---
 
+## Reconciled integration scope — 2026-11-13
+
+**Sequence:** US-PROP-001 profile → US-EDIT-025 Agent/Brand UI.
+
+Per-user ListingProfile persistence for this bounded workflow belongs to US-PROP-001. Existing onboarding/QR and broader Brand epic stories are not implemented by implication.
+
+The reconciled story cards supersede conflicting historical acceptance/dependency notes below for this delivery. Historical rows are retained for traceability, not as claims of completion. Done requires actual scoped AC evidence and gates; deferred siblings do not become Done.
+
 ## Goal
 
 The agent's identity — name, phone, agency, licence/RERA, logo, headshot — is saved once, captured at onboarding, and placed on designs as real canvas layers.

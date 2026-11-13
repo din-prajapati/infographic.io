@@ -13,6 +13,14 @@ updated: 2026-10-29
 
 ---
 
+## Reconciled integration scope — 2026-11-13
+
+**Sequence:** US-EDIT-025 + US-EDIT-020 → US-EDIT-022.
+
+The selected slice replaces the old Look/Accent rearrangement with reusable Template / independent Design actions. No proven-template rollout, new formats or full sidebar redesign is required.
+
+The reconciled story cards supersede conflicting historical acceptance/dependency notes below for this delivery. Historical rows are retained for traceability, not as claims of completion. Done requires actual scoped AC evidence and gates; deferred siblings do not become Done.
+
 ## Goal
 
 The Design tab offers Look, Accent colour, Property photo and Format & logo, and switching look keeps the facts.

@@ -139,3 +139,12 @@ Current candidate branch `codex/v3-arrange-opus`; baseline V3 checkpoint `b69074
 ### 2026-11-08 — US-EDIT-027 remaining same-document navigation guard
 
 T2/AC4 implemented on `codex/v3-arrange-opus`: central Wouter-compatible history consent for Back/Forward/go and programmatic push/replace, preserving rejected drafts and history order; explicit first-save adoption bypass and one Projects/logo confirmation. Types pass;811 backend+751 client unit passes (1 existing skip);39 distinct browser contracts pass across the retained38-case run plus final11-case navigation rerun. [Evidence](stories/US-EDIT-027/VERIFICATION.md). All eight ACs locally verified; independent review/PR/milestone merge still pending. No main merge, push, deployment or linked-editing/Look/import/export/extraction/assistant feature work.
+
+## Approved listing integration reconciliation — 2026-11-13
+
+Selected existing stories: US-EDIT-025 (Listing welcome/overview, Property/Agent/Brand, saved search, reviewed paste and manual media), US-EDIT-020 (Template Fields), US-EDIT-022 (reusable Template/independent Designs with existing save path), US-EDIT-021 (actual reviewed PNG export). These contracts supersede historical Contact rename, immediate source-to-canvas behavior and proven-Look dependencies for this slice. Titles in the historical story table are draft lineage; reconciled cards are authoritative. All remain Not Started until verified.
+
+US-EDIT-027 is an existing session/autosave foundation, not a reimplementation story: US-PROP-004 adds only new listing snapshot persistence integration in its existing session files. Broader autosave completion/merge is not claimed. Stop before M-EDIT-08 Assistant. [Integration matrix](../../../../research/2026-11-13-LISTING-V3-INTEGRATION-MATRIX.md).
+
+## Implementation Update — 2026-11-13
+Listing mockup integration through persistence and reviewed PNG export implemented locally. See docs/research/2026-11-13-V3-LISTING-IMPLEMENTATION.md. AI Assistant/providers remain deferred; no merge/Done claim.

@@ -1,3 +1,5 @@
+> **Scope reconciliation — 2026-11-13:** Superseded draft scope for this implementation slice; NOT implemented or Done. Structured pricing transitions move to US-PROP-002; pricing form to US-EDIT-025; pending versus applied price rendering to US-PROP-004 and Template Fields US-EDIT-020. AI generation pricing changes remain deferred. Do not implement the historical task list below independently; use the reconciled owner cards and integration matrix.
+
 ---
 title: Story Card — US-PROP-007
 type: story

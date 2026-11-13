@@ -1,111 +1,108 @@
----
-title: Story Card — US-PROP-004
-type: story
-tags: [orion, story, phase-1.5]
-updated: 2026-10-29
----
+# Story Card — US-PROP-004
 
-# Story Card — US-PROP-004 — Element binding types on the template contract
-
-> **Status:** 🔲 Not Started — hardened 2026-10-29 by /new-story
+> **Status:** 🔲 Not Started — reconciled 2026-11-13; certification and implementation pending
+> **Feature:** F-PROP-01 — Listing workflow integration
 > **Epic:** [EPIC-PROP-01](../../EPIC.md)
 > **Milestone:** [M-PROP-03-template-contract](../../milestones/M-PROP-03-template-contract.md)
+> **Linear:** LIN-XXX (unassigned)
 > **Size:** M
-> **Depends on:** — (independent of US-PROP-001; additive exports in `listingBindings.ts`, so it runs in parallel with US-PROP-007/003 and rebases if it merges second)
 > **Created:** 2026-10-29 | **Closed:** —
-> **Source:** Phase 1.5 restructure — [ADR-003](../../../../../decisions/ADR-003-phase-1-close-and-phase-1.5.md); V3 canvas mockup (`Mockups/buildographic-canvas-simplification-v3/`, untracked)
+> **Prerequisites:** US-PROP-002
+> **Approved source:** Mockups/listing-workflow-v1/REFINEMENT.md and P1-ESSENTIALS.md; photo ranking excluded by user approval.
 
 ---
 
 ## Story
 
-*As* an agent (and the editor working for them)
-*I want* every text element to carry an explicit link type — field, compound or independent
-*So that* the editor can show, detach and reconnect links reliably, and templates become a dependable contract for kits
-
----
-
-## Design decision — `binding` sits beside `slot`
-
-`binding` is **additive**; it does not replace `slot`. `slot` stays the write channel: `writeFieldToCanvas`,
-`writeCanvasToField` and `hydrateStoresFromCanvas` all find elements by `el.slot`. `binding` names the link type and key.
-Legacy elements get a `binding` on load from their `slot`; elements that already have one are left alone.
-
-| `el.slot` | `binding` |
-|---|---|
-| `property.specs` or `property.facts` (both map to `stats`) | `{ type: 'compound', parts: ['beds', 'baths', 'sqft'] }` |
-| any other slot in `SLOT_TO_FIELD` | `{ type: 'field', key: <BoundField> }` |
-| no slot, or a slot not in `SLOT_TO_FIELD` | `{ type: 'independent' }` |
-| non-text element | unchanged |
+*As a* solo real estate agent preparing listings in India, the US, UK or Canada
+*I want* to apply listing updates explicitly and keep design customizations
+*So that* editing listing facts cannot unexpectedly damage my artwork
 
 ---
 
 ## Acceptance Criteria
 
-- [ ] **AC1 [happy-path]:** `client/src/lib/canvasTypes.ts` exports `BindingDescriptor = { type: 'field'; key: BoundField } | { type: 'compound'; parts: string[] } | { type: 'independent' }`, and `BaseElement` gains optional `binding?: BindingDescriptor` (move `BoundField` into `canvasTypes.ts` and re-export it if importing it creates a cycle). `npm run check` has no new errors.
-- [ ] **AC2 [rollback]:** `migrateElementBinding(el)` exported from `listingBindings.ts` returns: `field`/`price` for `slot: 'property.price'`; `compound` with parts `beds, baths, sqft` for `slot: 'property.specs'`; `independent` for text with no slot; the element unchanged for non-text or when `binding` is already set. It never mutates its input and never changes `content`, `slot` or `slotFormat`. It runs inside `restoreCanvasData()` (`client/src/lib/canvasState.ts`), which every design and template load goes through.
-- [ ] **AC3 [happy-path]:** `detachBinding(el)` returns the element with `binding: { type: 'independent' }` and the same `content`, writing nothing to any store. `reconnectBinding(el, 'price')` with the store price "₹2.5 Cr" returns `binding: { type: 'field', key: 'price' }` and `content === applySlotFormat(el.slotFormat, '₹2.5 Cr')`, and never calls `setProperty` / `setAgent` — element text is never imported into a field.
-- [ ] **AC4 [happy-path]:** An element with `binding: { type: 'field', key: 'price' }` keeps exactly that `binding` after `captureCanvasData()` → `restoreCanvasData()` (save and reopen).
-- [ ] **AC5 [edge-case]:** `api/scripts/data/premium-templates.data.ts` gives every slot-tagged `text()` an explicit `binding`, and a new `api/tests/canvas/element-binding-migration.spec.ts` asserts on the seed data: every `property.specs` / `property.facts` element is `compound`; every element whose slot is in `SLOT_TO_FIELD` (and is not specs/facts) is `field` with the key its slot maps to; every slot-tagged element whose slot is **not** in `SLOT_TO_FIELD` (`agent.cta`, `openHouse.*`, `report.*`, …) is `independent` — matching the design table above. The spec cannot import client code, so it carries its own copy of the slot→field map with a comment pointing at `listingBindings.ts`; counts are computed in the test, not hard-coded. `npm run test:unit` passes, including `template-one-fact-per-element.spec.ts`.
+- [ ] **AC1 [happy-path]:** When Property, Agent or Brand source facts are edited, only the pending record changes; Apply listing updates atomically updates all eligible linked text/image elements and applied snapshot, retains element IDs, geometry, styles, crop and unlinked/customized content, and enables Undo last apply to restore the exact prior artwork/applied snapshot without discarding pending facts.
+- [ ] **AC2 [error-path]:** When a pending field is invalid Apply is blocked with a field finding and no partial canvas mutation; when a linked image source is missing an existing design retains its prior image with a review warning while a new design has an explicit Add image placeholder.
+- [ ] **AC3 [regression]:** When a saved V3 Design reopens, pending facts, applied snapshot, property association, bindings and design customizations restore independently; canvas text never silently becomes canonical property facts; documents without workflow metadata continue opening through existing legacy behavior.
+- [ ] **AC4 [edge-case]:** When a linked element is detached its current visible content remains independent; reconnecting or Use linked value explicitly removes that element customization; manual photo replacement remains protected from ordinary Apply, and mapping grouped specifications uses separate beds/baths/area/unit sources.
 
 ---
 
 ## Out of Scope
 
-- Any linking UI — showing, detaching or reconnecting in the editor is US-EDIT-020 (the helpers here have no call sites yet)
-- Changes to `writeFieldToCanvas`, `writeCanvasToField` or `hydrateStoresFromCanvas`
-- New template content
-- Migrating bindings on save — only on load
+- Does not implement AI Assistant, generation changes, MLS/RERA or any live property connector.
+- Does not implement photo ranking, role assignment, lifecycle photo packs, automatic crop changes or template reflow.
+- Does not change the default editor route, existing payment/usage metering, onboarding or legacy editor behavior.
+- Does not add autosave redesign, arbitrary poster reconstruction, new billing restrictions or connector caching.
 
 ---
 
 ## Engineering / PR
 
-- **Branch:** `feat/prop/m-03-template-contract`
-- **PR:** #_____
+- **Branch:** `codex/v3-arrange-opus` (existing approved V3 integration branch)
+- **PR:** #_____ (fill when opened)
 - **Primary files touched:**
-  - `client/src/lib/canvasTypes.ts` — `BindingDescriptor`, `binding?` on `BaseElement`
-  - `client/src/lib/listingBindings.ts` — `migrateElementBinding`, `detachBinding`, `reconnectBinding`
-  - `client/src/lib/canvasState.ts` — call `migrateElementBinding` on every element inside `restoreCanvasData()`
-  - `client/src/lib/__tests__/listingBindings.binding.spec.ts` — unit tests for the three helpers (new)
-  - `api/scripts/data/premium-templates.data.ts` — `binding?` on `TextOpts`; explicit bindings on slot-tagged elements
-  - `api/tests/canvas/element-binding-migration.spec.ts` — seed-data assertions (new)
+  - `client/src/lib/v3ListingWorkflow.ts` — Pure pending/applied snapshots, bindings, customizations, atomic Apply and Undo
+  - `client/src/hooks/useV3ListingWorkflow.ts` — Listing workspace Zustand state and editor orchestration
+  - `client/src/lib/canvasTypes.ts` — Add reusable field/image/compound binding and workflow snapshot types
+  - `client/src/lib/canvasState.ts` — Capture/restore workflow snapshots without canvas-to-pending hydration
+  - `client/src/lib/listingBindings.ts` — Add V3 guards and binding migration without changing legacy behavior
+  - `client/src/lib/v3DesignSession.ts` — Carry validated additive workflow state in document sessions
+  - `client/src/hooks/useV3DesignSession.ts` — Restore V3 state and subscribe to pending changes for autosave
+  - `client/src/components/canvas/TextElement.tsx` — Guard direct V3 linked-text edits through customization contract
+  - `client/src/lib/__tests__/v3ListingWorkflow.spec.ts` — Atomic apply, undo, binding, crop and snapshot isolation contracts
+  - `client/src/lib/__tests__/v3DesignSession.spec.ts` — Reopen and autosave snapshot regression cases
+  - `client/src/hooks/__tests__/useV3ListingWorkflow.spec.ts` — Workspace isolation and pending state orchestration tests
+  - `docs/agile/epics/phase-1.5-foundation-v3/EPIC-PROP-01/stories/US-PROP-004/STORY.md` — Record AC/test evidence and implementation status
+  - `docs/agile/epics/phase-1.5-foundation-v3/EPIC-PROP-01/stories/US-PROP-004/TASKS.md` — Record task progress and verification
+  - `docs/agile/epics/phase-1.5-foundation-v3/EPIC-PROP-01/stories/US-PROP-004/scaffold.json` — Maintain exact scope scaffold
 
 ---
 
+
+- `client/src/lib/slotIds.ts` — Register canonical listing field slots required by Apply
+
 ## AI Implementation Prompt
 
-> Paste this block into Claude Code to implement the story.
+> Paste this block into Codex to implement the story.
 
-```
-Context: Buildographic (code name InfographicAI) — React client canvas types + bindings; NestJS seed data; see CLAUDE.md.
-
-Story: US-PROP-004 — Element binding types on the template contract
-
+```text
+Context: InfographicAI SaaS — NestJS API (port 3001) + React frontend (port 5000 via Express proxy).
+Stack: React 18 + Vite, NestJS 11, Prisma 6, Tailwind v3 + shadcn/ui, Wouter router, Zustand + React Query.
+Read AGENTS.md, this story, TASKS.md, scaffold.json and parent ARCHITECTURE.mmd / ENV.yaml.
+Story: US-PROP-004 — Pending/applied V3 listing and binding contract
+Prerequisites: US-PROP-002
+As a solo real estate agent, I want to apply listing updates explicitly and keep design customizations so that editing listing facts cannot unexpectedly damage my artwork.
 Acceptance Criteria:
-AC1: BindingDescriptor in canvasTypes.ts; binding? on BaseElement; no new type errors.
-AC2: migrateElementBinding(el): property.specs/property.facts → compound (beds, baths, sqft); other SLOT_TO_FIELD slots → field;
-     untagged text → independent; non-text or already-bound → unchanged; never mutates; content/slot/slotFormat unchanged; runs inside
-     restoreCanvasData() (canvasState.ts), which every design and template load goes through.
-AC3: detachBinding → independent, same content, no store write. reconnectBinding(el, key) → field + store value via applySlotFormat;
-     never writes the store.
-AC4: binding survives captureCanvasData → restoreCanvasData unchanged.
-AC5: premium-templates.data.ts slot-tagged text() calls carry explicit bindings: specs/facts → compound; slots in SLOT_TO_FIELD →
-     field; other slots (agent.cta, openHouse.*, report.*) → independent. api/tests/canvas/element-binding-migration.spec.ts asserts
-     them with its own copy of the slot→field map (it cannot import client code); counts computed in the test.
-
-Constraints:
-- binding is ADDITIVE beside slot. Never remove slot. Do not change writeFieldToCanvas / writeCanvasToField / hydrateStoresFromCanvas.
-- The store fields are beds, baths, sqft (not area).
-- Tests under api/tests/ cannot import client/src/. Unit-test the helpers under client/src/lib/__tests__/ instead.
-
-Out of Scope: any UI (US-EDIT-020) · changes to the three write functions · new template content · save-time migration.
-
-Primary files (do NOT touch others): client/src/lib/canvasTypes.ts · client/src/lib/listingBindings.ts · client/src/lib/canvasState.ts
-(load path only) · client/src/lib/__tests__/listingBindings.binding.spec.ts (new) · api/scripts/data/premium-templates.data.ts ·
-api/tests/canvas/element-binding-migration.spec.ts (new)
-
-Rules: touch only these files; run `npm run check` and `npm run test:unit`; report files changed, ACs checked, test output.
+AC1 [happy-path]: When Property, Agent or Brand source facts are edited, only the pending record changes; Apply listing updates atomically updates all eligible linked text/image elements and applied snapshot, retains element IDs, geometry, styles, crop and unlinked/customized content, and enables Undo last apply to restore the exact prior artwork/applied snapshot without discarding pending facts.
+AC2 [error-path]: When a pending field is invalid Apply is blocked with a field finding and no partial canvas mutation; when a linked image source is missing an existing design retains its prior image with a review warning while a new design has an explicit Add image placeholder.
+AC3 [regression]: When a saved V3 Design reopens, pending facts, applied snapshot, property association, bindings and design customizations restore independently; canvas text never silently becomes canonical property facts; documents without workflow metadata continue opening through existing legacy behavior.
+AC4 [edge-case]: When a linked element is detached its current visible content remains independent; reconnecting or Use linked value explicitly removes that element customization; manual photo replacement remains protected from ordinary Apply, and mapping grouped specifications uses separate beds/baths/area/unit sources.
+Out of Scope: AI Assistant, live connectors, photo ranking/roles/packs, route default changes, billing or legacy-editor redesign.
+Primary files to touch (do NOT touch other files):
+client/src/lib/v3ListingWorkflow.ts
+client/src/hooks/useV3ListingWorkflow.ts
+client/src/lib/canvasTypes.ts
+client/src/lib/canvasState.ts
+client/src/lib/listingBindings.ts
+client/src/lib/v3DesignSession.ts
+client/src/hooks/useV3DesignSession.ts
+client/src/components/canvas/TextElement.tsx
+client/src/lib/__tests__/v3ListingWorkflow.spec.ts
+client/src/lib/__tests__/v3DesignSession.spec.ts
+client/src/hooks/__tests__/useV3ListingWorkflow.spec.ts
+docs/agile/epics/phase-1.5-foundation-v3/EPIC-PROP-01/stories/US-PROP-004/STORY.md
+docs/agile/epics/phase-1.5-foundation-v3/EPIC-PROP-01/stories/US-PROP-004/TASKS.md
+docs/agile/epics/phase-1.5-foundation-v3/EPIC-PROP-01/stories/US-PROP-004/scaffold.json
+client/src/lib/slotIds.ts
+Rules:
+- Touch ONLY the files listed above; do NOT implement Out of Scope.
+- Define contract assertions before implementation. Do not weaken existing tests.
+- Follow pending/applied snapshot isolation and reuse actual V3 render/save paths.
+- Run npm run check and npm run test:unit before declaring done.
+- Record browser/API verification where applicable. Never mark merged without a merge.
+- When done: list files changed, ACs checked, exact test output and remaining limitations.
 ```
 
 ---
@@ -113,15 +110,11 @@ Rules: touch only these files; run `npm run check` and `npm run test:unit`; repo
 ## Test Cases
 
 | TC ID | Type | Priority | Scenario | Status | Finding |
-|-------|------|:--------:|----------|:------:|---------|
-| TC-PROP-004-01 | Manual | P0 | Given a design saved before this story (slots, no bindings), when it is opened, then every text element in the canvas store has a `binding` (devtools) | 🔲 | |
-| TC-PROP-004-02 | Manual | P0 | Given a price element with a field binding, when the design is saved and reopened, then its `binding` is identical | 🔲 | |
-| TC-PROP-004-03 | Unit | P1 | `migrateElementBinding` on `slot: 'property.price'` → field/price; content and slot unchanged | 🔲 | |
-| TC-PROP-004-04 | Unit | P1 | `migrateElementBinding` on `slot: 'property.specs'` → compound beds/baths/sqft | 🔲 | |
-| TC-PROP-004-05 | Unit | P1 | `migrateElementBinding` on untagged text → independent; on a shape → unchanged | 🔲 | |
-| TC-PROP-004-06 | Unit | P1 | `detachBinding` → independent, same content, no `setProperty`/`setAgent` call | 🔲 | |
-| TC-PROP-004-07 | Unit | P1 | `reconnectBinding(el, 'price')` with store "₹2.5 Cr" → key price, content "₹2.5 Cr", no store write | 🔲 | |
-| TC-PROP-004-08 | Unit | P1 | Seed data: all compound slots compound, all field slots field with the right key — `element-binding-migration.spec.ts` | 🔲 | |
+|-------|------|----------|----------|--------|---------|
+| TC-PROP-004-01 | Unit | P0 | happy-path: When Property, Agent or Brand source facts are edited, on… | 🔲 | |
+| TC-PROP-004-02 | Unit | P0 | error-path: When a pending field is invalid Apply is blocked with a f… | 🔲 | |
+| TC-PROP-004-03 | Unit | P1 | regression: When a saved V3 Design reopens, pending facts, applied sn… | 🔲 | |
+| TC-PROP-004-04 | Unit | P1 | edge-case: When a linked element is detached its current visible con… | 🔲 | |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 
@@ -129,27 +122,17 @@ Rules: touch only these files; run `npm run check` and `npm run test:unit`; repo
 
 ## Definition of Done
 
-- [ ] All ACs checked ✅ · all test cases run and recorded
-- [ ] `npm run check` · `npm run test:unit` pass
-- [ ] TC-PROP-004-01/02 confirmed in the browser
+- [ ] All ACs checked ✅
+- [ ] All test cases run and recorded in table above
+- [ ] `npm run check` passes (0 new TypeScript errors)
+- [ ] `npm run test:unit` passes (no regressions)
+- [ ] Relevant visual/browser/API gates pass with recorded evidence
+- [ ] Manual flow verified on `localhost:5000` (actual opt-in V3 route)
 - [ ] PR merged (PR #_____)
-- [ ] [TASKS.md](./TASKS.md) fully checked ✅ · STORY.md status `✅ Done`
+- [ ] No console errors in changed flow
+- [ ] [TASKS.md](./TASKS.md) task list fully checked ✅
+- [ ] STORY.md status updated to `✅ Done`
 
----
+## Reconciliation — 2026-11-13
 
-## Implementation Update (log)
-
-> Appended by code-agent during/after implementation. Newest entries on top.
-
-### 2026-10-30 — Opus review of PR #83
-- AC5 fixed: the seed data also tags `agent.cta`, `openHouse.*` and `report.*`, which are not in `SLOT_TO_FIELD`; those are `independent`, as the design table says. The API-side spec needs its own copy of the slot→field map.
-- The load point is `restoreCanvasData()`; the AC4 round trip is `captureCanvasData()` → `restoreCanvasData()`.
-
-### 2026-10-29 — hardened by /new-story
-- Decided `binding` sits beside `slot` (the three write functions find elements by slot).
-- Compound parts use the real store field names `beds, baths, sqft` (the draft said "area").
-- API-side tests can't import client code, so the seed-data spec checks annotations, and the helpers get a client-side spec.
-
----
-
-*Story drafted: 2026-10-29 · hardened: 2026-10-29*
+This existing ID is retained. The approved listing mockup supersedes earlier draft paths and immediate canvas writes for the V3 slice. This card is a bounded M-sized implementation contract; follow-up product expansion remains deferred. Historical completion is not claimed. See docs/research/2026-11-13-LISTING-V3-INTEGRATION-MATRIX.md for sibling scope ownership.

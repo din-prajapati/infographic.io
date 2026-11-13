@@ -1,3 +1,5 @@
+> **Scope reconciliation — 2026-11-13:** Superseded draft scope for this implementation slice; NOT implemented or Done. Reviewed local text parsing/provenance/ambiguity/stale safeguards move to US-PROP-002; production review UI moves to US-EDIT-025. Existing remote extraction/generation changes remain deferred. Do not implement the historical task list below independently; use the reconciled owner cards and integration matrix.
+
 ---
 title: Tasks — US-PROP-003
 type: tasks

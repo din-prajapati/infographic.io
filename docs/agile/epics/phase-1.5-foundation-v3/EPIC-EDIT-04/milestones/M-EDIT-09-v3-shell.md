@@ -13,6 +13,14 @@ updated: 2026-10-29
 
 ---
 
+## Reconciled integration scope — 2026-11-13
+
+**Sequence:** Existing US-EDIT-024/027 foundation → US-EDIT-025.
+
+Use approved Listing/Agent/Brand navigation and overview with manual photos, structured pricing and reviewed paste. Basic 375px/1440px access is included; SVG export remains excluded. No Contact rename or AI Assistant implementation.
+
+The reconciled story cards supersede conflicting historical acceptance/dependency notes below for this delivery. Historical rows are retained for traceability, not as claims of completion. Done requires actual scoped AC evidence and gates; deferred siblings do not become Done.
+
 ## Goal
 
 Apply the approved editor skeleton and Navy/Teal light/dark themes to the working opt-in V3 slice: top bar, seven-item rail, floating Tools, proximity formatting, footer Layers/settings/zoom, separate Property and Agent panels, and acknowledged autosave. The approval supersedes the earlier guide bar, top-bar Assistant and rail Layers placement. See [the approved integration contract](../../../../../../Mockups/approved-v3-editor/INTEGRATION_PLAN.md).

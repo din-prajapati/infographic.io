@@ -1,0 +1,33 @@
+{
+  "story_id": "US-EDIT-020",
+  "title": "Template Fields and design customization inspector",
+  "domain": "EDIT",
+  "touches": {
+    "layers": [
+      "frontend",
+      "testing"
+    ],
+    "techs": {
+      "frontend": [
+        "react"
+      ],
+      "testing": [
+        "vitest"
+      ]
+    },
+    "modules": [
+      "listing-workflow",
+      "v3-editor"
+    ]
+  },
+  "rules_loaded": [
+    ".orion/rules/AGILE.md",
+    ".orion/rules/DOMAIN.md",
+    ".orion/rules/SECURITY.md",
+    ".orion/rules/OBSERVABILITY.md",
+    ".orion/rules/frontend/RULES.md",
+    ".orion/rules/frontend/react/RULES.md",
+    ".orion/rules/testing/RULES.md",
+    ".orion/rules/testing/vitest/RULES.md"
+  ]
+}

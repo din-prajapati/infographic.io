@@ -13,6 +13,14 @@ updated: 2026-10-29
 
 ---
 
+## Reconciled integration scope — 2026-11-13
+
+**Sequence:** US-PROP-004 → US-EDIT-020 → US-EDIT-022 → US-EDIT-021.
+
+Use friendly Template Fields with design-only overrides and reviewed actual PNG download. Do not add flat AI poster generation or AI image-guard features outside the approved manual workflow.
+
+The reconciled story cards supersede conflicting historical acceptance/dependency notes below for this delivery. Historical rows are retained for traceability, not as claims of completion. Done requires actual scoped AC evidence and gates; deferred siblings do not become Done.
+
 ## Goal
 
 The agent can see and change what every text element is linked to, and Export refuses a design with missing or out-of-date facts.

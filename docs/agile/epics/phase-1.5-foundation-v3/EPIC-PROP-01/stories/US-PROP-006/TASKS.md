@@ -1,3 +1,5 @@
+> **Scope reconciliation — 2026-11-13:** Superseded draft scope for this implementation slice; NOT implemented or Done. Saved properties client API moves to US-PROP-001 listingApi.ts; selection/search/forms move to US-EDIT-025; design snapshot integration moves to US-PROP-004 and US-EDIT-022. Do not implement the historical task list below independently; use the reconciled owner cards and integration matrix.
+
 ---
 title: Tasks — US-PROP-006
 type: tasks

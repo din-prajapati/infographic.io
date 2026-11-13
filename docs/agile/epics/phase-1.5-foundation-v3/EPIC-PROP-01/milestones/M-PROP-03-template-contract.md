@@ -13,6 +13,14 @@ updated: 2026-10-29
 
 ---
 
+## Reconciled integration scope — 2026-11-13
+
+**Sequence:** US-PROP-004 → US-EDIT-020.
+
+US-PROP-004 now owns V3 pending/applied bindings, snapshot migration, customization, atomic Apply/Undo. Existing seed bindings are read, not bulk reauthored. US-PROP-005 proven-template/version expansion remains deferred and does not block reusable-template integration.
+
+The reconciled story cards supersede conflicting historical acceptance/dependency notes below for this delivery. Historical rows are retained for traceability, not as claims of completion. Done requires actual scoped AC evidence and gates; deferred siblings do not become Done.
+
 ## Goal
 
 Every text element carries an explicit link type, and templates carry a version and a proven mark — the contract kits will be built on.
