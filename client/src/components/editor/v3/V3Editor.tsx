@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'wouter';
-import { ArrowLeft, Cloud, CloudUpload, Download, LayoutTemplate, MousePointer2, Redo2, Save, Type, Undo2, Upload, Palette, House, ContactRound, Scan, X, Shapes } from 'lucide-react';
+import { ArrowLeft, Cloud, CloudUpload, Download, LayoutTemplate, MousePointer2, Redo2, Save, Type, Undo2, Upload, Palette, House, ContactRound, Scan, X, Shapes, MoreHorizontal, ChevronUp, ChevronDown } from 'lucide-react';
 import { useV3DesignSession } from '../../../hooks/useV3DesignSession';
 import { useCanvasStore } from '../../../hooks/useCanvasStore';
 import { downloadCanvas } from '../../../lib/canvasExport';
@@ -32,6 +32,8 @@ import {clearV3Clipboard} from '../../../lib/v3EditorActions';
 import {clearElementPreview} from '../../../hooks/useV3ElementPreview';
 import {clearV3StrokeMemory} from './V3ElementToolbar';
 import './v3-editor.css';
+import './v3-responsive.css';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from '../../ui/dropdown-menu';
 import {V3ColorPanel} from './V3ColorPanel';
 import {useV3ColorPanel,openColorPanel,closeColorPanel,getTargetPaint,getDesignColors,previewColorPaint,commitColorPaint,clearColorDraft,COLOR_TARGET_LABELS} from '../../../hooks/useV3ColorPanel';
 import type {Paint} from '../../../lib/canvasTypes';
@@ -48,7 +50,12 @@ export default function V3Editor({designId}:{designId?:string}) {
   const session=useV3DesignSession(designId,user?String(user.id):undefined);
   const {undo,redo,history,addElement,selectElement}=useCanvasStore();
   const {resolvedTheme}=useTheme();
-  const [panel,setPanel]=useState<V3Panel|'Tools'|null>('Templates');
+  const [panel,setPanel]=useState<V3Panel|'Tools'|null>(()=>typeof window!=='undefined'&&typeof window.matchMedia==='function'&&window.matchMedia('(max-width: 767px)').matches?null:'Templates');
+  const [sheetExpanded,setSheetExpanded]=useState(false);
+  const panelOpener=useRef<HTMLElement|null>(null);
+  const sheetRef=useRef<HTMLElement>(null);
+  const panelHadFocus=useRef(false);
+  const rememberPanelOpener=()=>{if(document.activeElement instanceof HTMLElement)panelOpener.current=document.activeElement.closest('[role=menu]')?document.querySelector<HTMLElement>('.v3-more'):document.activeElement;setSheetExpanded(false);};
   const [imageEditing,setImageEditing]=useState(false);
   const [effectsId,setEffectsId]=useState<string|null>(null);
   const [layersOpen,setLayersOpen]=useState(false);
@@ -99,11 +106,19 @@ export default function V3Editor({designId}:{designId?:string}) {
   useV3EditorShortcuts({enabled:ready&&!isPreviewMode});
   useEffect(()=>{setExportStatus('idle');setIsPreviewMode(false);setLayersOpen(false);setSidebarTab('layers');beforeLayers.current=null;setEffectsId(null);setElementsReplaceId(null);beforeElements.current=null;closeColorPanel();clearV3StrokeMemory();clearV3Clipboard();},[designId]);
   useEffect(()=>{if(isPreviewMode){closeColorPanel();setEffectsId(null);clearElementPreview();}},[isPreviewMode]);
-  useEffect(()=>{previewIntent.current=isPreviewMode;if(isPreviewMode)window.getSelection()?.removeAllRanges();if(wasPreview.current&&!isPreviewMode)document.querySelector<HTMLButtonElement>('[data-v3-preview-trigger]')?.focus();wasPreview.current=isPreviewMode;},[isPreviewMode]);
+  useEffect(()=>{previewIntent.current=isPreviewMode;if(isPreviewMode)window.getSelection()?.removeAllRanges();if(wasPreview.current&&!isPreviewMode)document.querySelector<HTMLButtonElement>(window.matchMedia?.('(max-width: 1199px)').matches?'.v3-more':'[data-v3-preview-trigger]')?.focus();wasPreview.current=isPreviewMode;},[isPreviewMode]);
+  useEffect(()=>{
+    const preserveFocus=()=>{const focused=document.activeElement;if(focused instanceof HTMLElement&&focused.closest('.v3-editor')&&!focused.getClientRects().length)document.querySelector<HTMLButtonElement>('.v3-more')?.focus();};
+    window.addEventListener('resize',preserveFocus);return()=>window.removeEventListener('resize',preserveFocus);
+  },[]);
+  const panelVisible=ready&&!isPreviewMode&&(layersOpen||colorActive||imageEditing||effectsActive||(panel!==null&&panel!=='Tools'));
+  const closeResponsivePanel=()=>{leaveLayers();closeColorPanel();closeEffects();setImageEditing(false);setEditingBrandFromColor(false);setElementsReplaceId(null);beforeElements.current=null;setPanel(null);setSheetExpanded(false);panelOpener.current?.focus();};
+  useEffect(()=>{if(!panelVisible&&panelHadFocus.current){panelHadFocus.current=false;panelOpener.current?.focus();}},[panelVisible]);
   useEffect(()=>{
     function key(event:KeyboardEvent){
       if(event.isComposing||event.keyCode===229)return;
       if(event.key==='Escape'&&isPreviewMode){event.preventDefault();setIsPreviewMode(false);return;}
+      if(event.key==='Escape'&&!event.defaultPrevented&&window.matchMedia?.('(max-width: 767px)').matches&&panelVisible&&!document.querySelector('[role="menu"],[role="dialog"],.v3-element-popover,.v3-color-picker-popover')){event.preventDefault();closeResponsivePanel();return;}
       if(event.key==='Escape'&&!event.defaultPrevented&&useV3ColorPanel.getState().target&&!(event.target instanceof HTMLElement&&event.target.closest('.v3-element-popover,.v3-color-picker-popover'))){event.preventDefault();closeColorPanel();return;}
       if(event.key==='Escape'&&!event.defaultPrevented&&layersOpen&&!document.querySelector('[role="menu"]')){event.preventDefault();closeLayers();return;}
       if(event.key==='Escape'&&!event.defaultPrevented&&effectsActive){event.preventDefault();clearElementPreview();setEffectsId(null);return;}
@@ -115,7 +130,7 @@ export default function V3Editor({designId}:{designId?:string}) {
       if(event.key.toLowerCase()==='y'){event.preventDefault();redo();}
     }
     window.addEventListener('keydown',key);return()=>window.removeEventListener('keydown',key);
-  },[ready,save,undo,redo,isPreviewMode,effectsActive,layersOpen]);
+  },[ready,save,undo,redo,isPreviewMode,effectsActive,layersOpen,panelVisible]);
   async function exportDesign(){if(!ready||exportStatus==='exporting')return;setExportStatus('exporting');try{setExportStatus(await downloadCanvas(session.title||'design','png')?'exported':'error');}catch{setExportStatus('error');}}
   const listingArtwork=!!(listing.pending.property.address||listing.pending.property.headline||listing.selectedListingId||Object.keys(listing.bindings).length);
   const requestExport=()=>{if(listingArtwork)setReviewOpen(true);else void exportDesign();};
@@ -157,15 +172,26 @@ export default function V3Editor({designId}:{designId?:string}) {
   const sidebarTabs=<V3SidebarTabs active={sidebarTab} onChange={setSidebarTab}/>;
   const status=!ready?(session.status==='loading'||session.status==='idle'?'Opening design':'Unable to open design'):session.status==='saving'?'Saving…':session.status==='saved'&&!session.hasUnsavedChanges?'Saved':'Unsaved';
   const addText=()=>{const el=createTextElement();addElement(el);selectElement(el.id);useCanvasStore.getState().setActiveTool('select');setPanel('Text');};
-  return <div className="v3-editor" data-theme={resolvedTheme}>
+  const openTemplateFields=()=>{rememberPanelOpener();leaveLayers();closeColorPanel();setImageEditing(false);setEffectsId(null);setPanel('Template Fields');};
+  return <div className="v3-editor" data-theme={resolvedTheme} data-panel-open={panelVisible} data-sheet-expanded={sheetExpanded} onFocusCapture={event=>{panelHadFocus.current=!!sheetRef.current?.contains(event.target);if(event.target instanceof HTMLElement&&!panelHadFocus.current)panelOpener.current=event.target;}}>
     <h1 className="sr-only">V3 Editor</h1>
-    <header className="v3-header" hidden={isPreviewMode}><Link href="/my-designs" className="v3-logo"><img src="/logo-icon-option6-light.png" alt="" width="28" height="28"/>Buildographic</Link>
-      <Link href="/my-designs" className="v3-projects"><ArrowLeft/>Projects</Link>
+    <header className="v3-header" hidden={isPreviewMode}><Link href="/my-designs" className="v3-logo"><img src="/logo-icon-option6-light.png" alt="" width="28" height="28"/><span>Buildographic</span></Link>
+      <Link href="/my-designs" className="v3-projects" aria-label="Projects"><ArrowLeft/><span>Projects</span></Link>
       <div className="v3-title-wrap"><span aria-hidden="true" className="v3-title-measure">{session.title || 'Untitled design'}</span><input aria-label="Design title" className="v3-title" size={1} value={session.title} disabled={!ready} onChange={event=>session.setTitle(event.target.value)}/></div>
       <div className="v3-cloud-wrap"><button className="v3-icon" aria-label="Save status" aria-expanded={cloud} onClick={()=>setCloud(!cloud)}>{status==='Saved'?<Cloud/>:<CloudUpload/>}</button><span className="sr-only" role="status">{status}</span>
         {cloud&&<section className="v3-popover v3-cloud" aria-label="Save status details"><h2>{status==='Saved'?'Changes saved':status==='Saving…'?'Saving changes…':'Changes not saved'}</h2><p>{session.lastSavedAt?`Last saved: ${new Date(session.lastSavedAt).toLocaleTimeString()}`:designId?'Loaded from saved design.':'Save this design to start automatic saving.'}</p>{session.error?.operation==='save'&&<button onClick={()=>void save()}>Retry save</button>}</section>}
       </div>
-      <div className="v3-header-actions"><button className="v3-icon" aria-label="Undo" disabled={!ready||!history.past.length} onClick={undo}><Undo2/></button><button className="v3-icon" aria-label="Redo" disabled={!ready||!history.future.length} onClick={redo}><Redo2/></button><button data-v3-preview-trigger disabled={!ready} onMouseDown={event=>{previewIntent.current=true;event.preventDefault();}} onClick={()=>setIsPreviewMode(true)}><Scan/>Preview</button><button disabled={!ready||session.status==='saving'} onClick={()=>void save()}><Save/>{listingArtwork?'Save as Design':'Save'}</button><button className="v3-export" disabled={!ready||exportStatus==='exporting'} onClick={requestExport}><Download/>Export</button></div>
+      <div className="v3-header-actions"><button className="v3-icon v3-desktop-action" aria-label="Undo" disabled={!ready||!history.past.length} onClick={undo}><Undo2/></button><button className="v3-icon v3-desktop-action" aria-label="Redo" disabled={!ready||!history.future.length} onClick={redo}><Redo2/></button><button className="v3-desktop-action" data-v3-preview-trigger disabled={!ready} onMouseDown={event=>{previewIntent.current=true;event.preventDefault();}} onClick={()=>setIsPreviewMode(true)}><Scan/>Preview</button><button className="v3-save" aria-label={listingArtwork?'Save as Design':'Save'} disabled={!ready||session.status==='saving'} onClick={()=>void save()}><Save/><span>{listingArtwork?'Save as Design':'Save'}</span></button><button className="v3-export v3-desktop-action" disabled={!ready||exportStatus==='exporting'} onClick={requestExport}><Download/>Export</button>
+        <DropdownMenu><DropdownMenuTrigger asChild><button className="v3-more" aria-label="More actions"><MoreHorizontal/></button></DropdownMenuTrigger><DropdownMenuContent align="end" className="v3-responsive-menu" aria-label="Editor actions">
+          <DropdownMenuItem disabled={!ready} onSelect={()=>setIsPreviewMode(true)}><Scan/>Preview</DropdownMenuItem>
+          <DropdownMenuItem disabled={!ready||exportStatus==='exporting'} onSelect={requestExport}><Download/>{exportStatus==='exporting'?'Exporting�':'Export'}</DropdownMenuItem>
+          <DropdownMenuItem disabled={!ready||!history.past.length} onSelect={undo}><Undo2/>Undo</DropdownMenuItem><DropdownMenuItem disabled={!ready||!history.future.length} onSelect={redo}><Redo2/>Redo</DropdownMenuItem><DropdownMenuSeparator/>
+          <DropdownMenuItem disabled={!ready} onSelect={openTemplateFields}>Template Fields</DropdownMenuItem>
+          <DropdownMenuItem disabled={!ready||!listing.pendingChanges} onSelect={()=>{const result=listing.applyToDesign();setWorkflowError(result.ok?'':result.error);}}>Apply listing updates</DropdownMenuItem>
+          <DropdownMenuItem disabled={!ready||!listing.lastApplyAvailable} onSelect={()=>{const result=listing.undoLastApply();setWorkflowError(result.ok?'':result.error);}}>Undo last apply</DropdownMenuItem>
+          <DropdownMenuItem disabled={!ready||templateSaving} onSelect={()=>void saveAsTemplate()}>{templateSaving?'Saving template�':'Save as Template'}</DropdownMenuItem>
+        </DropdownMenuContent></DropdownMenu>
+      </div>
     </header>
     {isPreviewMode&&<button className="v3-exit-preview" aria-label="Exit preview" onClick={()=>setIsPreviewMode(false)}><ArrowLeft/>Exit preview <kbd>Esc</kbd></button>}
     <div hidden={isPreviewMode}>
@@ -180,8 +206,10 @@ export default function V3Editor({designId}:{designId?:string}) {
     </div>
     {reviewOpen&&ready&&<V3ExportReview key={designId??'new'} title={session.title} onClose={()=>setReviewOpen(false)}/>}
     <div className="v3-body">
-      <nav aria-label="Editor sections" className="v3-rail" hidden={isPreviewMode}>{rail.map(([name,Icon])=><button key={name} disabled={!ready} aria-pressed={!layersOpen&&!colorActive&&!imageEditing&&!effectsActive&&panel===name} onClick={()=>{leaveLayers();if(name==='Elements'){panel==='Elements'&&!colorActive?closeElements():openElements('shapes');return;}closeColorPanel();closeEffects();setElementsReplaceId(null);beforeElements.current=null;setEditingBrandFromColor(false);setImageEditing(false);setPanel(panel===name?null:name);}}><Icon/>{name}</button>)}</nav>
-      <aside className="v3-panel" hidden={!ready||isPreviewMode||(!layersOpen&&!colorActive&&!imageEditing&&!effectsActive&&(panel===null||panel==='Tools'))} aria-label={colorActive?'Color panel':effectsActive?'Effects panel':imageEditing?'Image editing panel':layersOpen?(sidebarTab==='arrange'?'Arrange panel':'Layers panel'):panel&&panel!=='Tools'?`${panel} panel`:undefined}>
+      <nav aria-label="Editor sections" className="v3-rail" hidden={isPreviewMode}>{rail.map(([name,Icon])=><button key={name} disabled={!ready} aria-pressed={!layersOpen&&!colorActive&&!imageEditing&&!effectsActive&&panel===name} onClick={()=>{rememberPanelOpener();leaveLayers();if(name==='Elements'){panel==='Elements'&&!colorActive?closeElements():openElements('shapes');return;}closeColorPanel();closeEffects();setElementsReplaceId(null);beforeElements.current=null;setEditingBrandFromColor(false);setImageEditing(false);setPanel(panel===name?null:name);}}><Icon/>{name}</button>)}</nav>
+      <aside ref={sheetRef} className="v3-panel" hidden={!panelVisible} aria-label={colorActive?'Color panel':effectsActive?'Effects panel':imageEditing?'Image editing panel':layersOpen?(sidebarTab==='arrange'?'Arrange panel':'Layers panel'):panel&&panel!=='Tools'?`${panel} panel`:undefined}>
+        <div className="v3-sheet-controls"><button type="button" aria-label={sheetExpanded?'Collapse panel':'Expand panel'} aria-expanded={sheetExpanded} onClick={()=>setSheetExpanded(value=>!value)}>{sheetExpanded?<ChevronDown/>:<ChevronUp/>}<span>{sheetExpanded?'Collapse':'Expand'}</span></button><button type="button" aria-label="Close panel" onClick={closeResponsivePanel}><X/></button></div>
+        <div className="v3-panel-scroll">
         <div hidden={layersOpen||colorActive||imageEditing||effectsActive}>{ready&&panel==='Elements'&&<V3ElementsPanel tab={elementsTab} replaceId={elementsReplaceId} onTabChange={tab=>{setElementsTab(tab);if(tab!==elementsTab)setElementsReplaceId(null);}} onClose={closeElements}/>}{ready&&panel&&panel!=='Tools'&&panel!=='Elements'&&<V3Panels panel={panel} userId={user?String(user.id):''} onUseTemplate={useTemplate} onNavigate={destination=>{leaveLayers();setPanel(destination);}} onClose={()=>{if(editingBrandFromColor){const previous=beforeBrandColor.current;if(previous){setPanel(previous.panel);setImageEditing(previous.imageEditing);}beforeBrandColor.current=null;setEditingBrandFromColor(false);}else setPanel(null);}}/>}</div>
         <div hidden={layersOpen||colorActive||imageEditing||effectsActive||panel!=='Text'}>{ready&&<V3TextInspector suspended={isPreviewMode} isSuspended={()=>previewIntent.current}/>}</div>
         {ready&&!isPreviewMode&&sidebarVisible&&(sidebarTab==='arrange'
@@ -192,8 +220,9 @@ export default function V3Editor({designId}:{designId?:string}) {
         {ready&&colorActive&&colorTarget&&<V3ColorPanel key={`${colorTarget.elementId??'canvas'}:${colorTarget.slot}`} targetLabel={COLOR_TARGET_LABELS[colorTarget.slot]} currentPaint={getTargetPaint(colorTarget)} designColors={getDesignColors()}
           brandPalettes={[...builtInPalettes,...loadPalettes()].map(palette=>({...palette,colors:palette.colors.map(color=>({type:'solid' as const,color,opacity:1}))}))} defaultColors={defaultPaintColors} supportsGradients={colorTarget.slot!=='shadow'&&colorTarget.slot!=='icon'}
           onDraft={previewColorPaint} onCommit={commitColorPaint} onCancel={clearColorDraft} onClose={closeColorPanel} onEditBrand={()=>{clearColorDraft();beforeBrandColor.current={panel,imageEditing};setEditingBrandFromColor(true);setImageEditing(false);setPanel('Brand');}}/>}
+        </div>
       </aside>
-      <div className="v3-stage">{ready&&!isPreviewMode&&<div className="v3-listing-bar" aria-label="Listing actions"><span>{listing.pendingChanges?`${listing.pendingChanges} pending updates · saved with Design, not applied`:`Applied: ${listing.applied.property.address||'No listing yet'}`}</span><button type="button" onClick={()=>{leaveLayers();closeColorPanel();setImageEditing(false);setEffectsId(null);setPanel('Template Fields');}}>Template Fields</button><button type="button" onClick={()=>{const result=listing.applyToDesign();setWorkflowError(result.ok?'':result.error);}} disabled={!listing.pendingChanges}>Apply listing updates</button><button type="button" onClick={()=>{const result=listing.undoLastApply();setWorkflowError(result.ok?'':result.error);}} disabled={!listing.lastApplyAvailable}>Undo last apply</button><button type="button" disabled={templateSaving} onClick={()=>void saveAsTemplate()}>{templateSaving?'Saving template…':'Save as Template'}</button></div>}{ready?<V3Canvas isPreviewMode={isPreviewMode} onAssistant={()=>setAssistant(!assistant)} onLayerPresentation={layersOpen?onLayerPresentation:undefined} onOpenLayers={()=>{if(sidebarVisible&&sidebarTab==='layers')closeLayers();else if(sidebarVisible)setSidebarTab('layers');else openLayers();}} isLayersSidebarOpen={sidebarVisible&&sidebarTab==='layers'} onEditImage={()=>{leaveLayers();setImageEditing(true);}} onEditEffects={()=>{leaveLayers();if(selectedShape){closeColorPanel();setImageEditing(false);setEffectsId(selectedShape.id);}}} onBrowseElements={()=>{const state=useCanvasStore.getState(),target=state.elements.find(el=>el.id===state.selectedElementIds[0]);if(target?.type==='shape')openElements('shapes',target.id);else if(target?.type==='image'&&target.icon)openElements('icons',target.id);}}/>:<main aria-label="Opening workspace" className="v3-opening"><p>{session.error?'Retry opening to load your design.':'Loading your workspace…'}</p></main>}
+      <div className="v3-stage">{ready&&!isPreviewMode&&<div className="v3-listing-bar" aria-label="Listing actions"><span>{listing.pendingChanges?`${listing.pendingChanges} pending updates · saved with Design, not applied`:`Applied: ${listing.applied.property.address||'No listing yet'}`}</span><button type="button" onClick={()=>{leaveLayers();closeColorPanel();setImageEditing(false);setEffectsId(null);setPanel('Template Fields');}}>Template Fields</button><button type="button" onClick={()=>{const result=listing.applyToDesign();setWorkflowError(result.ok?'':result.error);}} disabled={!listing.pendingChanges}>Apply listing updates</button><button type="button" onClick={()=>{const result=listing.undoLastApply();setWorkflowError(result.ok?'':result.error);}} disabled={!listing.lastApplyAvailable}>Undo last apply</button><button type="button" disabled={templateSaving} onClick={()=>void saveAsTemplate()}>{templateSaving?'Saving template…':'Save as Template'}</button></div>}{ready?<V3Canvas isPreviewMode={isPreviewMode} onAssistant={()=>setAssistant(!assistant)} onLayerPresentation={layersOpen?onLayerPresentation:undefined} onOpenLayers={()=>{rememberPanelOpener();if(sidebarVisible&&sidebarTab==='layers')closeLayers();else if(sidebarVisible)setSidebarTab('layers');else openLayers();}} isLayersSidebarOpen={sidebarVisible&&sidebarTab==='layers'} onEditImage={()=>{rememberPanelOpener();leaveLayers();setImageEditing(true);}} onEditEffects={()=>{rememberPanelOpener();leaveLayers();if(selectedShape){closeColorPanel();setImageEditing(false);setEffectsId(selectedShape.id);}}} onBrowseElements={()=>{const state=useCanvasStore.getState(),target=state.elements.find(el=>el.id===state.selectedElementIds[0]);if(target?.type==='shape')openElements('shapes',target.id);else if(target?.type==='image'&&target.icon)openElements('icons',target.id);}}/>:<main aria-label="Opening workspace" className="v3-opening"><p>{session.error?'Retry opening to load your design.':'Loading your workspace…'}</p></main>}
         {!layersOpen&&!isPreviewMode&&!colorActive&&!effectsActive&&ready&&panel==='Tools'&&<V3Tools onClose={()=>setPanel(null)} onText={addText} onImage={()=>setPanel('Uploads')} onElements={()=>openElements('shapes')}/>}
         <div hidden={isPreviewMode||!ready||!assistant} className="v3-ai-panel">{assistant&&ready&&<><button aria-label="Close Assistant" className="v3-icon" onClick={()=>setAssistant(false)}><X/></button>{assistantError&&<p role="alert">{assistantError}</p>}<AIChatBox isExpanded={assistant&&!isPreviewMode} onClose={()=>setAssistant(false)} onTemplateLoad={template=>void placeTemplate(template)}/></>}</div>
       </div>

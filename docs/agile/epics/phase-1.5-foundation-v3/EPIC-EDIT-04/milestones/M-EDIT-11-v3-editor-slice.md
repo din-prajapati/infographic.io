@@ -31,6 +31,7 @@ Approved extension (2026-11-01): draw and edit standalone straight/curved/elbow 
 | 11 | [US-EDIT-041](../stories/US-EDIT-041/STORY.md) | Property SVG icon and emoji library | M | existing checkpoint and coordinated shared seams | 🟡 Locally verified; merge pending | — |
 | 12 | [US-EDIT-042](../stories/US-EDIT-042/STORY.md) | Stable layer ordering, overlap geometry and row actions | M | existing checkpoint; 043 consumes042 helpers | 🟡 Locally verified; merge pending | — |
 | 13 | [US-EDIT-043](../stories/US-EDIT-043/STORY.md) | Layers sidebar with actual previews, row menus and drag ordering | M | existing checkpoint; 043 consumes042 helpers | 🟡 Locally verified; merge pending | — |
+| 14 | [US-EDIT-044](../stories/US-EDIT-044/STORY.md) | Responsive V3 editor shell | M | existing V3 listing/Arrange runtime; harden | 🔲 Not Started | — |
 
 ## Acceptance (Milestone Done When…)
 

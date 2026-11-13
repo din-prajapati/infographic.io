@@ -86,6 +86,7 @@ facts, generate a background without touching the text, and is stopped at Export
 | 22 | [US-EDIT-041](stories/US-EDIT-041/STORY.md) | Property SVG icon and emoji library | M-EDIT-11 | M | 🟡 Locally verified; merge pending |
 | 23 | [US-EDIT-042](stories/US-EDIT-042/STORY.md) | Stable layer ordering, overlap geometry and row actions | M-EDIT-11 | M | 🟡 Locally verified; merge pending |
 | 24 | [US-EDIT-043](stories/US-EDIT-043/STORY.md) | Layers sidebar with actual previews, row menus and drag ordering | M-EDIT-11 | M | 🟡 Locally verified; merge pending |
+| 25 | [US-EDIT-044](stories/US-EDIT-044/STORY.md) | Responsive V3 editor shell | M-EDIT-11 | M | 🔲 Not Started |
 
 ---
 
@@ -148,3 +149,6 @@ US-EDIT-027 is an existing session/autosave foundation, not a reimplementation s
 
 ## Implementation Update — 2026-11-13
 Listing mockup integration through persistence and reviewed PNG export implemented locally. See docs/research/2026-11-13-V3-LISTING-IMPLEMENTATION.md. AI Assistant/providers remain deferred; no merge/Done claim.
+
+### 2026-11-13 — US-EDIT-044 responsive V3 implementation
+Phone canvas-first/bottom sheet, compact tablet shell and measured V3 viewport fit implemented on codex/v3-arrange-opus. Gate1/full units/build pass;29 scoped responsive/Layers browser checks pass. Historical shell Listing/template fixture debt remains documented in story; review/merge pending.

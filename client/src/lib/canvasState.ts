@@ -275,6 +275,17 @@ export function fitCanvasZoomToViewport(): void {
   // Keep breathing room so the artboard never touches the viewport edge.
   // Math.floor ensures the computed zoom never exceeds the exact fit —
   // Math.round could round up (e.g. 0.165 → 0.17) causing a ~16px overflow.
+  if (viewport.closest('.v3-editor')) {
+    const center = viewport.querySelector<HTMLElement>('.v3-canvas-center');
+    const style = center ? getComputedStyle(center) : null;
+    const horizontal = style ? parseFloat(style.paddingLeft) + parseFloat(style.paddingRight) : 32;
+    const vertical = style ? parseFloat(style.paddingTop) + parseFloat(style.paddingBottom) : 48;
+    const scale = Math.min(Math.max(1, viewport.clientWidth - horizontal) / canvasWidth, Math.max(1, viewport.clientHeight - vertical) / canvasHeight, 1);
+    setZoom(Math.max(0.1, Math.floor(scale * 100) / 100));
+    resetPan();
+    return;
+  }
+
   const horizontalPadding = 80;
   const verticalPadding = 80;
   const availableW = Math.max(viewport.clientWidth - horizontalPadding, 200);

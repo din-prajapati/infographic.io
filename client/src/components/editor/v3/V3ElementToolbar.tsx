@@ -236,7 +236,7 @@ export function V3ElementToolbar({ element, onEditImage,onEditEffects,onBrowseEl
       const width = Math.min(toolbar.scrollWidth, bounds.width - 24);
       const height = toolbar.getBoundingClientRect().height;
       const above = target.top - height - 14;
-      const next = { width: Math.max(200, bounds.width - 24), left: Math.max(bounds.left + 12, Math.min(target.left + target.width / 2 - width / 2, bounds.right - width - 12)), top: Math.max(bounds.top + 12, Math.min(above >= bounds.top + 12 ? above : target.bottom + 14, bounds.bottom - height - 12)) };
+      const next = { width: Math.max(1, bounds.width - 24), left: Math.max(bounds.left + 12, Math.min(target.left + target.width / 2 - width / 2, bounds.right - width - 12)), top: Math.max(bounds.top + 12, Math.min(above >= bounds.top + 12 ? above : target.bottom + 14, bounds.bottom - height - 12)) };
       setPosition(previous => previous.left === next.left && previous.top === next.top && previous.width === next.width ? previous : next);
     };
     measure(); const observer = new ResizeObserver(measure); observer.observe(toolbar); observer.observe(viewport);
