@@ -3,6 +3,9 @@ import { useQuery } from '@tanstack/react-query';
 import { Upload, X, Plus, Pencil, Trash2 } from 'lucide-react';
 import { useCanvasStore } from '../../../hooks/useCanvasStore';
 import { canvasTemplatesApi } from '../../../lib/api';
+import { V3ListingPanel } from './V3ListingPanel';
+import { V3TemplateFields } from './V3TemplateFields';
+import type { V3ListingPanelProps } from './V3ListingPanel';
 import type { DesignMetadata } from '../../../lib/storage';
 import { createImageElement, createTextElement } from '../../../lib/canvasUtils';
 import { isValidLineElement } from '../../../lib/lineGeometry';
@@ -14,7 +17,7 @@ import { TemplateSection, PROPERTY_SLOT_FIELDS, AGENT_SLOT_FIELDS, BRAND_SLOT_FI
 import { BrandPaletteDialog, type BrandPalette } from '../BrandPaletteDialog';
 import { AlertDialog, AlertDialogContent, AlertDialogTitle, AlertDialogDescription, AlertDialogCancel } from '../../ui/alert-dialog';
 
-export type V3Panel = 'Templates' | 'Text' | 'Uploads' | 'Brand' | 'Property' | 'Agent' | 'Elements';
+export type V3Panel = 'Templates' | 'Text' | 'Uploads' | 'Brand' | 'Property' | 'Listing' | 'Agent' | 'Elements' | 'Template Fields';
 
 const textStyles = [
   { name: 'Headline Large', size: 48, weight: 700, color: '#1F1F1F' },
@@ -92,7 +95,7 @@ function hasCanvasLayout(data: unknown): boolean {
   });
 }
 
-function Templates({ userId }: { userId: string }) {
+function Templates({ userId, onUseTemplate }: { userId: string; onUseTemplate?: (template: DesignMetadata) => Promise<void> }) {
   const mounted = useRef(true);
   useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
   const [search, setSearch] = useState('');
@@ -115,8 +118,11 @@ function Templates({ userId }: { userId: string }) {
       if (!mounted.current) return;
       const data: unknown = fresh.canvasData;
       if (!hasCanvasLayout(data)) throw new Error('This template has no usable canvas layout.');
-      if (!restoreCanvasData(data)) throw new Error('This template could not be opened.');
-      useCanvasStore.getState().setCanvasOrigin({ templateId: fresh.id });
+      if (onUseTemplate) await onUseTemplate(fresh);
+      else {
+        if (!restoreCanvasData(data)) throw new Error('This template could not be opened.');
+        useCanvasStore.getState().setCanvasOrigin({ templateId: fresh.id });
+      }
       const next = [fresh.id, ...recent.filter(id => id !== fresh.id)].slice(0, 12);
       setRecent(next);
       try { localStorage.setItem(`v3-recent-templates:${userId}`, JSON.stringify(next)); } catch { /* Canvas use must remain possible when browser storage is unavailable. */ }
@@ -244,11 +250,14 @@ function Brand({ activeSlots }: { activeSlots: ReadonlySet<string> }) {
   </div>;
 }
 
-export function V3Panels({ panel, userId, onClose }: { panel: V3Panel; userId: string; onClose: () => void }) {
+export function V3Panels({ panel, userId, onClose, onNavigate, onUseTemplate }: { panel: V3Panel; userId: string; onClose: () => void; onNavigate?: V3ListingPanelProps['onNavigate']; onUseTemplate?: (template: DesignMetadata) => Promise<void> }) {
   const elements = useCanvasStore(state => state.elements);
   const activeSlots = new Set(elements.flatMap(element => element.slot ? [element.slot] : []));
+  if (onNavigate && panel === 'Brand') return <div className="v3-brand-workspace"><V3ListingPanel key={`${userId}:Brand`} section="Brand" userId={userId} onNavigate={onNavigate} onClose={onClose}/><details className="v3-canvas-palettes"><summary>Canvas palettes</summary><Brand activeSlots={activeSlots}/></details></div>;
+  if (onNavigate && ['Listing', 'Property', 'Agent', 'Brand', 'Uploads'].includes(panel)) return <V3ListingPanel key={`${userId}:${panel}`} section={panel === 'Uploads' ? 'Media' : panel === 'Property' ? 'Listing' : panel as 'Listing'|'Agent'|'Brand'} userId={userId} onNavigate={onNavigate} onClose={onClose} />;
+  if (panel === 'Template Fields') return <V3TemplateFields onClose={onClose} />;
   return <div className="v3-panel-content"><div className="v3-panel-header"><h2>{panel}</h2><button type="button" aria-label={`Close ${panel}`} onClick={onClose}><X /></button></div>
-    {panel === 'Templates' && <Templates key={userId} userId={userId} />}
+    {panel === 'Templates' && <Templates key={userId} userId={userId} onUseTemplate={onUseTemplate} />}
     {panel === 'Text' && <TextStyles />}
     {panel === 'Uploads' && <Uploads key={userId} />}
     {panel === 'Brand' && <Brand activeSlots={activeSlots} />}
