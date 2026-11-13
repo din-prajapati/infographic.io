@@ -1,0 +1,241 @@
+.v3-listing-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+  color: var(--v3-ink);
+  background: var(--v3-surface);
+  font-size: 13px;
+}
+.v3-listing-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--v3-border);
+  flex-shrink: 0;
+}
+.v3-listing-header h2 {
+  flex: 1;
+  font-size: 16px;
+  font-weight: 650;
+}
+.v3-listing-scroll {
+  overflow: auto;
+  min-height: 0;
+  padding: 16px;
+  overflow-wrap: anywhere;
+}
+.v3-listing-panel h3 {
+  font-weight: 650;
+  margin: 0 0 8px;
+}
+.v3-listing-panel p {
+  color: var(--v3-muted);
+  line-height: 1.6;
+  margin: 8px 0 14px;
+}
+.v3-listing-panel label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  margin: 12px 0;
+}
+.v3-editor .v3-listing-panel input:not([type="checkbox"]),
+.v3-editor .v3-listing-panel select,
+.v3-editor .v3-listing-panel textarea {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  border: 1px solid var(--v3-border);
+  border-radius: 8px;
+  background: var(--v3-surface);
+  color: var(--v3-ink);
+  padding: 9px;
+}
+.v3-listing-panel textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+.v3-listing-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 12px;
+}
+.v3-listing-actions {
+  display: flex;
+  gap: 8px;
+  margin: 18px 0;
+}
+.v3-editor .v3-listing-actions button:first-child {
+  background: var(--v3-accent);
+  color: var(--v3-surface);
+}
+.v3-editor .v3-listing-panel button {
+  white-space: normal;
+  min-width: 0;
+}
+.v3-editor .v3-listing-card {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  text-align: left;
+  border: 1px solid var(--v3-border);
+  border-radius: 12px;
+  padding: 14px;
+  margin: 12px 0;
+  background: var(--v3-surface);
+  color: var(--v3-ink);
+}
+.v3-listing-card > span {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+.v3-listing-card small {
+  color: var(--v3-muted);
+}
+.v3-listing-card b {
+  font-size: 21px;
+  color: var(--v3-accent);
+}
+.v3-listing-card-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.v3-listing-card:has(.v3-listing-thumbs) {
+  display: block;
+}
+.v3-listing-thumbs {
+  display: flex;
+  gap: 8px;
+}
+.v3-listing-thumbs img {
+  object-fit: cover;
+  border-radius: 8px;
+  max-width: 48%;
+}
+.v3-listing-address {
+  position: sticky;
+  top: -16px;
+  background: var(--v3-surface);
+  z-index: 1;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--v3-border);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.v3-listing-address small {
+  color: var(--v3-muted);
+}
+.v3-listing-sources {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 9px;
+  background: var(--v3-workspace);
+  margin: 16px 0;
+}
+.v3-editor .v3-listing-sources button {
+  flex: 1;
+  font-size: 11px;
+  padding: 9px 4px;
+}
+.v3-editor .v3-listing-sources button[aria-selected="true"] {
+  background: var(--v3-selected);
+  color: var(--v3-accent);
+}
+.v3-editor .v3-listing-manual {
+  width: 100%;
+  margin: 20px 0;
+  border: 1px solid var(--v3-border);
+}
+.v3-listing-error {
+  padding: 12px;
+  border: 1px solid var(--v3-border);
+  border-radius: 8px;
+  color: var(--v3-ink);
+  margin-bottom: 12px;
+  background: var(--v3-workspace);
+}
+.v3-listing-review {
+  margin-top: 18px;
+  border-top: 1px solid var(--v3-border);
+  padding-top: 14px;
+}
+.v3-listing-fact {
+  border-bottom: 1px solid var(--v3-border);
+  padding: 8px 0;
+}
+.v3-listing-fact span {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+.v3-listing-fact input {
+  margin-top: 3px;
+}
+.v3-listing-fact details {
+  padding-left: 22px;
+  color: var(--v3-muted);
+}
+.v3-listing-fact summary {
+  cursor: pointer;
+}
+.v3-listing-fact blockquote {
+  white-space: pre-wrap;
+  padding: 8px;
+  background: var(--v3-workspace);
+  border-radius: 6px;
+}
+.v3-listing-gallery {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.v3-listing-gallery img {
+  width: 100%;
+  height: 96px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+.v3-listing-gallery figcaption {
+  overflow-wrap: anywhere;
+  font-size: 11px;
+  margin-top: 4px;
+}
+.v3-listing-upload {
+  border: 1px dashed var(--v3-border);
+  border-radius: 10px;
+  padding: 14px;
+}
+.v3-listing-panel button:focus-visible,
+.v3-listing-panel summary:focus-visible {
+  outline: 2px solid var(--v3-accent);
+  outline-offset: 2px;
+}
+@media (max-width: 450px) {
+  .v3-listing-scroll {
+    padding: 12px;
+  }
+  .v3-listing-grid {
+    gap: 0 8px;
+  }
+}
+.v3-listing-panel fieldset {
+  min-width: 0;
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+.v3-listing-panel fieldset:disabled {
+  opacity: 0.8;
+}
+.v3-panel:has(>div:not([hidden])>.v3-listing-panel){overflow:hidden}
+.v3-panel>div:has(>.v3-listing-panel){height:100%}
+.v3-listing-scroll{flex:1}
