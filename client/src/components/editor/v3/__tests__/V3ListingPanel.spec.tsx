@@ -231,6 +231,7 @@ describe("Listing panel contracts", () => {
     await change("Property text", "Address: Mine Street");
     await click("Extract & review");
     expect(host.querySelector("blockquote")?.textContent).toBe("Address: Mine Street");
+    await click("Back");
     await click("Use example");
     expect((host.querySelector('[aria-label="Property text"]') as HTMLTextAreaElement).value).toBe("Address: Mine Street");
     await click("Keep my text");
@@ -408,6 +409,43 @@ describe("Listing panel contracts", () => {
       agent: { name: "" },
     });
   });
+  it('opens a separate focused review screen and Back preserves the focused composer source', async () => {
+    await render(); await click('Paste text'); await change('Property text', 'Address: River Road\nPrice: INR 8000000');
+    const scroll = host.querySelector<HTMLElement>('.v3-listing-scroll')!; scroll.scrollTop = 200;
+    await click('Extract & review');
+    const heading = host.querySelector('h2')!;
+    expect(heading.textContent).toBe('Review detected facts'); expect(document.activeElement).toBe(heading);
+    expect(host.querySelector('[data-screen="review"]')).not.toBeNull(); expect(scroll.scrollTop).toBe(0);
+    expect(host.querySelector('[aria-label="Property text"]')).toBeNull(); expect(host.querySelector('[role="tablist"]')).toBeNull();
+    expect([...host.querySelectorAll('button')].some(button => button.textContent === 'Enter manually')).toBe(false);
+    const original = [...host.querySelectorAll('details')].find(details => details.querySelector('summary')?.textContent === 'Original source text')!;
+    expect(original.open).toBe(false); expect(original.querySelector('pre')?.textContent).toBe('Address: River Road\nPrice: INR 8000000');
+    expect(host.querySelector('label details')).toBeNull(); expect(host.querySelector('.v3-listing-fact select')).toBeNull();
+    await click('Back');
+    const composer = host.querySelector<HTMLTextAreaElement>('[aria-label="Property text"]')!;
+    expect(composer.value).toBe('Address: River Road\nPrice: INR 8000000'); expect(document.activeElement).toBe(composer);
+    expect(host.querySelector('.v3-listing-review')).toBeNull(); expect(fixtures.setPending).not.toHaveBeenCalled();
+  });
+  it('shows the current baseline and keeps populated property facts unchecked until explicitly selected', async () => {
+    const record = createEmptyListing(); record.property.address = 'Existing Road'; record.property.amount = '5000000'; fixtures.pending = record;
+    await render(); await click('← Search'); await click('Paste text'); await change('Property text', 'Address: New Road\nPrice: INR 8000000\nBeds: 3'); await click('Extract & review');
+    const cards = [...host.querySelectorAll<HTMLElement>('.v3-listing-fact')];
+    const address = cards.find(card => card.querySelector('label')?.textContent?.includes('Address: New Road'))!;
+    expect(address.textContent).toContain('Current: Existing Road'); expect(address.querySelector<HTMLInputElement>('input')?.checked).toBe(false);
+    const price = cards.find(card => card.querySelector('label')?.textContent?.includes('Price:'))!;
+    expect(price.textContent).toContain('Current: ₹50 Lakh'); expect(price.querySelector<HTMLInputElement>('input')?.checked).toBe(false);
+    const beds = cards.find(card => card.querySelector('label')?.textContent?.includes('Bedrooms: 3'))!;
+    expect(beds.querySelector<HTMLInputElement>('input')?.checked).toBe(true);
+    await click('Confirm selected facts');
+    expect(fixtures.setPending.mock.calls.at(-1)?.[0]).toMatchObject({ property: { address: 'Existing Road', amount: '5000000', beds: '3' } });
+    expect(fixtures.applyToDesign).not.toHaveBeenCalled();
+  });
+  it('keeps an empty review recoverable through Back without importing anything', async () => {
+    await render(); await click('Paste text'); await change('Property text', 'Nothing supported here'); await click('Extract & review');
+    expect(host.querySelector('h2')?.textContent).toBe('Review detected facts'); expect(host.textContent).toContain('No supported facts recognized.');
+    expect([...host.querySelectorAll('button')].find(button => button.textContent === 'Confirm selected facts')?.disabled).toBe(true);
+    await click('Back'); expect(host.querySelector<HTMLTextAreaElement>('[aria-label="Property text"]')?.value).toBe('Nothing supported here'); expect(fixtures.setPending).not.toHaveBeenCalled();
+  });
   // Contract: mixed-property paste cannot be confirmed into pending state.
   it("blocks mixed-property import", async () => {
     await render();
@@ -554,6 +592,7 @@ describe("Listing panel contracts", () => {
     await change('Property text', 'Address: First property');
     await click('Extract & review');
     expect(host.querySelector('blockquote')?.textContent).toBe('Address: First property');
+    await click('Back');
     await change('Property text', 'Address: Second property');
     expect(host.querySelectorAll('blockquote')).toHaveLength(0);
     expect([...host.querySelectorAll('button')].filter(button => button.textContent === 'Confirm selected facts')).toHaveLength(0);

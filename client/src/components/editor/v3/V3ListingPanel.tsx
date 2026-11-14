@@ -63,6 +63,17 @@ function formatReviewedPrice(review: ListingTextReview, fact: ReviewedFact, base
   const period = sibling("property.rentalPeriod");
   return formatListingPrice({ ...base, amount: String(fact.value), currency: String(sibling("property.currency") ?? base.currency), transaction: sibling("property.transaction") === "rent" ? "rent" : "sale", rentalPeriod: (period as ListingRecord["property"]["rentalPeriod"]) ?? base.rentalPeriod });
 }
+function currentReviewedValue(review: ListingTextReview, fact: ReviewedFact): string | null {
+  const [section, key] = fact.path.split('.') as ['property' | 'agent', string];
+  const value = (review.baseline[section] as unknown as Record<string, unknown>)[key];
+  if (value === undefined || value === null || value === '' || (Array.isArray(value) && !value.length)) return null;
+  if (fact.path === 'property.amount') return formatListingPrice(review.baseline.property) || String(value);
+  return Array.isArray(value) ? value.join(', ') : String(value);
+}
+function detectedReviewedValue(review: ListingTextReview, fact: ReviewedFact): string {
+  if (fact.path === 'property.amount' && typeof fact.value === 'string') return formatReviewedPrice(review, fact, review.baseline.property) || fact.value;
+  return Array.isArray(fact.value) ? fact.value.join(', ') : String(fact.value ?? '');
+}
 const SOURCE_TABS = [
   ["id", "Listing ID"],
   ["text", "Paste text"],
@@ -147,7 +158,7 @@ export function V3ListingPanel({
   const workflow = useV3ListingWorkflow();
   const { pending } = workflow;
   const latestPending = useRef(pending); latestPending.current = pending;
-  const [screen, setScreen] = useState<"welcome" | "overview" | "property">(
+  const [screen, setScreen] = useState<"welcome" | "overview" | "property" | "review">(
     () =>
       section === 'Property' ? 'property' : pending.property.address || pending.property.name
         ? "overview"
@@ -160,6 +171,8 @@ export function V3ListingPanel({
   const [featuresText, setFeaturesText] = useState(() => pending.property.features.join(", "));
   const [confirmExample, setConfirmExample] = useState(false);
   const composer = useRef<HTMLTextAreaElement | null>(null);
+  const reviewHeading = useRef<HTMLHeadingElement | null>(null);
+  const returnToComposer = useRef(false);
   const [query, setQuery] = useState("");
   const [paste, setPaste] = useState("");
   const [review, setReview] = useState<ListingTextReview | null>(null);
@@ -170,6 +183,16 @@ export function V3ListingPanel({
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const viewport = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    if (section !== 'Listing') return;
+    if (screen === 'review') {
+      if (viewport.current) viewport.current.scrollTop = 0;
+      reviewHeading.current?.focus();
+    } else if (returnToComposer.current) {
+      returnToComposer.current = false;
+      composer.current?.focus();
+    }
+  }, [screen, section]);
   const identity = useRef(userId);
   identity.current = userId;
   const alive = useRef(true);
@@ -575,6 +598,14 @@ export function V3ListingPanel({
           if (section === 'Property') navigate('Listing');
         })}
       </header>
+    ) : screen === "review" ? (
+      <header className="v3-lp-head">
+        <h2 ref={reviewHeading} tabIndex={-1}>Review detected facts</h2>
+        {back("Back", () => {
+          setReview(null); setChosen([]); setError(null); setSource("Paste text");
+          returnToComposer.current = true; setScreen("welcome");
+        })}
+      </header>
     ) : screen === "overview" ? (
       <header className="v3-lp-head v3-lp-listing-head">
         <button
@@ -887,6 +918,31 @@ export function V3ListingPanel({
                 </button>
               </div>
             </section>
+          ) : screen === "review" && review ? (
+            <section className="v3-listing-review" aria-label="Detected listing facts">
+              <p className="v3-lp-review-intro">Choose the facts to add or replace. Existing values stay unchanged unless you select them. Canvas changes wait for Apply.</p>
+              <details className="v3-lp-review-source"><summary>Original source text</summary><pre>{review.source}</pre></details>
+              {review.error && <p role="alert" className="v3-lp-warning">{review.error}</p>}
+              <p className="v3-lp-hint">Contact details are suggestions. Select them explicitly only after checking the source.</p>
+              {review.facts.map((fact) => {
+                const value = detectedReviewedValue(review, fact);
+                const label = `${fact.path.startsWith("agent.") ? "Contact suggestion \u00b7 " : ""}${fact.label}: ${value}${fact.ambiguous ? " \u2014 choose one candidate" : ""}`;
+                const current = currentReviewedValue(review, fact);
+                return <article key={fact.id} className="v3-listing-fact" data-selected={chosen.includes(fact.id)}>
+                  <label>
+                    <input type="checkbox" aria-label={label} checked={chosen.includes(fact.id)} disabled={review.rejected} onChange={(event) => setChosen((ids) => event.target.checked ? [...ids.filter((id) => !review.facts.some((other) => other.id === id && other.path === fact.path)), fact.id] : ids.filter((id) => id !== fact.id))}/>
+                    <span className="v3-lp-fact-text"><span className="v3-lp-fact-label">{fact.path.startsWith("agent.") ? "Contact suggestion \u00b7 " : ""}{fact.label}: </span><strong>{value}</strong>{fact.ambiguous && <span className="v3-lp-fact-candidate">Choose one candidate</span>}</span>
+                  </label>
+                  {current !== null && <p className="v3-lp-fact-current">Current: {current}</p>}
+                  <details><summary>Source snippet</summary><blockquote>{fact.evidence}</blockquote></details>
+                </article>;
+              })}
+              <button type="button" className="v3-lp-primary v3-lp-full" disabled={review.rejected || chosen.length === 0} onClick={() => {
+                const result = applyReviewedFacts(pending, review, chosen);
+                if (!result.ok) { setError(result.error); return; }
+                workflow.setPending(result.record); setReview(null); setScreen("overview");
+              }}>Confirm selected facts</button>
+            </section>
           ) : screen === "overview" ? (
             <section className="v3-lp-overview">
               <div className="v3-lp-section-row">
@@ -1099,7 +1155,8 @@ export function V3ListingPanel({
                         onClick={() => {
                           const result = reviewListingText(paste, pending);
                           setReview(result);
-                          setChosen(result.facts.filter((f) => f.selected && !f.path.startsWith("agent.")).map((f) => f.id));
+                          setChosen(result.facts.filter((f) => f.selected && !f.path.startsWith("agent.") && currentReviewedValue(result, f) === null).map((f) => f.id));
+                          setScreen("review");
                           setError(null);
                         }}
                       >
@@ -1107,55 +1164,7 @@ export function V3ListingPanel({
                       </button>
                     </div>
                   )}
-                  {review && (
-                    <div className="v3-listing-review">
-                      <h3>Review extracted facts</h3>
-                      {review.error && <p role="alert" className="v3-lp-warning">{review.error}</p>}
-                      <p className="v3-lp-hint">Contact details are suggestions. Select them explicitly only after checking the source.</p>
-                      {review.facts.map((fact) => (
-                        <label key={fact.id} className="v3-listing-fact">
-                          <span>
-                            <input
-                              type="checkbox"
-                              checked={chosen.includes(fact.id)}
-                              disabled={review.rejected}
-                              onChange={(e) =>
-                                setChosen((ids) =>
-                                  e.target.checked
-                                    ? [...ids.filter((id) => !review.facts.some((other) => other.id === id && other.path === fact.path)), fact.id]
-                                    : ids.filter((id) => id !== fact.id),
-                                )
-                              }
-                            />
-                            {fact.path.startsWith("agent.") ? "Contact suggestion · " : ""}
-                            {fact.label}: {fact.path === "property.amount" && typeof fact.value === "string" ? formatReviewedPrice(review, fact, pending.property) || fact.value : Array.isArray(fact.value) ? fact.value.join(", ") : fact.value}
-                            {fact.ambiguous && " — choose one candidate"}
-                          </span>
-                          <details>
-                            <summary>Source snippet</summary>
-                            <blockquote>{fact.evidence}</blockquote>
-                          </details>
-                        </label>
-                      ))}
-                      <button
-                        type="button"
-                        className="v3-lp-primary v3-lp-full"
-                        disabled={review.rejected || chosen.length === 0}
-                        onClick={() => {
-                          const result = applyReviewedFacts(pending, review, chosen);
-                          if (!result.ok) {
-                            setError(result.error);
-                            return;
-                          }
-                          workflow.setPending(result.record);
-                          setReview(null);
-                          setScreen("overview");
-                        }}
-                      >
-                        Confirm selected facts
-                      </button>
-                    </div>
-                  )}
+
                 </div>
               )}
               </div>

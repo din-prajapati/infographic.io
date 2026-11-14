@@ -172,8 +172,12 @@ test('Use example → Extract & review lists the price, readable labels and a se
   await page.getByRole('button',{name:'Use example',exact:true}).click();
   await page.getByRole('button',{name:'Extract & review',exact:true}).click();
   const review=page.locator('.v3-listing-review');
-  for(const row of ['Price: ₹80 Lakh','Currency: INR','Bedrooms: 3','Bathrooms: 2','Area: 1500','Area unit: sq ft','Address: Satellite Road, Ahmedabad','Headline: A bright place to call home','Highlights: Balcony, parking'])
-    await expect(review.getByRole('checkbox',{name:row,exact:false})).toBeChecked();
+  // Existing populated fields require explicit approval; only the new Highlights field starts selected.
+  for(const row of ['Price: ₹80 Lakh','Currency: INR','Bedrooms: 3','Bathrooms: 2','Area: 1500','Area unit: sq ft','Address: Satellite Road, Ahmedabad','Headline: A bright place to call home']){
+    const candidate=review.getByRole('checkbox',{name:row,exact:false});
+    await expect(candidate).not.toBeChecked();await candidate.check();
+  }
+  await expect(review.getByRole('checkbox',{name:'Highlights: Balcony, parking',exact:false})).toBeChecked();
   await expect(review.getByRole('checkbox',{name:'Contact suggestion · Agent name: Seller suggested contact',exact:false})).not.toBeChecked();
   await expect(review.getByRole('checkbox',{name:'Contact suggestion · Agent phone: +91 90000 00000',exact:false})).not.toBeChecked();
   await expect(review.getByText(/areaUnit|beds:/)).toHaveCount(0);
@@ -181,4 +185,48 @@ test('Use example → Extract & review lists the price, readable labels and a se
   await review.getByRole('button',{name:'Confirm selected facts',exact:true}).click();
   await expect(page.getByText('₹80 Lakh').first()).toBeVisible();
   expect(state.writes).toHaveLength(0);
+});
+
+// Contract: Extract opens its own sidebar screen; Back restores the source, and selecting Address alone
+// updates pending Address without changing existing Bedrooms/contact or artwork until Apply, in both themes/sizes.
+for(const theme of ['light','dark'])for(const width of [375,1242])test(`dedicated fact review preserves source and applies only selected facts at ${width}px in ${theme}`,async({page},info)=>{
+  await page.setViewportSize({width,height:812});await setup(page,theme);
+  await page.getByRole('button',{name:'Listing',exact:true}).click();
+  const panel=page.getByRole('complementary',{name:'Listing panel',exact:true});
+  await panel.getByRole('button',{name:'Back to Listing search',exact:true}).click();
+  await panel.getByRole('tab',{name:'Paste text',exact:true}).click();
+  const source='Address: 25 Review Road\nBeds: 4\nAgent: Source Contact';
+  await panel.getByRole('textbox',{name:'Property text',exact:true}).fill(source);
+  await panel.getByRole('button',{name:'Extract & review',exact:true}).click();
+  const heading=panel.getByRole('heading',{name:'Review detected facts',exact:true});
+  await expect(heading).toBeFocused();
+  await expect(panel.getByTestId('v3-listing-panel')).toHaveAttribute('data-screen','review');
+  await expect(panel.getByRole('textbox',{name:'Property text',exact:true})).toHaveCount(0);
+  await expect(panel.getByRole('tablist',{name:'Listing source',exact:true})).toHaveCount(0);
+  const review=panel.locator('.v3-listing-review');
+  const address=review.getByRole('checkbox',{name:'Address: 25 Review Road',exact:false});
+  const beds=review.getByRole('checkbox',{name:'Bedrooms: 4',exact:false});
+  const contact=review.getByRole('checkbox',{name:'Contact suggestion · Agent name: Source Contact',exact:false});
+  for(const fact of [address,beds,contact])await expect(fact).not.toBeChecked();
+  await expect(review.getByText('Current: 10 Oak Road',{exact:true})).toBeVisible();
+  await expect(review.getByRole('button',{name:'Confirm selected facts',exact:true})).toBeDisabled();
+  const original=review.locator('details').filter({has:page.locator('summary',{hasText:'Original source text'})});
+  await expect(original).not.toHaveAttribute('open');
+  await original.locator('summary').click();await expect(original.locator('pre')).toHaveText(source);
+  await original.locator('summary').click();
+  const card=review.locator('.v3-listing-fact').filter({has:page.getByRole('checkbox',{name:'Address: 25 Review Road',exact:false})});
+  await card.locator('summary').click();await expect(card.locator('blockquote')).toHaveText('Address: 25 Review Road');
+  await page.screenshot({path:info.outputPath(`listing-review-${width}-${theme}.png`)});
+  expect(await panel.evaluate(node=>node.scrollWidth<=node.clientWidth)).toBe(true);
+  await panel.getByRole('button',{name:'Back',exact:true}).click();
+  const composer=panel.getByRole('textbox',{name:'Property text',exact:true});
+  await expect(composer).toHaveValue(source);await expect(composer).toBeFocused();
+  await panel.getByRole('button',{name:'Extract & review',exact:true}).click();
+  await address.check();await review.getByRole('button',{name:'Confirm selected facts',exact:true}).click();
+  await expect(panel.getByRole('button',{name:/Property information/})).toContainText('25 Review Road');
+  await expect(page.getByTestId('design-canvas').getByText('10 Oak Road',{exact:true})).toHaveCount(1);
+  await panel.getByRole('button',{name:'Apply to design',exact:true}).click();
+  await expect(page.getByTestId('design-canvas').getByText('25 Review Road',{exact:true})).toHaveCount(1);
+  await expect(panel.locator('.v3-lp-specs > span').filter({has:page.getByText('Bedrooms',{exact:true})}).locator('strong')).toHaveText('3');
+  await expect(panel.getByRole('button',{name:/Alex Agent/})).toHaveCount(1);
 });
