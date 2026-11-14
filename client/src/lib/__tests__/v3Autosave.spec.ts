@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createV3DesignSession } from '../v3DesignSession';
+import { createV3DesignSession, V3SaveSupersededError } from '../v3DesignSession';
 import { createV3DraftStore } from '../v3Autosave';
 
 const ID = 'c123456789012345678901234';
@@ -33,6 +33,41 @@ function setup(user = 'user-a') {
 describe('US-EDIT-027 guarded autosave', () => {
   beforeEach(() => { vi.useFakeTimers(); vi.setSystemTime(START); localStorage.clear(); });
   afterEach(() => { cleanup.splice(0).forEach(close => close()); vi.useRealTimers(); });
+
+  it.each([undefined, ID])('retries superseded preparation for %s without a false save error', async id => {
+    const f = setup(); await f.session.open(id); f.edit('Earlier');
+    const pending = deferred<{ id: string }>(); f.save.mockReturnValueOnce(pending.promise);
+    const saving = f.session.save(); f.edit('Latest');
+    pending.reject(new V3SaveSupersededError()); await saving;
+    expect(f.session.getState()).toMatchObject({ status: 'unsaved', error: null, lastSavedAt: null, hasUnsavedChanges: true });
+    expect(f.drafts.read(id)?.canvasData).toEqual(canvas('Latest'));
+    await vi.advanceTimersByTimeAsync(2000);
+    expect(f.save).toHaveBeenCalledTimes(2);
+    expect(f.save.mock.calls[1][0].canvasData).toEqual(canvas('Latest'));
+    expect(f.session.getState()).toMatchObject({ id: ID, status: 'saved', hasUnsavedChanges: false });
+  });
+
+  it('does not retry a superseded preview after changing documents', async () => {
+    const f = setup(); await f.session.open(ID); f.edit('Earlier');
+    const pending = deferred<{ id: string }>(); f.save.mockReturnValueOnce(pending.promise);
+    const saving = f.session.save(); await f.session.open(OTHER);
+    pending.reject(new V3SaveSupersededError()); await saving;
+    await vi.advanceTimersByTimeAsync(10000);
+    expect(f.save).toHaveBeenCalledTimes(1);
+    expect(f.session.getState()).toMatchObject({ id: OTHER, status: 'saved', error: null, lastSavedAt: null });
+  });
+
+  it('resumes a manual retry superseded after an earlier transport failure', async () => {
+    const f = setup(); await f.session.open(ID); f.edit('Offline edit');
+    f.save.mockRejectedValueOnce(new Error('Offline')); await f.session.save();
+    const pending = deferred<{ id: string }>(); f.save.mockReturnValueOnce(pending.promise);
+    const saving = f.session.save(); f.edit('Latest retry');
+    pending.reject(new V3SaveSupersededError()); await saving;
+    await vi.advanceTimersByTimeAsync(2000);
+    expect(f.save).toHaveBeenCalledTimes(3);
+    expect(f.save.mock.calls[2][0].canvasData).toEqual(canvas('Latest retry'));
+    expect(f.session.getState()).toMatchObject({ status: 'saved', error: null, hasUnsavedChanges: false });
+  });
 
   // Contract AC1: write exact latest snapshot at 2000ms after last persisted mutation.
   it('debounces persisted edits for two seconds and sends the latest canvas', async () => {

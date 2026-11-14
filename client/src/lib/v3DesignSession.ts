@@ -33,6 +33,10 @@ interface SessionOperations<T> {
 
 const canonicalId = /^c[a-z0-9]{24}$/;
 
+export class V3SaveSupersededError extends Error {
+  constructor() { super('A newer document revision needs a fresh preview.'); this.name = 'V3SaveSupersededError'; }
+}
+
 // Viewport state and capture timestamps must never create a document revision.
 function fingerprint(title: string, data: unknown): string {
   const canvas = data as Record<string, unknown>;
@@ -56,6 +60,7 @@ export function createV3DesignSession<T>(operations: SessionOperations<T>) {
   let autosavePaused = false;
   let recovered: V3Draft<T> | null = null;
   let hydrating = false;
+  let retrySuperseded = false;
   const current = (token: number) => !disposed && token === generation;
   const update = (patch: Partial<V3SessionState>) => {
     if (disposed) return;
@@ -78,7 +83,7 @@ export function createV3DesignSession<T>(operations: SessionOperations<T>) {
   }
   function schedule() {
     cancelTimer();
-    if (disposed || !state.ready || !state.id || saving || autosavePaused || recovered ||
+    if (disposed || !state.ready || (!state.id && !retrySuperseded) || saving || autosavePaused || recovered ||
       !state.hasUnsavedChanges || operations.autosaveDelay === undefined) return;
     timer = setTimeout(() => { timer = undefined; void save(false); },
       Math.max(0, lastEditedAt + operations.autosaveDelay - Date.now()));
@@ -101,6 +106,7 @@ export function createV3DesignSession<T>(operations: SessionOperations<T>) {
     requestedId = id;
     metadata = undefined;
     autosavePaused = false;
+    retrySuperseded = false;
     recovered = null;
     lastDocument = '';
     revision = 0;
@@ -155,6 +161,7 @@ export function createV3DesignSession<T>(operations: SessionOperations<T>) {
     const canvasData = operations.capture();
     const title = state.title;
     const capturedRevision = revision;
+    retrySuperseded = false;
     saving = true;
     activeSaveGeneration = token;
     update({ status: 'saving', error: null });
@@ -180,9 +187,17 @@ export function createV3DesignSession<T>(operations: SessionOperations<T>) {
       if (!id) operations.onId?.(acknowledgement.id);
     } catch (error) {
       if (current(token)) {
-        autosavePaused = true;
-        preserveDraft();
-        fail('save', error);
+        if (error instanceof V3SaveSupersededError) {
+          autosavePaused = false;
+          retrySuperseded = true;
+          lastEditedAt = Date.now();
+          update({ status: 'unsaved', error: null, hasUnsavedChanges: true });
+          preserveDraft();
+        } else {
+          autosavePaused = true;
+          preserveDraft();
+          fail('save', error);
+        }
       }
     } finally {
       saving = false;
@@ -225,6 +240,7 @@ export function createV3DesignSession<T>(operations: SessionOperations<T>) {
       if (state.hasUnsavedChanges) { preserveDraft(); schedule(); }
     },
     getState: () => state,
+    getNavigationRevision: () => `${generation}:${revision}`,
     dispose() { cancelTimer(); disposed = true; generation++; },
   };
 }

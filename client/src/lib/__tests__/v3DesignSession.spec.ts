@@ -276,9 +276,9 @@ describe('US-EDIT-031 StrictMode session lifecycle', () => {
     } finally { await view.close(); }
   });
 
-  // AC4/AC6: a thumbnail rendered across a document mutation cannot be sent as
-  // the preview of the earlier captured document. Retry is explicit and safe.
-  it('retains edits and rejects a save when the canvas changes during thumbnail rendering', async () => {
+  // AC5/8: superseded preview preparation queues the latest snapshot without
+  // reporting a transport failure or acknowledging the earlier revision.
+  it('queues the latest snapshot when the canvas changes during thumbnail rendering', async () => {
     hookBoundary.getOne.mockResolvedValue({ id: ID, name: 'Property', type: 'design', canvasData: hookBoundary.capture() });
     const thumbnail = deferred<string>();
     hookBoundary.thumbnail.mockReturnValueOnce(thumbnail.promise);
@@ -295,7 +295,10 @@ describe('US-EDIT-031 StrictMode session lifecycle', () => {
         await saving;
       });
       expect(hookBoundary.save).not.toHaveBeenCalled();
-      expect(view.current()).toMatchObject({ ready: true, status: 'error', error: { operation: 'save' } });
+      expect(view.current()).toMatchObject({ ready: true, status: 'unsaved', error: null, lastSavedAt: null });
+      await vi.waitFor(() => expect(hookBoundary.save).toHaveBeenCalledTimes(1), { timeout: 3000 });
+      expect(hookBoundary.save.mock.calls[0][0].canvasData.elements).toEqual(next.elements);
+      await vi.waitFor(() => expect(view.current()).toMatchObject({ status: 'saved', hasUnsavedChanges: false }));
     } finally { await view.close(); }
   });
 

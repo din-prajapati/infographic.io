@@ -4,7 +4,7 @@ import { captureCanvasData, generateThumbnail, restoreCanvasData } from '../lib/
 import type { CanvasElement } from '../lib/canvasTypes';
 import { queryClient } from '../lib/queryClient';
 import type { DesignMetadata } from '../lib/storage';
-import { createV3DesignSession, type V3SessionState } from '../lib/v3DesignSession';
+import { createV3DesignSession, V3SaveSupersededError, type V3SessionState } from '../lib/v3DesignSession';
 import { createV3DraftStore } from '../lib/v3Autosave';
 import { useCanvasStore } from './useCanvasStore';
 import { usePropertyStore } from './usePropertyStore';
@@ -91,7 +91,7 @@ export function useV3DesignSession(designId?: string, userId?: string) {
       // The shared renderer reads the canvas asynchronously. Never attach a
       // preview of newer edits to the earlier document captured by this save.
       if (thumbnailRevision !== canvasRevision) {
-        throw new Error('The design changed while preparing its preview. Please retry Save.');
+        throw new V3SaveSupersededError();
       }
       if (!thumbnail) throw new Error('Thumbnail generation failed');
       const now = new Date().toISOString();
@@ -172,6 +172,7 @@ export function useV3DesignSession(designId?: string, userId?: string) {
     retryLoad: () => controller.current?.retryLoad(),
     restoreDraft: () => controller.current?.restoreDraft(),
     discardDraft: () => controller.current?.discardDraft(),
+    getNavigationRevision: () => controller.current?.getNavigationRevision(),
     confirmNavigation: () => !controller.current?.getState().hasUnsavedChanges ||
       window.confirm(V3_UNSAVED_MESSAGE),
   };
