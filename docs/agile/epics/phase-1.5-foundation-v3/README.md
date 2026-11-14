@@ -29,8 +29,8 @@ Template library — versioned, "proven"       ← M-PROP-03  (this phase)
 | # | Epic | Focus | Status |
 |:-:|------|-------|--------|
 | 0 | [EPIC-OBS-00](EPIC-OBS-00/EPIC.md) | Observability — M-OBS-01 first (moved from Phase 1); reconcile the partly-built Sentry cards | 🟡 US-OBS-005 waits on T5 (BL-34) |
-| 1 | [EPIC-PROP-01](EPIC-PROP-01/EPIC.md) | Property & Brand Foundation — Property record, structured price + intent, Auto-Fill, Brand profile, template contract | 🔲 drafted |
-| 2 | [EPIC-EDIT-04](EPIC-EDIT-04/EPIC.md) | V3 Editor Simplification — single editable path, linked editing, Design tab, AI Assistant, export review, V3 shell (light and dark), Property and Contact tabs, autosave, Edit Elements review | 🟡 1/11 — M-EDIT-03 ✅ 2026-10-29 |
+| 1 | [EPIC-PROP-01](EPIC-PROP-01/EPIC.md) | Property & Brand Foundation — Property record, structured price + intent, Auto-Fill, Brand profile, template contract | 🟡3/12 reconciled implementations;0 merged Done |
+| 2 | [EPIC-EDIT-04](EPIC-EDIT-04/EPIC.md) | V3 Editor Simplification — single editable path, linked editing, Design tab, AI Assistant, export review, V3 shell (light and dark), Property and Contact tabs, autosave, Edit Elements review | 🟡21/25 implementation candidates including 1 formally Done; UI/release review pending |
 
 ## Order and dependencies
 
@@ -61,3 +61,8 @@ before this restructure.
 - [ ] Making an AI poster editable shows what was found and needs the agent's confirmation
 
 > Phase 2 (Kits & Asset Quality) starts only after this gate — kits are built on Property + proven templates.
+
+
+## Current status — 2026-11-14
+
+42 story cards across 3 epics;1/42 formally Done and1/12 milestone documents closed. V3 foundation and Listing delivery are implementation candidates; Assistant, extraction expansion and uncertified Property/Brand/template-version contracts remain open. docs/research/2026-11-14-V3-RELEASE-HARDENING.md separates local evidence from release acceptance.

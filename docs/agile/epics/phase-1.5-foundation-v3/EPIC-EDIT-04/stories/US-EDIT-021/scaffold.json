@@ -31,5 +31,15 @@
     ".orion/rules/testing/RULES.md",
     ".orion/rules/testing/vitest/RULES.md",
     ".orion/rules/testing/playwright/RULES.md"
-  ]
+  ],
+  "ac_coverage": {
+    "present": [
+      "happy-path",
+      "error-path",
+      "regression",
+      "theme"
+    ],
+    "verified": true,
+    "verification_report": "docs/research/2026-11-14-V3-RELEASE-HARDENING.md"
+  }
 }

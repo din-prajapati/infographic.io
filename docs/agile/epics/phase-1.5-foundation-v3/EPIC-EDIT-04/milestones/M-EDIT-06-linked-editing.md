@@ -8,7 +8,7 @@ updated: 2026-10-29
 # M-EDIT-06-linked-editing — Linked editing and export review
 
 > **Epic:** [EPIC-EDIT-04](../EPIC.md)
-> **Status:** 🔲 Not Started
+> **Status:** 🟡 2/2 stories implemented locally; release review/UI acceptance/merge pending
 > **Target date:** TBD (Phase 1.5 sequence — see the [phase README](../../README.md))
 
 ---
@@ -31,8 +31,8 @@ The agent can see and change what every text element is linked to, and Export re
 
 | Order | Story | Title | Size | Blocked By | Status | PR |
 |:-----:|-------|-------|:----:|------------|:------:|:--:|
-| 1 | [US-EDIT-020](../stories/US-EDIT-020/STORY.md) | Linked-element inspector and Manage links | M | US-PROP-004, US-PROP-002 | 🔲 | — |
-| 2 | [US-EDIT-021](../stories/US-EDIT-021/STORY.md) | Export review dialog and out-of-date image guard | M | US-EDIT-020 | 🔲 | — |
+| 1 | [US-EDIT-020](../stories/US-EDIT-020/STORY.md) | Linked-element inspector and Manage links | M | US-PROP-004, US-PROP-002 | 🟡 Implemented locally; review/merge pending | — |
+| 2 | [US-EDIT-021](../stories/US-EDIT-021/STORY.md) | Export review dialog and out-of-date image guard | M | US-EDIT-020 | 🟡 Implemented locally; review/merge pending | — |
 
 ---
 
@@ -52,3 +52,8 @@ The agent can see and change what every text element is linked to, and Export re
 ---
 
 *Milestone created: 2026-10-29*
+
+
+## Current reconciliation — 2026-11-14
+
+2026-11-14 — reconciled from committed Opus baseline3e95a40; implementation present, release hardening/review and UI/font acceptance in progress; not merged Done. Current source and story evidence supersede older status summaries above, including the historical US-EDIT-027 AC4 gap (its card records8/8 implementation ACs). Release-specific template navigation repair remains separately tracked. See docs/research/2026-11-14-V3-RELEASE-HARDENING.md. No formal milestone closure.

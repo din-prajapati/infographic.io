@@ -41,5 +41,15 @@
     ".orion/rules/database/prisma/RULES.md",
     ".orion/rules/testing/RULES.md",
     ".orion/rules/testing/vitest/RULES.md"
-  ]
+  ],
+  "ac_coverage": {
+    "present": [
+      "happy-path",
+      "error-path",
+      "security",
+      "concurrent"
+    ],
+    "verified": true,
+    "verification_report": "docs/research/2026-11-14-V3-RELEASE-HARDENING.md"
+  }
 }

@@ -8,7 +8,7 @@ updated: 2026-10-29
 # EPIC-PROP-01 — Property & Brand Foundation
 
 > **Phase:** Phase 1.5 — Property Foundation & V3 Editor
-> **Status:** 🔲 Not Started — drafted 2026-10-29
+> **Status:** 🟡 3/12 reconciled implementation candidates;0 formally Done; remaining contracts require separate audit
 > **Owner:** Dinesh
 > **Decision:** [ADR-003](../../../decisions/ADR-003-phase-1-close-and-phase-1.5.md)
 
@@ -56,9 +56,9 @@ generated poster.
 
 | # | Story | Title | Milestone | Size | Status |
 |:-:|-------|-------|-----------|:----:|:------:|
-| 1 | [US-PROP-001](stories/US-PROP-001/STORY.md) | Property as a saved record (backend) | M-PROP-01 | M | 🔲 |
+| 1 | [US-PROP-001](stories/US-PROP-001/STORY.md) | Property as a saved record (backend) | M-PROP-01 | M | 🟡 Implemented locally; review/merge pending |
 | 1b | [US-PROP-006](stories/US-PROP-006/STORY.md) | Property as a saved record (client) — *split from US-PROP-001 on 2026-10-29* | M-PROP-01 | M | 🔲 |
-| 2 | [US-PROP-002](stories/US-PROP-002/STORY.md) | Structured price: parser, schema and generation | M-PROP-01 | M | 🔲 |
+| 2 | [US-PROP-002](stories/US-PROP-002/STORY.md) | Structured price: parser, schema and generation | M-PROP-01 | M | 🟡 Implemented locally; review/merge pending |
 | 2b | [US-PROP-007](stories/US-PROP-007/STORY.md) | Listing intent and price in the editor — *split from US-PROP-002 on 2026-10-30* | M-PROP-01 | M | 🔲 |
 | 3 | [US-PROP-003](stories/US-PROP-003/STORY.md) | Auto-Fill from a listing message, with review | M-PROP-01 | M | 🔲 |
 | 4 | [US-AI-028](stories/US-AI-028/STORY.md) | Saved agent profile — the one profile endpoint — *moved from EPIC-AI-05* | M-PROP-02 | S | 🔲 |
@@ -66,7 +66,7 @@ generated poster.
 | 6 | [US-LAUNCH-017](stories/US-LAUNCH-017/STORY.md) | Onboarding brand kit — Screen 2 — *moved from EPIC-LAUNCH-01* | M-PROP-02 | M | 🔲 |
 | 7 | [US-EDIT-006](stories/US-EDIT-006/STORY.md) | Brand layers from existing data — logo + licence — *moved from EPIC-EDIT-03* | M-PROP-02 | M | 🔲 |
 | 8 | [US-EDIT-007](stories/US-EDIT-007/STORY.md) | Agent headshot + QR code — *moved from EPIC-EDIT-03* | M-PROP-02 | M | 🔲 |
-| 9 | [US-PROP-004](stories/US-PROP-004/STORY.md) | Element binding types on the template contract | M-PROP-03 | M | 🔲 |
+| 9 | [US-PROP-004](stories/US-PROP-004/STORY.md) | Element binding types on the template contract | M-PROP-03 | M | 🟡 Implemented locally; review/merge pending |
 | 10 | [US-PROP-005](stories/US-PROP-005/STORY.md) | Template version and proven flag | M-PROP-03 | S | 🔲 |
 
 ---
@@ -98,3 +98,8 @@ Profile persistence needed by this slice is owned by US-PROP-001; onboarding, QR
 
 ## Implementation Update — 2026-11-13
 Canonical global Listing contract, authenticated properties/personal profiles and V3 pending/applied state implemented locally. Additive migration deployed to configured local DB; historical Property data retained. Actual verification in docs/research/2026-11-13-V3-LISTING-IMPLEMENTATION.md; no merge/Done claim.
+
+
+## Release reconciliation — 2026-11-14
+
+2026-11-14 — reconciled from committed Opus baseline3e95a40; implementation present, release hardening/review and UI/font acceptance in progress; not merged Done. See docs/research/2026-11-14-V3-RELEASE-HARDENING.md. The implementation count includes existing locally verified cards, not merged story closures. No Assistant/provider/cutover implementation is added.

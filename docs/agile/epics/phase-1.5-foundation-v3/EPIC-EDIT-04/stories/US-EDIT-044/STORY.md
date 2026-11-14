@@ -101,3 +101,8 @@ Rules: trace runtime before edits; preserve desktop and document geometry; use c
 ## Verification note
 
 Responsive19 + existing Layers10 browser tests PASS (29 total), across both themes and the specified widths; actual screenshots reviewed. Type checks, full bounded unit suites and production build pass. Broader historical shell suite has three obsolete Listing/template cases still failing; overall release E2E and full localhost:5000/manual hardware checks remain pending. No push, merge or deployment was performed. See TASKS.md for commands, logs and scope.
+
+
+## Fresh release verification — 2026-11-14
+
+docs/research/2026-11-14-V3-RELEASE-HARDENING.md records the current full-unit/browser/live results and bounded independent review. Historical navigation/fixture findings above are superseded only by the repaired cases verified in this pass. User UI/font/device acceptance and actual milestone merge remain pending.

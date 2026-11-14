@@ -106,3 +106,8 @@ This is part of M-EDIT-09, separate from the M-EDIT-11/Arrange delivery package.
 ## AC4 completion — 2026-11-08
 
 The central same-document guard is implemented and locally verified; AC4 is now checked. Back/Forward/multi-entry and rapid traversal cancellation retain the live document, and push/replace guard design changes and V3 opt-out queries. First-save URL adoption, native anchors and clean/legacy navigation remain functional. Type checks, 811 backend +751 client unit passes (one existing skip), and 39 distinct browser contracts pass. See VERIFICATION.md for exact commands and the supported-desktop/manual-review boundary. All acceptance criteria are locally covered; formal Done, independent review and PR/merge remain pending. Main merge remains prohibited.
+
+
+## Fresh release verification — 2026-11-14
+
+docs/research/2026-11-14-V3-RELEASE-HARDENING.md records the current full-unit/browser/live results and bounded independent review. Historical navigation/fixture findings above are superseded only by the repaired cases verified in this pass. User UI/font/device acceptance and actual milestone merge remain pending.

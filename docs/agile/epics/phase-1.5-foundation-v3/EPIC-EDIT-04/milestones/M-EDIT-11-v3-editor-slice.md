@@ -2,9 +2,9 @@
 
 > **Epic:** [EPIC-EDIT-04](../EPIC.md)
 > **Feature:** N/A — validation slice
-> **Status:** 🟡 In Progress — local delivery packet prepared; Arrange independently approved after repair; whole-milestone closure/main merge remain unauthorized.
+> **Status:** 🟡 14/14 stories implemented locally; final verification/review, UI/font acceptance and merge pending
 > **Target date:** Not committed; validate effort after first working slice.
-> **Branch:** `codex/v3-arrange-opus` (current delivery candidate); protected checkpoint `codex/v3-editor-checkpoint-2026-11-05` at `b69074b`
+> **Branch:** `codex/v3-listing-responsive-handoff`; protected historical checkpoints retained
 
 ---
 
@@ -18,20 +18,20 @@ Approved extension (2026-11-01): draw and edit standalone straight/curved/elbow 
 
 | Order | Story | Title | Size | Blocked By | Status | PR |
 |:-----:|-------|-------|:----:|------------|:------:|:--:|
-| 1 | [US-EDIT-031](../stories/US-EDIT-031/STORY.md) | V3 shell: open → edit → save → reload → export | L | harden lock + independent tests | 🟡 locally verified | — |
-| 2 | [US-EDIT-032](../stories/US-EDIT-032/STORY.md) | Standalone straight, curved and elbow drawing | M | US-EDIT-031 | Implemented; merge pending | — |
-| 3 | [US-EDIT-033](../stories/US-EDIT-033/STORY.md) | Modern element toolbars and image Edit sidebar | M | shared 032/034 interfaces | Implemented; merge pending | — |
-| 4 | [US-EDIT-034](../stories/US-EDIT-034/STORY.md) | Rotation handles, borders and local shape shadows | M | shared 032/034 interfaces | Implemented; merge pending | — |
-| 5 | [US-EDIT-035](../stories/US-EDIT-035/STORY.md) | Shared paint model, rendering and document persistence | M | existing 031–034 runtime | In Progress - locally verified; merge pending | — |
-| 6 | [US-EDIT-036](../stories/US-EDIT-036/STORY.md) | Shared color sidebar, picker and transient paint editing | M | US-EDIT-035 | In Progress - locally verified; merge pending | — |
-| 7 | [US-EDIT-037](../stories/US-EDIT-037/STORY.md) | Compact stroke styling and line-type menus | M | US-EDIT-035/036 | In Progress - locally verified; merge pending | — |
-| 8 | [US-EDIT-038](../stories/US-EDIT-038/STORY.md) | Annotated Effects, opacity, text-anchor and image-Fit refinements | M | existing US-EDIT-031–037 runtime | Locally verified; merge pending | — |
-| 9 | [US-EDIT-039](../stories/US-EDIT-039/STORY.md) | Common element actions and V3 keyboard parity | M | existing checkpoint and coordinated shared seams | 🟡 Locally verified; merge pending | — |
-| 10 | [US-EDIT-040](../stories/US-EDIT-040/STORY.md) | Compact shape editing and existing-shape library | M | existing checkpoint and coordinated shared seams | 🟡 Locally verified; merge pending | — |
-| 11 | [US-EDIT-041](../stories/US-EDIT-041/STORY.md) | Property SVG icon and emoji library | M | existing checkpoint and coordinated shared seams | 🟡 Locally verified; merge pending | — |
-| 12 | [US-EDIT-042](../stories/US-EDIT-042/STORY.md) | Stable layer ordering, overlap geometry and row actions | M | existing checkpoint; 043 consumes042 helpers | 🟡 Locally verified; merge pending | — |
-| 13 | [US-EDIT-043](../stories/US-EDIT-043/STORY.md) | Layers sidebar with actual previews, row menus and drag ordering | M | existing checkpoint; 043 consumes042 helpers | 🟡 Locally verified; merge pending | — |
-| 14 | [US-EDIT-044](../stories/US-EDIT-044/STORY.md) | Responsive V3 editor shell | M | existing V3 listing/Arrange runtime; harden | 🔲 Not Started | — |
+| 1 | [US-EDIT-031](../stories/US-EDIT-031/STORY.md) | V3 shell: open → edit → save → reload → export | L | harden lock + independent tests | 🟡 Locally verified; UI/review/merge pending | — |
+| 2 | [US-EDIT-032](../stories/US-EDIT-032/STORY.md) | Standalone straight, curved and elbow drawing | M | US-EDIT-031 | 🟡 Locally verified; UI/review/merge pending | — |
+| 3 | [US-EDIT-033](../stories/US-EDIT-033/STORY.md) | Modern element toolbars and image Edit sidebar | M | shared 032/034 interfaces | 🟡 Locally verified; UI/review/merge pending | — |
+| 4 | [US-EDIT-034](../stories/US-EDIT-034/STORY.md) | Rotation handles, borders and local shape shadows | M | shared 032/034 interfaces | 🟡 Locally verified; UI/review/merge pending | — |
+| 5 | [US-EDIT-035](../stories/US-EDIT-035/STORY.md) | Shared paint model, rendering and document persistence | M | existing 031–034 runtime | 🟡 Locally verified; UI/review/merge pending | — |
+| 6 | [US-EDIT-036](../stories/US-EDIT-036/STORY.md) | Shared color sidebar, picker and transient paint editing | M | US-EDIT-035 | 🟡 Locally verified; UI/review/merge pending | — |
+| 7 | [US-EDIT-037](../stories/US-EDIT-037/STORY.md) | Compact stroke styling and line-type menus | M | US-EDIT-035/036 | 🟡 Locally verified; UI/review/merge pending | — |
+| 8 | [US-EDIT-038](../stories/US-EDIT-038/STORY.md) | Annotated Effects, opacity, text-anchor and image-Fit refinements | M | existing US-EDIT-031–037 runtime | 🟡 Locally verified; UI/review/merge pending | — |
+| 9 | [US-EDIT-039](../stories/US-EDIT-039/STORY.md) | Common element actions and V3 keyboard parity | M | existing checkpoint and coordinated shared seams | 🟡 Locally verified; UI/review/merge pending | — |
+| 10 | [US-EDIT-040](../stories/US-EDIT-040/STORY.md) | Compact shape editing and existing-shape library | M | existing checkpoint and coordinated shared seams | 🟡 Locally verified; UI/review/merge pending | — |
+| 11 | [US-EDIT-041](../stories/US-EDIT-041/STORY.md) | Property SVG icon and emoji library | M | existing checkpoint and coordinated shared seams | 🟡 Locally verified; UI/review/merge pending | — |
+| 12 | [US-EDIT-042](../stories/US-EDIT-042/STORY.md) | Stable layer ordering, overlap geometry and row actions | M | existing checkpoint; 043 consumes042 helpers | 🟡 Locally verified; UI/review/merge pending | — |
+| 13 | [US-EDIT-043](../stories/US-EDIT-043/STORY.md) | Layers sidebar with actual previews, row menus and drag ordering | M | existing checkpoint; 043 consumes042 helpers | 🟡 Locally verified; UI/review/merge pending | — |
+| 14 | [US-EDIT-044](../stories/US-EDIT-044/STORY.md) | Responsive V3 editor shell | M | existing V3 listing/Arrange runtime; harden | 🟡 Locally verified; UI/review/merge pending | — |
 
 ## Acceptance (Milestone Done When…)
 
@@ -81,3 +81,8 @@ Independent Arrange review initially found3 required issues (tab focus and legac
 US-EDIT-027 belongs to M-EDIT-09. Its autosave/recovery work is already implemented, but same-document navigation confirmation (AC4) remains incomplete. This is explicitly retained as a broader V3 release gap; M-EDIT-09 is not closed by M-EDIT-11/Arrange work. Historic authenticated smoke evidence is not a new current-branch database certification.
 
 Final local evidence: Arrange repairs `7ae0fe0` approved independently; frontend/API types,1,550 unit tests (1 existing skip) and production build pass. Browser full132 passes/1 timeout +passing isolatedPreview rerun covers133 distinct cases; not a single all-green invocation. Both theme captures inspected. See V3_DELIVERY_PACKET.md for exact logs, open US-EDIT-027 AC4, review-unit boundaries and main-merge prohibition.
+
+
+## Current reconciliation — 2026-11-14
+
+2026-11-14 — reconciled from committed Opus baseline3e95a40; implementation present, release hardening/review and UI/font acceptance in progress; not merged Done. Current source and story evidence supersede older status summaries above, including the historical US-EDIT-027 AC4 gap (its card records8/8 implementation ACs). Release-specific template navigation repair remains separately tracked. See docs/research/2026-11-14-V3-RELEASE-HARDENING.md. No formal milestone closure.

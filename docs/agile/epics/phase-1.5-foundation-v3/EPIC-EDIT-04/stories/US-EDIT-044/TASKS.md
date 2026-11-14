@@ -73,9 +73,12 @@ Changes subsections are filled during implementation; optional files may be expl
 
 ### T3 — Restore approved UI/UX composition (matrix rows: 4, 16)
 
-- [ ] Restore approved visual/interaction composition; preserve persistence, pending/applied state and responsive behaviour; reconcile UI-structure tests without weakening behaviour assertions.
+- [x] Restore approved visual/interaction composition; preserve persistence, pending/applied state and responsive behaviour; reconcile UI-structure tests without weakening behaviour assertions.
 - `client/src/components/editor/v3/V3Canvas.tsx`
 - `client/src/components/editor/v3/v3-responsive.css`
 - `e2e/v3-responsive.spec.ts`
 
 **Effort:** S
+
+
+2026-11-14: release-hardening automated verification and independent review are recorded in docs/research/2026-11-14-V3-RELEASE-HARDENING.md. Historical fixture failures are reconciled without removed cases; font/device/UI acceptance and merge remain open.

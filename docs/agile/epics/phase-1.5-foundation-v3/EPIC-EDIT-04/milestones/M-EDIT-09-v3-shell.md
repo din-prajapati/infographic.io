@@ -8,7 +8,7 @@ updated: 2026-10-29
 # M-EDIT-09-v3-shell — V3 editor shell and tabs
 
 > **Epic:** [EPIC-EDIT-04](../EPIC.md)
-> **Status:** 🟡 In Progress — approved shell integration on dependent V3 foundation branch; verification and merge pending.
+> **Status:** 🟡 3/3 stories implemented locally; release review/UI acceptance/merge pending
 > **Target date:** TBD (Phase 1.5 sequence — see the [phase README](../../README.md))
 
 ---
@@ -31,9 +31,9 @@ Apply the approved editor skeleton and Navy/Teal light/dark themes to the workin
 
 | Order | Story | Title | Size | Blocked By | Status | PR |
 |:-----:|-------|-------|:----:|------------|:------:|:--:|
-| 1 | [US-EDIT-024](../stories/US-EDIT-024/STORY.md) | Approved editor shell and existing capability adapters | L | US-EDIT-031 foundation | 🟡 | — |
-| 2 | [US-EDIT-027](../stories/US-EDIT-027/STORY.md) | Autosave and save status | M | US-EDIT-024 (status slot) | 🟡 | — |
-| 3 | [US-EDIT-025](../stories/US-EDIT-025/STORY.md) | Property and Contact tabs in the V3 layout | M | US-EDIT-022, US-PROP-002/003, US-AI-028 | 🔲 | — |
+| 1 | [US-EDIT-024](../stories/US-EDIT-024/STORY.md) | Approved editor shell and existing capability adapters | L | US-EDIT-031 foundation | 🟡 Implemented locally; review/merge pending | — |
+| 2 | [US-EDIT-027](../stories/US-EDIT-027/STORY.md) | Autosave and save status | M | US-EDIT-024 (status slot) | 🟡 Implemented locally; review/merge pending | — |
+| 3 | [US-EDIT-025](../stories/US-EDIT-025/STORY.md) | Property and Contact tabs in the V3 layout | M | US-EDIT-022, US-PROP-002/003, US-AI-028 | 🟡 Implemented locally; review/merge pending | — |
 
 ---
 
@@ -56,3 +56,8 @@ Apply the approved editor skeleton and Navy/Teal light/dark themes to the workin
 ---
 
 *Milestone created: 2026-10-29*
+
+
+## Current reconciliation — 2026-11-14
+
+2026-11-14 — reconciled from committed Opus baseline3e95a40; implementation present, release hardening/review and UI/font acceptance in progress; not merged Done. Current source and story evidence supersede older status summaries above, including the historical US-EDIT-027 AC4 gap (its card records8/8 implementation ACs). Release-specific template navigation repair remains separately tracked. See docs/research/2026-11-14-V3-RELEASE-HARDENING.md. No formal milestone closure.

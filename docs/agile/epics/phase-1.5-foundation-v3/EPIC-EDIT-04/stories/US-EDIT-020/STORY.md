@@ -1,6 +1,6 @@
 # Story Card — US-EDIT-020
 
-> **Status:** 🔲 Not Started — reconciled 2026-11-13; certification and implementation pending
+> **Status:** 🟡 Implemented and locally verified — 2026-11-14; independent functional review complete; UI/font/device acceptance and milestone merge pending
 > **Feature:** F-EDIT-01 — Listing workflow integration
 > **Epic:** [EPIC-EDIT-04](../../EPIC.md)
 > **Milestone:** [M-EDIT-06-linked-editing](../../milestones/M-EDIT-06-linked-editing.md)
@@ -22,10 +22,10 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC1 [happy-path]:** When Link field or Template Fields is invoked, the inspector shows the selected element with friendly Property/Agent/Brand source labels, explicit independent/linked/customized state and separate beds/baths/area/unit inputs for specifications; selecting artwork alone never opens the inspector.
-- [ ] **AC2 [error-path]:** When there is no selection or a selected element cannot accept the chosen field type, the inspector explains the condition and disables incompatible mapping without modifying artwork or source facts.
-- [ ] **AC3 [edge-case]:** When Customize this design is expanded, a local text/photo override changes only that element and not pending property/profile data; Detach retains visible content and Use linked value/reconnect explicitly removes the override; ordinary Apply preserves overrides.
-- [ ] **AC4 [theme]:** When Template Fields is used at 375px and 1440px in light/dark themes, field labels and actions remain visible/reachable without horizontal page overflow; controls have accessible labels and expose expanded/selected state to keyboard users.
+- [x] **AC1 [happy-path]:** When Link field or Template Fields is invoked, the inspector shows the selected element with friendly Property/Agent/Brand source labels, explicit independent/linked/customized state and separate beds/baths/area/unit inputs for specifications; selecting artwork alone never opens the inspector.
+- [x] **AC2 [error-path]:** When there is no selection or a selected element cannot accept the chosen field type, the inspector explains the condition and disables incompatible mapping without modifying artwork or source facts.
+- [x] **AC3 [edge-case]:** When Customize this design is expanded, a local text/photo override changes only that element and not pending property/profile data; Detach retains visible content and Use linked value/reconnect explicitly removes the override; ordinary Apply preserves overrides.
+- [x] **AC4 [theme]:** When Template Fields is used at 375px and 1440px in light/dark themes, field labels and actions remain visible/reachable without horizontal page overflow; controls have accessible labels and expose expanded/selected state to keyboard users.
 
 ---
 
@@ -91,10 +91,10 @@ Rules:
 
 | TC ID | Type | Priority | Scenario | Status | Finding |
 |-------|------|----------|----------|--------|---------|
-| TC-EDIT-020-01 | Unit | P0 | happy-path: When Link field or Template Fields is invoked, the inspec… | 🔲 | |
-| TC-EDIT-020-02 | Unit | P0 | error-path: When there is no selection or a selected element cannot a… | 🔲 | |
-| TC-EDIT-020-03 | Unit | P1 | edge-case: When Customize this design is expanded, a local text/phot… | 🔲 | |
-| TC-EDIT-020-04 | Unit | P1 | theme: When Template Fields is used at 375px and 1440px in light… | 🔲 | |
+| TC-EDIT-020-01 | Unit | P0 | happy-path: When Link field or Template Fields is invoked, the inspec… | ✅ | Unit/browser/API evidence mapped in 2026-11-14-V3-RELEASE-HARDENING.md; UI/device acceptance separate |
+| TC-EDIT-020-02 | Unit | P0 | error-path: When there is no selection or a selected element cannot a… | ✅ | Unit/browser/API evidence mapped in 2026-11-14-V3-RELEASE-HARDENING.md; UI/device acceptance separate |
+| TC-EDIT-020-03 | Unit | P1 | edge-case: When Customize this design is expanded, a local text/phot… | ✅ | Unit/browser/API evidence mapped in 2026-11-14-V3-RELEASE-HARDENING.md; UI/device acceptance separate |
+| TC-EDIT-020-04 | Unit | P1 | theme: When Template Fields is used at 375px and 1440px in light… | ✅ | Unit/browser/API evidence mapped in 2026-11-14-V3-RELEASE-HARDENING.md; UI/device acceptance separate |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 
@@ -102,17 +102,25 @@ Rules:
 
 ## Definition of Done
 
-- [ ] All ACs checked ✅
-- [ ] All test cases run and recorded in table above
-- [ ] `npm run check` passes (0 new TypeScript errors)
-- [ ] `npm run test:unit` passes (no regressions)
+- [x] All ACs checked ✅
+- [x] All test cases run and recorded in table above
+- [x] `npm run check` passes (0 new TypeScript errors)
+- [x] `npm run test:unit` passes (no regressions)
 - [ ] Relevant visual/browser/API gates pass with recorded evidence
 - [ ] Manual flow verified on `localhost:5000` (actual opt-in V3 route)
 - [ ] PR merged (PR #_____)
 - [ ] No console errors in changed flow
-- [ ] [TASKS.md](./TASKS.md) task list fully checked ✅
+- [x] [TASKS.md](./TASKS.md) task list fully checked ✅
 - [ ] STORY.md status updated to `✅ Done`
 
 ## Reconciliation — 2026-11-13
 
 This existing ID is retained. The approved listing mockup supersedes earlier draft paths and immediate canvas writes for the V3 slice. This card is a bounded M-sized implementation contract; follow-up product expansion remains deferred. Historical completion is not claimed. See docs/research/2026-11-13-LISTING-V3-INTEGRATION-MATRIX.md for sibling scope ownership.
+
+
+## Release reconciliation — 2026-11-14
+
+The current reconciled ACs are implemented; evidence is mapped in docs/research/2026-11-14-V3-RELEASE-HARDENING.md. AC implementation is distinguished from release acceptance. Historical verification keeps its original date; this pass records fresh checks separately. Open review, user font/UI annotations, device acceptance and milestone PR/merge remain unchecked. No formal closure or default-editor cutover is claimed.
+
+
+Fresh automated gates and the individual AC evidence map are recorded in docs/research/2026-11-14-V3-RELEASE-HARDENING.md. This is local verification, not formal Done. User UI/font acceptance, physical-device checks, unresolved operational gates and actual milestone PR/merge remain separate.

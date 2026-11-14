@@ -8,7 +8,7 @@ updated: 2026-10-29
 # M-EDIT-07-design-tab — Design tab simplification
 
 > **Epic:** [EPIC-EDIT-04](../EPIC.md)
-> **Status:** 🔲 Not Started
+> **Status:** 🟡 1/1 reconciled story implemented locally; dependency audit and release review/merge pending
 > **Target date:** TBD (Phase 1.5 sequence — see the [phase README](../../README.md))
 
 ---
@@ -31,7 +31,7 @@ The Design tab offers Look, Accent colour, Property photo and Format & logo, and
 
 | Order | Story | Title | Size | Blocked By | Status | PR |
 |:-----:|-------|-------|:----:|------------|:------:|:--:|
-| 1 | [US-EDIT-022](../stories/US-EDIT-022/STORY.md) | Design tab simplification | M | US-PROP-005, M-PROP-02 | 🔲 | — |
+| 1 | [US-EDIT-022](../stories/US-EDIT-022/STORY.md) | Design tab simplification | M | US-PROP-005, M-PROP-02 | 🟡 Implemented locally; review/merge pending | — |
 
 ---
 
@@ -51,3 +51,8 @@ The Design tab offers Look, Accent colour, Property photo and Format & logo, and
 ---
 
 *Milestone created: 2026-10-29*
+
+
+## Current reconciliation — 2026-11-14
+
+2026-11-14 — reconciled from committed Opus baseline3e95a40; implementation present, release hardening/review and UI/font acceptance in progress; not merged Done. Current source and story evidence supersede older status summaries above, including the historical US-EDIT-027 AC4 gap (its card records8/8 implementation ACs). Release-specific template navigation repair remains separately tracked. See docs/research/2026-11-14-V3-RELEASE-HARDENING.md. No formal milestone closure.

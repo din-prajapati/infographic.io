@@ -1,6 +1,6 @@
 # Story Card — US-EDIT-021
 
-> **Status:** 🔲 Not Started — reconciled 2026-11-13; certification and implementation pending
+> **Status:** 🟡 Implemented and locally verified — 2026-11-14; independent functional review complete; UI/font/device acceptance and milestone merge pending
 > **Feature:** F-EDIT-01 — Listing workflow integration
 > **Epic:** [EPIC-EDIT-04](../../EPIC.md)
 > **Milestone:** [M-EDIT-06-linked-editing](../../milestones/M-EDIT-06-linked-editing.md)
@@ -22,10 +22,10 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC1 [happy-path]:** When Review & export is invoked, the dialog lists missing required facts/photos, placeholders, invalid price, stale linked content, unapplied changes, intent/period mismatch and measurable text overflow; only an explicit human-review acknowledgement with no blocking findings enables PNG export through the existing actual V3 canvas renderer without selection/field-label UI.
-- [ ] **AC2 [error-path]:** When image loading or PNG rendering fails no successful download is reported and retry remains available; when artwork or pending/applied state changes while the asynchronous render is running, the stale export is rejected and review acknowledgement must be renewed.
-- [ ] **AC3 [regression]:** When the reviewed artwork is exported, the PNG has the design canvas dimensions and includes current text, geometry, chosen photos and crop without editor selection chrome; explicit independent/custom values are not mistaken for stale linked facts; hidden essential facts produce a review finding.
-- [ ] **AC4 [theme]:** When the dialog opens at 375px or 1440px in light/dark theme, all findings, acknowledgement, Cancel and Export actions remain keyboard reachable, focus returns to the trigger on close and the page has no horizontal overflow.
+- [x] **AC1 [happy-path]:** When Review & export is invoked, the dialog lists missing required facts/photos, placeholders, invalid price, stale linked content, unapplied changes, intent/period mismatch and measurable text overflow; only an explicit human-review acknowledgement with no blocking findings enables PNG export through the existing actual V3 canvas renderer without selection/field-label UI.
+- [x] **AC2 [error-path]:** When image loading or PNG rendering fails no successful download is reported and retry remains available; when artwork or pending/applied state changes while the asynchronous render is running, the stale export is rejected and review acknowledgement must be renewed.
+- [x] **AC3 [regression]:** When the reviewed artwork is exported, the PNG has the design canvas dimensions and includes current text, geometry, chosen photos and crop without editor selection chrome; explicit independent/custom values are not mistaken for stale linked facts; hidden essential facts produce a review finding.
+- [x] **AC4 [theme]:** When the dialog opens at 375px or 1440px in light/dark theme, all findings, acknowledgement, Cancel and Export actions remain keyboard reachable, focus returns to the trigger on close and the page has no horizontal overflow.
 
 ---
 
@@ -97,10 +97,10 @@ Rules:
 
 | TC ID | Type | Priority | Scenario | Status | Finding |
 |-------|------|----------|----------|--------|---------|
-| TC-EDIT-021-01 | Unit | P0 | happy-path: When Review & export is invoked, the dialog lists missing… | 🔲 | |
-| TC-EDIT-021-02 | Unit | P0 | error-path: When image loading or PNG rendering fails no successful d… | 🔲 | |
-| TC-EDIT-021-03 | Unit | P1 | regression: When the reviewed artwork is exported, the PNG has the de… | 🔲 | |
-| TC-EDIT-021-04 | Unit | P1 | theme: When the dialog opens at 375px or 1440px in light/dark th… | 🔲 | |
+| TC-EDIT-021-01 | Unit | P0 | happy-path: When Review & export is invoked, the dialog lists missing… | ✅ | Unit/browser/API evidence mapped in 2026-11-14-V3-RELEASE-HARDENING.md; UI/device acceptance separate |
+| TC-EDIT-021-02 | Unit | P0 | error-path: When image loading or PNG rendering fails no successful d… | ✅ | Unit/browser/API evidence mapped in 2026-11-14-V3-RELEASE-HARDENING.md; UI/device acceptance separate |
+| TC-EDIT-021-03 | Unit | P1 | regression: When the reviewed artwork is exported, the PNG has the de… | ✅ | Unit/browser/API evidence mapped in 2026-11-14-V3-RELEASE-HARDENING.md; UI/device acceptance separate |
+| TC-EDIT-021-04 | Unit | P1 | theme: When the dialog opens at 375px or 1440px in light/dark th… | ✅ | Unit/browser/API evidence mapped in 2026-11-14-V3-RELEASE-HARDENING.md; UI/device acceptance separate |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 
@@ -108,17 +108,25 @@ Rules:
 
 ## Definition of Done
 
-- [ ] All ACs checked ✅
-- [ ] All test cases run and recorded in table above
-- [ ] `npm run check` passes (0 new TypeScript errors)
-- [ ] `npm run test:unit` passes (no regressions)
+- [x] All ACs checked ✅
+- [x] All test cases run and recorded in table above
+- [x] `npm run check` passes (0 new TypeScript errors)
+- [x] `npm run test:unit` passes (no regressions)
 - [ ] Relevant visual/browser/API gates pass with recorded evidence
 - [ ] Manual flow verified on `localhost:5000` (actual opt-in V3 route)
 - [ ] PR merged (PR #_____)
 - [ ] No console errors in changed flow
-- [ ] [TASKS.md](./TASKS.md) task list fully checked ✅
+- [x] [TASKS.md](./TASKS.md) task list fully checked ✅
 - [ ] STORY.md status updated to `✅ Done`
 
 ## Reconciliation — 2026-11-13
 
 This existing ID is retained. The approved listing mockup supersedes earlier draft paths and immediate canvas writes for the V3 slice. This card is a bounded M-sized implementation contract; follow-up product expansion remains deferred. Historical completion is not claimed. See docs/research/2026-11-13-LISTING-V3-INTEGRATION-MATRIX.md for sibling scope ownership.
+
+
+## Release reconciliation — 2026-11-14
+
+The current reconciled ACs are implemented; evidence is mapped in docs/research/2026-11-14-V3-RELEASE-HARDENING.md. AC implementation is distinguished from release acceptance. Historical verification keeps its original date; this pass records fresh checks separately. Open review, user font/UI annotations, device acceptance and milestone PR/merge remain unchecked. No formal closure or default-editor cutover is claimed.
+
+
+Fresh automated gates and the individual AC evidence map are recorded in docs/research/2026-11-14-V3-RELEASE-HARDENING.md. This is local verification, not formal Done. User UI/font acceptance, physical-device checks, unresolved operational gates and actual milestone PR/merge remain separate.

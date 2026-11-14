@@ -35,9 +35,9 @@
 
 ### T2 — Verify and record evidence
 
-- [ ] Run required focused/full gates and record exact AC/TC findings in STORY.md; keep unchecked items honest.
-- [ ] Update TASKS.md and scaffold.json only as needed; Story acceptance text remains certification-locked.
-- [ ] Root coordinates all commits. Define tests before implementation inside each task, then commit the passing test+source group; no separate red-test commit is required. Do not revert other agents' changes.
+- [x] Run required focused/full gates and record exact AC/TC findings in STORY.md; keep unchecked items honest.
+- [x] Update TASKS.md and scaffold.json only as needed; Story acceptance text remains certification-locked.
+- [x] Root coordinates all commits. Define tests before implementation inside each task, then commit the passing test+source group; no separate red-test commit is required. Do not revert other agents' changes.
 
 **Effort:** S
 
@@ -73,7 +73,7 @@ Implementation integrated on codex/v3-arrange-opus. Full Gate1, focused/new brow
 
 ### T3 — Restore approved UI/UX composition (matrix rows: 14)
 
-- [ ] Restore approved visual/interaction composition; preserve persistence, pending/applied state and responsive behaviour; reconcile UI-structure tests without weakening behaviour assertions.
+- [x] Restore approved visual/interaction composition; preserve persistence, pending/applied state and responsive behaviour; reconcile UI-structure tests without weakening behaviour assertions.
 - `client/src/components/editor/v3/V3TemplateFields.tsx`
 - `client/src/components/editor/v3/v3-template-fields.css`
 - `client/src/components/editor/v3/__tests__/V3TemplateFields.spec.tsx`
@@ -112,3 +112,13 @@ Implementation integrated on codex/v3-arrange-opus. Full Gate1, focused/new brow
 - `api/tests/listing/listing-workflow.spec.ts` — five sample-text tests
 - `client/src/components/editor/v3/V3ListingPanel.tsx` — `formatReviewedPrice` for the price row
 - `e2e/v3-listing-workflow.spec.ts` — Use example → Extract & review test
+
+
+## Tracker reconciliation — 2026-11-14
+
+2026-11-14 — reconciled from committed Opus baseline3e95a40; implementation present, release hardening/review and UI/font acceptance in progress; not merged Done. Current AC/task findings and fresh gate results are tracked in docs/research/2026-11-14-V3-RELEASE-HARDENING.md. Historical unchecked implementation/evidence rows are retained until this pass finishes verification; they are not interpreted as missing source code. Font/layout annotations are deliberately untouched.
+
+
+## Fresh release evidence — 2026-11-14
+
+Applicable implementation and automated verification tasks are complete; docs/research/2026-11-14-V3-RELEASE-HARDENING.md records exact commands/counts and independent review. No CSS/font changes were made in this repair. User visual/font acceptance, physical devices, final milestone delivery and merge remain pending.

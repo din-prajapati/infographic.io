@@ -8,10 +8,10 @@
 
 ## Four-Pillars Pre-flight
 
-- [ ] **Brain** — Read STORY.md and approved Mockups/listing-workflow-v1/REFINEMENT.md / P1-ESSENTIALS.md; resolve each AC to observable contract assertions before changing code.
-- [ ] **Muscle** — Read every Primary file below, or its existing dependency if new; verify actual V3 runtime import paths and source ownership; do not alter unrelated work.
-- [ ] **Map** — Read `../../ARCHITECTURE.mmd`, trace Property/profile → pending record → Apply → artwork/applied snapshot → template/design persistence → review → existing PNG renderer.
-- [ ] **Env** — Read `../../ENV.yaml` and all scaffold.json rules_loaded; use existing local credentials without logging them; check localhost:5000/3001 and document actual availability. Schema deployment is separate from generating migration source.
+- [x] **Brain** — Read STORY.md and approved Mockups/listing-workflow-v1/REFINEMENT.md / P1-ESSENTIALS.md; resolve each AC to observable contract assertions before changing code.
+- [x] **Muscle** — Read every Primary file below, or its existing dependency if new; verify actual V3 runtime import paths and source ownership; do not alter unrelated work.
+- [x] **Map** — Read `../../ARCHITECTURE.mmd`, trace Property/profile → pending record → Apply → artwork/applied snapshot → template/design persistence → review → existing PNG renderer.
+- [x] **Env** — Read `../../ENV.yaml` and all scaffold.json rules_loaded; use existing local credentials without logging them; check localhost:5000/3001 and document actual availability. Schema deployment is separate from generating migration source.
 
 ## Primary files to touch (scope lock)
 
@@ -29,7 +29,7 @@
 
 ### T1 — Reusable template/independent design payloads with tests
 
-- [ ] Define fact/photo stripping and two-listing independence assertions first; implement clone/fill/placeholder helpers with no prior-listing leakage.
+- [x] Define fact/photo stripping and two-listing independence assertions first; implement clone/fill/placeholder helpers with no prior-listing leakage.
 - `client/src/lib/v3TemplateWorkflow.ts`
 - `client/src/lib/__tests__/v3TemplateWorkflow.spec.ts`
 
@@ -38,7 +38,7 @@
 
 ### T2 — Actual V3 shell wiring and save/navigation regression tests
 
-- [ ] Root owns integration. Define routing/save-status tests first; connect controlled Listing/Agent/Brand/Fields components and existing authenticated persistence without changing opt-in route or Assistant.
+- [x] Root owns integration. Define routing/save-status tests first; connect controlled Listing/Agent/Brand/Fields components and existing authenticated persistence without changing opt-in route or Assistant.
 - `client/src/components/editor/v3/V3Editor.tsx`
 - `client/src/components/editor/v3/V3Panels.tsx`
 - `client/src/components/editor/v3/v3-editor.css`
@@ -48,9 +48,9 @@
 
 ### T3 — Verify and record evidence
 
-- [ ] Run required focused/full gates and record exact AC/TC findings in STORY.md; keep unchecked items honest.
-- [ ] Update TASKS.md and scaffold.json only as needed; Story acceptance text remains certification-locked.
-- [ ] Root coordinates all commits. Define tests before implementation inside each task, then commit the passing test+source group; no separate red-test commit is required. Do not revert other agents' changes.
+- [x] Run required focused/full gates and record exact AC/TC findings in STORY.md; keep unchecked items honest.
+- [x] Update TASKS.md and scaffold.json only as needed; Story acceptance text remains certification-locked.
+- [x] Root coordinates all commits. Define tests before implementation inside each task, then commit the passing test+source group; no separate red-test commit is required. Do not revert other agents' changes.
 
 **Effort:** S
 
@@ -80,7 +80,7 @@ Implementation integrated on codex/v3-arrange-opus. Full Gate1, focused/new brow
 
 ### T3 — Restore approved UI/UX composition (matrix rows: 1–4, 17)
 
-- [ ] Restore approved visual/interaction composition; preserve persistence, pending/applied state and responsive behaviour; reconcile UI-structure tests without weakening behaviour assertions.
+- [x] Restore approved visual/interaction composition; preserve persistence, pending/applied state and responsive behaviour; reconcile UI-structure tests without weakening behaviour assertions.
 - `client/src/components/editor/v3/V3Editor.tsx`
 - `client/src/components/editor/v3/v3-editor.css`
 - `client/src/components/editor/v3/__tests__/V3Shell.spec.tsx`
@@ -126,3 +126,21 @@ Implementation integrated on codex/v3-arrange-opus. Full Gate1, focused/new brow
 - `client/src/components/editor/v3/V3Editor.tsx` — URL start-up effect and `useTemplate({replace, stillWanted})` only (the other hunks in this file belong to T3/T4)
 - `client/src/components/editor/v3/V3Panels.tsx` — uses the shared `hasTemplateLayout`
 - `e2e/v3-editor-url-real-backend.spec.ts` (new), `e2e/v3-real-backend.config.ts` (testMatch)
+
+## T7 — Authorized release hardening (2026-11-14)
+
+- [x] Release hardening: template creation must honor unsaved-navigation confirmation before any server write; cancellation keeps the active design and does not create an orphan design. Template confirmation must describe creating a separate Design, retaining existing work. Files: V3Editor.tsx, V3Panels.tsx, their existing tests, e2e/v3-listing-workflow.spec.ts, e2e/v3-approved-shell.spec.ts. No CSS/font/layout changes.
+
+User authorized standup points2/3. Root owns evidence, tracker reconciliation and commits; independent source/test ownership is coordinated. Existing ACs and exclusions remain unchanged. All applicable gates and independent review required; no merge/deploy. Physical-device acceptance and ongoing font annotations remain pending.
+
+
+## Tracker reconciliation — 2026-11-14
+
+2026-11-14 — reconciled from committed Opus baseline3e95a40; implementation present, release hardening/review and UI/font acceptance in progress; not merged Done. Current AC/task findings and fresh gate results are tracked in docs/research/2026-11-14-V3-RELEASE-HARDENING.md. Historical unchecked implementation/evidence rows are retained until this pass finishes verification; they are not interpreted as missing source code. Font/layout annotations are deliberately untouched.
+
+- Root verification scope: e2e/v3-listing-real-backend.spec.ts updates only the confirmation action name to Create Design; it retains the real isolated-Design/database/R2/export assertions and records fresh dev verification.
+
+
+## Fresh release evidence — 2026-11-14
+
+Applicable implementation and automated verification tasks are complete; docs/research/2026-11-14-V3-RELEASE-HARDENING.md records exact commands/counts and independent review. No CSS/font changes were made in this repair. User visual/font acceptance, physical devices, final milestone delivery and merge remain pending.

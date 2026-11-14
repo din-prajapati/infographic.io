@@ -1,6 +1,6 @@
 # Story Card — US-PROP-004
 
-> **Status:** 🔲 Not Started — reconciled 2026-11-13; certification and implementation pending
+> **Status:** 🟡 Implemented and locally verified — 2026-11-14; independent functional review complete; UI/font/device acceptance and milestone merge pending
 > **Feature:** F-PROP-01 — Listing workflow integration
 > **Epic:** [EPIC-PROP-01](../../EPIC.md)
 > **Milestone:** [M-PROP-03-template-contract](../../milestones/M-PROP-03-template-contract.md)
@@ -22,10 +22,10 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC1 [happy-path]:** When Property, Agent or Brand source facts are edited, only the pending record changes; Apply listing updates atomically updates all eligible linked text/image elements and applied snapshot, retains element IDs, geometry, styles, crop and unlinked/customized content, and enables Undo last apply to restore the exact prior artwork/applied snapshot without discarding pending facts.
-- [ ] **AC2 [error-path]:** When a pending field is invalid Apply is blocked with a field finding and no partial canvas mutation; when a linked image source is missing an existing design retains its prior image with a review warning while a new design has an explicit Add image placeholder.
-- [ ] **AC3 [regression]:** When a saved V3 Design reopens, pending facts, applied snapshot, property association, bindings and design customizations restore independently; canvas text never silently becomes canonical property facts; documents without workflow metadata continue opening through existing legacy behavior.
-- [ ] **AC4 [edge-case]:** When a linked element is detached its current visible content remains independent; reconnecting or Use linked value explicitly removes that element customization; manual photo replacement remains protected from ordinary Apply, and mapping grouped specifications uses separate beds/baths/area/unit sources.
+- [x] **AC1 [happy-path]:** When Property, Agent or Brand source facts are edited, only the pending record changes; Apply listing updates atomically updates all eligible linked text/image elements and applied snapshot, retains element IDs, geometry, styles, crop and unlinked/customized content, and enables Undo last apply to restore the exact prior artwork/applied snapshot without discarding pending facts.
+- [x] **AC2 [error-path]:** When a pending field is invalid Apply is blocked with a field finding and no partial canvas mutation; when a linked image source is missing an existing design retains its prior image with a review warning while a new design has an explicit Add image placeholder.
+- [x] **AC3 [regression]:** When a saved V3 Design reopens, pending facts, applied snapshot, property association, bindings and design customizations restore independently; canvas text never silently becomes canonical property facts; documents without workflow metadata continue opening through existing legacy behavior.
+- [x] **AC4 [edge-case]:** When a linked element is detached its current visible content remains independent; reconnecting or Use linked value explicitly removes that element customization; manual photo replacement remains protected from ordinary Apply, and mapping grouped specifications uses separate beds/baths/area/unit sources.
 
 ---
 
@@ -111,10 +111,10 @@ Rules:
 
 | TC ID | Type | Priority | Scenario | Status | Finding |
 |-------|------|----------|----------|--------|---------|
-| TC-PROP-004-01 | Unit | P0 | happy-path: When Property, Agent or Brand source facts are edited, on… | 🔲 | |
-| TC-PROP-004-02 | Unit | P0 | error-path: When a pending field is invalid Apply is blocked with a f… | 🔲 | |
-| TC-PROP-004-03 | Unit | P1 | regression: When a saved V3 Design reopens, pending facts, applied sn… | 🔲 | |
-| TC-PROP-004-04 | Unit | P1 | edge-case: When a linked element is detached its current visible con… | 🔲 | |
+| TC-PROP-004-01 | Unit | P0 | happy-path: When Property, Agent or Brand source facts are edited, on… | ✅ | Unit/browser/API evidence mapped in 2026-11-14-V3-RELEASE-HARDENING.md; UI/device acceptance separate |
+| TC-PROP-004-02 | Unit | P0 | error-path: When a pending field is invalid Apply is blocked with a f… | ✅ | Unit/browser/API evidence mapped in 2026-11-14-V3-RELEASE-HARDENING.md; UI/device acceptance separate |
+| TC-PROP-004-03 | Unit | P1 | regression: When a saved V3 Design reopens, pending facts, applied sn… | ✅ | Unit/browser/API evidence mapped in 2026-11-14-V3-RELEASE-HARDENING.md; UI/device acceptance separate |
+| TC-PROP-004-04 | Unit | P1 | edge-case: When a linked element is detached its current visible con… | ✅ | Unit/browser/API evidence mapped in 2026-11-14-V3-RELEASE-HARDENING.md; UI/device acceptance separate |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 
@@ -122,17 +122,25 @@ Rules:
 
 ## Definition of Done
 
-- [ ] All ACs checked ✅
-- [ ] All test cases run and recorded in table above
-- [ ] `npm run check` passes (0 new TypeScript errors)
-- [ ] `npm run test:unit` passes (no regressions)
+- [x] All ACs checked ✅
+- [x] All test cases run and recorded in table above
+- [x] `npm run check` passes (0 new TypeScript errors)
+- [x] `npm run test:unit` passes (no regressions)
 - [ ] Relevant visual/browser/API gates pass with recorded evidence
 - [ ] Manual flow verified on `localhost:5000` (actual opt-in V3 route)
 - [ ] PR merged (PR #_____)
 - [ ] No console errors in changed flow
-- [ ] [TASKS.md](./TASKS.md) task list fully checked ✅
+- [x] [TASKS.md](./TASKS.md) task list fully checked ✅
 - [ ] STORY.md status updated to `✅ Done`
 
 ## Reconciliation — 2026-11-13
 
 This existing ID is retained. The approved listing mockup supersedes earlier draft paths and immediate canvas writes for the V3 slice. This card is a bounded M-sized implementation contract; follow-up product expansion remains deferred. Historical completion is not claimed. See docs/research/2026-11-13-LISTING-V3-INTEGRATION-MATRIX.md for sibling scope ownership.
+
+
+## Release reconciliation — 2026-11-14
+
+The current reconciled ACs are implemented; evidence is mapped in docs/research/2026-11-14-V3-RELEASE-HARDENING.md. AC implementation is distinguished from release acceptance. Historical verification keeps its original date; this pass records fresh checks separately. Open review, user font/UI annotations, device acceptance and milestone PR/merge remain unchecked. No formal closure or default-editor cutover is claimed.
+
+
+Fresh automated gates and the individual AC evidence map are recorded in docs/research/2026-11-14-V3-RELEASE-HARDENING.md. This is local verification, not formal Done. User UI/font acceptance, physical-device checks, unresolved operational gates and actual milestone PR/merge remain separate.

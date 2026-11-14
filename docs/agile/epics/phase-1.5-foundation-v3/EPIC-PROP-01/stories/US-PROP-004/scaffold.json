@@ -29,5 +29,15 @@
     ".orion/rules/frontend/react/RULES.md",
     ".orion/rules/testing/RULES.md",
     ".orion/rules/testing/vitest/RULES.md"
-  ]
+  ],
+  "ac_coverage": {
+    "present": [
+      "happy-path",
+      "error-path",
+      "regression",
+      "edge-case"
+    ],
+    "verified": true,
+    "verification_report": "docs/research/2026-11-14-V3-RELEASE-HARDENING.md"
+  }
 }

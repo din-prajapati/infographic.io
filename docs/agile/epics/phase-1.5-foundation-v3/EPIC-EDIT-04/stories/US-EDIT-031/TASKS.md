@@ -104,3 +104,12 @@ Implement AC1–AC11, including persisted-document revisions, metadata preservat
 ## Verification evidence — 2026-10-31
 
 T0 planning counters completed. T1–T9 implemented and tested; full results, independent Opus review, typed browser trace, screenshots and accepted limits are in [VERIFICATION.md](VERIFICATION.md). Full default unit invocation initially exhausted memory; complete backend/client suites subsequently passed with one worker. No tests were omitted. Remaining unchecked delivery item is intentional: Gemini CLI unavailable, milestone PR/main merge and product-owner approval pending.
+
+## T11 — Authorized release hardening (2026-11-14)
+
+- [x] Release hardening: reconcile the historical browser fixtures/selectors to current canonical v3Listing and Save as Design/reviewed export contracts. Retain legacy hydration coverage separately and preserve every meaningful assertion. Files: e2e/us-edit-031-v3-slice.spec.ts and e2e/v3-slice.config.ts only if needed. No runtime/CSS/fonts edits.
+
+User authorized standup points2/3. Root owns evidence, tracker reconciliation and commits; independent source/test ownership is coordinated. Existing ACs and exclusions remain unchanged. All applicable gates and independent review required; no merge/deploy. Physical-device acceptance and ongoing font annotations remain pending.
+
+
+2026-11-14: release-hardening automated verification and independent review are recorded in docs/research/2026-11-14-V3-RELEASE-HARDENING.md. Historical fixture failures are reconciled without removed cases; font/device/UI acceptance and merge remain open.

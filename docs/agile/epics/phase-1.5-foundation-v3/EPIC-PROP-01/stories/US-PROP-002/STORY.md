@@ -1,6 +1,6 @@
 # Story Card — US-PROP-002
 
-> **Status:** 🔲 Not Started — reconciled 2026-11-13; certification and implementation pending
+> **Status:** 🟡 Implemented and locally verified — 2026-11-14; independent functional review complete; UI/font/device acceptance and milestone merge pending
 > **Feature:** F-PROP-01 — Listing workflow integration
 > **Epic:** [EPIC-PROP-01](../../EPIC.md)
 > **Milestone:** [M-PROP-01-property-record](../../milestones/M-PROP-01-property-record.md)
@@ -22,10 +22,10 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC1 [happy-path]:** When shared/listingWorkflow.ts receives a listing for IN, US, GB or CA, it retains country, ISO currency, area value/unit, sale/rent intent, numeric amount and rental period separately; formatting preserves 0 without treating it as missing, and switching sale/rent clears the previous amount while switching rental period retains the amount.
-- [ ] **AC2 [error-path]:** When a negative/non-finite price or area, unsupported currency/unit, missing rent period or unrecognized import value is submitted, validation returns field-specific findings and does not change the caller record; unknown values remain empty and are never invented.
-- [ ] **AC3 [edge-case]:** When local pasted text contains multiple property identities or conflicting price candidates, reviewed import blocks mixed-property input or requires an explicit price choice; each proposed fact has its original source snippet and selection state; agent/contact text is suggestion-only and is not automatically selected.
-- [ ] **AC4 [concurrent]:** When a fact changed after the import review baseline was captured, committing selected reviewed candidates rejects the changed fact instead of silently overwriting it; unselected and unchanged facts retain their exact prior values.
+- [x] **AC1 [happy-path]:** When shared/listingWorkflow.ts receives a listing for IN, US, GB or CA, it retains country, ISO currency, area value/unit, sale/rent intent, numeric amount and rental period separately; formatting preserves 0 without treating it as missing, and switching sale/rent clears the previous amount while switching rental period retains the amount.
+- [x] **AC2 [error-path]:** When a negative/non-finite price or area, unsupported currency/unit, missing rent period or unrecognized import value is submitted, validation returns field-specific findings and does not change the caller record; unknown values remain empty and are never invented.
+- [x] **AC3 [edge-case]:** When local pasted text contains multiple property identities or conflicting price candidates, reviewed import blocks mixed-property input or requires an explicit price choice; each proposed fact has its original source snippet and selection state; agent/contact text is suggestion-only and is not automatically selected.
+- [x] **AC4 [concurrent]:** When a fact changed after the import review baseline was captured, committing selected reviewed candidates rejects the changed fact instead of silently overwriting it; unselected and unchanged facts retain their exact prior values.
 
 ---
 
@@ -89,10 +89,10 @@ Rules:
 
 | TC ID | Type | Priority | Scenario | Status | Finding |
 |-------|------|----------|----------|--------|---------|
-| TC-PROP-002-01 | Unit | P0 | happy-path: When shared/listingWorkflow.ts receives a listing for IN,… | 🔲 | |
-| TC-PROP-002-02 | Unit | P0 | error-path: When a negative/non-finite price or area, unsupported cur… | 🔲 | |
-| TC-PROP-002-03 | Unit | P1 | edge-case: When local pasted text contains multiple property identit… | 🔲 | |
-| TC-PROP-002-04 | Integration | P1 | concurrent: When a fact changed after the import review baseline was … | 🔲 | |
+| TC-PROP-002-01 | Unit | P0 | happy-path: When shared/listingWorkflow.ts receives a listing for IN,… | ✅ | Unit/browser/API evidence mapped in 2026-11-14-V3-RELEASE-HARDENING.md; UI/device acceptance separate |
+| TC-PROP-002-02 | Unit | P0 | error-path: When a negative/non-finite price or area, unsupported cur… | ✅ | Unit/browser/API evidence mapped in 2026-11-14-V3-RELEASE-HARDENING.md; UI/device acceptance separate |
+| TC-PROP-002-03 | Unit | P1 | edge-case: When local pasted text contains multiple property identit… | ✅ | Unit/browser/API evidence mapped in 2026-11-14-V3-RELEASE-HARDENING.md; UI/device acceptance separate |
+| TC-PROP-002-04 | Integration | P1 | concurrent: When a fact changed after the import review baseline was … | ✅ | Unit/browser/API evidence mapped in 2026-11-14-V3-RELEASE-HARDENING.md; UI/device acceptance separate |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 
@@ -100,17 +100,25 @@ Rules:
 
 ## Definition of Done
 
-- [ ] All ACs checked ✅
-- [ ] All test cases run and recorded in table above
-- [ ] `npm run check` passes (0 new TypeScript errors)
-- [ ] `npm run test:unit` passes (no regressions)
+- [x] All ACs checked ✅
+- [x] All test cases run and recorded in table above
+- [x] `npm run check` passes (0 new TypeScript errors)
+- [x] `npm run test:unit` passes (no regressions)
 - [ ] Relevant visual/browser/API gates pass with recorded evidence
 - [ ] Manual flow verified on `localhost:5000` (actual opt-in V3 route)
 - [ ] PR merged (PR #_____)
 - [ ] No console errors in changed flow
-- [ ] [TASKS.md](./TASKS.md) task list fully checked ✅
+- [x] [TASKS.md](./TASKS.md) task list fully checked ✅
 - [ ] STORY.md status updated to `✅ Done`
 
 ## Reconciliation — 2026-11-13
 
 This existing ID is retained. The approved listing mockup supersedes earlier draft paths and immediate canvas writes for the V3 slice. This card is a bounded M-sized implementation contract; follow-up product expansion remains deferred. Historical completion is not claimed. See docs/research/2026-11-13-LISTING-V3-INTEGRATION-MATRIX.md for sibling scope ownership.
+
+
+## Release reconciliation — 2026-11-14
+
+The current reconciled ACs are implemented; evidence is mapped in docs/research/2026-11-14-V3-RELEASE-HARDENING.md. AC implementation is distinguished from release acceptance. Historical verification keeps its original date; this pass records fresh checks separately. Open review, user font/UI annotations, device acceptance and milestone PR/merge remain unchecked. No formal closure or default-editor cutover is claimed.
+
+
+Fresh automated gates and the individual AC evidence map are recorded in docs/research/2026-11-14-V3-RELEASE-HARDENING.md. This is local verification, not formal Done. User UI/font acceptance, physical-device checks, unresolved operational gates and actual milestone PR/merge remain separate.

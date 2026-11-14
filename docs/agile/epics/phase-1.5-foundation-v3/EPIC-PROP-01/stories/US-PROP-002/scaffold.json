@@ -23,5 +23,15 @@
     ".orion/rules/OBSERVABILITY.md",
     ".orion/rules/testing/RULES.md",
     ".orion/rules/testing/vitest/RULES.md"
-  ]
+  ],
+  "ac_coverage": {
+    "present": [
+      "happy-path",
+      "error-path",
+      "edge-case",
+      "concurrent"
+    ],
+    "verified": true,
+    "verification_report": "docs/research/2026-11-14-V3-RELEASE-HARDENING.md"
+  }
 }

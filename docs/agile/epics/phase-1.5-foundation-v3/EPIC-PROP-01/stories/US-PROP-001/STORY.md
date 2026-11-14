@@ -1,6 +1,6 @@
 # Story Card — US-PROP-001
 
-> **Status:** 🔲 Not Started — reconciled 2026-11-13; certification and implementation pending
+> **Status:** 🟡 Implemented and locally verified — 2026-11-14; independent functional review complete; UI/font/device acceptance and milestone merge pending
 > **Feature:** F-PROP-01 — Listing workflow integration
 > **Epic:** [EPIC-PROP-01](../../EPIC.md)
 > **Milestone:** [M-PROP-01-property-record](../../milestones/M-PROP-01-property-record.md)
@@ -22,10 +22,10 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC1 [happy-path]:** When an authenticated account creates, lists, reads or updates /api/v1/properties, the saved Property JSON record round-trips the shared listing contract with server-derived organization ownership and an incrementing version; GET and PUT /api/v1/listing-profiles round-trip the caller personal agent/brand profile.
-- [ ] **AC2 [error-path]:** When property/profile input is invalid the API responds 400 without a write; when persistence fails it returns a recoverable error and the client retains pending inputs, never reporting Saved before acknowledgement.
-- [ ] **AC3 [security]:** When an unauthenticated caller accesses either route family it receives 401; when an account accesses another organization Property it receives 404 and no write occurs; a supplied organizationId or userId cannot override server ownership; another user personal ListingProfile cannot be read or overwritten.
-- [ ] **AC4 [concurrent]:** When two property updates carry the same expectedVersion, exactly one succeeds and increments version while the stale update returns 409 without overwriting the accepted record; changing the authenticated account cannot reuse a previous account profile or property response.
+- [x] **AC1 [happy-path]:** When an authenticated account creates, lists, reads or updates /api/v1/properties, the saved Property JSON record round-trips the shared listing contract with server-derived organization ownership and an incrementing version; GET and PUT /api/v1/listing-profiles round-trip the caller personal agent/brand profile.
+- [x] **AC2 [error-path]:** When property/profile input is invalid the API responds 400 without a write; when persistence fails it returns a recoverable error and the client retains pending inputs, never reporting Saved before acknowledgement.
+- [x] **AC3 [security]:** When an unauthenticated caller accesses either route family it receives 401; when an account accesses another organization Property it receives 404 and no write occurs; a supplied organizationId or userId cannot override server ownership; another user personal ListingProfile cannot be read or overwritten.
+- [x] **AC4 [concurrent]:** When two property updates carry the same expectedVersion, exactly one succeeds and increments version while the stale update returns 409 without overwriting the accepted record; changing the authenticated account cannot reuse a previous account profile or property response.
 
 ---
 
@@ -117,10 +117,10 @@ Rules:
 
 | TC ID | Type | Priority | Scenario | Status | Finding |
 |-------|------|----------|----------|--------|---------|
-| TC-PROP-001-01 | Unit | P0 | happy-path: When an authenticated account creates, lists, reads or up… | 🔲 | |
-| TC-PROP-001-02 | Unit | P0 | error-path: When property/profile input is invalid the API responds 4… | 🔲 | |
-| TC-PROP-001-03 | Unit | P1 | security: When an unauthenticated caller accesses either route fami… | 🔲 | |
-| TC-PROP-001-04 | Integration | P1 | concurrent: When two property updates carry the same expectedVersion,… | 🔲 | |
+| TC-PROP-001-01 | Unit | P0 | happy-path: When an authenticated account creates, lists, reads or up… | ✅ | Unit/browser/API evidence mapped in 2026-11-14-V3-RELEASE-HARDENING.md; UI/device acceptance separate |
+| TC-PROP-001-02 | Unit | P0 | error-path: When property/profile input is invalid the API responds 4… | ✅ | Unit/browser/API evidence mapped in 2026-11-14-V3-RELEASE-HARDENING.md; UI/device acceptance separate |
+| TC-PROP-001-03 | Unit | P1 | security: When an unauthenticated caller accesses either route fami… | ✅ | Unit/browser/API evidence mapped in 2026-11-14-V3-RELEASE-HARDENING.md; UI/device acceptance separate |
+| TC-PROP-001-04 | Integration | P1 | concurrent: When two property updates carry the same expectedVersion,… | ✅ | Unit/browser/API evidence mapped in 2026-11-14-V3-RELEASE-HARDENING.md; UI/device acceptance separate |
 
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 
@@ -128,17 +128,25 @@ Rules:
 
 ## Definition of Done
 
-- [ ] All ACs checked ✅
-- [ ] All test cases run and recorded in table above
-- [ ] `npm run check` passes (0 new TypeScript errors)
-- [ ] `npm run test:unit` passes (no regressions)
+- [x] All ACs checked ✅
+- [x] All test cases run and recorded in table above
+- [x] `npm run check` passes (0 new TypeScript errors)
+- [x] `npm run test:unit` passes (no regressions)
 - [ ] Relevant visual/browser/API gates pass with recorded evidence
 - [ ] Manual flow verified on `localhost:5000` (actual opt-in V3 route)
 - [ ] PR merged (PR #_____)
 - [ ] No console errors in changed flow
-- [ ] [TASKS.md](./TASKS.md) task list fully checked ✅
+- [x] [TASKS.md](./TASKS.md) task list fully checked ✅
 - [ ] STORY.md status updated to `✅ Done`
 
 ## Reconciliation — 2026-11-13
 
 This existing ID is retained. The approved listing mockup supersedes earlier draft paths and immediate canvas writes for the V3 slice. This card is a bounded M-sized implementation contract; follow-up product expansion remains deferred. Historical completion is not claimed. See docs/research/2026-11-13-LISTING-V3-INTEGRATION-MATRIX.md for sibling scope ownership.
+
+
+## Release reconciliation — 2026-11-14
+
+The current reconciled ACs are implemented; evidence is mapped in docs/research/2026-11-14-V3-RELEASE-HARDENING.md. AC implementation is distinguished from release acceptance. Historical verification keeps its original date; this pass records fresh checks separately. Open review, user font/UI annotations, device acceptance and milestone PR/merge remain unchecked. No formal closure or default-editor cutover is claimed.
+
+
+Fresh automated gates and the individual AC evidence map are recorded in docs/research/2026-11-14-V3-RELEASE-HARDENING.md. This is local verification, not formal Done. User UI/font acceptance, physical-device checks, unresolved operational gates and actual milestone PR/merge remain separate.

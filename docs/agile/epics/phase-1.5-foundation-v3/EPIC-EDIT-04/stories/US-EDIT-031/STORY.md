@@ -168,3 +168,8 @@ This is a narrowly scoped validation slice, but nine files plus integration veri
 Independent Opus architecture review: approved once five documentation corrections were applied. Those corrections are recorded above: binary validation, sole V3 keyboard handler, one existing updateElement call per Apply text, stable initial session key across URL adoption and L sizing. useCanvasStore.ts confirms updateElement already pushes history; no additional push is permitted. No production implementation begins before the authoritative hardening lock.
 
 Take the Saved revision baseline only after restoreCanvasData returns true, after its synchronous listing hydration; restore itself must not dirty the loaded document. A blank POST can commit remotely but return no usable ID or time out: Retry may create a duplicate under the existing adapter. This limitation is accepted here; API/idempotency changes and retry workarounds are out of scope. Mocked browser images use data URLs or mocked proxy responses, so PNG export does not depend on external image availability. Contrast verification reuses the existing browser WCAG probe rather than adding axe dependencies.
+
+
+## Fresh release verification — 2026-11-14
+
+docs/research/2026-11-14-V3-RELEASE-HARDENING.md records the current full-unit/browser/live results and bounded independent review. Historical navigation/fixture findings above are superseded only by the repaired cases verified in this pass. User UI/font/device acceptance and actual milestone merge remain pending.

@@ -49,3 +49,12 @@ Gate 2/3: shell integration browser checks coordinated under US-EDIT-024. Gate 4
 ## Current delivery boundary
 
 Current branch for reconciliation: `codex/v3-arrange-opus`. T2 implemented and locally verified 2026-11-08; current evidence below supersedes the 2026-11-07 open-gap state. M-EDIT-09 cannot be marked complete from the Arrange work. No merge to main is permitted.
+
+## T4 — Authorized release hardening (2026-11-14)
+
+- [x] Release hardening: edits during thumbnail preparation are a superseded save attempt, not a transport failure. Retain latest edits/draft, serialize writes, schedule retry of latest state, never acknowledge stale revision or advance lastSavedAt falsely. Files: client/src/hooks/useV3DesignSession.ts, client/src/lib/v3DesignSession.ts and existing session/autosave tests, e2e/us-edit-031-v3-slice.spec.ts only jointly with fixture owner. No CSS/font changes.
+
+User authorized standup points2/3. Root owns evidence, tracker reconciliation and commits; independent source/test ownership is coordinated. Existing ACs and exclusions remain unchanged. All applicable gates and independent review required; no merge/deploy. Physical-device acceptance and ongoing font annotations remain pending.
+
+
+2026-11-14: release-hardening automated verification and independent review are recorded in docs/research/2026-11-14-V3-RELEASE-HARDENING.md. Historical fixture failures are reconciled without removed cases; font/device/UI acceptance and merge remain open.

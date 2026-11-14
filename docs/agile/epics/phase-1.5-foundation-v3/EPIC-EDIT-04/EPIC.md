@@ -14,7 +14,7 @@ updated: 2026-10-31
 
 > **Phase:** Phase 1.5 — Property Foundation & V3 Editor
 
-> **Status:** In Progress — M-EDIT-03 closed; M-EDIT-11 local delivery packet prepared; Arrange independently approved after repairs. Broader V3 parity and milestone/main merges remain pending.
+> **Status:** 🟡 21/25 implementation candidates including 1 formally Done; 4 deferred; release review/merge and UI acceptance pending
 
 > **Owner:** Dinesh
 
@@ -63,36 +63,36 @@ facts, generate a background without touching the text, and is stopped at Export
 | # | Story | Title | Milestone | Size | Status |
 |:-:|-------|-------|-----------|:----:|:------:|
 | 1 | [US-EDIT-009](stories/US-EDIT-009/STORY.md) | Remove the pre-placement Flat/Editable toggle — *moved from EPIC-EDIT-03* | M-EDIT-03 | M | ✅ |
-| 2 | [US-EDIT-020](stories/US-EDIT-020/STORY.md) | Linked-element inspector and Manage links | M-EDIT-06 | M | 🔲 |
-| 3 | [US-EDIT-021](stories/US-EDIT-021/STORY.md) | Export review dialog and out-of-date image guard | M-EDIT-06 | M | 🔲 |
-| 4 | [US-EDIT-022](stories/US-EDIT-022/STORY.md) | Design tab simplification | M-EDIT-07 | M | 🔲 |
+| 2 | [US-EDIT-020](stories/US-EDIT-020/STORY.md) | Linked-element inspector and Manage links | M-EDIT-06 | M | 🟡 Implemented locally; review/merge pending |
+| 3 | [US-EDIT-021](stories/US-EDIT-021/STORY.md) | Export review dialog and out-of-date image guard | M-EDIT-06 | M | 🟡 Implemented locally; review/merge pending |
+| 4 | [US-EDIT-022](stories/US-EDIT-022/STORY.md) | Design tab simplification | M-EDIT-07 | M | 🟡 Implemented locally; review/merge pending |
 | 5 | [US-EDIT-023](stories/US-EDIT-023/STORY.md) | AI Assistant — Create design or Generate Background | M-EDIT-08 | L | 🔲 |
 | 6 | [US-AI-015](stories/US-AI-015/STORY.md) | Quick Refine chips — *moved from EPIC-AI-03, re-scope before implementing* | M-EDIT-08 | M | 🔲 |
 | 7 | [US-EDIT-008](stories/US-EDIT-008/STORY.md) | Editable quota badge + charge confirmation — *moved from EPIC-EDIT-03* | M-EDIT-08 | M | 🔲 |
-| 8 | [US-EDIT-024](stories/US-EDIT-024/STORY.md) | Approved editor shell and existing capability adapters | M-EDIT-09 | L | 🟡 locally implemented |
-| 9 | [US-EDIT-027](stories/US-EDIT-027/STORY.md) | Autosave and save status | M-EDIT-09 | M | 🟡 locally implemented |
-| 10 | [US-EDIT-025](stories/US-EDIT-025/STORY.md) | Property and Contact tabs in the V3 layout | M-EDIT-09 | M | 🔲 |
+| 8 | [US-EDIT-024](stories/US-EDIT-024/STORY.md) | Approved editor shell and existing capability adapters | M-EDIT-09 | L | 🟡 Implemented locally; review/merge pending |
+| 9 | [US-EDIT-027](stories/US-EDIT-027/STORY.md) | Autosave and save status | M-EDIT-09 | M | 🟡 Implemented locally; review/merge pending |
+| 10 | [US-EDIT-025](stories/US-EDIT-025/STORY.md) | Property and Contact tabs in the V3 layout | M-EDIT-09 | M | 🟡 Implemented locally; review/merge pending |
 | 11 | [US-EDIT-026](stories/US-EDIT-026/STORY.md) | Edit Elements review — confirm links before a poster becomes editable | M-EDIT-10 | L | 🔲 |
-| 12 | [US-EDIT-031](stories/US-EDIT-031/STORY.md) | Opt-in V3 editor vertical slice | M-EDIT-11 | L | 🟡 locally verified |
-| 13 | [US-EDIT-032](stories/US-EDIT-032/STORY.md) | Standalone straight, curved and elbow drawing | M-EDIT-11 | M | Implemented; merge pending |
-| 14 | [US-EDIT-033](stories/US-EDIT-033/STORY.md) | Modern element toolbars and image Edit sidebar | M-EDIT-11 | M | Implemented; merge pending |
-| 15 | [US-EDIT-034](stories/US-EDIT-034/STORY.md) | Rotation handles, borders and local shape shadows | M-EDIT-11 | M | Implemented; merge pending |
-| 16 | [US-EDIT-035](stories/US-EDIT-035/STORY.md) | Shared paint model, rendering and document persistence | M-EDIT-11 | M | In Progress - locally verified; merge pending |
-| 17 | [US-EDIT-036](stories/US-EDIT-036/STORY.md) | Shared color sidebar, picker and transient paint editing | M-EDIT-11 | M | In Progress - locally verified; merge pending |
-| 18 | [US-EDIT-037](stories/US-EDIT-037/STORY.md) | Compact stroke styling and line-type menus | M-EDIT-11 | M | In Progress - locally verified; merge pending |
-| 19 | [US-EDIT-038](stories/US-EDIT-038/STORY.md) | Annotated Effects, opacity, text-anchor and image-Fit refinements | M-EDIT-11 | M | 🔲 |
-| 20 | [US-EDIT-039](stories/US-EDIT-039/STORY.md) | Common element actions and V3 keyboard parity | M-EDIT-11 | M | 🟡 Locally verified; merge pending |
-| 21 | [US-EDIT-040](stories/US-EDIT-040/STORY.md) | Compact shape editing and existing-shape library | M-EDIT-11 | M | 🟡 Locally verified; merge pending |
-| 22 | [US-EDIT-041](stories/US-EDIT-041/STORY.md) | Property SVG icon and emoji library | M-EDIT-11 | M | 🟡 Locally verified; merge pending |
-| 23 | [US-EDIT-042](stories/US-EDIT-042/STORY.md) | Stable layer ordering, overlap geometry and row actions | M-EDIT-11 | M | 🟡 Locally verified; merge pending |
-| 24 | [US-EDIT-043](stories/US-EDIT-043/STORY.md) | Layers sidebar with actual previews, row menus and drag ordering | M-EDIT-11 | M | 🟡 Locally verified; merge pending |
-| 25 | [US-EDIT-044](stories/US-EDIT-044/STORY.md) | Responsive V3 editor shell | M-EDIT-11 | M | 🔲 Not Started |
+| 12 | [US-EDIT-031](stories/US-EDIT-031/STORY.md) | Opt-in V3 editor vertical slice | M-EDIT-11 | L | 🟡 Locally verified; UI/review/merge pending |
+| 13 | [US-EDIT-032](stories/US-EDIT-032/STORY.md) | Standalone straight, curved and elbow drawing | M-EDIT-11 | M | 🟡 Locally verified; UI/review/merge pending |
+| 14 | [US-EDIT-033](stories/US-EDIT-033/STORY.md) | Modern element toolbars and image Edit sidebar | M-EDIT-11 | M | 🟡 Locally verified; UI/review/merge pending |
+| 15 | [US-EDIT-034](stories/US-EDIT-034/STORY.md) | Rotation handles, borders and local shape shadows | M-EDIT-11 | M | 🟡 Locally verified; UI/review/merge pending |
+| 16 | [US-EDIT-035](stories/US-EDIT-035/STORY.md) | Shared paint model, rendering and document persistence | M-EDIT-11 | M | 🟡 Locally verified; UI/review/merge pending |
+| 17 | [US-EDIT-036](stories/US-EDIT-036/STORY.md) | Shared color sidebar, picker and transient paint editing | M-EDIT-11 | M | 🟡 Locally verified; UI/review/merge pending |
+| 18 | [US-EDIT-037](stories/US-EDIT-037/STORY.md) | Compact stroke styling and line-type menus | M-EDIT-11 | M | 🟡 Locally verified; UI/review/merge pending |
+| 19 | [US-EDIT-038](stories/US-EDIT-038/STORY.md) | Annotated Effects, opacity, text-anchor and image-Fit refinements | M-EDIT-11 | M | 🟡 Locally verified; UI/review/merge pending |
+| 20 | [US-EDIT-039](stories/US-EDIT-039/STORY.md) | Common element actions and V3 keyboard parity | M-EDIT-11 | M | 🟡 Locally verified; UI/review/merge pending |
+| 21 | [US-EDIT-040](stories/US-EDIT-040/STORY.md) | Compact shape editing and existing-shape library | M-EDIT-11 | M | 🟡 Locally verified; UI/review/merge pending |
+| 22 | [US-EDIT-041](stories/US-EDIT-041/STORY.md) | Property SVG icon and emoji library | M-EDIT-11 | M | 🟡 Locally verified; UI/review/merge pending |
+| 23 | [US-EDIT-042](stories/US-EDIT-042/STORY.md) | Stable layer ordering, overlap geometry and row actions | M-EDIT-11 | M | 🟡 Locally verified; UI/review/merge pending |
+| 24 | [US-EDIT-043](stories/US-EDIT-043/STORY.md) | Layers sidebar with actual previews, row menus and drag ordering | M-EDIT-11 | M | 🟡 Locally verified; UI/review/merge pending |
+| 25 | [US-EDIT-044](stories/US-EDIT-044/STORY.md) | Responsive V3 editor shell | M-EDIT-11 | M | 🟡 Locally verified; UI/review/merge pending |
 
 ---
 
 ## Out of Scope (this epic)
 
-- The phone layout (V3 has one; not asked for yet). *Amended 2026-10-29:* the V3 shell **is** in scope (US-EDIT-024), in both light and dark themes.
+- Phone/tablet responsiveness is in scope under US-EDIT-044 (approved 2026-11-13); remaining UI/font annotations await user review. Historical scope note: *Amended 2026-10-29:* the V3 shell **is** in scope (US-EDIT-024), in both light and dark themes.
 
 - Removing the free-form design tools (shapes, fonts, crop, adjustments) — they stay; V3 drops them, we do not.
 
@@ -152,3 +152,8 @@ Listing mockup integration through persistence and reviewed PNG export implement
 
 ### 2026-11-13 — US-EDIT-044 responsive V3 implementation
 Phone canvas-first/bottom sheet, compact tablet shell and measured V3 viewport fit implemented on codex/v3-arrange-opus. Gate1/full units/build pass;29 scoped responsive/Layers browser checks pass. Historical shell Listing/template fixture debt remains documented in story; review/merge pending.
+
+
+## Release reconciliation — 2026-11-14
+
+2026-11-14 — reconciled from committed Opus baseline3e95a40; implementation present, release hardening/review and UI/font acceptance in progress; not merged Done. See docs/research/2026-11-14-V3-RELEASE-HARDENING.md. The implementation count includes existing locally verified cards, not merged story closures. No Assistant/provider/cutover implementation is added.

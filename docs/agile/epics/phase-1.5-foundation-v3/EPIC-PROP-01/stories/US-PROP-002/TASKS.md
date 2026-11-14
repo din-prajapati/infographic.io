@@ -25,17 +25,17 @@
 
 ### T1 — Shared structured listing and reviewed import contract
 
-- [ ] Define assertions in `api/tests/listing/listing-workflow.spec.ts`, then implement `shared/listingWorkflow.ts` as the same independently green task.
-- [ ] Cover structured pricing, exact decimal amounts, strict bounded validation, source evidence, ambiguous choices, agent suggestions, mixed-property rejection and stale review protection.
-- [ ] Run Gate 1 before commit.
+- [x] Define assertions in `api/tests/listing/listing-workflow.spec.ts`, then implement `shared/listingWorkflow.ts` as the same independently green task.
+- [x] Cover structured pricing, exact decimal amounts, strict bounded validation, source evidence, ambiguous choices, agent suggestions, mixed-property rejection and stale review protection.
+- [x] Run Gate 1 before commit.
 
 **Commit:** `feat(prop): T1 add structured listing and reviewed text contract — US-PROP-002`
 **ACs:** AC1–AC4 · **Effort:** S
 
 ### T2 — Verify and record evidence
 
-- [ ] Record exact Gate 1 and focused shared contract results in STORY.md.
-- [ ] Update TASKS.md and append parent EPIC.md Implementation Update after mandatory gates pass; do not claim merge.
+- [x] Record exact Gate 1 and focused shared contract results in STORY.md.
+- [x] Update TASKS.md and append parent EPIC.md Implementation Update after mandatory gates pass; do not claim merge.
 
 **Commit:** `docs(prop): close US-PROP-002 — record structured listing evidence`
 **Effort:** S
@@ -57,3 +57,13 @@ Gate 2: for UI stories verify actual V3 at 375px and 1440px in both themes, keyb
 
 ## Local integration verification — 2026-11-13
 Implementation integrated on codex/v3-arrange-opus. Full Gate1, focused/new browser and real database evidence are recorded in docs/research/2026-11-13-V3-LISTING-IMPLEMENTATION.md. Story closure/merge is not claimed; broad candidate visual/accessibility regression remains pre-merge work. Root coordinates commits; no failing-test-only commits.
+
+
+## Tracker reconciliation — 2026-11-14
+
+2026-11-14 — reconciled from committed Opus baseline3e95a40; implementation present, release hardening/review and UI/font acceptance in progress; not merged Done. Current AC/task findings and fresh gate results are tracked in docs/research/2026-11-14-V3-RELEASE-HARDENING.md. Historical unchecked implementation/evidence rows are retained until this pass finishes verification; they are not interpreted as missing source code. Font/layout annotations are deliberately untouched.
+
+
+## Fresh release evidence — 2026-11-14
+
+Applicable implementation and automated verification tasks are complete; docs/research/2026-11-14-V3-RELEASE-HARDENING.md records exact commands/counts and independent review. No CSS/font changes were made in this repair. User visual/font acceptance, physical devices, final milestone delivery and merge remain pending.

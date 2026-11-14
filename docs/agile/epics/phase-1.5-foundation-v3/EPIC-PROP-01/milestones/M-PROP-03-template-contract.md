@@ -8,7 +8,7 @@ updated: 2026-10-29
 # M-PROP-03-template-contract — Template contract
 
 > **Epic:** [EPIC-PROP-01](../EPIC.md)
-> **Status:** 🔲 Not Started
+> **Status:** 🟡 1/2 reconciled story implementations;005 version/proven contract uncertified; review/merge pending
 > **Target date:** TBD (Phase 1.5 sequence — see the [phase README](../../README.md))
 
 ---
@@ -31,7 +31,7 @@ Every text element carries an explicit link type, and templates carry a version 
 
 | Order | Story | Title | Size | Blocked By | Status | PR |
 |:-----:|-------|-------|:----:|------------|:------:|:--:|
-| 1 | [US-PROP-004](../stories/US-PROP-004/STORY.md) | Element binding types on the template contract | M | — | 🔲 | — |
+| 1 | [US-PROP-004](../stories/US-PROP-004/STORY.md) | Element binding types on the template contract | M | — | 🟡 Implemented locally; review/merge pending | — |
 | 1 | [US-PROP-005](../stories/US-PROP-005/STORY.md) | Template version and proven flag | S | — | 🔲 | — |
 
 ---
@@ -56,3 +56,8 @@ Every text element carries an explicit link type, and templates carry a version 
 ---
 
 *Milestone created: 2026-10-29*
+
+
+## Current reconciliation — 2026-11-14
+
+2026-11-14 — reconciled from committed Opus baseline3e95a40; implementation present, release hardening/review and UI/font acceptance in progress; not merged Done. Current source and story evidence supersede older status summaries above, including the historical US-EDIT-027 AC4 gap (its card records8/8 implementation ACs). Release-specific template navigation repair remains separately tracked. See docs/research/2026-11-14-V3-RELEASE-HARDENING.md. No formal milestone closure.

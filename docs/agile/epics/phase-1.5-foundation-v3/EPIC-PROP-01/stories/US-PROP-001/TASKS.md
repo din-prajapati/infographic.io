@@ -38,7 +38,7 @@
 
 ### T1 — Persistence schema and versioned service contracts
 
-- [ ] Define service mock contracts for JSON roundtrip, org/property and user/profile scope, expectedVersion and version=0 create; implement schema/service and verify as one green unit.
+- [x] Define service mock contracts for JSON roundtrip, org/property and user/profile scope, expectedVersion and version=0 create; implement schema/service and verify as one green unit.
 - `api/prisma/schema.prisma`
 - `api/prisma/migrations/20261113000000_listing_workspace/migration.sql`
 - `api/src/modules/properties/properties.service.ts`
@@ -49,7 +49,7 @@
 
 ### T2 — Authenticated HTTP boundary and large-body behavior
 
-- [ ] Define HTTP/guard/DTO assertions first; implement authenticated routes and route-scoped bounded parser; prove real >100KB request succeeds and invalid/over-limit/unauthorized inputs do not write.
+- [x] Define HTTP/guard/DTO assertions first; implement authenticated routes and route-scoped bounded parser; prove real >100KB request succeeds and invalid/over-limit/unauthorized inputs do not write.
 - `api/src/modules/properties/properties.module.ts`
 - `api/src/modules/properties/properties.controller.ts`
 - `api/src/modules/properties/listing-profiles.controller.ts`
@@ -64,16 +64,16 @@
 
 ### T3 — Typed authenticated property/profile client
 
-- [ ] Implement existing API transport/error conventions with version-aware typed requests; coordinate shared contract and preserve pending caller inputs on failure.
+- [x] Implement existing API transport/error conventions with version-aware typed requests; coordinate shared contract and preserve pending caller inputs on failure.
 - `client/src/lib/listingApi.ts`
 
 **Effort:** S
 
 ### T4 — Verify and record evidence
 
-- [ ] Run required focused/full gates and record exact AC/TC findings in STORY.md; keep unchecked items honest.
-- [ ] Update TASKS.md and scaffold.json only as needed; Story acceptance text remains certification-locked.
-- [ ] Root coordinates all commits. Define tests before implementation inside each task, then commit the passing test+source group; no separate red-test commit is required. Do not revert other agents' changes.
+- [x] Run required focused/full gates and record exact AC/TC findings in STORY.md; keep unchecked items honest.
+- [x] Update TASKS.md and scaffold.json only as needed; Story acceptance text remains certification-locked.
+- [x] Root coordinates all commits. Define tests before implementation inside each task, then commit the passing test+source group; no separate red-test commit is required. Do not revert other agents' changes.
 
 **Effort:** S
 
@@ -102,3 +102,13 @@ Gate 2: for UI stories verify actual V3 at 375px and 1440px in both themes, keyb
 
 ## Local integration verification — 2026-11-13
 Implementation integrated on codex/v3-arrange-opus. Full Gate1, focused/new browser and real database evidence are recorded in docs/research/2026-11-13-V3-LISTING-IMPLEMENTATION.md. Story closure/merge is not claimed; broad candidate visual/accessibility regression remains pre-merge work. Root coordinates commits; no failing-test-only commits.
+
+
+## Tracker reconciliation — 2026-11-14
+
+2026-11-14 — reconciled from committed Opus baseline3e95a40; implementation present, release hardening/review and UI/font acceptance in progress; not merged Done. Current AC/task findings and fresh gate results are tracked in docs/research/2026-11-14-V3-RELEASE-HARDENING.md. Historical unchecked implementation/evidence rows are retained until this pass finishes verification; they are not interpreted as missing source code. Font/layout annotations are deliberately untouched.
+
+
+## Fresh release evidence — 2026-11-14
+
+Applicable implementation and automated verification tasks are complete; docs/research/2026-11-14-V3-RELEASE-HARDENING.md records exact commands/counts and independent review. No CSS/font changes were made in this repair. User visual/font acceptance, physical devices, final milestone delivery and merge remain pending.
