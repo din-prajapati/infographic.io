@@ -109,3 +109,22 @@
 }
 .v3-editor .v3-listing-bar>.v3-canvas-source{max-width:none;flex-shrink:1;width:auto}
 @media(max-width:767px){.v3-editor .v3-element-toolbar .v3-link-field>span{display:none}}
+/* Canvas context actions stay with the information they act on. */
+.v3-editor .v3-listing-bar[aria-label="Canvas information"]{container-type:inline-size;container-name:v3info}
+.v3-editor .v3-listing-bar[aria-label="Canvas information"]{height:auto;min-height:44px;overflow:visible;flex-wrap:wrap;gap:6px 10px;padding:5px 12px}
+.v3-editor .v3-listing-bar[aria-label="Canvas information"]>.v3-canvas-source{flex:1 1 110px;min-width:0;width:auto;max-width:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.v3-editor .v3-listing-bar[aria-label="Canvas information"]>.v3-listing-pending{flex:0 1 auto;min-width:0;width:auto;max-width:25ch;overflow:hidden;text-overflow:ellipsis}
+.v3-editor .v3-canvas-linking{display:flex;align-items:center;gap:4px;margin-left:auto;flex-shrink:0}
+.v3-editor .v3-canvas-linking button{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:32px;min-width:32px;padding:5px 8px;white-space:nowrap;border:1px solid var(--v3-border);border-radius:7px}
+.v3-editor .v3-canvas-linking button[aria-pressed=true]{background:var(--v3-selected);color:var(--v3-accent);border-color:var(--v3-accent)}
+.v3-editor .v3-canvas-linking svg{width:16px;height:16px;flex-shrink:0}
+.v3-editor .v3-header .v3-preview-action{width:40px;min-width:40px;padding:8px}
+@container v3info (max-width:650px){.v3-editor .v3-canvas-linking button>span{display:none}}
+@media(max-width:767px){
+ .v3-editor .v3-listing-bar[aria-label="Canvas information"]{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 6px;padding:3px 8px;min-height:50px}
+ .v3-editor .v3-listing-bar[aria-label="Canvas information"]>.v3-canvas-source{grid-column:1;font-size:10px}
+ .v3-editor .v3-listing-bar[aria-label="Canvas information"]>.v3-listing-pending{grid-column:1;max-width:100%;font-size:10px}
+ .v3-editor .v3-canvas-linking{grid-column:2;grid-row:1 / span 2}
+ .v3-editor .v3-canvas-linking button{width:44px;min-height:44px;padding:10px}
+ .v3-editor .v3-canvas-linking button>span{display:none}
+}

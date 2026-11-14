@@ -144,3 +144,11 @@ User authorized standup points2/3. Root owns evidence, tracker reconciliation an
 ## Fresh release evidence — 2026-11-14
 
 Applicable implementation and automated verification tasks are complete; docs/research/2026-11-14-V3-RELEASE-HARDENING.md records exact commands/counts and independent review. No CSS/font changes were made in this repair. User visual/font acceptance, physical devices, final milestone delivery and merge remain pending.
+
+## 2026-11-14 — Browser annotation refinement
+
+- [x] T6 — Comments4/5/6: move Template Fields/Show links from footer into above-canvas information strip; Preview icon-only after Export with aria-label and tooltip, same shortcut and focus behavior, use legacy Maximize2 icon. Save buttons/semantics MUST NOT change (comment5 proposal only). Root files: V3Editor.tsx,V3Canvas.tsx,v3-editor.css,v3-responsive.css. Save-flow proposal document docs/research/2026-11-14-V3-SAVE-FLOW-PROPOSAL.md records entry-context decision table, no implementation.
+
+User explicitly authorized annotations1–4 and6;5 is proposal only. Shared files have explicit root/agent ownership. Do not redesign fonts or implement Assistant/providers/default-editor cutover. Gates required; formal merge remains pending.
+
+Verified 2026-11-14: frontend/API type checks pass; backend 853 and frontend 843 unit tests pass (one existing skip); production build passes; clean V3 browser 178/178 and Listing workflow 9/9 pass. Light/dark desktop, phone and tablet screenshots reviewed. Gate 4 N/A (UI only); physical-device acceptance and merge pending. Evidence: docs/research/2026-11-14-V3-BROWSER-ANNOTATIONS.md.
