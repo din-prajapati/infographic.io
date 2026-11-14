@@ -239,16 +239,30 @@ for(const theme of ['light','dark'])for(const width of [375,1242])test(`Save spl
   }
   await page.mouse.move(0,0);await options.focus();await expect(split).toHaveCSS('background-color',highlight);
   await expect(options).toHaveCSS('outline-style','solid');await expect(options).toHaveCSS('outline-width','2px');
+  const editorFont=await save.evaluate(node=>getComputedStyle(node).fontFamily);
   await page.keyboard.press('Enter');await expect(page.getByRole('menuitem',{name:/^Save a copy/})).toBeVisible();
   // T10: Save options contains exactly two actionable, icon-led rows; no Design section label.
   const menu=page.getByRole('menu',{name:'Save options',exact:true});
   await expect(menu).toHaveText('Save a copy...Create reusable template...');
   await expect(menu.getByRole('menuitem')).toHaveText(['Save a copy...','Create reusable template...']);
+  const normalColor=theme==='dark'?'rgb(237, 241, 245)':'rgb(32, 42, 53)';
+  const highlightedColor=theme==='dark'?'rgb(122, 219, 203)':'rgb(7, 107, 108)';
   for(const [name,icon] of [['Save a copy...','copy'],['Create reusable template...','layout-template']]){
-    const symbol=menu.getByRole('menuitem',{name,exact:true}).locator(`svg.lucide-${icon}`);
+    const action=menu.getByRole('menuitem',{name,exact:true});
+    const symbol=action.locator(`svg.lucide-${icon}`);
     await expect(symbol).toBeVisible();await expect(symbol).toHaveAttribute('aria-hidden','true');
     await expect(symbol).toHaveCSS('width','16px');await expect(symbol).toHaveCSS('height','16px');
+    // T11: icons share the exact V3 action foreground, including keyboard highlight and resting state.
+    const expected=await action.getAttribute('data-highlighted')!==null?highlightedColor:normalColor;
+    await expect(action).toHaveCSS('color',expected);await expect(symbol).toHaveCSS('color',expected);
+    await expect(action).toHaveCSS('font-family',editorFont);
   }
+  for(const action of await menu.getByRole('menuitem').all()){
+    await action.hover();await expect(action.locator('svg')).toHaveCSS('color',highlightedColor);
+  }
+  await page.keyboard.press('ArrowUp');await page.clock.runFor(50);
+  await expect(menu.getByRole('menuitem',{name:'Save a copy...',exact:true})).toHaveAttribute('data-highlighted');
+  await expect(menu.getByRole('menuitem',{name:'Save a copy...',exact:true}).locator('svg')).toHaveCSS('color',highlightedColor);
   await expect(split).toHaveCSS('background-color',highlight);
   await page.screenshot({path:info.outputPath(`save-split-${width}-${theme}.png`)});
   await page.keyboard.press('Escape');await page.clock.runFor(50);
