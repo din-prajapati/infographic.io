@@ -9,12 +9,15 @@ import './v3-layers-panel.css';
 
 type Direction='forward'|'backward'|'front'|'back';
 const stackCommands=[['Bring forward','forward',ArrowUp],['Send backward','backward',ArrowDown],['Bring to front','front',ArrowUpToLine],['Send to back','back',ArrowDownToLine]] as const;
-interface Props{label:string;targetId?:string;menuLabel?:string;triggerClassName?:string;onMoved?:(message:string)=>void}
+interface Props{label:string;targetId?:string;menuLabel?:string;triggerClassName?:string;onMoved?:(message:string)=>void;inline?:boolean;onClose?:()=>void}
 
-export function V3ElementActionsMenu({label,targetId,menuLabel='Element actions',triggerClassName='v3-toolbar-icon',onMoved}:Props){
+function ElementActionItem({inline,disabled,onSelect,children}:{inline:boolean;disabled?:boolean;onSelect:()=>void;children:React.ReactNode}){
+  return inline?<button type="button" role="menuitem" disabled={disabled} aria-disabled={disabled||undefined} onClick={onSelect}>{children}</button>:<DropdownMenu.Item disabled={disabled} onSelect={onSelect}>{children}</DropdownMenu.Item>;
+}
+export function V3ElementActionsMenu({label,targetId,menuLabel='Element actions',triggerClassName='v3-toolbar-icon',onMoved,inline=false,onClose}:Props){
   const state=useCanvasStore(),trigger=useRef<HTMLButtonElement>(null);
-  const [portal,setPortal]=useState<HTMLElement|null>(null),[open,setOpen]=useState(false);
-  const snapshot=useRef<string[]>([]);
+  const [portal,setPortal]=useState<HTMLElement|null>(null),[open,setOpen]=useState(inline);
+  const snapshot=useRef<string[]>(inline?[...state.selectedElementIds]:[]);
   const targets=state.elements.filter(element=>state.selectedElementIds.includes(element.id));
   const single=targets.length===1&&state.selectedElementIds.length===1?targets[0]:undefined;
   const visible=targets.filter(element=>element.visible),editable=visible.filter(element=>!element.locked);
@@ -35,7 +38,7 @@ export function V3ElementActionsMenu({label,targetId,menuLabel='Element actions'
     }
     setOpen(next);
   }
-  function run(command:()=>boolean){if(validSnapshot())command();}
+  function run(command:()=>boolean){if(validSnapshot()){command();if(inline)onClose?.();}}
   function move(direction:Direction){
     run(()=>{
       if(snapshot.current.length!==1)return false;
@@ -44,22 +47,29 @@ export function V3ElementActionsMenu({label,targetId,menuLabel='Element actions'
       onMoved?.(`Moved ${element.name} ${direction==='front'?'to front':direction==='back'?'to back':direction}.`);return true;
     });
   }
-  return <DropdownMenu.Root modal={false} open={open} onOpenChange={changeOpen}>
-    <DropdownMenu.Trigger asChild><button ref={trigger} type="button" className={triggerClassName} aria-label={label} title={label}><MoreHorizontal/></button></DropdownMenu.Trigger>
-    <DropdownMenu.Portal container={portal}><DropdownMenu.Content className="v3-layer-menu" aria-label={menuLabel} aria-labelledby={undefined} side={targetId?'right':'bottom'} align={targetId?'start':'end'} sideOffset={8} collisionPadding={12}>
-      {([['Copy',Copy,copyV3Selection,!!visible.length],['Paste',Clipboard,pasteV3Clipboard,!!targets.length&&editable.length===targets.length&&!!state.clipboard.length],['Duplicate',Copy,duplicateV3Selection,!!editable.length],['Delete',Trash2,deleteV3Selection,!!editable.length]] as const).map(([name,Icon,command,enabled])=><DropdownMenu.Item key={name} disabled={!enabled} onSelect={()=>run(command)}><Icon/><span>{name}</span></DropdownMenu.Item>)}
-      <DropdownMenu.Separator/>
-      {stackCommands.map(([name,direction,Icon])=><DropdownMenu.Item key={direction} disabled={!single||!canMoveV3Layer(single.id,direction)} onSelect={()=>move(direction)}><Icon/><span>{name}</span></DropdownMenu.Item>)}
-      <DropdownMenu.Separator/>
-      <DropdownMenu.Item disabled={!single||single.locked} onSelect={()=>run(()=>{
+  const items=<>      {([['Copy',Copy,copyV3Selection,!!visible.length],['Paste',Clipboard,pasteV3Clipboard,!!targets.length&&editable.length===targets.length&&!!state.clipboard.length],['Duplicate',Copy,duplicateV3Selection,!!editable.length],['Delete',Trash2,deleteV3Selection,!!editable.length]] as const).map(([name,Icon,command,enabled])=><ElementActionItem inline={inline} key={name} disabled={!enabled} onSelect={()=>run(command)}><Icon/><span>{name}</span></ElementActionItem>)}
+      {inline?<div role="separator"/>:<DropdownMenu.Separator/>}
+      {stackCommands.map(([name,direction,Icon])=><ElementActionItem inline={inline} key={direction} disabled={!single||!canMoveV3Layer(single.id,direction)} onSelect={()=>move(direction)}><Icon/><span>{name}</span></ElementActionItem>)}
+      {inline?<div role="separator"/>:<DropdownMenu.Separator/>}
+      <ElementActionItem inline={inline} disabled={!single||single.locked} onSelect={()=>run(()=>{
         const current=useCanvasStore.getState();if(current.selectedElementIds.length!==1)return false;
         const element=current.elements.find(item=>item.id===current.selectedElementIds[0]);return !!element&&setV3LayerVisibility(element.id,!element.visible);
-      })}>{single?.visible===false?<Eye/>:<EyeOff/>}<span>{single?.visible===false?'Show':'Hide'}</span></DropdownMenu.Item>
-      <DropdownMenu.Item disabled={!single&&!visible.length} onSelect={()=>run(()=>{
+      })}>{single?.visible===false?<Eye/>:<EyeOff/>}<span>{single?.visible===false?'Show':'Hide'}</span></ElementActionItem>
+      <ElementActionItem inline={inline} disabled={!single&&!visible.length} onSelect={()=>run(()=>{
         const current=useCanvasStore.getState();
         if(current.selectedElementIds.length===1){const element=current.elements.find(item=>item.id===current.selectedElementIds[0]);return !!element&&setV3LayerLocked(element.id,!element.locked);}
         return toggleV3SelectionLock();
-      })}>{lockLabel==='Unlock'?<Unlock/>:<Lock/>}<span>{lockLabel}</span></DropdownMenu.Item>
+      })}>{lockLabel==='Unlock'?<Unlock/>:<Lock/>}<span>{lockLabel}</span></ElementActionItem>
+</>;
+  if(inline)return open?<div className="v3-layer-menu v3-inline-element-actions" role="menu" aria-label={menuLabel} onKeyDown={event=>{
+    if(!['ArrowDown','ArrowUp','Home','End'].includes(event.key))return;
+    const enabled=Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>('button[role="menuitem"]:not(:disabled)'));
+    if(!enabled.length)return;event.preventDefault();const index=enabled.indexOf(document.activeElement as HTMLButtonElement);
+    enabled[event.key==='Home'?0:event.key==='End'?enabled.length-1:(index+(event.key==='ArrowUp'?-1:1)+enabled.length)%enabled.length].focus();
+  }}>{items}</div>:null;
+  return <DropdownMenu.Root modal={false} open={open} onOpenChange={changeOpen}>
+    <DropdownMenu.Trigger asChild><button ref={trigger} type="button" className={triggerClassName} aria-label={label} title={label}><MoreHorizontal/></button></DropdownMenu.Trigger>
+    <DropdownMenu.Portal container={portal}><DropdownMenu.Content className="v3-layer-menu" aria-label={menuLabel} aria-labelledby={undefined} side={targetId?'right':'bottom'} align={targetId?'start':'end'} sideOffset={8} collisionPadding={12}>{items}
     </DropdownMenu.Content></DropdownMenu.Portal>
   </DropdownMenu.Root>;
 }

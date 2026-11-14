@@ -58,3 +58,10 @@
 .v3-editor .v3-toolbar-overflow-panel .v3-toolbar-divider{display:none}
 .v3-editor .v3-toolbar-overflow-panel .v3-text-toggles{display:flex}
 .v3-editor .v3-toolbar-overflow-panel .v3-replace-error{white-space:normal}
+.v3-editor .v3-element-toolbar.v3-toolbar-link-compact .v3-link-field{width:34px;min-width:34px;padding:7px}
+.v3-editor .v3-element-toolbar.v3-toolbar-link-compact .v3-link-field>span{display:none}
+.v3-editor .v3-toolbar-overflow-panel .v3-toolbar-group{order:1}
+.v3-editor .v3-toolbar-overflow-panel .v3-inline-element-actions{position:static;order:2;flex:0 0 100%;min-width:0;width:100%;max-height:none;overflow:visible;display:flex;flex-direction:column;gap:2px;padding:10px 0 0;border:0;border-top:1px solid var(--v3-border);border-radius:0;box-shadow:none;background:transparent}
+.v3-editor .v3-toolbar-overflow-panel .v3-inline-element-actions>button{width:100%;justify-content:flex-start;height:auto;min-height:34px;white-space:normal;text-align:left}
+.v3-editor .v3-inline-element-actions>button:focus-visible{outline:2px solid var(--v3-accent);outline-offset:-2px;background:var(--v3-selected);color:var(--v3-accent)}
+@media(max-width:767px){.v3-editor .v3-toolbar-overflow-panel .v3-inline-element-actions>button{min-height:44px}}

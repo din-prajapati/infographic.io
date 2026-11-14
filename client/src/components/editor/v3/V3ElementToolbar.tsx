@@ -26,6 +26,7 @@ interface ControlSize { width: number; priority: number }
 interface ResponsiveControls {
   overflow: Set<string>;
   container: HTMLElement | null;
+  measurementContainer: HTMLElement | null;
   measure(id: string, width: number, priority: number): void;
   remove(id: string): void;
 }
@@ -51,7 +52,7 @@ function ToolbarGroup({ id, priority, children }: { id: string; priority: number
   }, [id, priority, measure, overflow]);
   useLayoutEffect(() => () => remove?.(id), [id, remove]);
   const content = <fieldset ref={ref} disabled={disabled} data-v3-toolbar-group={id} className="v3-toolbar-group">{children}</fieldset>;
-  return overflow ? createPortal(content, layout!.container!) : content;
+  return overflow ? createPortal(content, id.startsWith('common-') ? layout!.measurementContainer! : layout!.container!) : content;
 }
 
 function ToolbarGroups({ prefix, children }: { prefix: string; children: ReactNode }) {
@@ -180,11 +181,11 @@ function TextToggles({element}:{element:TextElement}){
   return <div className="v3-text-toggles"><Action label="Underline" pressed={element.underline} onClick={()=>commitElementPatch(element.id,{underline:!element.underline})}><Underline/></Action><Action label="Strikethrough" pressed={element.strikethrough} onClick={()=>commitElementPatch(element.id,{strikethrough:!element.strikethrough})}><Strikethrough/></Action><Action label="Text case" description={`Current case: ${mode.label}. Click to switch to ${modes[mode.next].label}.`} pressed={element.textTransform!=='none'} onClick={()=>commitElementPatch(element.id,{textTransform:mode.next})}><span className="v3-case-icon" aria-hidden="true">{mode.icon}</span></Action></div>;
 }
 
-function CommonActions({element}:{element:CanvasElement}){
+function CommonActions({element,more}:{element:CanvasElement;more:ReactNode}){
   const state=useCanvasStore(),selected=state.elements.filter(item=>item.visible&&state.selectedElementIds.includes(item.id));
   const editable=selected.some(item=>!item.locked),locked=!!selected.length&&selected.every(item=>item.locked);
   return <Disabled.Provider value={false}><div className="v3-common-actions"><ToolbarGroups prefix="common"><button type="button" aria-label={locked?'Unlock':'Lock'} title={locked?'Unlock':'Lock'} aria-pressed={locked} disabled={!selected.length} onClick={toggleV3SelectionLock}>{locked?<Unlock/>:<Lock/>}</button><button type="button" aria-label="Duplicate" title="Duplicate (Ctrl+D)" disabled={!editable} onClick={duplicateV3Selection}><Copy/></button><button type="button" aria-label="Delete" title="Delete (Delete)" disabled={!editable} onClick={deleteV3Selection}><Trash2/></button>
-    <V3ElementActionsMenu label={`More ${element.type} options`}/></ToolbarGroups></div></Disabled.Provider>;
+    </ToolbarGroups>{more}</div></Disabled.Provider>;
 }
 
 function Border({ element }: { element: ShapeElement | ImageElement }) {
@@ -280,17 +281,18 @@ export function V3ElementToolbar({ element, onEditImage,onEditEffects,onBrowseEl
   }, []);
   const overflow = useMemo(() => {
     const groups = [...sizes];
-    const total = groups.reduce((sum, [, size]) => sum + size.width + 3, 12);
+    const total = groups.reduce((sum, [, size]) => sum + size.width + 3, 52);
     if (total <= position.width) return new Set<string>();
-    let available = Math.max(0, position.width - 12 - 40);
+    const pinned = sizes.get('link');
+    let available = Math.max(0, position.width - 52 - (pinned ? pinned.width + 3 : 0));
     const hidden = new Set<string>();
-    for (const [id, size] of groups.sort((a, b) => b[1].priority - a[1].priority)) {
+    for (const [id, size] of groups.filter(([id]) => id !== 'link').sort((a, b) => b[1].priority - a[1].priority)) {
       if (size.width + 3 <= available) available -= size.width + 3;
       else hidden.add(id);
     }
     return hidden;
   }, [sizes, position.width]);
-  const responsive = useMemo(() => ({ overflow, container: overflowContainer ?? measurementContainer, measure: measureGroup, remove: removeGroup }), [overflow, overflowContainer, measurementContainer, measureGroup, removeGroup]);
+  const responsive = useMemo(() => ({ overflow, container: overflowContainer ?? measurementContainer, measurementContainer, measure: measureGroup, remove: removeGroup }), [overflow, overflowContainer, measurementContainer, measureGroup, removeGroup]);
   useLayoutEffect(() => setPortal(ref.current?.closest<HTMLElement>('.v3-editor') ?? null), []);
   const selectedIds = useCanvasStore(state => state.selectedElementIds);
   const zoom = useCanvasStore(state => state.zoom);
@@ -317,9 +319,8 @@ export function V3ElementToolbar({ element, onEditImage,onEditEffects,onBrowseEl
     return () => { observer.disconnect(); window.removeEventListener('resize', measure); window.removeEventListener('scroll', measure, true); };
   }, [element, zoom]);
   const nestedOverlay = (target: EventTarget | null) => target instanceof HTMLElement && !!target.closest('.v3-element-popover,.v3-layer-menu');
-  return <Disabled.Provider value={disabled}><Responsive.Provider value={responsive}><Popover.Root open={overflow.size > 0 && overflowOpen} onOpenChange={open => { setOverflowOpen(open); if (!open) clearElementPreview(); }}><div ref={ref} role="toolbar" aria-label={selectedIds.length>1?'Selection actions':`${element.type} formatting`} className="v3-element-toolbar" style={{ left: position.left, top: position.top, maxWidth: position.width }} onPointerDown={event => event.stopPropagation()} onClick={event => event.stopPropagation()}>
+  return <Disabled.Provider value={disabled}><Responsive.Provider value={responsive}><Popover.Root open={overflow.size > 0 && overflowOpen} onOpenChange={open => { setOverflowOpen(open); if (!open) clearElementPreview(); }}><div ref={ref} role="toolbar" aria-label={selectedIds.length>1?'Selection actions':`${element.type} formatting`} className={`v3-element-toolbar${position.width < 180 ? ' v3-toolbar-link-compact' : ''}`} style={{ left: position.left, top: position.top, maxWidth: position.width }} onPointerDown={event => event.stopPropagation()} onClick={event => event.stopPropagation()}>
     {linkable&&<ToolbarGroup id="link" priority={60}><button type="button" className="v3-link-field" aria-label="Link field" title="Link field — open Template Fields" onClick={onLinkField}><Link2/><span>Link field</span></button></ToolbarGroup>}
-    {selectedIds.length <= 1 && <fieldset disabled={disabled}>{element.type === 'text' ? <TextToolbar key={element.id} element={element}/> : element.type === 'shape' ? <ShapeToolbar key={element.id} element={element} onEditEffects={onEditEffects} onBrowseElements={onBrowseElements}/> : element.type === 'image' ? <ImageToolbar key={element.id} element={element} onEditImage={onEditImage} onBrowseElements={onBrowseElements}/> : <LineToolbar key={element.id} element={element}/>}</fieldset>}<CommonActions element={element}/>
-    {overflow.size > 0 && <Popover.Trigger asChild><button type="button" className="v3-toolbar-icon v3-formatting-more" aria-label="More formatting options" title="More formatting options"><MoreHorizontal/></button></Popover.Trigger>}
-  </div><div hidden aria-hidden="true" className="v3-element-toolbar v3-toolbar-overflow-panel" ref={setMeasurementContainer}/>{overflow.size > 0 && <Popover.Portal container={portal}><Popover.Content ref={setOverflowContainer} role={overflowOpen ? "dialog" : "presentation"} aria-hidden={!overflowOpen} aria-label="More formatting options" className="v3-element-toolbar v3-toolbar-overflow-panel" sideOffset={8} collisionPadding={12} onPointerDown={event => event.stopPropagation()} onClick={event => event.stopPropagation()} onInteractOutside={event => { if (nestedOverlay(event.target)) event.preventDefault(); }} onEscapeKeyDown={event => { if (event.target instanceof HTMLElement && event.target.closest('[data-v3-draft-dirty="true"]')) event.preventDefault(); }}><div className="v3-overflow-heading">More formatting options</div></Popover.Content></Popover.Portal>}</Popover.Root></Responsive.Provider></Disabled.Provider>;
+    {selectedIds.length <= 1 && <fieldset disabled={disabled}>{element.type === 'text' ? <TextToolbar key={element.id} element={element}/> : element.type === 'shape' ? <ShapeToolbar key={element.id} element={element} onEditEffects={onEditEffects} onBrowseElements={onBrowseElements}/> : element.type === 'image' ? <ImageToolbar key={element.id} element={element} onEditImage={onEditImage} onBrowseElements={onBrowseElements}/> : <LineToolbar key={element.id} element={element}/>}</fieldset>}<CommonActions element={element} more={overflow.size > 0 ? <Popover.Trigger asChild><button type="button" className="v3-toolbar-icon v3-formatting-more" aria-label="More formatting options" title="More formatting options"><MoreHorizontal/></button></Popover.Trigger> : <V3ElementActionsMenu label={`More ${element.type} options`}/>}/>
+  </div><div hidden aria-hidden="true" className="v3-element-toolbar v3-toolbar-overflow-panel" ref={setMeasurementContainer}/>{overflow.size > 0 && <Popover.Portal container={portal}><Popover.Content ref={setOverflowContainer} role={overflowOpen ? "dialog" : "presentation"} aria-hidden={!overflowOpen} aria-label="More formatting options" className="v3-element-toolbar v3-toolbar-overflow-panel" sideOffset={8} collisionPadding={12} onPointerDown={event => event.stopPropagation()} onClick={event => event.stopPropagation()} onInteractOutside={event => { if (nestedOverlay(event.target)) event.preventDefault(); }} onEscapeKeyDown={event => { if (event.target instanceof HTMLElement && event.target.closest('[data-v3-draft-dirty="true"]')) event.preventDefault(); }}><div className="v3-overflow-heading">More formatting options</div><V3ElementActionsMenu label={`More ${element.type} options`} inline onClose={()=>setOverflowOpen(false)}/></Popover.Content></Popover.Portal>}</Popover.Root></Responsive.Provider></Disabled.Provider>;
 }

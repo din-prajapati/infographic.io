@@ -14,6 +14,14 @@ beforeEach(()=>{Object.assign(globalThis,{IS_REACT_ACT_ENVIRONMENT:true});host=d
 const a={...createShapeElement('rectangle'),id:'a',name:'First',zIndex:2},b={...createShapeElement('circle'),id:'b',name:'Second',zIndex:1};useCanvasStore.setState({elements:[a,b],selectedElementIds:['a'],clipboard:[],history:{past:[],future:[]}});});
 afterEach(()=>{act(()=>root.unmount());host.remove();});
 describe('US-EDIT-043 shared toolbar and layer menu',()=>{
+ it('renders common actions directly in an overflow host without a nested More trigger and retains stale guards',async()=>{
+   await act(async()=>root.render(<V3ElementActionsMenu label="More shape options" inline/>));
+   expect(host.querySelector('[aria-label="More shape options"]')).toBeNull();
+   expect([...host.querySelectorAll('[role="menuitem"]')].map(node=>node.textContent)).toEqual(['Copy','Paste','Duplicate','Delete','Bring forward','Send backward','Bring to front','Send to back','Hide','Lock']);
+   expect((item('Paste') as HTMLButtonElement).disabled).toBe(true);
+   const obsolete=item('Delete');await act(async()=>useCanvasStore.getState().selectElements(['b']));
+   act(()=>Simulate.click(obsolete));expect(useCanvasStore.getState().elements).toHaveLength(2);expect(useCanvasStore.getState().history.past).toHaveLength(0);
+ });
  it('has the exact common and layer action sequence with stack boundary guards',async()=>{
    await open();expect(host.querySelector('[role="menu"]')?.getAttribute('aria-label')).toBe('Element actions');
    expect(host.querySelector('[role="menu"]')?.getAttribute('aria-labelledby')).toBeNull();

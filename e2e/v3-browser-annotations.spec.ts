@@ -46,6 +46,29 @@ async function boundsInside(locator:import('@playwright/test').Locator,width:num
   expect(box!.y).toBeGreaterThanOrEqual(0);expect(box!.y+box!.height).toBeLessThanOrEqual(height+1);
 }
 
+// Contract: at phone width eligible text/image elements retain Link field on the toolbar,
+// and one overflow dialog exposes common commands without a second More trigger.
+for(const theme of ['light','dark'])for(const selected of ['text','image'])test(`single More keeps Link field pinned for ${selected} on phone in ${theme}`,async({page},info)=>{
+  await page.setViewportSize({width:375,height:812});await setup(page,theme);
+  await artboard(page).locator(`[data-element-id="${selected==='text'?'address':'photo'}"]`).click();
+  const toolbar=page.getByRole('toolbar',{name:`${selected} formatting`,exact:true});
+  await expect(toolbar.getByRole('button',{name:'Link field',exact:true})).toBeVisible();
+  await expect(toolbar.getByRole('button',{name:/^More /})).toHaveCount(1);
+  await expect.poll(()=>toolbar.evaluate(node=>node.scrollWidth<=node.clientWidth+1)).toBe(true);
+  await noOverflow(page,375);await boundsInside(toolbar,375,812);
+  await toolbar.getByRole('button',{name:'More formatting options',exact:true}).click();
+  const overflow=page.getByRole('dialog',{name:'More formatting options',exact:true});
+  await expect(overflow).toBeVisible();await boundsInside(overflow,375,812);
+  await expect(overflow.getByRole('button',{name:/^More /})).toHaveCount(0);
+  await expect(overflow.getByRole('button',{name:'Link field',exact:true})).toHaveCount(0);
+  await expect(overflow.getByRole('menu',{name:'Element actions',exact:true}).getByRole('menuitem',{name:'Copy',exact:true})).toBeEnabled();
+  await page.screenshot({path:info.outputPath(`single-more-${selected}-phone-${theme}.png`)});
+  await page.keyboard.press('Escape');
+  await expect(toolbar.getByRole('button',{name:'Link field',exact:true})).toBeVisible();
+  await toolbar.getByRole('button',{name:'Link field',exact:true}).click();
+  await expect(page.getByRole('complementary',{name:'Template Fields panel',exact:true})).toBeVisible();
+});
+
 // Contract: both inspectors constrain the contextual toolbar without horizontal scrolling;
 // every formatting operation remains accessible through keyboard-triggered overflow.
 for(const theme of ['light','dark'])for(const selected of ['text','image'])test(`annotation toolbar ${selected} fits between inspectors in ${theme}`,async({page},info)=>{
@@ -61,25 +84,28 @@ for(const theme of ['light','dark'])for(const selected of ['text','image'])test(
   await expect(toolbar).toBeVisible();await noOverflow(page,1242);await boundsInside(toolbar,1242,668);
   await expect.poll(()=>toolbar.evaluate(node=>node.scrollWidth<=node.clientWidth+1)).toBe(true);
   expect(await toolbar.evaluate(node=>getComputedStyle(node).overflowX)).not.toBe('scroll');
+  // Link field is pinned; one More opens both secondary formatting and common actions directly.
+  await expect(toolbar.getByRole('button',{name:'Link field',exact:true})).toBeVisible();
+  await expect(toolbar.getByRole('button',{name:/^More /})).toHaveCount(1);
   const more=toolbar.getByRole('button',{name:'More formatting options',exact:true});
   await expect(page.locator('[role="dialog"][aria-label="More formatting options"]')).toHaveCount(0);
   await expect(more).toBeVisible();await more.focus();await page.keyboard.press('Enter');
   const overflow=page.getByRole('dialog',{name:'More formatting options',exact:true});
   await expect(overflow).toBeVisible();await boundsInside(overflow,1242,668);
+  await expect(overflow.getByRole('button',{name:'Link field',exact:true})).toHaveCount(0);
+  await expect(overflow.getByRole('button',{name:/^More /})).toHaveCount(0);
+  const actions=overflow.getByRole('menu',{name:'Element actions',exact:true});
+  await expect(actions.getByRole('menuitem')).toHaveText(['Copy','Paste','Duplicate','Delete','Bring forward','Send backward','Bring to front','Send to back','Hide','Lock']);
+  await expect(actions.getByRole('menuitem',{name:'Copy',exact:true})).toBeEnabled();
+  await expect(actions.getByRole('menuitem',{name:'Paste',exact:true})).toBeDisabled();
   await page.screenshot({path:info.outputPath(`toolbar-${selected}-${theme}.png`)});
-  if(selected==='text') {
-    const action=overflow.getByRole('button',{name:'Opacity',exact:true});
-    await expect(action).toBeVisible();await action.click();
-    await expect(page.getByRole('dialog',{name:'Transparency',exact:true})).toBeVisible();
-  } else {
-    await expect(toolbar.getByRole('button',{name:'Opacity',exact:true})).toBeVisible();
-    await overflow.getByRole('button',{name:'More image options',exact:true}).click();
-    const actions=page.getByRole('menu',{name:'Element actions',exact:true});
-    await expect(actions.getByRole('menuitem',{name:'Copy',exact:true})).toBeEnabled();
-    await expect(actions.getByRole('menuitem',{name:'Paste',exact:true})).toBeDisabled();
-    await boundsInside(actions,1242,668);
-  }
+  // Location of secondary formatting follows measured space after the pinned Link field.
+  await page.getByRole('button',{name:'Opacity',exact:true}).click();
+  await expect(page.getByRole('dialog',{name:'Transparency',exact:true})).toBeVisible();
   await page.keyboard.press('Escape');
+  // Escape closes the setting picker first, then its overflow host when the setting lives there.
+  if(await overflow.isVisible())await page.keyboard.press('Escape');
+  await expect(overflow).toHaveCount(0);
   await page.getByRole('button',{name:'Save',exact:true}).click();
   await expect.poll(()=>state.writes.length).toBeGreaterThan(0);
   expect(state.writes.at(-1).canvasData.elements).toEqual(before);

@@ -52,14 +52,19 @@ describe('approved compact text toolbar', () => {
     const viewport = document.createElement('div'); viewport.setAttribute('data-canvas-viewport', ''); document.body.append(viewport);
     const element = createImageElement('photo'); useCanvasStore.setState({ elements: [element], selectedElementIds: [element.id] });
     try {
-      act(() => root.render(<V3ElementToolbar element={element} onEditImage={() => {}} />));
+      act(() => root.render(<V3ElementToolbar element={element} onEditImage={() => {}} onLinkField={() => {}} />));
       const more = node.querySelector<HTMLButtonElement>('[aria-label="More formatting options"]');
       expect(more).not.toBeNull();
       expect(document.querySelector('[role="dialog"][aria-label="More formatting options"]')).toBeNull();
       expect(node.querySelector('[role="toolbar"] [aria-label="Reset image"]')).toBeNull();
+      expect(node.querySelector('[role="toolbar"] [aria-label="Link field"]')).not.toBeNull();
+      expect([...node.querySelectorAll('[role="toolbar"] button')].filter(button => button.getAttribute('aria-label')?.startsWith('More '))).toHaveLength(1);
       await act(async () => Simulate.click(more!));
       const overflow = document.querySelector('[role="dialog"][aria-label="More formatting options"]');
       expect(overflow?.querySelector('[aria-label="Reset image"]')).not.toBeNull();
+      expect(overflow?.querySelector('[aria-label="Link field"]')).toBeNull();
+      expect(overflow?.querySelector('[aria-label="More image options"]')).toBeNull();
+      expect([...overflow!.querySelectorAll('[role="menuitem"]')].map(item => item.textContent)).toEqual(['Copy','Paste','Duplicate','Delete','Bring forward','Send backward','Bring to front','Send to back','Hide','Lock']);
       await act(async () => Simulate.click(overflow!.querySelector('[aria-label="Corners"]')!));
       const radius = document.querySelector<HTMLInputElement>('[aria-label="Corner radius value"]')!;
       expect(radius).not.toBeNull();
@@ -75,6 +80,8 @@ describe('approved compact text toolbar', () => {
       act(() => window.dispatchEvent(new Event('resize')));
       expect(node.querySelector('[aria-label="More formatting options"]')).toBeNull();
       expect(node.querySelector('[role="toolbar"] [aria-label="Reset image"]')).not.toBeNull();
+      expect(node.querySelector('[role="toolbar"] [aria-label="Link field"]')).not.toBeNull();
+      expect(node.querySelector('[role="toolbar"] [aria-label="More image options"]')).not.toBeNull();
     } finally { bounds.mockRestore(); viewport.remove(); }
   });
   // Contract: every toolbar keeps its direct common controls and ends in the shared ten-action menu, without a Layers shortcut.
