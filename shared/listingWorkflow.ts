@@ -148,13 +148,16 @@ export function formatSpecifications(property: ListingRecord['property']): strin
 }
 
 export type ReviewedFactPath = `property.${keyof ListingRecord['property']}` | `agent.${keyof ListingRecord['agent']}`;
+/** Reader-facing names for review rows; the path stays the stable key. */
+const FACT_LABELS: Partial<Record<ReviewedFactPath, string>> = { 'property.name': 'Listing name', 'property.headline': 'Headline', 'property.address': 'Address', 'property.description': 'Description', 'property.type': 'Property type', 'property.beds': 'Bedrooms', 'property.baths': 'Bathrooms', 'property.area': 'Area', 'property.areaUnit': 'Area unit', 'property.status': 'Listing status', 'property.features': 'Highlights', 'property.amount': 'Price', 'property.currency': 'Currency', 'property.transaction': 'Listing intent', 'property.rentalPeriod': 'Rental period', 'agent.name': 'Agent name', 'agent.phone': 'Agent phone', 'agent.email': 'Agent email', 'agent.agency': 'Agency', 'agent.license': 'Licence number' };
 export interface ReviewedFact { id: string; path: ReviewedFactPath; label: string; value: string | string[] | null; evidence: string; selected: boolean; ambiguous: boolean; candidates?: string[] }
 export interface ListingTextReview { id: string; source: string; baseline: ListingRecord; facts: ReviewedFact[]; rejected: boolean; error?: string }
+const PHONE = /\+?\d[\d\s().-]{7,}\d/;
 export function reviewListingText(source: string, baseline: ListingRecord): ListingTextReview {
   const review: ListingTextReview = { id: 'review', source, baseline: structuredClone(baseline), facts: [], rejected: false };
   if (!source.trim() || source.length > 50000) return { ...review, rejected: true, error: 'Paste one property description, up to 50,000 characters.' };
   const add = (path: ReviewedFactPath, value: string | string[] | null, evidence: string) => {
-    if (!review.facts.some(fact => fact.path === path && JSON.stringify(fact.value) === JSON.stringify(value) && fact.evidence === evidence)) review.facts.push({ id: `fact-${review.facts.length}`, path, label: path.split('.')[1], value, evidence, selected: !path.startsWith('agent.'), ambiguous: false });
+    if (!review.facts.some(fact => fact.path === path && JSON.stringify(fact.value) === JSON.stringify(value) && fact.evidence === evidence)) review.facts.push({ id: `fact-${review.facts.length}`, path, label: FACT_LABELS[path] ?? path.split('.')[1], value, evidence, selected: !path.startsWith('agent.'), ambiguous: false });
   };
   const labels: Record<string, ReviewedFactPath> = { name: 'property.name', headline: 'property.headline', address: 'property.address', location: 'property.address', description: 'property.description', type: 'property.type', beds: 'property.beds', bedrooms: 'property.beds', baths: 'property.baths', bathrooms: 'property.baths', area: 'property.area', status: 'property.status', features: 'property.features', agent: 'agent.name', phone: 'agent.phone', email: 'agent.email', agency: 'agent.agency', license: 'agent.license' };
   let identities = 0;
@@ -181,6 +184,12 @@ export function reviewListingText(source: string, baseline: ListingRecord): List
         if (path === 'property.area') {
           const area = value.match(/^(\d[\d,]*(?:\.\d{1,2})?)\s*(sq\s*ft|sq\s*m|acres)?$/i);
           if (area && decimal.test(area[1].replace(/,/g, ''))) { add(path, area[1].replace(/,/g, ''), line); if (area[2]) add('property.areaUnit', area[2].toLowerCase().replace(/\s+/g, ' '), line); }
+        } else if (path === 'agent.name' && PHONE.test(value)) {
+          // "Agent: Name, +91 90000 00000" → separate name and phone suggestions (both stay unselected).
+          const phone = value.match(PHONE)![0];
+          const name = value.replace(phone, '').replace(/^[\s,;:|–—-]+|[\s,;:|–—-]+$/g, '').trim();
+          if (name) add('agent.name', name, line);
+          add('agent.phone', phone.trim(), line);
         } else add(path, path === 'property.features' ? value.split(/[,;•]/).map(v => v.trim()).filter(Boolean) : value, line);
       }
     } else {
@@ -201,6 +210,13 @@ export function reviewListingText(source: string, baseline: ListingRecord): List
         add('property.amount', parsed.amount, m[0]); add('property.currency', parsed.currency, m[0]);
         if (parsed.transaction) add('property.transaction', parsed.transaction, m[0]);
         if (parsed.rentalPeriod) add('property.rentalPeriod', parsed.rentalPeriod, m[0]);
+      });
+      // Unlabeled "80 Lakh" / "2 Cr" without a currency sign. Indian scale words always mean INR; amounts that carry
+      // a sign are handled by the pattern above, so they are excluded here to avoid duplicate rows.
+      matches(/(?<!(?:₹|\$|£|Rs\.?|INR|USD|GBP|CAD)\s*)(?<![\d.,])\b\d[\d,]*(?:\.\d+)?\s*(?:crores?|cr|lakhs?|lacs?)\b/gi, m => {
+        const parsed = parseListingPrice(`INR ${m[0]}`, baseline.property.country);
+        if (!parsed) return;
+        add('property.amount', parsed.amount, m[0]); add('property.currency', parsed.currency, m[0]);
       });
       matches(/\bfor\s+(sale|rent)\b/gi, m => add('property.transaction', m[1].toLowerCase(), m[0]));
       matches(/\b(apartment|flat|villa|commercial property|plot|land)\b/gi, m => add('property.type', m[1], m[0]));

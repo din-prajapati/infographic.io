@@ -65,3 +65,45 @@ describe('structured listing contract', () => {
     expect(reviewListingText('2 and 3 BHK apartments', baseline).rejected).toBe(true);
   });
 });
+
+describe('reviewListingText — Use example sample text (US-EDIT-020)', () => {
+  const sample = `3 BHK, 2 bathrooms, 80 Lakh, 1500 sq ft
+Address: Satellite Road, Ahmedabad
+Headline: A bright place to call home
+Features: Balcony, parking
+Agent: Seller suggested contact, +91 90000 00000`;
+  const baseline = () => { const record = createEmptyListing(); record.property.country = 'IN'; record.property.currency = 'INR'; return record; };
+  const fact = (review: ReturnType<typeof reviewListingText>, path: string) => review.facts.filter(f => f.path === path);
+
+  it('extracts an unlabeled Indian price such as "80 Lakh" as INR 8000000', () => {
+    const review = reviewListingText(sample, baseline());
+    expect(fact(review, 'property.amount').map(f => f.value)).toEqual(['8000000']);
+    expect(fact(review, 'property.currency').map(f => f.value)).toEqual(['INR']);
+    expect(fact(review, 'property.amount')[0]).toMatchObject({ selected: true, ambiguous: false, label: 'Price', evidence: '80 Lakh' });
+  });
+  it('reads lakh and crore as INR whatever the listing country, and does not double-count a ₹ price', () => {
+    const us = createEmptyListing(); us.property.country = 'US';
+    expect(fact(reviewListingText('2 Cr villa', us), 'property.amount').map(f => [f.value])).toEqual([['20000000']]);
+    expect(fact(reviewListingText('2 Cr villa', us), 'property.currency').map(f => f.value)).toEqual(['INR']);
+    expect(fact(reviewListingText('Villa, ₹4.2 Cr', baseline()), 'property.amount')).toHaveLength(1);
+    expect(fact(reviewListingText('Villa, Rs 75 lakh', baseline()), 'property.amount')).toHaveLength(1);
+  });
+  it('splits an agent line into a name and a phone suggestion, both left unselected', () => {
+    const review = reviewListingText(sample, baseline());
+    expect(fact(review, 'agent.name').map(f => [f.value, f.selected])).toEqual([['Seller suggested contact', false]]);
+    expect(fact(review, 'agent.phone').map(f => [f.value, f.selected])).toEqual([['+91 90000 00000', false]]);
+  });
+  it('uses readable labels instead of field keys', () => {
+    const labels = Object.fromEntries(reviewListingText(sample, baseline()).facts.map(f => [f.path, f.label]));
+    expect(labels).toMatchObject({ 'property.beds': 'Bedrooms', 'property.baths': 'Bathrooms', 'property.area': 'Area', 'property.areaUnit': 'Area unit', 'property.address': 'Address', 'property.headline': 'Headline', 'property.features': 'Highlights', 'property.amount': 'Price', 'property.currency': 'Currency', 'agent.name': 'Agent name', 'agent.phone': 'Agent phone' });
+  });
+  it('confirming the default selection fills price, rooms, area, address, headline and highlights', () => {
+    const review = reviewListingText(sample, baseline());
+    const result = applyReviewedFacts(baseline(), review, review.facts.filter(f => f.selected).map(f => f.id));
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.record.property).toMatchObject({ amount: '8000000', currency: 'INR', beds: '3', baths: '2', area: '1500', areaUnit: 'sq ft', address: 'Satellite Road, Ahmedabad', headline: 'A bright place to call home', features: ['Balcony', 'parking'] });
+    expect(formatListingPrice(result.record.property)).toBe('₹80 Lakh');
+    expect(result.record.agent.name).toBe('');
+  });
+});
