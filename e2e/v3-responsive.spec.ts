@@ -73,7 +73,7 @@ for (const theme of ['light','dark']) for (const width of [320,375,390,768,820,1
       await expect(panel).toBeHidden();
       await expect(page.getByRole('button',{name:'Listing',exact:true})).toBeFocused();
     }
-    await page.getByRole('button',{name:'Save as Design',exact:true}).click();
+    await page.getByRole('button',{name:'Save',exact:true}).click();
     await expect.poll(()=>state.writes.length).toBeGreaterThan(0);
     expect(state.document.canvasData.elements).toEqual(before);
     expect(state.document.canvasData.canvasWidth).toBe(800);
@@ -117,7 +117,7 @@ test('phone save failure can retry after rotation without changing artwork',asyn
   await page.setViewportSize({width:390,height:844});const state=await setup(page);
   const before=structuredClone(state.document.canvasData.elements);
   state.failSave=true;
-  await page.getByRole('button',{name:'Save as Design',exact:true}).click();
+  await page.getByRole('button',{name:'Save',exact:true}).click();
   await expect(page.getByRole('alert').filter({hasText:'Save failed'})).toBeVisible();
   await page.setViewportSize({width:844,height:390});
   state.failSave=false;

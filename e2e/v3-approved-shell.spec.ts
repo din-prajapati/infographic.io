@@ -132,7 +132,8 @@ test('listing-only edits during a deferred template deep link cancel automatic c
   await expect(page).toHaveURL(/templateId=template-city$/);
   await expect(page.getByTestId('design-canvas').locator('[data-element-id]')).toHaveCount(0);
   expect(state.writePaths.filter(path => path.startsWith('POST '))).toEqual([]);
-  await page.getByRole('button', { name: 'Save as Design', exact: true }).click();
+  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await page.getByRole('dialog', { name: 'Save design', exact: true }).getByRole('button', { name: 'Save design', exact: true }).click();
   await expect.poll(() => state.writes.length).toBe(1);
   expect(state.writes[0].canvasData.v3Listing.pending.property.address).toBe('Preserve this pending address');
 });
@@ -238,7 +239,7 @@ test('listing panels persist their fields and canvas panels open', async ({ page
   await page.getByRole('button', { name: 'Save changes', exact: true }).click();
   await page.getByRole('button', { name: 'Listing', exact: true }).click();
   await expect(page.getByRole('button', { name: /^Agent Morgan Agent/ })).toBeVisible();
-  await page.getByRole('button', { name: 'Save as Design', exact: true }).click();
+  await page.getByRole('button', { name: 'Save', exact: true }).click();
   await expect(page.getByText('Saved', { exact: true })).toBeVisible();
   expect(state.writes.at(-1).canvasData.v3Listing.pending.property.headline).toBe('Garden residence');
   expect(state.writes.at(-1).canvasData.v3Listing.pending.agent.name).toBe('Morgan Agent');

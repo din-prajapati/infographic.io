@@ -80,7 +80,7 @@ for(const theme of ['light','dark'])for(const selected of ['text','image'])test(
     await boundsInside(actions,1242,668);
   }
   await page.keyboard.press('Escape');
-  await page.getByRole('button',{name:'Save as Design',exact:true}).click();
+  await page.getByRole('button',{name:'Save',exact:true}).click();
   await expect.poll(()=>state.writes.length).toBeGreaterThan(0);
   expect(state.writes.at(-1).canvasData.elements).toEqual(before);
 });

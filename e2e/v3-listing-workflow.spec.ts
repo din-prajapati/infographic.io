@@ -52,7 +52,7 @@ test('listing edits save separately, apply together and undo without losing sour
   await expect(page.getByTestId('design-canvas').getByText('US$400,000',{exact:true})).toHaveCount(2);
   await expect(page.getByRole('button',{name:/Property information/})).toContainText('US$450,000');
   await page.getByRole('button',{name:'Apply to design',exact:true}).click();
-  await page.getByRole('button',{name:'Save as Design',exact:true}).click();
+  await page.getByRole('button',{name:'Save',exact:true}).click();
   await expect.poll(()=>state.document.canvasData.v3Listing.applied.property.amount).toBe('450000');
   await page.reload();
   await expect(page.getByTestId('design-canvas').getByText('US$450,000',{exact:true})).toHaveCount(2);
@@ -61,7 +61,11 @@ test('listing edits save separately, apply together and undo without losing sour
 // Contract: Use this template saves a distinct design and leaves the original source intact.
 test('using a saved Template creates a separate Design through the V3 UI',async({page})=>{
   const state=await setup(page);
-  await page.getByRole('button',{name:'Save as Template',exact:true}).click();
+  await page.getByRole('button',{name:'Save options',exact:true}).click();
+  await page.getByRole('menuitem',{name:/^Create reusable template/}).click();
+  const creation=page.getByRole('dialog',{name:'Create reusable template',exact:true});
+  await creation.getByRole('textbox',{name:'Template name',exact:true}).fill('Oak design');
+  await creation.getByRole('button',{name:'Create template',exact:true}).click();
   await expect.poll(()=>state.templates.length).toBe(1);
   await page.getByRole('button',{name:/Oak design/}).click();
   await page.getByRole('button',{name:'Create Design',exact:true}).click();
@@ -74,7 +78,11 @@ test('using a saved Template creates a separate Design through the V3 UI',async(
 // Contract: a reusable template cannot contain linked facts or a source association.
 test('Save as Template strips listing facts and export requires human review',async({page})=>{
   const state=await setup(page);
-  await page.getByRole('button',{name:'Save as Template',exact:true}).click();
+  await page.getByRole('button',{name:'Save options',exact:true}).click();
+  await page.getByRole('menuitem',{name:/^Create reusable template/}).click();
+  const creation=page.getByRole('dialog',{name:'Create reusable template',exact:true});
+  await creation.getByRole('textbox',{name:'Template name',exact:true}).fill('Oak design');
+  await creation.getByRole('button',{name:'Create template',exact:true}).click();
   await expect.poll(()=>state.templates.length).toBe(1);
   expect(state.templates[0].canvasData.v3Listing).toBeUndefined();
   expect(state.templates[0].canvasData.elements.find((e:any)=>e.id==='address').content).toBe('[Address]');
@@ -119,7 +127,7 @@ test('Show links overlay follows zoom and stays out of saved artwork',async({pag
   const toggle=page.getByRole('button',{name:'Show links',exact:true});
   await expect(toggle).toHaveAttribute('aria-pressed','false');
   await expect(page.getByTestId('link-overlay')).toHaveCount(0);
-  await page.getByRole('button',{name:'Save as Design',exact:true}).click();
+  await page.getByRole('button',{name:'Save',exact:true}).click();
   await expect.poll(()=>state.writes.length).toBe(1);
   const before=state.writes[0];
   await toggle.click();
@@ -132,7 +140,7 @@ test('Show links overlay follows zoom and stays out of saved artwork',async({pag
   await page.getByRole('button',{name:'Zoom in',exact:true}).click();
   await expect.poll(near).toBe(true);
   await expect(page.getByRole('status').filter({hasText:/^Unsaved$/})).toHaveCount(0);
-  await page.getByRole('button',{name:'Save as Design',exact:true}).click();
+  await page.getByRole('button',{name:'Save',exact:true}).click();
   await expect.poll(()=>state.writes.length).toBe(2);
   expect(state.writes[1].thumbnail).toBe(before.thumbnail);
   // zoom and timestamp are view/save metadata; the design content itself must be identical.

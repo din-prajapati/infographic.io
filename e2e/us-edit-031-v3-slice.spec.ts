@@ -73,7 +73,7 @@ async function open(page: Page) {
   await page.goto(URL, { waitUntil: 'domcontentloaded' });
   await expect(page.getByRole('textbox', { name: 'Design title', exact: true })).toBeVisible();
   await expect(canvas(page).getByText(TEXT, { exact: true })).toBeVisible();
-  await expect(page.getByRole('button', { name: /^(Save|Save as Design)$/ })).toBeEnabled();
+  await expect(page.getByRole('button', { name: /^Save$/ })).toBeEnabled();
   // Restore schedules Fit at 350/700ms and two animation frames. Settle those
   // document-open callbacks before exercising manual view controls.
   await page.clock.runFor(750);
@@ -153,7 +153,7 @@ test.describe('US-EDIT-031 — mocked browser integration', () => {
     await expect(canvas(page)).toHaveAttribute('role', 'img');
     expect(await canvas(page).evaluate(el => getComputedStyle(el).pointerEvents)).toBe('none');
     await expect(page.getByRole('button', { name: 'Exit preview', exact: true })).toBeVisible();
-    await expect(page.getByRole('button', { name: /^(Save|Save as Design)$/ })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: /^Save$/ })).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Text', exact: true })).toHaveCount(0);
     await expect(page.getByRole('complementary', { name: 'Text inspector', exact: true })).toBeHidden();
     await expect(page.getByRole('navigation', { name: 'Editing workflow', exact: true })).toBeHidden();
@@ -212,7 +212,7 @@ test.describe('US-EDIT-031 — mocked browser integration', () => {
     await page.getByRole('button', { name: 'Redo', exact: true }).click();
     await expect(canvas(page).getByText(EDITED, { exact: true })).toBeVisible();
     await page.getByRole('textbox', { name: 'Design title', exact: true }).fill('Updated mocked listing');
-    await page.getByRole('button', { name: /^(Save|Save as Design)$/ }).click();
+    await page.getByRole('button', { name: /^Save$/ }).click();
     await expect(page.getByText('Saved', { exact: true })).toBeVisible();
     expect(model.writes).toHaveLength(1); expect(model.writes[0].method).toBe('PUT');
     expect(model.writes[0].body.thumbnail).toMatch(/^data:image\/png;base64,/);
@@ -229,7 +229,7 @@ test.describe('US-EDIT-031 — mocked browser integration', () => {
   test('TC-EDIT-031-02 [P0] failed save retains edits and retries without local fallback', async ({ page }) => {
     const model = await mockedSession(page); await open(page); await edit(page);
     model.rejectWrite = true;
-    await page.getByRole('button', { name: /^(Save|Save as Design)$/ }).click();
+    await page.getByRole('button', { name: /^Save$/ }).click();
     await expect(page.getByRole('button', { name: 'Retry save', exact: true })).toBeVisible();
     await expect(page.getByText('Saved', { exact: true })).toHaveCount(0);
     await expect(canvas(page).getByText(EDITED, { exact: true })).toBeVisible();
@@ -246,7 +246,7 @@ test.describe('US-EDIT-031 — mocked browser integration', () => {
     const model = await mockedSession(page);
     Reflect.deleteProperty(model.design, 'category'); Reflect.deleteProperty(model.design, 'tags');
     await open(page); await edit(page);
-    await page.getByRole('button', { name: /^(Save|Save as Design)$/ }).click();
+    await page.getByRole('button', { name: /^Save$/ }).click();
     await expect(page.getByText('Saved', { exact: true })).toBeVisible();
     expect(model.writes).toHaveLength(1);
     expect(model.writes[0].body).not.toHaveProperty('category');
@@ -258,7 +258,7 @@ test.describe('US-EDIT-031 — mocked browser integration', () => {
   test('TC-EDIT-031-03 [P0] editing during an in-flight save stays Unsaved', async ({ page }) => {
     const model = await mockedSession(page); await open(page); await edit(page);
     model.writeGate = deferred();
-    await page.getByRole('button', { name: /^(Save|Save as Design)$/ }).click();
+    await page.getByRole('button', { name: /^Save$/ }).click();
     await expect.poll(() => model.writes.length).toBe(1);
     await edit(page, 'NEWER REVISION');
     model.writeGate.resolve();
@@ -272,16 +272,16 @@ test.describe('US-EDIT-031 — mocked browser integration', () => {
     const model = await mockedSession(page); model.readGate = deferred(); model.rejectRead = true;
     await page.goto(URL, { waitUntil: 'domcontentloaded' });
     await expect(page.getByRole('status')).toHaveText(/Opening design/);
-    await expect(page.getByRole('button', { name: /^(Save|Save as Design)$/ })).toBeDisabled();
+    await expect(page.getByRole('button', { name: /^Save$/ })).toBeDisabled();
     await expect(page.getByRole('button', { name: /^(Export|Review & export)$/ })).toBeDisabled();
     model.readGate.resolve();
     await expect(page.getByRole('button', { name: 'Retry opening', exact: true })).toBeVisible();
-    await expect(page.getByRole('button', { name: /^(Save|Save as Design)$/ })).toBeDisabled();
+    await expect(page.getByRole('button', { name: /^Save$/ })).toBeDisabled();
     await expect(page.getByRole('button', { name: /^(Export|Review & export)$/ })).toBeDisabled();
     model.rejectRead = false;
     await page.getByRole('button', { name: 'Retry opening', exact: true }).click();
     await expect(canvas(page).getByText(TEXT, { exact: true })).toBeVisible();
-    await expect(page.getByRole('button', { name: /^(Save|Save as Design)$/ })).toBeEnabled();
+    await expect(page.getByRole('button', { name: /^Save$/ })).toBeEnabled();
   });
 
   // AC2: structurally invalid server documents never become an editable canvas.
@@ -291,7 +291,7 @@ test.describe('US-EDIT-031 — mocked browser integration', () => {
       model.design.canvasData = invalid as unknown as ReturnType<typeof fixture>['canvasData'];
       await page.goto(URL, { waitUntil: 'domcontentloaded' });
       await expect(page.getByRole('button', { name: 'Retry opening', exact: true })).toBeVisible();
-      await expect(page.getByRole('button', { name: /^(Save|Save as Design)$/ })).toBeDisabled();
+      await expect(page.getByRole('button', { name: /^Save$/ })).toBeDisabled();
       await expect(page.getByRole('button', { name: /^(Export|Review & export)$/ })).toBeDisabled();
       model.design = fixture();
       await page.getByRole('button', { name: 'Retry opening', exact: true }).click();
@@ -336,7 +336,7 @@ test.describe('US-EDIT-031 — mocked browser integration', () => {
     await page.getByRole('textbox', { name: 'Text content', exact: true }).fill(EDITED);
     await page.getByRole('textbox', { name: 'Text content', exact: true }).press('Tab');
     await expect(canvas(page).getByText(TEXT, { exact: true })).toBeVisible();
-    await page.getByRole('button', { name: /^(Save|Save as Design)$/ }).click();
+    await page.getByRole('button', { name: /^Save$/ }).click();
     await expect(page.getByText('Saved', { exact: true })).toBeVisible();
     expect(model.writes[0].body.canvasData.v3Listing.pending.property).toMatchObject({ headline: EDITED, address: '14 Garden Lane', amount: '725000', currency: 'USD', description: 'Retain unrendered listing facts' });
     expect(model.writes[0].body.canvasData.v3Listing.applied.property.headline).toBe(TEXT);
@@ -344,13 +344,13 @@ test.describe('US-EDIT-031 — mocked browser integration', () => {
     await page.getByRole('button', { name: 'Apply to design', exact: true }).click();
     await expect(canvas(page).getByText(EDITED, { exact: true })).toBeVisible();
     await page.getByRole('button', { name: 'Undo', exact: true }).click();
-    await page.getByRole('button', { name: /^(Save|Save as Design)$/ }).click();
+    await page.getByRole('button', { name: /^Save$/ }).click();
     await expect(page.getByText('Saved', { exact: true })).toBeVisible();
     expect(model.writes[1].body.canvasData.v3Listing.pending.property.headline).toBe(EDITED);
     expect(model.writes[1].body.canvasData.v3Listing.applied.property.headline).toBe(TEXT);
     expect(model.writes[1].body.canvasData.elements[0]).toMatchObject({ content: TEXT });
     await page.getByRole('button', { name: 'Redo', exact: true }).click();
-    await page.getByRole('button', { name: /^(Save|Save as Design)$/ }).click();
+    await page.getByRole('button', { name: /^Save$/ }).click();
     await expect(page.getByText('Saved', { exact: true })).toBeVisible();
     expect(model.writes[2].body.canvasData.v3Listing.pending.property.headline).toBe(EDITED);
     expect(model.writes[2].body.canvasData.v3Listing.applied.property.headline).toBe(EDITED);
@@ -371,7 +371,7 @@ test.describe('US-EDIT-031 — mocked browser integration', () => {
     await expect(canvas(page).locator('[data-element-id]')).toHaveCount(4);
     await page.getByRole('button', { name: 'Tools', exact: true }).click();
     await page.getByRole('button', { name: 'Select', exact: true }).click();
-    await page.getByRole('button', { name: /^(Save|Save as Design)$/ }).click();
+    await page.getByRole('button', { name: /^Save$/ }).click();
     await expect(page.getByText('Saved', { exact: true })).toBeVisible();
     const added = model.writes[0].body.canvasData.elements.filter(el => !['text-1', 'image-1', 'shape-1'].includes(el.id));
     expect(added).toHaveLength(1); expect(added[0].type).toBe('text');
@@ -386,7 +386,7 @@ test.describe('US-EDIT-031 — mocked browser integration', () => {
     await page.mouse.move(box!.x + box!.width / 2, box!.y + box!.height / 2);
     await page.mouse.down(); await page.mouse.move(box!.x + box!.width / 2 + 30, box!.y + box!.height / 2 + 20, { steps: 8 }); await page.mouse.up();
     await expect(page.getByText('Unsaved', { exact: true })).toBeVisible();
-    await page.getByRole('button', { name: /^(Save|Save as Design)$/ }).click();
+    await page.getByRole('button', { name: /^Save$/ }).click();
     await expect(page.getByText('Saved', { exact: true })).toBeVisible();
     const moved = model.writes[0].body.canvasData.elements.find(el => el.id === 'shape-1')!;
     expect(moved.x).not.toBe(40); expect(moved.y).not.toBe(220);
@@ -428,7 +428,7 @@ test.describe('US-EDIT-031 — mocked browser integration', () => {
     page.on('request', request => { if (/\/designs(?:\/|$)/.test(new globalThis.URL(request.url()).pathname)) requests.push(request.method()); });
     await page.goto('/editor?editor=v3&designId=local-only-draft', { waitUntil: 'domcontentloaded' });
     await expect(page.getByText('Unsupported design ID', { exact: true })).toBeVisible();
-    await expect(page.getByRole('button', { name: /^(Save|Save as Design)$/ })).toBeDisabled();
+    await expect(page.getByRole('button', { name: /^Save$/ })).toBeDisabled();
     await expect(page.getByRole('button', { name: /^(Export|Review & export)$/ })).toBeDisabled();
     expect(requests).toEqual([]); expect(model.writes).toEqual([]);
   });
@@ -455,14 +455,17 @@ test.describe('US-EDIT-031 — mocked browser integration', () => {
   // AC7: first POST ID is carried in the opt-in URL and next save uses PUT.
   test('TC-EDIT-031-08 [P1] first blank save retains editor=v3 and server identity', async ({ page }) => {
     const model = await mockedSession(page); await page.goto('/editor?editor=v3', { waitUntil: 'domcontentloaded' });
-    await expect(page.getByRole('button', { name: /^(Save|Save as Design)$/ })).toBeEnabled();
+    await expect(page.getByRole('button', { name: /^Save$/ })).toBeEnabled();
     expect(model.reads).toBe(0);
     await page.getByRole('textbox', { name: 'Design title', exact: true }).fill('Blank session');
-    await page.getByRole('button', { name: /^(Save|Save as Design)$/ }).click();
+    await page.getByRole('button', { name: /^Save$/ }).click();
+    const creation = page.getByRole('dialog', { name: 'Save design', exact: true });
+    await expect(creation.getByRole('textbox', { name: 'Design name', exact: true })).toHaveValue('Blank session');
+    await creation.getByRole('button', { name: 'Save design', exact: true }).click();
     await expect(page).toHaveURL(new RegExp(`editor=v3.*designId=${ID}|designId=${ID}.*editor=v3`));
     expect(model.reads, 'Adopting create ID must not trigger another GET').toBe(0);
     await page.getByRole('textbox', { name: 'Design title', exact: true }).fill('Second save');
-    await page.getByRole('button', { name: /^(Save|Save as Design)$/ }).click();
+    await page.getByRole('button', { name: /^Save$/ }).click();
     await expect(page.getByText('Saved', { exact: true })).toBeVisible();
     expect(model.reads, 'Subsequent PUT must stay in the same mounted session').toBe(0);
     expect(model.writes.map(w => w.method)).toEqual(['POST', 'PUT']);
@@ -540,14 +543,14 @@ for (const width of [1280, 1440]) for (const theme of ['light', 'dark'] as const
     await page.setViewportSize({ width, height: 1000 }); await mockedSession(page, theme); await open(page);
     await expect(page.locator('html')).toHaveClass(new RegExp(theme));
     const title = page.getByRole('textbox', { name: 'Design title', exact: true });
-    const save = page.getByRole('button', { name: /^(Save|Save as Design)$/ });
+    const save = page.getByRole('button', { name: /^Save$/ });
     await title.focus();
     const keyboardVisited: string[] = [];
     for (let i = 0; i < 80; i++) {
       keyboardVisited.push(await page.evaluate(() => document.activeElement?.getAttribute('aria-label') || document.activeElement?.textContent?.trim() || document.activeElement?.getAttribute('title') || ''));
       await page.keyboard.press('Tab');
     }
-    expect(keyboardVisited).toContain('Save as Design'); expect(keyboardVisited).toContain('Review & export');
+    expect(keyboardVisited).toContain('Save'); expect(keyboardVisited).toContain('Review & export');
     for (const button of await page.getByRole('button').all()) {
       if (!await button.isVisible() || !await button.isEnabled()) continue;
       const name = await button.evaluate(el => el.getAttribute('aria-label') || el.textContent?.trim() || el.getAttribute('title') || '');

@@ -166,8 +166,12 @@ test('V3 listing workflow with linked fields against the real backend and R2', a
   });
 
   await test.step('3. Save as Template stores placeholders, not listing facts', async () => {
-    await page.getByRole('button', { name: 'Save as Template', exact: true }).click();
-    await expect(page.getByRole('status').filter({ hasText: 'Reusable template saved' })).toBeVisible();
+    await page.getByRole('button', { name: 'Save options', exact: true }).click();
+    await page.getByRole('menuitem', { name: /^Create reusable template/ }).click();
+    const creation=page.getByRole('dialog', { name: 'Create reusable template', exact: true });
+    await creation.getByRole('textbox', { name: 'Template name', exact: true }).fill(designName);
+    await creation.getByRole('button', { name: 'Create template', exact: true }).click();
+    await expect(page.getByRole('status').filter({ hasText: 'Template created' })).toBeVisible();
     const list = await (await api.get('/api/v1/canvas-templates')).json();
     const match = list.filter((t: any) => t.name === designName);
     expect(match).toHaveLength(1);
@@ -280,7 +284,7 @@ test('V3 listing workflow with linked fields against the real backend and R2', a
   });
 
   await test.step('8. Save as Design, reload, verify persisted listing and R2-only media', async () => {
-    await page.getByRole('button', { name: 'Save as Design', exact: true }).click();
+    await page.getByRole('button', { name: 'Save', exact: true }).click();
     await expect(page.getByRole('status').filter({ hasText: /^Saved$/ })).toHaveCount(1, { timeout: 30_000 });
     await expect.poll(async () => (await (await api.get(`/api/v1/designs/${designId}`)).json()).canvasData?.v3Listing?.applied?.property?.headline, { timeout: 30_000 }).toBe(LISTING.headline);
     await page.reload();

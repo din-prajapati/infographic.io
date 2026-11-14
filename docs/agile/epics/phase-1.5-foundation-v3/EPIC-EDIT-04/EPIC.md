@@ -161,3 +161,7 @@ Phone canvas-first/bottom sheet, compact tablet shell and measured V3 viewport f
 ## Annotation refinement — 2026-11-14
 
 US-EDIT-022 T6, US-EDIT-025 T7, US-EDIT-033 T8 and US-EDIT-044 T14: Details tabs, pinned Apply undo, measured toolbar overflow, canvas linking strip and Preview icon implemented and locally verified. Save workflow remains proposal only. Type checks, 1696 unit tests (one existing skip), build and 187 clean browser cases pass. User visual/device acceptance and milestone merge remain pending. See docs/research/2026-11-14-V3-BROWSER-ANNOTATIONS.md.
+
+## Save-flow implementation — 2026-11-14
+
+US-EDIT-022 T7/T8 and AC5–8: Design-mode Save split button and themed naming/copy/reusable-Template dialogs delivered with optional Design Tags, acknowledged identity, source-save consent, recovery and late-response guards. Type checks, 1718 unit tests (one existing skip), build and 206 distinct mocked browser cases pass across broad/reconciled runs. Evidence: docs/research/2026-11-14-V3-SAVE-FLOW-IMPLEMENTATION.md. Explicit Template authoring, user/device acceptance and milestone merge remain pending.
