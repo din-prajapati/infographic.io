@@ -163,3 +163,7 @@ User authorized implementation of docs/research/2026-11-14-V3-SAVE-FLOW-PROPOSAL
 Documentation scope: this STORY.md/TASKS.md/scaffold.json, parent EPIC.md, docs/research/2026-11-14-V3-SAVE-FLOW-PROPOSAL.md and docs/research/2026-11-14-V3-SAVE-FLOW-IMPLEMENTATION.md (new). Gate 1 required, visual/browser gates required, API smoke N/A unless backend source scope is explicitly revised. No formal merged/Done claim.
 
 T7/T8 verification: frontend/API type checks, 1718 unit tests, production build pass; 206 distinct browser cases verified across broad + reconciled runs. Source metadata, autosave consent, copy identity, sanitation, recovery, late replies, focus, light/dark and short-screen layout covered. Evidence: docs/research/2026-11-14-V3-SAVE-FLOW-IMPLEMENTATION.md. Formal merge/Done and physical-device/user acceptance remain pending.
+
+## 2026-11-14 — Browser comment 2: Save split-button presentation
+
+- [x] T9 (15m) — First individual annotation item: render Save and Save options as one bordered header control, matching adjacent header-button outline; shared hover, focus-within and open-menu highlight, visible individual keyboard focus, disabled state without active hover, no layout shift. Exact files: client/src/components/editor/v3/v3-save-dialog.css; e2e/v3-save-flow.spec.ts; this TASKS.md; docs/research/2026-11-14-V3-SAVE-FLOW-IMPLEMENTATION.md. No save/session/dialog behavior or other fonts/layout changes. Verify 1242 and375, both themes. Comment1 extraction-review navigation is a separate next item and excluded from T9.

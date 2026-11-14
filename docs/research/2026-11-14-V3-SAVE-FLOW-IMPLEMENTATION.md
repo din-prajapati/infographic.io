@@ -46,3 +46,9 @@ Initial new-flow browser pass verified the save/copy/template behavior. Paused-c
 - Explicit owned-Template editing, Template updates/copies and Template-mode Create design are future work from the proposal.
 - Physical-device and user visual acceptance remain separate from browser-emulated checks.
 - Milestone PR/merge and formal story closure are not claimed by local implementation.
+
+## Browser comment 2 — Save split-button outline and hover (T9)
+
+Save and its dropdown now share one persistent border matching adjacent header controls, with a divider between actions. Hovering either half, keyboard focus within the control, and an open menu highlight the entire group. Individual focus outlines remain visible. Disabled saving remains neutral and state changes do not resize the control. Save behavior and dialogs are unchanged.
+
+Fresh verification: frontend/API type checks pass; backend 853/853 and frontend 865 passing with one existing skip (1,718 passing units). Four focused browser cases pass at 375px and 1242px in both themes, covering the border, both hover targets, focus, open menu, disabled state and stable dimensions. Phone light and desktop dark screenshots were visually reviewed. Logs: `.agent-logs/save-hover-check.log`, `save-hover-backend.log`, `save-hover-client.log`, `save-hover-browser-rerun.log`. The initial browser run exposed only an expected-color serialization mismatch; the exact color contract now uses browser normalization. Gate 4 is not applicable to this CSS-only change. Comment 1 extraction review is a separate item.

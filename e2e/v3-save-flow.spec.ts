@@ -14,7 +14,7 @@ async function setup(page:Page,options:{blank?:boolean;theme?:string}={}){
   await page.clock.pauseAt(new Date('2026-01-01T00:00:01Z'));
   await page.addInitScript(theme=>{localStorage.setItem('auth_token','save-flow-fixture');localStorage.setItem('auth_user',JSON.stringify({id:'save-user',name:'Alex',email:'alex@example.test',plan:'SOLO'}));localStorage.setItem('theme',theme);},options.theme??'light');
   const documents:Record<string,any>={[originalId]:fixture()};
-  const state={documents,writes:[] as {method:string;body:any;id:string}[],templates:[] as any[],rejectCreate:false,rejectUpdate:false,rejectTemplate:false,invalidCreateId:false,createGate:null as ReturnType<typeof deferred>|null};
+  const state={documents,writes:[] as {method:string;body:any;id:string}[],templates:[] as any[],rejectCreate:false,rejectUpdate:false,rejectTemplate:false,invalidCreateId:false,createGate:null as ReturnType<typeof deferred>|null,updateGate:null as ReturnType<typeof deferred>|null};
   await page.route('**/api/**',async route=>{
     const req=route.request(),path=new URL(req.url()).pathname,method=req.method();
     if(/\/designs(?:\/[^/]+)?$/.test(path)){
@@ -22,6 +22,7 @@ async function setup(page:Page,options:{blank?:boolean;theme?:string}={}){
       const body=req.postDataJSON(),id=method==='POST'?newId:path.split('/').at(-1)!;
       state.writes.push({method,body:structuredClone(body),id});
       if(method==='POST'&&state.createGate)await state.createGate.promise;
+      if(method==='PUT'&&state.updateGate)await state.updateGate.promise;
       if(method==='POST'&&state.rejectCreate||method==='PUT'&&state.rejectUpdate)return route.fulfill({status:503,json:{message:'Save temporarily unavailable'}});
       if(method==='POST'&&state.invalidCreateId)return route.fulfill({json:{...body,id:'invalid'}});
       documents[id]={...documents[id],...body,id};return route.fulfill({json:documents[id]});
@@ -218,4 +219,32 @@ for(const theme of ['light','dark'])test(`short-screen Save dialog retains scrol
   expect((await submit.boundingBox())!.y+(await submit.boundingBox())!.height).toBeLessThanOrEqual(375);
   await dialog.getByRole('textbox',{name:'Add a tag',exact:true}).scrollIntoViewIfNeeded();await expect(submit).toBeInViewport();
   await page.screenshot({path:info.outputPath(`save-template-short-${theme}.png`)});
+});
+
+// T9: one outlined Save group shares hover/focus/open highlight across both halves; disabled saving stays neutral.
+for(const theme of ['light','dark'])for(const width of [375,1242])test(`Save split button has unified border hover and focus at ${width}px in ${theme}`,async({page},info)=>{
+  await page.setViewportSize({width,height:812});const state=await setup(page,{theme});
+  const split=page.locator('.v3-save-split'),save=split.getByRole('button',{name:'Save',exact:true}),options=split.getByRole('button',{name:'Save options',exact:true});
+  const idle='rgba(0, 0, 0, 0)';
+  const highlight=await page.evaluate(()=>{const reference=document.createElement('div');reference.style.backgroundColor='#ffffff1a';document.body.append(reference);const color=getComputedStyle(reference).backgroundColor;reference.remove();return color;});
+  await page.mouse.move(0,0);await page.getByRole('textbox',{name:'Design title',exact:true}).focus();
+  await expect(split).toHaveCSS('border-top-width','1px');await expect(split).toHaveCSS('border-top-style','solid');
+  const outline=await page.locator('.v3-header [aria-label="Undo"]').evaluate(node=>getComputedStyle(node).borderTopColor);
+  await expect(split).toHaveCSS('border-top-color',outline);await expect(split).toHaveCSS('background-color',idle);
+  const before=(await split.boundingBox())!;
+  for(const half of [save,options]){
+    await half.hover();await expect(split).toHaveCSS('background-color',highlight);
+    await expect(save).toHaveCSS('background-color',idle);await expect(options).toHaveCSS('background-color',idle);
+    const after=(await split.boundingBox())!;expect(after.width).toBe(before.width);expect(after.height).toBe(before.height);
+  }
+  await page.mouse.move(0,0);await options.focus();await expect(split).toHaveCSS('background-color',highlight);
+  await expect(options).toHaveCSS('outline-style','solid');await expect(options).toHaveCSS('outline-width','2px');
+  await page.keyboard.press('Enter');await expect(page.getByRole('menuitem',{name:/^Save a copy/})).toBeVisible();
+  await expect(split).toHaveCSS('background-color',highlight);
+  await page.screenshot({path:info.outputPath(`save-split-${width}-${theme}.png`)});
+  await page.keyboard.press('Escape');await page.clock.runFor(50);
+  await page.getByRole('textbox',{name:'Design title',exact:true}).focus();await page.mouse.move(0,0);await expect(split).toHaveCSS('background-color',idle);
+  state.updateGate=deferred();await save.click();await expect.poll(()=>state.writes.length).toBe(1);
+  await expect(save).toBeDisabled();await expect(options).toBeDisabled();await options.hover();await expect(split).toHaveCSS('background-color',idle);
+  state.updateGate.resolve();await expect(save).toBeEnabled();
 });
