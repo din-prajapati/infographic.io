@@ -243,11 +243,11 @@ for(const theme of ['light','dark'])for(const width of [375,1242])test(`Save spl
   await page.keyboard.press('Enter');await expect(page.getByRole('menuitem',{name:/^Save a copy/})).toBeVisible();
   // T10: Save options contains exactly two actionable, icon-led rows; no Design section label.
   const menu=page.getByRole('menu',{name:'Save options',exact:true});
-  await expect(menu).toHaveText('Save a copy...Create reusable template...');
-  await expect(menu.getByRole('menuitem')).toHaveText(['Save a copy...','Create reusable template...']);
+  await expect(menu).toHaveText('Save a copyCreate reusable template');
+  await expect(menu.getByRole('menuitem')).toHaveText(['Save a copy','Create reusable template']);
   const normalColor=theme==='dark'?'rgb(237, 241, 245)':'rgb(32, 42, 53)';
   const highlightedColor=theme==='dark'?'rgb(122, 219, 203)':'rgb(7, 107, 108)';
-  for(const [name,icon] of [['Save a copy...','copy'],['Create reusable template...','layout-template']]){
+  for(const [name,icon] of [['Save a copy','copy'],['Create reusable template','layout-template']]){
     const action=menu.getByRole('menuitem',{name,exact:true});
     const symbol=action.locator(`svg.lucide-${icon}`);
     await expect(symbol).toBeVisible();await expect(symbol).toHaveAttribute('aria-hidden','true');
@@ -261,8 +261,8 @@ for(const theme of ['light','dark'])for(const width of [375,1242])test(`Save spl
     await action.hover();await expect(action.locator('svg')).toHaveCSS('color',highlightedColor);
   }
   await page.keyboard.press('ArrowUp');await page.clock.runFor(50);
-  await expect(menu.getByRole('menuitem',{name:'Save a copy...',exact:true})).toHaveAttribute('data-highlighted');
-  await expect(menu.getByRole('menuitem',{name:'Save a copy...',exact:true}).locator('svg')).toHaveCSS('color',highlightedColor);
+  await expect(menu.getByRole('menuitem',{name:'Save a copy',exact:true})).toHaveAttribute('data-highlighted');
+  await expect(menu.getByRole('menuitem',{name:'Save a copy',exact:true}).locator('svg')).toHaveCSS('color',highlightedColor);
   await expect(split).toHaveCSS('background-color',highlight);
   await page.screenshot({path:info.outputPath(`save-split-${width}-${theme}.png`)});
   await page.keyboard.press('Escape');await page.clock.runFor(50);
