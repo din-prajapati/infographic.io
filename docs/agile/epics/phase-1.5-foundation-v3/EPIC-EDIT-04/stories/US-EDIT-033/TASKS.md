@@ -61,3 +61,11 @@ Nov4 retained visual evidence scope: Mockups/approved-v3-editor/evidence/nov4-li
 Detailed follow-up evidence scope: Mockups/approved-v3-editor/evidence/details-text-overflow-dark.png, details-line-live-stroke.png, details-image-border-dark.png. Font picker remains within existing fonts; no external font loading.
 
 - [x] T7 (60m) — AC6/7 exact text controls: seamless font-size capsule, screenshot-matched spacing/anchor panel and three-state case toggle. Existing toolbar/CSS/unit/browser, preview validation/tests, plan/report paths and evidence/text-ref-light.png + text-ref-dark.png.
+
+## 2026-11-14 — Browser annotation refinement
+
+- [x] T8 — Comment3: replace horizontal toolbar overflow with measured responsive More controls for text,image,shape,line,icon,multiselection; preserve every action and styling draft behavior, disabled/lock state, keyboard/focus/Escape and viewport-safe nested popovers. Files: V3ElementToolbar.tsx, client/src/styles/v3-element-toolbar.css, existing toolbar unit tests; optional new pure helper if necessary. Never merely hide scrollbar or clip controls. Root owns browser tests.
+
+User explicitly authorized annotations1–4 and6;5 is proposal only. Shared files have explicit root/agent ownership. Do not redesign fonts or implement Assistant/providers/default-editor cutover. Gates required; formal merge remains pending.
+
+Verified 2026-11-14: frontend/API type checks pass; backend 853 and frontend 843 unit tests pass (one existing skip); production build passes; clean V3 browser 178/178 and Listing workflow 9/9 pass. Light/dark desktop, phone and tablet screenshots reviewed. Gate 4 N/A (UI only); physical-device acceptance and merge pending. Evidence: docs/research/2026-11-14-V3-BROWSER-ANNOTATIONS.md.

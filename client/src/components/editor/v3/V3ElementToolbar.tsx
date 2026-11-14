@@ -1,6 +1,7 @@
-import React, { createContext, useContext, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import * as Popover from '@radix-ui/react-popover';
-import { Link2, AlignCenter, AlignLeft, AlignRight, Bold, Italic, Minus, Plus, Underline, Strikethrough, List, ListOrdered, SlidersHorizontal, Replace, Square, Circle, CircleSlash, Triangle, Star, Sparkles, ArrowLeftRight, RotateCcw, Scan, Check, ChevronDown, Lock, Unlock, Copy, Trash2 } from 'lucide-react';
+import { Link2, AlignCenter, AlignLeft, AlignRight, Bold, Italic, Minus, Plus, Underline, Strikethrough, List, ListOrdered, SlidersHorizontal, Replace, Square, Circle, CircleSlash, Triangle, Star, Sparkles, ArrowLeftRight, RotateCcw, Scan, Check, ChevronDown, Lock, Unlock, Copy, Trash2, MoreHorizontal } from 'lucide-react';
 import type { CanvasElement, ImageElement, ShapeElement, TextElement, LineElement } from '../../../lib/canvasTypes';
 import { useCanvasStore } from '../../../hooks/useCanvasStore';
 import { previewElementPatch, clearElementPreview } from '../../../hooks/useV3ElementPreview';
@@ -20,6 +21,42 @@ const previousBorderWeights=new Map<string,number>();
 export function clearV3StrokeMemory(){previousBorderWeights.clear();}
 type ElementPatch = Parameters<typeof commitElementPatch>[1];
 const Divider = () => <span className="v3-toolbar-divider" aria-hidden="true"/>;
+
+interface ControlSize { width: number; priority: number }
+interface ResponsiveControls {
+  overflow: Set<string>;
+  container: HTMLElement | null;
+  measure(id: string, width: number, priority: number): void;
+  remove(id: string): void;
+}
+const Responsive = createContext<ResponsiveControls | null>(null);
+
+function ToolbarGroup({ id, priority, children }: { id: string; priority: number; children: ReactNode }) {
+  const layout = useContext(Responsive);
+  const disabled = useContext(Disabled);
+  const ref = useRef<HTMLFieldSetElement>(null);
+  const overflow = !!layout?.overflow.has(id) && !!layout.container;
+  const measure = layout?.measure, remove = layout?.remove;
+  useLayoutEffect(() => {
+    const group = ref.current;
+    if (!group || !measure) return;
+    const update = () => {
+      const width = group.getBoundingClientRect().width;
+      if (width > 0) measure(id, width, priority);
+    };
+    update();
+    if (typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(update); observer.observe(group);
+    return () => observer.disconnect();
+  }, [id, priority, measure, overflow]);
+  useLayoutEffect(() => () => remove?.(id), [id, remove]);
+  const content = <fieldset ref={ref} disabled={disabled} data-v3-toolbar-group={id} className="v3-toolbar-group">{children}</fieldset>;
+  return overflow ? createPortal(content, layout!.container!) : content;
+}
+
+function ToolbarGroups({ prefix, children }: { prefix: string; children: ReactNode }) {
+  return <>{React.Children.toArray(children).map((child, index) => <ToolbarGroup key={`${prefix}-${index}`} id={`${prefix}-${index}`} priority={(prefix === 'common' ? 50 : 120) - index}>{child}</ToolbarGroup>)}</>;
+}
 
 function FlipIcon({ vertical = false }: { vertical?: boolean }) {
   return <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="v3-flip-icon"><g transform={vertical ? 'rotate(-90 12 12)' : undefined}><path d="M20 7C17 3 8 3 4 8C0 13 5 18 12 18H18M14 14l4 4-4 4"/></g></svg>;
@@ -114,13 +151,19 @@ function TextSpacing({element}:{element:TextElement}) {
   </Menu>;
 }
 
-function TextToolbar({ element }: { element: TextElement }) {
+function FontSize({ element }: { element: TextElement }) {
   const update = (patch: Partial<TextElement>) => commitElementPatch(element.id, patch);
   const [size, setSize] = useState(String(element.fontSize));
   useEffect(() => setSize(String(element.fontSize)), [element.fontSize]);
+  useEffect(() => () => clearElementPreview(element.id), [element.id]);
   const commitSize = () => { const value = clampNumeric(size, 1, 500); if (value !== null) update({ fontSize: value }); setSize(String(value ?? element.fontSize)); };
-  return <><FontPicker element={element}/>
-    <div className="v3-font-size"><Action label="Decrease font size" onClick={() => update({ fontSize: Math.max(1, element.fontSize - 1) })}><Minus/></Action><input aria-label="Font size" type="number" min={1} max={500} step="0.1" value={size} onChange={event => {setSize(event.target.value);const fontSize=clampNumeric(event.target.value,1,500);if(fontSize!==null)previewElementPatch(element.id,{fontSize});else clearElementPreview(element.id);}} onBlur={commitSize} onKeyDown={event => { if (event.key === 'Enter') commitSize(); if (event.key === 'Escape') { event.preventDefault();event.stopPropagation();setSize(String(element.fontSize));clearElementPreview(element.id); } }}/><Action label="Increase font size" onClick={() => update({ fontSize: Math.min(500, element.fontSize + 1) })}><Plus/></Action></div>
+  return <div className="v3-font-size"><Action label="Decrease font size" onClick={() => update({ fontSize: Math.max(1, element.fontSize - 1) })}><Minus/></Action><input aria-label="Font size" type="number" min={1} max={500} step="0.1" value={size} onChange={event => {setSize(event.target.value);const fontSize=clampNumeric(event.target.value,1,500);if(fontSize!==null)previewElementPatch(element.id,{fontSize});else clearElementPreview(element.id);}} onBlur={commitSize} onKeyDown={event => { if (event.key === 'Enter') commitSize(); if (event.key === 'Escape') { event.preventDefault();event.stopPropagation();setSize(String(element.fontSize));clearElementPreview(element.id); } }}/><Action label="Increase font size" onClick={() => update({ fontSize: Math.min(500, element.fontSize + 1) })}><Plus/></Action></div>;
+}
+
+function TextToolbar({ element }: { element: TextElement }) {
+  const update = (patch: Partial<TextElement>) => commitElementPatch(element.id, patch);
+  return <ToolbarGroups prefix="text"><FontPicker element={element}/>
+    <FontSize element={element}/>
     <V3ColorButton element={element} slot="color" label="Text color" text/>
     <Action label="Bold" pressed={element.bold} onClick={() => update({ bold: !element.bold, fontWeight: element.bold ? 400 : 700 })}><Bold/></Action>
     <Action label="Italic" pressed={element.italic} onClick={() => update({ italic: !element.italic })}><Italic/></Action>
@@ -128,7 +171,7 @@ function TextToolbar({ element }: { element: TextElement }) {
     <Menu label="Text alignment" strip iconOnly icon={element.align==='center'?<AlignCenter/>:element.align==='right'?<AlignRight/>:<AlignLeft/>}>{([['left', AlignLeft], ['center', AlignCenter], ['right', AlignRight]] as const).map(([align, Icon]) => <Action key={align} label={`Align ${align}`} pressed={element.align === align} onClick={() => update({ align })}><Icon/></Action>)}</Menu>
     <Menu label="List style" strip iconOnly icon={element.listStyle==='numbered'?<ListOrdered/>:<List/>}><Action label="No list" pressed={element.listStyle==='none'} onClick={()=>update({listStyle:'none'})}><CircleSlash/></Action><Action label="Bullet list" pressed={element.listStyle==='bullet'} onClick={()=>update({listStyle:'bullet'})}><List/></Action><Action label="Numbered list" pressed={element.listStyle==='numbered'} onClick={()=>update({listStyle:'numbered'})}><ListOrdered/></Action></Menu>
     <TextSpacing element={element}/>
-    <Opacity element={element}/></>;
+    <Opacity element={element}/></ToolbarGroups>;
 }
 
 function TextToggles({element}:{element:TextElement}){
@@ -140,8 +183,8 @@ function TextToggles({element}:{element:TextElement}){
 function CommonActions({element}:{element:CanvasElement}){
   const state=useCanvasStore(),selected=state.elements.filter(item=>item.visible&&state.selectedElementIds.includes(item.id));
   const editable=selected.some(item=>!item.locked),locked=!!selected.length&&selected.every(item=>item.locked);
-  return <Disabled.Provider value={false}><div className="v3-common-actions"><Divider/><button type="button" aria-label={locked?'Unlock':'Lock'} title={locked?'Unlock':'Lock'} aria-pressed={locked} disabled={!selected.length} onClick={toggleV3SelectionLock}>{locked?<Unlock/>:<Lock/>}</button><button type="button" aria-label="Duplicate" title="Duplicate (Ctrl+D)" disabled={!editable} onClick={duplicateV3Selection}><Copy/></button><button type="button" aria-label="Delete" title="Delete (Delete)" disabled={!editable} onClick={deleteV3Selection}><Trash2/></button>
-    <V3ElementActionsMenu label={`More ${element.type} options`}/></div></Disabled.Provider>;
+  return <Disabled.Provider value={false}><div className="v3-common-actions"><ToolbarGroups prefix="common"><button type="button" aria-label={locked?'Unlock':'Lock'} title={locked?'Unlock':'Lock'} aria-pressed={locked} disabled={!selected.length} onClick={toggleV3SelectionLock}>{locked?<Unlock/>:<Lock/>}</button><button type="button" aria-label="Duplicate" title="Duplicate (Ctrl+D)" disabled={!editable} onClick={duplicateV3Selection}><Copy/></button><button type="button" aria-label="Delete" title="Delete (Delete)" disabled={!editable} onClick={deleteV3Selection}><Trash2/></button>
+    <V3ElementActionsMenu label={`More ${element.type} options`}/></ToolbarGroups></div></Disabled.Provider>;
 }
 
 function Border({ element }: { element: ShapeElement | ImageElement }) {
@@ -160,17 +203,17 @@ function Border({ element }: { element: ShapeElement | ImageElement }) {
 }
 
 function ShapeToolbar({ element,onEditEffects,onBrowseElements }: { element: ShapeElement;onEditEffects?:()=>void;onBrowseElements?:()=>void }) {
-  return <><Menu label="Edit shape" text="Edit" hideHeading compact contentClassName="v3-shape-type-menu" icon={<SlidersHorizontal/>}>{([['rectangle', Square], ['circle', Circle], ['triangle', Triangle], ['star', Star]] as const).map(([shapeType, Icon]) => <Popover.Close asChild key={shapeType}><button type="button" aria-pressed={element.shapeType===shapeType} onClick={() => commitElementPatch(element.id, { shapeType })}><Icon/><span>{shapeType === 'rectangle' ? 'Rectangle / Square' : shapeType[0].toUpperCase() + shapeType.slice(1)}</span>{element.shapeType===shapeType&&<Check/>}</button></Popover.Close>)}{onBrowseElements&&<Popover.Close asChild><button type="button" onClick={onBrowseElements}>Browse all shapes</button></Popover.Close>}</Menu>
+  return <ToolbarGroups prefix="shape"><Menu label="Edit shape" text="Edit" hideHeading compact contentClassName="v3-shape-type-menu" icon={<SlidersHorizontal/>}>{([['rectangle', Square], ['circle', Circle], ['triangle', Triangle], ['star', Star]] as const).map(([shapeType, Icon]) => <Popover.Close asChild key={shapeType}><button type="button" aria-pressed={element.shapeType===shapeType} onClick={() => commitElementPatch(element.id, { shapeType })}><Icon/><span>{shapeType === 'rectangle' ? 'Rectangle / Square' : shapeType[0].toUpperCase() + shapeType.slice(1)}</span>{element.shapeType===shapeType&&<Check/>}</button></Popover.Close>)}{onBrowseElements&&<Popover.Close asChild><button type="button" onClick={onBrowseElements}>Browse all shapes</button></Popover.Close>}</Menu>
     <V3ColorButton element={element} slot="fill" label="Fill"/>
     <V3ColorButton element={element} slot="stroke" label="Border color" ring/>
     <Menu label="Border" hideHeading contentClassName="v3-stroke-menu" iconOnly compact icon={<BorderIcon/>}><Border element={element}/></Menu>
     {element.shapeType === 'rectangle' && <Menu label="Corners" heading="Corner rounding" iconOnly compact icon={<CornerIcon/>}><StyleNumber element={element} label="Corner radius" compact hideLabel min={0} max={100} value={element.cornerRadius} patch={cornerRadius=>({cornerRadius})}/></Menu>}
-    <Opacity element={element}/><button type="button" aria-label="Effects" disabled={useContext(Disabled)} onClick={onEditEffects}><Sparkles/>Effects</button></>;
+    <Opacity element={element}/><button type="button" aria-label="Effects" disabled={useContext(Disabled)} onClick={onEditEffects}><Sparkles/>Effects</button></ToolbarGroups>;
 }
 
 function IconToolbar({element,onBrowseElements}:{element:ImageElement;onBrowseElements?:()=>void}){
-  return <><Action label="Edit icon" onClick={onBrowseElements}><SlidersHorizontal/>Edit</Action><V3ColorButton element={element} slot="icon" label="Icon color"/>
-    <Menu label="Icon stroke" iconOnly compact hideHeading icon={<BorderIcon/>}><StyleNumber element={element} label="Icon stroke width" min={.5} max={4} step={.1} value={element.icon?.strokeWidth??2} patch={strokeWidth=>propertyIconPatch(element,{strokeWidth})??{}}/></Menu><Opacity element={element}/></>;
+  return <ToolbarGroups prefix="icon"><Action label="Edit icon" onClick={onBrowseElements}><SlidersHorizontal/>Edit</Action><V3ColorButton element={element} slot="icon" label="Icon color"/>
+    <Menu label="Icon stroke" iconOnly compact hideHeading icon={<BorderIcon/>}><StyleNumber element={element} label="Icon stroke width" min={.5} max={4} step={.1} value={element.icon?.strokeWidth??2} patch={strokeWidth=>propertyIconPatch(element,{strokeWidth})??{}}/></Menu><Opacity element={element}/></ToolbarGroups>;
 }
 
 function ImageToolbar({ element, onEditImage,onBrowseElements }: { element: ImageElement; onEditImage: () => void;onBrowseElements?:()=>void }) {
@@ -188,9 +231,10 @@ function ImageToolbar({ element, onEditImage,onBrowseElements }: { element: Imag
     finally { if (alive.current) setBusy(false); if (fileInput.current) fileInput.current.value = ''; }
   };
   if(element.icon)return <IconToolbar element={element} onBrowseElements={onBrowseElements}/>;
-  return <><Action label="Edit image" onClick={onEditImage}><SlidersHorizontal/><span>Edit</span></Action>
+  return <ToolbarGroups prefix="image"><Action label="Edit image" onClick={onEditImage}><SlidersHorizontal/><span>Edit</span></Action>
+    <div className="v3-replace-control">
     <input ref={fileInput} hidden type="file" accept="image/*" aria-label="Replace image file" onChange={event => void replace(event.target.files?.[0])}/>
-    <button type="button" disabled={busy || disabled} aria-label="Replace image" onClick={() => fileInput.current?.click()}><Replace/>{busy ? 'Replacing…' : 'Replace'}</button>
+    <button type="button" disabled={busy || disabled} aria-label="Replace image" onClick={() => fileInput.current?.click()}><Replace/>{busy ? 'Replacing…' : 'Replace'}</button></div>
     <span className="v3-toolbar-divider" aria-hidden="true"/>
     <Action label="Flip horizontal" pressed={element.flipHorizontal} onClick={() => commitElementPatch(element.id, { flipHorizontal: !element.flipHorizontal })}><FlipIcon/></Action><Action label="Flip vertical" pressed={element.flipVertical} onClick={() => commitElementPatch(element.id, { flipVertical: !element.flipVertical })}><FlipIcon vertical/></Action>
     <V3ColorButton element={element} slot="stroke" label="Border color" ring/><Menu label="Border" hideHeading contentClassName="v3-stroke-menu" iconOnly compact icon={<BorderIcon/>}><Border element={element}/></Menu>
@@ -199,7 +243,7 @@ function ImageToolbar({ element, onEditImage,onBrowseElements }: { element: Imag
     <Menu label="Image fit" heading="Fit image" iconOnly compact icon={<Scan/>}><div className="v3-fit-options">{(['cover','contain','fill'] as const).map(objectFit=><button key={objectFit} type="button" aria-label={`Fit ${objectFit}`} title={objectFit==='fill'?'Stretch to fill':objectFit} aria-pressed={(element.objectFit??'contain')===objectFit} onClick={()=>commitElementPatch(element.id,{objectFit})}><svg aria-hidden="true" viewBox="0 0 32 28" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="4" y="4" width="24" height="20" rx="2"/>{objectFit==='contain'?<rect x="5" y="8" width="22" height="12" rx="1"/>:objectFit==='cover'?<path d="M10 4V24M22 4V24M4 10H28M4 18H28"/>:<path d="M8 8L24 20M24 8L8 20"/>}</svg><span>{objectFit==='fill'?'Stretch':objectFit==='cover'?'Cover':'Contain'}</span></button>)}</div><p className="v3-control-help">Fit changes are visible when the frame and image proportions differ.</p><p className="v3-control-help">Drag a side handle to reshape the frame; corners keep proportions.</p></Menu>
     <Action label="Reset image" onClick={()=>commitElementPatch(element.id,resetImageAppearancePatch())}><RotateCcw/></Action>
     {error && <div className="v3-replace-error" role="alert">{error}<button type="button" onClick={() => fileInput.current?.click()}>Retry replacement</button></div>}
-  </>;
+  </ToolbarGroups>;
 }
 
 function DecorationIcon({kind,start=false}:{kind:LineElement['startDecoration'];start?:boolean}) {
@@ -212,20 +256,46 @@ function LineTypeIcon({type}:{type:LineElement['lineType']}) {
 
 function LineToolbar({ element }: { element: LineElement }) {
   const rounded=element.lineCap==='round'||(!element.lineCap&&element.strokeStyle==='dotted');
-  return <><V3ColorButton element={element} slot="stroke" label="Line color" ring/>
+  return <ToolbarGroups prefix="line"><V3ColorButton element={element} slot="stroke" label="Line color" ring/>
     <Menu label="Stroke" hideHeading contentClassName="v3-stroke-menu" compact iconOnly icon={<BorderIcon/>}><div className="v3-border-samples v3-line-patterns" role="group" aria-label="Line stroke patterns">{(['solid','dashed','short-dashed','dotted'] as const).map(strokeStyle=><button key={strokeStyle} type="button" title={strokeStyle==='dashed'?'Long dashes':strokeStyle==='short-dashed'?'Short dashes':strokeStyle} aria-label={`Line stroke ${strokeStyle}`} aria-pressed={element.strokeStyle===strokeStyle} onClick={()=>commitElementPatch(element.id,{strokeStyle})}><StrokeSample style={strokeStyle}/></button>)}</div><div className="v3-switch-row"><span>Rounded end points</span><button type="button" role="switch" aria-label="Rounded end points" aria-checked={rounded} onClick={()=>commitElementPatch(element.id,{lineCap:rounded?'butt':'round'})}><span/></button></div><StyleNumber element={element} label="Line width" displayLabel="Stroke weight" min={1} max={20} value={element.strokeWidth} patch={strokeWidth=>({strokeWidth})}/></Menu>
     <Menu label="Line start" strip iconOnly icon={<DecorationIcon kind={element.startDecoration} start/>}><div className="v3-decoration-options">{(['none','arrow','circle','bar'] as const).map(startDecoration=><Action key={startDecoration} label={`Start decoration ${startDecoration}`} pressed={element.startDecoration===startDecoration} onClick={()=>commitElementPatch(element.id,{startDecoration})}>{startDecoration==='none'?<CircleSlash/>:<DecorationIcon kind={startDecoration} start/>}</Action>)}</div></Menu>
     <Action label="Swap ends" onClick={()=>commitElementPatch(element.id,{startDecoration:element.endDecoration,endDecoration:element.startDecoration})}><ArrowLeftRight/></Action>
     <Menu label="Line end" strip iconOnly icon={<DecorationIcon kind={element.endDecoration}/> }><div className="v3-decoration-options">{(['none','arrow','circle','bar'] as const).map(endDecoration=><Action key={endDecoration} label={`End decoration ${endDecoration}`} pressed={element.endDecoration===endDecoration} onClick={()=>commitElementPatch(element.id,{endDecoration})}>{endDecoration==='none'?<CircleSlash/>:<DecorationIcon kind={endDecoration}/>}</Action>)}</div></Menu>
-    <Menu label="Line type" hideHeading contentClassName="v3-line-type-menu" compact iconOnly icon={<LineTypeIcon type={element.lineType}/> }><div className="v3-picker-list">{(['straight','elbow','curved'] as const).map(lineType=><Popover.Close asChild key={lineType}><button type="button" aria-label={`Type ${lineType}`} aria-pressed={element.lineType===lineType} onClick={()=>commitElementPatch(element.id,{lineType})}><LineTypeIcon type={lineType}/><span>{lineType==='elbow'?'Elbowed':lineType==='curved'?'Curved':'Straight'}</span>{element.lineType===lineType&&<Check aria-hidden="true"/>}</button></Popover.Close>)}</div></Menu><Opacity element={element}/></>;
+    <Menu label="Line type" hideHeading contentClassName="v3-line-type-menu" compact iconOnly icon={<LineTypeIcon type={element.lineType}/> }><div className="v3-picker-list">{(['straight','elbow','curved'] as const).map(lineType=><Popover.Close asChild key={lineType}><button type="button" aria-label={`Type ${lineType}`} aria-pressed={element.lineType===lineType} onClick={()=>commitElementPatch(element.id,{lineType})}><LineTypeIcon type={lineType}/><span>{lineType==='elbow'?'Elbowed':lineType==='curved'?'Curved':'Straight'}</span>{element.lineType===lineType&&<Check aria-hidden="true"/>}</button></Popover.Close>)}</div></Menu><Opacity element={element}/></ToolbarGroups>;
 }
 
 export function V3ElementToolbar({ element, onEditImage,onEditEffects,onBrowseElements,onLinkField }: { element: CanvasElement; onEditImage: () => void;onEditEffects?:()=>void;onBrowseElements?:()=>void;onLinkField?:()=>void }) {
   const ref = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState({ left: 0, top: 0, width: 650 });
+  const [sizes, setSizes] = useState<Map<string, ControlSize>>(() => new Map());
+  const [overflowContainer, setOverflowContainer] = useState<HTMLDivElement | null>(null);
+  const [measurementContainer, setMeasurementContainer] = useState<HTMLDivElement | null>(null);
+  const [portal, setPortal] = useState<HTMLElement | null>(null);
+  const [overflowOpen, setOverflowOpen] = useState(false);
+  const measureGroup = useCallback((id: string, width: number, priority: number) => {
+    setSizes(current => current.get(id)?.width === width && current.get(id)?.priority === priority ? current : new Map(current).set(id, { width, priority }));
+  }, []);
+  const removeGroup = useCallback((id: string) => {
+    setSizes(current => { if (!current.has(id)) return current; const next = new Map(current); next.delete(id); return next; });
+  }, []);
+  const overflow = useMemo(() => {
+    const groups = [...sizes];
+    const total = groups.reduce((sum, [, size]) => sum + size.width + 3, 12);
+    if (total <= position.width) return new Set<string>();
+    let available = Math.max(0, position.width - 12 - 40);
+    const hidden = new Set<string>();
+    for (const [id, size] of groups.sort((a, b) => b[1].priority - a[1].priority)) {
+      if (size.width + 3 <= available) available -= size.width + 3;
+      else hidden.add(id);
+    }
+    return hidden;
+  }, [sizes, position.width]);
+  const responsive = useMemo(() => ({ overflow, container: overflowContainer ?? measurementContainer, measure: measureGroup, remove: removeGroup }), [overflow, overflowContainer, measurementContainer, measureGroup, removeGroup]);
+  useLayoutEffect(() => setPortal(ref.current?.closest<HTMLElement>('.v3-editor') ?? null), []);
   const selectedIds = useCanvasStore(state => state.selectedElementIds);
   const zoom = useCanvasStore(state => state.zoom);
   const disabled = element.locked || !element.visible || selectedIds.length !== 1 || selectedIds[0] !== element.id;
+  useEffect(() => { setOverflowOpen(false); clearElementPreview(); }, [element.id, selectedIds, disabled]);
   // Link field opens Template Fields for one eligible (unlocked, unframed, non-icon) text or image element.
   const linkable = !!onLinkField && !disabled && (element.type === 'text' || (element.type === 'image' && !element.icon)) && !element.frameOf;
   useLayoutEffect(() => {
@@ -236,7 +306,7 @@ export function V3ElementToolbar({ element, onEditImage,onEditEffects,onBrowseEl
       const selection = Array.from(viewport.querySelectorAll<HTMLElement>('[data-element-id]')).find(node => node.dataset.elementId === element.id);
       const bounds = viewport.getBoundingClientRect();
       const target = selection?.getBoundingClientRect() ?? bounds;
-      const width = Math.min(toolbar.scrollWidth, bounds.width - 24);
+      const width = Math.min(toolbar.getBoundingClientRect().width, Math.max(1, bounds.width - 24));
       const height = toolbar.getBoundingClientRect().height;
       const above = target.top - height - 14;
       const next = { width: Math.max(1, bounds.width - 24), left: Math.max(bounds.left + 12, Math.min(target.left + target.width / 2 - width / 2, bounds.right - width - 12)), top: Math.max(bounds.top + 12, Math.min(above >= bounds.top + 12 ? above : target.bottom + 14, bounds.bottom - height - 12)) };
@@ -246,7 +316,10 @@ export function V3ElementToolbar({ element, onEditImage,onEditEffects,onBrowseEl
     window.addEventListener('resize', measure); window.addEventListener('scroll', measure, true);
     return () => { observer.disconnect(); window.removeEventListener('resize', measure); window.removeEventListener('scroll', measure, true); };
   }, [element, zoom]);
-  return <Disabled.Provider value={disabled}><div ref={ref} role="toolbar" aria-label={selectedIds.length>1?'Selection actions':`${element.type} formatting`} className="v3-element-toolbar" style={{ left: position.left, top: position.top, maxWidth: position.width }} onPointerDown={event => event.stopPropagation()} onClick={event => event.stopPropagation()}>
-    {linkable&&<><button type="button" className="v3-link-field" aria-label="Link field" title="Link field — open Template Fields" onClick={onLinkField}><Link2/><span>Link field</span></button><span className="v3-toolbar-divider" aria-hidden="true"/></>}<fieldset disabled={disabled} hidden={selectedIds.length>1}>{element.type === 'text' ? <TextToolbar key={element.id} element={element}/> : element.type === 'shape' ? <ShapeToolbar key={element.id} element={element} onEditEffects={onEditEffects} onBrowseElements={onBrowseElements}/> : element.type === 'image' ? <ImageToolbar key={element.id} element={element} onEditImage={onEditImage} onBrowseElements={onBrowseElements}/> : <LineToolbar key={element.id} element={element}/>}</fieldset><CommonActions element={element}/>
-  </div></Disabled.Provider>;
+  const nestedOverlay = (target: EventTarget | null) => target instanceof HTMLElement && !!target.closest('.v3-element-popover,.v3-layer-menu');
+  return <Disabled.Provider value={disabled}><Responsive.Provider value={responsive}><Popover.Root open={overflow.size > 0 && overflowOpen} onOpenChange={open => { setOverflowOpen(open); if (!open) clearElementPreview(); }}><div ref={ref} role="toolbar" aria-label={selectedIds.length>1?'Selection actions':`${element.type} formatting`} className="v3-element-toolbar" style={{ left: position.left, top: position.top, maxWidth: position.width }} onPointerDown={event => event.stopPropagation()} onClick={event => event.stopPropagation()}>
+    {linkable&&<ToolbarGroup id="link" priority={60}><button type="button" className="v3-link-field" aria-label="Link field" title="Link field — open Template Fields" onClick={onLinkField}><Link2/><span>Link field</span></button></ToolbarGroup>}
+    {selectedIds.length <= 1 && <fieldset disabled={disabled}>{element.type === 'text' ? <TextToolbar key={element.id} element={element}/> : element.type === 'shape' ? <ShapeToolbar key={element.id} element={element} onEditEffects={onEditEffects} onBrowseElements={onBrowseElements}/> : element.type === 'image' ? <ImageToolbar key={element.id} element={element} onEditImage={onEditImage} onBrowseElements={onBrowseElements}/> : <LineToolbar key={element.id} element={element}/>}</fieldset>}<CommonActions element={element}/>
+    {overflow.size > 0 && <Popover.Trigger asChild><button type="button" className="v3-toolbar-icon v3-formatting-more" aria-label="More formatting options" title="More formatting options"><MoreHorizontal/></button></Popover.Trigger>}
+  </div><div hidden aria-hidden="true" className="v3-element-toolbar v3-toolbar-overflow-panel" ref={setMeasurementContainer}/>{overflow.size > 0 && <Popover.Portal container={portal}><Popover.Content ref={setOverflowContainer} role={overflowOpen ? "dialog" : "presentation"} aria-hidden={!overflowOpen} aria-label="More formatting options" className="v3-element-toolbar v3-toolbar-overflow-panel" sideOffset={8} collisionPadding={12} onPointerDown={event => event.stopPropagation()} onClick={event => event.stopPropagation()} onInteractOutside={event => { if (nestedOverlay(event.target)) event.preventDefault(); }} onEscapeKeyDown={event => { if (event.target instanceof HTMLElement && event.target.closest('[data-v3-draft-dirty="true"]')) event.preventDefault(); }}><div className="v3-overflow-heading">More formatting options</div></Popover.Content></Popover.Portal>}</Popover.Root></Responsive.Provider></Disabled.Provider>;
 }

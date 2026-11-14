@@ -17,6 +17,66 @@ Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
 beforeEach(() => { node = document.createElement('div'); document.body.append(node); root = createRoot(node); useCanvasStore.setState({ elements: [], selectedElementIds: [], history: { past: [], future: [] } }); });
 afterEach(() => { act(() => root.unmount()); node.remove(); vi.unstubAllGlobals(); });
 describe('approved compact text toolbar', () => {
+  it('cancels an unfinished font-size preview when resize moves its control into More', async () => {
+    let width = 1600;
+    vi.stubGlobal('ResizeObserver', class { observe() {} disconnect() {} });
+    const bounds = vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (this: HTMLElement) {
+      const measuredWidth = this.hasAttribute('data-canvas-viewport') ? width : this.hasAttribute('data-v3-toolbar-group') ? 100 : 200;
+      return { x: 0, y: 100, left: 0, top: 100, width: measuredWidth, height: 48, right: measuredWidth, bottom: 148, toJSON() {} };
+    });
+    const viewport = document.createElement('div'); viewport.setAttribute('data-canvas-viewport', ''); document.body.append(viewport);
+    const element = createTextElement(); useCanvasStore.setState({ elements: [element], selectedElementIds: [element.id] });
+    try {
+      act(() => root.render(<V3ElementToolbar element={element} onEditImage={() => {}} />));
+      const input = node.querySelector<HTMLInputElement>('[aria-label="Font size"]')!;
+      act(() => { input.value = '95'; Simulate.change(input); });
+      expect(useV3ElementPreview.getState().preview).not.toBeNull();
+      width = 180;
+      act(() => window.dispatchEvent(new Event('resize')));
+      expect(useV3ElementPreview.getState().preview).toBeNull();
+      await act(async () => Simulate.click(node.querySelector('[aria-label="More formatting options"]')!));
+      expect(document.querySelector<HTMLInputElement>('[aria-label="Font size"]')!.value).toBe(String(element.fontSize));
+      expect(useCanvasStore.getState().history.past).toHaveLength(0);
+    } finally { bounds.mockRestore(); viewport.remove(); }
+  });
+  it('moves measured secondary image controls into More and restores them when the canvas grows', async () => {
+    let viewportWidth = 280;
+    const callbacks = new Set<() => void>();
+    vi.stubGlobal('ResizeObserver', class { constructor(private callback: () => void) { callbacks.add(callback); } observe() {} unobserve() {} disconnect() { callbacks.delete(this.callback); } });
+    const rect = (width: number) => ({ x: 0, y: 100, left: 0, top: 100, width, height: 48, right: width, bottom: 148, toJSON() {} });
+    const bounds = vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (this: HTMLElement) {
+      if (this.hasAttribute('data-canvas-viewport')) return rect(viewportWidth);
+      if (this.hasAttribute('data-v3-toolbar-group')) return rect(48);
+      return rect(200);
+    });
+    const viewport = document.createElement('div'); viewport.setAttribute('data-canvas-viewport', ''); document.body.append(viewport);
+    const element = createImageElement('photo'); useCanvasStore.setState({ elements: [element], selectedElementIds: [element.id] });
+    try {
+      act(() => root.render(<V3ElementToolbar element={element} onEditImage={() => {}} />));
+      const more = node.querySelector<HTMLButtonElement>('[aria-label="More formatting options"]');
+      expect(more).not.toBeNull();
+      expect(document.querySelector('[role="dialog"][aria-label="More formatting options"]')).toBeNull();
+      expect(node.querySelector('[role="toolbar"] [aria-label="Reset image"]')).toBeNull();
+      await act(async () => Simulate.click(more!));
+      const overflow = document.querySelector('[role="dialog"][aria-label="More formatting options"]');
+      expect(overflow?.querySelector('[aria-label="Reset image"]')).not.toBeNull();
+      await act(async () => Simulate.click(overflow!.querySelector('[aria-label="Corners"]')!));
+      const radius = document.querySelector<HTMLInputElement>('[aria-label="Corner radius value"]')!;
+      expect(radius).not.toBeNull();
+      act(() => { radius.focus(); radius.value = '45'; Simulate.change(radius); });
+      expect(useCanvasStore.getState().history.past).toHaveLength(0);
+      await act(async () => { radius.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true })); });
+      expect(radius.value).toBe('0');
+      expect(useV3ElementPreview.getState().preview).toBeNull();
+      await act(async () => { radius.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true })); });
+      expect(document.querySelector('[aria-label="Corner radius value"]')).toBeNull();
+      expect(document.querySelector('[role="dialog"][aria-label="More formatting options"]')).not.toBeNull();
+      viewportWidth = 1600;
+      act(() => window.dispatchEvent(new Event('resize')));
+      expect(node.querySelector('[aria-label="More formatting options"]')).toBeNull();
+      expect(node.querySelector('[role="toolbar"] [aria-label="Reset image"]')).not.toBeNull();
+    } finally { bounds.mockRestore(); viewport.remove(); }
+  });
   // Contract: every toolbar keeps its direct common controls and ends in the shared ten-action menu, without a Layers shortcut.
   it.each([
     ['text',()=>createTextElement()],['shape',()=>createShapeElement('rectangle')],

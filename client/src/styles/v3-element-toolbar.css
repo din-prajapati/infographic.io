@@ -1,4 +1,4 @@
-.v3-editor .v3-element-toolbar{position:fixed;z-index:28;display:flex;width:max-content;min-height:48px;padding:5px;border:1px solid var(--v3-border);border-radius:14px;background:var(--v3-surface);color:var(--v3-ink);box-shadow:var(--v3-shadow);overflow-x:auto;overflow-y:visible;scrollbar-width:thin;white-space:nowrap}
+.v3-editor .v3-element-toolbar{position:fixed;z-index:28;display:flex;align-items:center;gap:3px;width:max-content;min-height:48px;padding:5px;border:1px solid var(--v3-border);border-radius:14px;background:var(--v3-surface);color:var(--v3-ink);box-shadow:var(--v3-shadow);white-space:nowrap}
 .v3-editor .v3-element-toolbar>fieldset{display:flex;align-items:center;gap:3px;border:0;min-width:0;padding:0;margin:0}
 .v3-editor .v3-element-toolbar button{height:34px;min-width:34px;padding:6px 8px;font-size:13px;flex-shrink:0;border-radius:8px}
 .v3-editor .v3-element-toolbar label,.v3-element-popover label{display:flex;align-items:center;gap:8px;font-size:12px}
@@ -43,7 +43,18 @@
 .v3-editor .v3-line-type-menu{width:152px;padding:6px;border-radius:10px}.v3-line-type-menu .v3-picker-list{gap:0}.v3-editor .v3-line-type-menu .v3-picker-list button{height:36px;min-height:36px;padding:7px 8px;gap:8px;border:0;font-size:13px;border-radius:6px}.v3-line-type-menu .v3-picker-list svg{width:18px;height:18px}.v3-line-type-menu .v3-picker-list button>span{flex:1;text-align:left}
 
 .v3-control-help{font-size:11px;line-height:1.45;color:var(--v3-muted);margin:10px 0 0;white-space:normal}
-.v3-common-actions{display:flex;align-items:center;gap:2px;flex-shrink:0}.v3-editor .v3-element-toolbar{overflow-x:auto;overflow-y:hidden}.v3-editor .v3-shape-type-menu{width:210px;padding:7px}.v3-shape-type-menu fieldset{display:grid;gap:1px}.v3-editor .v3-shape-type-menu button{justify-content:flex-start;width:100%;padding:8px;gap:9px}.v3-shape-type-menu button span{flex:1;text-align:left}.v3-editor .v3-context-menu{width:248px;padding:6px}.v3-context-menu fieldset{display:grid;gap:0}.v3-editor .v3-context-menu button{display:flex;justify-content:flex-start;gap:9px;width:100%;padding:9px 8px;font-size:12px}.v3-context-menu button span:not(.v3-case-icon){flex:1;text-align:left}.v3-context-menu kbd{margin-left:auto;font:10px inherit;color:var(--v3-muted);background:var(--v3-hover);padding:3px 5px;border-radius:5px}.v3-context-text{border-top:1px solid var(--v3-border);margin-top:4px;padding-top:4px}.v3-editor .v3-rail{overflow-y:auto}
+.v3-common-actions{display:flex;align-items:center;gap:2px;flex-shrink:0}.v3-editor .v3-shape-type-menu{width:210px;padding:7px}.v3-shape-type-menu fieldset{display:grid;gap:1px}.v3-editor .v3-shape-type-menu button{justify-content:flex-start;width:100%;padding:8px;gap:9px}.v3-shape-type-menu button span{flex:1;text-align:left}.v3-editor .v3-context-menu{width:248px;padding:6px}.v3-context-menu fieldset{display:grid;gap:0}.v3-editor .v3-context-menu button{display:flex;justify-content:flex-start;gap:9px;width:100%;padding:9px 8px;font-size:12px}.v3-context-menu button span:not(.v3-case-icon){flex:1;text-align:left}.v3-context-menu kbd{margin-left:auto;font:10px inherit;color:var(--v3-muted);background:var(--v3-hover);padding:3px 5px;border-radius:5px}.v3-context-text{border-top:1px solid var(--v3-border);margin-top:4px;padding-top:4px}.v3-editor .v3-rail{overflow-y:auto}
 .v3-library-tabs{display:flex;gap:4px;border-bottom:1px solid var(--v3-border);margin-bottom:16px}.v3-editor .v3-library-tabs button{flex:1;padding:10px 2px;border-radius:0;border:0;border-bottom:2px solid transparent}.v3-library-tabs button[aria-selected=true]{color:var(--v3-accent);border-bottom-color:var(--v3-accent);background:var(--v3-selected)}
 .v3-text-toggles{display:flex;align-items:center;gap:3px;flex-shrink:0}
 .v3-editor .v3-text-toggles button{width:34px;padding:7px}
+
+.v3-editor .v3-element-toolbar .v3-toolbar-group{display:inline-flex;align-items:center;flex:0 0 auto;gap:3px;width:max-content;min-width:0;margin:0;padding:0;border:0}
+.v3-editor .v3-element-toolbar .v3-common-actions{display:contents}
+.v3-editor .v3-element-toolbar .v3-replace-control{display:flex;align-items:center}
+.v3-editor .v3-element-toolbar.v3-toolbar-overflow-panel{position:relative;z-index:64;display:flex;flex-wrap:wrap;align-content:start;gap:10px;width:320px;max-width:calc(100vw - 24px);max-height:min(440px,var(--radix-popover-content-available-height,calc(100dvh - 24px)));overflow-y:auto;white-space:normal;padding:12px}
+.v3-editor .v3-toolbar-overflow-panel[hidden]{display:none}
+.v3-editor .v3-toolbar-overflow-panel .v3-overflow-heading{flex-basis:100%;margin-bottom:2px;font-size:13px;font-weight:650}
+.v3-editor .v3-toolbar-overflow-panel .v3-toolbar-group{max-width:100%}
+.v3-editor .v3-toolbar-overflow-panel .v3-toolbar-divider{display:none}
+.v3-editor .v3-toolbar-overflow-panel .v3-text-toggles{display:flex}
+.v3-editor .v3-toolbar-overflow-panel .v3-replace-error{white-space:normal}
