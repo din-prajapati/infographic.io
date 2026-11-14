@@ -82,3 +82,11 @@ Changes subsections are filled during implementation; optional files may be expl
 
 
 2026-11-14: release-hardening automated verification and independent review are recorded in docs/research/2026-11-14-V3-RELEASE-HARDENING.md. Historical fixture failures are reconciled without removed cases; font/device/UI acceptance and merge remain open.
+
+## 2026-11-14 — Browser annotation refinement
+
+- [x] T14 — Annotations responsive verification: new e2e/v3-browser-annotations.spec.ts and register in e2e/v3-slice.config.ts; update affected existing e2e fixture selectors to Details + Agent tab and relocated strip controls / toolbar More where necessary, never weaken assertions. Verify 1242x668 and narrow available canvas with both inspectors open, mobile375 and tablet768; both themes. No horizontal toolbar scroll, no page overflow; menu actions remain reachable. Existing save, export, selection/history remain unchanged.
+
+User explicitly authorized annotations1–4 and6;5 is proposal only. Shared files have explicit root/agent ownership. Do not redesign fonts or implement Assistant/providers/default-editor cutover. Gates required; formal merge remains pending.
+
+Verified 2026-11-14: frontend/API type checks pass; backend 853 and frontend 843 unit tests pass (one existing skip); production build passes; clean V3 browser 178/178 and Listing workflow 9/9 pass. Light/dark desktop, phone and tablet screenshots reviewed. Gate 4 N/A (UI only); physical-device acceptance and merge pending. Evidence: docs/research/2026-11-14-V3-BROWSER-ANNOTATIONS.md.

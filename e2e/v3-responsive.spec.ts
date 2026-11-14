@@ -86,7 +86,9 @@ test('phone actions and export review remain reachable',async({page})=>{
   await page.setViewportSize({width:375,height:812});await setup(page);
   await page.getByRole('button',{name:'More actions',exact:true}).click();
   await expect(page.getByRole('menuitem',{name:'Undo',exact:true})).toBeDisabled();
-  await page.getByRole('menuitem',{name:'Template Fields',exact:true}).click();
+  await expect(page.getByRole('menuitem',{name:'Template Fields',exact:true})).toHaveCount(0);
+  await page.keyboard.press('Escape');
+  await page.locator('[aria-label="Canvas information"]').getByRole('button',{name:'Template Fields',exact:true}).click();
   await expect(page.getByRole('complementary',{name:'Template Fields panel',exact:true})).toBeVisible();
   await page.getByRole('button',{name:'More actions',exact:true}).click();
   await page.getByRole('menuitem',{name:'Export',exact:true}).click();
@@ -128,7 +130,7 @@ test('phone save failure can retry after rotation without changing artwork',asyn
 
 test('phone navigation keeps every existing section inside the screen',async({page})=>{
   await page.setViewportSize({width:320,height:568});await setup(page,'dark');
-  for(const name of ['Templates','Elements','Text','Uploads','Brand','Listing','Agent']) {
+  for(const name of ['Templates','Elements','Text','Uploads','Brand','Listing','Details']) {
     const trigger=page.getByRole('navigation',{name:'Editor sections'}).getByRole('button',{name,exact:true});
     await trigger.click();
     const box=await trigger.boundingBox();expect(box!.width).toBeGreaterThanOrEqual(44);expect(box!.height).toBeGreaterThanOrEqual(44);
@@ -140,19 +142,20 @@ test('phone navigation keeps every existing section inside the screen',async({pa
   }
 });
 
-test('phone listing apply and undo stay available through More',async({page})=>{
+test('phone listing apply stays in More and undo remains in Listing footer',async({page})=>{
   await page.setViewportSize({width:375,height:812});await setup(page);
   await page.getByRole('button',{name:'Listing',exact:true}).click();
   await page.getByRole('button',{name:'Expand panel',exact:true}).click();
   await page.getByRole('button',{name:/Property information/}).click();
   await page.getByRole('spinbutton',{name:'Asking price',exact:true}).fill('450000');
   await page.getByRole('button',{name:'Save property',exact:true}).click();
+  await page.getByRole('button',{name:'Listing',exact:true}).click();
   await page.getByRole('button',{name:'More actions',exact:true}).click();
   await page.getByRole('menuitem',{name:'Apply to design',exact:true}).click();
   await expect(page.getByTestId('design-canvas').getByText('US$450,000',{exact:true})).toHaveCount(2);
   await page.getByRole('button',{name:'More actions',exact:true}).click();
-  await page.getByRole('menuitem',{name:'Undo last apply',exact:true}).click();
+  await expect(page.getByRole('menuitem',{name:'Undo last apply',exact:true})).toHaveCount(0);
+  await page.keyboard.press('Escape');
+  await page.getByRole('complementary',{name:'Listing panel',exact:true}).getByRole('button',{name:'Undo last apply',exact:true}).click();
   await expect(page.getByTestId('design-canvas').getByText('US$400,000',{exact:true})).toHaveCount(2);
 });
-
-

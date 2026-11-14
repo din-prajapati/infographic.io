@@ -141,7 +141,7 @@ test('listing-only edits during a deferred template deep link cancel automatic c
 // line drawing choices at their named toolbars after opening Tools/Line.
 test('approved rail, direct tools and three line choices', async ({ page }) => {
   await setup(page);
-  for (const name of ['Templates', 'Tools', 'Elements', 'Text', 'Uploads', 'Brand', 'Listing', 'Agent']) await expect(page.getByRole('button', { name, exact: true })).toBeVisible();
+  for (const name of ['Templates', 'Tools', 'Elements', 'Text', 'Uploads', 'Brand', 'Listing', 'Details']) await expect(page.getByRole('button', { name, exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Tools', exact: true }).click();
   const strip = page.getByRole('toolbar', { name: 'Canvas tools', exact: true });
   for (const name of ['Select', 'Hand', 'Line', 'Shapes', 'Add text', 'Add image']) await expect(strip.getByRole('button', { name, exact: true })).toBeVisible();
@@ -236,6 +236,7 @@ test('listing panels persist their fields and canvas panels open', async ({ page
   await page.getByRole('button', { name: /^Agent / }).click();
   await page.getByRole('textbox', { name: 'Full name', exact: true }).fill('Morgan Agent');
   await page.getByRole('button', { name: 'Save changes', exact: true }).click();
+  await page.getByRole('button', { name: 'Listing', exact: true }).click();
   await expect(page.getByRole('button', { name: /^Agent Morgan Agent/ })).toBeVisible();
   await page.getByRole('button', { name: 'Save as Design', exact: true }).click();
   await expect(page.getByText('Saved', { exact: true })).toBeVisible();

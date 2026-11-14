@@ -157,3 +157,7 @@ Phone canvas-first/bottom sheet, compact tablet shell and measured V3 viewport f
 ## Release reconciliation — 2026-11-14
 
 2026-11-14 — reconciled from committed Opus baseline3e95a40; implementation present, release hardening/review and UI/font acceptance in progress; not merged Done. See docs/research/2026-11-14-V3-RELEASE-HARDENING.md. The implementation count includes existing locally verified cards, not merged story closures. No Assistant/provider/cutover implementation is added.
+
+## Annotation refinement — 2026-11-14
+
+US-EDIT-022 T6, US-EDIT-025 T7, US-EDIT-033 T8 and US-EDIT-044 T14: Details tabs, pinned Apply undo, measured toolbar overflow, canvas linking strip and Preview icon implemented and locally verified. Save workflow remains proposal only. Type checks, 1696 unit tests (one existing skip), build and 187 clean browser cases pass. User visual/device acceptance and milestone merge remain pending. See docs/research/2026-11-14-V3-BROWSER-ANNOTATIONS.md.

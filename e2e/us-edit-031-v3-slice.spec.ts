@@ -570,7 +570,7 @@ for (const width of [1280, 1440]) for (const theme of ['light', 'dark'] as const
     ] as const) await expectReadable(locator, label);
     const rail = page.getByRole('navigation', { name: 'Editor sections', exact: true });
     await expect(rail).toBeVisible();
-    for (const name of ['Templates', 'Tools', 'Text', 'Uploads', 'Brand', 'Listing', 'Agent'])
+    for (const name of ['Templates', 'Tools', 'Text', 'Uploads', 'Brand', 'Listing', 'Details'])
       await expectReadable(rail.getByRole('button', { name, exact: true }), `${name} rail`);
     await expectReadable(page.getByRole('button', { name: 'Layers', exact: true }), 'Layers footer');
     await expectReadable(page.getByRole('button', { name: 'Canvas settings', exact: true }), 'Canvas settings footer');

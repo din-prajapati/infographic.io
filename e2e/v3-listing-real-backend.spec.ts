@@ -210,7 +210,7 @@ test('V3 listing workflow with linked fields against the real backend and R2', a
   await test.step('5. Agent and Brand profiles (logo stored in R2)', async () => {
     let panel = page.getByRole('complementary', { name: 'Listing panel', exact: true });
     await panel.getByRole('button', { name: /^Agent / }).click();
-    panel = page.getByRole('complementary', { name: 'Agent panel', exact: true });
+    panel = page.getByRole('complementary', { name: 'Details panel', exact: true });
     await expect(panel.getByLabel('Full name', { exact: true })).toBeEditable();
     await panel.getByLabel('Full name', { exact: true }).fill(AGENT.name);
     await panel.getByLabel('Phone', { exact: true }).fill(AGENT.phone);
@@ -218,6 +218,7 @@ test('V3 listing workflow with linked fields against the real backend and R2', a
     const agentSaved = page.waitForResponse(r => r.request().method() === 'PUT' && new URL(r.url()).pathname === '/api/v1/listing-profiles');
     await panel.getByRole('button', { name: 'Save changes', exact: true }).click();
     expect((await agentSaved).status()).toBe(200);
+    await railTo(page, 'Listing');
 
     panel = page.getByRole('complementary', { name: 'Listing panel', exact: true });
     await panel.getByRole('button', { name: /^Brand / }).click();

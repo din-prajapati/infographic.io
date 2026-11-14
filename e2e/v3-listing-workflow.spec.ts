@@ -43,6 +43,7 @@ test('listing edits save separately, apply together and undo without losing sour
   await page.getByRole('button',{name:/Property information/}).click();
   await page.getByRole('spinbutton',{name:'Asking price',exact:true}).fill('450000');
   await page.getByRole('button',{name:'Save property',exact:true}).click();
+  await page.getByRole('button',{name:'Listing',exact:true}).click();
   await expect(page.getByTestId('design-canvas').getByText('US$400,000',{exact:true})).toHaveCount(2);
   await expect.poll(()=>state.properties.length).toBe(1);
   await page.getByRole('button',{name:'Apply to design',exact:true}).click();
