@@ -95,3 +95,17 @@
   .v3-editor[data-sheet-expanded=true] .v3-panel{height:auto;max-height:none;width:var(--v3-sheet-width)}
   .v3-editor .v3-canvas-center{padding:26px 12px 8px}
 }
+/* Template Fields inspector: docked at desktop, floating card below 1100px, bottom sheet on phones (editor.html @1100). */
+@media(max-width:1099px){
+  .v3-editor .v3-inspector{position:absolute;right:12px;top:118px;bottom:64px;width:280px;max-width:calc(100% - 24px);z-index:26;border:1px solid var(--v3-border);border-radius:9px;box-shadow:var(--v3-shadow)}
+}
+@media(max-width:767px){
+  .v3-editor .v3-inspector{left:0;right:0;top:auto;bottom:var(--v3-nav-height);width:100%;max-width:none;height:var(--v3-sheet-height);border-radius:16px 16px 0 0;box-shadow:0 -6px 24px #0002}
+  .v3-editor:has(.v3-inspector) .v3-stage{padding-bottom:var(--v3-sheet-height)}
+  .v3-editor .v3-listing-bar{height:30px;min-height:30px;padding:0 10px}
+  .v3-editor .v3-pending-source{max-width:46%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  /* The sheet's own close control replaces the panel's duplicate close button. */
+  .v3-editor .v3-panel .v3-lp-close{display:none}
+}
+.v3-editor .v3-listing-bar>.v3-canvas-source{max-width:none;flex-shrink:1;width:auto}
+@media(max-width:767px){.v3-editor .v3-element-toolbar .v3-link-field>span{display:none}}

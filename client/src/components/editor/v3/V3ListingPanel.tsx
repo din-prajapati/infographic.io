@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
+import type React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { X, ArrowLeft, ChevronRight, ImagePlus } from "lucide-react";
+import { X, ArrowLeft, ChevronRight, ImagePlus, Pencil, Search } from "lucide-react";
 import {
   createEmptyListing,
   isListingMedia,
@@ -15,12 +16,13 @@ import {
   pricingPatch,
   type ListingRecord,
   type ListingTextReview,
+  type ReviewedFact,
 } from "@shared/listingWorkflow";
 import { useV3ListingWorkflow } from "../../../hooks/useV3ListingWorkflow";
 import { propertiesApi, listingProfilesApi } from "../../../lib/listingApi";
 import { useCanvasStore } from "../../../hooks/useCanvasStore";
 import { createImageElement } from "../../../lib/canvasUtils";
-import { readReplacementImage } from "../../../lib/v3ElementEditing";
+import { uploadV3Image } from "../../../lib/v3MediaUpload";
 import "./v3-listing-panel.css";
 
 export interface V3ListingPanelProps {
@@ -36,6 +38,101 @@ const countries: Record<string, string> = {
   CA: "Canada",
 };
 const scrollPositions = new Map<string, number>();
+// Recommended display lengths from the approved port-4180 Property/Contact reference. These are layout guidance only:
+// the authoritative storage limits stay in shared/listingWorkflow.ts (2,000 characters; description 20,000).
+const RECOMMENDED_LENGTH = {
+  headline: 105,
+  address: 85,
+  agentName: 40,
+  phone: 28,
+  agency: 45,
+  callToAction: 28,
+  registration: 75,
+} as const;
+const STORED_TEXT_LIMIT = 2000;
+const STORED_DESCRIPTION_LIMIT = 20000;
+const LISTING_EXAMPLE_TEXT = `3 BHK, 2 bathrooms, 80 Lakh, 1500 sq ft
+Address: Satellite Road, Ahmedabad
+Headline: A bright place to call home
+Features: Balcony, parking
+Agent: Seller suggested contact, +91 90000 00000`;
+/** Shows an extracted amount the way the canvas will ("₹80 Lakh"), using the currency/intent found in the same snippet. */
+function formatReviewedPrice(review: ListingTextReview, fact: ReviewedFact, base: ListingRecord["property"]): string {
+  const sibling = (path: string) => review.facts.find((other) => other.path === path && other.evidence === fact.evidence)?.value;
+  const period = sibling("property.rentalPeriod");
+  return formatListingPrice({ ...base, amount: String(fact.value), currency: String(sibling("property.currency") ?? base.currency), transaction: sibling("property.transaction") === "rent" ? "rent" : "sale", rentalPeriod: (period as ListingRecord["property"]["rentalPeriod"]) ?? base.rentalPeriod });
+}
+const SOURCE_TABS = [
+  ["id", "Listing ID"],
+  ["text", "Paste text"],
+  ["saved", "Saved properties"],
+] as const;
+type SourceTab = (typeof SOURCE_TABS)[number][1];
+
+function Counter({ id, value, recommended, limit }: { id: string; value: string; recommended?: number; limit?: number }) {
+  const length = value.length;
+  const over = recommended !== undefined && length > recommended;
+  return (
+    <span id={id} className={`v3-lp-count${over ? " v3-lp-count-over" : ""}`}>
+      {over && <span className="v3-lp-count-note">Longer than the recommended length for this layout; it is saved in full. </span>}
+      {recommended !== undefined ? `${length}/${recommended}` : limit !== undefined ? `${length}/${limit.toLocaleString()}` : length}
+    </span>
+  );
+}
+
+function TextField({
+  id,
+  label,
+  value,
+  onChange,
+  recommended,
+  limit = STORED_TEXT_LIMIT,
+  textarea = false,
+  optional = false,
+  help,
+  type = "text",
+  ariaLabel = label,
+  placeholder,
+  rows,
+}: {
+  id: string;
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  recommended?: number;
+  limit?: number;
+  textarea?: boolean;
+  optional?: boolean;
+  help?: string;
+  type?: string;
+  ariaLabel?: string;
+  placeholder?: string;
+  rows?: number;
+}) {
+  const describedBy = [help ? `${id}-help` : "", `${id}-count`].filter(Boolean).join(" ");
+  const common = {
+    id,
+    "aria-label": ariaLabel,
+    "aria-describedby": describedBy,
+    value,
+    placeholder,
+    onChange: (event: { target: { value: string } }) => onChange(event.target.value),
+  };
+  return (
+    <div className="v3-lp-field">
+      <span className="v3-lp-label-row">
+        <label htmlFor={id}>{label}</label>
+        {optional && <span className="v3-lp-optional">Optional</span>}
+      </span>
+      {textarea ? <textarea {...common} rows={rows ?? 3} /> : <input {...common} type={type} />}
+      <span className="v3-lp-field-meta">
+        {help ? <span id={`${id}-help`} className="v3-lp-help">{help}</span> : <span />}
+        <Counter id={`${id}-count`} value={value} recommended={recommended} limit={recommended === undefined ? limit : undefined} />
+      </span>
+    </div>
+  );
+}
+
 const message = (error: unknown) =>
   error instanceof Error ? error.message : "The request failed. Please retry.";
 
@@ -53,9 +150,13 @@ export function V3ListingPanel({
         ? "overview"
         : "welcome",
   );
-  const [source, setSource] = useState<
-    "Paste text" | "Saved properties" | "Listing ID"
-  >("Paste text");
+  const [source, setSource] = useState<SourceTab>("Listing ID");
+  const [lookup, setLookup] = useState("");
+  const [lookupSubmitted, setLookupSubmitted] = useState(false);
+  const [applyError, setApplyError] = useState<string | null>(null);
+  const [featuresText, setFeaturesText] = useState(() => pending.property.features.join(", "));
+  const [confirmExample, setConfirmExample] = useState(false);
+  const composer = useRef<HTMLTextAreaElement | null>(null);
   const [query, setQuery] = useState("");
   const [paste, setPaste] = useState("");
   const [review, setReview] = useState<ListingTextReview | null>(null);
@@ -78,7 +179,9 @@ export function V3ListingPanel({
   const saved = useQuery({
     queryKey: ["saved-listings", userId, query.trim()],
     queryFn: () => propertiesApi.list(query.trim()),
-    enabled: section === "Listing" && source === "Saved properties",
+    enabled:
+      section === "Listing" &&
+      (source === "Saved properties" || (source === "Listing ID" && lookupSubmitted)),
     retry: false,
   });
   const profile = useQuery({
@@ -124,8 +227,26 @@ export function V3ListingPanel({
   };
   const openProperty = () => {
     setDraft(structuredClone(pending));
+    setFeaturesText(pending.property.features.join(", "));
     setError(null);
     setScreen("property");
+  };
+  const setPropertyText = (key: "name" | "type" | "headline" | "address" | "description" | "status", value: string) => {
+    changeProperty(key, value);
+    setError(null);
+  };
+  const setAgent = (key: keyof ListingRecord["agent"], value: string) =>
+    setDraft((current) => ({ ...current, agent: { ...current.agent, [key]: value } }));
+  const setBrand = (key: keyof ListingRecord["brand"], value: string) =>
+    setDraft((current) => ({ ...current, brand: { ...current.brand, [key]: value } }));
+  // Inserts fictional sample text into the composer only: no extraction, save, agent selection or artwork change.
+  const insertExample = () => {
+    setPaste(LISTING_EXAMPLE_TEXT);
+    setReview(null);
+    setChosen([]);
+    setError(null);
+    setConfirmExample(false);
+    requestAnimationFrame(() => composer.current?.focus());
   };
   const saveProperty = async (record: ListingRecord = draft) => {
     const errors = validateListingRecord(record);
@@ -203,33 +324,10 @@ export function V3ListingPanel({
         throw Error(
           "Keep up to 8 listing photos. Remove one before uploading.",
         );
-      if (file.size > 10 * 1024 * 1024)
-        throw Error("Choose an image smaller than 10 MB.");
-      const image = await readReplacementImage(file);
-      let src = image.src;
-      if (src.length > 2 * 1024 * 1024) {
-        const decoded = await new Promise<HTMLImageElement>(
-          (resolve, reject) => {
-            const img = new Image();
-            img.onload = () => resolve(img);
-            img.onerror = () => reject(Error("Unable to resize image."));
-            img.src = src;
-          },
-        );
-        const scale = Math.min(
-          1,
-          1600 / Math.max(decoded.naturalWidth, decoded.naturalHeight),
-        );
-        const canvas = document.createElement("canvas");
-        canvas.width = Math.round(decoded.naturalWidth * scale);
-        canvas.height = Math.round(decoded.naturalHeight * scale);
-        const context = canvas.getContext("2d");
-        if (!context) throw Error("Image processing unavailable.");
-        context.drawImage(decoded, 0, 0, canvas.width, canvas.height);
-        src = canvas.toDataURL("image/jpeg", 0.8);
-      }
-      if (!isListingMedia(src))
-        throw Error("Choose a raster image smaller than 2 MB after resizing.");
+      // Listing photos, agent portraits and brand logos are stored in the R2 bucket; records keep the https URL only.
+      const image = await uploadV3Image(file);
+      const src = image.src;
+      if (!isListingMedia(src)) throw Error("Image storage returned an unsupported address. Retry the upload.");
       if (target) {
         if (alive.current && identity.current === requestUser)
           setDraft((current) => ({
@@ -264,8 +362,8 @@ export function V3ListingPanel({
     key: keyof ListingRecord["property"],
     type = "text",
   ) => (
-    <label key={key}>
-      {label}
+    <label key={key} className="v3-lp-field">
+      <span>{label}</span>
       <input
         aria-label={label}
         type={type}
@@ -283,25 +381,222 @@ export function V3ListingPanel({
       />
     </label>
   );
-  return (
-    <div className="v3-listing-panel" data-testid="v3-listing-panel">
-      <header className="v3-listing-header">
-        {(section !== "Listing" || screen !== "welcome") && (
-          <button
-            type="button"
-            aria-label="Back to Listing"
-            onClick={() =>
-              section !== "Listing" ? navigate("Listing") : setScreen("welcome")
-            }
-          >
-            <ArrowLeft />
+  const select = (
+    label: string,
+    value: string,
+    options: readonly (string | [string, string])[],
+    onChange: (value: string) => void,
+    ariaLabel = label,
+  ) => (
+    <label className="v3-lp-field">
+      <span>{label}</span>
+      <select
+        aria-label={ariaLabel}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+      >
+        {options.map((option) => {
+          const [code, text] =
+            typeof option === "string" ? [option, option] : option;
+          return (
+            <option key={code} value={code}>
+              {text}
+            </option>
+          );
+        })}
+      </select>
+    </label>
+  );
+  const p = pending.property;
+  const specs: [string, string][] = [
+    ["Bedrooms", p.beds],
+    ["Bathrooms", p.baths],
+    ["Floor area", p.area ? `${Number(p.area).toLocaleString()} ${p.areaUnit}` : ""],
+  ];
+  const overrides = workflow.overrides ?? {};
+  const customCount = Object.keys(overrides).length;
+  const skippedCount = workflow.skipped?.length ?? 0;
+  const pendingCount = Number(workflow.pendingChanges || 0);
+  const amount = Number(draft.property.amount);
+  const initials = (name: string) =>
+    name
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase())
+      .join("") || "?";
+  const back = (label: string, onClick: () => void) => (
+    <button type="button" className="v3-lp-back" onClick={onClick}>
+      <ArrowLeft aria-hidden="true" />
+      {label}
+    </button>
+  );
+  const closeButton = (
+    <button
+      type="button"
+      className="v3-lp-close"
+      aria-label={`Close ${section}`}
+      onClick={onClose}
+    >
+      <X />
+    </button>
+  );
+  const resultCard = (
+    item: { id: string; version: number; record: ListingRecord },
+  ) => (
+    <button
+      type="button"
+      className="v3-lp-result"
+      key={item.id}
+      onClick={() => {
+        workflow.selectListing(item.record, item.id, item.version);
+        setScreen("overview");
+        setReview(null);
+        setError(null);
+      }}
+    >
+      {item.record.photos[0] ? (
+        <span className="v3-lp-result-cover">
+          <img src={item.record.photos[0].src} alt="" />
+          {item.record.property.status && (
+            <span>{item.record.property.status}</span>
+          )}
+        </span>
+      ) : (
+        <span className="v3-lp-result-empty">No listing photos</span>
+      )}
+      <strong>
+        {item.record.property.address || item.record.property.name || item.id}
+      </strong>
+      <small>
+        {[item.record.property.name, formatListingPrice(item.record.property) || "Price not provided"]
+          .filter(Boolean)
+          .join(" · ")}
+      </small>
+    </button>
+  );
+  const results = saved.isPending || saved.isFetching ? (
+    <p role="status" className="v3-lp-note">Loading saved properties…</p>
+  ) : saved.isError ? (
+    <div className="v3-lp-warning">
+      <p role="alert">{message(saved.error)}</p>
+      <button type="button" onClick={() => saved.refetch()}>
+        Retry saved properties
+      </button>
+    </div>
+  ) : (
+    <>
+      <div className="v3-lp-search-summary">
+        <small role="status">
+          {filtered.length} {filtered.length === 1 ? "property" : "properties"}
+        </small>
+        {query && (
+          <button type="button" className="v3-lp-link" onClick={() => setQuery("")}>
+            Clear search
           </button>
         )}
-        <h2>{section === "Listing" ? "Listing" : section}</h2>
-        <button type="button" aria-label={`Close ${section}`} onClick={onClose}>
-          <X />
-        </button>
+      </div>
+      {filtered.length === 0 && (
+        <div className="v3-lp-empty">
+          <strong>{query ? "No matching properties" : "No saved properties yet"}</strong>
+          <p>
+            {query
+              ? "No saved properties match. Try another address, property name or listing ID."
+              : "Save a property from pasted text or manual entry to find it here."}
+          </p>
+        </div>
+      )}
+      {filtered.map(resultCard)}
+    </>
+  );
+  const countrySelect = (
+    <label className="v3-lp-field">
+      <span>Country</span>
+      <select
+        aria-label="Listing country"
+        value={pending.property.country}
+        onChange={(e) => {
+          setReview(null);
+          setChosen([]);
+          setError(null);
+          workflow.setPending({
+            ...pending,
+            property: {
+              ...pending.property,
+              country: e.target.value,
+              amount: null,
+              currency: ({ IN: "INR", US: "USD", GB: "GBP", CA: "CAD" } as Record<string, string>)[e.target.value],
+            },
+          });
+        }}
+      >
+        {LISTING_COUNTRIES.map((code) => (
+          <option key={code} value={code}>
+            {countries[code]}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+  const heading =
+    section === "Agent" ? (
+      <header className="v3-lp-head">
+        <h2>Edit agent</h2>
+        <span className="v3-lp-head-actions">
+          {back("Back", () => navigate("Listing"))}
+          {closeButton}
+        </span>
       </header>
+    ) : section === "Brand" ? (
+      <header className="v3-lp-head">
+        <h2>Edit brand assets</h2>
+        <span className="v3-lp-head-actions">
+          {back("Back", () => navigate("Listing"))}
+          {closeButton}
+        </span>
+      </header>
+    ) : section === "Media" ? (
+      <header className="v3-lp-head">
+        <h2>Uploads</h2>
+        {closeButton}
+      </header>
+    ) : screen === "property" ? (
+      <header className="v3-lp-head">
+        <h2>Edit property</h2>
+        {back("Back", () => {
+          setDraft(structuredClone(pending));
+          setScreen(pending.property.address || pending.property.name ? "overview" : "welcome");
+          setError(null);
+        })}
+      </header>
+    ) : screen === "overview" ? (
+      <header className="v3-lp-head v3-lp-listing-head">
+        <button
+          type="button"
+          className="v3-lp-link"
+          aria-label="Back to Listing search"
+          onClick={() => setScreen("welcome")}
+        >
+          ← Search
+        </button>
+        <h2>{p.address || p.name || "Untitled property"}</h2>
+        <small>
+          {[p.status || "Saved property", countries[p.country]].filter(Boolean).join(" · ")}
+        </small>
+      </header>
+    ) : (
+      <header className="v3-lp-head">
+        <h2>Load a listing</h2>
+        {closeButton}
+      </header>
+    );
+  return (
+    <div
+      className="v3-listing-panel"
+      data-testid="v3-listing-panel"
+      data-screen={section === "Listing" ? screen : section.toLowerCase()}
+    >
+      {heading}
       <div
         className="v3-listing-scroll"
         ref={(node) => {
@@ -316,94 +611,128 @@ export function V3ListingPanel({
       >
         <fieldset disabled={saving} aria-busy={saving}>
           {error && (
-            <div role="alert" className="v3-listing-error">
+            <div role="alert" className="v3-lp-warning">
               {error}
             </div>
           )}
           {section === "Agent" || section === "Brand" ? (
             <section>
-              <p>
-                Save identity to your profile, then apply it to this design when
-                ready.
-              </p>
               {profile.isPending || profile.isFetching ? (
-                <p role="status">Loading profile…</p>
+                <p role="status" className="v3-lp-note">Loading profile…</p>
               ) : profile.isError ? (
-                <>
+                <div className="v3-lp-warning">
                   <p role="alert">{message(profile.error)}</p>
-                  <button onClick={() => profile.refetch()}>
+                  <button type="button" onClick={() => profile.refetch()}>
                     Retry profile
                   </button>
+                </div>
+              ) : section === "Agent" ? (
+                <>
+                  {/* Layout follows the approved mockup (listing-workflow-v1/editor.js, "Edit agent"): portrait row, one column
+                      of fields, then a stacked Save changes / Cancel pair. The saved-agent dropdown is omitted on purpose: the
+                      backend keeps one agent profile per user (ListingProfile.userId is unique), so it would only ever list one. */}
+                  <div className="v3-lp-identity v3-lp-agent-profile">
+                    {draft.agent.photo ? (
+                      <img className="v3-lp-portrait v3-lp-portrait-lg" src={draft.agent.photo} alt="Agent portrait" />
+                    ) : (
+                      <span className="v3-lp-portrait v3-lp-portrait-lg" aria-hidden="true">{initials(draft.agent.name)}</span>
+                    )}
+                    <span className="v3-lp-identity-text">
+                      <small>{draft.agent.photo ? "Agent portrait" : "No portrait yet"}</small>
+                      <label className="v3-lp-upload-link">
+                        {draft.agent.photo ? "Change photo" : "Upload photo"}
+                        <input
+                          type="file"
+                          aria-label="Upload agent photo"
+                          accept="image/png,image/jpeg,image/webp,image/gif,image/avif"
+                          disabled={saving}
+                          onChange={(event) => {
+                            void upload(event.target.files?.[0], "agent");
+                            event.target.value = "";
+                          }}
+                        />
+                      </label>
+                    </span>
+                  </div>
+                  {profile.data && JSON.stringify(profile.data.record.agent) !== JSON.stringify(draft.agent) && (
+                    <p className="v3-lp-hint v3-lp-agent-restore">
+                      This listing uses different details from your saved profile.{" "}
+                      <button
+                        type="button"
+                        className="v3-lp-link v3-lp-inline"
+                        onClick={() => {
+                          if (profile.data) setDraft({ ...pending, ...profile.data.record });
+                          setError(null);
+                        }}
+                      >
+                        Use saved profile
+                      </button>
+                    </p>
+                  )}
+                  <TextField id="agent-name" label="Full name" value={draft.agent.name} recommended={RECOMMENDED_LENGTH.agentName} onChange={(value) => setAgent("name", value)} />
+                  <TextField id="agent-agency" label="Agency" value={draft.agent.agency} recommended={RECOMMENDED_LENGTH.agency} onChange={(value) => setAgent("agency", value)} />
+                  <TextField id="agent-phone" label="Phone" type="tel" value={draft.agent.phone} recommended={RECOMMENDED_LENGTH.phone} onChange={(value) => setAgent("phone", value)} />
+                  <TextField id="agent-email" label="Email" type="email" value={draft.agent.email} onChange={(value) => setAgent("email", value)} />
+                  <TextField id="agent-license" label="Registration / licence" optional value={draft.agent.license} recommended={RECOMMENDED_LENGTH.registration} help="Adding a number does not verify it." onChange={(value) => setAgent("license", value)} />
+                  <p className="v3-lp-hint">Saves your agent profile and assigns it to the pending listing. It does not update the canvas yet.</p>
+                  <div className="v3-lp-actions">
+                    <button type="button" className="v3-lp-primary" disabled={saving} onClick={saveProfile}>
+                      {saving ? "Saving…" : "Save changes"}
+                    </button>
+                    <button type="button" className="v3-lp-secondary" disabled={saving} onClick={() => navigate("Listing")}>
+                      Cancel
+                    </button>
+                  </div>
                 </>
               ) : (
                 <>
+                  <div className="v3-lp-identity">
+                    {draft.brand.logo ? (
+                      <img className="v3-lp-logo" src={draft.brand.logo} alt="Brand logo" />
+                    ) : (
+                      <span className="v3-lp-wordmark" style={{ "--v3-brand": draft.brand.accent || undefined } as React.CSSProperties}>{draft.brand.name || "Brand"}</span>
+                    )}
+                    <label className="v3-lp-upload-link">
+                      Upload brand logo
+                      <input
+                        type="file"
+                        aria-label="Upload brand logo"
+                        accept="image/png,image/jpeg,image/webp,image/gif,image/avif"
+                        disabled={saving}
+                        onChange={(event) => {
+                          void upload(event.target.files?.[0], "brand");
+                          event.target.value = "";
+                        }}
+                      />
+                    </label>
+                  </div>
+                  <TextField id="brand-name" label="Brand name" value={draft.brand.name} onChange={(value) => setBrand("name", value)} />
+                  <TextField id="brand-tagline" label="Call to action / brand signature" ariaLabel="Brand signature" value={draft.brand.tagline} recommended={RECOMMENDED_LENGTH.callToAction} onChange={(value) => setBrand("tagline", value)} />
+                  <label className="v3-lp-field">
+                    <span>Accent colour</span>
+                    <input
+                      type="color"
+                      aria-label="Accent colour"
+                      value={/^#[0-9a-f]{6}$/i.test(draft.brand.accent) ? draft.brand.accent : "#146b64"}
+                      onChange={(e) => setBrand("accent", e.target.value)}
+                    />
+                  </label>
+                  <p className="v3-lp-hint">Saves your brand profile and assigns it to the pending listing. The canvas changes only when you apply.</p>
                   <button
                     type="button"
+                    className="v3-lp-secondary"
                     onClick={() => {
-                      if (profile.data)
-                        setDraft({ ...pending, ...profile.data.record });
+                      if (profile.data) setDraft({ ...pending, ...profile.data.record });
                       setError(null);
                     }}
                   >
                     Use saved profile
                   </button>
-                  {Object.entries(
-                    draft[section === "Agent" ? "agent" : "brand"],
-                  ).map(([key, value]) => (
-                    <label key={key}>
-                      {section} {key}
-                      <input
-                        aria-label={`${section} ${key}`}
-                        value={value}
-                        onChange={(e) =>
-                          setDraft((current) => ({
-                            ...current,
-                            [section === "Agent" ? "agent" : "brand"]: {
-                              ...current[
-                                section === "Agent" ? "agent" : "brand"
-                              ],
-                              [key]: e.target.value,
-                            },
-                          }))
-                        }
-                      />
-                    </label>
-                  ))}
-                  <label>
-                    {section === "Agent"
-                      ? "Upload agent photo"
-                      : "Upload brand logo"}
-                    <input
-                      type="file"
-                      aria-label={
-                        section === "Agent"
-                          ? "Upload agent photo"
-                          : "Upload brand logo"
-                      }
-                      accept="image/png,image/jpeg,image/webp,image/gif,image/avif"
-                      disabled={saving}
-                      onChange={(event) => {
-                        void upload(
-                          event.target.files?.[0],
-                          section === "Agent" ? "agent" : "brand",
-                        );
-                        event.target.value = "";
-                      }}
-                    />
-                  </label>
-                  <div className="v3-listing-actions">
-                    <button
-                      type="button"
-                      disabled={saving}
-                      onClick={saveProfile}
-                    >
-                      {saving ? "Saving…" : `Save ${section}`}
+                  <div className="v3-lp-actions">
+                    <button type="button" className="v3-lp-primary" disabled={saving} onClick={saveProfile}>
+                      {saving ? "Saving…" : "Save Brand"}
                     </button>
-                    <button
-                      type="button"
-                      disabled={saving}
-                      onClick={() => navigate("Listing")}
-                    >
+                    <button type="button" className="v3-lp-secondary" disabled={saving} onClick={() => navigate("Listing")}>
                       Cancel
                     </button>
                   </div>
@@ -412,14 +741,13 @@ export function V3ListingPanel({
             </section>
           ) : section === "Media" ? (
             <section>
-              <h3>Listing photos</h3>
-              <p>
-                Select photos manually for each frame using Replace image in the
-                artwork. Uploads stay pending until you save the Property.
-              </p>
+              <div className="v3-lp-upload-target">
+                <small>Add media to</small>
+                <strong>{p.address || p.name || "the pending listing"}</strong>
+              </div>
               <label className="v3-listing-upload">
-                <ImagePlus />
-                Upload photo
+                <ImagePlus aria-hidden="true" />
+                <span>Upload photo</span>
                 <input
                   aria-label="Upload listing photo"
                   type="file"
@@ -431,173 +759,120 @@ export function V3ListingPanel({
                   }}
                 />
               </label>
+              <p className="v3-lp-hint">
+                Choose photos manually for each frame with Replace image. Uploads stay pending until you save the Property.
+              </p>
               <div className="v3-listing-gallery">
                 {pending.photos.map((photo) => (
                   <figure key={photo.id}>
-                    <img
-                      src={photo.src}
-                      alt={photo.name}
-                      width="128"
-                      height="96"
-                    />
+                    <img src={photo.src} alt={photo.name} width="128" height="96" />
                     <figcaption>{photo.name}</figcaption>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const store = useCanvasStore.getState();
-                        const element = createImageElement(photo.src);
-                        store.addElement(element);
-                        store.selectElement(element.id);
-                      }}
-                    >
-                      Add to canvas
-                    </button>
-                    <button
-                      type="button"
-                      aria-label={`Remove ${photo.name}`}
-                      onClick={() =>
-                        workflow.setPending({
-                          ...pending,
-                          photos: pending.photos.filter(
-                            (p) => p.id !== photo.id,
-                          ),
-                        })
-                      }
-                    >
-                      Remove
-                    </button>
+                    <div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const store = useCanvasStore.getState();
+                          const element = createImageElement(photo.src);
+                          store.addElement(element);
+                          store.selectElement(element.id);
+                        }}
+                      >
+                        Add to canvas
+                      </button>
+                      <button
+                        type="button"
+                        aria-label={`Remove ${photo.name}`}
+                        onClick={() =>
+                          workflow.setPending({
+                            ...pending,
+                            photos: pending.photos.filter((item) => item.id !== photo.id),
+                          })
+                        }
+                      >
+                        Remove
+                      </button>
+                    </div>
                   </figure>
                 ))}
               </div>
-              <button type="button" onClick={() => navigate("Uploads")}>
-                Open Uploads
-              </button>
+              {(p.address || p.name) && (
+                <button type="button" className="v3-lp-link" onClick={() => navigate("Listing")}>
+                  ← Back to listing overview
+                </button>
+              )}
             </section>
           ) : screen === "property" ? (
             <section>
-              <h3>Property information</h3>
-              <p>
-                Saving updates the property record. Artwork changes only when
-                you Apply.
-              </p>
-              {field("Property name", "name")}
-              {field("Address", "address")}
-              {field("Headline", "headline")}
-              <label>
-                Description
-                <textarea
-                  aria-label="Description"
-                  value={draft.property.description}
-                  onChange={(e) =>
-                    changeProperty("description", e.target.value)
-                  }
-                />
-              </label>
+              <p className="v3-lp-intro">Add the essentials. The canvas changes only when you apply the saved listing.</p>
+              <h3 className="v3-lp-form-section">Listing identity</h3>
+              <TextField id="property-name" label="Listing name" value={draft.property.name} onChange={(value) => setPropertyText("name", value)} />
+              <TextField id="property-type" label="Property type" optional placeholder="Apartment, villa, commercial…" value={draft.property.type} onChange={(value) => setPropertyText("type", value)} />
+              <TextField id="property-headline" label="Marketing headline" textarea rows={2} value={draft.property.headline} recommended={RECOMMENDED_LENGTH.headline} onChange={(value) => setPropertyText("headline", value)} />
+              <h3 className="v3-lp-form-section">Pricing</h3>
               <div className="v3-listing-grid">
-                <label>
-                  Country
-                  <select
-                    aria-label="Country"
-                    value={draft.property.country}
-                    onChange={(e) => changeProperty("country", e.target.value)}
-                  >
-                    {LISTING_COUNTRIES.map((code) => (
-                      <option key={code} value={code}>
-                        {countries[code]}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label>
-                  Transaction
-                  <select
-                    aria-label="Transaction"
-                    value={draft.property.transaction}
-                    onChange={(e) =>
-                      changeProperty("transaction", e.target.value)
-                    }
-                  >
-                    <option value="sale">For sale</option>
-                    <option value="rent">For rent</option>
-                  </select>
-                </label>
-                <label>
-                  Currency
-                  <select
-                    aria-label="Currency"
-                    value={draft.property.currency}
-                    onChange={(e) => changeProperty("currency", e.target.value)}
-                  >
-                    {LISTING_CURRENCIES.map((code) => (
-                      <option key={code}>{code}</option>
-                    ))}
-                  </select>
-                </label>
-                {field(
-                  draft.property.transaction === "rent"
-                    ? "Rent amount"
-                    : "Asking price",
-                  "amount",
-                  "number",
-                )}
-                {draft.property.transaction === "rent" && (
-                  <label>
-                    Rental period
-                    <select
-                      aria-label="Rental period"
-                      value={draft.property.rentalPeriod}
-                      onChange={(e) =>
-                        changeProperty("rentalPeriod", e.target.value)
-                      }
-                    >
-                      {["month", "week", "year", "day"].map((period) => (
-                        <option key={period}>{period}</option>
-                      ))}
-                    </select>
-                  </label>
-                )}
+                {select("Listing intent", draft.property.transaction, [["sale", "For sale"], ["rent", "For rent"]], (value) => changeProperty("transaction", value), "Transaction")}
+                {select("Currency", draft.property.currency, LISTING_CURRENCIES, (value) => changeProperty("currency", value))}
+              </div>
+              <div className={draft.property.transaction === "rent" ? "v3-listing-grid" : undefined}>
+                {field(draft.property.transaction === "rent" ? "Rent amount" : "Asking price", "amount", "number")}
+                {draft.property.transaction === "rent" &&
+                  select("Rental period", draft.property.rentalPeriod, [["month", "Per month"], ["week", "Per week"], ["year", "Per year"], ["day", "Per day"]], (value) => changeProperty("rentalPeriod", value))}
+              </div>
+              <p className="v3-lp-numeric">
+                {Number.isFinite(amount) && amount > 0
+                  ? `Shown as ${formatListingPrice(draft.property)} · numeric amount ${amount.toLocaleString(draft.property.country === "IN" ? "en-IN" : "en-US")} ${draft.property.currency}`
+                  : "Enter a numeric amount. Changing sale/rent clears it."}
+              </p>
+              <h3 className="v3-lp-form-section">Location</h3>
+              <TextField id="property-address" label="Address" value={draft.property.address} recommended={RECOMMENDED_LENGTH.address} onChange={(value) => setPropertyText("address", value)} />
+              {select("Country", draft.property.country, LISTING_COUNTRIES.map((code) => [code, countries[code]] as [string, string]), (value) => changeProperty("country", value))}
+              <h3 className="v3-lp-form-section">Specifications</h3>
+              <div className="v3-lp-grid-3">
                 {field("Beds", "beds", "number")}
                 {field("Baths", "baths", "number")}
-                {field("Area", "area", "number")}
-                <label>
-                  Area unit
-                  <select
-                    aria-label="Area unit"
-                    value={draft.property.areaUnit}
-                    onChange={(e) => changeProperty("areaUnit", e.target.value)}
-                  >
-                    {LISTING_AREA_UNITS.map((unit) => (
-                      <option key={unit}>{unit}</option>
-                    ))}
-                  </select>
-                </label>
+                {field(`Area · ${draft.property.areaUnit}`, "area", "number")}
               </div>
-              {field("Property type", "type")}
-              {field("Status", "status")}
-              <label>
-                Features, separated by commas
-                <input
+              <p className="v3-lp-help">Whole numbers for rooms; area in {draft.property.areaUnit}. Change the unit in Additional details.</p>
+              <h3 className="v3-lp-form-section">Description and highlights</h3>
+              <TextField id="property-description" label="Description" textarea rows={4} value={draft.property.description} limit={STORED_DESCRIPTION_LIMIT} onChange={(value) => setPropertyText("description", value)} />
+              <div className="v3-lp-field">
+                <span className="v3-lp-label-row">
+                  <label htmlFor="property-features">Highlights</label>
+                  <span className="v3-lp-optional">Optional</span>
+                </span>
+                <textarea
+                  id="property-features"
                   aria-label="Features"
-                  value={draft.property.features.join(", ")}
-                  onChange={(e) => changeProperty("features", e.target.value)}
+                  aria-describedby="property-features-help"
+                  rows={2}
+                  placeholder="Garden, covered parking"
+                  value={featuresText}
+                  onChange={(e) => {
+                    setFeaturesText(e.target.value);
+                    changeProperty("features", e.target.value);
+                  }}
                 />
-              </label>
-              <div className="v3-listing-actions">
-                <button
-                  type="button"
-                  disabled={saving}
-                  onClick={() => void saveProperty()}
-                >
+                <span className="v3-lp-field-meta">
+                  <span id="property-features-help" className="v3-lp-help">Separate with commas. Up to 3 appear on the overview card.</span>
+                  <span className="v3-lp-count">{draft.property.features.length} {draft.property.features.length === 1 ? "highlight" : "highlights"}</span>
+                </span>
+              </div>
+              <details className="v3-lp-details">
+                <summary>Additional details</summary>
+                {select("Area unit", draft.property.areaUnit, LISTING_AREA_UNITS, (value) => changeProperty("areaUnit", value))}
+                <TextField id="property-status" label="Listing status" optional placeholder="Active, sold, rented…" value={draft.property.status} onChange={(value) => setPropertyText("status", value)} />
+              </details>
+              <div className="v3-lp-actions">
+                <button type="button" className="v3-lp-primary" disabled={saving} onClick={() => void saveProperty()}>
                   {saving ? "Saving…" : "Save property"}
                 </button>
                 <button
                   type="button"
+                  className="v3-lp-secondary"
                   disabled={saving}
                   onClick={() => {
                     setDraft(structuredClone(pending));
-                    setScreen(
-                      pending.property.address ? "overview" : "welcome",
-                    );
+                    setScreen(pending.property.address ? "overview" : "welcome");
                     setError(null);
                   }}
                 >
@@ -606,250 +881,230 @@ export function V3ListingPanel({
               </div>
             </section>
           ) : screen === "overview" ? (
-            <section>
-              <div className="v3-listing-address">
-                <strong>
-                  {pending.property.address ||
-                    pending.property.name ||
-                    "Untitled property"}
-                </strong>
-                <small>
-                  Pending listing · {countries[pending.property.country]}
-                </small>
+            <section className="v3-lp-overview">
+              <div className="v3-lp-section-row">
+                <h3>
+                  Media <small>({pending.photos.length})</small>
+                </h3>
+                <button type="button" className="v3-lp-link" onClick={() => navigate("Uploads")}>
+                  See all
+                </button>
               </div>
-              <button
-                type="button"
-                className="v3-listing-card v3-property-card"
-                onClick={openProperty}
-              >
-                <span>
-                  <strong>Property information</strong>
-                  <span>{pending.property.address || "Add address"}</span>
-                  <span>
-                    {pending.property.description || "Add a description"}
-                  </span>
-                  <b>{formatListingPrice(pending.property) || "Add price"}</b>
-                  <span>
-                    {formatSpecifications(pending.property) ||
-                      "Add specifications"}
-                  </span>
-                  <small>
-                    {[
-                      pending.property.type,
-                      pending.property.status,
-                      ...pending.property.features,
-                    ]
-                      .filter(Boolean)
-                      .join(" · ")}
-                  </small>
-                </span>
-                <ChevronRight />
-              </button>
-              <div className="v3-listing-card">
-                <div className="v3-listing-card-title">
-                  <h3>Media</h3>
+              {pending.photos.length ? (
+                <button type="button" className="v3-lp-photos" aria-label="See all listing media" onClick={() => navigate("Uploads")}>
+                  {pending.photos.slice(0, 2).map((photo) => (
+                    <img key={photo.id} src={photo.src} alt={photo.name} />
+                  ))}
+                </button>
+              ) : (
+                <div className="v3-lp-empty-media">
+                  <span>No listing photos</span>
                   <button type="button" onClick={() => navigate("Uploads")}>
-                    See all
+                    Open Uploads
                   </button>
                 </div>
-                <div className="v3-listing-thumbs">
-                  {pending.photos.slice(0, 2).map((p) => (
-                    <img
-                      key={p.id}
-                      src={p.src}
-                      alt={p.name}
-                      width="110"
-                      height="80"
-                    />
-                  ))}
-                  {pending.photos.length === 0 && (
-                    <p>No property photos. Add images in Uploads.</p>
-                  )}
-                </div>
-              </div>
-              {(["Agent", "Brand"] as const).map((target) => (
-                <button
-                  key={target}
-                  type="button"
-                  className="v3-listing-card"
-                  onClick={() => navigate(target)}
-                >
-                  <span>
-                    <strong>{target}</strong>
-                    <span>
-                      {(target === "Agent" ? pending.agent : pending.brand)
-                        .name || `Add ${target.toLowerCase()}`}
+              )}
+              <button type="button" className="v3-lp-card v3-property-card" onClick={openProperty}>
+                <span className="v3-lp-card-label">
+                  Property information
+                  <Pencil aria-hidden="true" />
+                </span>
+                <strong className="v3-lp-address">{p.address || "Add address"}</strong>
+                <span className="v3-lp-description">{p.description || "Description not provided"}</span>
+                <span className="v3-lp-price">
+                  <small>{p.transaction === "rent" ? "Rent" : "Listing price"}</small>
+                  <strong>{formatListingPrice(p) || "Add price"}</strong>
+                </span>
+                <span className="v3-lp-specs">
+                  {specs.map(([label, value]) => (
+                    <span key={label}>
+                      <small>{label}</small>
+                      <strong>{value || "—"}</strong>
                     </span>
-                  </span>
-                  <ChevronRight />
-                </button>
-              ))}
+                  ))}
+                </span>
+                {p.type && <span className="v3-lp-extras">{p.type}</span>}
+                <span className="v3-lp-chips">
+                  {p.status && <span className="v3-lp-status">{p.status}</span>}
+                  {p.features.slice(0, 3).map((feature) => (
+                    <span key={feature} className="v3-lp-chip">{feature}</span>
+                  ))}
+                  {p.features.length > 3 && <span className="v3-lp-chip">+{p.features.length - 3} more</span>}
+                </span>
+              </button>
+              <h3 className="v3-lp-section-label">Agent</h3>
+              <button type="button" className="v3-lp-card v3-lp-profile" aria-label={`Agent ${pending.agent.name || "not set"}`} onClick={() => navigate("Agent")}>
+                {pending.agent.photo ? (
+                  <img className="v3-lp-portrait" src={pending.agent.photo} alt="" />
+                ) : (
+                  <span className="v3-lp-portrait" aria-hidden="true">{initials(pending.agent.name)}</span>
+                )}
+                <span>
+                  <strong>{pending.agent.name || "Add agent"}</strong>
+                  {[pending.agent.agency, pending.agent.phone, pending.agent.email].filter(Boolean).map((line) => (
+                    <small key={line}>{line}</small>
+                  ))}
+                </span>
+                <ChevronRight aria-hidden="true" />
+              </button>
+              <h3 className="v3-lp-section-label">Brand assets</h3>
+              <button type="button" className="v3-lp-card v3-lp-brand" aria-label={`Brand ${pending.brand.name || "not set"}`} onClick={() => navigate("Brand")}>
+                {pending.brand.logo ? (
+                  <img className="v3-lp-logo" src={pending.brand.logo} alt="" />
+                ) : (
+                  <span className="v3-lp-wordmark" style={{ "--v3-brand": pending.brand.accent || undefined } as React.CSSProperties}>{pending.brand.name || "Add brand"}</span>
+                )}
+                <small>
+                  {pending.brand.accent && <span className="v3-lp-swatch" style={{ background: pending.brand.accent }} />}
+                  {pending.brand.tagline || "No brand signature"}
+                  <ChevronRight aria-hidden="true" />
+                </small>
+              </button>
             </section>
           ) : (
             <section>
-              <h3>Find your next listing</h3>
-              <p>Bring your property details into a design.</p>
-              <label>
-                Country
-                <select
-                  aria-label="Listing country"
-                  value={pending.property.country}
-                  onChange={(e) => { setReview(null); setChosen([]); setError(null);
-                    workflow.setPending({
-                      ...pending,
-                      property: {
-                        ...pending.property,
-                        country: e.target.value,
-                        amount: null,
-                        currency: (
-                          {
-                            IN: "INR",
-                            US: "USD",
-                            GB: "GBP",
-                            CA: "CAD",
-                          } as Record<string, string>
-                        )[e.target.value],
-                      },
-                    });
-                  }}
-                >
-                  {LISTING_COUNTRIES.map((code) => (
-                    <option key={code} value={code}>
-                      {countries[code]}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <div
-                className="v3-listing-sources"
-                role="tablist"
-                aria-label="Listing source"
-              >
-                {(
-                  ["Listing ID", "Paste text", "Saved properties"] as const
-                ).map((tab) => (
+              <div className="v3-lp-welcome">
+                <span className="v3-lp-eyebrow">Start with the facts</span>
+                <h3>Your listing, ready to design.</h3>
+                <p>Find a saved record or paste a seller’s message. Review the details before updating the canvas.</p>
+              </div>
+              <div className="v3-listing-sources" role="tablist" aria-label="Listing source">
+                {SOURCE_TABS.map(([key, tab], index) => (
                   <button
                     type="button"
                     role="tab"
+                    id={`v3-lp-tab-${key}`}
+                    aria-controls="v3-lp-source-panel"
                     aria-selected={source === tab}
+                    tabIndex={source === tab ? 0 : -1}
                     key={tab}
                     onClick={() => setSource(tab)}
+                    onKeyDown={(event) => {
+                      const next =
+                        event.key === "ArrowRight" ? (index + 1) % SOURCE_TABS.length
+                        : event.key === "ArrowLeft" ? (index + SOURCE_TABS.length - 1) % SOURCE_TABS.length
+                        : event.key === "Home" ? 0
+                        : event.key === "End" ? SOURCE_TABS.length - 1
+                        : -1;
+                      if (next < 0) return;
+                      event.preventDefault();
+                      setSource(SOURCE_TABS[next][1]);
+                      document.getElementById(`v3-lp-tab-${SOURCE_TABS[next][0]}`)?.focus();
+                    }}
                   >
                     {tab}
                   </button>
                 ))}
               </div>
+              <div
+                id="v3-lp-source-panel"
+                role="tabpanel"
+                aria-labelledby={`v3-lp-tab-${SOURCE_TABS.find(([, tab]) => tab === source)?.[0]}`}
+                className="v3-lp-source-panel"
+              >
               {source === "Listing ID" ? (
-                <div>
-                  <p>
-                    Country providers are not connected. Search Saved properties
-                    by listing ID, address or name.
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => setSource("Saved properties")}
-                  >
-                    Search saved catalogue
+                <form
+                  onSubmit={(event) => {
+                    event.preventDefault();
+                    setQuery(lookup.trim());
+                    setLookupSubmitted(true);
+                  }}
+                >
+                  {countrySelect}
+                  {select("Listing source", "saved", [["saved", "Your saved properties"], ["live", `${pending.property.country === "IN" ? "State RERA" : "MLS"} · not connected`]], () => {}, "Listing source")}
+                  <label className="v3-lp-field">
+                    <span>Search by address or listing ID</span>
+                    <span className="v3-lp-search">
+                      <Search aria-hidden="true" />
+                      <input aria-label="Search by address or listing ID" value={lookup} placeholder="Address, property name or listing ID" onChange={(e) => setLookup(e.target.value)} />
+                    </span>
+                  </label>
+                  <button type="submit" className="v3-lp-primary v3-lp-full">
+                    Find listing
                   </button>
-                </div>
+                  {lookupSubmitted ? (
+                    results
+                  ) : (
+                    <div className="v3-lp-info">
+                      <strong>Live listing sources</strong>
+                      <p>Country providers are not connected. Find listing searches your saved properties by listing ID, address or name.</p>
+                    </div>
+                  )}
+                </form>
               ) : source === "Saved properties" ? (
                 <div>
-                  <label>
-                    Search saved properties
-                    <input
-                      type="search"
-                      aria-label="Search saved properties"
-                      value={query}
-                      onChange={(e) => setQuery(e.target.value)}
-                    />
+                  <label className="v3-lp-field">
+                    <span>Search saved properties</span>
+                    <span className="v3-lp-search">
+                      <Search aria-hidden="true" />
+                      <input type="search" aria-label="Search saved properties" placeholder="Address, property name or listing ID" value={query} onChange={(e) => setQuery(e.target.value)} />
+                    </span>
                   </label>
-                  {query && (
-                    <button type="button" onClick={() => setQuery("")}>
-                      Clear search
-                    </button>
-                  )}
-                  {saved.isPending || saved.isFetching ? (
-                    <p role="status">Loading saved properties…</p>
-                  ) : saved.isError ? (
-                    <>
-                      <p role="alert">{message(saved.error)}</p>
-                      <button type="button" onClick={() => saved.refetch()}>
-                        Retry saved properties
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <p role="status">
-                        {filtered.length}{" "}
-                        {filtered.length === 1 ? "property" : "properties"}
-                      </p>
-                      {filtered.length === 0 && (
-                        <p>
-                          No saved properties match. Clear search or enter a
-                          property manually.
-                        </p>
-                      )}
-                      {filtered.map((item) => (
-                        <button
-                          type="button"
-                          className="v3-listing-card"
-                          key={item.id}
-                          onClick={() => {
-                            workflow.selectListing(
-                              item.record,
-                              item.id,
-                              item.version,
-                            );
-                            setScreen("overview");
-                            setReview(null);
-                            setError(null);
-                          }}
-                        >
-                          {item.record.property.address ||
-                            item.record.property.name ||
-                            item.id}
-                        </button>
-                      ))}
-                    </>
-                  )}
+                  {results}
                 </div>
               ) : (
                 <div>
-                  <label>
-                    Property text
+                  {countrySelect}
+                  <div className="v3-lp-field">
+                    <span className="v3-lp-label-row">
+                      <label htmlFor="v3-lp-composer">Listing or WhatsApp message</label>
+                      {paste === LISTING_EXAMPLE_TEXT && <span className="v3-lp-optional">Sample text</span>}
+                    </span>
                     <textarea
+                      id="v3-lp-composer"
+                      ref={composer}
                       aria-label="Property text"
-                      placeholder="Address: …&#10;Price: …&#10;Beds: …"
+                      aria-describedby="v3-lp-composer-help"
+                      rows={6}
+                      placeholder="3 BHK, 80 Lakh, Address: Satellite Road, Ahmedabad"
                       value={paste}
                       maxLength={50000}
-                      onChange={(e) => { setPaste(e.target.value); setReview(null); setChosen([]); setError(null); }}
+                      onChange={(e) => { setPaste(e.target.value); setReview(null); setChosen([]); setError(null); setConfirmExample(false); }}
                     />
-                  </label>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const result = reviewListingText(paste, pending);
-                      setReview(result);
-                      setChosen(
-                        result.facts
-                          .filter(
-                            (f) => f.selected && !f.path.startsWith("agent."),
-                          )
-                          .map((f) => f.id),
-                      );
-                      setError(null);
-                    }}
-                  >
-                    Extract &amp; review
-                  </button>
+                    <span id="v3-lp-composer-help" className="v3-lp-help">
+                      {paste === LISTING_EXAMPLE_TEXT ? "Fictional sample text for trying the review — not a verified listing." : "Paste one property. Nothing changes until you review and confirm facts."}
+                    </span>
+                  </div>
+                  {confirmExample ? (
+                    <div className="v3-lp-confirm" role="group" aria-label="Replace message with sample text">
+                      <p>Replace your message with the sample text? Your current text will be removed.</p>
+                      <div className="v3-lp-button-pair">
+                        <button type="button" className="v3-lp-secondary" onClick={() => setConfirmExample(false)}>
+                          Keep my text
+                        </button>
+                        <button type="button" className="v3-lp-primary" onClick={insertExample}>
+                          Replace with sample
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="v3-lp-button-pair">
+                      <button
+                        type="button"
+                        className="v3-lp-secondary"
+                        onClick={() => (paste.trim() && paste !== LISTING_EXAMPLE_TEXT ? setConfirmExample(true) : insertExample())}
+                      >
+                        Use example
+                      </button>
+                      <button
+                        type="button"
+                        className="v3-lp-primary"
+                        onClick={() => {
+                          const result = reviewListingText(paste, pending);
+                          setReview(result);
+                          setChosen(result.facts.filter((f) => f.selected && !f.path.startsWith("agent.")).map((f) => f.id));
+                          setError(null);
+                        }}
+                      >
+                        Extract &amp; review
+                      </button>
+                    </div>
+                  )}
                   {review && (
                     <div className="v3-listing-review">
                       <h3>Review extracted facts</h3>
-                      {review.error && <p role="alert">{review.error}</p>}
-                      <p>
-                        Contact details are suggestions. Select them explicitly
-                        only after checking the source.
-                      </p>
+                      {review.error && <p role="alert" className="v3-lp-warning">{review.error}</p>}
+                      <p className="v3-lp-hint">Contact details are suggestions. Select them explicitly only after checking the source.</p>
                       {review.facts.map((fact) => (
                         <label key={fact.id} className="v3-listing-fact">
                           <span>
@@ -860,28 +1115,13 @@ export function V3ListingPanel({
                               onChange={(e) =>
                                 setChosen((ids) =>
                                   e.target.checked
-                                    ? [
-                                        ...ids.filter(
-                                          (id) =>
-                                            !review.facts.some(
-                                              (other) =>
-                                                other.id === id &&
-                                                other.path === fact.path,
-                                            ),
-                                        ),
-                                        fact.id,
-                                      ]
+                                    ? [...ids.filter((id) => !review.facts.some((other) => other.id === id && other.path === fact.path)), fact.id]
                                     : ids.filter((id) => id !== fact.id),
                                 )
                               }
                             />
-                            {fact.path.startsWith("agent.")
-                              ? "Contact suggestion · "
-                              : ""}
-                            {fact.label}:{" "}
-                            {Array.isArray(fact.value)
-                              ? fact.value.join(", ")
-                              : fact.value}
+                            {fact.path.startsWith("agent.") ? "Contact suggestion · " : ""}
+                            {fact.label}: {fact.path === "property.amount" && typeof fact.value === "string" ? formatReviewedPrice(review, fact, pending.property) || fact.value : Array.isArray(fact.value) ? fact.value.join(", ") : fact.value}
                             {fact.ambiguous && " — choose one candidate"}
                           </span>
                           <details>
@@ -892,13 +1132,10 @@ export function V3ListingPanel({
                       ))}
                       <button
                         type="button"
+                        className="v3-lp-primary v3-lp-full"
                         disabled={review.rejected || chosen.length === 0}
                         onClick={() => {
-                          const result = applyReviewedFacts(
-                            pending,
-                            review,
-                            chosen,
-                          );
+                          const result = applyReviewedFacts(pending, review, chosen);
                           if (!result.ok) {
                             setError(result.error);
                             return;
@@ -914,17 +1151,37 @@ export function V3ListingPanel({
                   )}
                 </div>
               )}
-              <button
-                type="button"
-                className="v3-listing-manual"
-                onClick={openProperty}
-              >
+              </div>
+              <button type="button" className="v3-lp-link v3-listing-manual" onClick={openProperty}>
                 Enter manually
               </button>
             </section>
           )}
         </fieldset>
       </div>
+      {section === "Listing" && screen === "overview" && (
+        <footer className="v3-lp-apply" aria-label="Apply listing">
+          <div>
+            <small>{pendingCount} pending {pendingCount === 1 ? "change" : "changes"}</small>
+            {customCount > 0 && <small>{customCount} custom {customCount === 1 ? "value" : "values"}</small>}
+          </div>
+          {skippedCount > 0 && (
+            <p className="v3-lp-note">{skippedCount} {skippedCount === 1 ? "update needs" : "updates need"} attention. Existing artwork is kept for these elements.</p>
+          )}
+          {applyError && <p role="alert" className="v3-lp-warning">{applyError}</p>}
+          <button
+            type="button"
+            className="v3-lp-primary v3-lp-full"
+            disabled={!pendingCount}
+            onClick={() => {
+              const result = workflow.applyToDesign();
+              setApplyError(result.ok ? null : result.error);
+            }}
+          >
+            Apply to design
+          </button>
+        </footer>
+      )}
     </div>
   );
 }

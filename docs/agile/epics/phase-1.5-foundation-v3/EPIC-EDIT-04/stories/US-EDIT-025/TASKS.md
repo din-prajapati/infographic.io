@@ -66,3 +66,59 @@ Gate 2: for UI stories verify actual V3 at 375px and 1440px in both themes, keyb
 
 ## Local integration verification — 2026-11-13
 Implementation integrated on codex/v3-arrange-opus. Full Gate1, focused/new browser and real database evidence are recorded in docs/research/2026-11-13-V3-LISTING-IMPLEMENTATION.md. Story closure/merge is not claimed; broad candidate visual/accessibility regression remains pre-merge work. Root coordinates commits; no failing-test-only commits.
+
+## Mockup-fidelity restoration — 2026-11-13 (scope reconciliation)
+
+> Source: user direction in `docs/agile/sessions/2026-11-13-v3-claude-opus-handoff.md`; mismatch evidence in `docs/research/2026-11-13-V3-MOCKUP-FIDELITY-MATRIX.md`. Restores the approved `Mockups/listing-workflow-v1/editor.html` composition without adding feature scope. AC text is unchanged; Out of Scope (AI Assistant, connectors, photo ranking, route default) still applies.
+
+### T3 — Restore approved UI/UX composition (matrix rows: 5–13, 16)
+
+- [ ] Restore approved visual/interaction composition; preserve persistence, pending/applied state and responsive behaviour; reconcile UI-structure tests without weakening behaviour assertions.
+- `client/src/components/editor/v3/V3ListingPanel.tsx`
+- `client/src/components/editor/v3/v3-listing-panel.css`
+- `client/src/components/editor/v3/__tests__/V3ListingPanel.spec.tsx`
+
+**Effort:** S
+
+### T4 — Intake example, accessible source tabs, overview footer, grouped Property/Agent forms with counters (2026-11-13, listing UX refinement brief)
+
+> Source: user brief "V3 Listing UX and Template Field Controls" (2026-11-13). Checkpoint: `refs/checkpoints/v3-listing-ux-refine-2026-11-13` + `.agent-logs/checkpoints/before-listing-ux-refine.patch`. No schema/API change; recommended display lengths are guidance, authoritative limits stay in `shared/listingWorkflow.ts`. Out of Scope unchanged (no live MLS/RERA, AI generation, poster extraction, P2 appearance controls).
+
+- [x] Implement, test-first where behavioural; verify in browser at 1242×668 and both themes. Evidence 2026-11-13: `npm run check` exit 0; backend 840/840; client 808 passed + 1 existing skip; `npm run build` exit 0; Playwright listing 8/8 and V3 regression 124/124; Gate 2 screenshots in `.e2e-artifacts/mockup-fidelity/t4/` (1242×668 light/dark, 375 light/dark, 1440); Gate 3 N/A (no global token file change); Gate 4 N/A (no backend change). Details: `docs/research/2026-11-13-V3-MOCKUP-FIDELITY-MATRIX.md` § T4.
+- `client/src/components/editor/v3/V3ListingPanel.tsx`
+- `client/src/components/editor/v3/v3-listing-panel.css`
+- `client/src/components/editor/v3/__tests__/V3ListingPanel.spec.tsx`
+
+**Effort:** S
+
+### T5 — Listing photo, agent portrait and brand logo uploads stored in R2 (2026-11-13, real-backend E2E brief)
+
+> Source: user decision 2026-11-13 after the real-backend probe: design/template saves above ~100 kB failed with 500 "request entity too large" (properties/profiles already accept 12 MB). User chose: fix and test, and store image data in the Cloudflare R2 bucket. Gate 4 (boot smoke + health) required for the backend part. Legacy editor upload paths are out of scope.
+
+- [x] Implement test-first; Gate 1 + Gate 4; real-backend E2E against the dev database. Evidence 2026-11-13: `npm run check` exit 0; backend 848/848; client 815 + 1 skip; mocked V3 regression 124/124; listing 8/8; `npm run build` OK; `smoke:boot` BOOT OK (media route mapped) + health 200; real-backend journey passes (latest run E2E-HZN-mwf9pf8r). Details: `docs/research/2026-11-13-V3-REAL-BACKEND-E2E.md`.
+- `client/src/components/editor/v3/V3ListingPanel.tsx`
+- `client/src/components/editor/v3/__tests__/V3ListingPanel.spec.tsx`
+
+**Effort:** S
+
+### T6 — Agent form matches the approved mockup layout (2026-11-14, user request)
+
+> Source: user 2026-11-14, with a screenshot of `Mockups/listing-workflow-v1/editor.js` "Edit agent". This supersedes the T4 grouping (a "Contact details" heading, two-column grid, collapsible registration):
+> - Portrait row.
+> - One column: Full name, Agency, Phone, Email, Registration / licence (visible).
+> - Hint.
+> - Stacked **Save changes** / **Cancel**.
+>
+> Kept from earlier work:
+> - R2 photo upload (link in the portrait row).
+> - Live counters.
+> - "Adding a number does not verify it." as the licence field's help.
+>
+> The mockup's "Select saved demo agent" dropdown is **omitted**: `ListingProfile.userId` is unique (one agent profile per user), so it would list one item. "Use saved profile" now appears only when the listing's agent differs from the saved profile. Multiple agents per organization (Team/Brokerage) would be a separate story.
+
+- [x] Gate 1 + mocked E2E + real-backend journey. Evidence (2026-11-14): `npm run check` exit 0; `V3ListingPanel.spec.tsx` 23/23 (new layout contract; the registration test updated from "collapsible" to "visible"); shell + colour E2E 28/28; listing and real-backend runs recorded in the session report.
+
+**Files**
+- `client/src/components/editor/v3/V3ListingPanel.tsx` — Agent screen markup only
+- `client/src/components/editor/v3/v3-listing-panel.css` — `.v3-lp-agent-profile`, `.v3-lp-agent-restore`
+- `client/src/components/editor/v3/__tests__/V3ListingPanel.spec.tsx`, `e2e/v3-approved-shell.spec.ts`, `e2e/v3-listing-real-backend.spec.ts` — labels "Full name" / "Save changes"

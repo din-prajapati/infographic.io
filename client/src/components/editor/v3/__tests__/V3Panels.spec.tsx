@@ -7,6 +7,8 @@ import { useCanvasStore } from '../../../../hooks/useCanvasStore';
 
 const api = vi.hoisted(() => ({ getAll: vi.fn(), getAdminCurated: vi.fn(), getOne: vi.fn() }));
 vi.mock('../../../../lib/api', async original => ({ ...await original<typeof import('../../../../lib/api')>(), canvasTemplatesApi: api }));
+const media = vi.hoisted(() => ({ upload: vi.fn() }));
+vi.mock('../../../../lib/v3MediaUpload', () => ({ uploadV3Image: media.upload }));
 let host: HTMLDivElement, root: Root, query: QueryClient;
 beforeEach(() => {
   vi.stubGlobal('React', React); vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
@@ -65,5 +67,21 @@ describe('approved panel contracts', () => {
     expect(useCanvasStore.getState().canvasWidth).toBe(640);
     expect(useCanvasStore.getState().elements).toEqual([]);
     expect(localStorage.getItem('v3-recent-templates:agent-a')).toBeNull();
+  });
+});
+const chooseFile = async (input: HTMLInputElement, file: File) => {
+  Object.defineProperty(input, 'files', { value: [file], configurable: true });
+  await act(async () => { input.dispatchEvent(new Event('change', { bubbles: true })); await new Promise(resolve => setTimeout(resolve, 10)); });
+};
+describe('Uploads panel stores R2 URLs', () => {
+  // Contract: an uploaded image becomes a canvas element whose src is the R2 URL, sized from the decoded dimensions.
+  it('adds the uploaded image with its R2 URL', async () => {
+    media.upload.mockReset().mockResolvedValue({ src: 'https://media.example.test/design-media/org/u.png', name: 'u.png', width: 1600, height: 1200 });
+    await render('Uploads' as 'Text');
+    await chooseFile(host.querySelector('input[type="file"]') as HTMLInputElement, new File(['x'], 'u.png', { type: 'image/png' }));
+    const [added] = useCanvasStore.getState().elements;
+    expect(added).toMatchObject({ type: 'image', src: 'https://media.example.test/design-media/org/u.png', name: 'u.png' });
+    expect(added.width / added.height).toBeCloseTo(4 / 3, 2);
+    expect(added.width).toBeLessThanOrEqual(640 * 0.8);
   });
 });

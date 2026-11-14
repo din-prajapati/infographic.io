@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { X } from "lucide-react";
+import { ChevronRight, X } from "lucide-react";
 import {
   isListingMedia,
   LISTING_AREA_UNITS,
@@ -10,7 +10,7 @@ import {
 import { useCanvasStore } from "../../../hooks/useCanvasStore";
 import { useV3ListingWorkflow } from "../../../hooks/useV3ListingWorkflow";
 import { V3_SLOT_CATALOG, resolveSlot } from "../../../lib/v3ListingWorkflow";
-import { readReplacementImage } from "../../../lib/v3ElementEditing";
+import { uploadV3Image } from "../../../lib/v3MediaUpload";
 import "./v3-template-fields.css";
 export function V3TemplateFields({ onClose }: { onClose: () => void }) {
   const state = useCanvasStore();
@@ -122,14 +122,17 @@ export function V3TemplateFields({ onClose }: { onClose: () => void }) {
       ) : (
         <>
           <section>
-            <h3>{selected.name || "Selected element"}</h3>
-            <p className="v3-field-state" role="status">
-              {customized
-                ? "Customized for this design"
-                : binding
-                  ? "Linked field"
-                  : "Independent element"}
-            </p>
+            <div className="v3-tf-selection">
+              <h3>{(binding && V3_SLOT_CATALOG.find((item) => item.slot === binding)?.label) || selected.name || "Selected element"}</h3>
+              <p className="v3-field-state" role="status">
+                <span>{selected.type === "image" ? "Image" : selected.type === "text" ? "Text" : "Element"} · </span>
+                {customized
+                  ? "Customized for this design"
+                  : binding
+                    ? "Linked field"
+                    : "Independent element"}
+              </p>
+            </div>
             {!compatible && (
               <p>
                 This element cannot accept a field. Select an unlocked text or
@@ -137,7 +140,7 @@ export function V3TemplateFields({ onClose }: { onClose: () => void }) {
               </p>
             )}
             <label>
-              Linked field
+              <span>Get content from</span>
               <select
                 aria-label="Linked field"
                 disabled={!compatible}
@@ -187,7 +190,7 @@ export function V3TemplateFields({ onClose }: { onClose: () => void }) {
                     : binding.startsWith("agent.")
                       ? "Agent"
                       : "Brand"}
-                  . Changes stay pending until Apply listing updates.
+                  . Changes stay pending until Apply to design.
                 </p>
                 {binding === "property.specs" ||
                 binding === "property.facts" ||
@@ -322,6 +325,7 @@ export function V3TemplateFields({ onClose }: { onClose: () => void }) {
               aria-controls="v3-element-customization"
               onClick={() => setExpanded((value) => !value)}
             >
+              <ChevronRight aria-hidden="true" />
               Customize this design
             </button>
             {expanded && (
@@ -359,9 +363,7 @@ export function V3TemplateFields({ onClose }: { onClose: () => void }) {
                           setLoading(true);
                           setError(null);
                           try {
-                            if (file.size > 2 * 1024 * 1024)
-                              throw Error("Choose an image smaller than 2 MB.");
-                            const photo = await readReplacementImage(file);
+                            const photo = await uploadV3Image(file);
                             if (!isListingMedia(photo.src))
                               throw Error("Choose a smaller image.");
                             if (alive.current && selection.current === id && useCanvasStore.getState().elements.find(element => element.id === id) === selected)

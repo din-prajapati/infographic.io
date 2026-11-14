@@ -1,3 +1,4 @@
+import { uploadV3Image } from '../../../lib/v3MediaUpload';
 import { useEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Upload, X, Plus, Pencil, Trash2 } from 'lucide-react';
@@ -8,8 +9,8 @@ import { V3TemplateFields } from './V3TemplateFields';
 import type { V3ListingPanelProps } from './V3ListingPanel';
 import type { DesignMetadata } from '../../../lib/storage';
 import { createImageElement, createTextElement } from '../../../lib/canvasUtils';
-import { isValidLineElement } from '../../../lib/lineGeometry';
 import { restoreCanvasData } from '../../../lib/canvasState';
+import { hasTemplateLayout } from '../../../lib/v3EditorUrl';
 import { pickCanvasBackground } from '../../../lib/brandPalette';
 import { PropertyDetailsForm } from '../PropertyDetailsForm';
 import { AgentInfoForm } from '../AgentInfoForm';
@@ -75,26 +76,6 @@ function readRecent(userId: string): string[] {
   } catch { return []; }
 }
 
-function hasCanvasLayout(data: unknown): boolean {
-  if (!data || typeof data !== 'object') return false;
-  const canvas = data as Record<string, unknown>;
-  if (!Array.isArray(canvas.elements) || canvas.elements.length === 0) return false;
-  if (['canvasWidth', 'canvasHeight'].some(key => canvas[key] !== undefined && (typeof canvas[key] !== 'number' || !Number.isFinite(canvas[key]) || Number(canvas[key]) <= 0))) return false;
-  const ids = new Set<string>();
-  return canvas.elements.every((value: unknown) => {
-    if (!value || typeof value !== 'object') return false;
-    const element = value as Record<string, unknown>;
-    if (typeof element.id !== 'string' || ids.has(element.id) || !['text', 'image', 'shape', 'line'].includes(String(element.type))) return false;
-    ids.add(element.id);
-    if (['x', 'y', 'width', 'height'].some(key => typeof element[key] !== 'number' || !Number.isFinite(element[key]))) return false;
-    if (Number(element.width) <= 0 || Number(element.height) <= 0) return false;
-    if (element.type === 'text') return typeof element.content === 'string';
-    if (element.type === 'image') return typeof element.src === 'string';
-    if (element.type === 'line') return isValidLineElement(element);
-    return ['rectangle', 'circle', 'ellipse', 'triangle', 'star', 'speechBubble', 'arrowLeft', 'arrowRight'].includes(String(element.shapeType));
-  });
-}
-
 function Templates({ userId, onUseTemplate }: { userId: string; onUseTemplate?: (template: DesignMetadata) => Promise<void> }) {
   const mounted = useRef(true);
   useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
@@ -117,7 +98,7 @@ function Templates({ userId, onUseTemplate }: { userId: string; onUseTemplate?: 
       const fresh = await canvasTemplatesApi.getOne(template.id);
       if (!mounted.current) return;
       const data: unknown = fresh.canvasData;
-      if (!hasCanvasLayout(data)) throw new Error('This template has no usable canvas layout.');
+      if (!hasTemplateLayout(data)) throw new Error('This template has no usable canvas layout.');
       if (onUseTemplate) await onUseTemplate(fresh);
       else {
         if (!restoreCanvasData(data)) throw new Error('This template could not be opened.');
@@ -167,18 +148,9 @@ function Uploads() {
     setBusy(true);
     setError(null);
     try {
-      const src = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => typeof reader.result === 'string' ? resolve(reader.result) : reject(new Error('Unable to read image.'));
-        reader.onerror = () => reject(new Error('Unable to read image.'));
-        reader.readAsDataURL(file);
-      });
-      const dimensions = await new Promise<{ width: number; height: number }>((resolve, reject) => {
-        const image = new Image();
-        image.onload = () => resolve({ width: image.naturalWidth, height: image.naturalHeight });
-        image.onerror = () => reject(new Error('This image could not be opened.'));
-        image.src = src;
-      });
+      // Stored in the R2 bucket; the canvas keeps only the public https URL (no inline base64).
+      const uploaded = await uploadV3Image(file);
+      const src = uploaded.src, dimensions = { width: uploaded.width, height: uploaded.height };
       const state = useCanvasStore.getState();
       if (!mounted.current) return;
       const scale = Math.min(1, state.canvasWidth * 0.8 / dimensions.width, state.canvasHeight * 0.8 / dimensions.height);
@@ -189,7 +161,7 @@ function Uploads() {
     finally { setBusy(false); if (input.current) input.current.value = ''; }
   };
   return <div className="space-y-4"><input ref={input} type="file" accept="image/*" aria-label="Choose image" hidden onChange={event => void upload(event.target.files?.[0])} />
-    <button type="button" disabled={busy} className="v3-wide-button" onClick={() => input.current?.click()}><Upload />{busy ? 'Opening image…' : 'Upload image'}</button>
+    <button type="button" disabled={busy} className="v3-wide-button" onClick={() => input.current?.click()}><Upload />{busy ? 'Uploading image…' : 'Upload image'}</button>
     <p>Choose an image from your device to add it to this canvas.</p>{error && <p role="alert">{error}</p>}
   </div>;
 }

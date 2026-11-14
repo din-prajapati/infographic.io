@@ -13,6 +13,8 @@ import {
   createTextElement,
   createImageElement,
 } from "../../../../lib/canvasUtils";
+const media = vi.hoisted(() => ({ upload: vi.fn() }));
+vi.mock('../../../../lib/v3MediaUpload', () => ({ uploadV3Image: media.upload }));
 let host: HTMLDivElement, root: Root;
 beforeEach(() => {
   vi.stubGlobal("React", React);
@@ -189,5 +191,23 @@ describe("Template Fields inspector contracts", () => {
     expect(useV3ListingStore.getState().snapshot.bindings[element.id]).toEqual({
       slot: "property.location",
     });
+  });
+});
+const chooseFile = async (input: HTMLInputElement, file: File) => {
+  Object.defineProperty(input, 'files', { value: [file], configurable: true });
+  await act(async () => { input.dispatchEvent(new Event('change', { bubbles: true })); await new Promise(resolve => setTimeout(resolve, 10)); });
+};
+describe("Customize this design photo stores the R2 URL", () => {
+  // Contract: a design-only photo is uploaded to R2 and stored as an override for that element only.
+  it("customizes the selected image with the uploaded URL", async () => {
+    media.upload.mockReset().mockResolvedValue({ src: "https://media.example.test/design-media/org/c.jpg", name: "c.jpg", width: 10, height: 10 });
+    const image = createImageElement("https://media.example.test/original.jpg");
+    useCanvasStore.setState({ elements: [image], selectedElementIds: [image.id] });
+    await act(async () => root.render(<V3TemplateFields onClose={() => {}} />));
+    const toggle = [...host.querySelectorAll("button")].find((b) => b.textContent === "Customize this design")!;
+    await act(async () => toggle.click());
+    await chooseFile(host.querySelector('input[aria-label="Design photo"]') as HTMLInputElement, new File(["x"], "c.jpg", { type: "image/jpeg" }));
+    expect(media.upload).toHaveBeenCalledTimes(1);
+    expect(useV3ListingStore.getState().snapshot.overrides[image.id]).toBe("https://media.example.test/design-media/org/c.jpg");
   });
 });

@@ -9,19 +9,31 @@ async function setup(page: Page, theme = 'light', withTemplate = false) {
     localStorage.setItem('auth_user', JSON.stringify({ id: 'shell-test-user', name: 'Agent', email: 'agent@example.test', plan: 'SOLO' }));
     localStorage.setItem('theme', theme);
   }, theme);
-  const state = { writes: [] as any[], writePaths: [] as string[], rejectSave: false, document: { id, name: 'Approved design', type: 'design', category: 'real-estate', tags: [], canvasData: { elements: [base], canvasWidth: 640, canvasHeight: 480, backgroundColor: '#ffffff' } } };
+  const state = { writes: [] as any[], writePaths: [] as string[], rejectSave: false, documents: {} as Record<string, any>, properties: [] as any[], profile: { version: 0, record: { agent: { name: '', phone: '', email: '', agency: '', license: '', photo: '' }, brand: { name: '', logo: '', tagline: '', accent: '' } } }, document: { id, name: 'Approved design', type: 'design', category: 'real-estate', tags: [], canvasData: { elements: [base], canvasWidth: 640, canvasHeight: 480, backgroundColor: '#ffffff' } } };
   const template = { ...state.document, id: 'template-city', name: 'City listing', thumbnail: '', canvasData: { ...state.document.canvasData, elements: [{ ...base, id: 'template-heading', content: 'City template content' }] } };
   await page.route('**/api/**', async route => {
     const request = route.request(); const pathname = new URL(request.url()).pathname;
     if (pathname.endsWith('/canvas-templates/template-city')) return route.fulfill({ json: template });
     if (pathname.endsWith('/canvas-templates')) return route.fulfill({ json: withTemplate ? [template] : [] });
+    if (pathname.endsWith('/listing-profiles')) {
+      if (request.method() === 'GET') return route.fulfill({ json: state.profile });
+      state.profile = { version: state.profile.version + 1, record: request.postDataJSON().record };
+      return route.fulfill({ json: state.profile });
+    }
+    if (pathname.endsWith('/properties')) {
+      if (request.method() === 'GET') return route.fulfill({ json: state.properties });
+      const value = { id: 'c' + '5'.repeat(24), version: 1, record: request.postDataJSON().record, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+      state.properties.push(value); return route.fulfill({ status: 201, json: value });
+    }
     if (/\/designs(?:\/[^/]+)?$/.test(pathname)) {
-      if (request.method() === 'GET') return route.fulfill({ json: state.document });
+      const target = pathname.split('/').at(-1)!;
+      if (request.method() === 'GET') return route.fulfill({ json: state.documents[target] ?? state.document });
       if (['POST', 'PUT'].includes(request.method())) {
         const body = request.postDataJSON(); state.writes.push(body); state.writePaths.push(`${request.method()} ${pathname}`);
         if (state.rejectSave) return route.fulfill({ status: 503, json: { message: 'Save temporarily unavailable' } });
-        state.document = { ...state.document, ...body, id };
-        return route.fulfill({ json: state.document });
+        const saved = { ...(request.method() === 'POST' ? {} : state.document), ...body, id: request.method() === 'POST' ? 'c' + String(state.writes.length).padStart(24, '7') : id };
+        state.documents[saved.id] = saved; if (saved.id === id) state.document = saved;
+        return route.fulfill({ json: saved });
       }
     }
     return route.fulfill({ json: [] });
@@ -35,7 +47,7 @@ async function setup(page: Page, theme = 'light', withTemplate = false) {
 // line drawing choices at their named toolbars after opening Tools/Line.
 test('approved rail, direct tools and three line choices', async ({ page }) => {
   await setup(page);
-  for (const name of ['Templates', 'Tools', 'Text', 'Uploads', 'Brand', 'Property', 'Agent']) await expect(page.getByRole('button', { name, exact: true })).toBeVisible();
+  for (const name of ['Templates', 'Tools', 'Elements', 'Text', 'Uploads', 'Brand', 'Listing', 'Agent']) await expect(page.getByRole('button', { name, exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Tools', exact: true }).click();
   const strip = page.getByRole('toolbar', { name: 'Canvas tools', exact: true });
   for (const name of ['Select', 'Hand', 'Line', 'Shapes', 'Add text', 'Add image']) await expect(strip.getByRole('button', { name, exact: true })).toBeVisible();
@@ -47,13 +59,15 @@ test('approved rail, direct tools and three line choices', async ({ page }) => {
 // Contract: template replacement needs explicit confirmation and successful
 // application alone moves its ID to the signed-in user's Recently used group.
 test('template search confirms replacement and records account scoped recents', async ({ page }) => {
-  await setup(page, 'light', true);
+  const state = await setup(page, 'light', true);
   await page.getByRole('searchbox', { name: 'Search templates', exact: true }).fill('City');
   await page.getByRole('button', { name: /City listing/ }).click();
   await expect(page.getByRole('alertdialog')).toBeVisible();
   await expect(page.getByTestId('design-canvas').getByText('Approved listing', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Replace canvas', exact: true }).click();
+  await expect(page).not.toHaveURL(new RegExp(`designId=${id}$`));
   await expect(page.getByTestId('design-canvas').getByText('City template content', { exact: true })).toBeVisible();
+  expect(state.document.canvasData.elements[0].content).toBe('Approved listing');
   await expect(page.getByRole('region', { name: 'Recently used', exact: true }).getByRole('button', { name: /City listing/ })).toBeVisible();
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('v3-recent-templates:shell-test-user') ?? '[]'))).toEqual(['template-city']);
 });
@@ -120,14 +134,19 @@ for (const theme of ['light', 'dark']) test(`${theme} approved shell and artwork
 test('listing panels persist their fields and canvas panels open', async ({ page }) => {
   const state = await setup(page);
   const exceptions: string[] = []; page.on('pageerror', error => exceptions.push(error.message));
-  await page.getByRole('button', { name: 'Property', exact: true }).click();
-  await page.getByRole('textbox', { name: 'Headline', exact: true }).fill('Garden residence');
-  await page.getByRole('button', { name: 'Agent', exact: true }).click();
-  await page.getByRole('textbox', { name: /Agent Name/ }).fill('Morgan Agent');
-  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await page.getByRole('button', { name: 'Listing', exact: true }).click();
+  await page.getByRole('button', { name: 'Enter manually', exact: true }).click();
+  await page.getByRole('textbox', { name: 'Address', exact: true }).fill('7 Garden Road');
+  await page.getByRole('textbox', { name: 'Marketing headline', exact: true }).fill('Garden residence');
+  await page.getByRole('button', { name: 'Save property', exact: true }).click();
+  await page.getByRole('button', { name: /^Agent / }).click();
+  await page.getByRole('textbox', { name: 'Full name', exact: true }).fill('Morgan Agent');
+  await page.getByRole('button', { name: 'Save changes', exact: true }).click();
+  await expect(page.getByRole('button', { name: /^Agent Morgan Agent/ })).toBeVisible();
+  await page.getByRole('button', { name: 'Save as Design', exact: true }).click();
   await expect(page.getByText('Saved', { exact: true })).toBeVisible();
-  expect(state.writes.at(-1).canvasData.listing.property.headline).toBe('Garden residence');
-  expect(state.writes.at(-1).canvasData.listing.agent.name).toBe('Morgan Agent');
+  expect(state.writes.at(-1).canvasData.v3Listing.pending.property.headline).toBe('Garden residence');
+  expect(state.writes.at(-1).canvasData.v3Listing.pending.agent.name).toBe('Morgan Agent');
   await page.getByRole('button', { name: 'Layers', exact: true }).click();
   await expect(page.getByRole('complementary', { name: 'Layers panel', exact: true })).toBeVisible();
   await page.keyboard.press('Escape');

@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { test, expect, type Page } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 
@@ -15,8 +16,18 @@ async function setup(page: Page, theme = 'light', imagePatch:Record<string,unkno
     {...base,id:'shape',type:'shape',name:'Accent',x:60,y:260,width:150,height:100,shapeType:'rectangle',fill:'#00a080',stroke:'#123e62',strokeWidth:2,cornerRadius:0},
     {...base,id:'image',type:'image',name:'Photo',x:500,y:260,width:160,height:120,src:photo,objectFit:'contain',cornerRadius:0,flipHorizontal:false,flipVertical:false,colorOverlay:null,filters:{brightness:100,contrast:100,saturation:100},...imagePatch},
   ]}}};
+  // Replace image uploads to R2 via POST /api/v1/media; the stub returns an https URL and serves the uploaded bytes
+  // back from the stand-in bucket host and the export proxy, mirroring the real storage path.
+  const media = new Map<string, Buffer>();
+  // Chromium interception does not expose file-input bytes in multipart bodies, so the stub serves the fixture named
+  // in Content-Disposition (the real browser does send the bytes; the real-backend journey verifies R2 storage).
+  const pngFrom = (raw: Buffer) => readFileSync(`e2e/fixtures/${/filename="([^"]+)"/.exec(raw.toString('latin1'))![1]}`);
+  await page.route('https://media.example.test/**', route => route.fulfill({ body: media.get(route.request().url()) ?? Buffer.alloc(0), contentType: 'image/png', headers: { 'Access-Control-Allow-Origin': '*' } }));
   await page.route('**/api/**',route => {
-    if (/\/designs(?:\/[^/]+)?$/.test(new URL(route.request().url()).pathname)) {
+    const pathname = new URL(route.request().url()).pathname;
+    if (pathname.endsWith('/media') && route.request().method() === 'POST') { const url = `https://media.example.test/upload-${media.size + 1}.png`; media.set(url, pngFrom(route.request().postDataBuffer()!)); return route.fulfill({ status: 201, json: { url, key: url, contentType: 'image/png', size: 1 } }); }
+    if (pathname.endsWith('/proxy-image')) { const target = new URL(route.request().url()).searchParams.get('url')!; return route.fulfill({ body: media.get(target) ?? Buffer.alloc(0), contentType: 'image/png', headers: { 'Access-Control-Allow-Origin': '*' } }); }
+    if (/\/designs(?:\/[^/]+)?$/.test(pathname)) {
       if (route.request().method()==='GET') return route.fulfill({json:model.document});
       const body=route.request().postDataJSON();model.writes.push(body);model.document={...model.document,...body};return route.fulfill({json:model.document});
     }
@@ -224,10 +235,11 @@ test('image Edit sidebar commits adjustment once and reset restores neutral',asy
 // Contract: replacing a selected image preserves its geometry and identity.
 test('image replacement preserves geometry and supports flip and border',async({page})=>{
   const model=await setup(page);await element(page,'image').click();
-  await page.getByLabel('Replace image file',{exact:true}).setInputFiles({name:'replacement.svg',mimeType:'image/svg+xml',buffer:Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"><rect width="40" height="40" fill="#ff0000"/></svg>')});
-  await expect(element(page,'image').locator('img')).toHaveAttribute('src',/^data:image\/svg\+xml;base64,/);
+  await page.getByLabel('Replace image file',{exact:true}).setInputFiles('e2e/fixtures/replacement-red.png');
+  // Stored image is the R2 URL returned by /media — never an inline data URL.
+  await expect(element(page,'image').locator('img')).toHaveAttribute('src',/media\.example\.test%2Fupload-1\.png|^https:\/\/media\.example\.test\/upload-1\.png$/);
   await toolbar(page,'image').getByRole('button',{name:'Flip horizontal',exact:true}).click();
-  expect((await save(page,model)).find(el=>el.id==='image')).toMatchObject({id:'image',x:500,y:260,width:160,height:120,objectFit:'contain',flipHorizontal:true,name:'replacement.svg'});
+  expect((await save(page,model)).find(el=>el.id==='image')).toMatchObject({id:'image',x:500,y:260,width:160,height:120,objectFit:'contain',flipHorizontal:true,name:'replacement-red.png',src:'https://media.example.test/upload-1.png'});
 });
 
 test('rotation numeric input commits once and Undo restores original angle',async({page})=>{
@@ -317,8 +329,8 @@ for(const theme of ['light','dark']) test(`${theme} modern toolbar and sidebar p
 // after a clockwise90° rotation, in the actual2x PNG, not just stored metadata.
 test('rotated flipped image exports with the same orientation as the canvas',async({page})=>{
   await setup(page);await element(page,'image').click();
-  await page.getByLabel('Replace image file',{exact:true}).setInputFiles({name:'two-colours.svg',mimeType:'image/svg+xml',buffer:Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="160" height="120"><rect width="80" height="120" fill="#ff0000"/><rect x="80" width="80" height="120" fill="#0000ff"/></svg>')});
-  await expect(element(page,'image').locator('img')).toHaveAttribute('src',/^data:image\/svg\+xml;base64,/);
+  await page.getByLabel('Replace image file',{exact:true}).setInputFiles('e2e/fixtures/two-colours.png');
+  await expect(element(page,'image').locator('img')).toHaveAttribute('src',/media\.example\.test%2Fupload-1\.png|^https:\/\/media\.example\.test\/upload-1\.png$/);
   await toolbar(page,'image').getByRole('button',{name:'Flip horizontal',exact:true}).click();
   await page.getByRole('button',{name:'Rotate element',exact:true}).click();await page.getByLabel('Rotation degrees',{exact:true}).fill('90');await page.getByRole('button',{name:'Apply angle',exact:true}).click();
   const pending=page.waitForEvent('download');await page.getByRole('button',{name:'Export',exact:true}).click();const downloaded=await pending;

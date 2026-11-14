@@ -66,3 +66,49 @@ Gate 2: for UI stories verify actual V3 at 375px and 1440px in both themes, keyb
 
 ## Local integration verification — 2026-11-13
 Implementation integrated on codex/v3-arrange-opus. Full Gate1, focused/new browser and real database evidence are recorded in docs/research/2026-11-13-V3-LISTING-IMPLEMENTATION.md. Story closure/merge is not claimed; broad candidate visual/accessibility regression remains pre-merge work. Root coordinates commits; no failing-test-only commits.
+
+## Mockup-fidelity restoration — 2026-11-13 (scope reconciliation)
+
+> Source: user direction in `docs/agile/sessions/2026-11-13-v3-claude-opus-handoff.md`; mismatch evidence in `docs/research/2026-11-13-V3-MOCKUP-FIDELITY-MATRIX.md`. Restores the approved `Mockups/listing-workflow-v1/editor.html` composition without adding feature scope. AC text is unchanged; Out of Scope (AI Assistant, connectors, photo ranking, route default) still applies.
+
+### T3 — Restore approved UI/UX composition (matrix rows: 14)
+
+- [ ] Restore approved visual/interaction composition; preserve persistence, pending/applied state and responsive behaviour; reconcile UI-structure tests without weakening behaviour assertions.
+- `client/src/components/editor/v3/V3TemplateFields.tsx`
+- `client/src/components/editor/v3/v3-template-fields.css`
+- `client/src/components/editor/v3/__tests__/V3TemplateFields.spec.tsx`
+
+**Effort:** S
+
+### T4 — Show links overlay and Link field in the element toolbar (2026-11-13, listing UX refinement brief)
+
+> Source: user brief "V3 Listing UX and Template Field Controls" (2026-11-13). Checkpoint: `refs/checkpoints/v3-listing-ux-refine-2026-11-13` + `.agent-logs/checkpoints/before-listing-ux-refine.patch`. No schema/API change; recommended display lengths are guidance, authoritative limits stay in `shared/listingWorkflow.ts`. Out of Scope unchanged (no live MLS/RERA, AI generation, poster extraction, P2 appearance controls).
+
+- [x] Implement, test-first where behavioural; verify in browser at 1242×668 and both themes. Evidence 2026-11-13: `npm run check` exit 0; backend 840/840; client 808 passed + 1 existing skip; `npm run build` exit 0; Playwright listing 8/8 and V3 regression 124/124; Gate 2 screenshots in `.e2e-artifacts/mockup-fidelity/t4/` (1242×668 light/dark, 375 light/dark, 1440); Gate 3 N/A (no global token file change); Gate 4 N/A (no backend change). Details: `docs/research/2026-11-13-V3-MOCKUP-FIDELITY-MATRIX.md` § T4.
+- `client/src/components/editor/v3/V3LinkOverlay.tsx`
+- `client/src/components/editor/v3/__tests__/V3LinkOverlay.spec.tsx`
+- `client/src/components/editor/v3/V3ElementToolbar.tsx`
+- `client/src/components/editor/v3/__tests__/V3ElementToolbar.spec.tsx`
+- `client/src/components/editor/v3/V3Canvas.tsx`
+- `client/src/components/editor/v3/V3Editor.tsx`
+- `client/src/components/editor/v3/v3-editor.css`
+- `client/src/components/editor/v3/v3-responsive.css`
+
+**Effort:** S
+
+### T5 — Paste-text extraction: unlabeled Indian price, readable labels, agent phone (2026-11-14, user report)
+
+> Source: user 2026-11-14, with a screenshot of the review list. **Use example → Extract & review** on the sample text dropped "80 Lakh". Unlabeled prices were recognised only with a currency sign. Rows also showed field keys (`areaUnit`, `beds`), and the agent line put name and phone in one field.
+
+- [x] Test-first (5 new failing unit tests, then fix); Gate 1; mocked listing E2E. Evidence 2026-11-14: `npm run check` exit 0; backend unit 853/853; client unit 825 + 1 skip; `e2e/v3-listing.config.ts` 9/9, including the new extract-and-review test.
+- Rules:
+  - A bare amount with an Indian scale word (lakh/lac/crore/cr) is read as INR, whatever the listing country.
+  - Amounts that carry a currency sign keep the existing pattern; the new pattern excludes them, so there are no duplicate rows.
+  - Agent name and phone are separate suggestions, both unselected.
+  - Review rows use reader-facing labels, and the price row shows the formatted value (₹80 Lakh).
+
+**Files**
+- `shared/listingWorkflow.ts` — `reviewListingText` (FACT_LABELS, PHONE, lakh/crore pattern)
+- `api/tests/listing/listing-workflow.spec.ts` — five sample-text tests
+- `client/src/components/editor/v3/V3ListingPanel.tsx` — `formatReviewedPrice` for the price row
+- `e2e/v3-listing-workflow.spec.ts` — Use example → Extract & review test

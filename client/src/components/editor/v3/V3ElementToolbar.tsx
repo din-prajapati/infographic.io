@@ -1,10 +1,11 @@
 import React, { createContext, useContext, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import * as Popover from '@radix-ui/react-popover';
-import { AlignCenter, AlignLeft, AlignRight, Bold, Italic, Minus, Plus, Underline, Strikethrough, List, ListOrdered, SlidersHorizontal, Replace, Square, Circle, CircleSlash, Triangle, Star, Sparkles, ArrowLeftRight, RotateCcw, Scan, Check, ChevronDown, Lock, Unlock, Copy, Trash2 } from 'lucide-react';
+import { Link2, AlignCenter, AlignLeft, AlignRight, Bold, Italic, Minus, Plus, Underline, Strikethrough, List, ListOrdered, SlidersHorizontal, Replace, Square, Circle, CircleSlash, Triangle, Star, Sparkles, ArrowLeftRight, RotateCcw, Scan, Check, ChevronDown, Lock, Unlock, Copy, Trash2 } from 'lucide-react';
 import type { CanvasElement, ImageElement, ShapeElement, TextElement, LineElement } from '../../../lib/canvasTypes';
 import { useCanvasStore } from '../../../hooks/useCanvasStore';
 import { previewElementPatch, clearElementPreview } from '../../../hooks/useV3ElementPreview';
-import { clampNumeric, commitElementPatch, readReplacementImage, replacementImagePatch, resetImageAppearancePatch } from '../../../lib/v3ElementEditing';
+import { uploadV3Image } from '../../../lib/v3MediaUpload';
+import { clampNumeric, commitElementPatch, replacementImagePatch, resetImageAppearancePatch } from '../../../lib/v3ElementEditing';
 import '../../../styles/v3-element-toolbar.css';
 import {openColorPanel,useV3ColorPanel,getTargetPaint} from '../../../hooks/useV3ColorPanel';
 import type {PaintSlot,StrokeStyle} from '../../../lib/canvasTypes';
@@ -182,7 +183,7 @@ function ImageToolbar({ element, onEditImage,onBrowseElements }: { element: Imag
   const replace = async (file?: File) => {
     if (!file) return;
     setBusy(true); setError(null);
-    try { const replacement = await readReplacementImage(file); if (alive.current) commitElementPatch(element.id, replacementImagePatch(replacement.src, replacement.name)); }
+    try { const replacement = await uploadV3Image(file); if (alive.current) commitElementPatch(element.id, replacementImagePatch(replacement.src, replacement.name)); }
     catch (cause) { if (alive.current) setError(cause instanceof Error ? cause.message : 'Unable to replace image. Choose another image to retry.'); }
     finally { if (alive.current) setBusy(false); if (fileInput.current) fileInput.current.value = ''; }
   };
@@ -219,12 +220,14 @@ function LineToolbar({ element }: { element: LineElement }) {
     <Menu label="Line type" hideHeading contentClassName="v3-line-type-menu" compact iconOnly icon={<LineTypeIcon type={element.lineType}/> }><div className="v3-picker-list">{(['straight','elbow','curved'] as const).map(lineType=><Popover.Close asChild key={lineType}><button type="button" aria-label={`Type ${lineType}`} aria-pressed={element.lineType===lineType} onClick={()=>commitElementPatch(element.id,{lineType})}><LineTypeIcon type={lineType}/><span>{lineType==='elbow'?'Elbowed':lineType==='curved'?'Curved':'Straight'}</span>{element.lineType===lineType&&<Check aria-hidden="true"/>}</button></Popover.Close>)}</div></Menu><Opacity element={element}/></>;
 }
 
-export function V3ElementToolbar({ element, onEditImage,onEditEffects,onBrowseElements }: { element: CanvasElement; onEditImage: () => void;onEditEffects?:()=>void;onBrowseElements?:()=>void }) {
+export function V3ElementToolbar({ element, onEditImage,onEditEffects,onBrowseElements,onLinkField }: { element: CanvasElement; onEditImage: () => void;onEditEffects?:()=>void;onBrowseElements?:()=>void;onLinkField?:()=>void }) {
   const ref = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState({ left: 0, top: 0, width: 650 });
   const selectedIds = useCanvasStore(state => state.selectedElementIds);
   const zoom = useCanvasStore(state => state.zoom);
   const disabled = element.locked || !element.visible || selectedIds.length !== 1 || selectedIds[0] !== element.id;
+  // Link field opens Template Fields for one eligible (unlocked, unframed, non-icon) text or image element.
+  const linkable = !!onLinkField && !disabled && (element.type === 'text' || (element.type === 'image' && !element.icon)) && !element.frameOf;
   useLayoutEffect(() => {
     const toolbar = ref.current;
     const viewport = toolbar?.closest('.v3-workspace')?.querySelector<HTMLElement>('[data-canvas-viewport]') ?? document.querySelector<HTMLElement>('[data-canvas-viewport]');
@@ -244,6 +247,6 @@ export function V3ElementToolbar({ element, onEditImage,onEditEffects,onBrowseEl
     return () => { observer.disconnect(); window.removeEventListener('resize', measure); window.removeEventListener('scroll', measure, true); };
   }, [element, zoom]);
   return <Disabled.Provider value={disabled}><div ref={ref} role="toolbar" aria-label={selectedIds.length>1?'Selection actions':`${element.type} formatting`} className="v3-element-toolbar" style={{ left: position.left, top: position.top, maxWidth: position.width }} onPointerDown={event => event.stopPropagation()} onClick={event => event.stopPropagation()}>
-    <fieldset disabled={disabled} hidden={selectedIds.length>1}>{element.type === 'text' ? <TextToolbar key={element.id} element={element}/> : element.type === 'shape' ? <ShapeToolbar key={element.id} element={element} onEditEffects={onEditEffects} onBrowseElements={onBrowseElements}/> : element.type === 'image' ? <ImageToolbar key={element.id} element={element} onEditImage={onEditImage} onBrowseElements={onBrowseElements}/> : <LineToolbar key={element.id} element={element}/>}</fieldset><CommonActions element={element}/>
+    {linkable&&<><button type="button" className="v3-link-field" aria-label="Link field" title="Link field — open Template Fields" onClick={onLinkField}><Link2/><span>Link field</span></button><span className="v3-toolbar-divider" aria-hidden="true"/></>}<fieldset disabled={disabled} hidden={selectedIds.length>1}>{element.type === 'text' ? <TextToolbar key={element.id} element={element}/> : element.type === 'shape' ? <ShapeToolbar key={element.id} element={element} onEditEffects={onEditEffects} onBrowseElements={onBrowseElements}/> : element.type === 'image' ? <ImageToolbar key={element.id} element={element} onEditImage={onEditImage} onBrowseElements={onBrowseElements}/> : <LineToolbar key={element.id} element={element}/>}</fieldset><CommonActions element={element}/>
   </div></Disabled.Provider>;
 }

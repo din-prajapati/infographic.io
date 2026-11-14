@@ -45,12 +45,12 @@ test('listing edits save separately, apply together and undo without losing sour
   await page.getByRole('button',{name:'Save property',exact:true}).click();
   await expect(page.getByTestId('design-canvas').getByText('US$400,000',{exact:true})).toHaveCount(2);
   await expect.poll(()=>state.properties.length).toBe(1);
-  await page.getByRole('button',{name:'Apply listing updates',exact:true}).click();
+  await page.getByRole('button',{name:'Apply to design',exact:true}).click();
   await expect(page.getByTestId('design-canvas').getByText('US$450,000',{exact:true})).toHaveCount(2);
   await page.getByRole('button',{name:'Undo last apply',exact:true}).click();
   await expect(page.getByTestId('design-canvas').getByText('US$400,000',{exact:true})).toHaveCount(2);
   await expect(page.getByRole('button',{name:/Property information/})).toContainText('US$450,000');
-  await page.getByRole('button',{name:'Apply listing updates',exact:true}).click();
+  await page.getByRole('button',{name:'Apply to design',exact:true}).click();
   await page.getByRole('button',{name:'Save as Design',exact:true}).click();
   await expect.poll(()=>state.document.canvasData.v3Listing.applied.property.amount).toBe('450000');
   await page.reload();
@@ -77,7 +77,7 @@ test('Save as Template strips listing facts and export requires human review',as
   await expect.poll(()=>state.templates.length).toBe(1);
   expect(state.templates[0].canvasData.v3Listing).toBeUndefined();
   expect(state.templates[0].canvasData.elements.find((e:any)=>e.id==='address').content).toBe('[Address]');
-  await page.getByRole('button',{name:'Export',exact:true}).click();
+  await page.getByRole('button',{name:'Review & export',exact:true}).click();
   const dialog=page.getByRole('dialog',{name:'Review & export',exact:true});
   await expect(dialog.getByRole('button',{name:'Download PNG',exact:true})).toBeDisabled();
   await dialog.getByRole('checkbox').check();
@@ -94,4 +94,82 @@ for(const theme of ['light','dark'])test(`listing controls remain reachable on m
   const box=await page.getByRole('complementary',{name:'Listing panel',exact:true}).boundingBox();
   expect(box!.x).toBeGreaterThanOrEqual(0);expect(box!.x+box!.width).toBeLessThanOrEqual(376);
   await page.screenshot({path:`.e2e-artifacts/listing-${theme}-mobile.png`});
+});
+
+// Contract: Link field lives in the contextual element toolbar (not a canvas row) and opens Template Fields for that element.
+test('Link field is a toolbar action that opens Template Fields for the selection',async({page})=>{
+  await page.setViewportSize({width:1242,height:668});await setup(page);
+  await expect(page.getByRole('button',{name:'Link field',exact:true})).toHaveCount(0);
+  await page.getByTestId('design-canvas').getByText('10 Oak Road',{exact:true}).click();
+  const toolbar=page.getByRole('toolbar',{name:'text formatting',exact:true});
+  await expect(toolbar.getByRole('button',{name:'Link field',exact:true})).toBeVisible();
+  await expect(page.getByRole('button',{name:'Link field',exact:true})).toHaveCount(1);
+  await expect(page.locator('.v3-element-bar')).toHaveCount(0);
+  await toolbar.getByRole('button',{name:'Link field',exact:true}).click();
+  const inspector=page.getByRole('complementary',{name:'Template Fields panel',exact:true});
+  await expect(inspector).toBeVisible();
+  await expect(inspector.locator('select[aria-label="Linked field"]')).toHaveValue('property.location');
+  await page.screenshot({path:'.e2e-artifacts/listing-link-field-1242.png'});
+});
+
+// Contract: Show links is an editor-only, session overlay: it follows zoom, never dirties or rewrites the design, and is absent from saved thumbnails.
+test('Show links overlay follows zoom and stays out of saved artwork',async({page})=>{
+  await page.setViewportSize({width:1242,height:668});const state=await setup(page);
+  const toggle=page.getByRole('button',{name:'Show links',exact:true});
+  await expect(toggle).toHaveAttribute('aria-pressed','false');
+  await expect(page.getByTestId('link-overlay')).toHaveCount(0);
+  await page.getByRole('button',{name:'Save as Design',exact:true}).click();
+  await expect.poll(()=>state.writes.length).toBe(1);
+  const before=state.writes[0];
+  await toggle.click();
+  await expect(toggle).toHaveAttribute('aria-pressed','true');
+  const mark=page.locator('[data-link-for="address"]');
+  await expect(mark).toContainText('Property · Address');
+  const text=page.getByTestId('design-canvas').getByText('10 Oak Road',{exact:true});
+  const near=async()=>{const [m,t]=await Promise.all([mark.boundingBox(),text.boundingBox()]);return Math.abs(m!.x-t!.x)<12&&Math.abs(m!.y-t!.y)<12;};
+  expect(await near()).toBe(true);
+  await page.getByRole('button',{name:'Zoom in',exact:true}).click();
+  await expect.poll(near).toBe(true);
+  await expect(page.getByRole('status').filter({hasText:/^Unsaved$/})).toHaveCount(0);
+  await page.getByRole('button',{name:'Save as Design',exact:true}).click();
+  await expect.poll(()=>state.writes.length).toBe(2);
+  expect(state.writes[1].thumbnail).toBe(before.thumbnail);
+  // zoom and timestamp are view/save metadata; the design content itself must be identical.
+  expect(state.writes[1].canvasData.elements).toEqual(before.canvasData.elements);
+  expect(state.writes[1].canvasData.v3Listing).toEqual(before.canvasData.v3Listing);
+  await page.getByRole('button',{name:'Preview',exact:true}).click();
+  await expect(page.getByTestId('link-overlay')).toHaveCount(0);
+});
+
+// Contract: Use example only fills the composer; artwork and pending listing are unchanged.
+test('Use example fills only the message composer',async({page})=>{
+  await page.setViewportSize({width:1242,height:668});const state=await setup(page);
+  await page.getByRole('button',{name:'Listing',exact:true}).click();
+  await page.getByRole('button',{name:'Back to Listing search',exact:true}).click();
+  await page.getByRole('tab',{name:'Paste text',exact:true}).click();
+  await page.getByRole('button',{name:'Use example',exact:true}).click();
+  await expect(page.getByRole('textbox',{name:'Property text',exact:true})).toBeFocused();
+  await expect(page.getByRole('textbox',{name:'Property text',exact:true})).toHaveValue(/Satellite Road, Ahmedabad/);
+  await expect(page.getByTestId('design-canvas').getByText('10 Oak Road',{exact:true})).toBeVisible();
+  expect(state.properties).toHaveLength(0);expect(state.writes).toHaveLength(0);
+  await page.screenshot({path:'.e2e-artifacts/listing-example-1242.png'});
+});
+
+test('Use example → Extract & review lists the price, readable labels and a separate agent phone',async({page})=>{
+  await page.setViewportSize({width:1242,height:668});const state=await setup(page);
+  await page.getByRole('button',{name:'Listing',exact:true}).click();
+  await page.getByRole('button',{name:'Back to Listing search',exact:true}).click();
+  await page.getByRole('tab',{name:'Paste text',exact:true}).click();
+  await page.getByRole('button',{name:'Use example',exact:true}).click();
+  await page.getByRole('button',{name:'Extract & review',exact:true}).click();
+  const review=page.locator('.v3-listing-review');
+  for(const row of ['Price: ₹80 Lakh','Currency: INR','Bedrooms: 3','Bathrooms: 2','Area: 1500','Area unit: sq ft','Address: Satellite Road, Ahmedabad','Headline: A bright place to call home','Highlights: Balcony, parking'])
+    await expect(review.getByRole('checkbox',{name:row,exact:false})).toBeChecked();
+  await expect(review.getByRole('checkbox',{name:'Contact suggestion · Agent name: Seller suggested contact',exact:false})).not.toBeChecked();
+  await expect(review.getByRole('checkbox',{name:'Contact suggestion · Agent phone: +91 90000 00000',exact:false})).not.toBeChecked();
+  await expect(review.getByText(/areaUnit|beds:/)).toHaveCount(0);
+  await page.screenshot({path:'.e2e-artifacts/listing-example-review-1242.png'});
+  await review.getByRole('button',{name:'Confirm selected facts',exact:true}).click();
+  await expect(page.getByText('₹80 Lakh').first()).toBeVisible();
+  expect(state.writes).toHaveLength(0);
 });

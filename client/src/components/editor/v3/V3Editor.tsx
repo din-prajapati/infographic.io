@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'wouter';
-import { ArrowLeft, Cloud, CloudUpload, Download, LayoutTemplate, MousePointer2, Redo2, Save, Type, Undo2, Upload, Palette, House, ContactRound, Scan, X, Shapes, MoreHorizontal, ChevronUp, ChevronDown } from 'lucide-react';
+import { ArrowLeft, Cloud, CloudUpload, Download, LayoutTemplate, MousePointer2, Redo2, Save, Type, Undo2, Upload, Palette, House, ContactRound, Scan, X, Shapes, MoreHorizontal, ChevronUp, ChevronDown, Undo } from 'lucide-react';
 import { useV3DesignSession } from '../../../hooks/useV3DesignSession';
 import { useCanvasStore } from '../../../hooks/useCanvasStore';
 import { downloadCanvas } from '../../../lib/canvasExport';
@@ -13,9 +13,11 @@ import { createReusableTemplate, createDesignFromTemplate, type ListingCanvasDoc
 import { useV3ListingWorkflow } from '../../../hooks/useV3ListingWorkflow';
 import { initializeV3NavigationGuard } from '../../../lib/v3NavigationGuard';
 import { V3ExportReview } from './V3ExportReview';
+import { V3TemplateFields } from './V3TemplateFields';
 import type { DesignMetadata } from '../../../lib/storage';
 import { queryClient } from '../../../lib/queryClient';
 import { loadTemplateById } from '../../../lib/storage';
+import { resolveUrlTemplate, type V3EditorParams } from '../../../lib/v3EditorUrl';
 import { AIChatBox } from '../../ai-chat/AIChatBox';
 import type { Template } from '../../ai-chat/types';
 import { V3Canvas } from './V3Canvas';
@@ -42,7 +44,7 @@ defaultPaintColors.push({type:'linear',angle:0,stops:[{color:'#123E62',opacity:1
 
 
 const rail=[['Templates',LayoutTemplate],['Tools',MousePointer2],['Elements',Shapes],['Text',Type],['Uploads',Upload],['Brand',Palette],['Listing',House],['Agent',ContactRound]] as const;
-export default function V3Editor({designId}:{designId?:string}) {
+export default function V3Editor({designId,templateId,canvasSize}:V3EditorParams) {
   const {user}=useAuth();
   const [,navigate]=useLocation();
   const listing=useV3ListingWorkflow();
@@ -52,6 +54,10 @@ export default function V3Editor({designId}:{designId?:string}) {
   const {resolvedTheme}=useTheme();
   const [panel,setPanel]=useState<V3Panel|'Tools'|null>(()=>typeof window!=='undefined'&&typeof window.matchMedia==='function'&&window.matchMedia('(max-width: 767px)').matches?null:'Templates');
   const [sheetExpanded,setSheetExpanded]=useState(false);
+  const [fieldsOpen,setFieldsOpen]=useState(false);
+  // Show links is editor-only and session-scoped: off on entry, kept across designs opened in this editor session.
+  const [showLinks,setShowLinks]=useState(false);
+  const fieldsOpener=useRef<HTMLElement|null>(null);
   const panelOpener=useRef<HTMLElement|null>(null);
   const sheetRef=useRef<HTMLElement>(null);
   const panelHadFocus=useRef(false);
@@ -104,7 +110,7 @@ export default function V3Editor({designId}:{designId?:string}) {
   const previewIntent=useRef(false);
   const ready=session.ready, save=session.save;
   useV3EditorShortcuts({enabled:ready&&!isPreviewMode});
-  useEffect(()=>{setExportStatus('idle');setIsPreviewMode(false);setLayersOpen(false);setSidebarTab('layers');beforeLayers.current=null;setEffectsId(null);setElementsReplaceId(null);beforeElements.current=null;closeColorPanel();clearV3StrokeMemory();clearV3Clipboard();},[designId]);
+  useEffect(()=>{setExportStatus('idle');setIsPreviewMode(false);setLayersOpen(false);setFieldsOpen(false);setSidebarTab('layers');beforeLayers.current=null;setEffectsId(null);setElementsReplaceId(null);beforeElements.current=null;closeColorPanel();clearV3StrokeMemory();clearV3Clipboard();},[designId]);
   useEffect(()=>{if(isPreviewMode){closeColorPanel();setEffectsId(null);clearElementPreview();}},[isPreviewMode]);
   useEffect(()=>{previewIntent.current=isPreviewMode;if(isPreviewMode)window.getSelection()?.removeAllRanges();if(wasPreview.current&&!isPreviewMode)document.querySelector<HTMLButtonElement>(window.matchMedia?.('(max-width: 1199px)').matches?'.v3-more':'[data-v3-preview-trigger]')?.focus();wasPreview.current=isPreviewMode;},[isPreviewMode]);
   useEffect(()=>{
@@ -148,15 +154,39 @@ export default function V3Editor({designId}:{designId?:string}) {
     }catch(error){if(account.current===owner)setWorkflowError(error instanceof Error?error.message:'Template save failed. Retry Save as Template.');}
     finally{if(account.current===owner)setTemplateSaving(false);}
   }
-  async function useTemplate(template:DesignMetadata){
+  async function useTemplate(template:DesignMetadata,options:{replace?:boolean;stillWanted?:()=>boolean}={}){
     const owner=user?.id;const now=new Date().toISOString();
     const canvasData=createDesignFromTemplate(template.canvasData as ListingCanvasDocument,listing.pending,listing.selectedListingId,listing.selectedListingVersion);
     const saved=await designsApi.save({id:'',name:`${template.name} — ${listing.pending.property.name||listing.pending.property.address||'New design'}`,type:'design',canvasData,thumbnail:'',category:template.category,tags:template.tags,createdAt:now,updatedAt:now});
     if(account.current!==owner)return;
     if(!/^c[a-z0-9]{24}$/.test(saved.id)||saved.id===session.id)throw new Error('The server did not acknowledge a separate design.');
-    initializeV3NavigationGuard().allowInternal(()=>navigate(`/editor?editor=v3&designId=${saved.id}`));
+    // A deep link that finished after the user left or opened something else must not pull them back.
+    if(options.stillWanted&&!options.stillWanted())return;
+    initializeV3NavigationGuard().allowInternal(()=>navigate(`/editor?editor=v3&designId=${saved.id}`,{replace:!!options.replace}));
     setWorkflowNotice('A separate Design was created from the template.');
   }
+  // URL start-up (lib/v3EditorUrl.ts): templateId starts a separate design exactly like the Templates panel; width/height
+  // pre-size a blank design. Runs once per URL value, only for a new unsaved session (designId always wins).
+  const urlStart=useRef<string|null>(null);
+  const editorMounted=useRef(true);
+  useEffect(()=>{editorMounted.current=true;return()=>{editorMounted.current=false;};},[]);
+  useEffect(()=>{
+    if(designId||!ready||session.id)return;
+    const key=templateId?`template:${templateId}`:canvasSize?`size:${canvasSize.width}x${canvasSize.height}`:null;
+    if(!key||urlStart.current===key)return;
+    urlStart.current=key;
+    if(!templateId&&canvasSize){if(!useCanvasStore.getState().elements.length){useCanvasStore.getState().loadCanvas({canvasWidth:canvasSize.width,canvasHeight:canvasSize.height});scheduleFitCanvasZoomToViewport();}return;}
+    const owner=user?.id;setWorkflowError('');setWorkflowNotice('Opening template…');
+    const stillWanted=()=>{const params=new URLSearchParams(window.location.search);return editorMounted.current&&urlStart.current===key&&account.current===owner&&params.get('templateId')===templateId&&!params.get('designId')&&!useCanvasStore.getState().elements.length;};
+    void (async()=>{
+      const resolved=await resolveUrlTemplate(templateId!,canvasTemplatesApi.getOne);
+      if(!stillWanted())return;
+      if(!resolved.ok){setWorkflowNotice('');setWorkflowError(resolved.error);return;}
+      try{await useTemplate(resolved.template,{replace:true,stillWanted});}
+      catch(error){if(stillWanted()){setWorkflowNotice('');setWorkflowError(error instanceof Error?error.message:'The template could not be opened. Try again.');}}
+    })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[designId,templateId,canvasSize?.width,canvasSize?.height,ready,session.id]);
   async function placeTemplate(template:Template){
     setAssistantError(null);
     try{
@@ -172,7 +202,15 @@ export default function V3Editor({designId}:{designId?:string}) {
   const sidebarTabs=<V3SidebarTabs active={sidebarTab} onChange={setSidebarTab}/>;
   const status=!ready?(session.status==='loading'||session.status==='idle'?'Opening design':'Unable to open design'):session.status==='saving'?'Saving…':session.status==='saved'&&!session.hasUnsavedChanges?'Saved':'Unsaved';
   const addText=()=>{const el=createTextElement();addElement(el);selectElement(el.id);useCanvasStore.getState().setActiveTool('select');setPanel('Text');};
-  const openTemplateFields=()=>{rememberPanelOpener();leaveLayers();closeColorPanel();setImageEditing(false);setEffectsId(null);setPanel('Template Fields');};
+  // Template Fields is a right-hand inspector beside the Listing panel (approved editor.html). On phones it replaces the bottom sheet.
+  const openTemplateFields=()=>{fieldsOpener.current=document.activeElement instanceof HTMLElement&&!document.activeElement.closest('[role=menu]')?document.activeElement:document.querySelector<HTMLElement>('.v3-more');if(window.matchMedia?.('(max-width: 767px)').matches){leaveLayers();closeColorPanel();setImageEditing(false);setEffectsId(null);setPanel(null);}setFieldsOpen(true);};
+  const closeTemplateFields=()=>{setFieldsOpen(false);const opener=fieldsOpener.current;fieldsOpener.current=null;if(opener?.isConnected&&opener.getClientRects().length)opener.focus();};
+  const toggleTemplateFields=()=>fieldsOpen?closeTemplateFields():openTemplateFields();
+  const appliedProperty=listing.applied.property;
+  const appliedName=appliedProperty.name||appliedProperty.address;
+  const canvasSource=appliedName?`Canvas: ${appliedName} · ${appliedProperty.transaction==='rent'?'For rent':'For sale'}`:`Canvas: ${listingArtwork?'no listing applied yet':'no listing linked'}`;
+  const applyListing=()=>{const result=listing.applyToDesign();setWorkflowError(result.ok?'':result.error);};
+  const undoListingApply=()=>{const result=listing.undoLastApply();setWorkflowError(result.ok?'':result.error);};
   return <div className="v3-editor" data-theme={resolvedTheme} data-panel-open={panelVisible} data-sheet-expanded={sheetExpanded} onFocusCapture={event=>{panelHadFocus.current=!!sheetRef.current?.contains(event.target);if(event.target instanceof HTMLElement&&!panelHadFocus.current)panelOpener.current=event.target;}}>
     <h1 className="sr-only">V3 Editor</h1>
     <header className="v3-header" hidden={isPreviewMode}><Link href="/my-designs" className="v3-logo"><img src="/logo-icon-option6-light.png" alt="" width="28" height="28"/><span>Buildographic</span></Link>
@@ -181,15 +219,15 @@ export default function V3Editor({designId}:{designId?:string}) {
       <div className="v3-cloud-wrap"><button className="v3-icon" aria-label="Save status" aria-expanded={cloud} onClick={()=>setCloud(!cloud)}>{status==='Saved'?<Cloud/>:<CloudUpload/>}</button><span className="sr-only" role="status">{status}</span>
         {cloud&&<section className="v3-popover v3-cloud" aria-label="Save status details"><h2>{status==='Saved'?'Changes saved':status==='Saving…'?'Saving changes…':'Changes not saved'}</h2><p>{session.lastSavedAt?`Last saved: ${new Date(session.lastSavedAt).toLocaleTimeString()}`:designId?'Loaded from saved design.':'Save this design to start automatic saving.'}</p>{session.error?.operation==='save'&&<button onClick={()=>void save()}>Retry save</button>}</section>}
       </div>
-      <div className="v3-header-actions"><button className="v3-icon v3-desktop-action" aria-label="Undo" disabled={!ready||!history.past.length} onClick={undo}><Undo2/></button><button className="v3-icon v3-desktop-action" aria-label="Redo" disabled={!ready||!history.future.length} onClick={redo}><Redo2/></button><button className="v3-desktop-action" data-v3-preview-trigger disabled={!ready} onMouseDown={event=>{previewIntent.current=true;event.preventDefault();}} onClick={()=>setIsPreviewMode(true)}><Scan/>Preview</button><button className="v3-save" aria-label={listingArtwork?'Save as Design':'Save'} disabled={!ready||session.status==='saving'} onClick={()=>void save()}><Save/><span>{listingArtwork?'Save as Design':'Save'}</span></button><button className="v3-export v3-desktop-action" disabled={!ready||exportStatus==='exporting'} onClick={requestExport}><Download/>Export</button>
+      <div className="v3-header-actions"><button className="v3-icon v3-desktop-action" aria-label="Undo" disabled={!ready||!history.past.length} onClick={undo}><Undo2/></button><button className="v3-icon v3-desktop-action" aria-label="Redo" disabled={!ready||!history.future.length} onClick={redo}><Redo2/></button><button className="v3-desktop-action" data-v3-preview-trigger disabled={!ready} onMouseDown={event=>{previewIntent.current=true;event.preventDefault();}} onClick={()=>setIsPreviewMode(true)}><Scan/>Preview</button>{listingArtwork&&<button className="v3-desktop-action v3-header-text" aria-label="Undo last apply" disabled={!ready||!listing.lastApplyAvailable} onClick={undoListingApply}><Undo/>Undo apply</button>}<button className="v3-desktop-action v3-header-text" disabled={!ready||templateSaving} onClick={()=>void saveAsTemplate()}>{templateSaving?'Saving template…':'Save as Template'}</button><button className="v3-save" aria-label={listingArtwork?'Save as Design':'Save'} disabled={!ready||session.status==='saving'} onClick={()=>void save()}><Save/><span>{listingArtwork?'Save as Design':'Save'}</span></button><button className="v3-export v3-desktop-action" disabled={!ready||exportStatus==='exporting'} onClick={requestExport}><Download/>{listingArtwork?'Review & export':'Export'}</button>
         <DropdownMenu><DropdownMenuTrigger asChild><button className="v3-more" aria-label="More actions"><MoreHorizontal/></button></DropdownMenuTrigger><DropdownMenuContent align="end" className="v3-responsive-menu" aria-label="Editor actions">
           <DropdownMenuItem disabled={!ready} onSelect={()=>setIsPreviewMode(true)}><Scan/>Preview</DropdownMenuItem>
-          <DropdownMenuItem disabled={!ready||exportStatus==='exporting'} onSelect={requestExport}><Download/>{exportStatus==='exporting'?'Exporting�':'Export'}</DropdownMenuItem>
+          <DropdownMenuItem disabled={!ready||exportStatus==='exporting'} onSelect={requestExport}><Download/>{exportStatus==='exporting'?'Exporting…':'Export'}</DropdownMenuItem>
           <DropdownMenuItem disabled={!ready||!history.past.length} onSelect={undo}><Undo2/>Undo</DropdownMenuItem><DropdownMenuItem disabled={!ready||!history.future.length} onSelect={redo}><Redo2/>Redo</DropdownMenuItem><DropdownMenuSeparator/>
           <DropdownMenuItem disabled={!ready} onSelect={openTemplateFields}>Template Fields</DropdownMenuItem>
-          <DropdownMenuItem disabled={!ready||!listing.pendingChanges} onSelect={()=>{const result=listing.applyToDesign();setWorkflowError(result.ok?'':result.error);}}>Apply listing updates</DropdownMenuItem>
-          <DropdownMenuItem disabled={!ready||!listing.lastApplyAvailable} onSelect={()=>{const result=listing.undoLastApply();setWorkflowError(result.ok?'':result.error);}}>Undo last apply</DropdownMenuItem>
-          <DropdownMenuItem disabled={!ready||templateSaving} onSelect={()=>void saveAsTemplate()}>{templateSaving?'Saving template�':'Save as Template'}</DropdownMenuItem>
+          <DropdownMenuItem disabled={!ready||!listing.pendingChanges} onSelect={applyListing}>Apply to design</DropdownMenuItem>
+          <DropdownMenuItem disabled={!ready||!listing.lastApplyAvailable} onSelect={undoListingApply}>Undo last apply</DropdownMenuItem>
+          <DropdownMenuItem disabled={!ready||templateSaving} onSelect={()=>void saveAsTemplate()}>{templateSaving?'Saving template…':'Save as Template'}</DropdownMenuItem>
         </DropdownMenuContent></DropdownMenu>
       </div>
     </header>
@@ -222,10 +260,11 @@ export default function V3Editor({designId}:{designId?:string}) {
           onDraft={previewColorPaint} onCommit={commitColorPaint} onCancel={clearColorDraft} onClose={closeColorPanel} onEditBrand={()=>{clearColorDraft();beforeBrandColor.current={panel,imageEditing};setEditingBrandFromColor(true);setImageEditing(false);setPanel('Brand');}}/>}
         </div>
       </aside>
-      <div className="v3-stage">{ready&&!isPreviewMode&&<div className="v3-listing-bar" aria-label="Listing actions"><span>{listing.pendingChanges?`${listing.pendingChanges} pending updates · saved with Design, not applied`:`Applied: ${listing.applied.property.address||'No listing yet'}`}</span><button type="button" onClick={()=>{leaveLayers();closeColorPanel();setImageEditing(false);setEffectsId(null);setPanel('Template Fields');}}>Template Fields</button><button type="button" onClick={()=>{const result=listing.applyToDesign();setWorkflowError(result.ok?'':result.error);}} disabled={!listing.pendingChanges}>Apply listing updates</button><button type="button" onClick={()=>{const result=listing.undoLastApply();setWorkflowError(result.ok?'':result.error);}} disabled={!listing.lastApplyAvailable}>Undo last apply</button><button type="button" disabled={templateSaving} onClick={()=>void saveAsTemplate()}>{templateSaving?'Saving template…':'Save as Template'}</button></div>}{ready?<V3Canvas isPreviewMode={isPreviewMode} onAssistant={()=>setAssistant(!assistant)} onLayerPresentation={layersOpen?onLayerPresentation:undefined} onOpenLayers={()=>{rememberPanelOpener();if(sidebarVisible&&sidebarTab==='layers')closeLayers();else if(sidebarVisible)setSidebarTab('layers');else openLayers();}} isLayersSidebarOpen={sidebarVisible&&sidebarTab==='layers'} onEditImage={()=>{rememberPanelOpener();leaveLayers();setImageEditing(true);}} onEditEffects={()=>{rememberPanelOpener();leaveLayers();if(selectedShape){closeColorPanel();setImageEditing(false);setEffectsId(selectedShape.id);}}} onBrowseElements={()=>{const state=useCanvasStore.getState(),target=state.elements.find(el=>el.id===state.selectedElementIds[0]);if(target?.type==='shape')openElements('shapes',target.id);else if(target?.type==='image'&&target.icon)openElements('icons',target.id);}}/>:<main aria-label="Opening workspace" className="v3-opening"><p>{session.error?'Retry opening to load your design.':'Loading your workspace…'}</p></main>}
+      <div className="v3-stage">{ready&&!isPreviewMode&&<div className="v3-listing-bar" aria-label="Listing actions"><span className="v3-canvas-source" title={canvasSource}>{canvasSource}</span>{listing.pendingChanges>0&&<span className="v3-pending-source" role="status">{listing.pendingChanges} pending {listing.pendingChanges===1?'update':'updates'} · Apply first</span>}</div>}{ready?<V3Canvas isPreviewMode={isPreviewMode} onTemplateFields={toggleTemplateFields} isTemplateFieldsOpen={fieldsOpen} showLinks={showLinks} onToggleLinks={()=>setShowLinks(value=>!value)} onLinkField={openTemplateFields} onAssistant={()=>setAssistant(!assistant)} onLayerPresentation={layersOpen?onLayerPresentation:undefined} onOpenLayers={()=>{rememberPanelOpener();if(sidebarVisible&&sidebarTab==='layers')closeLayers();else if(sidebarVisible)setSidebarTab('layers');else openLayers();}} isLayersSidebarOpen={sidebarVisible&&sidebarTab==='layers'} onEditImage={()=>{rememberPanelOpener();leaveLayers();setImageEditing(true);}} onEditEffects={()=>{rememberPanelOpener();leaveLayers();if(selectedShape){closeColorPanel();setImageEditing(false);setEffectsId(selectedShape.id);}}} onBrowseElements={()=>{const state=useCanvasStore.getState(),target=state.elements.find(el=>el.id===state.selectedElementIds[0]);if(target?.type==='shape')openElements('shapes',target.id);else if(target?.type==='image'&&target.icon)openElements('icons',target.id);}}/>:<main aria-label="Opening workspace" className="v3-opening"><p>{session.error?'Retry opening to load your design.':'Loading your workspace…'}</p></main>}
         {!layersOpen&&!isPreviewMode&&!colorActive&&!effectsActive&&ready&&panel==='Tools'&&<V3Tools onClose={()=>setPanel(null)} onText={addText} onImage={()=>setPanel('Uploads')} onElements={()=>openElements('shapes')}/>}
         <div hidden={isPreviewMode||!ready||!assistant} className="v3-ai-panel">{assistant&&ready&&<><button aria-label="Close Assistant" className="v3-icon" onClick={()=>setAssistant(false)}><X/></button>{assistantError&&<p role="alert">{assistantError}</p>}<AIChatBox isExpanded={assistant&&!isPreviewMode} onClose={()=>setAssistant(false)} onTemplateLoad={template=>void placeTemplate(template)}/></>}</div>
       </div>
+      {ready&&!isPreviewMode&&fieldsOpen&&<aside className="v3-inspector" aria-label="Template Fields panel"><V3TemplateFields onClose={closeTemplateFields}/></aside>}
     </div>
   </div>;
 }

@@ -66,3 +66,16 @@ Changes subsections are filled during implementation; optional files may be expl
 - Final scoped Gate2/3:19 responsive +10 existing Layers browser tests PASS (29 total), log .agent-logs/responsive-verified-browser.log. Phone375 light/dark and tablet768 screenshots reviewed; header56px and canvas retained above tools. Existing desktop coordinates, shape edits, text/autosave and theme checks also pass in broader shell run. Coupled T1–T13 layout/fit/tests form one atomic review change; formal merge/complete remains pending.
 
 - Existing Listing regression PASS:5/5 save/apply/undo, reusable-template isolation, reviewed PNG and mobiletheme cases; .agent-logs/responsive-listing-regression.log. Final scoped browser total34/34. Historical three shell fixtures remain unchanged and separately recorded.
+
+## Mockup-fidelity restoration — 2026-11-13 (scope reconciliation)
+
+> Source: user direction in `docs/agile/sessions/2026-11-13-v3-claude-opus-handoff.md`; mismatch evidence in `docs/research/2026-11-13-V3-MOCKUP-FIDELITY-MATRIX.md`. Restores the approved `Mockups/listing-workflow-v1/editor.html` composition without adding feature scope. AC text is unchanged; Out of Scope (AI Assistant, connectors, photo ranking, route default) still applies.
+
+### T3 — Restore approved UI/UX composition (matrix rows: 4, 16)
+
+- [ ] Restore approved visual/interaction composition; preserve persistence, pending/applied state and responsive behaviour; reconcile UI-structure tests without weakening behaviour assertions.
+- `client/src/components/editor/v3/V3Canvas.tsx`
+- `client/src/components/editor/v3/v3-responsive.css`
+- `e2e/v3-responsive.spec.ts`
+
+**Effort:** S

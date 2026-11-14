@@ -8,6 +8,8 @@ import { useCanvasStore } from '../../../../hooks/useCanvasStore';
 import { createTextElement, createImageElement, createShapeElement } from '../../../../lib/canvasUtils';
 import { createLineElement } from '../../../../lib/lineGeometry';
 import { useV3ElementPreview } from '../../../../hooks/useV3ElementPreview';
+const media = vi.hoisted(() => ({ upload: vi.fn() }));
+vi.mock('../../../../lib/v3MediaUpload', () => ({ uploadV3Image: media.upload }));
 
 let node: HTMLDivElement;
 let root: Root;
@@ -255,5 +257,59 @@ describe('Nov2 compact toolbar presentation contract', () => {
     expect(useCanvasStore.getState().elements[0].opacity).toBe(0.6);
     expect(useCanvasStore.getState().history.past).toHaveLength(1);
     vi.unstubAllGlobals();
+  });
+});
+
+describe('Link field in the element toolbar', () => {
+  // Contract: Link field is a labelled toolbar action for exactly one eligible text/image element and opens Template Fields via the callback.
+  it.each([['text',()=>createTextElement()],['image',()=>createImageElement('photo')]] as const)('shows Link field for one %s element',async(_type,create)=>{
+    vi.stubGlobal('ResizeObserver',class{observe(){}unobserve(){}disconnect(){}});
+    const element=create();useCanvasStore.setState({elements:[element],selectedElementIds:[element.id]});
+    const onLinkField=vi.fn();act(()=>root.render(<V3ElementToolbar element={element} onEditImage={()=>{}} onLinkField={onLinkField}/>));
+    const button=node.querySelector('[aria-label="Link field"]') as HTMLButtonElement;
+    expect(button.textContent).toBe('Link field');
+    await act(async()=>Simulate.click(button));
+    expect(onLinkField).toHaveBeenCalledTimes(1);
+    expect(useCanvasStore.getState().selectedElementIds).toEqual([element.id]);
+  });
+  // Contract: unsupported, locked and multiple selections do not offer Link field.
+  it('hides Link field for shapes, locked elements and multiple selection',()=>{
+    vi.stubGlobal('ResizeObserver',class{observe(){}unobserve(){}disconnect(){}});
+    const shape=createShapeElement('rectangle'),text=createTextElement(),locked={...createTextElement(),locked:true};
+    useCanvasStore.setState({elements:[shape],selectedElementIds:[shape.id]});
+    act(()=>root.render(<V3ElementToolbar element={shape} onEditImage={()=>{}} onLinkField={()=>{}}/>));
+    expect(node.querySelector('[aria-label="Link field"]')).toBeNull();
+    useCanvasStore.setState({elements:[locked],selectedElementIds:[locked.id]});
+    act(()=>root.render(<V3ElementToolbar element={locked} onEditImage={()=>{}} onLinkField={()=>{}}/>));
+    expect(node.querySelector('[aria-label="Link field"]')).toBeNull();
+    useCanvasStore.setState({elements:[text,shape],selectedElementIds:[text.id,shape.id]});
+    act(()=>root.render(<V3ElementToolbar element={text} onEditImage={()=>{}} onLinkField={()=>{}}/>));
+    expect(node.querySelector('[aria-label="Link field"]')).toBeNull();
+  });
+});
+const chooseFile = async (input: HTMLInputElement, file: File) => {
+  Object.defineProperty(input, 'files', { value: [file], configurable: true });
+  await act(async () => { input.dispatchEvent(new Event('change', { bubbles: true })); await new Promise(resolve => setTimeout(resolve, 10)); });
+};
+describe('Replace image stores the R2 URL', () => {
+  // Contract: Replace uploads through uploadV3Image and the element keeps only the returned https URL (no data URL).
+  it('replaces the image with the uploaded R2 URL', async () => {
+    vi.stubGlobal('ResizeObserver', class { observe() {} unobserve() {} disconnect() {} });
+    media.upload.mockReset().mockResolvedValue({ src: 'https://media.example.test/design-media/org/a.png', name: 'a.png', width: 40, height: 40 });
+    const element = createImageElement('https://media.example.test/old.png'); useCanvasStore.setState({ elements: [element], selectedElementIds: [element.id] });
+    act(() => root.render(<V3ElementToolbar element={element} onEditImage={() => {}} />));
+    await chooseFile(node.querySelector('[aria-label="Replace image file"]') as HTMLInputElement, new File(['x'], 'a.png', { type: 'image/png' }));
+    expect(media.upload).toHaveBeenCalledTimes(1);
+    expect(useCanvasStore.getState().elements[0]).toMatchObject({ src: 'https://media.example.test/design-media/org/a.png', name: 'a.png' });
+  });
+  // Contract: a failed upload shows a retryable error and leaves the artwork unchanged.
+  it('keeps the image and shows retry when the upload fails', async () => {
+    vi.stubGlobal('ResizeObserver', class { observe() {} unobserve() {} disconnect() {} });
+    media.upload.mockReset().mockRejectedValue(new Error('Image storage is unavailable. Your design is unchanged; retry the upload.'));
+    const element = createImageElement('https://media.example.test/old.png'); useCanvasStore.setState({ elements: [element], selectedElementIds: [element.id] });
+    act(() => root.render(<V3ElementToolbar element={element} onEditImage={() => {}} />));
+    await chooseFile(node.querySelector('[aria-label="Replace image file"]') as HTMLInputElement, new File(['x'], 'a.png', { type: 'image/png' }));
+    expect(node.querySelector('[role="alert"]')?.textContent).toContain('retry the upload');
+    expect((useCanvasStore.getState().elements[0] as { src?: string }).src).toBe('https://media.example.test/old.png');
   });
 });

@@ -148,7 +148,7 @@ test('phone listing apply and undo stay available through More',async({page})=>{
   await page.getByRole('spinbutton',{name:'Asking price',exact:true}).fill('450000');
   await page.getByRole('button',{name:'Save property',exact:true}).click();
   await page.getByRole('button',{name:'More actions',exact:true}).click();
-  await page.getByRole('menuitem',{name:'Apply listing updates',exact:true}).click();
+  await page.getByRole('menuitem',{name:'Apply to design',exact:true}).click();
   await expect(page.getByTestId('design-canvas').getByText('US$450,000',{exact:true})).toHaveCount(2);
   await page.getByRole('button',{name:'More actions',exact:true}).click();
   await page.getByRole('menuitem',{name:'Undo last apply',exact:true}).click();

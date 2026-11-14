@@ -85,3 +85,25 @@ Gate 2: for UI stories verify actual V3 at 375px and 1440px in both themes, keyb
 ## Local integration verification — 2026-11-13
 Implementation integrated on codex/v3-arrange-opus. Full Gate1, focused/new browser and real database evidence are recorded in docs/research/2026-11-13-V3-LISTING-IMPLEMENTATION.md. Story closure/merge is not claimed; broad candidate visual/accessibility regression remains pre-merge work. Root coordinates commits; no failing-test-only commits.
 - `e2e/v3-listing.config.ts`, `docs/research/2026-11-13-V3-LISTING-IMPLEMENTATION.md`, `docs/research/evidence/v3-listing-2026-11-13/live-result.json` — bounded verification configuration and actual delivery evidence.
+
+## Mockup-fidelity restoration — 2026-11-13 (scope reconciliation)
+
+> Source: user direction in `docs/agile/sessions/2026-11-13-v3-claude-opus-handoff.md`; mismatch evidence in `docs/research/2026-11-13-V3-MOCKUP-FIDELITY-MATRIX.md`. Restores the approved `Mockups/listing-workflow-v1/editor.html` composition without adding feature scope. AC text is unchanged; Out of Scope (AI Assistant, connectors, photo ranking, route default) still applies.
+
+### T3 — Restore approved UI/UX composition (matrix rows: 15)
+
+- [ ] Restore approved visual/interaction composition; preserve persistence, pending/applied state and responsive behaviour; reconcile UI-structure tests without weakening behaviour assertions.
+- `client/src/components/editor/v3/V3ExportReview.tsx`
+- `client/src/components/editor/v3/v3-export-review.css`
+- `client/src/components/editor/v3/__tests__/V3ExportReview.spec.tsx`
+
+**Effort:** S
+
+### T4 — Browser contracts for the refined listing UX (2026-11-13, listing UX refinement brief)
+
+> Source: user brief "V3 Listing UX and Template Field Controls" (2026-11-13). Checkpoint: `refs/checkpoints/v3-listing-ux-refine-2026-11-13` + `.agent-logs/checkpoints/before-listing-ux-refine.patch`. No schema/API change; recommended display lengths are guidance, authoritative limits stay in `shared/listingWorkflow.ts`. Out of Scope unchanged (no live MLS/RERA, AI generation, poster extraction, P2 appearance controls).
+
+- [x] Implement, test-first where behavioural; verify in browser at 1242×668 and both themes. Evidence 2026-11-13: `npm run check` exit 0; backend 840/840; client 808 passed + 1 existing skip; `npm run build` exit 0; Playwright listing 8/8 and V3 regression 124/124; Gate 2 screenshots in `.e2e-artifacts/mockup-fidelity/t4/` (1242×668 light/dark, 375 light/dark, 1440); Gate 3 N/A (no global token file change); Gate 4 N/A (no backend change). Details: `docs/research/2026-11-13-V3-MOCKUP-FIDELITY-MATRIX.md` § T4.
+- `e2e/v3-listing-workflow.spec.ts`
+
+**Effort:** S

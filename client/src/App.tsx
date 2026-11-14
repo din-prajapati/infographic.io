@@ -31,6 +31,7 @@ import { VersionBadge } from "./components/VersionBadge";
 import { FormatPickerDialog } from "./components/pages/FormatPickerDialog";
 import { useCanvasStore } from "./hooks/useCanvasStore";
 import { initializeV3NavigationGuard } from './lib/v3NavigationGuard';
+import { parseV3EditorParams } from './lib/v3EditorUrl';
 
 initializeV3NavigationGuard();
 
@@ -65,7 +66,7 @@ function EditorInner() {
   };
 
   if (params.get('editor') === 'v3') {
-    return <Suspense fallback={<div role="status" className="p-6">Opening design…</div>}><V3Editor designId={designId} /></Suspense>;
+    return <Suspense fallback={<div role="status" className="p-6">Opening design…</div>}><V3Editor {...parseV3EditorParams(search)} /></Suspense>;
   }
 
   return (

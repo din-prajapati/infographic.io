@@ -17,6 +17,8 @@ const fixtures = vi.hoisted(() => ({
   create: vi.fn(),
   update: vi.fn(),
   saveProfile: vi.fn(),
+  pendingChanges: 0,
+  applyToDesign: vi.fn(() => ({ ok: true })),
 }));
 vi.mock("../../../../hooks/useV3ListingWorkflow", () => ({
   useV3ListingWorkflow: () => ({
@@ -26,7 +28,10 @@ vi.mock("../../../../hooks/useV3ListingWorkflow", () => ({
     setPending: fixtures.setPending,
     selectListing: fixtures.selectListing,
     setSelectedListingIdentity: vi.fn(),
-    pendingChanges: false,
+    pendingChanges: fixtures.pendingChanges,
+    overrides: {},
+    skipped: [],
+    applyToDesign: fixtures.applyToDesign,
   }),
 }));
 vi.mock("../../../../lib/listingApi", () => ({
@@ -41,6 +46,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   notifyManager.setNotifyFunction((callback) => act(callback));
   fixtures.pending = createEmptyListing();
+  fixtures.pendingChanges = 0;
   fixtures.list.mockResolvedValue([]);
   fixtures.getProfile.mockResolvedValue({
     version: 0,
@@ -87,6 +93,16 @@ async function click(text: string) {
     await new Promise((resolve) => setTimeout(resolve, 15));
   });
 }
+async function clickResult(address: string) {
+  const b = [...host.querySelectorAll("button.v3-lp-result")].find(
+    (b) => b.querySelector("strong")?.textContent?.trim() === address,
+  ) as HTMLButtonElement | undefined;
+  if (!b) throw Error(`Missing result ${address}`);
+  await act(async () => {
+    b.click();
+    await new Promise((resolve) => setTimeout(resolve, 15));
+  });
+}
 async function change(label: string, value: string) {
   const input = host.querySelector(`[aria-label="${label}"]`) as
     HTMLInputElement | HTMLTextAreaElement;
@@ -113,6 +129,153 @@ describe("Listing panel contracts", () => {
     await click("Listing ID");
     expect(host.textContent).toContain("Country providers are not connected");
   });
+  // Contract: the approved welcome (editor.html) opens on Listing ID with the restored copy hierarchy, and Find listing searches only the real saved catalogue.
+  it("opens the approved welcome on Listing ID and searches the saved catalogue", async () => {
+    const record = createEmptyListing();
+    record.property.address = "9 Harbour Street";
+    fixtures.list.mockResolvedValue([{ id: "cuid-9", version: 1, record }]);
+    await render();
+    expect(host.querySelector(".v3-lp-head h2")?.textContent).toBe("Load a listing");
+    expect(host.querySelector(".v3-lp-eyebrow")?.textContent).toBe("Start with the facts");
+    expect(host.querySelector('[role="tab"][aria-selected="true"]')?.textContent).toBe("Listing ID");
+    expect(fixtures.list).not.toHaveBeenCalled();
+    await change("Search by address or listing ID", "harbour");
+    await act(async () => {
+      host.querySelector("form")!.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+    });
+    await vi.waitFor(() => expect(fixtures.list).toHaveBeenLastCalledWith("harbour"));
+    await vi.waitFor(() => expect(host.textContent).toContain("1 property"));
+    await clickResult("9 Harbour Street");
+    expect(fixtures.selectListing).toHaveBeenCalledWith(record, "cuid-9", 1);
+  });
+  // Contract: the overview restores Media first, the unified Property card, Agent/Brand sections and a pinned Apply footer wired to the real Apply.
+  it("renders the approved overview with a pinned Apply footer", async () => {
+    const record = createEmptyListing();
+    Object.assign(record.property, { address: "4 Lake Road", beds: "3", baths: "2", area: "1850", amount: "12500000", features: ["Garden", "Pool", "Gym", "Lift"] });
+    record.agent.name = "Arjun Shah";
+    record.brand.name = "Aster Realty";
+    fixtures.pending = record;
+    fixtures.pendingChanges = 2;
+    await render();
+    const children = [...host.querySelectorAll(".v3-lp-overview > *")];
+    const mediaIndex = children.findIndex((node) => node.classList.contains("v3-lp-section-row"));
+    const propertyIndex = children.findIndex((node) => node.classList.contains("v3-property-card"));
+    expect(mediaIndex).toBe(0);
+    expect(propertyIndex).toBeGreaterThan(mediaIndex);
+    const card = children[propertyIndex];
+    expect(card.querySelector(".v3-lp-card-label")?.textContent).toBe("Property information");
+    expect([...card.querySelectorAll(".v3-lp-specs small")].map((n) => n.textContent)).toEqual(["Bedrooms", "Bathrooms", "Floor area"]);
+    expect([...card.querySelectorAll(".v3-lp-chip")].map((n) => n.textContent)).toEqual(["Garden", "Pool", "Gym", "+1 more"]);
+    expect([...host.querySelectorAll(".v3-lp-section-label")].map((n) => n.textContent)).toEqual(["Agent", "Brand assets"]);
+    const footer = host.querySelector(".v3-lp-apply")!;
+    expect(footer.parentElement?.classList.contains("v3-listing-panel")).toBe(true);
+    expect(footer.textContent).toContain("2 pending changes");
+    await click("Apply to design");
+    expect(fixtures.applyToDesign).toHaveBeenCalledTimes(1);
+  });
+  // Contract: Use example fills only the composer with fictional sample text, focuses it, and never extracts, saves or changes pending state.
+  it("inserts sample text into the composer only", async () => {
+    await render();
+    await click("Paste text");
+    await click("Use example");
+    await new Promise((resolve) => setTimeout(resolve, 30));
+    const composer = host.querySelector('[aria-label="Property text"]') as HTMLTextAreaElement;
+    expect(composer.value.startsWith("3 BHK, 2 bathrooms, 80 Lakh, 1500 sq ft")).toBe(true);
+    expect(document.activeElement).toBe(composer);
+    expect(host.textContent).toContain("Sample text");
+    expect(host.querySelectorAll("blockquote")).toHaveLength(0);
+    expect(fixtures.setPending).toHaveBeenCalledTimes(0);
+    expect(fixtures.create).toHaveBeenCalledTimes(0);
+  });
+  // Contract: different composer text is only replaced after an explicit choice, and replacing invalidates the old review.
+  it("protects existing composer text before inserting the example", async () => {
+    await render();
+    await click("Paste text");
+    await change("Property text", "Address: Mine Street");
+    await click("Extract & review");
+    expect(host.querySelector("blockquote")?.textContent).toBe("Address: Mine Street");
+    await click("Use example");
+    expect((host.querySelector('[aria-label="Property text"]') as HTMLTextAreaElement).value).toBe("Address: Mine Street");
+    await click("Keep my text");
+    expect((host.querySelector('[aria-label="Property text"]') as HTMLTextAreaElement).value).toBe("Address: Mine Street");
+    await click("Use example");
+    await click("Replace with sample");
+    expect((host.querySelector('[aria-label="Property text"]') as HTMLTextAreaElement).value).toContain("Satellite Road, Ahmedabad");
+    expect(host.querySelectorAll("blockquote")).toHaveLength(0);
+    expect(fixtures.setPending).toHaveBeenCalledTimes(0);
+  });
+  // Contract: the three source tabs expose complete tab semantics with roving focus and arrow/Home/End navigation.
+  it("supports keyboard tab navigation with associated panel", async () => {
+    await render();
+    const tabs = () => [...host.querySelectorAll('[role="tab"]')] as HTMLButtonElement[];
+    expect(tabs().map((tab) => tab.textContent)).toEqual(["Listing ID", "Paste text", "Saved properties"]);
+    const panel = host.querySelector('[role="tabpanel"]')!;
+    expect(tabs().every((tab) => tab.getAttribute("aria-controls") === panel.id)).toBe(true);
+    expect(panel.getAttribute("aria-labelledby")).toBe(tabs()[0].id);
+    expect(tabs().map((tab) => tab.tabIndex)).toEqual([0, -1, -1]);
+    const key = async (target: HTMLElement, value: string) =>
+      act(async () => { target.dispatchEvent(new KeyboardEvent("keydown", { key: value, bubbles: true })); });
+    tabs()[0].focus();
+    await key(tabs()[0], "ArrowRight");
+    expect(tabs()[1].getAttribute("aria-selected")).toBe("true");
+    expect(document.activeElement).toBe(tabs()[1]);
+    expect(host.querySelector('[role="tabpanel"]')!.getAttribute("aria-labelledby")).toBe(tabs()[1].id);
+    await key(tabs()[1], "End");
+    expect(tabs()[2].getAttribute("aria-selected")).toBe("true");
+    await key(tabs()[2], "ArrowRight");
+    expect(tabs()[0].getAttribute("aria-selected")).toBe("true");
+    await key(tabs()[0], "ArrowLeft");
+    expect(tabs()[2].getAttribute("aria-selected")).toBe("true");
+  });
+  // Contract: bounded fields show live recommended-length counters; longer existing values stay complete and are saved untruncated.
+  it("shows counters and preserves longer existing values", async () => {
+    const long = "A".repeat(130);
+    const record = createEmptyListing();
+    Object.assign(record.property, { address: "1 Long Road", headline: long });
+    fixtures.pending = record;
+    fixtures.create.mockResolvedValue({ id: "saved1", version: 1, record });
+    await render();
+    await act(async () => (host.querySelector(".v3-property-card") as HTMLButtonElement).click());
+    const headline = host.querySelector('[aria-label="Marketing headline"]') as HTMLTextAreaElement;
+    expect(headline.tagName).toBe("TEXTAREA");
+    expect(headline.value).toBe(long);
+    expect(headline.maxLength).toBe(-1);
+    const counter = host.querySelector("#property-headline-count")!;
+    expect(counter.textContent).toContain("130/105");
+    expect(counter.textContent).toContain("saved in full");
+    expect(headline.getAttribute("aria-describedby")).toContain("property-headline-count");
+    expect(host.querySelector("#property-address-count")?.textContent).toBe("11/85");
+    await change("Address", "1 Long Road, Ahmedabad");
+    expect(host.querySelector("#property-address-count")?.textContent).toBe("22/85");
+    expect([...host.querySelectorAll(".v3-lp-form-section")].map((n) => n.textContent)).toEqual([
+      "Listing identity", "Pricing", "Location", "Specifications", "Description and highlights",
+    ]);
+    await click("Save property");
+    expect(fixtures.create.mock.calls[0][0].property.headline).toBe(long);
+  });
+  // Contract: highlights accept natural comma typing without the separator being stripped mid-entry.
+  it("keeps comma-separated highlights while typing", async () => {
+    const record = createEmptyListing();
+    record.property.address = "2 Comma Lane";
+    fixtures.pending = record;
+    await render();
+    await act(async () => (host.querySelector(".v3-property-card") as HTMLButtonElement).click());
+    await change("Features", "Garden, ");
+    expect((host.querySelector('[aria-label="Features"]') as HTMLTextAreaElement).value).toBe("Garden, ");
+    await change("Features", "Garden, Pool");
+    expect(host.textContent).toContain("2 highlights");
+  });
+  // Contract: Agent fields keep their counters (empty values read 0/limit); registration is a visible field (mockup, 2026-11-14).
+  it("renders agent contact counters and a visible registration field", async () => {
+    await render("Agent");
+    await vi.waitFor(() => expect(host.querySelector('[aria-label="Full name"]')).toBeTruthy());
+    expect(host.querySelector("#agent-name-count")?.textContent).toBe("0/40");
+    expect(host.querySelector("#agent-phone-count")?.textContent).toBe("0/28");
+    expect(host.querySelector("#agent-agency-count")?.textContent).toBe("0/45");
+    expect(host.querySelector("#agent-license-count")?.textContent).toBe("0/75");
+    await change("Full name", "Morgan");
+    expect(host.querySelector("#agent-name-count")?.textContent).toBe("6/40");
+  });
   // Contract: successful catalogue loading exposes the exact result count and preserves the authoritative selected record.
   it("selects a saved property into pending state", async () => {
     const record = createEmptyListing();
@@ -121,7 +284,7 @@ describe("Listing panel contracts", () => {
     await render();
     await click("Saved properties");
     await vi.waitFor(() => expect(host.textContent).toContain("1 property"));
-    await click("123 River Road");
+    await clickResult("123 River Road");
     expect(fixtures.selectListing).toHaveBeenCalledWith(record, "listing-1", 2);
   });
   // Contract: a catalogue rejection leaves a visible retry action rather than successful empty data.
@@ -140,10 +303,23 @@ describe("Listing panel contracts", () => {
   it("provides editable identity fields with explicit actions", async () => {
     await render("Agent");
     await vi.waitFor(() =>
-      expect(host.querySelector('input[aria-label="Agent name"]')).toBeTruthy(),
+      expect(host.querySelector('input[aria-label="Full name"]')).toBeTruthy(),
     );
-    expect(host.textContent).toContain("Save Agent");
+    expect(host.textContent).toContain("Save changes");
     expect(host.textContent).toContain("Cancel");
+  });
+  // Contract (approved mockup "Edit agent"): one column in the order Full name, Agency, Phone, Email, Registration / licence;
+  // licence visible (not collapsed); no saved-agent dropdown (one profile per user); Save changes above Cancel.
+  it("lays out the agent form like the approved mockup", async () => {
+    await render("Agent");
+    await vi.waitFor(() => expect(host.querySelector('input[aria-label="Full name"]')).toBeTruthy());
+    const order = [...host.querySelectorAll<HTMLInputElement>("input[id^=agent-]")].map((input) => input.getAttribute("aria-label"));
+    expect(order).toEqual(["Full name", "Agency", "Phone", "Email", "Registration / licence"]);
+    expect(host.querySelector("#agent-license")?.closest("details")).toBeNull();
+    expect(host.querySelector("select")).toBeNull();
+    const actions = [...host.querySelectorAll(".v3-lp-actions button")].map((button) => button.textContent);
+    expect(actions).toEqual(["Save changes", "Cancel"]);
+    expect(host.querySelector('input[aria-label="Upload agent photo"]')).toBeTruthy();
   });
   // Contract: case-insensitive catalogue search matches property name and ID; clear restores the exact full result count.
   it("filters saved properties and clears no-results search", async () => {
@@ -174,6 +350,7 @@ describe("Listing panel contracts", () => {
   // Contract: contact suggestions start unselected; confirmed property facts retain inspectable source evidence.
   it("imports only explicitly selected reviewed facts", async () => {
     await render();
+    await click("Paste text");
     await change(
       "Property text",
       "Address: 55 Garden Avenue\nBeds: 3\nAgent: Someone Else",
@@ -195,6 +372,7 @@ describe("Listing panel contracts", () => {
   // Contract: mixed-property paste cannot be confirmed into pending state.
   it("blocks mixed-property import", async () => {
     await render();
+    await click("Paste text");
     await change("Property text", "Address: River Road\nAddress: Lake Lane");
     await click("Extract & review");
     expect(host.textContent).toContain("Multiple properties detected");
@@ -207,6 +385,7 @@ describe("Listing panel contracts", () => {
   // Contract: a fact edited while review is open cannot be silently overwritten by an older extraction.
   it("requires re-extraction after a reviewed fact changes", async () => {
     await render();
+    await click("Paste text");
     await change("Property text", "Address: River Road");
     await click("Extract & review");
     (
@@ -271,10 +450,10 @@ describe("Listing panel contracts", () => {
     });
     await render("Agent");
     await vi.waitFor(() =>
-      expect(host.querySelector('[aria-label="Agent name"]')).toBeTruthy(),
+      expect(host.querySelector('[aria-label="Full name"]')).toBeTruthy(),
     );
-    await change("Agent name", "New Agent");
-    await click("Save Agent");
+    await change("Full name", "New Agent");
+    await click("Save changes");
     expect(fixtures.saveProfile).toHaveBeenCalledWith(
       { agent: { ...record.agent, name: "New Agent" }, brand: record.brand },
       4,
@@ -332,6 +511,7 @@ describe("Listing panel contracts", () => {
   // Contract: editing source text invalidates its old extraction so only a freshly reviewed source can be confirmed.
   it('invalidates extracted facts when the pasted source changes', async () => {
     await render();
+    await click("Paste text");
     await change('Property text', 'Address: First property');
     await click('Extract & review');
     expect(host.querySelector('blockquote')?.textContent).toBe('Address: First property');
