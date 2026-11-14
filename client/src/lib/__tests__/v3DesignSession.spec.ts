@@ -174,7 +174,7 @@ describe('US-EDIT-031 session contracts', () => {
     const f = setup();
     const pendingLoad = deferred<Awaited<ReturnType<typeof f.load>>>();
     const pendingSave = deferred<{ id: string }>();
-    let work: Promise<void>;
+    let work: Promise<void | boolean>;
     if (operation === 'load') { f.load.mockReturnValueOnce(pendingLoad.promise); work = f.session.open(ID); }
     else { await f.session.open(); f.edit('New'); f.save.mockReturnValueOnce(pendingSave.promise); work = f.session.save(); }
     f.session.dispose();
@@ -284,7 +284,7 @@ describe('US-EDIT-031 StrictMode session lifecycle', () => {
     hookBoundary.thumbnail.mockReturnValueOnce(thumbnail.promise);
     const view = await probe(ID);
     try {
-      let saving: Promise<void> | undefined;
+      let saving: Promise<boolean> | undefined;
       await act(async () => { saving = view.current().save(); });
       const previous = hookBoundary.capture();
       const next = { ...previous, elements: [{ id: 'new-text', type: 'text', content: 'Newer revision' }] };

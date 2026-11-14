@@ -1,5 +1,6 @@
 export interface V3Draft<T> {
   title: string;
+  metadata?: Record<string, unknown>;
   canvasData: T;
   updatedAt: number;
 }
@@ -22,6 +23,14 @@ export function createV3DraftStore<T>(storage: Pick<Storage, 'getItem' | 'setIte
       const record = value as Record<string, unknown>;
       const draft = record.draft as Partial<V3Draft<T>> | undefined;
       const canvas = draft?.canvasData as Record<string, unknown> | undefined;
+      const metadata = draft?.metadata;
+      if (metadata !== undefined && (!metadata || typeof metadata !== 'object' || Array.isArray(metadata) ||
+        Object.keys(metadata).some(key => !['category', 'tags'].includes(key)) ||
+        (metadata.category !== undefined && typeof metadata.category !== 'string') ||
+        (metadata.tags !== undefined && (!Array.isArray(metadata.tags) || metadata.tags.length > 5 ||
+          metadata.tags.some(tag => typeof tag !== 'string' || !tag.trim() || tag.length > 20))))) {
+        throw new Error('Invalid local recovery metadata');
+      }
       if (record.version !== 1 || record.userId !== userId || record.designId !== (id ?? null) ||
         !draft || typeof draft.title !== 'string' || typeof draft.updatedAt !== 'number' || !Number.isFinite(draft.updatedAt) ||
         !canvas || !Array.isArray(canvas.elements) ||

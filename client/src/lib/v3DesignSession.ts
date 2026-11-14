@@ -2,6 +2,7 @@ import type { V3Draft, V3DraftStore } from './v3Autosave';
 
 export interface V3SessionState {
   id?: string;
+  metadata?: Record<string, unknown>;
   title: string;
   status: 'idle' | 'loading' | 'saved' | 'unsaved' | 'saving' | 'error';
   error: null | { operation: 'load' | 'save'; message: string };
@@ -38,9 +39,9 @@ export class V3SaveSupersededError extends Error {
 }
 
 // Viewport state and capture timestamps must never create a document revision.
-function fingerprint(title: string, data: unknown): string {
+function fingerprint(title: string, data: unknown, metadata?: Record<string, unknown>): string {
   const canvas = data as Record<string, unknown>;
-  return JSON.stringify([title, canvas.elements, canvas.canvasWidth, canvas.canvasHeight, canvas.backgroundColor, canvas.backgroundPaint, canvas.listing, canvas.v3Listing]);
+  return JSON.stringify([title, canvas.elements, canvas.canvasWidth, canvas.canvasHeight, canvas.backgroundColor, canvas.backgroundPaint, canvas.listing, canvas.v3Listing, metadata?.category, metadata?.tags]);
 }
 
 export function createV3DesignSession<T>(operations: SessionOperations<T>) {
@@ -58,6 +59,8 @@ export function createV3DesignSession<T>(operations: SessionOperations<T>) {
   let timer: ReturnType<typeof setTimeout> | undefined;
   let lastEditedAt = 0;
   let autosavePaused = false;
+  let autosaveHolds = 0;
+  let copying = false;
   let recovered: V3Draft<T> | null = null;
   let hydrating = false;
   let retrySuperseded = false;
@@ -78,12 +81,12 @@ export function createV3DesignSession<T>(operations: SessionOperations<T>) {
   function preserveDraft() {
     if (!operations.drafts || recovered || !state.ready) return false;
     return withDraft(() => operations.drafts!.write(state.id, {
-      title: state.title, canvasData: operations.capture(), updatedAt: Date.now(),
+      title: state.title, canvasData: operations.capture(), metadata: metadata ? { ...(metadata.category !== undefined ? { category: metadata.category } : {}), ...(metadata.tags !== undefined ? { tags: structuredClone(metadata.tags) } : {}) } : undefined, updatedAt: Date.now(),
     }));
   }
   function schedule() {
     cancelTimer();
-    if (disposed || !state.ready || (!state.id && !retrySuperseded) || saving || autosavePaused || recovered ||
+    if (disposed || !state.ready || (!state.id && !retrySuperseded) || saving || copying || autosavePaused || autosaveHolds > 0 || recovered ||
       !state.hasUnsavedChanges || operations.autosaveDelay === undefined) return;
     timer = setTimeout(() => { timer = undefined; void save(false); },
       Math.max(0, lastEditedAt + operations.autosaveDelay - Date.now()));
@@ -92,7 +95,7 @@ export function createV3DesignSession<T>(operations: SessionOperations<T>) {
     if (!operations.drafts) return;
     withDraft(() => {
       const draft = operations.drafts!.read(state.id);
-      if (draft && fingerprint(draft.title, draft.canvasData) !== lastDocument) {
+      if (draft && fingerprint(draft.title, draft.canvasData, { ...metadata, ...draft.metadata }) !== lastDocument) {
         recovered = draft;
         update({ recoveredDraft: { updatedAt: draft.updatedAt } });
       } else if (draft) operations.drafts!.remove(state.id);
@@ -111,13 +114,13 @@ export function createV3DesignSession<T>(operations: SessionOperations<T>) {
     lastDocument = '';
     revision = 0;
     savedRevision = -1;
-    update({ id, title: 'Untitled design', status: 'loading', ready: false, error: null,
+    update({ id, metadata: undefined, title: 'Untitled design', status: 'loading', ready: false, error: null,
       lastSavedAt: null, hasUnsavedChanges: false, recoveredDraft: null, draftError: null });
     try {
       if (id && !canonicalId.test(id)) throw new Error('Unsupported design ID');
       if (!id) {
         operations.reset();
-        lastDocument = fingerprint(state.title, operations.capture());
+        lastDocument = fingerprint(state.title, operations.capture(), metadata);
         update({ status: 'unsaved', ready: true, hasUnsavedChanges: true });
         offerDraft();
         return;
@@ -128,9 +131,9 @@ export function createV3DesignSession<T>(operations: SessionOperations<T>) {
       if (operations.restore(document.canvasData) === false) throw new Error('Unable to restore design');
       metadata = document.metadata;
       // Restore hydrates listing fields synchronously, so capture the actual restored document.
-      lastDocument = fingerprint(document.title, operations.capture());
+      lastDocument = fingerprint(document.title, operations.capture(), metadata);
       savedRevision = revision;
-      update({ id, title: document.title, status: 'saved', ready: true, error: null });
+      update({ id, metadata, title: document.title, status: 'saved', ready: true, error: null });
       offerDraft();
     } catch (error) {
       if (current(token)) fail('load', error);
@@ -139,7 +142,7 @@ export function createV3DesignSession<T>(operations: SessionOperations<T>) {
 
   function markDirty() {
     if (!state.ready || disposed || hydrating) return;
-    const document = fingerprint(state.title, operations.capture());
+    const document = fingerprint(state.title, operations.capture(), metadata);
     if (document !== lastDocument) {
       revision++;
       lastDocument = document;
@@ -153,8 +156,8 @@ export function createV3DesignSession<T>(operations: SessionOperations<T>) {
     schedule();
   }
 
-  async function save(manual = true): Promise<void> {
-    if (!state.ready || saving || disposed || recovered) return;
+  async function save(manual = true): Promise<boolean> {
+    if (!state.ready || saving || copying || disposed || recovered) return false;
     cancelTimer();
     const token = generation;
     const id = state.id;
@@ -167,7 +170,7 @@ export function createV3DesignSession<T>(operations: SessionOperations<T>) {
     update({ status: 'saving', error: null });
     try {
       const acknowledgement = await operations.save({ id, title, canvasData, metadata });
-      if (!current(token)) return;
+      if (!current(token)) return false;
       if (!canonicalId.test(acknowledgement.id) || (id && acknowledgement.id !== id)) {
         throw new Error('The server did not acknowledge this design ID');
       }
@@ -185,6 +188,7 @@ export function createV3DesignSession<T>(operations: SessionOperations<T>) {
         withDraft(() => operations.drafts?.remove());
       }
       if (!id) operations.onId?.(acknowledgement.id);
+      return true;
     } catch (error) {
       if (current(token)) {
         if (error instanceof V3SaveSupersededError) {
@@ -204,6 +208,7 @@ export function createV3DesignSession<T>(operations: SessionOperations<T>) {
       activeSaveGeneration = null;
       schedule();
     }
+    return false;
   }
 
   return {
@@ -216,6 +221,46 @@ export function createV3DesignSession<T>(operations: SessionOperations<T>) {
       markDirty();
     },
     save: () => save(true),
+    setMetadata(patch: { tags?: string[]; category?: string }) {
+      if (!state.ready || disposed) return;
+      metadata = { ...metadata, ...structuredClone(patch) };
+      update({ metadata });
+      markDirty();
+    },
+    pauseAutosave() {
+      autosaveHolds++;
+      cancelTimer();
+      let released = false;
+      return () => { if (released) return; released = true; autosaveHolds--; schedule(); };
+    },
+    async saveCopy(options: { title: string; tags: string[]; alsoSaveOriginal: boolean }): Promise<{ id: string; opened: boolean }> {
+      if (!state.ready || disposed || recovered || saving || copying) throw new Error('Wait for the current save to finish.');
+      if (!options.title.trim()) throw new Error('Enter a design name.');
+      cancelTimer();
+      const token = generation, sourceId = state.id, sourceRevision = revision;
+      if (options.alsoSaveOriginal && sourceId && state.hasUnsavedChanges) {
+        if (!await save(true)) throw new Error(state.error?.message ?? 'The original could not be saved.');
+        if (!current(token) || sourceRevision !== revision) throw new Error('The source changed. Review your copy choices and try again.');
+      }
+      copying = true;
+      const copyMetadata = { ...structuredClone(metadata), tags: [...options.tags] };
+      const canvasData = operations.capture();
+      try {
+        const result = await operations.save({ id: undefined, title: options.title.trim(), canvasData, metadata: copyMetadata });
+        if (!canonicalId.test(result.id) || result.id === sourceId) throw new Error('The server did not acknowledge a separate design.');
+        if (!current(token) || sourceRevision !== revision) return { id: result.id, opened: false };
+        // Navigation is safe only for the exact source revision the user agreed to copy.
+        const oldId = state.id;
+        metadata = copyMetadata;
+        revision++;
+        savedRevision = revision;
+        lastDocument = fingerprint(options.title.trim(), operations.capture(), metadata);
+        update({ id: result.id, title: options.title.trim(), metadata, status: 'saved', error: null, hasUnsavedChanges: false, lastSavedAt: Date.now() });
+        withDraft(() => operations.drafts?.remove(oldId));
+        operations.onId?.(result.id);
+        return { id: result.id, opened: true };
+      } finally { copying = false; schedule(); }
+    },
     restoreDraft() {
       if (!recovered || !state.ready || saving) return;
       const draft = recovered;
@@ -225,8 +270,9 @@ export function createV3DesignSession<T>(operations: SessionOperations<T>) {
         recovered = null;
         autosavePaused = true;
         revision++;
-        lastDocument = fingerprint(draft.title, operations.capture());
-        update({ title: draft.title, status: 'unsaved', error: null, hasUnsavedChanges: true, recoveredDraft: null });
+        metadata = draft.metadata ? { ...metadata, ...draft.metadata } : metadata;
+        lastDocument = fingerprint(draft.title, operations.capture(), metadata);
+        update({ title: draft.title, metadata, status: 'unsaved', error: null, hasUnsavedChanges: true, recoveredDraft: null });
         preserveDraft();
       } catch {
         update({ draftError: 'Unable to restore local draft. Discard it or reload the saved design.' });

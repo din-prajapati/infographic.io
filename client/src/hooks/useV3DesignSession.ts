@@ -96,8 +96,8 @@ export function useV3DesignSession(designId?: string, userId?: string) {
       if (!thumbnail) throw new Error('Thumbnail generation failed');
       const now = new Date().toISOString();
       const design = {
-        ...(metadata ?? { type: 'design', category: 'real-estate', tags: [], createdAt: now }),
-        id: id ?? '', name: title, canvasData, thumbnail, updatedAt: now,
+        ...(id ? metadata : { type: 'design', category: 'real-estate', tags: [], createdAt: now, ...metadata }),
+        id: id ?? '', type: 'design', name: title, canvasData, thumbnail, updatedAt: now,
       } as DesignMetadata;
       return designsApi.save(design);
     },
@@ -169,6 +169,9 @@ export function useV3DesignSession(designId?: string, userId?: string) {
     ...current,
     setTitle: (title: string) => controller.current?.setTitle(title),
     save: () => controller.current?.save(),
+    setMetadata: (patch: { tags?: string[]; category?: string }) => controller.current?.setMetadata(patch),
+    pauseAutosave: () => controller.current?.pauseAutosave() ?? (() => {}),
+    saveCopy: (options: { title: string; tags: string[]; alsoSaveOriginal: boolean }) => controller.current?.saveCopy(options),
     retryLoad: () => controller.current?.retryLoad(),
     restoreDraft: () => controller.current?.restoreDraft(),
     discardDraft: () => controller.current?.discardDraft(),

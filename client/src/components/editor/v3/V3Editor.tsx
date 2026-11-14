@@ -12,6 +12,7 @@ import { canvasTemplatesApi, designsApi } from '../../../lib/api';
 import { createReusableTemplate, createDesignFromTemplate, type ListingCanvasDocument } from '../../../lib/v3TemplateWorkflow';
 import { useV3ListingWorkflow, useV3ListingStore } from '../../../hooks/useV3ListingWorkflow';
 import { initializeV3NavigationGuard } from '../../../lib/v3NavigationGuard';
+import { V3SaveDialog, type V3SaveAction, type V3SaveValues } from './V3SaveDialog';
 import { V3ExportReview } from './V3ExportReview';
 import { V3TemplateFields } from './V3TemplateFields';
 import type { DesignMetadata } from '../../../lib/storage';
@@ -35,7 +36,7 @@ import {clearElementPreview} from '../../../hooks/useV3ElementPreview';
 import {clearV3StrokeMemory} from './V3ElementToolbar';
 import './v3-editor.css';
 import './v3-responsive.css';
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from '../../ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuLabel } from '../../ui/dropdown-menu';
 import {V3ColorPanel} from './V3ColorPanel';
 import {useV3ColorPanel,openColorPanel,closeColorPanel,getTargetPaint,getDesignColors,previewColorPaint,commitColorPaint,clearColorDraft,COLOR_TARGET_LABELS} from '../../../hooks/useV3ColorPanel';
 import type {Paint} from '../../../lib/canvasTypes';
@@ -101,14 +102,23 @@ export default function V3Editor({designId,templateId,canvasSize}:V3EditorParams
   const [recoveryNotice,setRecoveryNotice]=useState(false);
   const [exportStatus,setExportStatus]=useState<'idle'|'exporting'|'exported'|'error'>('idle');
   const [reviewOpen,setReviewOpen]=useState(false);
-  const [templateSaving,setTemplateSaving]=useState(false);
+  const [saveAction,setSaveAction]=useState<V3SaveAction|null>(null);
+  const saveIntent=useRef(0);
+  const resumeAutosave=useRef<(()=>void)|null>(null);
+  const [createdCopy,setCreatedCopy]=useState<string|null>(null);
+  const [templateCreated,setTemplateCreated]=useState(false);
+  const closeSaveDialog=()=>{saveIntent.current++;setSaveAction(null);resumeAutosave.current?.();resumeAutosave.current=null;};
+  const openSaveDialog=(action:V3SaveAction)=>{if(!session.ready||session.status==='saving'||session.recoveredDraft)return;saveIntent.current++;resumeAutosave.current?.();resumeAutosave.current=session.pauseAutosave();setSaveAction(action);};
+  useEffect(()=>{closeSaveDialog();setCreatedCopy(null);setTemplateCreated(false);},[designId,user?.id]);
+  useEffect(()=>()=>{resumeAutosave.current?.();},[]);
   const [workflowNotice,setWorkflowNotice]=useState('');
   const [workflowError,setWorkflowError]=useState('');
   const [isPreviewMode,setIsPreviewMode]=useState(false);
   useEffect(()=>{if(!layersOpen||isPreviewMode)setLayerPresentation(null);},[layersOpen,isPreviewMode]);
   const wasPreview=useRef(false);
   const previewIntent=useRef(false);
-  const ready=session.ready, save=session.save;
+  const ready=session.ready;
+  const save=()=>{if(!session.ready||session.status==='saving'||saveAction)return;if(!session.id){openSaveDialog('design');return;}return session.save();};
   useV3EditorShortcuts({enabled:ready&&!isPreviewMode});
   useEffect(()=>{setExportStatus('idle');setIsPreviewMode(false);setLayersOpen(false);setFieldsOpen(false);setSidebarTab('layers');beforeLayers.current=null;setEffectsId(null);setElementsReplaceId(null);beforeElements.current=null;closeColorPanel();clearV3StrokeMemory();clearV3Clipboard();},[designId]);
   useEffect(()=>{if(isPreviewMode){closeColorPanel();setEffectsId(null);clearElementPreview();}},[isPreviewMode]);
@@ -140,19 +150,31 @@ export default function V3Editor({designId,templateId,canvasSize}:V3EditorParams
   async function exportDesign(){if(!ready||exportStatus==='exporting')return;setExportStatus('exporting');try{setExportStatus(await downloadCanvas(session.title||'design','png')?'exported':'error');}catch{setExportStatus('error');}}
   const listingArtwork=!!(listing.pending.property.address||listing.pending.property.headline||listing.selectedListingId||Object.keys(listing.bindings).length);
   const requestExport=()=>{if(listingArtwork)setReviewOpen(true);else void exportDesign();};
-  async function saveAsTemplate(){
-    if(templateSaving||!ready)return;
-    const owner=user?.id;setTemplateSaving(true);setWorkflowError('');setWorkflowNotice('');
-    try{
+  async function submitSave(values:V3SaveValues){
+    const owner=user?.id,sourceUrl=window.location.href,intent=saveIntent.current;
+    const sameIntent=()=>editorMounted.current&&account.current===owner&&saveIntent.current===intent;
+    const stillHere=()=>sameIntent()&&window.location.href===sourceUrl;
+    if(!saveAction||!ready)throw new Error('This Design is no longer available.');
+    if(saveAction==='design'){
+      session.setTitle(values.name);session.setMetadata({tags:values.tags});
+      const saved=await session.save();
+      if(!saved)throw new Error('The Design could not be saved. Your edits stay. Retry save.');
+      if(sameIntent())closeSaveDialog();
+    }else if(saveAction==='copy'){
+      const result=await session.saveCopy({title:values.name,tags:values.tags,alsoSaveOriginal:values.alsoSaveOriginal});
+      if(!result)throw new Error('The Design is no longer available.');
+      if(!sameIntent()||(!result.opened&&!stillHere()))return;
+      if(!result.opened&&stillHere()){setCreatedCopy(result.id);setWorkflowNotice('A separate Design was created. Your newer edits remain open.');}
+      closeSaveDialog();
+    }else{
       const now=new Date().toISOString();
       const canvasData=createReusableTemplate(captureCanvasData());
-      const savedTemplate=await canvasTemplatesApi.save({id:'',name:session.title||'Reusable template',type:'template',canvasData,thumbnail:'',category:'real-estate',tags:[],createdAt:now,updatedAt:now});
-      if(!/^c[a-z0-9]{24}$/.test(savedTemplate.id))throw new Error('The server did not acknowledge the template. Retry Save as Template.');
-      if(account.current!==owner)return;
-      await queryClient.invalidateQueries({queryKey:['v3-templates',String(owner),'personal']});
-      setWorkflowNotice('Reusable template saved. Linked listing facts and photos are left empty.');
-    }catch(error){if(account.current===owner)setWorkflowError(error instanceof Error?error.message:'Template save failed. Retry Save as Template.');}
-    finally{if(account.current===owner)setTemplateSaving(false);}
+      const saved=await canvasTemplatesApi.save({id:'',name:values.name,type:'template',canvasData,thumbnail:'',category:values.category,tags:values.tags,createdAt:now,updatedAt:now});
+      if(!/^c[a-z0-9]{24}$/.test(saved.id)||saved.id===session.id)throw new Error('The server did not acknowledge the template. Retry creation.');
+      if(!stillHere())return;
+      closeSaveDialog();setTemplateCreated(true);setWorkflowNotice('Template created.');
+      void queryClient.invalidateQueries({queryKey:['v3-templates',String(owner),'personal']});
+    }
   }
   async function useTemplate(template:DesignMetadata,options:{replace?:boolean;stillWanted?:()=>boolean}={}){
     if(options.stillWanted&&!options.stillWanted())return false;
@@ -225,13 +247,12 @@ export default function V3Editor({designId,templateId,canvasSize}:V3EditorParams
       <div className="v3-cloud-wrap"><button className="v3-icon" aria-label="Save status" aria-expanded={cloud} onClick={()=>setCloud(!cloud)}>{status==='Saved'?<Cloud/>:<CloudUpload/>}</button><span className="sr-only" role="status">{status}</span>
         {cloud&&<section className="v3-popover v3-cloud" aria-label="Save status details"><h2>{status==='Saved'?'Changes saved':status==='Saving…'?'Saving changes…':'Changes not saved'}</h2><p>{session.lastSavedAt?`Last saved: ${new Date(session.lastSavedAt).toLocaleTimeString()}`:designId?'Loaded from saved design.':'Save this design to start automatic saving.'}</p>{session.error?.operation==='save'&&<button onClick={()=>void save()}>Retry save</button>}</section>}
       </div>
-      <div className="v3-header-actions"><button className="v3-icon v3-desktop-action" aria-label="Undo" disabled={!ready||!history.past.length} onClick={undo}><Undo2/></button><button className="v3-icon v3-desktop-action" aria-label="Redo" disabled={!ready||!history.future.length} onClick={redo}><Redo2/></button><button className="v3-desktop-action v3-header-text" disabled={!ready||templateSaving} onClick={()=>void saveAsTemplate()}>{templateSaving?'Saving template…':'Save as Template'}</button><button className="v3-save" aria-label={listingArtwork?'Save as Design':'Save'} disabled={!ready||session.status==='saving'} onClick={()=>void save()}><Save/><span>{listingArtwork?'Save as Design':'Save'}</span></button><button className="v3-export v3-desktop-action" disabled={!ready||exportStatus==='exporting'} onClick={requestExport}><Download/>{listingArtwork?'Review & export':'Export'}</button><button className="v3-icon v3-desktop-action v3-preview-action" aria-label="Preview" title="Preview (P)" data-v3-preview-trigger disabled={!ready} onMouseDown={event=>{previewIntent.current=true;event.preventDefault();}} onClick={()=>setIsPreviewMode(true)}><Maximize2/></button>
+      <div className="v3-header-actions"><button className="v3-icon v3-desktop-action" aria-label="Undo" disabled={!ready||!history.past.length} onClick={undo}><Undo2/></button><button className="v3-icon v3-desktop-action" aria-label="Redo" disabled={!ready||!history.future.length} onClick={redo}><Redo2/></button><div className="v3-save-split"><button className="v3-save" aria-label="Save" disabled={!ready||session.status==='saving'||!!saveAction||!!session.recoveredDraft} onClick={()=>void save()}><Save/><span>Save</span></button><DropdownMenu><DropdownMenuTrigger asChild><button className="v3-save-options" aria-label="Save options" disabled={!ready||session.status==='saving'||!!saveAction||!!session.recoveredDraft}><ChevronDown/></button></DropdownMenuTrigger><DropdownMenuContent align="end" className="v3-save-menu" data-theme={resolvedTheme} aria-label="Save options"><DropdownMenuLabel>Design</DropdownMenuLabel><DropdownMenuItem onSelect={()=>openSaveDialog('copy')}>Save a copy...</DropdownMenuItem><DropdownMenuItem onSelect={()=>openSaveDialog('template')}>Create reusable template...</DropdownMenuItem></DropdownMenuContent></DropdownMenu></div><button className="v3-export v3-desktop-action" disabled={!ready||exportStatus==='exporting'} onClick={requestExport}><Download/>{listingArtwork?'Review & export':'Export'}</button><button className="v3-icon v3-desktop-action v3-preview-action" aria-label="Preview" title="Preview (P)" data-v3-preview-trigger disabled={!ready} onMouseDown={event=>{previewIntent.current=true;event.preventDefault();}} onClick={()=>setIsPreviewMode(true)}><Maximize2/></button>
         <DropdownMenu><DropdownMenuTrigger asChild><button className="v3-more" aria-label="More actions"><MoreHorizontal/></button></DropdownMenuTrigger><DropdownMenuContent align="end" className="v3-responsive-menu" aria-label="Editor actions">
           <DropdownMenuItem disabled={!ready} onSelect={()=>setIsPreviewMode(true)}><Scan/>Preview</DropdownMenuItem>
           <DropdownMenuItem disabled={!ready||exportStatus==='exporting'} onSelect={requestExport}><Download/>{exportStatus==='exporting'?'Exporting…':'Export'}</DropdownMenuItem>
           <DropdownMenuItem disabled={!ready||!history.past.length} onSelect={undo}><Undo2/>Undo</DropdownMenuItem><DropdownMenuItem disabled={!ready||!history.future.length} onSelect={redo}><Redo2/>Redo</DropdownMenuItem><DropdownMenuSeparator/>
           <DropdownMenuItem disabled={!ready||!listing.pendingChanges} onSelect={applyListing}>Apply to design</DropdownMenuItem>
-          <DropdownMenuItem disabled={!ready||templateSaving} onSelect={()=>void saveAsTemplate()}>{templateSaving?'Saving template…':'Save as Template'}</DropdownMenuItem>
         </DropdownMenuContent></DropdownMenu>
       </div>
     </header>
@@ -244,8 +265,9 @@ export default function V3Editor({designId,templateId,canvasSize}:V3EditorParams
       {exportStatus==='error'&&<div role="alert" className="v3-alert">Export failed. Your design is unchanged.<button onClick={()=>void exportDesign()}>Retry export</button></div>}
       {exportStatus==='exported'&&<p role="status" className="v3-alert">PNG exported</p>}
       {workflowError&&<p role="alert" className="v3-alert">{workflowError}</p>}
-      {workflowNotice&&<p role="status" className="v3-alert">{workflowNotice}</p>}
+      {workflowNotice&&<p role="status" className="v3-alert">{workflowNotice}{templateCreated&&<Link href="/templates">View in Templates</Link>}{createdCopy&&<Link href={`/editor?editor=v3&designId=${createdCopy}`}>Open created Design</Link>}</p>}
     </div>
+    {saveAction&&ready&&<V3SaveDialog key={`${saveAction}:${session.id??'new'}`} action={saveAction} initialName={saveAction==='copy'?`${session.title||'Untitled design'} - Copy`:session.title||'Untitled design'} initialTags={Array.isArray(session.metadata?.tags)?session.metadata.tags.filter((value):value is string=>typeof value==='string'):[]} initialCategory={typeof session.metadata?.category==='string'?session.metadata.category:'real-estate'} hasSourceId={!!session.id} sourceHasChanges={session.hasUnsavedChanges} pendingUpdates={listing.pendingChanges} onClose={closeSaveDialog} onSubmit={submitSave}/>}
     {reviewOpen&&ready&&<V3ExportReview key={designId??'new'} title={session.title} onClose={()=>setReviewOpen(false)}/>}
     <div className="v3-body">
       <nav aria-label="Editor sections" className="v3-rail" hidden={isPreviewMode}>{rail.map(([name,Icon])=><button key={name} disabled={!ready} aria-pressed={!layersOpen&&!colorActive&&!imageEditing&&!effectsActive&&(panel===name||(name==='Details'&&(panel==='Property'||panel==='Agent')))} onClick={()=>{rememberPanelOpener();leaveLayers();if(name==='Elements'){panel==='Elements'&&!colorActive?closeElements():openElements('shapes');return;}closeColorPanel();closeEffects();setElementsReplaceId(null);beforeElements.current=null;setEditingBrandFromColor(false);setImageEditing(false);setPanel(panel===name||(name==='Details'&&(panel==='Property'||panel==='Agent'))?null:name);}}><Icon/>{name}</button>)}</nav>

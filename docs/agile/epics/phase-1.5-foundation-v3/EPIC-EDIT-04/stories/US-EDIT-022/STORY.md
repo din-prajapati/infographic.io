@@ -27,6 +27,11 @@
 - [x] **AC3 [regression]:** When two Designs are created from one Template with different Listings, saving/reopening and editing one retains the other artwork, property association and customizations; a new Design with a missing linked photo shows Add image instead of the prior property photograph; existing V3 image editing/crop and canvas tools remain available.
 - [x] **AC4 [theme]:** When integrated Listing, Agent, Brand, Template Fields and save controls are used at 375px and 1440px in both themes, panel actions remain reachable and navigation preserves the expected overview; the opt-in V3 route remains opt-in and Assistant behavior is not changed.
 
+- [x] **AC5 [happy-path]:** In Design mode one Save split button updates an existing Design without a modal; first save of a draft opens Save design. Save options offers Save a copy and Create reusable template with action-specific V3 dialogs, names prefilled, optional editable Tags on Design creation/copy (five tags, 20 characters each), and optional Category and tags for Templates. The action determines the destination; no type toggle. Template Customize remains an independent Design session.
+- [x] **AC6 [error-path]:** Creation dialogs retain values and show inline retry on failure, reject empty names and duplicate submissions, and close/report success only after the intended canonical record is acknowledged. Template creation sanitizes linked data and remains in the source Design. Copy creation uses the current artwork and pending/applied Listing snapshots, inherits metadata, and opens only the acknowledged new ID. Cancellation creates no record and retains current canvas edits.
+- [x] **AC7 [regression]:** Copy dialogs explicitly disclose unsaved source edits and offer an unchecked Also save these changes to the original choice; source-save failure stops creation. Autosave cannot accidentally save the source while that choice is pending. New edits/account or route changes invalidate earlier consent and prevent late responses from discarding edits or switching documents. Current Save, Ctrl/Cmd+S, autosave, retry and recovery retain canonical identity and metadata; tag edits survive reload/recovery, regular saves preserve existing category/tags, missing/invalid source loads never become implicit creation.
+- [x] **AC8 [theme]:** Save dialogs and split menu inherit the V3 light/dark theme, are keyboard accessible with focus restoration and inline status/errors, and fit desktop/tablet/phone and short viewports with scrollable bodies and reachable actions. Existing opt-in routing, Listing Apply/Undo, export, toolbar actions and legacy SaveDialog behavior remain intact. Explicit Template authoring/update/copy modes are deferred as in the approved proposal.
+
 ---
 
 ## Out of Scope
@@ -101,7 +106,10 @@ Rules:
 | TC-EDIT-022-02 | Unit | P0 | error-path: When template/design save is pending duplicate saves are … | ✅ | Unit/browser/API evidence mapped in 2026-11-14-V3-RELEASE-HARDENING.md; UI/device acceptance separate |
 | TC-EDIT-022-03 | Unit | P1 | regression: When two Designs are created from one Template with diffe… | ✅ | Unit/browser/API evidence mapped in 2026-11-14-V3-RELEASE-HARDENING.md; UI/device acceptance separate |
 | TC-EDIT-022-04 | Unit | P1 | theme: When integrated Listing, Agent, Brand, Template Fields an… | ✅ | Unit/browser/API evidence mapped in 2026-11-14-V3-RELEASE-HARDENING.md; UI/device acceptance separate |
-
+| TC-EDIT-022-05 | Unit | P0 | happy-path: In Design mode one Save split button updates an existing … | ✅ | Save-flow controller/dialog unit tests and black-box evidence in 2026-11-14-V3-SAVE-FLOW-IMPLEMENTATION.md |
+| TC-EDIT-022-06 | Unit | P0 | error-path: Creation dialogs retain values and show inline retry on f… | ✅ | Save-flow controller/dialog unit tests and black-box evidence in 2026-11-14-V3-SAVE-FLOW-IMPLEMENTATION.md |
+| TC-EDIT-022-07 | Unit | P1 | regression: Copy dialogs explicitly disclose unsaved source edits and… | ✅ | Save-flow controller/dialog unit tests and black-box evidence in 2026-11-14-V3-SAVE-FLOW-IMPLEMENTATION.md |
+| TC-EDIT-022-08 | Unit | P1 | theme: Save dialogs and split menu inherit the V3 light/dark the… | ✅ | Save-flow controller/dialog unit tests and black-box evidence in 2026-11-14-V3-SAVE-FLOW-IMPLEMENTATION.md |
 **Status key:** 🔲 Not run · ✅ Pass · ⚠️ Pass with finding · ❌ Fail · ⏸ Blocked
 
 ---
@@ -130,3 +138,7 @@ The current reconciled ACs are implemented; evidence is mapped in docs/research/
 
 
 Fresh automated gates and the individual AC evidence map are recorded in docs/research/2026-11-14-V3-RELEASE-HARDENING.md. This is local verification, not formal Done. User UI/font acceptance, physical-device checks, unresolved operational gates and actual milestone PR/merge remain separate.
+
+## Save-flow implementation — 2026-11-14
+
+AC5–8 and T7/T8 implemented and locally verified against the approved Save-flow proposal. Type checks, backend 853/frontend 865 unit tests (one existing skip), build and all 206 distinct mocked browser cases pass across broad/reconciled runs. See docs/research/2026-11-14-V3-SAVE-FLOW-IMPLEMENTATION.md for exact results and the retained fixture reconciliation. User/device acceptance and milestone merge remain pending; explicit Template authoring is deferred.
