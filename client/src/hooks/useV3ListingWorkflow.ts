@@ -9,26 +9,42 @@ interface ListingWorkspace { active: boolean; snapshot: V3ListingSnapshot; lastA
 export const useV3ListingStore = create<ListingWorkspace>(() => ({ active: false, snapshot: createListingSnapshot(), lastApply: null }));
 let writing = false;
 const cloned = <T,>(value: T): T => structuredClone(value);
+// Canvas history keeps element-array references. Pair metadata with those entries
+// without retaining discarded history or making pending source edits undoable.
+let artworkSnapshots = new WeakMap<CanvasElement[], V3ListingSnapshot>();
+function rememberArtwork(elements = useCanvasStore.getState().elements) {
+  artworkSnapshots.set(elements, cloned(useV3ListingStore.getState().snapshot));
+}
+function resetArtworkHistory() {
+  artworkSnapshots = new WeakMap();
+  rememberArtwork();
+}
 const canvasSignature = () => {
   const s = useCanvasStore.getState();
   return JSON.stringify([s.elements, s.canvasWidth, s.canvasHeight, s.backgroundColor, s.backgroundPaint]);
 };
-function writeCanvas(elements: CanvasElement[], history = true) {
+function writeCanvas(elements: CanvasElement[], snapshot: V3ListingSnapshot) {
+  rememberArtwork();
   writing = true;
   try {
     const state = useCanvasStore.getState();
-    if (history) state.pushToHistory(state.elements);
+    state.pushToHistory(state.elements);
     useCanvasStore.setState({ elements });
+    useV3ListingStore.setState({ snapshot });
+    rememberArtwork(elements);
   } finally { writing = false; }
 }
 export function activateV3ListingWorkflow(): void {
   useV3ListingStore.setState({ active: true, snapshot: createListingSnapshot(createEmptyListing(), useCanvasStore.getState().elements), lastApply: null });
+  resetArtworkHistory();
 }
 export function resetV3ListingWorkflow(record = createEmptyListing()): void {
   useV3ListingStore.setState({ snapshot: createListingSnapshot(record, useCanvasStore.getState().elements), lastApply: null });
+  resetArtworkHistory();
 }
 export function deactivateV3ListingWorkflow(): void {
   useV3ListingStore.setState({ active: false, snapshot: createListingSnapshot(), lastApply: null });
+  resetArtworkHistory();
 }
 export function captureV3ListingWorkflow(): V3ListingSnapshot | undefined {
   const state = useV3ListingStore.getState();
@@ -37,6 +53,7 @@ export function captureV3ListingWorkflow(): V3ListingSnapshot | undefined {
 export function restoreV3ListingWorkflow(value: unknown): boolean {
   if (validateListingSnapshot(value).length) return false;
   useV3ListingStore.setState({ snapshot: cloned(value as V3ListingSnapshot), lastApply: null });
+  resetArtworkHistory();
   return true;
 }
 type ActionResult = { ok: true } | { ok: false; error: string };
@@ -46,6 +63,7 @@ function updateSnapshot(action: (snapshot: V3ListingSnapshot) => V3ListingSnapsh
   const state = useV3ListingStore.getState();
   if (!state.active) return;
   useV3ListingStore.setState({ snapshot: action(state.snapshot) });
+  rememberArtwork();
 }
 export const v3ListingActions = {
   setPending(record: ListingRecord): void {
@@ -84,19 +102,21 @@ export const v3ListingActions = {
     if (element.locked || element.frameOf) return failure('Choose an unlocked text or image element.');
     if (element.type === 'image' && (!value || !isListingMedia(value))) return failure('Choose a raster image upload up to 2 MB or an HTTPS image.');
     if (element.type === 'text' && value.length > 20000) return failure('Keep design text within 20,000 characters.');
-    updateSnapshot(s => ({ ...s, overrides: { ...s.overrides, [id]: value }, unreviewedOverrides: s.unreviewedOverrides?.filter(key => key !== id) }));
-    writeCanvas(useCanvasStore.getState().elements.map(e => e.id !== id ? e : e.type === 'text' ? { ...e, content: value } : e.type === 'image' ? { ...e, src: value } : e));
+    const s = useV3ListingStore.getState().snapshot;
+    const snapshot = { ...s, overrides: { ...s.overrides, [id]: value }, skipped: s.skipped.filter(key => key !== id), unreviewedOverrides: s.unreviewedOverrides?.filter(key => key !== id) };
+    writeCanvas(useCanvasStore.getState().elements.map(e => e.id !== id ? e : e.type === 'text' ? { ...e, content: value } : e.type === 'image' ? { ...e, src: value } : e), snapshot);
     return success();
   },
   useLinked(id: string): void {
     const state = useV3ListingStore.getState();
     const binding = state.snapshot.appliedBindings[id];
     const element = useCanvasStore.getState().elements.find(e => e.id === id);
-    updateSnapshot(s => { const overrides = { ...s.overrides }; delete overrides[id]; return { ...s, overrides, skipped: s.skipped.filter(key => key !== id), unreviewedOverrides: s.unreviewedOverrides?.filter(key => key !== id) }; });
-    if (!binding || binding.slot !== state.snapshot.bindings[id]?.slot || !element || !isCompatibleListingSlot(element, binding.slot)) return;
+    const overrides = { ...state.snapshot.overrides }; delete overrides[id];
+    const snapshot = { ...state.snapshot, overrides, skipped: state.snapshot.skipped.filter(key => key !== id), unreviewedOverrides: state.snapshot.unreviewedOverrides?.filter(key => key !== id) };
+    if (!binding || binding.slot !== state.snapshot.bindings[id]?.slot || !element || !isCompatibleListingSlot(element, binding.slot)) { updateSnapshot(() => snapshot); return; }
     const raw = resolveSlot(state.snapshot.applied, binding.slot);
     const value = element.type === 'text' && element.slotFormat?.includes('{}') && raw ? raw.split('\n').map(line => element.slotFormat!.replace('{}', line)).join('\n') : raw;
-    writeCanvas(useCanvasStore.getState().elements.map(e => e.id !== id ? e : e.type === 'text' ? { ...e, content: value } : e.type === 'image' ? { ...e, src: value } : e));
+    writeCanvas(useCanvasStore.getState().elements.map(e => e.id !== id ? e : e.type === 'text' ? { ...e, content: value } : e.type === 'image' ? { ...e, src: value } : e), snapshot);
   },
   applyToDesign(): ActionResult {
     try {
@@ -104,7 +124,7 @@ export const v3ListingActions = {
       if (!state.active) return failure('Listing workspace is unavailable.');
       const before = cloned(useCanvasStore.getState().elements);
       const result = applyListingSnapshot(state.snapshot, before);
-      writeCanvas(result.elements);
+      writeCanvas(result.elements, result.snapshot);
       useV3ListingStore.setState({ snapshot: result.snapshot, lastApply: { before, after: cloned(result.elements), snapshot: cloned(state.snapshot), canvas: canvasSignature() } });
       return success();
     } catch (error) { return failure(error); }
@@ -116,7 +136,7 @@ export const v3ListingActions = {
     if (canvasSignature() !== last.canvas) return failure('Artwork changed after Apply. Undo those edits first to avoid losing them.');
     if (JSON.stringify([state.snapshot.bindings, state.snapshot.detached, state.snapshot.overrides]) !== JSON.stringify([last.snapshot.bindings, last.snapshot.detached, last.snapshot.overrides])) return failure('Field links changed after Apply. Apply the current links before using Undo last apply.');
     const snapshot = { ...last.snapshot, pending: state.snapshot.pending, selectedListingId: state.snapshot.selectedListingId, selectedListingVersion: state.snapshot.selectedListingVersion };
-    writeCanvas(cloned(last.before));
+    writeCanvas(cloned(last.before), snapshot);
     useV3ListingStore.setState({ snapshot, lastApply: null });
     return success();
   },
@@ -151,17 +171,39 @@ export function stageV3LinkedTextEdit(id: string, value: string, format?: string
 
 useCanvasStore.subscribe((next, previous) => {
   const state = useV3ListingStore.getState();
-  if (!state.active || writing || next.elements === previous.elements) return;
+  if (!state.active || writing) return;
+  if (next.elements === previous.elements) {
+    if (next.history !== previous.history) rememberArtwork(next.elements);
+    return;
+  }
+  const undoing = next.elements === previous.history.past.at(-1) && next.history.past.length === previous.history.past.length - 1;
+  const redoing = next.elements === previous.history.future[0] && next.history.future.length === previous.history.future.length - 1;
+  if (undoing || redoing) {
+    rememberArtwork(previous.elements);
+    const historical = artworkSnapshots.get(next.elements);
+    if (historical) {
+      const unreviewedOverrides = historical.selectedListingId !== state.snapshot.selectedListingId
+        ? Array.from(new Set([...(historical.unreviewedOverrides ?? []), ...next.elements.filter(element => element.type === 'image' && Object.prototype.hasOwnProperty.call(historical.overrides, element.id)).map(element => element.id)]))
+        : historical.unreviewedOverrides;
+      useV3ListingStore.setState({ snapshot: { ...cloned(historical), pending: state.snapshot.pending, selectedListingId: state.snapshot.selectedListingId, selectedListingVersion: state.snapshot.selectedListingVersion, unreviewedOverrides } });
+    }
+    return;
+  }
   const before = new Map(previous.elements.map(e => [e.id, e]));
   const overrides = { ...state.snapshot.overrides };
+  const resolvedImages = new Set<string>();
   let changed = false;
   for (const element of next.elements) {
     const old = before.get(element.id);
     if (!old || !state.snapshot.bindings[element.id] || state.snapshot.detached.includes(element.id)) continue;
     if (element.type === 'text' && old.type === 'text' && element.content !== old.content) { overrides[element.id] = element.content; changed = true; }
-    if (element.type === 'image' && old.type === 'image' && element.src !== old.src) { overrides[element.id] = element.src; changed = true; }
+    if (element.type === 'image' && old.type === 'image' && element.src !== old.src) {
+      overrides[element.id] = element.src; changed = true;
+      if (element.src && isListingMedia(element.src)) resolvedImages.add(element.id);
+    }
   }
-  if (changed) useV3ListingStore.setState({ snapshot: { ...state.snapshot, overrides } });
+  if (changed) useV3ListingStore.setState({ snapshot: { ...state.snapshot, overrides, skipped: state.snapshot.skipped.filter(id => !resolvedImages.has(id)), unreviewedOverrides: state.snapshot.unreviewedOverrides?.filter(id => !resolvedImages.has(id)) } });
+  rememberArtwork(next.elements);
 });
 
 export function useV3ListingWorkflow() {
