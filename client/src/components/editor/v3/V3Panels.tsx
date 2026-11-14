@@ -18,7 +18,7 @@ import { TemplateSection, PROPERTY_SLOT_FIELDS, AGENT_SLOT_FIELDS, BRAND_SLOT_FI
 import { BrandPaletteDialog, type BrandPalette } from '../BrandPaletteDialog';
 import { AlertDialog, AlertDialogContent, AlertDialogTitle, AlertDialogDescription, AlertDialogCancel } from '../../ui/alert-dialog';
 
-export type V3Panel = 'Templates' | 'Text' | 'Uploads' | 'Brand' | 'Property' | 'Listing' | 'Agent' | 'Elements' | 'Template Fields';
+export type V3Panel = 'Templates' | 'Text' | 'Uploads' | 'Brand' | 'Details' | 'Property' | 'Listing' | 'Agent' | 'Elements' | 'Template Fields';
 
 const textStyles = [
   { name: 'Headline Large', size: 48, weight: 700, color: '#1F1F1F' },
@@ -224,9 +224,20 @@ function Brand({ activeSlots }: { activeSlots: ReadonlySet<string> }) {
   </div>;
 }
 
+function Details({ section, userId, onClose, onNavigate }: { section: 'Property' | 'Agent'; userId: string; onClose: () => void; onNavigate: V3ListingPanelProps['onNavigate'] }) {
+  const [tab, setTab] = useState(section);
+  useEffect(() => setTab(section), [section]);
+  const select = (next: 'Property' | 'Agent', focus = false) => { setTab(next); if (focus) document.getElementById(`v3-details-tab-${next.toLowerCase()}`)?.focus(); };
+  return <div className="v3-details-workspace"><div role="tablist" aria-label="Listing details" className="v3-details-tabs">{(['Property', 'Agent'] as const).map(name => <button type="button" key={name} role="tab" id={`v3-details-tab-${name.toLowerCase()}`} aria-controls={`v3-details-${name.toLowerCase()}`} aria-selected={tab === name} tabIndex={tab === name ? 0 : -1} onClick={() => select(name)} onKeyDown={event => {
+    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+    event.preventDefault(); select(event.key === 'Home' ? 'Property' : event.key === 'End' ? 'Agent' : name === 'Property' ? 'Agent' : 'Property', true);
+  }}>{name}</button>)}</div>{(['Property', 'Agent'] as const).map(name => <div key={name} role="tabpanel" id={`v3-details-${name.toLowerCase()}`} aria-labelledby={`v3-details-tab-${name.toLowerCase()}`} hidden={tab !== name} className="v3-details-content"><V3ListingPanel section={name} userId={userId} onNavigate={onNavigate} onClose={onClose} stayInDetails/></div>)}</div>;
+}
+
 export function V3Panels({ panel, userId, onClose, onNavigate, onUseTemplate }: { panel: V3Panel; userId: string; onClose: () => void; onNavigate?: V3ListingPanelProps['onNavigate']; onUseTemplate?: (template: DesignMetadata) => Promise<void | boolean> }) {
   const elements = useCanvasStore(state => state.elements);
   const activeSlots = new Set(elements.flatMap(element => element.slot ? [element.slot] : []));
+  if (onNavigate && ['Details', 'Property', 'Agent'].includes(panel)) return <Details key={userId} section={panel === 'Agent' ? 'Agent' : 'Property'} userId={userId} onNavigate={onNavigate} onClose={onClose}/>;
   if (onNavigate && panel === 'Brand') return <div className="v3-brand-workspace"><V3ListingPanel key={`${userId}:Brand`} section="Brand" userId={userId} onNavigate={onNavigate} onClose={onClose}/><details className="v3-canvas-palettes"><summary>Canvas palettes</summary><Brand activeSlots={activeSlots}/></details></div>;
   if (onNavigate && ['Listing', 'Property', 'Agent', 'Brand', 'Uploads'].includes(panel)) return <V3ListingPanel key={`${userId}:${panel}`} section={panel === 'Uploads' ? 'Media' : panel === 'Property' ? 'Listing' : panel as 'Listing'|'Agent'|'Brand'} userId={userId} onNavigate={onNavigate} onClose={onClose} />;
   if (panel === 'Template Fields') return <V3TemplateFields onClose={onClose} />;

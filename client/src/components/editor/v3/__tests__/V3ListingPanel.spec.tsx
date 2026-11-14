@@ -19,6 +19,8 @@ const fixtures = vi.hoisted(() => ({
   saveProfile: vi.fn(),
   pendingChanges: 0,
   applyToDesign: vi.fn(() => ({ ok: true })),
+  undoLastApply: vi.fn(() => ({ ok: true })),
+  lastApplyAvailable: false,
 }));
 vi.mock("../../../../hooks/useV3ListingWorkflow", () => ({
   useV3ListingWorkflow: () => ({
@@ -32,6 +34,8 @@ vi.mock("../../../../hooks/useV3ListingWorkflow", () => ({
     overrides: {},
     skipped: [],
     applyToDesign: fixtures.applyToDesign,
+    undoLastApply: fixtures.undoLastApply,
+    lastApplyAvailable: fixtures.lastApplyAvailable,
   }),
 }));
 vi.mock("../../../../lib/listingApi", () => ({
@@ -47,6 +51,7 @@ beforeEach(() => {
   notifyManager.setNotifyFunction((callback) => act(callback));
   fixtures.pending = createEmptyListing();
   fixtures.pendingChanges = 0;
+  fixtures.lastApplyAvailable = false;
   fixtures.list.mockResolvedValue([]);
   fixtures.getProfile.mockResolvedValue({
     version: 0,
@@ -68,7 +73,7 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 async function render(
-  section: "Listing" | "Agent" | "Brand" | "Media" = "Listing",
+  section: "Listing" | "Property" | "Agent" | "Brand" | "Media" = "Listing",
 ) {
   await act(async () =>
     root.render(
@@ -173,6 +178,38 @@ describe("Listing panel contracts", () => {
     await click("Apply to design");
     expect(fixtures.applyToDesign).toHaveBeenCalledTimes(1);
   });
+  it('places guarded Undo last apply below Apply and reports its failures', async () => {
+    const record = createEmptyListing(); record.property.address = '4 Lake Road'; fixtures.pending = record;
+    await render();
+    const buttons = [...host.querySelectorAll<HTMLButtonElement>('.v3-lp-apply button')];
+    expect(buttons.map(button => button.textContent?.trim())).toEqual(['Apply to design', 'Undo last apply']);
+    expect(buttons[1].disabled).toBe(true);
+    fixtures.lastApplyAvailable = true;
+    fixtures.undoLastApply.mockReturnValueOnce({ ok: false, error: 'Artwork changed; Undo is unavailable.' } as { ok: boolean });
+    await render(); await click('Undo last apply');
+    expect(fixtures.undoLastApply).toHaveBeenCalledTimes(1);
+    expect(host.querySelector('[role="alert"]')?.textContent).toContain('Artwork changed; Undo is unavailable.');
+  });
+  it('opens Property directly and routes the overview Property card to Details', async () => {
+    await render('Property');
+    expect(host.querySelector('[aria-label="Address"]')).toBeTruthy();
+    const record = createEmptyListing(); record.property.address = '4 Lake Road'; fixtures.pending = record;
+    await act(async () => root.unmount()); root = createRoot(host);
+    await render();
+    await act(async () => host.querySelector<HTMLButtonElement>('.v3-property-card')!.click());
+    expect(nav).toHaveBeenCalledWith('Property');
+  });
+  it('saves only the Property draft while retaining newer pending Agent information', async () => {
+    const record = createEmptyListing(); record.property.address = 'Original address'; fixtures.pending = record;
+    await render('Property'); await change('Address', 'Draft address');
+    const latest = structuredClone(record); latest.agent.name = 'Newer Agent'; fixtures.pending = latest;
+    await render('Property');
+    const savedRecord = structuredClone(record); savedRecord.property.address = 'Draft address';
+    fixtures.create.mockResolvedValueOnce({ id: 'saved-property', version: 1, record: savedRecord });
+    await click('Save property');
+    expect(fixtures.create.mock.calls[0][0]).toMatchObject({ property: { address: 'Draft address' }, agent: { name: 'Newer Agent' } });
+    expect(fixtures.setPending).toHaveBeenCalledWith(expect.objectContaining({ property: savedRecord.property, agent: latest.agent }));
+  });
   // Contract: Use example fills only the composer with fictional sample text, focuses it, and never extracts, saves or changes pending state.
   it("inserts sample text into the composer only", async () => {
     await render();
@@ -236,6 +273,7 @@ describe("Listing panel contracts", () => {
     fixtures.create.mockResolvedValue({ id: "saved1", version: 1, record });
     await render();
     await act(async () => (host.querySelector(".v3-property-card") as HTMLButtonElement).click());
+    expect(nav).toHaveBeenCalledWith("Property"); await render("Property");
     const headline = host.querySelector('[aria-label="Marketing headline"]') as HTMLTextAreaElement;
     expect(headline.tagName).toBe("TEXTAREA");
     expect(headline.value).toBe(long);
@@ -260,6 +298,7 @@ describe("Listing panel contracts", () => {
     fixtures.pending = record;
     await render();
     await act(async () => (host.querySelector(".v3-property-card") as HTMLButtonElement).click());
+    expect(nav).toHaveBeenCalledWith("Property"); await render("Property");
     await change("Features", "Garden, ");
     expect((host.querySelector('[aria-label="Features"]') as HTMLTextAreaElement).value).toBe("Garden, ");
     await change("Features", "Garden, Pool");

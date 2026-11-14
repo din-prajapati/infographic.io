@@ -26,10 +26,11 @@ import { uploadV3Image } from "../../../lib/v3MediaUpload";
 import "./v3-listing-panel.css";
 
 export interface V3ListingPanelProps {
-  section?: "Listing" | "Agent" | "Brand" | "Media";
+  section?: "Listing" | "Property" | "Agent" | "Brand" | "Media";
   userId: string;
-  onNavigate: (panel: "Listing" | "Agent" | "Brand" | "Uploads") => void;
+  onNavigate: (panel: "Listing" | "Details" | "Property" | "Agent" | "Brand" | "Uploads") => void;
   onClose: () => void;
+  stayInDetails?: boolean;
 }
 const countries: Record<string, string> = {
   IN: "India",
@@ -141,12 +142,14 @@ export function V3ListingPanel({
   userId,
   onNavigate,
   onClose,
+  stayInDetails = false,
 }: V3ListingPanelProps) {
   const workflow = useV3ListingWorkflow();
   const { pending } = workflow;
+  const latestPending = useRef(pending); latestPending.current = pending;
   const [screen, setScreen] = useState<"welcome" | "overview" | "property">(
     () =>
-      pending.property.address || pending.property.name
+      section === 'Property' ? 'property' : pending.property.address || pending.property.name
         ? "overview"
         : "welcome",
   );
@@ -195,7 +198,7 @@ export function V3ListingPanel({
       (value) => value.toLowerCase().includes(query.trim().toLowerCase()),
     ),
   );
-  const navigate = (target: "Listing" | "Agent" | "Brand" | "Uploads") => {
+  const navigate = (target: "Listing" | "Details" | "Property" | "Agent" | "Brand" | "Uploads") => {
     if (section === "Listing")
       scrollPositions.set(userId, viewport.current?.scrollTop ?? 0);
     onNavigate(target);
@@ -249,6 +252,7 @@ export function V3ListingPanel({
     requestAnimationFrame(() => composer.current?.focus());
   };
   const saveProperty = async (record: ListingRecord = draft) => {
+    if (section === 'Property') record = { ...latestPending.current, property: record.property };
     const errors = validateListingRecord(record);
     if (errors.length) {
       setError(errors.join("; "));
@@ -265,9 +269,10 @@ export function V3ListingPanel({
           })
         : await propertiesApi.save(record);
       if (!alive.current || identity.current !== requestUser) return;
-      workflow.setPending(result.record);
+      workflow.setPending(section === 'Property' ? { ...latestPending.current, property: result.record.property } : result.record);
       workflow.setSelectedListingIdentity(result.id, result.version);
       setScreen("overview");
+      if (section === 'Property' && !stayInDetails) navigate('Listing');
       await saved.refetch();
     } catch (e) {
       if (alive.current && identity.current === requestUser)
@@ -300,13 +305,13 @@ export function V3ListingPanel({
       );
       if (!alive.current || identity.current !== requestUser) return;
       workflow.setPending({
-        ...pending,
+        ...latestPending.current,
         ...(section === "Agent"
           ? { agent: result.record.agent }
           : { brand: result.record.brand }),
       });
       await profile.refetch();
-      if (alive.current && identity.current === requestUser) navigate("Listing");
+      if (alive.current && identity.current === requestUser && !stayInDetails) navigate("Listing");
     } catch (e) {
       if (alive.current && identity.current === requestUser)
         setError(message(e));
@@ -560,13 +565,14 @@ export function V3ListingPanel({
         <h2>Uploads</h2>
         {closeButton}
       </header>
-    ) : screen === "property" ? (
+    ) : section === 'Property' || screen === "property" ? (
       <header className="v3-lp-head">
         <h2>Edit property</h2>
         {back("Back", () => {
           setDraft(structuredClone(pending));
           setScreen(pending.property.address || pending.property.name ? "overview" : "welcome");
           setError(null);
+          if (section === 'Property') navigate('Listing');
         })}
       </header>
     ) : screen === "overview" ? (
@@ -801,7 +807,7 @@ export function V3ListingPanel({
                 </button>
               )}
             </section>
-          ) : screen === "property" ? (
+          ) : section === 'Property' || screen === "property" ? (
             <section>
               <p className="v3-lp-intro">Add the essentials. The canvas changes only when you apply the saved listing.</p>
               <h3 className="v3-lp-form-section">Listing identity</h3>
@@ -874,6 +880,7 @@ export function V3ListingPanel({
                     setDraft(structuredClone(pending));
                     setScreen(pending.property.address ? "overview" : "welcome");
                     setError(null);
+                    if (section === 'Property' && !stayInDetails) navigate('Listing');
                   }}
                 >
                   Cancel
@@ -904,7 +911,7 @@ export function V3ListingPanel({
                   </button>
                 </div>
               )}
-              <button type="button" className="v3-lp-card v3-property-card" onClick={openProperty}>
+              <button type="button" className="v3-lp-card v3-property-card" onClick={() => navigate('Property')}>
                 <span className="v3-lp-card-label">
                   Property information
                   <Pencil aria-hidden="true" />
@@ -1180,6 +1187,10 @@ export function V3ListingPanel({
           >
             Apply to design
           </button>
+          <button type="button" className="v3-lp-secondary v3-lp-full" disabled={!workflow.lastApplyAvailable} onClick={() => {
+            const result = workflow.undoLastApply();
+            setApplyError(result.ok ? null : result.error);
+          }}>Undo last apply</button>
         </footer>
       )}
     </div>

@@ -5,11 +5,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { V3Panels } from '../V3Panels';
 import { useCanvasStore } from '../../../../hooks/useCanvasStore';
 import { createTextElement } from '../../../../lib/canvasUtils';
+import { Simulate } from 'react-dom/test-utils';
+import { createEmptyListing } from '@shared/listingWorkflow';
 
 const api = vi.hoisted(() => ({ getAll: vi.fn(), getAdminCurated: vi.fn(), getOne: vi.fn() }));
 vi.mock('../../../../lib/api', async original => ({ ...await original<typeof import('../../../../lib/api')>(), canvasTemplatesApi: api }));
 const media = vi.hoisted(() => ({ upload: vi.fn() }));
 vi.mock('../../../../lib/v3MediaUpload', () => ({ uploadV3Image: media.upload }));
+vi.mock('../../../../lib/listingApi', () => ({ propertiesApi: { list: vi.fn(async () => []) }, listingProfilesApi: { get: vi.fn(async () => ({ version: 0, record: { agent: createEmptyListing().agent, brand: createEmptyListing().brand } })) } }));
 let host: HTMLDivElement, root: Root, query: QueryClient;
 beforeEach(() => {
   vi.stubGlobal('React', React); vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
@@ -30,6 +33,24 @@ async function click(label: string) {
 }
 
 describe('approved panel contracts', () => {
+  it('keeps Property and Agent drafts while keyboard navigation switches Details tabs', async () => {
+    await act(async () => root.render(<QueryClientProvider client={query}><V3Panels panel="Details" userId="agent-a" onClose={() => {}} onNavigate={() => {}} /></QueryClientProvider>));
+    const property = host.querySelector<HTMLButtonElement>('[role="tab"][aria-controls="v3-details-property"]')!;
+    const agent = host.querySelector<HTMLButtonElement>('[role="tab"][aria-controls="v3-details-agent"]')!;
+    expect(property.getAttribute('aria-selected')).toBe('true');
+    const address = host.querySelector<HTMLInputElement>('[aria-label="Address"]')!;
+    act(() => { address.value = 'Unsaved property address'; Simulate.change(address); });
+    act(() => Simulate.keyDown(property, { key: 'ArrowRight' }));
+    expect(agent.getAttribute('aria-selected')).toBe('true'); expect(document.activeElement).toBe(agent);
+    await vi.waitFor(() => expect(host.querySelector('[aria-label="Full name"]')).toBeTruthy());
+    const name = host.querySelector<HTMLInputElement>('[aria-label="Full name"]')!;
+    act(() => { name.value = 'Unsaved Agent'; Simulate.change(name); });
+    act(() => Simulate.keyDown(agent, { key: 'Home' }));
+    expect(address.value).toBe('Unsaved property address');
+    act(() => Simulate.keyDown(property, { key: 'End' }));
+    expect(name.value).toBe('Unsaved Agent');
+    expect(host.querySelector('[id="v3-details-property"]')?.hasAttribute('hidden')).toBe(true);
+  });
   it('ignores a gallery fetch completed after navigation to another Design', async () => {
     const template = { id: 'template-a', name: 'City listing', thumbnail: '', tags: [], canvasData: { elements: [createTextElement()], canvasWidth: 640, canvasHeight: 480 } };
     api.getAll.mockResolvedValue([template]);

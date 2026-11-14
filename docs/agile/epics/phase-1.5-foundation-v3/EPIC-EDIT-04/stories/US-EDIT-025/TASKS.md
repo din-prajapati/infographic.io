@@ -132,3 +132,11 @@ Implementation integrated on codex/v3-arrange-opus. Full Gate1, focused/new brow
 ## Fresh release evidence — 2026-11-14
 
 Applicable implementation and automated verification tasks are complete; docs/research/2026-11-14-V3-RELEASE-HARDENING.md records exact commands/counts and independent review. No CSS/font changes were made in this repair. User visual/font acceptance, physical devices, final milestone delivery and merge remain pending.
+
+## 2026-11-14 — Browser annotation refinement
+
+- [x] T7 — Comments1/2: Undo last apply below Apply to design with same disabled/guard/error behavior. One Details rail destination, Property/Agent tabs, preserved drafts or explicit save/discard before switching, keyboard tab semantics. Listing overview/search remains independent; Brand separate. Files: V3ListingPanel.tsx,V3Panels.tsx,v3-listing-panel.css,their existing unit tests. Root owns V3Editor shell wiring. Property/Agent source and Apply semantics unchanged.
+
+User explicitly authorized annotations1–4 and6;5 is proposal only. Shared files have explicit root/agent ownership. Do not redesign fonts or implement Assistant/providers/default-editor cutover. Gates required; formal merge remains pending.
+
+Verified 2026-11-14: frontend/API type checks pass; backend 853 and frontend 843 unit tests pass (one existing skip); production build passes; clean V3 browser 178/178 and Listing workflow 9/9 pass. Light/dark desktop, phone and tablet screenshots reviewed. Gate 4 N/A (UI only); physical-device acceptance and merge pending. Evidence: docs/research/2026-11-14-V3-BROWSER-ANNOTATIONS.md.
