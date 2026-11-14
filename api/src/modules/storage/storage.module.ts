@@ -1,5 +1,6 @@
 import { Global, Module } from '@nestjs/common';
 import { StorageService } from './services/storage.service';
+import { MediaController } from './controllers/media.controller';
 
 /**
  * US-INFRA-001 AC4 — `@Global()`, so any service in any module can declare `StorageService` in
@@ -12,6 +13,7 @@ import { StorageService } from './services/storage.service';
  */
 @Global()
 @Module({
+  controllers: [MediaController],
   providers: [StorageService],
   exports: [StorageService],
 })
