@@ -10,7 +10,7 @@ import { useAuth } from '../../../lib/auth';
 import { captureCanvasData, loadAiVariationToCanvas, loadComposedDesignToCanvas, restoreCanvasData, scheduleFitCanvasZoomToViewport } from '../../../lib/canvasState';
 import { canvasTemplatesApi, designsApi } from '../../../lib/api';
 import { createReusableTemplate, createDesignFromTemplate, type ListingCanvasDocument } from '../../../lib/v3TemplateWorkflow';
-import { useV3ListingWorkflow } from '../../../hooks/useV3ListingWorkflow';
+import { useV3ListingWorkflow, useV3ListingStore } from '../../../hooks/useV3ListingWorkflow';
 import { initializeV3NavigationGuard } from '../../../lib/v3NavigationGuard';
 import { V3ExportReview } from './V3ExportReview';
 import { V3TemplateFields } from './V3TemplateFields';
@@ -155,15 +155,22 @@ export default function V3Editor({designId,templateId,canvasSize}:V3EditorParams
     finally{if(account.current===owner)setTemplateSaving(false);}
   }
   async function useTemplate(template:DesignMetadata,options:{replace?:boolean;stillWanted?:()=>boolean}={}){
+    if(options.stillWanted&&!options.stillWanted())return false;
+    const pristineUrlStart=!!options.stillWanted&&session.title==='Untitled design'&&!useCanvasStore.getState().elements.length;
+    if(!pristineUrlStart&&!session.confirmNavigation())return false;
+    const sourceUrl=window.location.href,sourceRevision=session.getNavigationRevision();
     const owner=user?.id;const now=new Date().toISOString();
-    const canvasData=createDesignFromTemplate(template.canvasData as ListingCanvasDocument,listing.pending,listing.selectedListingId,listing.selectedListingVersion);
-    const saved=await designsApi.save({id:'',name:`${template.name} — ${listing.pending.property.name||listing.pending.property.address||'New design'}`,type:'design',canvasData,thumbnail:'',category:template.category,tags:template.tags,createdAt:now,updatedAt:now});
-    if(account.current!==owner)return;
+    const sourceListing=useV3ListingStore.getState().snapshot;
+    const canvasData=createDesignFromTemplate(template.canvasData as ListingCanvasDocument,sourceListing.pending,sourceListing.selectedListingId,sourceListing.selectedListingVersion);
+    const saved=await designsApi.save({id:'',name:`${template.name} — ${sourceListing.pending.property.name||sourceListing.pending.property.address||'New design'}`,type:'design',canvasData,thumbnail:'',category:template.category,tags:template.tags,createdAt:now,updatedAt:now});
+    if(!editorMounted.current||account.current!==owner||window.location.href!==sourceUrl)return false;
     if(!/^c[a-z0-9]{24}$/.test(saved.id)||saved.id===session.id)throw new Error('The server did not acknowledge a separate design.');
     // A deep link that finished after the user left or opened something else must not pull them back.
-    if(options.stillWanted&&!options.stillWanted())return;
+    if(session.getNavigationRevision()!==sourceRevision){setWorkflowNotice('A separate Design was created. Your newer edits remain open in this Design. Find the new Design in Projects.');return false;}
+    if(options.stillWanted&&!options.stillWanted())return false;
     initializeV3NavigationGuard().allowInternal(()=>navigate(`/editor?editor=v3&designId=${saved.id}`,{replace:!!options.replace}));
     setWorkflowNotice('A separate Design was created from the template.');
+    return true;
   }
   // URL start-up (lib/v3EditorUrl.ts): templateId starts a separate design exactly like the Templates panel; width/height
   // pre-size a blank design. Runs once per URL value, only for a new unsaved session (designId always wins).
@@ -176,11 +183,11 @@ export default function V3Editor({designId,templateId,canvasSize}:V3EditorParams
     if(!key||urlStart.current===key)return;
     urlStart.current=key;
     if(!templateId&&canvasSize){if(!useCanvasStore.getState().elements.length){useCanvasStore.getState().loadCanvas({canvasWidth:canvasSize.width,canvasHeight:canvasSize.height});scheduleFitCanvasZoomToViewport();}return;}
-    const owner=user?.id;setWorkflowError('');setWorkflowNotice('Opening template…');
-    const stillWanted=()=>{const params=new URLSearchParams(window.location.search);return editorMounted.current&&urlStart.current===key&&account.current===owner&&params.get('templateId')===templateId&&!params.get('designId')&&!useCanvasStore.getState().elements.length;};
+    const owner=user?.id,initialRevision=session.getNavigationRevision();setWorkflowError('');setWorkflowNotice('Opening template…');
+    const stillWanted=()=>{const params=new URLSearchParams(window.location.search);return editorMounted.current&&urlStart.current===key&&account.current===owner&&params.get('templateId')===templateId&&!params.get('designId')&&!useCanvasStore.getState().elements.length&&session.getNavigationRevision()===initialRevision;};
     void (async()=>{
       const resolved=await resolveUrlTemplate(templateId!,canvasTemplatesApi.getOne);
-      if(!stillWanted())return;
+      if(!stillWanted()){if(editorMounted.current&&account.current===owner&&urlStart.current===key&&session.getNavigationRevision()!==initialRevision)setWorkflowNotice('Template opening cancelled because this Design changed. Your edits remain open.');return;}
       if(!resolved.ok){setWorkflowNotice('');setWorkflowError(resolved.error);return;}
       try{await useTemplate(resolved.template,{replace:true,stillWanted});}
       catch(error){if(stillWanted()){setWorkflowNotice('');setWorkflowError(error instanceof Error?error.message:'The template could not be opened. Try again.');}}

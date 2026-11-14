@@ -43,6 +43,100 @@ async function setup(page: Page, theme = 'light', withTemplate = false) {
   return state;
 }
 
+test('cancelled unsaved template navigation creates no separate Design', async ({ page }) => {
+  const state = await setup(page, 'light', true);
+  await page.getByRole('textbox', { name: 'Design title', exact: true }).fill('Keep this unsaved title');
+  await page.getByRole('button', { name: /City listing/ }).click();
+  const dialog = page.getByRole('alertdialog');
+  await expect(dialog).toContainText('Create a separate Design?');
+  await expect(dialog).toContainText('current saved Design stays unchanged');
+  page.once('dialog', prompt => prompt.dismiss());
+  await dialog.getByRole('button', { name: 'Create Design', exact: true }).click();
+  await dialog.getByRole('button', { name: 'Cancel', exact: true }).click();
+  await expect(page).toHaveURL(new RegExp(`designId=${id}$`));
+  await expect(page.getByRole('textbox', { name: 'Design title', exact: true })).toHaveValue('Keep this unsaved title');
+  await expect(page.getByTestId('design-canvas').getByText('Approved listing', { exact: true })).toBeVisible();
+  expect(state.writePaths.filter(path => path.startsWith('POST '))).toEqual([]);
+  expect(await page.evaluate(() => localStorage.getItem('v3-recent-templates:shell-test-user'))).toBeNull();
+});
+
+test('edits made while a template Design is being created retain the current guarded document', async ({ page }) => {
+  const state = await setup(page, 'light', true);
+  let release!: () => void;
+  const held = new Promise<void>(resolve => { release = resolve; });
+  let started = false;
+  await page.route('**/api/v1/designs', async route => {
+    if (route.request().method() !== 'POST') return route.fallback();
+    started = true; await held; return route.fallback();
+  });
+  await page.getByRole('button', { name: /City listing/ }).click();
+  await page.getByRole('button', { name: 'Create Design', exact: true }).click();
+  await expect.poll(() => started).toBe(true);
+  // The dialog intentionally blocks pointer interactions; a keyboard shortcut or
+  // asynchronous editor mutation can still create a newer document revision.
+  await page.evaluate(() => {
+    const input = document.querySelector<HTMLInputElement>('input[aria-label="Design title"]')!;
+    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(input, 'Newer title stays here');
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+  });
+  release();
+  await expect.poll(() => state.writePaths.filter(path => path.startsWith('POST ')).length).toBe(1);
+  await expect(page.getByText(/Your newer edits remain open/)).toBeVisible();
+  await page.getByRole('alertdialog').getByRole('button', { name: 'Cancel', exact: true }).click();
+  await expect(page).toHaveURL(new RegExp(`designId=${id}$`));
+  await expect(page.getByRole('textbox', { name: 'Design title', exact: true })).toHaveValue('Newer title stays here');
+  let prompted = false;
+  page.once('dialog', async prompt => { prompted = true; await prompt.dismiss(); });
+  await page.evaluate(() => history.pushState(null, '', '/my-designs'));
+  expect(prompted).toBe(true);
+  await expect(page).toHaveURL(new RegExp(`designId=${id}$`));
+});
+
+test('a template creation response cannot redirect after leaving the Editor', async ({ page }) => {
+  const state = await setup(page, 'light', true);
+  let release!: () => void;
+  const held = new Promise<void>(resolve => { release = resolve; });
+  let started = false;
+  await page.route('**/api/v1/designs', async route => {
+    if (route.request().method() !== 'POST') return route.fallback();
+    started = true; await held; return route.fallback();
+  });
+  await page.getByRole('button', { name: /City listing/ }).click();
+  await page.getByRole('button', { name: 'Create Design', exact: true }).click();
+  await expect.poll(() => started).toBe(true);
+  await page.evaluate(() => history.pushState(null, '', '/my-designs'));
+  await expect(page).toHaveURL(/\/my-designs$/);
+  release();
+  await expect.poll(() => state.writePaths.filter(path => path.startsWith('POST ')).length).toBe(1);
+  await expect(page).toHaveURL(/\/my-designs$/);
+  await expect(page.getByRole('heading', { name: 'V3 Editor', exact: true })).toHaveCount(0);
+});
+
+test('listing-only edits during a deferred template deep link cancel automatic creation', async ({ page }) => {
+  const state = await setup(page, 'light', true);
+  let release!: () => void;
+  const held = new Promise<void>(resolve => { release = resolve; });
+  let started = false;
+  await page.route('**/api/v1/canvas-templates/template-city', async route => {
+    started = true; await held; return route.fallback();
+  });
+  await page.goto('/editor?editor=v3&templateId=template-city', { waitUntil: 'domcontentloaded' });
+  await expect.poll(() => started).toBe(true);
+  await page.getByRole('button', { name: 'Listing', exact: true }).click();
+  await page.getByRole('button', { name: 'Enter manually', exact: true }).click();
+  await page.getByRole('textbox', { name: 'Address', exact: true }).fill('Preserve this pending address');
+  await page.getByRole('button', { name: 'Save property', exact: true }).click();
+  await expect(page.getByRole('button', { name: /^Property information/ })).toContainText('Preserve this pending address');
+  release();
+  await expect(page.getByText('Template opening cancelled because this Design changed. Your edits remain open.', { exact: true })).toBeVisible();
+  await expect(page).toHaveURL(/templateId=template-city$/);
+  await expect(page.getByTestId('design-canvas').locator('[data-element-id]')).toHaveCount(0);
+  expect(state.writePaths.filter(path => path.startsWith('POST '))).toEqual([]);
+  await page.getByRole('button', { name: 'Save as Design', exact: true }).click();
+  await expect.poll(() => state.writes.length).toBe(1);
+  expect(state.writes[0].canvasData.v3Listing.pending.property.address).toBe('Preserve this pending address');
+});
+
 // Contract: approved seven rail entries, direct creation tools and three available
 // line drawing choices at their named toolbars after opening Tools/Line.
 test('approved rail, direct tools and three line choices', async ({ page }) => {
@@ -64,7 +158,7 @@ test('template search confirms replacement and records account scoped recents', 
   await page.getByRole('button', { name: /City listing/ }).click();
   await expect(page.getByRole('alertdialog')).toBeVisible();
   await expect(page.getByTestId('design-canvas').getByText('Approved listing', { exact: true })).toBeVisible();
-  await page.getByRole('button', { name: 'Replace canvas', exact: true }).click();
+  await page.getByRole('button', { name: 'Create Design', exact: true }).click();
   await expect(page).not.toHaveURL(new RegExp(`designId=${id}$`));
   await expect(page.getByTestId('design-canvas').getByText('City template content', { exact: true })).toBeVisible();
   expect(state.document.canvasData.elements[0].content).toBe('Approved listing');

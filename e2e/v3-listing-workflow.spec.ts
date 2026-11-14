@@ -63,7 +63,7 @@ test('using a saved Template creates a separate Design through the V3 UI',async(
   await page.getByRole('button',{name:'Save as Template',exact:true}).click();
   await expect.poll(()=>state.templates.length).toBe(1);
   await page.getByRole('button',{name:/Oak design/}).click();
-  await page.getByRole('button',{name:'Replace canvas',exact:true}).click();
+  await page.getByRole('button',{name:'Create Design',exact:true}).click();
   await expect(page).not.toHaveURL(new RegExp(`designId=${id}$`));
   await expect(page.getByTestId('design-canvas').getByText('10 Oak Road',{exact:true})).toBeVisible();
   expect(state.document.id).not.toBe(id);

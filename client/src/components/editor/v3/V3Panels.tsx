@@ -76,7 +76,7 @@ function readRecent(userId: string): string[] {
   } catch { return []; }
 }
 
-function Templates({ userId, onUseTemplate }: { userId: string; onUseTemplate?: (template: DesignMetadata) => Promise<void> }) {
+function Templates({ userId, onUseTemplate }: { userId: string; onUseTemplate?: (template: DesignMetadata) => Promise<void | boolean> }) {
   const mounted = useRef(true);
   useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
   const [search, setSearch] = useState('');
@@ -91,15 +91,17 @@ function Templates({ userId, onUseTemplate }: { userId: string; onUseTemplate?: 
   const recentlyUsed = recent.flatMap(id => matching.filter(template => template.id === id));
   const others = matching.filter(template => !recent.includes(template.id));
   const apply = async (template: DesignMetadata) => {
+    const sourceUrl = window.location.href;
+    const sourceCanvas = useCanvasStore.getState().elements;
     setApplying(true);
     setError(null);
     try {
       // Fetch again at the trust boundary: cached gallery membership is not authorization.
       const fresh = await canvasTemplatesApi.getOne(template.id);
-      if (!mounted.current) return;
+      if (!mounted.current || window.location.href !== sourceUrl || useCanvasStore.getState().elements !== sourceCanvas) return;
       const data: unknown = fresh.canvasData;
       if (!hasTemplateLayout(data)) throw new Error('This template has no usable canvas layout.');
-      if (onUseTemplate) await onUseTemplate(fresh);
+      if (onUseTemplate) { if (await onUseTemplate(fresh) === false) return; }
       else {
         if (!restoreCanvasData(data)) throw new Error('This template could not be opened.');
         useCanvasStore.getState().setCanvasOrigin({ templateId: fresh.id });
@@ -129,9 +131,9 @@ function Templates({ userId, onUseTemplate }: { userId: string; onUseTemplate?: 
     <section aria-label="More templates"><h3>More templates</h3>{cards(others)}</section>
     {error && <div role="alert"><p>{error}</p>{replacement && <button type="button" disabled={applying} onClick={() => void apply(replacement)}>Retry template</button>}</div>}
     <AlertDialog open={!!replacement} onOpenChange={open => { if (!open && !applying) setReplacement(null); }}><AlertDialogContent>
-      <AlertDialogTitle>Replace canvas?</AlertDialogTitle><AlertDialogDescription>Applying {replacement?.name} replaces the current canvas contents.</AlertDialogDescription>
+      <AlertDialogTitle>{onUseTemplate ? 'Create a separate Design?' : 'Replace canvas?'}</AlertDialogTitle><AlertDialogDescription>{onUseTemplate ? `Create a separate Design from ${replacement?.name}. Your current saved Design stays unchanged. Save any unsaved edits before continuing if you want to keep them.` : `Applying ${replacement?.name} replaces the current canvas contents.`}</AlertDialogDescription>
       <AlertDialogCancel disabled={applying}>Cancel</AlertDialogCancel>
-      <button type="button" disabled={applying || !replacement} onClick={() => { if (replacement) void apply(replacement); }}>{applying ? 'Applying template…' : 'Replace canvas'}</button>
+      <button type="button" disabled={applying || !replacement} onClick={() => { if (replacement) void apply(replacement); }}>{applying ? 'Applying template…' : onUseTemplate ? 'Create Design' : 'Replace canvas'}</button>
     </AlertDialogContent></AlertDialog>
   </div>;
 }
@@ -222,7 +224,7 @@ function Brand({ activeSlots }: { activeSlots: ReadonlySet<string> }) {
   </div>;
 }
 
-export function V3Panels({ panel, userId, onClose, onNavigate, onUseTemplate }: { panel: V3Panel; userId: string; onClose: () => void; onNavigate?: V3ListingPanelProps['onNavigate']; onUseTemplate?: (template: DesignMetadata) => Promise<void> }) {
+export function V3Panels({ panel, userId, onClose, onNavigate, onUseTemplate }: { panel: V3Panel; userId: string; onClose: () => void; onNavigate?: V3ListingPanelProps['onNavigate']; onUseTemplate?: (template: DesignMetadata) => Promise<void | boolean> }) {
   const elements = useCanvasStore(state => state.elements);
   const activeSlots = new Set(elements.flatMap(element => element.slot ? [element.slot] : []));
   if (onNavigate && panel === 'Brand') return <div className="v3-brand-workspace"><V3ListingPanel key={`${userId}:Brand`} section="Brand" userId={userId} onNavigate={onNavigate} onClose={onClose}/><details className="v3-canvas-palettes"><summary>Canvas palettes</summary><Brand activeSlots={activeSlots}/></details></div>;

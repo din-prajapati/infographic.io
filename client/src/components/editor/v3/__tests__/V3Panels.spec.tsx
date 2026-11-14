@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { V3Panels } from '../V3Panels';
 import { useCanvasStore } from '../../../../hooks/useCanvasStore';
+import { createTextElement } from '../../../../lib/canvasUtils';
 
 const api = vi.hoisted(() => ({ getAll: vi.fn(), getAdminCurated: vi.fn(), getOne: vi.fn() }));
 vi.mock('../../../../lib/api', async original => ({ ...await original<typeof import('../../../../lib/api')>(), canvasTemplatesApi: api }));
@@ -29,6 +30,36 @@ async function click(label: string) {
 }
 
 describe('approved panel contracts', () => {
+  it('ignores a gallery fetch completed after navigation to another Design', async () => {
+    const template = { id: 'template-a', name: 'City listing', thumbnail: '', tags: [], canvasData: { elements: [createTextElement()], canvasWidth: 640, canvasHeight: 480 } };
+    api.getAll.mockResolvedValue([template]);
+    let resolve!: (value: typeof template) => void;
+    api.getOne.mockReturnValueOnce(new Promise<typeof template>(yes => { resolve = yes; }));
+    const onUseTemplate = vi.fn(async () => true);
+    history.replaceState(null, '', '/editor?editor=v3&designId=first');
+    await act(async () => root.render(<QueryClientProvider client={query}><V3Panels panel="Templates" userId="agent-a" onClose={() => {}} onUseTemplate={onUseTemplate} /></QueryClientProvider>));
+    await vi.waitFor(() => expect(host.textContent).toContain('City listing'));
+    await click('City listing');
+    history.replaceState(null, '', '/editor?editor=v3&designId=second');
+    await act(async () => { resolve(template); });
+    expect(onUseTemplate).not.toHaveBeenCalled();
+    expect(localStorage.getItem('v3-recent-templates:agent-a')).toBeNull();
+  });
+  it('describes a separate Design and records no recent template when navigation is cancelled', async () => {
+    const template = { id: 'template-a', name: 'City listing', thumbnail: '', tags: [], canvasData: { elements: [createTextElement(10, 10, 'Template')], canvasWidth: 640, canvasHeight: 480 } };
+    api.getAll.mockResolvedValue([template]); api.getOne.mockResolvedValue(template);
+    useCanvasStore.getState().addElement({ ...createTextElement(), id: 'existing' });
+    const onUseTemplate = vi.fn(async () => false);
+    await act(async () => root.render(<QueryClientProvider client={query}><V3Panels panel="Templates" userId="agent-a" onClose={() => {}} onUseTemplate={onUseTemplate} /></QueryClientProvider>));
+    await vi.waitFor(() => expect(host.textContent).toContain('City listing'));
+    await click('City listing');
+    expect(document.querySelector('[role="alertdialog"]')?.textContent).toContain('Create a separate Design?');
+    expect(document.querySelector('[role="alertdialog"]')?.textContent).toContain('current saved Design stays unchanged');
+    await click('Create Design');
+    expect(onUseTemplate).toHaveBeenCalledTimes(1);
+    expect(localStorage.getItem('v3-recent-templates:agent-a')).toBeNull();
+    expect(useCanvasStore.getState().elements[0].id).toBe('existing');
+  });
   // AC6: each named style creates a real selected text element at its exact approved size.
   it('creates all eight text style sizes with independent history entries', async () => {
     await render('Text');

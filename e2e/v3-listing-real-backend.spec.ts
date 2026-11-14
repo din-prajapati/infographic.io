@@ -313,12 +313,12 @@ test('V3 listing workflow with linked fields against the real backend and R2', a
     await page.keyboard.press('Escape');
   });
 
-  await test.step('9. Use the saved Template: Replace canvas creates a separate design', async () => {
+  await test.step('9. Use the saved Template: Create Design creates a separate design', async () => {
     const before = await (await api.get(`/api/v1/designs/${designId}`)).json();
     await railTo(page, 'Templates');
     const panel = page.getByRole('complementary', { name: 'Templates panel', exact: true });
     await panel.getByRole('button', { name: new RegExp(designName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')) }).first().click();
-    await page.getByRole('alertdialog').getByRole('button', { name: 'Replace canvas', exact: true }).click();
+    await page.getByRole('alertdialog').getByRole('button', { name: 'Create Design', exact: true }).click();
     await expect(page).not.toHaveURL(new RegExp(`designId=${designId}(&|$)`), { timeout: 30_000 });
     const newId = new URL(page.url()).searchParams.get('designId')!;
     expect(newId).toMatch(/^c[a-z0-9]{24}$/);
