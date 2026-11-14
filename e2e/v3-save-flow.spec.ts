@@ -240,6 +240,15 @@ for(const theme of ['light','dark'])for(const width of [375,1242])test(`Save spl
   await page.mouse.move(0,0);await options.focus();await expect(split).toHaveCSS('background-color',highlight);
   await expect(options).toHaveCSS('outline-style','solid');await expect(options).toHaveCSS('outline-width','2px');
   await page.keyboard.press('Enter');await expect(page.getByRole('menuitem',{name:/^Save a copy/})).toBeVisible();
+  // T10: Save options contains exactly two actionable, icon-led rows; no Design section label.
+  const menu=page.getByRole('menu',{name:'Save options',exact:true});
+  await expect(menu).toHaveText('Save a copy...Create reusable template...');
+  await expect(menu.getByRole('menuitem')).toHaveText(['Save a copy...','Create reusable template...']);
+  for(const [name,icon] of [['Save a copy...','copy'],['Create reusable template...','layout-template']]){
+    const symbol=menu.getByRole('menuitem',{name,exact:true}).locator(`svg.lucide-${icon}`);
+    await expect(symbol).toBeVisible();await expect(symbol).toHaveAttribute('aria-hidden','true');
+    await expect(symbol).toHaveCSS('width','16px');await expect(symbol).toHaveCSS('height','16px');
+  }
   await expect(split).toHaveCSS('background-color',highlight);
   await page.screenshot({path:info.outputPath(`save-split-${width}-${theme}.png`)});
   await page.keyboard.press('Escape');await page.clock.runFor(50);
