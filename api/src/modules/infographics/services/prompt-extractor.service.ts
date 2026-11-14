@@ -44,7 +44,8 @@ export class PromptExtractorService {
     organizationId?: string,
     conversationId?: string,
   ): Promise<ExtractionResult> {
-    console.log(`🔍 [Extractor] Extracting property data from prompt: "${prompt.substring(0, 100)}..."`);
+    // Never log prompt text: listing prompts carry agent phone numbers, names and addresses.
+    console.log(`🔍 [Extractor] Extracting property data promptLength=${prompt.length}`);
 
     const isDemoMode = process.env.DEMO_MODE === 'true';
     
