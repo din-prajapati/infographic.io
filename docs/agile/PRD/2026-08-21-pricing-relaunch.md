@@ -49,6 +49,25 @@ the relevant story ACs. This file focuses on what changed or needed grounding.
 | Agency | ₹43,999 | ₹29,999 | 400 | 150 |
 | Enterprise | Custom | — | 1,000+ | Custom |
 
+> **⚠️ Correction (2026-11-14): the "100% quota utilization" margins below are overstated.**
+> They price one generation as **one image** ($0.06 + $0.004 LLM ≈ ₹5.31). Production requests
+> **three** images per generation by default (`variations: 3` in
+> `client/src/components/ai-chat/AIChatBox.tsx` and `client/src/components/editor/RightSidebar.tsx`;
+> the DTO allows up to 5), and the orchestrator costs a generation at `getTotalCost(model, variations)`
+> while still recording `creditsUsed: 1`. The rupee rate has also moved (₹83 assumed here, ≈ ₹94 in Nov 2026).
+>
+> Re-measured at ₹94/$, 100% quota use, with each generation also made editable:
+> - **GST-inclusive** (Razorpay plan amounts are what the customer pays): **≈ 68% at 3 images, ≈ 56% at 5 images**, on every tier.
+> - **Annual plans:** ≈ 61% at 3 images.
+> - **Typical use** (50% of credits at the measured $0.12 blended cost): ≈ 90%. This one still holds.
+>
+> The worst case falls below this PRD's own 75–80% target. No customer is loss-making, but the
+> heaviest users are the least profitable.
+>
+> **Full analysis and proposed fix** (redefine a credit as 3 Turbo previews + 1 final render; add
+> listings limits): [2026-11-14 strategy doc §7.6–§7.7 and §8](../../research/2026-11-14-AI-DIFFERENTIATION-AND-PRICING-STRATEGY.md).
+> The figures below are left unchanged as the historical record.
+
 **Margin validation (2026-08-21, this session)** — verified against real code constants
 (`api/src/config/ai-models.config.ts`: generate $0.06 + $0.004 LLM ≈ ₹5.31; editable/layerize
 +$0.09 ≈ ₹7.47) and real production data (`UsageRecord` table: 107 real records, $0.1195/unit
