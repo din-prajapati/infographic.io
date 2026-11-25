@@ -1,15 +1,15 @@
-> **Scope reconciliation — 2026-11-13:** Superseded draft scope for this implementation slice; NOT implemented or Done. Saved properties client API moves to US-PROP-001 listingApi.ts; selection/search/forms move to US-EDIT-025; design snapshot integration moves to US-PROP-004 and US-EDIT-022. Do not implement the historical task list below independently; use the reconciled owner cards and integration matrix.
+> **Scope reconciliation — 2026-11-13:** Superseded draft scope for this implementation slice; the historical task list was NOT implemented as written — V3 delivery verified 2026-11-25 (see **V3 acceptance**). Saved properties client API moves to US-PROP-001 listingApi.ts; selection/search/forms move to US-EDIT-025; design snapshot integration moves to US-PROP-004 and US-EDIT-022. Do not implement the historical task list below independently; use the reconciled owner cards and integration matrix.
 
 ---
 title: Story Card — US-PROP-006
 type: story
 tags: [orion, story, phase-1.5]
-updated: 2026-10-29
+updated: 2026-11-25
 ---
 
 # Story Card — US-PROP-006 — Property as a saved record (client)
 
-> **Status:** 🔲 Not Started — hardened 2026-10-29 by /new-story
+> **Status:** 🟡 Delivered in V3 — acceptance verified 2026-11-25 on `feat/edit/m-v3-default-editor` (draft PR #91); closes when PR #91 merges
 > **Feature:** EPIC-PROP-01 — Property & Brand Foundation
 > **Epic:** [EPIC-PROP-01](../../EPIC.md)
 > **Milestone:** [M-PROP-01-property-record](../../milestones/M-PROP-01-property-record.md)
@@ -29,7 +29,21 @@ updated: 2026-10-29
 
 ---
 
-## Acceptance Criteria
+## V3 acceptance (2026-11-25)
+
+> The historical ACs below describe the legacy editor (`usePropertyStore`, debounced auto-save, `/my-properties`). The 2026-11-13 reconciliation moved this scope to US-PROP-001, US-PROP-004, US-EDIT-022 and US-EDIT-025. This section records what V3 delivers, so the card can close against it. Decision 2026-11-25 (product owner): on reopen, a changed shared listing is **staged as pending**, never auto-applied.
+
+| # | Acceptance (V3 model) | Status | Evidence |
+|---|---|---|---|
+| V1 | Listings → **Create design** opens the editor with `propertyId`; the listing loads into the Listing panel as pending, and the artwork changes only on **Apply to design** | ✅ | `V3Editor.tsx` property handoff; `e2e/editor/v3-property-handoff.spec.ts`; Chrome check 2026-11-25 |
+| V2 | Saving stores the listing snapshot in the design and links it (`Infographic.propertyId`); reopening restores that snapshot | ✅ | `designs.service.ts`; `client/src/lib/v3ListingWorkflow.ts`; `api/tests/designs/designs.property-link.spec.ts` |
+| V3 | Listing edits made in the editor can be saved back to the shared listing with an expected version; a conflict never overwrites (409 → Keep editing / Reload latest) | ✅ | `V3ListingPanel.tsx` (`propertiesApi.save` with `expectedVersion`); `e2e/listings/listings.spec.ts` (version conflict) |
+| V4 | *(was AC5)* Reopening a design whose shared listing changed since it was saved (e.g. price updated from design A) stages the latest details as pending with a notice; unapplied listing edits saved with the design are never overwritten; a failed fetch keeps the saved details with a notice; staging is not an edit (no prompt, draft or autosave) | ✅ | `b6d1f7b`; `listingRefreshOnReopen` tests in `v3ListingWorkflow.spec.ts`; `applyAsStartingPoint` tests in `v3Autosave.spec.ts`; two reopen tests in `v3-property-handoff.spec.ts` |
+| V5 | *(was AC6–AC8)* The listing library is `/listings` (search, pagination, cards, **Create design**), replacing `/my-properties` | ✅ | `client/src/features/listings/`; `e2e/listings/listings.spec.ts` |
+
+**Not carried over:** AC2 / AC10 / AC11 debounced auto-`PUT` (replaced by explicit save with an expected version, V3); AC4 lazy Property creation on a legacy design's first save (the legacy editor is being retired); AC9 toast (replaced by the inline notice in V4).
+
+## Acceptance Criteria (historical — legacy-editor design, superseded 2026-11-13)
 
 - [ ] **AC1 [happy-path]:** When a design with a non-null `propertyId` is opened, the client calls `GET /api/v1/properties/:propertyId` after `restoreCanvasData` runs, and on success overwrites the property fields in `usePropertyStore` with every `PROPERTY_PAYLOAD_FIELDS` field the server returns (`type, headline, price, beds, baths, sqft, address, description, features, locale, amount, currency, transaction, rentalPeriod`); canvas slots then reflect them.
 - [ ] **AC2 [happy-path]:** While `usePropertyStore.activePropertyId` is non-null, any property-store change (typed in the Property tab or coming from a canvas slot edit) triggers a debounced `PUT /api/v1/properties/:activePropertyId` 800 ms after the last change; the local store updates immediately. Store changes made while a design is loading (`restoreCanvasData`, the AC1 overwrite) do not schedule a PUT.

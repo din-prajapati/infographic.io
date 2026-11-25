@@ -1,15 +1,15 @@
-> **Scope reconciliation — 2026-11-13:** Superseded draft scope for this implementation slice; NOT implemented or Done. Structured pricing transitions move to US-PROP-002; pricing form to US-EDIT-025; pending versus applied price rendering to US-PROP-004 and Template Fields US-EDIT-020. AI generation pricing changes remain deferred. Do not implement the historical task list below independently; use the reconciled owner cards and integration matrix.
+> **Scope reconciliation — 2026-11-13:** Superseded draft scope for this implementation slice; the historical task list was NOT implemented as written — V3 delivery verified 2026-11-25 (see **V3 acceptance**). Structured pricing transitions move to US-PROP-002; pricing form to US-EDIT-025; pending versus applied price rendering to US-PROP-004 and Template Fields US-EDIT-020. AI generation pricing changes remain deferred. Do not implement the historical task list below independently; use the reconciled owner cards and integration matrix.
 
 ---
 title: Story Card — US-PROP-007
 type: story
 tags: [orion, story, phase-1.5]
-updated: 2026-10-30
+updated: 2026-11-25
 ---
 
 # Story Card — US-PROP-007 — Listing intent and price in the editor
 
-> **Status:** 🔲 Not Started — split from US-PROP-002 on 2026-10-30 after the Opus review of PR #83
+> **Status:** 🟡 Delivered in V3 — acceptance verified 2026-11-25 on `feat/edit/m-v3-default-editor` (draft PR #91); closes when PR #91 merges
 > **Epic:** [EPIC-PROP-01](../../EPIC.md)
 > **Milestone:** [M-PROP-01-property-record](../../milestones/M-PROP-01-property-record.md)
 > **Size:** M
@@ -27,7 +27,20 @@ updated: 2026-10-30
 
 ---
 
-## Acceptance Criteria
+## V3 acceptance (2026-11-25)
+
+> The historical ACs below target the legacy `PropertyDetailsForm` / `listingBindings.ts`. The 2026-11-13 reconciliation moved structured pricing to US-PROP-002, the pricing form to US-EDIT-025 and pending/applied rendering to US-PROP-004 / US-EDIT-020, and **deferred AI generation pricing**. On 2026-11-25 the product owner asked for the poster gap to be closed; V4 records that.
+
+| # | Acceptance (V3 model) | Status | Evidence |
+|---|---|---|---|
+| V1 | Sale/rent intent, rental period (month / week / year / day) and price are edited in the Listing panel and the property form | ✅ | `shared/listingWorkflow.ts` (`pricingPatch`); `client/src/features/listings/PropertyForm.tsx`; `V3ListingPanel.tsx` |
+| V2 | **Apply to design** writes `property.intent` as FOR SALE / FOR RENT and `property.price` with its period (e.g. "₹50,000 / month") | ✅ | `v3ListingWorkflow.ts` slot values; `formatListingPrice` in `shared/listingWorkflow.ts`; `api/tests/listing/listing-workflow.spec.ts`; `listingFormat.spec.ts` |
+| V3 | An invalid price is rejected with a message and leaves the saved amount unchanged | ✅ | `pricingPatch` ("enter a valid price with currency"); listing-workflow tests |
+| V4 | Generated posters print **FOR RENT** and the price with its period; the extractor returns `rentalPeriod`; sale and sold prompts stay byte-identical to the production-proven format | ✅ | `2e21da3`; `infographic-prompt.builder.spec.ts` (US-PROP-007 block; E3 golden test unchanged); `prompt-extractor.rental-period.spec.ts` |
+
+**Not carried over:** AC4 "Review price format" legacy back-fill warning (legacy editor only); `listingBindings.price.spec.ts` (coverage lives in the listing-workflow and listing-format specs). **Not verified yet:** a real generated rental poster (paid AI call) — check it visually before release.
+
+## Acceptance Criteria (historical — legacy-editor design, superseded 2026-11-13)
 
 - [ ] **AC1 [happy-path]:** `PropertyDetailsForm.tsx` has a **Listing intent** select (For Sale / For Rent) above the price. The price label reads "Sale price" for sale (or unset) and "Rent per {period}" for rent, when a rental-period select (month / week / year / day) appears. Changing intent clears `amount`, `currency` and `price` and clears the canvas `property.price` slot as **one** undo step (`writeFieldToCanvas('price', '')` is the single history entry); one Undo restores the previous price on the canvas and `amount` in the store. Changing only the rental period keeps `amount` and adds no history entry.
 - [ ] **AC6 [happy-path]:** Typing a valid price in the Property tab (e.g. "4.2 Cr", "₹50,000 / month") sets `amount` and `currency` from `parseIndianPrice` (and `rentalPeriod` from its period hint when the intent is rent) and writes the `property.price` slot with `formatListingPrice(property)` — one function, exported from `listingBindings.ts`, that returns `formatPriceForLocale(amount, locale, currencyToken)` for a sale and the same plus `" / " + rentalPeriod` for a rent. Every writer of the price slot (this form, the canvas binding, US-PROP-003's Auto-Fill) uses it; the input keeps the typed text as the buffer.
