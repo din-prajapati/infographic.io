@@ -16,7 +16,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import { ImageWithFallback } from "../figma/ImageWithFallback";
+import { GalleryThumbnail } from "./GalleryThumbnail";
 import { loadDesigns, deleteDesign, DesignMetadata } from "../../lib/storage";
 import { toast } from "sonner";
 
@@ -124,8 +124,8 @@ export function MyDesignsPage({ onOpenEditor }: MyDesignsPageProps) {
     });
 
   return (
-    <div className="min-h-screen" style={{ background: 'var(--page-bg)' }}>
-      <div className="max-w-[1440px] mx-auto px-6 py-8">
+    <div className="ws-legacy-page" style={{ background: 'var(--page-bg)' }}>
+      <div className="ws-legacy-content">
         {/* Header Section */}
         <div className="mb-8">
           <div className="flex items-start justify-between mb-6">
@@ -149,13 +149,13 @@ export function MyDesignsPage({ onOpenEditor }: MyDesignsPageProps) {
 
           {/* Search and Filters */}
           <div className="flex items-center gap-3 mb-6">
-            <div className="flex-1 relative">
+            <div className="ws-search flex-1 relative">
               <span className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
                 <Search className="w-4 h-4 text-muted-foreground" />
               </span>
               <Input
                 placeholder="Search designs..."
-                className="pl-11 h-11 bg-input-background border-border text-foreground placeholder:text-muted-foreground"
+                className="ws-search-input pl-11 h-11 bg-input-background border-border text-foreground placeholder:text-muted-foreground"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -231,23 +231,15 @@ export function MyDesignsPage({ onOpenEditor }: MyDesignsPageProps) {
               >
                 {/* Design Image */}
                 <div className="relative aspect-[4/3] overflow-hidden">
-                  <img
-                    src={design.thumbnail}
-                    alt={design.name}
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute top-3 left-3">
-                    <Badge className="bg-blue-500 text-white border-0">
-                      Saved
-                    </Badge>
-                  </div>
+                  <GalleryThumbnail src={design.thumbnail} title={design.name} />
                 </div>
+                <div className="ws-gallery-badges"><Badge variant="secondary">Saved</Badge></div>
 
                 {/* Design Info */}
                 <div className="p-4">
                   <div className="flex items-start justify-between mb-2">
-                    <h3 className="flex-1 text-foreground">{design.name}</h3>
-                    <div className="flex items-center gap-1">
+                    <h3 className="flex-1 min-w-0 text-foreground ws-gallery-title">{design.name}</h3>
+                    <div className="flex shrink-0 items-center gap-1">
                       <Button
                         variant="ghost"
                         size="icon"

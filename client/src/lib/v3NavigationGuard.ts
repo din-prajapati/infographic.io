@@ -16,7 +16,7 @@ export function createV3NavigationGuard(target: Window) {
   let restoring: number | null = null;
   let internal = 0;
   let disposed = false;
-  const guards = new Set<{ dirty: () => boolean; confirm: () => boolean }>();
+  const guards = new Set<{ dirty: () => boolean; confirm: (destination: string) => boolean }>();
   const stamp = (value: unknown, position: number) => ({ [key]: { owner, position }, value });
   const metadata = (state: unknown): { owner: string; position: number } | undefined => {
     const value = state && typeof state === 'object' ? (state as Record<string, unknown>)[key] : undefined;
@@ -29,7 +29,7 @@ export function createV3NavigationGuard(target: Window) {
   // State and same-document history entries persist across a reload.
   const unwrap = (state: unknown) => metadata(state) ? (state as { value: unknown }).value : state;
   const address = (url: string) => { const value = new URL(url); return value.pathname + value.search; };
-  const permitted = () => internal > 0 || [...guards].every(guard => !guard.dirty() || guard.confirm());
+  const permitted = (destination: string) => internal > 0 || [...guards].every(guard => !guard.dirty() || guard.confirm(destination));
   const previous = metadata(history.state);
   if (previous) { owner = previous.owner; index = previous.position; }
   originalReplace.call(history, stamp(unwrap(history.state), index), '', href);
@@ -37,7 +37,7 @@ export function createV3NavigationGuard(target: Window) {
 
   function write(method: 'pushState' | 'replaceState', state: unknown, unused: string, url?: string | URL | null) {
     const next = url == null ? target.location.href : new URL(String(url), target.location.href).href;
-    if (restoring !== null || (address(next) !== address(href) && !permitted())) return;
+    if (restoring !== null || (address(next) !== address(href) && !permitted(next))) return;
     const nextIndex = method === 'pushState' ? index + 1 : index;
     (method === 'pushState' ? originalPush : originalReplace).call(history, stamp(state, nextIndex), unused, url);
     index = nextIndex;
@@ -70,7 +70,7 @@ export function createV3NavigationGuard(target: Window) {
     }
     // Entries outside the tracked SPA history chain use document unload.
     if (destination === undefined || destination === index) return;
-    if (address(target.location.href) !== address(href) && !permitted()) {
+    if (address(target.location.href) !== address(href) && !permitted(target.location.href)) {
       event.stopImmediatePropagation();
       restoring = index;
       history.go(index - destination);
@@ -81,7 +81,8 @@ export function createV3NavigationGuard(target: Window) {
   };
   target.addEventListener('popstate', onPop, true);
   return {
-    register(dirty: () => boolean, confirm: () => boolean) {
+    /** `confirm` receives the absolute destination URL; return true to allow the navigation. */
+    register(dirty: () => boolean, confirm: (destination: string) => boolean) {
       const guard = { dirty, confirm }; guards.add(guard); return () => { guards.delete(guard); };
     },
     allowInternal<T>(action: () => T): T { internal++; try { return action(); } finally { internal--; } },

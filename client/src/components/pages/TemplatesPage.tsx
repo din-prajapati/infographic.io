@@ -10,6 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../ui/dialog";
+import { GalleryThumbnail } from "./GalleryThumbnail";
 import { ImageWithFallback } from "../figma/ImageWithFallback";
 import { templatesApi, canvasTemplatesApi } from "../../lib/api";
 import { useQuery } from "@tanstack/react-query";
@@ -200,8 +201,8 @@ export function TemplatesPage({ onOpenEditor }: TemplatesPageProps) {
   };
 
   return (
-    <div className="min-h-screen" style={{ background: 'var(--page-bg)' }}>
-      <div className="max-w-[1440px] mx-auto px-6 py-8">
+    <div className="ws-legacy-page" style={{ background: 'var(--page-bg)' }}>
+      <div className="ws-legacy-content">
         {/* Header Section */}
         <div className="mb-8">
           <div className="flex items-start justify-between mb-6">
@@ -225,13 +226,13 @@ export function TemplatesPage({ onOpenEditor }: TemplatesPageProps) {
 
           {/* Search and tag chip filters (US-AI-040 AC5/AC6) */}
           <div className="flex flex-col gap-3">
-            <div className="flex-1 relative">
+            <div className="ws-search flex-1 relative">
               <span className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
                 <Search className="w-4 h-4 text-muted-foreground" />
               </span>
               <Input
                 placeholder="Search templates..."
-                className="pl-11 h-11 bg-input-background border-border text-foreground placeholder:text-muted-foreground"
+                className="ws-search-input pl-11 h-11 bg-input-background border-border text-foreground placeholder:text-muted-foreground"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -300,22 +301,14 @@ export function TemplatesPage({ onOpenEditor }: TemplatesPageProps) {
                         onClick={() => openPreview(template)}
                         onKeyDown={(e) => onThumbnailKeyDown(e, template)}
                       >
-                        <img
-                          src={template.image}
-                          alt={template.title}
-                          className="w-full h-full object-contain pointer-events-none"
-                        />
-                        <div className="absolute top-3 left-3">
-                          <Badge style={{ backgroundColor: 'var(--badge-custom-bg)', color: 'var(--badge-custom-text)' }}>
-                            My Template
-                          </Badge>
-                        </div>
-                        <div className="absolute top-3 right-3">
-                          <Badge style={template.badgeStyle}>{template.badge}</Badge>
-                        </div>
+                        <GalleryThumbnail src={template.image} title={template.title} />
+                      </div>
+                      <div className="ws-gallery-badges">
+                        <Badge style={{ backgroundColor: 'var(--badge-custom-bg)', color: 'var(--badge-custom-text)' }}>My Template</Badge>
+                        <Badge style={template.badgeStyle}>{template.badge}</Badge>
                       </div>
                       <div className="p-4 flex-1 flex flex-col">
-                        <h3 className="mb-1 text-foreground">{template.title}</h3>
+                        <h3 className="mb-1 text-foreground ws-gallery-title">{template.title}</h3>
                         <p className="text-xs text-muted-foreground mb-3">{template.description}</p>
                         <div className="flex items-center justify-between mt-auto">
                           <span className="text-xs text-muted-foreground">Saved</span>
@@ -379,28 +372,16 @@ export function TemplatesPage({ onOpenEditor }: TemplatesPageProps) {
                   onClick={() => openPreview(template)}
                   onKeyDown={(e) => onThumbnailKeyDown(e, template)}
                 >
-                  <ImageWithFallback
-                    src={template.image}
-                    alt={template.title}
-                    className="w-full h-full object-contain pointer-events-none"
-                  />
-                  <div className="absolute top-3 right-3">
-                    <Badge style={template.badgeStyle}>
-                      {template.badge}
-                    </Badge>
-                  </div>
-                  {template.isPremium && (
-                    <div className="absolute top-3 left-3">
-                      <Badge style={{ backgroundColor: "var(--badge-premium-bg, #0ca0eb)", color: "var(--badge-premium-text, #ffffff)" }}>
-                        Premium
-                      </Badge>
-                    </div>
-                  )}
+                  <GalleryThumbnail src={template.image} title={template.title} />
+                </div>
+                <div className="ws-gallery-badges">
+                  {template.isPremium && <Badge style={{ backgroundColor: "var(--badge-premium-bg, #0ca0eb)", color: "var(--badge-premium-text, #ffffff)" }}>Premium</Badge>}
+                  <Badge style={template.badgeStyle}>{template.badge}</Badge>
                 </div>
 
                 {/* Template Info */}
                 <div className="p-4 flex-1 flex flex-col">
-                  <h3 className="mb-1 text-foreground">{template.title}</h3>
+                  <h3 className="mb-1 text-foreground ws-gallery-title">{template.title}</h3>
                   <p className="text-xs text-muted-foreground mb-3">
                     {template.description}
                   </p>

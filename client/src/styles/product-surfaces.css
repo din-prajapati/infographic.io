@@ -1,0 +1,90 @@
+/* Visual alignment only. Every selector is limited to authenticated pages or
+ * their active portal host; public marketing/auth/legal styling is untouched. */
+.ws-legacy-page{min-width:0;color:var(--v3-ink);font-size:12px;line-height:1.6}
+.ws-legacy-content{width:100%;max-width:none;margin:0;padding:0}
+.ws-legacy-page h1{font-size:28px;line-height:1.2;font-weight:650;letter-spacing:-1px}
+.ws-legacy-page h2{font-size:17px;line-height:1.4;font-weight:700;letter-spacing:-.3px}
+.ws-legacy-page h3{font-size:14px;line-height:1.4;font-weight:600}
+.ws-legacy-page h1+p{font-size:12px;line-height:1.7;color:var(--v3-muted)}
+.ws-legacy-page .glass{background:var(--v3-surface);border:1px solid var(--v3-border);box-shadow:none;backdrop-filter:none;border-radius:12px}
+.ws-legacy-page .glass:hover{border-color:var(--v3-border)}
+.ws-legacy-page [data-testid=template-card]:hover,.ws-legacy-page [data-testid=design-card]:hover{box-shadow:var(--v3-shadow)}
+.ws-legacy-page [data-slot=button]{min-height:38px;border-radius:8px;font-size:11px;font-weight:600}
+.ws-legacy-page :is(input,[data-slot=select-trigger]){font-size:12px;border-radius:8px;border-color:var(--v3-border)}
+.ws-legacy-page input::placeholder{color:var(--v3-muted);opacity:.8}
+.ws-legacy-page [data-slot=button]:focus-visible{outline:2px solid var(--v3-accent);outline-offset:2px}
+.ws-usage-page>div:first-child{background:none;border:0;box-shadow:none;backdrop-filter:none;margin-bottom:24px}
+.ws-usage-page>div:first-child>div{padding:0;max-width:none;height:auto;min-height:44px;gap:16px;flex-wrap:wrap}
+.ws-usage-content{width:100%;max-width:none;margin:0;padding:0}
+
+/* The reference uses a compact 12px body / 11px secondary and control scale. */
+.ws-legacy-page .text-sm{font-size:12px}
+.ws-legacy-page .text-xs{font-size:11px}
+.ws-root .ws-search{position:relative;min-width:0}
+.ws-root .ws-search .ws-search-input{
+  width:100%;height:44px;min-height:44px;border:1px solid var(--v3-border);border-radius:8px;
+  padding:10px 44px;font-family:var(--v3-font);font-size:12px;font-weight:400;line-height:20px;
+  color:var(--v3-ink);background:var(--v3-surface);box-shadow:none;
+}
+.ws-root .ws-search .ws-search-input::placeholder{color:var(--v3-muted);opacity:.8}
+.ws-root .ws-search .ws-search-input:focus,.ws-root .ws-search .ws-search-input:focus-visible{
+  outline:2px solid var(--v3-accent);outline-offset:2px;border-color:var(--v3-accent);box-shadow:none;
+}
+.ws-search>span svg,.ws-search>.lst-search-icon{width:16px;height:16px;color:var(--v3-muted)}
+.ws-search>.lst-search-icon{left:16px}
+.ws-search-input[type=search]::-webkit-search-cancel-button{-webkit-appearance:none}
+
+/* Preserve the existing format taxonomy, thumbnails and selection handlers.
+ * Only the frame, density and responsive arrangement change. */
+body[data-product-theme] [role=dialog].format-picker{
+  width:calc(100vw - 48px);max-width:1040px;height:min(82vh,580px);max-height:calc(100dvh - 40px);
+  border-radius:14px;box-shadow:var(--v3-shadow);font-size:13px;
+}
+body[data-product-theme] .format-picker [data-slot=dialog-header]{padding:20px 24px 18px}
+body[data-product-theme] .format-picker h2{font-size:20px;font-weight:650;letter-spacing:-.4px}
+.format-picker-categories{width:200px;background:var(--v3-workspace);padding:12px}
+.format-picker-categories button{min-height:40px;border-radius:8px;font-size:13px;gap:10px}
+.format-picker-categories button svg{width:17px;height:17px;flex:none}
+.format-picker-categories button[aria-pressed=true]{background:var(--v3-selected);color:var(--v3-accent)}
+.format-picker-options{min-width:0;padding:22px 24px;overscroll-behavior:contain}
+.format-picker-options h3{font-size:16px;line-height:1.4;letter-spacing:-.2px}
+.format-picker-options p{font-size:13px;line-height:1.6;color:var(--v3-muted)}
+.format-picker-tiles{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.format-picker-tile{min-width:0;background:var(--v3-surface);border:1px solid var(--v3-border);border-radius:10px;padding:12px;box-shadow:none}
+.format-picker-tile>span{font-size:12px;line-height:1.4;color:var(--v3-ink)}
+.format-picker-tile:hover{background:var(--v3-hover);border-color:var(--v3-accent)}
+.format-picker-tile[aria-pressed=true]{background:var(--v3-tint);border-color:var(--v3-accent);box-shadow:0 0 0 1px var(--v3-accent)}
+.format-picker-custom{max-width:100%;flex-wrap:wrap;justify-content:center}
+.format-picker-custom input{min-height:40px;background:var(--v3-surface);border-radius:8px}
+@media(max-width:1000px){.format-picker-tiles{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:767px){
+  .ws-legacy-page h1{font-size:24px}
+  .ws-legacy-page .flex.items-start.justify-between{flex-wrap:wrap;gap:16px}
+  .ws-legacy-page .flex.items-center.gap-3{flex-wrap:wrap}
+  .ws-legacy-page .flex.items-center.gap-3>.relative{flex-basis:100%}
+  .ws-usage-page>div:first-child>div>div{flex-wrap:wrap}
+  .format-picker-categories{width:160px}
+  .format-picker-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:560px){
+  body[data-product-theme] [role=dialog].format-picker{width:calc(100vw - 24px);height:calc(100dvh - 32px);max-height:calc(100dvh - 32px)}
+  body[data-product-theme] .format-picker [data-slot=dialog-header]{padding:18px 44px 16px 16px}
+  .format-picker-body{flex-direction:column}
+  .format-picker-categories{display:flex;align-items:center;gap:6px;overflow-x:auto;overflow-y:hidden;width:100%;border-right:0;border-bottom:1px solid var(--v3-border);padding:8px;flex-shrink:0}
+  .format-picker-categories button{width:auto;min-width:max-content;white-space:nowrap;padding:8px 10px;margin:0}
+  .format-picker-categories>div{display:none}
+  .format-picker-options{padding:18px 16px}
+  .format-picker-tile{padding:10px}
+  .format-picker-custom{gap:12px}
+}
+@media(prefers-reduced-motion:reduce){
+  body[data-product-theme] .format-picker-tile{transition:none}
+}
+
+/* Gallery metadata has its own row; artwork remains unobscured. */
+.ws-gallery-image{display:block;width:100%;height:100%;object-fit:contain;pointer-events:none}
+.ws-gallery-fallback{display:flex;width:100%;height:100%;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:var(--v3-workspace);color:var(--v3-muted);font-size:11px;text-align:center;padding:16px}
+.ws-gallery-fallback svg{width:24px;height:24px}
+.ws-gallery-badges{display:flex;align-items:center;flex-wrap:wrap;gap:6px;padding:12px 16px 0}
+.ws-gallery-badges>*{max-width:100%;white-space:normal;overflow-wrap:anywhere}
+.ws-gallery-title{overflow-wrap:anywhere;line-height:1.5}

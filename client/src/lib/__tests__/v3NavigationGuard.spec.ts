@@ -18,6 +18,12 @@ describe('V3 navigation boundary', () => {
     expect(location.href).toBe(url); expect(history.state).toEqual(state);
     expect(f.confirm).toHaveBeenCalledTimes(1);
   });
+  // Contract: consent receives the absolute destination so a guard can continue there after its own dialog.
+  it('passes the destination URL to confirm', () => {
+    const f = setup();
+    history.pushState({}, '', '/listings/c1?tab=photos');
+    expect(f.confirm).toHaveBeenCalledWith(new URL('/listings/c1?tab=photos', location.href).href);
+  });
   // Contract: consent applies once at the history boundary; unrelated state fields survive tagging.
   it('accepts a route with original application state fields', () => {
     const f = setup(); f.confirm.mockReturnValue(true);

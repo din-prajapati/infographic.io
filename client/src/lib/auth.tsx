@@ -9,6 +9,8 @@ interface AuthContextType {
   token: string | null;
   login: (user: LegacyUser, token: string) => void;
   logout: () => void;
+  /** Merge profile changes (name, photo) into the cached session so the shell updates without a reload. */
+  updateUser: (patch: Partial<LegacyUser>) => void;
   isAuthenticated: boolean;
   isLoading: boolean;
 }
@@ -84,6 +86,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('auth_user', JSON.stringify(newUser));
   };
 
+  const updateUser = (patch: Partial<LegacyUser>) => {
+    setUser(current => {
+      if (!current) return current;
+      const next = { ...current, ...patch };
+      localStorage.setItem('auth_user', JSON.stringify(next));
+      return next;
+    });
+  };
+
   const logout = () => {
     queryClient.clear();
     setUser(null);
@@ -101,6 +112,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         token,
         login,
         logout,
+        updateUser,
         isAuthenticated: !!user && !!token,
         isLoading,
       }}

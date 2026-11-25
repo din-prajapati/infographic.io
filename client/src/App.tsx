@@ -8,18 +8,20 @@ import { TooltipProvider } from "./components/ui/tooltip";
 import { Toaster } from "./components/ui/sonner";
 import { TemplatesPage } from "./components/pages/TemplatesPage";
 import { MyDesignsPage } from "./components/pages/MyDesignsPage";
-import { AccountPage } from "./components/pages/AccountPage";
 import { EditorLayout } from "./components/editor/EditorLayout";
-import { AppHeader } from "./components/navigation/AppHeader";
+import { WorkspaceLayout } from "./features/workspace/WorkspaceLayout";
+import HowItWorksPage from "./features/workspace/HowItWorksPage";
+import ListingsPage from "./features/listings/ListingsPage";
+import NewPropertyPage from "./features/listings/NewPropertyPage";
+import ListingDetailPage from "./features/listings/ListingDetailPage";
+import AgentBrandPage from "./features/agent-brand/AgentBrandPage";
 import AuthPage from "./pages/AuthPage";
 import PricingPage from "./pages/PricingPage";
 import LandingPage from "./pages/LandingPage";
-import UsageDashboardPage from "./pages/UsageDashboardPage";
 import AuthCallbackPage from "./pages/AuthCallbackPage";
 import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/auth/ResetPasswordPage";
 import VerifyEmailPage from "./pages/auth/VerifyEmailPage";
-import { EmailVerificationBanner } from "./components/ui/EmailVerificationBanner";
 import { EmailVerificationRequiredDialog } from "./components/auth/EmailVerificationRequiredDialog";
 import TermsPage from "./pages/legal/TermsPage";
 import PrivacyPage from "./pages/legal/PrivacyPage";
@@ -31,7 +33,7 @@ import { VersionBadge } from "./components/VersionBadge";
 import { FormatPickerDialog } from "./components/pages/FormatPickerDialog";
 import { useCanvasStore } from "./hooks/useCanvasStore";
 import { initializeV3NavigationGuard } from './lib/v3NavigationGuard';
-import { parseV3EditorParams } from './lib/v3EditorUrl';
+import { buildV3EditorUrl, legacyEditorRedirect, parseV3EditorParams } from './lib/v3EditorUrl';
 
 initializeV3NavigationGuard();
 
@@ -65,6 +67,10 @@ function EditorInner() {
     navigate('/templates');
   };
 
+  // Legacy editor retired: any /editor URL without editor=v3 goes to V3 (editor=legacy is a temporary escape hatch).
+  const v3Redirect = legacyEditorRedirect(search);
+  if (v3Redirect) return <Redirect to={v3Redirect} replace />;
+
   if (params.get('editor') === 'v3') {
     return <Suspense fallback={<div role="status" className="p-6">Opening design…</div>}><V3Editor {...parseV3EditorParams(search)} /></Suspense>;
   }
@@ -89,7 +95,7 @@ function TemplatesPageWrapper() {
 
   const handleOpenTemplate = (templateId?: string) => {
     if (templateId) {
-      navigate(`/editor?templateId=${encodeURIComponent(templateId)}`);
+      navigate(buildV3EditorUrl({ templateId }));
     } else {
       // No template selected — open Format Picker so user picks a canvas size first (AC1).
       setPickerOpen(true);
@@ -99,11 +105,11 @@ function TemplatesPageWrapper() {
   const handleFormatSelect = (width: number, height: number, templateId?: string) => {
     setPickerOpen(false);
     if (templateId) {
-      navigate(`/editor?templateId=${encodeURIComponent(templateId)}`);
+      navigate(buildV3EditorUrl({ templateId }));
     } else {
       // Pre-size the canvas before navigating to blank editor (AC3).
       loadCanvas({ elements: [], canvasWidth: width, canvasHeight: height, backgroundColor: '#FFFFFF', zoom: 1 });
-      navigate('/editor');
+      navigate(buildV3EditorUrl({ canvasSize: { width, height } }));
     }
   };
 
@@ -126,7 +132,7 @@ function MyDesignsPageWrapper() {
 
   const handleOpenDesign = (designId?: string) => {
     if (designId) {
-      navigate(`/editor?designId=${designId}`);
+      navigate(buildV3EditorUrl({ designId }));
     } else {
       // No design selected — open Format Picker so user picks canvas size first (AC1).
       setPickerOpen(true);
@@ -136,11 +142,11 @@ function MyDesignsPageWrapper() {
   const handleFormatSelect = (width: number, height: number, templateId?: string) => {
     setPickerOpen(false);
     if (templateId) {
-      navigate(`/editor?templateId=${encodeURIComponent(templateId)}`);
+      navigate(buildV3EditorUrl({ templateId }));
     } else {
       // Pre-size the canvas before navigating to blank editor (AC3).
       loadCanvas({ elements: [], canvasWidth: width, canvasHeight: height, backgroundColor: '#FFFFFF', zoom: 1 });
-      navigate('/editor');
+      navigate(buildV3EditorUrl({ canvasSize: { width, height } }));
     }
   };
 
@@ -156,28 +162,51 @@ function MyDesignsPageWrapper() {
   );
 }
 
-/** Layout with top nav for Templates, My Designs, Account so users can navigate between them. */
-function AppLayoutWithHeader({ component: Component }: { component: () => JSX.Element }) {
+/**
+ * Authenticated non-editor pages render inside one persistent workspace shell (rev-2 spec §2–§3).
+ * Every component below is defined at module scope, so neither the shell nor the page remounts when the URL changes
+ * (e.g. the library's ?q= search updates while typing).
+ */
+const WORKSPACE_PATH = /^\/(?:workspace|listings|agent-brand|templates|my-designs|account|usage)(?:\/|$)/;
+/** Home is reserved for the Assistant Home workstream; until it ships it opens Listings. */
+function WorkspaceHomeRoute() { return <Redirect to="/listings" replace />; }
+/** The Account and Usage pages became tabs of the Settings dialog; old links open it over Listings. */
+function AccountRedirect() { return <Redirect to="/listings#settings/account" replace />; }
+function UsageRedirect() { return <Redirect to="/listings#settings/usage" replace />; }
+function WorkspaceSection() {
   return (
-    <>
-      <AppHeader />
-      <EmailVerificationBanner />
-      <main className="flex-1">
-        <Component />
-      </main>
-    </>
+    <WorkspaceLayout>
+      <Switch>
+        <Route path="/workspace/how-it-works" component={HowItWorksPage} />
+        <Route path="/workspace" component={WorkspaceHomeRoute} />
+        {/* "/listings/new" must stay above "/listings/:propertyId". */}
+        <Route path="/listings/new" component={NewPropertyPage} />
+        <Route path="/listings/:propertyId">{params => <ListingDetailPage key={params.propertyId} propertyId={decodeURIComponent(params.propertyId)} />}</Route>
+        <Route path="/listings" component={ListingsPage} />
+        <Route path="/agent-brand" component={AgentBrandPage} />
+        <Route path="/templates" component={TemplatesPageWrapper} />
+        <Route path="/my-designs" component={MyDesignsPageWrapper} />
+        <Route path="/account" component={AccountRedirect} />
+        <Route path="/usage" component={UsageRedirect} />
+        <Route><div className="ws-empty"><h2>Page not found</h2></div></Route>
+      </Switch>
+    </WorkspaceLayout>
   );
 }
+function ProtectedWorkspace() { return <ProtectedRoute component={WorkspaceSection} />; }
+function WorkspaceShellRoute() { return <AppOnlyRoute component={ProtectedWorkspace} />; }
 
 function HomeRoute() {
   const { isAuthenticated, isLoading } = useAuth();
   if (isLoading) return null;
-  if (isAuthenticated) return <Redirect to="/templates" />;
+  if (isAuthenticated) return <Redirect to="/listings" />;
   if (isAppHost()) return <Redirect to="/auth" />;
   return <LandingPage />;
 }
 
 function Router() {
+  const [location] = useLocation();
+  if (WORKSPACE_PATH.test(location)) return <WorkspaceShellRoute />;
   return (
     <Switch>
       <Route path="/auth/callback" component={() => <AppOnlyRoute component={AuthCallbackPage} />} />
@@ -187,10 +216,6 @@ function Router() {
       <Route path="/auth/verify-email" component={() => <AppOnlyRoute component={VerifyEmailPage} />} />
       <Route path="/auth" component={() => <AppOnlyRoute component={AuthPage} />} />
       <Route path="/pricing" component={PricingPage} />
-      <Route path="/templates" component={() => <AppOnlyRoute component={() => <ProtectedRoute component={() => <AppLayoutWithHeader component={TemplatesPageWrapper} />} />} />} />
-      <Route path="/my-designs" component={() => <AppOnlyRoute component={() => <ProtectedRoute component={() => <AppLayoutWithHeader component={MyDesignsPageWrapper} />} />} />} />
-      <Route path="/account" component={() => <AppOnlyRoute component={() => <ProtectedRoute component={() => <AppLayoutWithHeader component={AccountPage} />} />} />} />
-      <Route path="/usage" component={() => <AppOnlyRoute component={() => <ProtectedRoute component={() => <UsageDashboardPage />} />} />} />
       <Route path="/editor" component={() => <AppOnlyRoute component={EditorRoute} />} />
       <Route path="/terms" component={TermsPage} />
       <Route path="/privacy" component={PrivacyPage} />

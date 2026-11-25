@@ -1,0 +1,66 @@
+/*
+ * V3 design tokens — single source for the V3 editor and every workspace page (Slice 0, 2026-11-17).
+ * Colour, ink and shadcn HSL overrides only; layout stays in the owning stylesheet (v3-editor.css, workspace.css).
+ * Theme: set data-theme="light|dark" on the themed root (the editor and the workspace shell both read ThemeProvider).
+ */
+.v3-theme,.v3-editor,body[data-product-theme]{--v3-surface:#fff;--v3-workspace:#f2f4f6;--v3-ink:#202a35;--v3-muted:#566372;--v3-border:#d9e0e6;--v3-accent:#076b6c;--v3-selected:#dff5f0;--v3-hover:#edf0f3;--v3-shadow:0 6px 24px #123e621a;--v3-on-accent:#fff;--v3-tint:#f0f7f5;--v3-tint-border:#d6e6e2;--v3-chip:#ffffffb0;--v3-chip-ink:#4f6f68;--v3-chip-strong:#d9ece4;--v3-chip-strong-ink:#0f6552;--v3-warn-bg:#fff4dd;--v3-warn-ink:#7a5310;--v3-pass-bg:#edf7f0;--v3-pass-ink:#14684f;--v3-custom:#b7791f;--v3-custom-badge:#8a5a12;--v3-custom-badge-ink:#fff;--background:0 0% 100%;--foreground:213 25% 17%;--card:0 0% 100%;--card-foreground:213 25% 17%;--muted:210 20% 95%;--muted-foreground:214 14% 39%;--border:210 20% 86%;--accent:164 52% 92%;--accent-foreground:181 88% 22%;--primary:181 88% 22%;--ring:181 88% 22%}
+.v3-theme[data-theme=dark],.v3-editor[data-theme=dark],body[data-product-theme=dark]{--v3-surface:#1e2228;--v3-workspace:#111318;--v3-ink:#edf1f5;--v3-muted:#afb9c7;--v3-border:#343e4a;--v3-accent:#7adbcb;--v3-selected:#203f3e;--v3-hover:#2a3039;--v3-shadow:0 6px 24px #0004;--v3-on-accent:#0d2b2a;--v3-tint:#1b3230;--v3-tint-border:#2d4a47;--v3-chip:#253a38;--v3-chip-ink:#b9dcd4;--v3-chip-strong:#22463f;--v3-chip-strong-ink:#a6ead9;--v3-warn-bg:#3a2e17;--v3-warn-ink:#f4d18f;--v3-pass-bg:#173a2e;--v3-pass-ink:#a2e3c6;--v3-custom:#e0a94a;--v3-custom-badge:#e0a94a;--v3-custom-badge-ink:#2a1a00;--background:216 14% 14%;--foreground:210 29% 95%;--card:216 14% 14%;--card-foreground:210 29% 95%;--muted:216 15% 19%;--muted-foreground:215 18% 73%;--border:214 18% 25%;--accent:178 33% 19%;--accent-foreground:170 57% 67%;--primary:170 57% 67%;--ring:170 57% 67%}
+.v3-theme,body[data-product-theme]{
+  --v3-font:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  /* Product branding: exact V3 header gradient, shared with the workspace. */
+  --ws-topbar:#102d46;--ws-topbar-ink:#ffffff;--ws-topbar-muted:#b3c7d7;--ws-topbar-line:#ffffff24;--ws-brand-mark:#2ab5a0;
+  --ws-price:#123e62;--ws-radius:12px;--ws-card-shadow:0 8px 30px #133f6210;
+  /* Existing pages (Templates, My designs, Account, Usage) read these design-tokens.css / shadcn names. */
+  --page-bg:var(--v3-workspace);--card-bg:var(--v3-surface);--text-secondary:var(--v3-muted);--border-subtle:var(--v3-border);
+  --popover:var(--card);--popover-foreground:var(--card-foreground);--input:var(--border);--secondary:var(--muted);--secondary-foreground:var(--foreground);
+  --primary-foreground:0 0% 100%;
+  font-family:var(--v3-font);font-size:14px;color:var(--v3-ink);background:var(--v3-workspace);
+}
+.v3-theme[data-theme=dark],body[data-product-theme=dark]{--primary-foreground:177 54% 11%;--ws-topbar:#0c1d2b;--ws-topbar-muted:#9aafbf;--ws-price:#82c6c9;--ws-card-shadow:0 8px 30px #0006}
+
+/* Complete shadcn aliases for portalled dialogs, selects, menus and previews.
+ * All are scoped to authenticated surfaces; root/public-page variables stay intact. */
+.v3-theme,.v3-editor,body[data-product-theme]{
+  --v3-header-bg:linear-gradient(110deg,#123e62,#196965);
+  --popover:var(--card);--popover-foreground:var(--card-foreground);--input:var(--border);
+  --input-background:var(--card);--secondary:var(--muted);--secondary-foreground:var(--foreground);
+  --primary-foreground:0 0% 100%;--destructive:0 65% 43%;--destructive-foreground:0 0% 100%;
+  --glass-bg:var(--v3-surface);--glass-border:var(--v3-border);--glass-shadow:var(--v3-shadow);
+  --glass-highlight:0 0 0 transparent;--glass-blur:0px;
+  --page-bg:var(--v3-workspace);--card-bg:var(--v3-surface);--text-secondary:var(--v3-muted);--border-subtle:var(--v3-border);
+  --ws-primary:var(--v3-accent);--ws-primary-border:var(--v3-accent);--ws-input-border:var(--v3-border);
+  --ws-focus:var(--v3-accent);--ws-shadow:var(--v3-shadow);--ws-price:#123e62;
+  --ws-stage:var(--v3-hover);--ws-sidebar:var(--v3-surface);--ws-radius:12px;
+  --ws-preview-bg:linear-gradient(145deg,var(--v3-selected),var(--v3-workspace));
+  --badge-custom-bg:var(--v3-selected);--badge-custom-text:var(--v3-accent);
+  --badge-starter-bg:var(--v3-tint);--badge-starter-text:var(--v3-chip-ink);
+  --badge-premium-bg:var(--ws-price);--badge-premium-text:#fff;
+}
+.v3-theme[data-theme=dark],.v3-editor[data-theme=dark],body[data-product-theme=dark]{
+  --primary-foreground:177 54% 11%;--ws-price:var(--v3-accent);--destructive:0 78% 72%;
+  --badge-premium-bg:var(--v3-selected);--badge-premium-text:var(--v3-accent);
+}
+body[data-product-theme] :is([role=dialog],[role=alertdialog],[role=menu],[role=listbox],[role=tooltip]){
+  font-family:var(--v3-font);color:var(--v3-ink);font-size:13px;line-height:1.5;
+}
+body[data-product-theme] :is([role=dialog],[role=alertdialog]){
+  border:1px solid var(--v3-border);border-radius:14px;background:var(--v3-surface);
+}
+body[data-product-theme] :is([role=menu],[role=listbox]){
+  background:var(--v3-surface);border-color:var(--v3-border);
+}
+body[data-product-theme] :is([role=dialog],[role=alertdialog]) h2{
+  font-size:20px;line-height:1.3;font-weight:650;letter-spacing:-.4px;
+}
+body[data-product-theme] :is([role=dialog],[role=alertdialog]) [data-slot=button]{
+  min-height:38px;border-radius:8px;font-size:13px;font-weight:600;
+}
+body[data-product-theme] :is([role=dialog],[role=alertdialog]) :is(input,select,textarea){
+  color:var(--v3-ink);border-color:var(--v3-border);accent-color:var(--v3-accent);
+}
+body[data-product-theme] :is([role=menuitem],[role=option])[data-highlighted]{
+  background:var(--v3-selected);color:var(--v3-accent);
+}
+body[data-product-theme] :is([role=dialog],[role=alertdialog],[role=menu],[role=listbox]) :focus-visible{
+  outline:2px solid var(--v3-accent);outline-offset:2px;
+}

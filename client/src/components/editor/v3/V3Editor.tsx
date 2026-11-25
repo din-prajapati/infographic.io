@@ -19,6 +19,8 @@ import type { DesignMetadata } from '../../../lib/storage';
 import { queryClient } from '../../../lib/queryClient';
 import { loadTemplateById } from '../../../lib/storage';
 import { resolveUrlTemplate, type V3EditorParams } from '../../../lib/v3EditorUrl';
+import { propertiesApi } from '../../../lib/listingApi';
+import type { SavedProperty } from '@shared/listingWorkflow';
 import { AIChatBox } from '../../ai-chat/AIChatBox';
 import type { Template } from '../../ai-chat/types';
 import { V3Canvas } from './V3Canvas';
@@ -34,6 +36,8 @@ import {useV3EditorShortcuts} from '../../../hooks/useV3EditorShortcuts';
 import {clearV3Clipboard} from '../../../lib/v3EditorActions';
 import {clearElementPreview} from '../../../hooks/useV3ElementPreview';
 import {clearV3StrokeMemory} from './V3ElementToolbar';
+import '../../../styles/v3-tokens.css';
+import {useProductSurfaceTheme} from '../../../hooks/useProductSurfaceTheme';
 import './v3-editor.css';
 import './v3-responsive.css';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from '../../ui/dropdown-menu';
@@ -45,7 +49,7 @@ defaultPaintColors.push({type:'linear',angle:0,stops:[{color:'#123E62',opacity:1
 
 
 const rail=[['Templates',LayoutTemplate],['Tools',MousePointer2],['Elements',Shapes],['Text',Type],['Uploads',Upload],['Brand',Palette],['Listing',House],['Details',NotebookTabs]] as const;
-export default function V3Editor({designId,templateId,canvasSize}:V3EditorParams) {
+export default function V3Editor({designId,templateId,canvasSize,propertyId}:V3EditorParams) {
   const {user}=useAuth();
   const [,navigate]=useLocation();
   const listing=useV3ListingWorkflow();
@@ -53,6 +57,7 @@ export default function V3Editor({designId,templateId,canvasSize}:V3EditorParams
   const session=useV3DesignSession(designId,user?String(user.id):undefined);
   const {undo,redo,history,addElement,selectElement}=useCanvasStore();
   const {resolvedTheme}=useTheme();
+  useProductSurfaceTheme(resolvedTheme);
   const [panel,setPanel]=useState<V3Panel|'Tools'|null>(()=>typeof window!=='undefined'&&typeof window.matchMedia==='function'&&window.matchMedia('(max-width: 767px)').matches?null:'Templates');
   const [sheetExpanded,setSheetExpanded]=useState(false);
   const [fieldsOpen,setFieldsOpen]=useState(false);
@@ -216,6 +221,26 @@ export default function V3Editor({designId,templateId,canvasSize}:V3EditorParams
     })();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   },[designId,templateId,canvasSize?.width,canvasSize?.height,ready,session.id]);
+  // Property handoff (rev-2 spec §9): /editor?editor=v3[&templateId|&width&height]&propertyId=<id>. The editor first
+  // settles its session — a template start creates and opens a new Design — then stages the authorized Property as the
+  // Listing panel's pending source. Artwork changes only on Apply to design. A saved design (designId) never takes it.
+  const handoff=useRef<{propertyId:string;waitForDesign:boolean;done:boolean}|null>(propertyId&&!designId?{propertyId,waitForDesign:!!templateId,done:false}:null);
+  const [handoffProperty,setHandoffProperty]=useState<SavedProperty|null>(null);
+  useEffect(()=>{
+    const pending=handoff.current;if(!pending||pending.done)return;
+    let live=true;
+    propertiesApi.get(pending.propertyId).then(saved=>{if(live)setHandoffProperty(saved);}).catch(()=>{if(live){pending.done=true;setWorkflowError('This property could not be opened. It may have been removed, or it is not shared with your organization.');}});
+    return()=>{live=false;};
+  },[]);
+  useEffect(()=>{
+    const pending=handoff.current;if(!pending||pending.done||!handoffProperty||!ready)return;
+    if(pending.waitForDesign?!(designId&&session.id===designId):(!!designId||!!session.id))return;
+    pending.done=true;
+    try{listing.selectListing(handoffProperty.record,handoffProperty.id,handoffProperty.version);setPanel('Listing');setWorkflowNotice('Property loaded in the Listing panel. Review it, then Apply to design to update the artwork.');}
+    catch{setWorkflowError('This property could not be loaded into the design.');}
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[handoffProperty,ready,designId,session.id]);
+  const returnPropertyId=handoff.current?.propertyId??listing.appliedListingId??null;
   async function placeTemplate(template:Template){
     setAssistantError(null);
     try{
@@ -242,7 +267,7 @@ export default function V3Editor({designId,templateId,canvasSize}:V3EditorParams
   return <div className="v3-editor" data-theme={resolvedTheme} data-panel-open={panelVisible} data-sheet-expanded={sheetExpanded} onFocusCapture={event=>{panelHadFocus.current=!!sheetRef.current?.contains(event.target);if(event.target instanceof HTMLElement&&!panelHadFocus.current)panelOpener.current=event.target;}}>
     <h1 className="sr-only">V3 Editor</h1>
     <header className="v3-header" hidden={isPreviewMode}><Link href="/my-designs" className="v3-logo"><img src="/logo-icon-option6-light.png" alt="" width="28" height="28"/><span>Buildographic</span></Link>
-      <Link href="/my-designs" className="v3-projects" aria-label="Projects"><ArrowLeft/><span>Projects</span></Link>
+      {returnPropertyId?<Link href={`/listings/${encodeURIComponent(returnPropertyId)}`} className="v3-projects" aria-label="Back to listing"><ArrowLeft/><span>Listing</span></Link>:<Link href="/my-designs" className="v3-projects" aria-label="Projects"><ArrowLeft/><span>Projects</span></Link>}
       <div className="v3-title-wrap"><span aria-hidden="true" className="v3-title-measure">{session.title || 'Untitled design'}</span><input aria-label="Design title" className="v3-title" size={1} value={session.title} disabled={!ready} onChange={event=>session.setTitle(event.target.value)}/></div>
       <div className="v3-cloud-wrap"><button className="v3-icon" aria-label="Save status" aria-expanded={cloud} onClick={()=>setCloud(!cloud)}>{status==='Saved'?<Cloud/>:<CloudUpload/>}</button><span className="sr-only" role="status">{status}</span>
         {cloud&&<section className="v3-popover v3-cloud" aria-label="Save status details"><h2>{status==='Saved'?'Changes saved':status==='Saving…'?'Saving changes…':'Changes not saved'}</h2><p>{session.lastSavedAt?`Last saved: ${new Date(session.lastSavedAt).toLocaleTimeString()}`:designId?'Loaded from saved design.':'Save this design to start automatic saving.'}</p>{session.error?.operation==='save'&&<button onClick={()=>void save()}>Retry save</button>}</section>}

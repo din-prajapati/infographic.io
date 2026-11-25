@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import * as catalog from '../galleryTemplateCatalog';
-import { hasTemplateLayout, parseV3EditorParams, resolveUrlTemplate, TEMPLATE_UNAVAILABLE } from '../v3EditorUrl';
+import { buildV3EditorUrl, hasTemplateLayout, legacyEditorRedirect, parseV3EditorParams, resolveUrlTemplate, TEMPLATE_UNAVAILABLE } from '../v3EditorUrl';
 import type { DesignMetadata } from '../storage';
 
 const layout = { canvasWidth: 1080, canvasHeight: 1080, elements: [{ id: 'h', type: 'text', content: '[Headline]', x: 0, y: 0, width: 100, height: 40 }] };
@@ -22,6 +22,48 @@ describe('parseV3EditorParams — V3 deep-link contract', () => {
   });
   it('lets templateId win over a size', () => {
     expect(parseV3EditorParams('?editor=v3&templateId=t1&width=1080&height=1080')).toEqual({ designId: undefined, templateId: 't1', canvasSize: undefined });
+  });
+});
+
+describe('buildV3EditorUrl', () => {
+  it('builds design, template, size and blank URLs with V3 precedence', () => {
+    expect(buildV3EditorUrl({ designId: 'cabc', templateId: 't1' })).toBe('/editor?editor=v3&designId=cabc');
+    expect(buildV3EditorUrl({ templateId: 'starter one' })).toBe('/editor?editor=v3&templateId=starter+one');
+    expect(buildV3EditorUrl({ canvasSize: { width: 1080, height: 1350 } })).toBe('/editor?editor=v3&width=1080&height=1350');
+    expect(buildV3EditorUrl()).toBe('/editor?editor=v3');
+  });
+});
+
+describe('propertyId — V3 handoff from a saved Property', () => {
+  it('reads propertyId with a template, a size or alone', () => {
+    expect(parseV3EditorParams('?editor=v3&templateId=t1&propertyId=p1')).toEqual({ designId: undefined, templateId: 't1', canvasSize: undefined, propertyId: 'p1' });
+    expect(parseV3EditorParams('?editor=v3&width=1080&height=1080&propertyId=p1').propertyId).toBe('p1');
+    expect(parseV3EditorParams('?editor=v3&propertyId=p1').propertyId).toBe('p1');
+  });
+  it('ignores propertyId when a saved design is opened, and rejects malformed ids', () => {
+    expect(parseV3EditorParams('?editor=v3&designId=d1&propertyId=p1').propertyId).toBeUndefined();
+    expect(parseV3EditorParams('?editor=v3&propertyId=bad%20id').propertyId).toBeUndefined();
+  });
+  it('builds handoff URLs and drops propertyId next to a designId', () => {
+    expect(buildV3EditorUrl({ templateId: 't1', propertyId: 'p1' })).toBe('/editor?editor=v3&templateId=t1&propertyId=p1');
+    expect(buildV3EditorUrl({ canvasSize: { width: 1080, height: 1350 }, propertyId: 'p1' })).toBe('/editor?editor=v3&width=1080&height=1350&propertyId=p1');
+    expect(buildV3EditorUrl({ designId: 'd1', propertyId: 'p1' })).toBe('/editor?editor=v3&designId=d1');
+  });
+  it('keeps propertyId when redirecting a legacy URL', () => {
+    expect(legacyEditorRedirect('?templateId=t1&propertyId=p1')).toBe('/editor?editor=v3&templateId=t1&propertyId=p1');
+  });
+});
+
+describe('legacyEditorRedirect — legacy editor retired', () => {
+  it('sends legacy deep links to V3, keeping their parameters', () => {
+    expect(legacyEditorRedirect('')).toBe('/editor?editor=v3');
+    expect(legacyEditorRedirect('?designId=cabc')).toBe('/editor?editor=v3&designId=cabc');
+    expect(legacyEditorRedirect('?templateId=t1')).toBe('/editor?editor=v3&templateId=t1');
+    expect(legacyEditorRedirect('?editor=old&width=1080&height=1080')).toBe('/editor?editor=v3&width=1080&height=1080');
+  });
+  it('does not redirect V3 URLs or the legacy escape hatch', () => {
+    expect(legacyEditorRedirect('?editor=v3&designId=cabc')).toBeNull();
+    expect(legacyEditorRedirect('?editor=legacy&designId=cabc')).toBeNull();
   });
 });
 

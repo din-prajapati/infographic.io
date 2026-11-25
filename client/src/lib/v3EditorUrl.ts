@@ -9,12 +9,15 @@ import type { DesignMetadata } from './storage';
  *   templateId=<id>              start a separate design from a template: a saved or curated canvas template (API) or
  *                                a built-in starter template (client catalog). AI variation ids are not templates.
  *   width=<px>&height=<px>       start a blank design at this canvas size (Format Picker hand-off)
- * designId wins over templateId; templateId wins over width/height.
+ *   propertyId=<id>             stage this saved Property in the Listing panel (with templateId, a size, or alone)
+ * designId wins over templateId; templateId wins over width/height. A saved design restores its own listing snapshot,
+ * so propertyId is ignored whenever designId is present.
  */
-export interface V3EditorParams { designId?: string; templateId?: string; canvasSize?: { width: number; height: number } }
+export interface V3EditorParams { designId?: string; templateId?: string; canvasSize?: { width: number; height: number }; propertyId?: string }
 
 export const V3_CANVAS_SIZE_LIMITS = { min: 64, max: 8000 } as const;
 const TEMPLATE_ID = /^[A-Za-z0-9_-]{1,128}$/;
+const PROPERTY_ID = /^[A-Za-z0-9_-]{1,100}$/;
 
 function readSize(value: string | null): number | undefined {
   if (value === null || !/^\d{1,5}$/.test(value)) return undefined;
@@ -27,11 +30,33 @@ export function parseV3EditorParams(search: string): V3EditorParams {
   const designId = params.get('designId')?.trim() || undefined;
   const rawTemplate = params.get('templateId')?.trim() || undefined;
   const width = readSize(params.get('width')), height = readSize(params.get('height'));
+  const rawProperty = params.get('propertyId')?.trim();
   return {
     designId,
     templateId: designId ? undefined : rawTemplate,
     canvasSize: designId || rawTemplate || width === undefined || height === undefined ? undefined : { width, height },
+    ...(!designId && rawProperty && PROPERTY_ID.test(rawProperty) ? { propertyId: rawProperty } : {}),
   };
+}
+
+/** Builds a V3 editor URL. Same precedence as parseV3EditorParams: designId, then templateId, then canvas size. */
+export function buildV3EditorUrl(params: V3EditorParams = {}): string {
+  const query = new URLSearchParams({ editor: 'v3' });
+  if (params.designId) query.set('designId', params.designId);
+  else if (params.templateId) query.set('templateId', params.templateId);
+  else if (params.canvasSize) { query.set('width', String(params.canvasSize.width)); query.set('height', String(params.canvasSize.height)); }
+  if (params.propertyId && !params.designId) query.set('propertyId', params.propertyId);
+  return `/editor?${query.toString()}`;
+}
+
+/**
+ * The legacy editor is retired. Any /editor URL without `editor=v3` is sent to V3, keeping its deep-link parameters.
+ * `editor=legacy` is a temporary escape hatch for designs V3 cannot open yet; it returns null (no redirect).
+ */
+export function legacyEditorRedirect(search: string): string | null {
+  const editor = new URLSearchParams(search).get('editor');
+  if (editor === 'v3' || editor === 'legacy') return null;
+  return buildV3EditorUrl(parseV3EditorParams(search));
 }
 
 /** Structural check for a template canvas before it reaches the store (shared with the Templates panel). */

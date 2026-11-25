@@ -1,0 +1,31 @@
+/* Agent & Brand fills the workspace while retaining the form / preview balance. */
+.ab-layout{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(260px,1fr);gap:20px;align-items:start;width:100%}
+.ab-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ab-section{border-top:1px solid var(--v3-border)}
+.ab-section-title{display:flex;align-items:center;gap:8px;font-size:12px;margin:0 0 16px;text-transform:uppercase;letter-spacing:1.2px;color:var(--v3-muted);font-weight:700}
+.ab-section-title svg{width:16px;height:16px;color:var(--v3-accent)}
+.ab-image-field{display:flex;align-items:center;gap:14px;margin-bottom:22px;flex-wrap:wrap}
+.ab-image-label{font-size:13px;font-weight:650;margin:0 0 7px}
+.ab-image{width:52px;height:52px;flex:none;object-fit:cover;background:var(--ws-stage);border:3px solid var(--v3-workspace)}
+.ab-image-round{border-radius:50%;object-position:center 20%}
+.ab-image-square{border-radius:10px;object-fit:contain}
+.ab-placeholder{display:grid;place-items:center;color:var(--v3-muted)}
+.ab-placeholder svg{width:22px;height:22px}
+.ab-accent input:not(.ab-color){flex:1}
+.ws-root input.ab-color{width:48px;min-width:48px;height:44px;padding:4px;border:1px solid var(--ws-input-border);border-radius:8px;background:var(--v3-surface);cursor:pointer}
+
+/* Identity preview — soft gradient card, centred */
+.ab-preview{position:sticky;top:90px;padding:28px;display:flex;flex-direction:column;align-items:center;text-align:center;background:var(--ws-preview-bg);border-radius:12px}
+.ab-preview-photo{width:85px;height:85px;border-radius:50%;object-fit:cover;object-position:center 20%;border:3px solid var(--v3-workspace);background:var(--v3-surface)}
+.ab-preview h2{font-size:18px;margin:15px 0 0}
+.ab-preview p{font-size:13px;color:var(--v3-muted);margin:7px 0 0;overflow-wrap:anywhere}
+.ab-preview-license{font-size:12px}
+.ab-preview-brand{display:flex;align-items:center;gap:10px;margin-top:18px;padding:10px 14px;background:var(--v3-surface);border-radius:10px;text-align:left;max-width:100%}
+.ab-preview-brand strong{display:block;font-size:13px}
+.ab-preview-brand small{display:block;font-size:12px;color:var(--v3-muted)}
+.ab-preview-logo{width:36px;height:36px;border-radius:8px;object-fit:contain;background:var(--ws-stage);flex:none}
+.ab-swatches{display:flex;gap:7px;margin-top:16px}
+.ab-swatch{height:24px;width:24px;border-radius:6px;border:1px solid #ffffff75;box-shadow:0 0 0 1px #0000000d}
+.ab-swatch[data-empty]{border:1px dashed var(--v3-muted)}
+.ab-preview-note{font-size:12px;color:var(--v3-muted);line-height:1.8;margin:16px 0 10px}
+@media (max-width:900px){.ab-layout{grid-template-columns:1fr}.ab-preview{position:static}}
