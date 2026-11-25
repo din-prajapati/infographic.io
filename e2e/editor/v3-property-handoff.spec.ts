@@ -70,3 +70,50 @@ test('plain /editor links with propertyId open V3 and keep the handoff', async (
   await expect(page).toHaveURL(new RegExp(`/editor\\?width=1080&height=1080&propertyId=${saved.id}$`));
   await expect(listingPanel(page)).toContainText('21 Handoff Road, Pune');
 });
+
+// US-PROP-006 AC5: a change made to the shared listing elsewhere reaches a design the next time it is opened —
+// staged in the Listing panel as pending, never applied to the artwork or saved on its own.
+test('reopening a design stages the latest shared listing as pending, without an edit or a save', async ({ page }) => {
+  const state = await mockWorkspace(page, { properties: [structuredClone(saved)] });
+  const documents = await withDesigns(page, state);
+  await page.goto(`/editor?width=1080&height=1080&propertyId=${saved.id}`);
+  await expect(listingPanel(page)).toContainText('21 Handoff Road, Pune');
+  await listingPanel(page).getByRole('button', { name: 'Apply to design', exact: true }).click();
+  await page.getByRole('button', { name: /^Save$/ }).click();
+  await page.getByRole('dialog', { name: 'Save design', exact: true }).getByRole('button', { name: 'Save design', exact: true }).click();
+  await expect(page).toHaveURL(new RegExp(`designId=${cuid(801)}$`));
+  expect(documents[cuid(801)].canvasData.v3Listing).toMatchObject({ appliedListingId: saved.id, selectedListingVersion: 1 });
+
+  // Another design updates the shared listing (version 1 → 2).
+  state.properties[0].record.property.address = '99 Updated Road, Pune';
+  state.properties[0].version = 2;
+
+  await page.goto(`/editor?designId=${cuid(801)}`);
+  await expect(page.getByRole('status').filter({ hasText: 'This listing changed since the design was saved' })).toBeVisible();
+  await expect(listingPanel(page)).toContainText('99 Updated Road, Pune');
+  await expect(listingPanel(page).getByRole('button', { name: 'Apply to design', exact: true })).toBeEnabled();
+  // Staging is not an edit: no autosave write and no unsaved-changes prompt.
+  const writes = () => state.requests.filter(r => r.path.startsWith('/api/v1/designs') && r.method !== 'GET').length;
+  const before = writes(); let prompts = 0;
+  page.on('dialog', async dialog => { prompts++; await dialog.accept(); });
+  await page.waitForTimeout(3000);
+  expect(writes()).toBe(before);
+  await page.getByRole('link', { name: 'Back to listing' }).click(); await expect(page).toHaveURL(new RegExp(`/listings/${saved.id}$`));
+  expect(prompts).toBe(0);
+});
+
+test('reopening a design whose saved listing version is current fetches it once and stages nothing', async ({ page }) => {
+  const state = await mockWorkspace(page, { properties: [structuredClone(saved)] });
+  const documents = await withDesigns(page, state);
+  await page.goto(`/editor?width=1080&height=1080&propertyId=${saved.id}`);
+  await listingPanel(page).getByRole('button', { name: 'Apply to design', exact: true }).click();
+  await page.getByRole('button', { name: /^Save$/ }).click();
+  await page.getByRole('dialog', { name: 'Save design', exact: true }).getByRole('button', { name: 'Save design', exact: true }).click();
+  await expect(page).toHaveURL(new RegExp(`designId=${cuid(801)}$`));
+  expect(documents[cuid(801)]).toBeTruthy();
+  const fetchesBefore = state.requests.filter(r => r.path === `/properties/${saved.id}`).length;
+  await page.goto(`/editor?designId=${cuid(801)}`);
+  await expect(page.getByRole('textbox', { name: 'Design title', exact: true })).toBeVisible();
+  await expect.poll(() => state.requests.filter(r => r.path === `/properties/${saved.id}`).length).toBe(fetchesBefore + 1);
+  await expect(page.getByRole('status').filter({ hasText: 'This listing changed' })).toHaveCount(0);
+});

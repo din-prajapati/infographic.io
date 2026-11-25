@@ -76,6 +76,21 @@ export function applyListingSnapshot(snapshot: V3ListingSnapshot, elements: Canv
   });
   return { elements: next, skipped, snapshot: { ...structuredClone(snapshot), applied: structuredClone(snapshot.pending), appliedBindings: structuredClone(snapshot.bindings), appliedListingId: snapshot.selectedListingId, skipped } };
 }
+/**
+ * What a reopened design should do with the latest copy of its shared listing (US-PROP-006 AC5):
+ *   'none'   — not linked to this listing, the saved version is current, or nothing differs;
+ *   'stage'  — the listing changed since the design was saved: load it as pending (artwork changes only on Apply);
+ *   'review' — it changed, but the design already holds unapplied listing edits, which must not be overwritten.
+ */
+export type ListingRefresh = 'none' | 'stage' | 'review';
+export function listingRefreshOnReopen(snapshot: V3ListingSnapshot, latest: { id: string; version: number; record: ListingRecord }): ListingRefresh {
+  const linkedId = snapshot.appliedListingId ?? snapshot.selectedListingId;
+  if (!linkedId || latest.id !== linkedId) return 'none';
+  const savedVersion = snapshot.selectedListingId === latest.id ? snapshot.selectedListingVersion : undefined;
+  if (savedVersion !== undefined && latest.version <= savedVersion) return 'none';
+  if (JSON.stringify(latest.record) === JSON.stringify(snapshot.pending)) return 'none';
+  return listingPendingChanges(snapshot) > 0 ? 'review' : 'stage';
+}
 export function listingPendingChanges(snapshot: V3ListingSnapshot): number {
   let count = 0;
   for (const key of ['property', 'agent', 'brand', 'photos'] as const) {

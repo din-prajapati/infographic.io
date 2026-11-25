@@ -219,12 +219,12 @@ export function createV3DesignSession<T>(operations: SessionOperations<T>) {
     retryLoad: () => open(requestedId),
     markDirty,
     /**
-     * Applies start-up setup (e.g. a URL canvas size) to a new, untouched blank design as part of its clean starting
-     * point: no unsaved-changes warning and no recovery draft. Once the design is saved or edited, `apply` runs as a
-     * normal edit.
+     * Applies start-up setup to a design that has no unsaved changes as part of its clean starting point — e.g. a URL
+     * canvas size on a new blank design, or the latest shared listing staged as pending on reopen. No unsaved-changes
+     * warning, no recovery draft, no autosave. Once the user has edited the design, `apply` runs as a normal edit.
      */
-    initializeBlank(apply: () => void) {
-      if (!state.ready || disposed || state.id || revision !== savedRevision) { apply(); return; }
+    applyAsStartingPoint(apply: () => void) {
+      if (!state.ready || disposed || revision !== savedRevision) { apply(); return; }
       hydrating = true;
       try { apply(); } finally { hydrating = false; }
       lastDocument = fingerprint(state.title, operations.capture(), metadata);

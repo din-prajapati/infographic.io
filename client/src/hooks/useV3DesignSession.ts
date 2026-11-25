@@ -167,7 +167,7 @@ export function useV3DesignSession(designId?: string, userId?: string) {
   return {
     ...current,
     setTitle: (title: string) => controller.current?.setTitle(title),
-    initializeBlank: (apply: () => void) => { if (controller.current) controller.current.initializeBlank(apply); else apply(); },
+    applyAsStartingPoint: (apply: () => void) => { if (controller.current) controller.current.applyAsStartingPoint(apply); else apply(); },
     save: () => controller.current?.save(),
     setMetadata: (patch: { tags?: string[]; category?: string }) => controller.current?.setMetadata(patch),
     pauseAutosave: () => controller.current?.pauseAutosave() ?? (() => {}),

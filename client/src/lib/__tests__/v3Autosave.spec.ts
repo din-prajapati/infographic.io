@@ -256,25 +256,35 @@ describe('new blank design: no unsaved-changes warning until the first edit', ()
     expect(f.drafts.read()?.canvasData).toEqual(canvas('First edit'));
   });
 
-  it('initializeBlank folds start-up setup (a URL canvas size) into the clean starting point', async () => {
+  it('applyAsStartingPoint folds start-up setup (a URL canvas size) into the clean starting point', async () => {
     const f = setup(); await f.session.open();
-    f.session.initializeBlank(() => f.edit('Pre-sized'));
+    f.session.applyAsStartingPoint(() => f.edit('Pre-sized'));
     expect(f.session.getState().hasUnsavedChanges).toBe(false);
     expect(f.drafts.read()).toBeNull();
     f.edit('Then a real edit');
     expect(f.session.getState().hasUnsavedChanges).toBe(true);
   });
 
-  it('initializeBlank runs as a normal edit once the blank design has been edited', async () => {
+  it('applyAsStartingPoint runs as a normal edit once the blank design has been edited', async () => {
     const f = setup(); await f.session.open(); f.edit('User edit');
-    f.session.initializeBlank(() => f.edit('Setup after edit'));
+    f.session.applyAsStartingPoint(() => f.edit('Setup after edit'));
     expect(f.session.getState().hasUnsavedChanges).toBe(true);
     expect(f.drafts.read()?.canvasData).toEqual(canvas('Setup after edit'));
   });
 
-  it('initializeBlank runs as a normal edit on a saved design', async () => {
+  it('applyAsStartingPoint keeps an unedited saved design clean: no draft, no autosave', async () => {
     const f = setup(); await f.session.open(ID);
-    f.session.initializeBlank(() => f.edit('Setup on saved'));
+    f.session.applyAsStartingPoint(() => f.editListing());
+    expect(f.session.getState()).toMatchObject({ id: ID, status: 'saved', hasUnsavedChanges: false });
+    expect(f.drafts.read(ID)).toBeNull();
+    await vi.advanceTimersByTimeAsync(5000); expect(f.save).not.toHaveBeenCalled();
+    f.edit('Then a real edit'); expect(f.session.getState().hasUnsavedChanges).toBe(true);
+  });
+
+  it('applyAsStartingPoint runs as a normal edit on a saved design with unsaved edits', async () => {
+    const f = setup(); await f.session.open(ID); f.edit('User edit');
+    f.session.applyAsStartingPoint(() => f.editListing());
     expect(f.session.getState().hasUnsavedChanges).toBe(true);
+    expect(f.drafts.read(ID)?.canvasData.listing.property.address).toBe('New address');
   });
 });

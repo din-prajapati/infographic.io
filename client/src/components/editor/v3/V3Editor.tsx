@@ -20,6 +20,7 @@ import { queryClient } from '../../../lib/queryClient';
 import { loadTemplateById } from '../../../lib/storage';
 import { buildV3EditorUrl, resolveUrlTemplate, type V3EditorParams } from '../../../lib/v3EditorUrl';
 import { propertiesApi } from '../../../lib/listingApi';
+import { listingRefreshOnReopen } from '../../../lib/v3ListingWorkflow';
 import type { SavedProperty } from '@shared/listingWorkflow';
 import { AIChatBox } from '../../ai-chat/AIChatBox';
 import type { Template } from '../../ai-chat/types';
@@ -209,7 +210,7 @@ export default function V3Editor({designId,templateId,canvasSize,propertyId}:V3E
     const key=templateId?`template:${templateId}`:canvasSize?`size:${canvasSize.width}x${canvasSize.height}`:null;
     if(!key||urlStart.current===key)return;
     urlStart.current=key;
-    if(!templateId&&canvasSize){if(!useCanvasStore.getState().elements.length){session.initializeBlank(()=>useCanvasStore.getState().loadCanvas({canvasWidth:canvasSize.width,canvasHeight:canvasSize.height}));scheduleFitCanvasZoomToViewport();}return;}
+    if(!templateId&&canvasSize){if(!useCanvasStore.getState().elements.length){session.applyAsStartingPoint(()=>useCanvasStore.getState().loadCanvas({canvasWidth:canvasSize.width,canvasHeight:canvasSize.height}));scheduleFitCanvasZoomToViewport();}return;}
     const owner=user?.id,initialRevision=session.getNavigationRevision();setWorkflowError('');setWorkflowNotice('Opening template…');
     const stillWanted=()=>{const params=new URLSearchParams(window.location.search);return editorMounted.current&&urlStart.current===key&&account.current===owner&&params.get('templateId')===templateId&&!params.get('designId')&&!useCanvasStore.getState().elements.length&&session.getNavigationRevision()===initialRevision;};
     void (async()=>{
@@ -240,6 +241,28 @@ export default function V3Editor({designId,templateId,canvasSize,propertyId}:V3E
     catch{setWorkflowError('This property could not be loaded into the design.');}
   // eslint-disable-next-line react-hooks/exhaustive-deps
   },[handoffProperty,ready,designId,session.id]);
+  // US-PROP-006 AC5: a reopened design picks up changes made to its shared listing elsewhere (e.g. from another design),
+  // staged in the Listing panel as pending — the artwork changes only on Apply to design. Checked once per opened design.
+  const openDesignId=useRef(designId);openDesignId.current=designId;
+  const listingRefreshFor=useRef<string|null>(null);
+  useEffect(()=>{
+    if(!designId||!ready||session.id!==designId||listingRefreshFor.current===designId)return;
+    listingRefreshFor.current=designId;
+    const saved=useV3ListingStore.getState().snapshot;
+    const linkedId=saved.appliedListingId??saved.selectedListingId;
+    if(!linkedId)return;
+    const stillOpen=()=>editorMounted.current&&openDesignId.current===designId;
+    propertiesApi.get(linkedId).then(latest=>{
+      if(!stillOpen())return;
+      const action=listingRefreshOnReopen(useV3ListingStore.getState().snapshot,latest);
+      if(action==='stage'){
+        session.applyAsStartingPoint(()=>listing.selectListing(latest.record,latest.id,latest.version));
+        setPanel('Listing');
+        setWorkflowNotice('This listing changed since the design was saved. The latest details are in the Listing panel — review them, then Apply to design.');
+      }else if(action==='review')setWorkflowNotice('This listing changed since the design was saved. Your unapplied listing edits are kept — choose the listing again in the Listing panel to load the latest details.');
+    }).catch(()=>{if(stillOpen())setWorkflowNotice('Could not load the latest listing — using the details saved with this design.');});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[designId,ready,session.id]);
   const returnPropertyId=handoff.current?.propertyId??listing.appliedListingId??null;
   async function placeTemplate(template:Template){
     setAssistantError(null);
