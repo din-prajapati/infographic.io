@@ -683,6 +683,24 @@ test.describe('US-EDIT-027 central dirty-navigation boundary', () => {
   });
 });
 
+// A new blank design (plain or pre-sized from the Format Picker) has nothing to lose until the first edit.
+for (const route of ['/editor', '/editor?width=1080&height=1350']) test(`US-EDIT-027 untouched blank ${route} leaves without an unsaved-changes prompt`, async ({ page }) => {
+  await mockedSession(page); let prompts = 0;
+  page.on('dialog', async dialog => { prompts++; await dialog.accept(); });
+  await page.goto(route, { waitUntil: 'domcontentloaded' });
+  await expect(page.getByRole('button', { name: /^Save$/ })).toBeEnabled();
+  await page.getByRole('link', { name: 'Projects', exact: true }).click(); await expect(page).toHaveURL(/\/my-designs$/);
+  expect(prompts).toBe(0);
+});
+test('US-EDIT-027 a blank design prompts once it has been edited', async ({ page }) => {
+  await mockedSession(page); let prompts = 0;
+  page.on('dialog', async dialog => { prompts++; await dialog.dismiss(); });
+  await page.goto('/editor', { waitUntil: 'domcontentloaded' });
+  await page.getByRole('textbox', { name: 'Design title', exact: true }).fill('Edited blank');
+  await page.getByRole('link', { name: 'Projects', exact: true }).click();
+  await expect.poll(() => prompts).toBe(1); await expect(page).toHaveURL(/\/editor$/);
+});
+
 // Contract: native hash entries made before opening V3 remain guarded Back destinations.
 test('US-EDIT-027 native hash predecessor stays in history after cancelled Back', async ({ page }) => {
   await mockedSession(page); await page.goto('/templates');

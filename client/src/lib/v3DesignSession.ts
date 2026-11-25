@@ -121,7 +121,10 @@ export function createV3DesignSession<T>(operations: SessionOperations<T>) {
       if (!id) {
         operations.reset();
         lastDocument = fingerprint(state.title, operations.capture(), metadata);
-        update({ status: 'unsaved', ready: true, hasUnsavedChanges: true });
+        // A new blank design is not on the server yet (status 'unsaved') but has no changes to lose until the first edit,
+        // so leaving it untouched must not warn.
+        savedRevision = revision;
+        update({ status: 'unsaved', ready: true, hasUnsavedChanges: false });
         offerDraft();
         return;
       }
@@ -215,6 +218,17 @@ export function createV3DesignSession<T>(operations: SessionOperations<T>) {
     open,
     retryLoad: () => open(requestedId),
     markDirty,
+    /**
+     * Applies start-up setup (e.g. a URL canvas size) to a new, untouched blank design as part of its clean starting
+     * point: no unsaved-changes warning and no recovery draft. Once the design is saved or edited, `apply` runs as a
+     * normal edit.
+     */
+    initializeBlank(apply: () => void) {
+      if (!state.ready || disposed || state.id || revision !== savedRevision) { apply(); return; }
+      hydrating = true;
+      try { apply(); } finally { hydrating = false; }
+      lastDocument = fingerprint(state.title, operations.capture(), metadata);
+    },
     setTitle(title: string) {
       if (!state.ready || disposed || title === state.title) return;
       update({ title });

@@ -239,3 +239,42 @@ describe('US-EDIT-027 guarded autosave', () => {
     await f.session.save(); expect(f.session.getState().hasUnsavedChanges).toBe(false);
   });
 });
+
+describe('new blank design: no unsaved-changes warning until the first edit', () => {
+  beforeEach(() => { vi.useFakeTimers(); vi.setSystemTime(START); localStorage.clear(); });
+  afterEach(() => { cleanup.splice(0).forEach(close => close()); vi.useRealTimers(); });
+
+  it('opens clean: not on the server yet, but nothing to lose and no recovery draft', async () => {
+    const f = setup(); await f.session.open();
+    expect(f.session.getState()).toMatchObject({ id: undefined, ready: true, status: 'unsaved', hasUnsavedChanges: false });
+    expect(f.drafts.read()).toBeNull();
+  });
+
+  it('the first edit makes it dirty and keeps a recovery draft', async () => {
+    const f = setup(); await f.session.open(); f.edit('First edit');
+    expect(f.session.getState().hasUnsavedChanges).toBe(true);
+    expect(f.drafts.read()?.canvasData).toEqual(canvas('First edit'));
+  });
+
+  it('initializeBlank folds start-up setup (a URL canvas size) into the clean starting point', async () => {
+    const f = setup(); await f.session.open();
+    f.session.initializeBlank(() => f.edit('Pre-sized'));
+    expect(f.session.getState().hasUnsavedChanges).toBe(false);
+    expect(f.drafts.read()).toBeNull();
+    f.edit('Then a real edit');
+    expect(f.session.getState().hasUnsavedChanges).toBe(true);
+  });
+
+  it('initializeBlank runs as a normal edit once the blank design has been edited', async () => {
+    const f = setup(); await f.session.open(); f.edit('User edit');
+    f.session.initializeBlank(() => f.edit('Setup after edit'));
+    expect(f.session.getState().hasUnsavedChanges).toBe(true);
+    expect(f.drafts.read()?.canvasData).toEqual(canvas('Setup after edit'));
+  });
+
+  it('initializeBlank runs as a normal edit on a saved design', async () => {
+    const f = setup(); await f.session.open(ID);
+    f.session.initializeBlank(() => f.edit('Setup on saved'));
+    expect(f.session.getState().hasUnsavedChanges).toBe(true);
+  });
+});

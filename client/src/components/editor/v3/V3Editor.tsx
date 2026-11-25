@@ -209,7 +209,7 @@ export default function V3Editor({designId,templateId,canvasSize,propertyId}:V3E
     const key=templateId?`template:${templateId}`:canvasSize?`size:${canvasSize.width}x${canvasSize.height}`:null;
     if(!key||urlStart.current===key)return;
     urlStart.current=key;
-    if(!templateId&&canvasSize){if(!useCanvasStore.getState().elements.length){useCanvasStore.getState().loadCanvas({canvasWidth:canvasSize.width,canvasHeight:canvasSize.height});scheduleFitCanvasZoomToViewport();}return;}
+    if(!templateId&&canvasSize){if(!useCanvasStore.getState().elements.length){session.initializeBlank(()=>useCanvasStore.getState().loadCanvas({canvasWidth:canvasSize.width,canvasHeight:canvasSize.height}));scheduleFitCanvasZoomToViewport();}return;}
     const owner=user?.id,initialRevision=session.getNavigationRevision();setWorkflowError('');setWorkflowNotice('Opening template…');
     const stillWanted=()=>{const params=new URLSearchParams(window.location.search);return editorMounted.current&&urlStart.current===key&&account.current===owner&&params.get('templateId')===templateId&&!params.get('designId')&&!useCanvasStore.getState().elements.length&&session.getNavigationRevision()===initialRevision;};
     void (async()=>{
