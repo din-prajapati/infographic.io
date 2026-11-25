@@ -67,6 +67,7 @@ __generated__
 # Skills, agents, hooks and commands under .claude/ stay tracked; only the
 # one-off scripts and screenshots an agent leaves behind are ignored.
 .claude/worktrees/
+.codex-worktrees/
 .claude/screenshots/
 .claude/*.ts
 .claude/*.png
