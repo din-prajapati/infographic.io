@@ -1,0 +1,596 @@
+/**
+ * US-EDIT-009 — Gate 2, automated.
+ *
+ * M-EDIT-03 removed the pre-generation "Edit as: Flat / Editable" toggle.
+ * Generation is always flat; text becomes editable through CanvasEditToolbar
+ * after the design is on the canvas. Gate 2 is the story's human visual check;
+ * these tests cover the parts a machine can actually decide.
+ *
+ * Run:
+ *   npx playwright test e2e/us-edit-009-gate2.spec.ts
+ *
+ * Coverage — see STORY.md's Gate 2 table:
+ *   step 1  TC-EDIT-009-01  no mode choice anywhere pre-generation      [FREE]
+ *   step 3  TC-EDIT-009-12  AI Chat design → "Edit elements" resolves   [1 gen]
+ *   step 4  TC-EDIT-009-05  a fresh template is not "already editable"  [free]
+ *   step 5  —               real listing photo → text-free background   [1 gen, opt-in]
+ *
+ * Cost: ONE real generation by default (~$0.08). Step 5 costs a second one and
+ * is skipped unless RUN_PHOTO_CHECK=1.
+ *
+ * Why step 3 is the one that matters: US-EDIT-009 AC9 was a regression found
+ * during implementation, not in review. `setActiveGenerationId` was called in
+ * exactly one place — RightSidebar's *panel-triggered* WebSocket handler — so
+ * removing AI Chat's own editable branch would have stranded every AI Chat
+ * design at "Design isn't linked to a generation". The unit test proves the
+ * store setter works; only this proves AI Chat calls it on the real completion
+ * path. Quick Generate would pass even with the bug present, so this test
+ * deliberately drives AI Chat and never Quick Generate.
+ *
+ * Auth: fresh throwaway account per run (FREE-tier quota isolation), same
+ * pattern as us-ai-032-editable-canvas.spec.ts.
+ *
+ * Target environment: PLAYWRIGHT_BASE_URL defaults every spec at STAGING.
+ * For local changes:
+ *   PLAYWRIGHT_BASE_URL=http://localhost:5000 npx playwright test e2e/us-edit-009-gate2.spec.ts
+ */
+import { test, expect, type Page } from "../fixtures/legacy-editor";
+import process from "node:process";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const baseURL = (process.env.PLAYWRIGHT_BASE_URL || "http://localhost:5000").replace(/\/$/, "");
+
+/** A real listing photograph for step 5 (shared with us-ai-031-real-photo-composition.spec.ts). */
+const LISTING_PHOTO = fileURLToPath(
+  new URL("../../client/src/assets/images/carousel/property-1.jpg", import.meta.url),
+);
+
+/** The exact toast AC9 must never produce. CanvasEditToolbar.tsx:92. */
+const NOT_LINKED_TOAST = /Design isn't linked to a generation/i;
+
+/**
+ * M-INFRA-01 check 1 — is a generated image stored on storage we own?
+ *
+ * Deliberately not a single hardcoded domain: the two environments publish R2
+ * differently, and asserting production's domain would fail on staging for a
+ * correct system.
+ *   production  assets.buildographic.com   (custom domain)
+ *   staging     pub-<id>.r2.dev            (managed subdomain, no custom domain)
+ *
+ * Override with R2_PUBLIC_URL_EXPECTED when pointing at an environment whose
+ * public URL is neither of those.
+ *
+ * The failure this catches is quiet by design: uploadAndFallback() never
+ * throws, so a misconfigured R2 degrades to the original Ideogram URL instead
+ * of failing the generation. Nothing errors, nothing looks wrong — the stored
+ * URL simply expires weeks later, taking the customer's design with it. That
+ * is why this asserts on the *stored* URL rather than on whether the image
+ * renders: a fallback URL renders perfectly today.
+ */
+const OWNED_URL = process.env.R2_PUBLIC_URL_EXPECTED
+  ? new RegExp(process.env.R2_PUBLIC_URL_EXPECTED.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i")
+  : /(assets\.buildographic\.com|\.r2\.dev)/i;
+
+async function registerFreshAccount(): Promise<{ token: string; user: unknown }> {
+  const email = `e2e-edit009-${Date.now()}@test.local`;
+  const res = await fetch(`${baseURL}/api/v1/auth/register`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password: "E2eProbe12345!", name: "E2E US-EDIT-009" }),
+  });
+  if (!res.ok) {
+    throw new Error(`Registration failed: HTTP ${res.status} — ${await res.text()}`);
+  }
+  const body = await res.json();
+  return { token: body.token, user: body.user };
+}
+
+async function ensureLoggedIn(page: Page) {
+  const { token, user } = await registerFreshAccount();
+  await page.addInitScript(([t, u]) => {
+    localStorage.setItem("auth_token", t as string);
+    localStorage.setItem("auth_user", u as string);
+  }, [token, JSON.stringify(user)]);
+
+  const res = await page.goto("/templates", { waitUntil: "domcontentloaded" });
+  if (!res || !res.ok()) {
+    throw new Error(
+      `Cannot load /templates (HTTP ${res?.status() ?? "no response"}). Check PLAYWRIGHT_BASE_URL: ${baseURL}`,
+    );
+  }
+  await expect(page.getByRole("heading", { name: /template gallery/i })).toBeVisible({
+    timeout: 30_000,
+  });
+}
+
+/** Open a template into the editor. Gives the canvas real (non-AI) elements. */
+async function openTemplateInEditor(page: Page) {
+  await expect(page.getByRole("heading", { name: /template gallery/i })).toBeVisible({
+    timeout: 60_000,
+  });
+  const useTemplate = page.getByRole("button", { name: "Use Template" }).first();
+  await expect(useTemplate).toBeVisible({ timeout: 60_000 });
+  await useTemplate.scrollIntoViewIfNeeded();
+  await useTemplate.click();
+  await expect(page).toHaveURL(/\/editor\?.*templateId=/, { timeout: 30_000 });
+  await expect(page.locator('[data-testid="design-canvas"]')).toBeVisible();
+}
+
+async function openAiChat(page: Page) {
+  await page.getByRole("button", { name: /open ai chat/i }).click();
+  await expect(page.locator("#ai-chat-panel")).toBeVisible();
+}
+
+/** The per-variation action that places a design on the canvas. */
+function placementButton(page: Page) {
+  return page
+    .locator("#ai-chat-panel")
+    .getByRole("button", { name: /use this design/i })
+    .first();
+}
+
+/**
+ * Drive AI Chat to a completed generation. Deliberately NOT Quick Generate —
+ * see the AC9 note in the file header.
+ */
+async function generateFromAiChat(page: Page, prompt: string) {
+  const textarea = page.locator("#ai-chat-panel textarea");
+  await expect(textarea).toBeVisible({ timeout: 30_000 });
+  await textarea.fill(prompt);
+
+  await page.locator("#ai-chat-panel").getByTitle("Generate").click();
+
+  // Fail fast on the intent gate rather than waiting out the results timeout.
+  // AI Chat validates the prompt before generating and answers "Missing
+  // Information" if it cannot find an address — no generation is started, so a
+  // rejected prompt is free, but it also means results will never arrive and
+  // waiting 5 minutes for them tells you nothing about why.
+  const missingInfo = page.locator("#ai-chat-panel").getByText(/missing information/i);
+  // "Use This Design" is the single per-variation placement action. It used to
+  // sit beside an icon-only "Customize in editor" button that this spec keyed
+  // off; the pair was collapsed because both handlers built the same Template,
+  // called the same onTemplateLoad and closed the panel identically. This label
+  // predates that change, so the selector works against old and new builds.
+  const useButton = placementButton(page);
+
+  await expect(missingInfo.or(useButton).first()).toBeVisible({ timeout: 300_000 });
+  if (await missingInfo.isVisible()) {
+    throw new Error(
+      "AI Chat rejected the prompt as incomplete — no generation started. " +
+        "It needs a street-style address; see the prompt used in this spec.",
+    );
+  }
+  await expect(useButton).toBeVisible({ timeout: 300_000 });
+}
+
+test.describe("US-EDIT-009 — Gate 2 (automated portion)", () => {
+  test.describe.configure({ retries: 0 });
+  test.use({ navigationTimeout: 90_000, actionTimeout: 60_000 });
+
+  test.beforeEach(async ({ page }) => {
+    test.setTimeout(600_000);
+    await ensureLoggedIn(page);
+  });
+
+  // ── Step 1 — free, no generation ────────────────────────────────────────
+  test("step 1 (TC-01): no flat/editable mode choice is offered before generating", async ({
+    page,
+  }) => {
+    await openTemplateInEditor(page);
+    await openAiChat(page);
+
+    const panel = page.locator("#ai-chat-panel");
+
+    // Positive control. Every assertion below is an absence, and an absence
+    // passes just as happily against a panel that failed to render. Prove we
+    // are looking at a live, populated panel before concluding anything from
+    // what is missing in it.
+    await expect(panel.locator("textarea")).toBeVisible({ timeout: 30_000 });
+    await expect(panel.getByTitle("Generate")).toBeVisible();
+
+    // The removed control rendered the literal label "Edit as:" beside a
+    // Flat / Editable pair, in two places (conversation view and results view).
+    await expect(panel.getByText(/edit as:/i)).toHaveCount(0);
+    await expect(panel.getByRole("button", { name: /^flat$/i })).toHaveCount(0);
+    await expect(panel.getByRole("button", { name: /^editable$/i })).toHaveCount(0);
+
+    // And nowhere else on the page either — RightSidebar hosted its own copy
+    // of the same preference.
+    await expect(page.getByText(/edit as:/i)).toHaveCount(0);
+  });
+
+  // ── Steps 3 + 4 — one real generation, both assertions ──────────────────
+  test("steps 3+4 (TC-12, TC-05): an AI Chat design extracts, and a fresh template does not inherit it", async ({
+    page,
+  }, testInfo) => {
+    // M-INFRA-01 check 1 rides along on the generation this test already pays
+    // for. Capture the variations payload the app itself fetches, rather than
+    // reading the canvas <img src>: that src is the /api/proxy-image URL (CORS
+    // bypass), so it would report the proxy's host no matter where the bytes
+    // actually live, and pass against a broken R2.
+    let tComposeFired: number | null = null;
+    page.on("request", (r) => {
+      if (
+        tComposeFired === null &&
+        /\/infographics\/generations\/[^/]+\/compose/.test(r.url())
+      ) {
+        tComposeFired = Date.now();
+      }
+    });
+
+    const consoleLines: string[] = [];
+    page.on("console", (m) => consoleLines.push(`[${m.type()}] ${m.text()}`));
+
+    const variationUrls: string[] = [];
+    page.on("response", async (res) => {
+      if (!/\/infographics\/generations\/[^/]+\/variations/.test(res.url())) return;
+      try {
+        const body = await res.json();
+        for (const v of Array.isArray(body) ? body : []) {
+          if (typeof v?.imageUrl === "string") variationUrls.push(v.imageUrl);
+        }
+      } catch {
+        /* non-JSON or already consumed — the assertion below reports the gap */
+      }
+    });
+
+    await openTemplateInEditor(page);
+    await openAiChat(page);
+    await generateFromAiChat(
+      page,
+      // Matches the shape AI Chat asks for ("3BR house at 123 Oak St, Austin TX
+      // for $450k") — a street-level address, or it refuses to generate.
+      "3 BHK villa at 12 Oak Road, Ahmedabad priced 18500000 with pool",
+    );
+
+    // Place the result on the canvas via the chat's Edit action. Under
+    // US-EDIT-009 this is a plain flat load — no mode was ever chosen.
+    await placementButton(page).click();
+
+    // ── M-INFRA-01 check 1 — the generated image is on storage we own ──────
+    // Free: this generation was already bought by the AC9 check above.
+    expect(
+      variationUrls.length,
+      "no /variations response was captured — the check below would pass vacuously",
+    ).toBeGreaterThan(0);
+
+    // Record the hosts. A green assertion says "it matched"; a milestone
+    // acceptance wants "here is what it was", and this is the artifact that
+    // closes M-INFRA-01 check 1 rather than merely reporting it closed.
+    const hosts = [...new Set(variationUrls.map((u) => new URL(u).host))];
+    await testInfo.attach("stored-image-hosts", {
+      body: `${hosts.join("\n")}\n\n(${variationUrls.length} variation URL(s) captured)`,
+      contentType: "text/plain",
+    });
+
+    for (const url of variationUrls) {
+      expect(url, `variation still served from the provider CDN: ${url}`).not.toMatch(
+        /ideogram\.ai/i,
+      );
+      expect(url, `variation is not on an owned domain: ${url}`).toMatch(OWNED_URL);
+    }
+
+    // Wait for the image to actually land on the canvas before touching the
+    // toolbar. This matters more than it looks: the toolbar is already on
+    // screen from the *template's* own elements, so asserting it is visible
+    // proves nothing about the AI design, and clicking too early makes
+    // CanvasEditToolbar return "Generate or select a design first" — it finds
+    // no isAiImport element yet. loadAiVariationToCanvas is async (it fetches
+    // and measures the image), and this success toast is the app's own signal
+    // that it finished.
+    await expect(page.getByText(/AI design loaded/i)).toBeVisible({ timeout: 120_000 });
+
+    const toolbar = page.locator('[data-testid="canvas-edit-toolbar"]');
+    await expect(toolbar).toBeVisible({ timeout: 60_000 });
+
+    // Pre-condition for step 4 to mean anything: this design starts flat.
+    await expect(toolbar.getByText(/edit elements/i)).toBeVisible();
+
+    // ── AC9, asserted on the mechanism rather than on a toast.
+    //
+    // The toast is the symptom; the compose call is the thing. If the store
+    // never received the generation id, CanvasEditToolbar returns early and
+    // POST /generations/:id/compose is never sent — so the request either
+    // happens (id resolved) or it does not (AC9 regression), with no ambiguity
+    // and nothing that auto-dismisses while we look at it. An earlier version
+    // of this test waited on toast text and timed out against a working app,
+    // because by then the canvas had swapped in the image-selection toolbar.
+    const composeCall = page.waitForRequest(
+      (r) =>
+        /\/infographics\/generations\/[^/]+\/compose/.test(r.url()) &&
+        r.method() === "POST",
+      { timeout: 180_000 },
+    );
+
+    // Capture the early-return toast if there is one. CanvasEditToolbar has
+    // three guards that return before composing, and all three raise a toast
+    // that auto-dismisses in seconds — long gone by the time a 180s timeout
+    // takes its DOM snapshot. Without this, a failure here says only "no
+    // request", which is the symptom of all three and the diagnosis of none.
+    const guardToast = page
+      .getByText(NOT_LINKED_TOAST)
+      .or(page.getByText(/Generate or select a design first/i))
+      .or(page.getByText(/Design is already editable/i))
+      .or(page.getByText(/Editable designs are a paid feature/i))
+      .or(page.getByText(/Monthly limit reached/i))
+      .first();
+
+    const tClick = Date.now();
+    await toolbar.getByRole("button").click();
+
+    const guardText = await guardToast
+      .textContent({ timeout: 8_000 })
+      .catch(() => null);
+    if (guardText) {
+      throw new Error(
+        `"Edit elements" returned early instead of composing — toast said: "${guardText.trim()}". ` +
+          `If that is "Design isn't linked to a generation", this is the AC9 regression: ` +
+          `AI Chat did not publish its generation id to useGenerationPrefs.`,
+      );
+    }
+
+    const request = await composeCall;
+    // NOT Date.now() here: this line runs only after the 8s guard-toast wait
+    // above, so it would report the request as ~8s later than it fired and
+    // make the server look 8s faster than it is. tComposeFired is stamped by
+    // the page.on("request") listener at the moment the request leaves the
+    // browser, which is the only honest reading.
+    const tRequest = tComposeFired ?? Date.now();
+
+    // The id in the URL must be a real generation id, not a placeholder — the
+    // exact bug US-EDIT-005 fixed once already ('current-gen' was being sent).
+    const composedId = request.url().match(/generations\/([^/]+)\/compose/)?.[1] ?? "";
+    expect(composedId.length).toBeGreaterThan(8);
+    expect(composedId).not.toBe("current-gen");
+
+    // Belt and braces: the failure toast must never have appeared.
+    await expect(page.getByText(NOT_LINKED_TOAST)).toHaveCount(0);
+
+    // The call must not fail outright. A 402/403 (paywall) still proves AC9 —
+    // it got far enough to be told no — so only server faults fail here.
+    const response = await request.response();
+    expect(response?.status() ?? 599).toBeLessThan(500);
+    const tResponse = Date.now();
+
+    // ── How long does "Separating layers…" actually last? ──────────────────
+    // US-AI-048 measured 15-90s for a real extraction and 2.97s for a cache
+    // hit, but nothing measures it on the surface the user actually presses.
+    // Recorded rather than asserted: a slow extraction is a product fact, not
+    // a test failure, and pinning a threshold here would make this test fail
+    // for reasons that have nothing to do with US-EDIT-009.
+    // BL-21 — the wait must say how long it has been waiting. Sample the
+    // button twice and require the text to change: a static "Separating
+    // layers…" is exactly the regression this fixes, and it would satisfy any
+    // assertion that only checked the label was present.
+    const labelSamples: string[] = [];
+    for (const at of [2_500, 9_000]) {
+      await page.waitForTimeout(at === 2_500 ? 2_500 : 6_500);
+      labelSamples.push((await toolbar.textContent())?.trim() ?? "");
+    }
+
+    // The BL-21 contract is "if the user is made to wait, the wait must say how
+    // long" — not "there must be a wait". This block used to assert the second
+    // one unconditionally, and failed a run in which everything US-EDIT-009
+    // cares about had just succeeded.
+    //
+    // ⚠ WHERE THIS SAMPLING ACTUALLY SITS. It runs *after*
+    // `await request.response()` above, so the 9s window opens only once the
+    // compose round trip has already returned. On the 2026-09-07 run that round
+    // trip took 37.4s, so both samples were taken well after extraction
+    // finished and both read "Editable layers active" — correctly.
+    //
+    // Which means this check only observes a ticking label when the server
+    // answers 201 quickly and the client then keeps polling. When the server
+    // holds the connection instead, the in-flight label is never sampled at
+    // all. **BL-21's real behaviour — does the wait narrate itself while the
+    // user is waiting? — is therefore not covered here, and was not covered
+    // before this change either.** Closing that properly means sampling
+    // concurrently with the request rather than after it; left alone because
+    // restructuring the timing harness is outside US-EDIT-009.
+    //
+    // So: still separating ⇒ the label must tick and carry elapsed seconds
+    // (the BL-21 regression assertion, unchanged). Already finished ⇒ assert it
+    // finished in a state we recognise, rather than passing on silence.
+    // Both in-flight labels, per CanvasEditToolbar.tsx:232-233 — the toolbar
+    // switches from "Separating layers… Ns" to "Still working… Ns" once the
+    // wait runs long. An earlier version of this branch matched only the first,
+    // so a run that reached "Still working… 43s" — a label that satisfies BL-21
+    // perfectly well — fell through to the terminal-state check and failed.
+    const inFlight = /separating layers|still working/i.test(labelSamples[0]);
+    if (inFlight) {
+      expect(
+        labelSamples[0],
+        `progress label never ticked — still "${labelSamples[0]}" after 9s`,
+      ).not.toBe(labelSamples[1]);
+      // Whichever of the two is showing, it must say how long it has been
+      // waiting. That is the whole of BL-21.
+      expect(labelSamples[0]).toMatch(/\d+s/);
+      expect(labelSamples[1]).toMatch(/\d+s/);
+    } else {
+      expect(
+        labelSamples[0],
+        `toolbar was neither separating nor in a known terminal state: "${labelSamples[0]}"`,
+      ).toMatch(
+        /editable layers active|no separate text layers detected|could not load separated layers|monthly limit reached/i,
+      );
+    }
+
+    let activeMs: number | null = null;
+    let terminalState = "none — still spinning at timeout";
+    try {
+      await expect(toolbar.getByText(/editable layers active/i)).toBeVisible({
+        timeout: 180_000,
+      });
+      activeMs = Date.now() - tClick;
+      terminalState = "Editable layers active";
+    } catch {
+      // Not every generation yields extractable text. These are legitimate
+      // endings too, and worth distinguishing from a hang.
+      for (const [re, label] of [
+        [/no separate text layers detected/i, "No separate text layers detected"],
+        [/could not load separated layers/i, "Could not load separated layers"],
+        [/monthly limit reached/i, "Monthly limit reached"],
+      ] as const) {
+        if (await page.getByText(re).isVisible().catch(() => false)) {
+          terminalState = label;
+          activeMs = Date.now() - tClick;
+          break;
+        }
+      }
+    }
+
+    const timing = [
+      `click → compose request sent : ${tRequest - tClick} ms`,
+      `compose HTTP round trip      : ${tResponse - tRequest} ms`,
+      `click → terminal state       : ${activeMs === null ? ">180000 (timed out)" : activeMs + " ms"}`,
+      `terminal state               : ${terminalState}`,
+      `progress label @~2.5s        : ${labelSamples[0]}`,
+      `progress label @~9s          : ${labelSamples[1]}`,
+      `compose HTTP status          : ${response?.status() ?? "n/a"}`,
+      "",
+      "Console lines mentioning compose/extract/layer:",
+      ...consoleLines
+        .filter((l) => /compose|extract|layer|editable/i.test(l))
+        .slice(0, 40),
+    ].join("\n");
+
+    await testInfo.attach("separating-layers-timing", {
+      body: timing,
+      contentType: "text/plain",
+    });
+    console.log("\n===== SEPARATING LAYERS TIMING =====\n" + timing + "\n");
+
+    // ── Step 4 / TC-05 — the regression CanvasEditToolbar's comment warns
+    // about: a compose succeeding must not make every later canvas in the
+    // session claim to be editable. Same page context, same session.
+    await page.goto("/templates", { waitUntil: "domcontentloaded" });
+    await openTemplateInEditor(page);
+
+    const freshToolbar = page.locator('[data-testid="canvas-edit-toolbar"]');
+    await expect(freshToolbar).toBeVisible({ timeout: 60_000 });
+
+    // Must offer to extract, NOT report layers it does not have.
+    await expect(freshToolbar.getByText(/edit elements/i)).toBeVisible();
+    await expect(freshToolbar.getByText(/editable layers active/i)).toHaveCount(0);
+  });
+
+  // ── Step 5 — opt-in: a real listing photo must produce a text-free background ──
+  //
+  // BL-26: this step used to generate from text alone. US-EDIT-009 settled that
+  // the text-free prompt fires on `photoReference` alone (Option A), so with no
+  // photo a fully composed poster was the *expected* output and the step could
+  // neither pass nor fail for the reason it exists. It now attaches a real
+  // listing photograph and asserts on the two things a machine can decide:
+  //   1. the generate request actually carries a photoReference, and
+  //   2. the server classified the generation as a text-free `background`.
+  // (2) is read from the variations payload. `composition` is computed by
+  // resolveAiComposition(photoReference) — the same function the orchestrator
+  // calls to choose the text-free prompt (US-EDIT-011), so it cannot disagree
+  // with the prompt that was sent. Whether the pixels are actually free of text
+  // stays a human judgment on the saved screenshot — see the note at the end.
+  test("step 5: a real listing photo produces a text-free background (opt-in)", async ({
+    page,
+  }, testInfo) => {
+    test.skip(
+      process.env.RUN_PHOTO_CHECK !== "1",
+      "Costs a second generation. Set RUN_PHOTO_CHECK=1 to run.",
+    );
+
+    // Request side: what AI Chat sent. Response side: what the server decided.
+    let generateBody: Record<string, unknown> | null = null;
+    page.on("request", (r) => {
+      if (r.method() === "POST" && /\/infographics\/generations\/?(\?|$)/.test(r.url())) {
+        try {
+          generateBody = r.postDataJSON();
+        } catch {
+          /* non-JSON — the assertion below reports it */
+        }
+      }
+    });
+    const compositions: unknown[] = [];
+    page.on("response", async (res) => {
+      if (!/\/infographics\/generations\/[^/]+\/variations/.test(res.url())) return;
+      try {
+        const body = await res.json();
+        for (const v of Array.isArray(body) ? body : []) compositions.push(v?.composition);
+      } catch {
+        /* the assertion below reports an empty capture */
+      }
+    });
+
+    await openTemplateInEditor(page);
+    await openAiChat(page);
+
+    // Attach a real listing photograph — the input BL-26 found missing. Same
+    // fixture as us-ai-031-real-photo-composition.spec.ts: a real interior
+    // photo, so the model has an actual building to keep, not a 1×1 pixel.
+    const panel = page.locator("#ai-chat-panel");
+    await panel.locator("input[type='file']").setInputFiles(LISTING_PHOTO);
+    await expect(panel.getByText("Property photo attached")).toBeVisible({ timeout: 30_000 });
+
+    await generateFromAiChat(
+      page,
+      "3 BHK villa at 12 Oak Road, Ahmedabad priced 18500000 with pool",
+    );
+
+    // 1 — the photo reached the generate request.
+    expect(generateBody, "no POST /infographics/generations request was captured").not.toBeNull();
+    const photoReference = (generateBody as Record<string, unknown> | null)?.photoReference;
+    expect(typeof photoReference, "generate request carried no photoReference").toBe("string");
+    expect((photoReference as string).length).toBeGreaterThan(0);
+
+    // 2 — the server took the text-free path for every variation.
+    expect(
+      compositions.length,
+      "no /variations response was captured — the check below would pass vacuously",
+    ).toBeGreaterThan(0);
+    for (const c of compositions) {
+      expect(c, "a photo-backed generation must be classified as a text-free background").toBe(
+        "background",
+      );
+    }
+
+    await placementButton(page).click();
+    await expect(page.locator('[data-testid="design-canvas"]')).toBeVisible();
+    await expect(page.getByText(/AI design loaded/i)).toBeVisible({ timeout: 120_000 });
+
+    // Capture the background for the human half of the check (see below).
+    const shot = await page.locator('[data-testid="design-canvas"]').screenshot();
+    await testInfo.attach("generated-background", { body: shot, contentType: "image/png" });
+
+    // Also write it somewhere it survives.
+    //
+    // `testInfo.attach` alone puts the image in the report, and with the
+    // default `list` reporter a *passing* run leaves nothing on disk — so the
+    // one artifact this test exists to produce was being discarded precisely
+    // when the test succeeded. Evidence for human review that only exists on
+    // failure is not evidence. Costs a generation to regenerate, so it is
+    // written to a stable, predictable path.
+    const evidenceDir = path.resolve(process.cwd(), "test-results", "gate2-evidence");
+    fs.mkdirSync(evidenceDir, { recursive: true });
+    const evidencePath = path.join(
+      evidenceDir,
+      `us-edit-009-step5-background-${new Date().toISOString().replace(/[:.]/g, "-")}.png`,
+    );
+    fs.writeFileSync(evidencePath, shot);
+    console.log(`\n===== STEP 5 EVIDENCE =====\n  ${evidencePath}\n`);
+
+    /**
+     * What is asserted, and what is not.
+     *
+     * Asserted above: the photo reached the request, and the server chose the
+     * text-free path (`composition: 'background'`, from the same predicate that
+     * picks the prompt). Those were the parts BL-26 showed were never exercised.
+     *
+     * Not asserted: that the returned pixels contain no text. The obvious proxy
+     * — compose and assert `extraction.blocksDetected === 0` — does not hold:
+     * US-AI-031b's AC1 was live-verified on 2026-08-15 with blocksDetected: 0 on
+     * a run that went through the *text-baked* path, so zero blocks says nothing
+     * about whether text was baked in. The pixel judgment therefore stays with
+     * whoever runs Gate 2, on the screenshot saved above. A real automated check
+     * would need OCR over the background — its own story, not a proxy here.
+     */
+  });
+});
