@@ -1,5 +1,8 @@
 # Agile Hierarchy — Master Index
 
+> **Current candidate update — 2026-11-14:** Phase 1.5 has 42 cards (EDIT 25 / PROP 12 / OBS 5); 1 formally Done, 23 additional locally implemented candidates. M-EDIT-11 has 14/14 implemented cards; M-EDIT-06/07/09 and M-PROP-01/03 now reflect the reconciled Listing scope. Release repairs, final review and user UI/font acceptance remain open. Candidate branch: `codex/v3-listing-responsive-handoff`. See [current release record](../research/2026-11-14-V3-RELEASE-HARDENING.md). Older dated summaries below are historical; no phase/milestone merge closure is implied.
+
+
 > **Entry point for all planning, story, and delivery work.**  
 > Full hierarchy: **Phase → Epic → Milestone → Story → Task → PR**  
 > Toolchain: GitHub (code + PR) · Linear (issue tracker) · Claude Code (AI implementation)
@@ -55,8 +58,8 @@ Every PR is traceable from `git log` → Story → Milestone → Epic.
 | Epic ID | Title | Status | Stories |
 |---------|-------|--------|---------|
 | [EPIC-OBS-00](epics/phase-1.5-foundation-v3/EPIC-OBS-00/EPIC.md) | Structured Observability (Sentry · uptime) — moved from Phase 1 | 🟡 0/5 — US-OBS-005 waits on T5 (BL-34); reconcile US-OBS-002/003 against the existing Sentry wiring | US-OBS-001 to US-OBS-005 |
-| [EPIC-PROP-01](epics/phase-1.5-foundation-v3/EPIC-PROP-01/EPIC.md) | Property & Brand Foundation (Property record · structured price + intent · Auto-Fill · Brand profile · template contract) | 🔲 0/12 — hardened 2026-10-29, re-checked 2026-10-30 | US-PROP-001 to 007 · US-AI-028 · US-LAUNCH-016/017 · US-EDIT-006/007 |
-| [EPIC-EDIT-04](epics/phase-1.5-foundation-v3/EPIC-EDIT-04/EPIC.md) | V3 Editor Simplification (single editable path · linked editing · Design tab · AI Assistant · export review · V3 shell, light + dark · Property/Contact tabs · autosave · Edit Elements review) | 🟡 1/11 — M-EDIT-03 ✅ 2026-10-29 | US-EDIT-008/009 · US-EDIT-020 to 027 · US-AI-015 |
+| [EPIC-PROP-01](epics/phase-1.5-foundation-v3/EPIC-PROP-01/EPIC.md) | Property & Brand Foundation (Property record · structured price + intent · Auto-Fill · Brand profile · template contract) | 🟡 3/12 local implementations; 0 formally Done; remaining contracts open | US-PROP-001 to 007 · US-AI-028 · US-LAUNCH-016/017 · US-EDIT-006/007 |
+| [EPIC-EDIT-04](epics/phase-1.5-foundation-v3/EPIC-EDIT-04/EPIC.md) | V3 Editor Simplification (single editable path · linked editing · Design tab · AI Assistant · export review · V3 shell, light + dark · Property/Contact tabs · autosave · Edit Elements review) | 🟡 21/25 implementation candidates, including 1 formally Done; UI/review/merge pending | US-EDIT-008/009 · US-EDIT-020 to 027 · US-EDIT-031 to 044 · US-AI-015 |
 
 ## AI Capability Epics (Phase 0.5 → Phase 3)
 

@@ -1,0 +1,33 @@
+{
+  "files": [
+    {
+      "path": "appearance-preview.html",
+      "sha256": "850549a7f92c23a8e8d01004fd24b36dbf7cdb7cd2e037ab7a8bcce3159dd4e5"
+    },
+    {
+      "path": "appearance-variations.html",
+      "sha256": "84b42e8190e59f362145db0b1744e36be2ad1386f06154c337ad96b99e429954"
+    },
+    {
+      "path": "approved-brand-theme.html",
+      "sha256": "151f0febae006cb7c3dfe804479319c6ae42189e55b1682425f09b0cf1e7989f"
+    },
+    {
+      "path": "approved-skeleton.html",
+      "sha256": "73d2c7a24fc424e3c6d49acdd23b99ceb824b1457c65ae6c04be3861beb39157"
+    },
+    {
+      "path": "index.html",
+      "sha256": "4eeebaf87b92e84e1ef960a357d9a8e46b30a63878eb3eae15eeb3d331124c39"
+    },
+    {
+      "path": "skeleton-preview.html",
+      "sha256": "8e423a6c52a52b14985f213ee45ce0ffa33c183abdac715b5034a9832c172b55"
+    }
+  ],
+  "status": "Visual design approved; runtime integration pending",
+  "baselineBranch": "feat/edit/m-11-v3-editor-slice",
+  "savedAtUtc": "2026-10-31T11:32:24.3930899Z",
+  "baselineCommit": "99e0288",
+  "amendedAtUtc": "2026-10-31T15:35:14.4815821Z"
+}

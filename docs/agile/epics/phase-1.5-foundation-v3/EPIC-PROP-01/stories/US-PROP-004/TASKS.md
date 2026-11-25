@@ -1,95 +1,104 @@
----
-title: Tasks — US-PROP-004
-type: tasks
-tags: [orion, prop, canvas, binding]
-updated: 2026-10-29
----
-
 # Tasks — US-PROP-004
 
-> **Story:** [US-PROP-004](./STORY.md) — Element binding types on the template contract
-> **Branch:** `feat/prop/m-03-template-contract`
+> **Story:** [STORY.md](./STORY.md) — Pending/applied V3 listing and binding contract
+> **Branch:** `codex/v3-arrange-opus`
 > **PR:** #_____
-> **PR scope:** `BindingDescriptor`; `migrateElementBinding` / `detachBinding` / `reconnectBinding`; load-time migration; explicit bindings in the curated seed data; tests. No UI, no change to the three write functions.
-
----
+> **PR scope:** Pending/applied V3 listing and binding contract; no AI Assistant or live providers.
+> **Prerequisites:** US-PROP-002
 
 ## Four-Pillars Pre-flight
 
-- [ ] **Brain** — Read `listingBindings.ts`. Be able to say (a) why `slot` must stay the write channel, (b) why `stats` → compound while every other field → field (see `STORE_TO_CANVAS_ONLY` and the Q1 note), (c) why `reconnectBinding` must never call `writeCanvasToField`.
-- [ ] **Muscle** — Baseline `npm run test:unit` green, including `api/tests/canvas/template-one-fact-per-element.spec.ts`.
-- [ ] **Map** — Find `BaseElement` (and `slot?`, `frameOf?`, `slotFormat?`) in `canvasTypes.ts`; confirm `captureCanvasData()` serialises elements verbatim; confirm `restoreCanvasData()` (`canvasState.ts`) is the single load path for designs and templates (the migration call site).
-- [ ] **Env** — `npm run dev`, `npm run check`, `npm run test:unit` all green before the first edit.
+- [x] **Brain** — Read STORY.md and approved Mockups/listing-workflow-v1/REFINEMENT.md / P1-ESSENTIALS.md; resolve each AC to observable contract assertions before changing code.
+- [x] **Muscle** — Read every Primary file below, or its existing dependency if new; verify actual V3 runtime import paths and source ownership; do not alter unrelated work.
+- [x] **Map** — Read `../../ARCHITECTURE.mmd`, trace Property/profile → pending record → Apply → artwork/applied snapshot → template/design persistence → review → existing PNG renderer.
+- [x] **Env** — Read `../../ENV.yaml` and all scaffold.json rules_loaded; use existing local credentials without logging them; check localhost:5000/3001 and document actual availability. Schema deployment is separate from generating migration source.
 
----
+## Primary files to touch (scope lock)
+
+- `client/src/lib/v3ListingWorkflow.ts` — Pure pending/applied snapshots, bindings, customizations, atomic Apply and Undo
+- `client/src/hooks/useV3ListingWorkflow.ts` — Listing workspace Zustand state and editor orchestration
+- `client/src/lib/canvasTypes.ts` — Add reusable field/image/compound binding and workflow snapshot types
+- `client/src/lib/canvasState.ts` — Capture/restore workflow snapshots without canvas-to-pending hydration
+- `client/src/lib/listingBindings.ts` — Add V3 guards and binding migration without changing legacy behavior
+- `client/src/lib/v3DesignSession.ts` — Carry validated additive workflow state in document sessions
+- `client/src/hooks/useV3DesignSession.ts` — Restore V3 state and subscribe to pending changes for autosave
+- `client/src/components/canvas/TextElement.tsx` — Guard direct V3 linked-text edits through customization contract
+- `client/src/lib/__tests__/v3ListingWorkflow.spec.ts` — Atomic apply, undo, binding, crop and snapshot isolation contracts
+- `client/src/lib/__tests__/v3DesignSession.spec.ts` — Reopen and autosave snapshot regression cases
+- `client/src/hooks/__tests__/useV3ListingWorkflow.spec.ts` — Workspace isolation and pending state orchestration tests
+- `docs/agile/epics/phase-1.5-foundation-v3/EPIC-PROP-01/stories/US-PROP-004/STORY.md` — Record AC/test evidence and implementation status
+- `docs/agile/epics/phase-1.5-foundation-v3/EPIC-PROP-01/stories/US-PROP-004/TASKS.md` — Record task progress and verification
+- `docs/agile/epics/phase-1.5-foundation-v3/EPIC-PROP-01/stories/US-PROP-004/scaffold.json` — Maintain exact scope scaffold
+
+
+- `client/src/lib/slotIds.ts` — Register canonical listing field slots required by Apply
 
 ## Tasks
 
-### T1 — `BindingDescriptor`
-- [ ] Export the union type; add `binding?` to `BaseElement` with a US-PROP-004 note. Resolve any `BoundField` import cycle by moving the type. `npm run check`.
+### T1 — Pure listing snapshot and reusable binding contract
 
-**ACs:** AC1 · **Effort:** XS
+- [x] Define contract assertions, then implement `client/src/lib/v3ListingWorkflow.ts`, `client/src/lib/canvasTypes.ts`, `client/src/lib/slotIds.ts` and `client/src/lib/__tests__/v3ListingWorkflow.spec.ts` together as one green task.
+- [x] Run Gate 1 before commit.
 
-### T2 — `migrateElementBinding` + load call
-- [ ] Rules per the table in STORY.md; idempotent; spread, never mutate.
-- [ ] Call it on every element inside `restoreCanvasData()` in `canvasState.ts` (the one load path for designs and templates).
+**Commit:** `feat(prop): T1 add atomic listing snapshot and binding contract — US-PROP-004`
+**ACs:** AC1, AC2, AC4 · **Effort:** S
 
-**ACs:** AC2 · **Effort:** S
+### T2 — Isolated workspace orchestration
 
-### T3 — `detachBinding` / `reconnectBinding`
-- [ ] Detach → independent, same content, no store write.
-- [ ] Reconnect → read the store value (read-only), `applySlotFormat(el.slotFormat, value)`, field binding; no store write.
-- [ ] Client spec `client/src/lib/__tests__/listingBindings.binding.spec.ts` for T2 + T3 (TC-03 to TC-07).
+- [x] Define contract assertions, then implement `client/src/hooks/useV3ListingWorkflow.ts` and `client/src/hooks/__tests__/useV3ListingWorkflow.spec.ts` together as one green task.
+- [x] Run Gate 1 before commit.
 
-**ACs:** AC2, AC3 · **Effort:** S
+**Commit:** `feat(prop): T2 add isolated pending listing workspace — US-PROP-004`
+**ACs:** AC1–AC4 · **Effort:** S
 
-### T4 — Seed data bindings
-- [ ] `binding?` on `TextOpts`; `text()` passes it through.
-- [ ] Every slot-tagged `text()` call gets its binding: compound for specs/facts, field for slots in `SLOT_TO_FIELD`, independent for other slots (`agent.cta`, `openHouse.*`, `report.*`). Untagged elements stay without one — load-time migration covers them.
+### T3 — Actual canvas persistence and linked-edit integration
 
-**ACs:** AC5 · **Effort:** S
+- [x] Define session regression assertions, then implement `client/src/lib/canvasState.ts`, `client/src/lib/listingBindings.ts`, `client/src/lib/v3DesignSession.ts`, `client/src/hooks/useV3DesignSession.ts`, `client/src/components/canvas/TextElement.tsx` and `client/src/lib/__tests__/v3DesignSession.spec.ts` together as one green task.
+- [x] Run Gate 1 before commit; confirm versioned snapshots do not hydrate canonical facts from artwork.
 
-### T5 — Seed-data spec
-- [ ] `api/tests/canvas/element-binding-migration.spec.ts`: import `PREMIUM_CANVAS_TEMPLATES`; keep a local copy of the slot→field map (comment: mirrors `listingBindings.ts`); assert compound / field / independent per slot; counts computed in the test.
+**Commit:** `feat(prop): T3 persist V3 listing and stage linked text edits — US-PROP-004`
+**ACs:** AC1–AC4 · **Effort:** S
 
-**ACs:** AC5 · **Effort:** S
+### T4 — Verify and record evidence
 
-### T6 — Round-trip check
-- [ ] Open a curated template, check bindings in devtools, save, reopen, compare (TC-01, TC-02). Record in STORY.md.
+- [x] Record exact Gate 1, focused compatibility results, AC/TC evidence and remaining manual checks in STORY.md.
+- [x] Update TASKS.md and append parent EPIC.md Implementation Update after mandatory gates pass; do not claim merge.
 
-**ACs:** AC4 · **Effort:** XS
-
----
-
-## File → Task Map
-
-| File | Task | Change type |
-|---|:--:|---|
-| `client/src/lib/canvasTypes.ts` | T1 | type + field |
-| `client/src/lib/listingBindings.ts` | T2, T3 | three helpers |
-| `client/src/lib/canvasState.ts` | T2 | load-time call |
-| `client/src/lib/__tests__/listingBindings.binding.spec.ts` | T3 | new |
-| `api/scripts/data/premium-templates.data.ts` | T4 | explicit bindings |
-| `api/tests/canvas/element-binding-migration.spec.ts` | T5 | new |
-
----
-
+**Commit:** `docs(prop): close US-PROP-004 — record listing integration evidence`
+**Effort:** S
 ## Test Commands
 
 ```bash
 npm run check
 npm run test:unit
-cd api && npx vitest run tests/canvas/element-binding-migration.spec.ts tests/canvas/template-one-fact-per-element.spec.ts --reporter=verbose
 ```
 
----
+Gate 2: for UI stories verify actual V3 at 375px and 1440px in both themes, keyboard/focus, layout and no console errors. Gate 4: for US-PROP-001 verify authenticated property/profile routes including 401, cross-org 404 and stale 409. Gate 3: `npx playwright test e2e/v3-listing-workflow.spec.ts` for final US-EDIT-021 journey. Gates not applicable to pure shared helpers must be documented with this reason; never silently skip a required check. Live DB smoke is required before reporting persistent listing capability verified.
 
-## Anti-patterns for this story
+## Anti-patterns
 
-- **Removing or renaming `slot`.** Every field-to-canvas write finds elements by it.
-- **Calling `writeCanvasToField` from `reconnectBinding`.** Reconnect goes store → element only; the reverse would import stale or placeholder text into the listing.
-- **Importing `client/src/` from `api/tests/`.** The API test runner can't resolve the client graph; test the helpers on the client side.
+- Copying the mockup storage/runtime as production persistence.
+- Hydrating pending listing facts from canvas/custom text on reopen.
+- Touching outside this Primary list without reconciling scope and certification first.
+- Treating browser-local recovery as a successful backend save.
 
----
 
-*Tasks created: 2026-10-29*
+
+## Local integration verification — 2026-11-13
+Implementation integrated on codex/v3-arrange-opus. Full Gate1, focused/new browser and real database evidence are recorded in docs/research/2026-11-13-V3-LISTING-IMPLEMENTATION.md. Story closure/merge is not claimed; broad candidate visual/accessibility regression remains pre-merge work. Root coordinates commits; no failing-test-only commits.
+
+## T5 — Authorized release hardening (2026-11-14)
+
+- [x] Release hardening: canvas Undo/Redo across Apply must preserve coherent applied Listing snapshot and existing intentional customizations, without creating accidental overrides. A validated explicit custom photo after missing-photo Apply clears only that resolved skipped-image finding. Preserve unrelated later edits and Undo last apply guard. Files: client/src/hooks/useV3ListingWorkflow.ts, client/src/lib/v3ListingWorkflow.ts, corresponding existing unit tests, client/src/hooks/useCanvasStore.ts only if actual runtime requires metadata-aware history and coordinated ownership. No CSS/fonts.
+
+User authorized standup points2/3. Root owns evidence, tracker reconciliation and commits; independent source/test ownership is coordinated. Existing ACs and exclusions remain unchanged. All applicable gates and independent review required; no merge/deploy. Physical-device acceptance and ongoing font annotations remain pending.
+
+
+## Tracker reconciliation — 2026-11-14
+
+2026-11-14 — reconciled from committed Opus baseline3e95a40; implementation present, release hardening/review and UI/font acceptance in progress; not merged Done. Current AC/task findings and fresh gate results are tracked in docs/research/2026-11-14-V3-RELEASE-HARDENING.md. Historical unchecked implementation/evidence rows are retained until this pass finishes verification; they are not interpreted as missing source code. Font/layout annotations are deliberately untouched.
+
+
+## Fresh release evidence — 2026-11-14
+
+Applicable implementation and automated verification tasks are complete; docs/research/2026-11-14-V3-RELEASE-HARDENING.md records exact commands/counts and independent review. No CSS/font changes were made in this repair. User visual/font acceptance, physical devices, final milestone delivery and merge remain pending.

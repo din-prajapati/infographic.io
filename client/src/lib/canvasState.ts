@@ -4,6 +4,8 @@
  */
 
 import { exportCanvasToImage } from './canvasExport';
+import { isValidPaint, isValidElementPaints } from './paint';
+import { isValidLineElement } from './lineGeometry';
 import { useCanvasStore } from '../hooks/useCanvasStore';
 import type { CanvasElement, ImageElement, TextElement, TextAlign } from './canvasTypes';
 import type { AiComposition, ComposedDesign, ComposedTextElementGeometry } from './api';
@@ -13,6 +15,9 @@ import type { AiComposition, ComposedDesign, ComposedTextElementGeometry } from 
 // pushing that knowledge out to both callers would duplicate the condition in
 // two files, which is precisely the drift US-AI-047 was written to undo.
 import { toast } from 'sonner';
+import { captureV3ListingWorkflow, resetV3ListingWorkflow, restoreV3ListingWorkflow, useV3ListingStore } from '../hooks/useV3ListingWorkflow';
+import { validateListingSnapshot } from './v3ListingWorkflow';
+import { createEmptyListing, parseListingPrice } from '@shared/listingWorkflow';
 import { mapExtractedFont } from './fontMap';
 import { createMeasureText } from './layout/connectLayout';
 import {
@@ -46,11 +51,13 @@ export function captureCanvasData(): any {
     canvasWidth: state.canvasWidth,
     canvasHeight: state.canvasHeight,
     backgroundColor: state.backgroundColor,
+    backgroundPaint: state.backgroundPaint,
     zoom: state.zoom,
     // US-EDIT-018 AC1 — the listing facts travel with the design, so a fact
     // with no element on this template (Brokerage on the Story template,
     // Website everywhere) survives a reopen.
     listing: captureListing(),
+    ...(useV3ListingStore.getState().active ? { v3Listing: captureV3ListingWorkflow() } : {}),
     timestamp: new Date().toISOString(),
   };
 }
@@ -187,7 +194,9 @@ function generatePlaceholderThumbnail(): string {
  */
 export function restoreCanvasData(canvasData: any): boolean {
   try {
-    if (!canvasData || !canvasData.elements) {
+    if (canvasData?.v3Listing !== undefined && validateListingSnapshot(canvasData.v3Listing).length) return false;
+    if (!canvasData || !Array.isArray(canvasData.elements) || (canvasData.backgroundPaint !== undefined && !isValidPaint(canvasData.backgroundPaint)) || canvasData.elements.some((element: unknown) => !isValidElementPaints(element) ||
+      !!element && typeof element === 'object' && (element as {type?:unknown}).type === 'line' && !isValidLineElement(element))) {
       console.error('Invalid canvas data');
       return false;
     }
@@ -200,6 +209,7 @@ export function restoreCanvasData(canvasData: any): boolean {
       canvasWidth: canvasData.canvasWidth || 1200,
       canvasHeight: canvasData.canvasHeight || 800,
       backgroundColor: canvasData.backgroundColor || '#FFFFFF',
+      backgroundPaint: canvasData.backgroundPaint,
       zoom: canvasData.zoom || 1,
       canvasPanX: 0,
       canvasPanY: 0,
@@ -214,8 +224,29 @@ export function restoreCanvasData(canvasData: any): boolean {
     // US-EDIT-018 AC2 — a design saved with its listing restores it first;
     // slot text then wins where it exists. Without one (older designs, seeded
     // templates) this is a no-op and only the hydration below applies.
-    applySavedListing(canvasData.listing);
-    hydrateStoresFromCanvas();
+    if (canvasData.v3Listing !== undefined) {
+      restoreV3ListingWorkflow(canvasData.v3Listing);
+    } else {
+      applySavedListing(canvasData.listing);
+      hydrateStoresFromCanvas(true);
+      if (useV3ListingStore.getState().active) {
+        const legacy = captureListing();
+        const record = createEmptyListing();
+        const p = legacy.property;
+        const a = legacy.agent;
+        Object.assign(record.property, {
+          headline: p.headline ?? '', address: p.address ?? '', description: p.description ?? '',
+          type: p.type ?? '', country: p.locale === 'en-US' ? 'US' : 'IN', currency: p.locale === 'en-US' ? 'USD' : 'INR',
+          beds: p.beds ? String(p.beds) : '', baths: p.baths ? String(p.baths) : '',
+          area: /^\d+(?:\.\d+)?$/.test(p.sqft ?? '') ? p.sqft : '', features: p.features ?? [],
+        });
+        const parsed = p.price ? parseListingPrice(p.price, record.property.country) : null;
+        if (parsed) Object.assign(record.property, parsed);
+        Object.assign(record.agent, { name: a.name ?? '', phone: a.phone ?? '', email: a.email ?? '', agency: a.brokerage ?? '', license: a.license ?? '' });
+        record.brand.name = a.brokerage ?? '';
+        resetV3ListingWorkflow(record);
+      }
+    }
 
     // Ensure loaded templates/infographics are fully visible in the current viewport.
     scheduleFitCanvasZoomToViewport();
@@ -244,6 +275,17 @@ export function fitCanvasZoomToViewport(): void {
   // Keep breathing room so the artboard never touches the viewport edge.
   // Math.floor ensures the computed zoom never exceeds the exact fit —
   // Math.round could round up (e.g. 0.165 → 0.17) causing a ~16px overflow.
+  if (viewport.closest('.v3-editor')) {
+    const center = viewport.querySelector<HTMLElement>('.v3-canvas-center');
+    const style = center ? getComputedStyle(center) : null;
+    const horizontal = style ? parseFloat(style.paddingLeft) + parseFloat(style.paddingRight) : 32;
+    const vertical = style ? parseFloat(style.paddingTop) + parseFloat(style.paddingBottom) : 48;
+    const scale = Math.min(Math.max(1, viewport.clientWidth - horizontal) / canvasWidth, Math.max(1, viewport.clientHeight - vertical) / canvasHeight, 1);
+    setZoom(Math.max(0.1, Math.floor(scale * 100) / 100));
+    resetPan();
+    return;
+  }
+
   const horizontalPadding = 80;
   const verticalPadding = 80;
   const availableW = Math.max(viewport.clientWidth - horizontalPadding, 200);
@@ -255,8 +297,25 @@ export function fitCanvasZoomToViewport(): void {
 }
 
 /** Run fit after layout settles (e.g. AI chat panel closing changes viewport width). */
+let scheduledFitGeneration = 0;
 export function scheduleFitCanvasZoomToViewport(): void {
-  const run = () => fitCanvasZoomToViewport();
+  const generation = ++scheduledFitGeneration;
+  const scheduled = useCanvasStore.getState();
+  let expectedZoom = scheduled.zoom;
+  let expectedPanX = scheduled.canvasPanX, expectedPanY = scheduled.canvasPanY;
+  let cancelled = false;
+  const run = () => {
+    const current = useCanvasStore.getState();
+    if (cancelled || generation !== scheduledFitGeneration) return;
+    if (current.elements !== scheduled.elements || current.canvasWidth !== scheduled.canvasWidth || current.canvasHeight !== scheduled.canvasHeight ||
+      current.zoom !== expectedZoom || current.canvasPanX !== expectedPanX || current.canvasPanY !== expectedPanY) {
+      cancelled = true;
+      return;
+    }
+    fitCanvasZoomToViewport();
+    const fitted = useCanvasStore.getState();
+    expectedZoom = fitted.zoom; expectedPanX = fitted.canvasPanX; expectedPanY = fitted.canvasPanY;
+  };
   requestAnimationFrame(() => requestAnimationFrame(run));
   setTimeout(run, 350);
   setTimeout(run, 700);

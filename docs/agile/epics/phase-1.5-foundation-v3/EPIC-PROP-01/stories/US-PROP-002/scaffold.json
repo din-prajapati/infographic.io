@@ -1,0 +1,37 @@
+{
+  "story_id": "US-PROP-002",
+  "title": "Structured global listing and reviewed text import",
+  "domain": "PROP",
+  "touches": {
+    "layers": [
+      "testing"
+    ],
+    "techs": {
+      "testing": [
+        "vitest"
+      ]
+    },
+    "modules": [
+      "listing-workflow",
+      "v3-editor"
+    ]
+  },
+  "rules_loaded": [
+    ".orion/rules/AGILE.md",
+    ".orion/rules/DOMAIN.md",
+    ".orion/rules/SECURITY.md",
+    ".orion/rules/OBSERVABILITY.md",
+    ".orion/rules/testing/RULES.md",
+    ".orion/rules/testing/vitest/RULES.md"
+  ],
+  "ac_coverage": {
+    "present": [
+      "happy-path",
+      "error-path",
+      "edge-case",
+      "concurrent"
+    ],
+    "verified": true,
+    "verification_report": "docs/research/2026-11-14-V3-RELEASE-HARDENING.md"
+  }
+}

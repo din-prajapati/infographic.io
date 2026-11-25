@@ -10,6 +10,7 @@ const { mockSend, MockPutObjectCommand } = vi.hoisted(() => ({
 vi.mock('@aws-sdk/client-s3', () => ({
   S3Client: vi.fn(() => ({ send: mockSend })),
   PutObjectCommand: MockPutObjectCommand,
+  DeleteObjectCommand: vi.fn(input => ({ input })),
 }));
 
 import { StorageService } from '../../src/modules/storage/services/storage.service';
@@ -209,4 +210,16 @@ describe('StorageService (US-INFRA-001)', () => {
       );
     });
   });
+});
+
+it('removes only the specified rollback object through the configured bucket', async () => {
+  const old = process.env.R2_BUCKET_NAME;
+  process.env.R2_BUCKET_NAME = 'rollback-bucket';
+  try {
+    const service = new StorageService();
+    (service as any).client = { send: mockSend };
+    mockSend.mockResolvedValue({});
+    await service.remove('design-media/org/just-created.png');
+    expect(mockSend).toHaveBeenLastCalledWith({ input: { Bucket: 'rollback-bucket', Key: 'design-media/org/just-created.png' } });
+  } finally { if (old === undefined) delete process.env.R2_BUCKET_NAME; else process.env.R2_BUCKET_NAME = old; }
 });

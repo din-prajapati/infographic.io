@@ -1,14 +1,28 @@
 // Canvas element types and interfaces
 
 import type { AiComposition } from './api';
+export type { V3ListingSnapshot } from './v3ListingWorkflow';
+export type BindingDescriptor = { kind: 'field'; slot: string } | { kind: 'image'; slot: string } | { kind: 'compound'; slot: string; parts: ['beds', 'baths', 'area', 'areaUnit'] } | { kind: 'independent' };
 
-export type ElementType = 'text' | 'shape' | 'image';
+export type ElementType = 'text' | 'shape' | 'image' | 'line';
+export type StrokeStyle = 'solid' | 'dashed' | 'short-dashed' | 'dotted';
+export interface PaintStop { color: string; opacity: number }
+export type Paint = { type: 'none' } | ({ type: 'solid' } & PaintStop)
+  | { type: 'linear'; angle: 0 | 90 | 135; stops: PaintStop[] }
+  | { type: 'radial'; center: 'center' | 'corner'; stops: PaintStop[] };
+export type PaintSlot = 'color' | 'fill' | 'stroke' | 'overlay';
+export interface BackgroundSnapshot { color: string; paint?: Paint }
+export type LineType = 'straight' | 'curved' | 'elbow';
+export type LineDecoration = 'none' | 'arrow' | 'circle' | 'bar';
+export interface Point { x: number; y: number }
+export interface ElementShadow { color: string; opacity: number; blur: number; offsetX: number; offsetY: number }
 export type ShapeType = 'rectangle' | 'circle' | 'ellipse' | 'triangle' | 'star' | 'speechBubble' | 'arrowLeft' | 'arrowRight';
 export type TextAlign = 'left' | 'center' | 'right';
 export type TextTransform = 'none' | 'uppercase' | 'lowercase' | 'capitalize';
 export type ListStyle = 'none' | 'bullet' | 'numbered';
 
 export interface BaseElement {
+  paints?: Partial<Record<PaintSlot, Paint>>;
   id: string;
   type: ElementType;
   x: number;
@@ -28,6 +42,7 @@ export interface BaseElement {
    * all elements and absent on legacy designs.
    */
   slot?: string;
+  binding?: BindingDescriptor;
   /**
    * BL-44 — the slot whose text this element exists to hold (a price pill, a
    * CTA bar, a readability scrim). When an AI poster displaces slot layers, a
@@ -58,6 +73,10 @@ export interface TextElement extends BaseElement {
   color: string;
   align: TextAlign;
   lineHeight: number;
+  /** Tracking in thousandths of an em; absent means zero. */
+  letterSpacing?: number;
+  /** Vertical content anchor within the existing fixed text box. */
+  textAnchor?: 'start' | 'middle' | 'end';
   textTransform: TextTransform;
   listStyle: ListStyle;
 }
@@ -68,6 +87,10 @@ export interface ShapeElement extends BaseElement {
   fill: string;
   stroke: string;
   strokeWidth: number;
+  strokeStyle?: StrokeStyle;
+  shadow?: ElementShadow;
+  /** Independent additional shadow copies; absent preserves legacy single-shadow artwork. */
+  shadowLayers?: ElementShadow[];
   cornerRadius: number;
   /** Optional text rendered inside the shape */
   textContent?: string;
@@ -82,7 +105,12 @@ export interface ShapeElement extends BaseElement {
 
 export interface ImageElement extends BaseElement {
   type: 'image';
+  /** Curated self-contained SVG artwork; absent for ordinary photos and legacy images. */
+  icon?: { id: string; color: string; strokeWidth: number; version: 1; opacity?: number };
   src: string;
+  borderColor?: string;
+  borderWidth?: number;
+  borderStyle?: StrokeStyle;
   /** How the image fills its element box. */
   objectFit?: 'contain' | 'cover' | 'fill';
   /** AI-generated full-bleed import — uses background-image for reliable fit */
@@ -128,7 +156,24 @@ export interface ImageElement extends BaseElement {
   };
 }
 
-export type CanvasElement = TextElement | ShapeElement | ImageElement;
+export interface LineElement extends BaseElement {
+  type: 'line';
+  lineType: LineType;
+  start: Point;
+  end: Point;
+  control: Point;
+  elbowAxis: 'horizontal' | 'vertical';
+  elbowOffset: number;
+  stroke: string;
+  strokeWidth: number;
+  strokeStyle: StrokeStyle;
+  /** Absent keeps legacy dotted-round / otherwise-butt rendering. */
+  lineCap?: 'butt' | 'round';
+  startDecoration: LineDecoration;
+  endDecoration: LineDecoration;
+}
+
+export type CanvasElement = TextElement | ShapeElement | ImageElement | LineElement;
 
 export interface CanvasState {
   elements: CanvasElement[];
@@ -137,7 +182,8 @@ export interface CanvasState {
   canvasHeight: number;
   zoom: number;
   backgroundColor: string;
-  activeTool: 'select' | 'text' | 'image' | 'rectangle' | 'circle' | 'hand' | 'delete' | 'pen';
+  backgroundPaint?: Paint;
+  activeTool: 'select' | 'text' | 'image' | 'rectangle' | 'circle' | 'hand' | 'delete' | 'pen' | 'line-straight' | 'line-curved' | 'line-elbow';
   clipboard: CanvasElement[];
   selectedThemeColors: string[] | null; // Colors from selected theme for placeholder
   canvasPanX: number;
@@ -145,6 +191,8 @@ export interface CanvasState {
   history: {
     past: CanvasElement[][];
     future: CanvasElement[][];
+    pastBackgrounds?: BackgroundSnapshot[];
+    futureBackgrounds?: BackgroundSnapshot[];
   };
   /**
    * Tracks the deliberate origin of the current canvas (set when a template is
@@ -189,6 +237,7 @@ export interface CanvasActions {
   // Canvas settings
   setZoom: (zoom: number) => void;
   setBackgroundColor: (color: string) => void;
+  setBackgroundPaint: (paint: Paint) => void;
   setSelectedThemeColors: (colors: string[] | null) => void;
   setPan: (x: number, y: number) => void;
   resetPan: () => void;

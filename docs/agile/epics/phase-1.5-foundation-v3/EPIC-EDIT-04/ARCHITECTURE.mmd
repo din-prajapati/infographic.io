@@ -1,0 +1,15 @@
+flowchart LR
+  Auth[Existing ProtectedRoute] --> Route{editor=v3?}
+  Route -->|no| Legacy[Existing EditorLayout]
+  Route -->|yes| Shell[V3Editor shell]
+  Shell --> Session[useV3DesignSession]
+  Shell --> Viewport[V3Canvas and V3TextInspector]
+  Session --> Controller[v3DesignSession pure revision and request controller]
+  Session --> API[Existing designsApi GET / PUT / POST]
+  API --> Nest[Existing NestJS designs endpoints]
+  Session --> Serialization[Existing captureCanvasData / restoreCanvasData]
+  Serialization --> Store[Existing useCanvasStore]
+  Viewport --> Store
+  Viewport --> Elements[Existing canvas element components]
+  Shell --> Export[Existing downloadCanvas PNG]
+  Export --> Store

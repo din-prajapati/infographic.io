@@ -1,0 +1,59 @@
+import {test,expect,type Page} from '@playwright/test';
+import {readFile} from 'node:fs/promises';
+const id='c123456789012345678901234';
+const base={rotation:0,opacity:1,locked:false,visible:true,zIndex:1};
+async function setup(page:Page,theme='dark',short=false){
+  await page.addInitScript(theme=>{localStorage.setItem('auth_token','annotation-test');localStorage.setItem('auth_user',JSON.stringify({id:'annotations',name:'Tester',email:'test@example.test',plan:'SOLO'}));localStorage.setItem('theme',theme);},theme);
+  const model={writes:[] as any[],document:{id,name:'Annotation review',type:'design',category:'real-estate',tags:[],canvasData:{canvasWidth:800,canvasHeight:600,backgroundColor:'#FFFFFF',elements:[
+    {...base,id:'text',type:'text',name:'Anchor text',x:40,y:40,width:280,height:short?30:200,content:short?'Anchor':'Anchor\nexample',fontFamily:'Arial',fontSize:20,fontWeight:400,bold:false,italic:false,underline:false,strikethrough:false,color:'#123E62',align:'left',lineHeight:1.5,textTransform:'none',listStyle:'none'},
+    {...base,id:'shape',type:'shape',name:'Shape',x:420,y:60,width:100,height:100,shapeType:'rectangle',fill:'#8B5CF6',stroke:'#123E62',strokeWidth:0,cornerRadius:8},
+    {...base,id:'image',type:'image',name:'Photo',x:400,y:300,width:200,height:200,src:'data:image/svg+xml;charset=utf-8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="200"><path fill="red" d="M0 0H100V200H0z"/><path fill="#00ff00" d="M100 0H300V200H100z"/><path fill="blue" d="M300 0H400V200H300z"/></svg>'),objectFit:'contain',cornerRadius:0,flipHorizontal:false,flipVertical:false,filters:{brightness:100,contrast:100,saturation:100}},
+  ]}}};
+  await page.route('**/api/**',route=>{if(/\/designs(?:\/[^/]+)?$/.test(new URL(route.request().url()).pathname)){if(route.request().method()==='GET')return route.fulfill({json:model.document});const body=route.request().postDataJSON();model.writes.push(body);model.document={...model.document,...body};return route.fulfill({json:model.document});}return route.fulfill({json:[]});});
+  await page.goto(`/editor?editor=v3&designId=${id}`,{waitUntil:'domcontentloaded'});await expect(artwork(page,'text')).toBeVisible();return model;
+}
+const artwork=(page:Page,id:string)=>page.getByTestId('design-canvas').locator(`[data-element-id="${id}"]`);
+const bar=(page:Page,type:string)=>page.getByRole('toolbar',{name:`${type} formatting`,exact:true});
+async function save(page:Page,model:Awaited<ReturnType<typeof setup>>){const before=model.writes.length;await page.getByRole('button',{name:'Save',exact:true}).click();await expect.poll(()=>model.writes.length).toBeGreaterThan(before);return model.writes.at(-1).canvasData;}
+
+// Contract: Effects opens in the sidebar, provides seven functional presets, retains custom settings and restores the prior panel.
+for(const theme of ['light','dark'])test(`${theme} Effects uses the reference sidebar and persists layered presets`,async({page},info)=>{
+  await page.setViewportSize({width:1242,height:668});const model=await setup(page,theme);await page.getByRole('button',{name:'Text',exact:true}).click();await artwork(page,'shape').click();await bar(page,'shape').getByRole('button',{name:'Effects',exact:true}).click();
+  const panel=page.getByRole('complementary',{name:'Effects panel',exact:true});await expect(panel).toBeVisible();await expect(panel.getByRole('heading',{name:'Effects',exact:true})).toBeVisible();
+  for(const label of ['Drop','Glow','Echo','Glitch','Radioactive','Retro','Midnight']){await panel.getByRole('button',{name:`Effect ${label}`,exact:true}).click();await expect(panel.getByRole('button',{name:`Effect ${label}`,exact:true})).toHaveAttribute('aria-pressed','true');const shape=(await save(page,model)).elements.find((el:any)=>el.id==='shape');expect(shape.fill).toBe('#8B5CF6');expect(shape.shadow.opacity).toBeGreaterThan(0);if(label==='Glitch'||label==='Echo')expect(shape.shadowLayers.length).toBeGreaterThan(0);}
+  await panel.getByRole('button',{name:'Effect Glitch',exact:true}).click();await page.screenshot({path:info.outputPath(`annotations-effects-${theme}.png`)});await panel.getByRole('button',{name:'Effect None',exact:true}).click();expect((await save(page,model)).elements.find((el:any)=>el.id==='shape').shadow).toBeUndefined();await page.getByRole('button',{name:'Undo',exact:true}).click();expect((await save(page,model)).elements.find((el:any)=>el.id==='shape').shadowLayers.length).toBeGreaterThan(0);
+  await panel.getByRole('button',{name:'Close Effects',exact:true}).click();await expect(page.getByRole('heading',{name:'Text',exact:true})).toBeVisible();await page.reload({waitUntil:'domcontentloaded'});await expect(artwork(page,'shape')).toBeVisible();await artwork(page,'shape').click();await bar(page,'shape').getByRole('button',{name:'Effects',exact:true}).click();await expect(page.getByRole('button',{name:'Effect Glitch',exact:true})).toHaveAttribute('aria-pressed','true');
+  const download=page.waitForEvent('download');await page.getByRole('button',{name:'Export',exact:true}).click();const path=info.outputPath(`effects-${theme}.png`);await (await download).saveAs(path);
+  const pixels=await page.evaluate(async encoded=>{const image=new Image();image.src='data:image/png;base64,'+encoded;await image.decode();const canvas=document.createElement('canvas');canvas.width=image.width;canvas.height=image.height;const ctx=canvas.getContext('2d')!;ctx.drawImage(image,0,0);const scale=image.width/800;return [[417,100],[523,100],[470,100]].map(([x,y])=>Array.from(ctx.getImageData(x*scale,y*scale,1,1).data).slice(0,3));},(await readFile(path)).toString('base64'));
+  expect(pixels[0][2]).toBe(255);expect(pixels[0][0]).toBeLessThan(60);expect(pixels[1][0]).toBe(255);expect(pixels[1][2]).toBeGreaterThan(150);expect(pixels[2]).toEqual([139,92,246]);
+});
+
+// Contract: percent and editable value occupy separate non-overlapping areas, including 100 and focused keyboard input.
+test('opacity percent is a unified readable editable field and Escape cancels',async({page},info)=>{
+  await page.setViewportSize({width:1242,height:668});const model=await setup(page);await artwork(page,'shape').click();await bar(page,'shape').getByRole('button',{name:'Fill',exact:true}).click();await page.getByRole('button',{name:'Add color',exact:true}).click();const input=page.getByLabel('Color opacity percent',{exact:true});
+  for(const value of ['0','50','100']){await input.fill(value);await input.press('Enter');await expect(input).toHaveValue(value);await expect(page.getByRole('slider',{name:'Alpha',exact:true})).toHaveValue(value);}
+  const geometry=await input.evaluate(el=>{const input=el.getBoundingClientRect(),suffix=el.parentElement!.querySelector('span')!.getBoundingClientRect();return {inputRight:input.right,suffixLeft:suffix.left,width:input.width,outline:getComputedStyle(el).outlineStyle};});expect(geometry.inputRight).toBeLessThanOrEqual(geometry.suffixLeft);expect(geometry.width).toBeGreaterThanOrEqual(46);expect(geometry.outline).toBe('none');await page.screenshot({path:info.outputPath('annotations-opacity-dark.png')});
+  await input.fill('20');await input.press('Escape');await input.blur();expect((await save(page,model)).elements.find((el:any)=>el.id==='shape').paints.fill.opacity).toBe(1);
+});
+
+// Contract: actual two-line artwork moves within a fixed box by 66px per anchor, and has no displacement when there is no spare height.
+for(const short of [false,true])test(`text anchor has observable fixed-box alignment short=${short}`,async({page},info)=>{
+  const model=await setup(page,'dark',short);await artwork(page,'text').click();await bar(page,'text').getByRole('button',{name:'Text spacing',exact:true}).click();await expect(page.getByText('Make the text box taller to see vertical alignment.',{exact:true})).toBeVisible();
+  const positions:number[]=[];for(const anchor of ['start','middle','end']){await page.getByRole('button',{name:`Anchor ${anchor}`,exact:true}).click();positions.push(await artwork(page,'text').evaluate(el=>{const box=el.getBoundingClientRect(),content=el.querySelector('.whitespace-pre-wrap')!.getBoundingClientRect();return (content.top-box.top)/(box.height/parseFloat((el as HTMLElement).style.height));}));}
+  expect(positions[0]).toBeCloseTo(4,0);expect(positions[1]).toBeCloseTo(short?4:70,0);expect(positions[2]).toBeCloseTo(short?4:136,0);const text=(await save(page,model)).elements.find((el:any)=>el.id==='text');expect(text).toMatchObject({x:40,y:40,height:short?30:200,textAnchor:'end'});if(!short)await page.screenshot({path:info.outputPath('annotation-text-anchor.png')});
+  await page.keyboard.press('Escape');await artwork(page,'text').dblclick();await artwork(page,'text').locator('textarea').press('Escape');expect((await save(page,model)).elements.find((el:any)=>el.id==='text').textAnchor).toBe('end');
+});
+
+// Contract: real V3 side-handle gestures change frame ratio, corners retain it, and Undo restores the initial square.
+test('image side handles reshape the frame while corner handles keep proportions',async({page})=>{
+  const model=await setup(page);await artwork(page,'image').click();let box=(await artwork(page,'image').boundingBox())!;await page.mouse.move(box.x+box.width,box.y+box.height/2);await page.mouse.down();await page.mouse.move(box.x+box.width+70,box.y+box.height/2,{steps:10});await page.mouse.up();
+  let image=(await save(page,model)).elements.find((el:any)=>el.id==='image');expect(image.width).toBeGreaterThan(240);expect(image.height).toBe(200);await page.getByRole('button',{name:'Undo',exact:true}).click();await artwork(page,'image').click();box=(await artwork(page,'image').boundingBox())!;await page.mouse.move(box.x+box.width,box.y+box.height);await page.mouse.down();await page.mouse.move(box.x+box.width+35,box.y+box.height+35,{steps:10});await page.mouse.up();image=(await save(page,model)).elements.find((el:any)=>el.id==='image');expect(image.width).toBeGreaterThan(220);expect(image.width).toBe(image.height);
+});
+
+// Contract: fitting a 2:1 source in a square has distinct exported pixels, without changing the frame.
+for(const fit of ['cover','contain','fill'])test(`image ${fit} changes rendered pixels and survives reload`,async({page},info)=>{
+  const model=await setup(page);await artwork(page,'image').click();await bar(page,'image').getByRole('button',{name:'Image fit',exact:true}).click();await expect(page.getByText('Fit changes are visible when the frame and image proportions differ.',{exact:true})).toBeVisible();await page.getByRole('button',{name:`Fit ${fit}`,exact:true}).click();await expect(artwork(page,'image').locator('img')).toHaveCSS('object-fit',fit);if(fit==='contain')await page.screenshot({path:info.outputPath('annotations-fit-dark.png')});const image=(await save(page,model)).elements.find((el:any)=>el.id==='image');expect(image).toMatchObject({x:400,y:300,width:200,height:200,objectFit:fit});
+  await page.keyboard.press('Escape');const pending=page.waitForEvent('download');await page.getByRole('button',{name:'Export',exact:true}).click();const path=info.outputPath(`${fit}.png`);await (await pending).saveAs(path);
+  const pixels=await page.evaluate(async encoded=>{const image=new Image();image.src='data:image/png;base64,'+encoded;await image.decode();const canvas=document.createElement('canvas');canvas.width=image.width;canvas.height=image.height;const ctx=canvas.getContext('2d')!;ctx.drawImage(image,0,0);const scale=image.width/800;return [[500,310],[410,400]].map(([x,y])=>Array.from(ctx.getImageData(x*scale,y*scale,1,1).data).slice(0,3));},(await readFile(path)).toString('base64'));
+  expect(pixels[0]).toEqual(fit==='contain'?[255,255,255]:[0,255,0]);expect(pixels[1]).toEqual(fit==='cover'?[0,255,0]:[255,0,0]);await page.reload({waitUntil:'domcontentloaded'});await expect(artwork(page,'image').locator('img')).toHaveCSS('object-fit',fit);
+});

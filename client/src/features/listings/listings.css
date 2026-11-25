@@ -1,0 +1,130 @@
+/* Listings module — layout per Mockups/listing-workflow-v1 (design.md §7–§8). Shell and shared parts: workspace.css. */
+.lst-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.lst-small{display:block;font-size:12px;color:var(--v3-muted);margin:3px 0 0;line-height:1.6;overflow-wrap:anywhere}
+.lst-tiny{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--v3-muted);margin:12px 0}
+.lst-tiny svg{width:14px;height:14px;flex:none}
+
+/* Library */
+.lst-search{position:relative;width:100%;margin:0 0 18px}
+.lst-search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--v3-muted);pointer-events:none}
+.ws-root .lst-search input{padding-left:44px;padding-right:46px}
+.lst-search-clear{position:absolute;right:3px;top:50%;transform:translateY(-50%);width:40px;height:40px;border:0;background:none;color:var(--v3-muted);border-radius:8px;display:grid;place-items:center;cursor:pointer}
+.lst-search-clear:hover{background:var(--v3-hover)}
+.lst-search-clear svg{width:16px;height:16px}
+.lst-count{font-size:12px;color:var(--v3-muted);margin:0 0 18px}
+.lst-grid{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+.lst-card{display:flex;flex-direction:column;overflow:hidden;text-decoration:none;color:inherit;height:100%;text-align:left;transition:box-shadow .2s,transform .2s}
+.lst-card:hover{box-shadow:var(--ws-shadow);transform:translateY(-2px)}
+@media (prefers-reduced-motion:reduce){.lst-card{transition:none}.lst-card:hover{transform:none}}
+.lst-card-cover{width:100%;height:185px;object-fit:cover;display:block;flex:none}
+.lst-card .ws-panel-body{display:flex;flex-direction:column;flex:1;align-items:flex-start}
+.lst-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:var(--ws-stage);color:var(--v3-muted);font-size:12px}
+.lst-placeholder svg{width:24px;height:24px}
+.lst-card-title{font-size:17px;margin:10px 0 5px;line-height:1.35;overflow-wrap:anywhere;letter-spacing:-.3px}
+.lst-card-address,.lst-card-specs{font-size:11px;color:var(--v3-muted);margin:0;line-height:1.6;overflow-wrap:anywhere}
+.lst-card-price{display:block;font-size:17px;margin:12px 0 2px;color:var(--ws-price);font-weight:700;letter-spacing:-.3px}
+.lst-card-price-missing{font-size:13px;font-weight:500;color:var(--v3-muted)}
+.lst-card-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:auto;padding-top:15px;width:100%;font-size:12px;color:var(--v3-muted)}
+.lst-more{display:flex;justify-content:center;margin-top:24px}
+
+/* Listing workspace — summary grid 1.25fr 1fr .9fr */
+.lst-summary{display:grid;grid-template-columns:1.25fr 1fr .9fr;gap:15px;margin-bottom:22px}
+.lst-summary-property{display:flex;overflow:hidden;min-height:150px}
+.lst-summary-cover{width:40%;object-fit:cover;flex:none;min-height:150px}
+.lst-summary-body{padding:17px 15px;flex:1;min-width:0;display:flex;flex-direction:column;align-items:flex-start}
+.lst-summary-body h2{font-size:16px;line-height:1.45;margin:8px 0 0;overflow-wrap:anywhere}
+.lst-summary-price{display:block;font-size:20px;letter-spacing:-.4px;font-weight:700;margin-top:8px;color:var(--ws-price)}
+.lst-facts{font-size:12px;color:var(--v3-muted);margin:6px 0 0}
+.lst-summary-edit{margin-top:auto;padding-left:0}
+.lst-summary-card{padding:17px;display:flex;flex-direction:column;min-width:0}
+.lst-summary-actions{margin-top:auto;padding-top:12px;display:flex;flex-direction:column;align-items:flex-start;gap:4px}
+.lst-summary-actions .ws-text-button{padding-left:0;text-align:left;white-space:normal}
+.lst-summary-label{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:700;color:var(--v3-muted);margin:0 0 15px;text-transform:uppercase;letter-spacing:.6px}
+.lst-summary-label svg{width:15px;height:15px}
+.lst-identity{display:flex;align-items:center;gap:12px;min-width:0}
+.lst-identity>div{min-width:0}
+.lst-portrait{width:46px;height:46px;border-radius:50%;object-fit:cover;object-position:center 20%;flex:none;border:3px solid var(--v3-workspace);background:var(--ws-stage);display:grid;place-items:center;color:var(--v3-muted);font-weight:700;font-size:15px}
+.lst-logo{width:46px;height:46px;border-radius:10px;object-fit:contain;flex:none;background:var(--ws-stage);display:grid;place-items:center;color:var(--v3-muted)}
+.lst-logo svg{width:20px;height:20px}
+.lst-identity div>strong{display:block;font-size:14px}
+.lst-identity div>span{display:block;font-size:12px;color:var(--v3-muted);margin-top:4px;overflow-wrap:anywhere}
+.lst-brand-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:14px;flex-wrap:wrap}
+.lst-swatch{display:inline-block;width:12px;height:12px;border-radius:3px;border:1px solid #0002;vertical-align:middle}
+
+/* Pipeline strip */
+.lst-pipeline{list-style:none;margin:0 0 25px;padding:13px 16px;display:flex;align-items:center;background:var(--v3-surface);border:1px solid var(--v3-border);border-radius:10px}
+.lst-pipe-step{display:flex;align-items:center;gap:10px;flex:1;min-width:0}
+.lst-pipe-step strong{display:block;font-size:12px;font-weight:650}
+.lst-pipe-step small{display:block;font-size:11px;color:var(--v3-muted);margin-top:2px}
+.lst-step-icon{width:32px;height:32px;flex:none;border-radius:8px;background:var(--v3-selected);display:grid;place-items:center;color:var(--v3-accent)}
+.lst-step-icon svg{width:16px;height:16px}
+.lst-pipe-step[data-current] .lst-step-icon{background:var(--v3-warn-bg);color:var(--v3-warn-ink)}
+.lst-pipe-arrow{width:15px;height:15px;color:#b5c3cd;margin:0 14px 0 auto;flex:none}
+
+/* Marketing assets */
+.lst-asset-grid{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:17px}
+.lst-asset{overflow:hidden;display:flex;flex-direction:column;transition:box-shadow .2s,transform .2s}
+.lst-asset:hover{box-shadow:var(--ws-shadow);transform:translateY(-2px)}
+.lst-asset-stage{height:228px;background:var(--ws-stage);display:flex;align-items:center;justify-content:center;padding:17px}
+.lst-asset-stage img{max-width:100%;max-height:100%;object-fit:contain;box-shadow:0 5px 13px #233e5020;background:#fff}
+.lst-asset-info{padding:13px;display:flex;flex-direction:column;gap:6px}
+.lst-asset-info h3{font-size:14px;margin:0;overflow-wrap:anywhere}
+.lst-asset-info .ws-btn{margin-top:8px}
+.lst-asset-foot{display:flex;align-items:center;gap:5px;font-size:12px;color:#4c8e81;margin-top:4px}
+.lst-asset-foot svg{width:13px;height:13px}
+.lst-savebar{position:sticky;bottom:12px;z-index:5;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:20px;padding:12px 16px;background:var(--v3-surface);border:1px solid var(--v3-border);border-radius:12px;box-shadow:var(--ws-shadow);font-size:13px}
+
+/* Photos */
+.lst-upload-list{list-style:none;padding:0;margin:0 0 16px}
+.lst-photo-grid{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+.lst-photo-card{overflow:hidden}
+.lst-photo-card img{width:100%;height:150px;object-fit:cover;display:block;background:var(--ws-stage)}
+.lst-photo-caption{padding:11px 12px}
+.lst-photo-caption strong{display:block;font-size:13px;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lst-photo-caption small{font-size:12px;color:var(--v3-muted)}
+.lst-photo-actions{display:flex;align-items:center;gap:2px;margin-top:8px}
+.lst-photo-actions .ws-icon-button{min-width:36px;min-height:36px;color:var(--v3-muted)}
+.lst-photo-actions .ws-icon-button:hover:not(:disabled){background:var(--v3-hover);color:var(--v3-ink)}
+.lst-photo-actions .ws-icon-button:disabled{opacity:.35;cursor:not-allowed}
+.lst-photo-actions .ws-icon-button svg{width:16px;height:16px}
+.lst-rank-tag{font-size:11px;font-weight:650;background:var(--v3-pass-bg);color:var(--v3-accent);border-radius:5px;padding:4px 7px;margin-right:auto}
+.lst-upload-zone{border:1px dashed #bed4ce;background:var(--v3-selected);padding:30px;border-radius:10px;text-align:center;margin-top:20px}
+.ws-tokens[data-theme=dark] .lst-upload-zone{border-color:#2d5d54}
+.lst-upload-zone>svg{width:22px;height:22px;color:var(--v3-accent);margin-bottom:10px}
+.lst-upload-zone h3{font-size:15px;margin:0 0 7px}
+.lst-upload-zone p{font-size:13px;color:var(--v3-muted);line-height:1.7;margin:0 0 14px}
+
+/* New property */
+.lst-mode{display:inline-flex;border:1px solid var(--v3-border);border-radius:10px;padding:3px;margin-bottom:20px;background:var(--v3-surface)}
+.lst-mode button{font:inherit;font-size:13px;font-weight:650;border:0;background:none;color:var(--v3-muted);padding:8px 16px;border-radius:8px;min-height:40px;cursor:pointer}
+.lst-mode button[aria-pressed=true]{background:var(--v3-selected);color:var(--v3-accent)}
+.lst-review{list-style:none;margin:16px 0 0;padding:0;display:flex;flex-direction:column;gap:10px}
+.lst-fact{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;padding:12px 14px;border:1px solid var(--v3-border);border-radius:10px;background:var(--v3-surface)}
+.lst-fact input[type=checkbox]{width:18px;height:18px;margin-top:2px;accent-color:var(--v3-accent)}
+.lst-fact-label{font-size:13px;font-weight:650}
+.lst-fact-value{font-size:14px;overflow-wrap:anywhere}
+.lst-fact-evidence{grid-column:2;font-size:12px;color:var(--v3-muted);overflow-wrap:anywhere}
+.lst-fact[data-ambiguous]{border-color:var(--v3-warn-ink)}
+
+/* Responsive — design.md §16 */
+@media (min-width:1500px){.lst-asset-stage{height:270px}}
+@media (max-width:1200px){
+  .lst-summary{grid-template-columns:1.3fr 1fr}
+  .lst-summary>:nth-child(3){grid-column:1/-1}
+  .lst-photo-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .lst-asset-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media (max-width:980px){
+  .lst-grid,.lst-asset-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .lst-pipeline{flex-wrap:wrap;gap:12px}
+  .lst-pipe-step{flex:1 1 40%}
+  .lst-pipe-arrow{display:none}
+}
+@media (max-width:720px){
+  .lst-summary{grid-template-columns:1fr}
+  .lst-summary-property{flex-direction:column}
+  .lst-summary-cover{width:100%;height:180px}
+  .lst-grid,.lst-asset-grid{grid-template-columns:1fr}
+  .lst-photo-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .lst-pipe-step{flex-basis:100%}
+}

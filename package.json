@@ -34,7 +34,12 @@
     "test:integration": "cd api && npx vitest run --config vitest.integration.config.ts --reporter=verbose",
     "test:watch": "cd api && npx vitest --config vitest.config.ts",
     "test:e2e": "playwright test",
-    "test:e2e:editor": "playwright test e2e/editor-ai-chatbox.spec.ts",
+    "test:e2e:editor": "node scripts/test-module.mjs editor --e2e",
+    "test:e2e:mocked": "playwright test -c e2e/mocked.config.ts",
+    "test:module": "node scripts/test-module.mjs",
+    "test:modules:list": "node scripts/test-module.mjs --list",
+    "test:changed": "node scripts/test-module.mjs --changed",
+    "test:changed:unit": "node scripts/test-module.mjs --changed --unit",
     "pr:story": "node scripts/pr-story.mjs",
     "pr:open:us-design-002": "gh pr create --base main --title \"[US-DESIGN-002] Editor + AI chat design tokens & dark-mode polish\" --body-file docs/agile/epics/EPIC-DESIGN-01/stories/US-DESIGN-002/PR_BODY.md",
     "check:api": "tsc --noEmit -p api/tsconfig.json"

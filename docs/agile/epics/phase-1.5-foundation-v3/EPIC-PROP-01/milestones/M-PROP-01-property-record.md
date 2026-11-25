@@ -8,10 +8,18 @@ updated: 2026-10-29
 # M-PROP-01-property-record — Property record and structured listing
 
 > **Epic:** [EPIC-PROP-01](../EPIC.md)
-> **Status:** 🔲 Not Started
+> **Status:** 🟡 2/5 reconciled story implementations;003/006/007 full contracts uncertified; review/merge pending
 > **Target date:** TBD (Phase 1.5 sequence — see the [phase README](../../README.md))
 
 ---
+
+## Reconciled integration scope — 2026-11-13
+
+**Sequence:** US-PROP-002 → US-PROP-001 → US-EDIT-025 (in EDIT epic).
+
+The active contracts are US-PROP-002 shared structured global listing/pricing/reviewed import and US-PROP-001 authenticated persistence. Historical US-PROP-003/006/007 overlap is superseded per explicit story notes; do not execute independently. No AI-generated poster/pricing change is required. Property changes remain pending in each Design until Apply.
+
+The reconciled story cards supersede conflicting historical acceptance/dependency notes below for this delivery. Historical rows are retained for traceability, not as claims of completion. Done requires actual scoped AC evidence and gates; deferred siblings do not become Done.
 
 ## Goal
 
@@ -23,9 +31,9 @@ A listing is a saved Property with structured price and Sale/Rent intent, filled
 
 | Order | Story | Title | Size | Blocked By | Status | PR |
 |:-----:|-------|-------|:----:|------------|:------:|:--:|
-| 1 | [US-PROP-001](../stories/US-PROP-001/STORY.md) | Property as a saved record (backend) | M | — | 🔲 | — |
+| 1 | [US-PROP-001](../stories/US-PROP-001/STORY.md) | Property as a saved record (backend) | M | — | 🟡 Implemented locally; review/merge pending | — |
 | 3 | [US-PROP-006](../stories/US-PROP-006/STORY.md) | Property as a saved record (client) | M | US-PROP-001, US-PROP-002 | 🔲 | — |
-| 2 | [US-PROP-002](../stories/US-PROP-002/STORY.md) | Structured price: parser, schema and generation | M | US-PROP-001 | 🔲 | — |
+| 2 | [US-PROP-002](../stories/US-PROP-002/STORY.md) | Structured price: parser, schema and generation | M | US-PROP-001 | 🟡 Implemented locally; review/merge pending | — |
 | 3 | [US-PROP-007](../stories/US-PROP-007/STORY.md) | Listing intent and price in the editor — *split from US-PROP-002 on 2026-10-30* | M | US-PROP-002 | 🔲 | — |
 | 4 | [US-PROP-003](../stories/US-PROP-003/STORY.md) | Auto-Fill from a listing message, with review | M | US-PROP-002, US-PROP-007 | 🔲 | — |
 
@@ -49,3 +57,8 @@ A listing is a saved Property with structured price and Sale/Rent intent, filled
 ---
 
 *Milestone created: 2026-10-29*
+
+
+## Current reconciliation — 2026-11-14
+
+2026-11-14 — reconciled from committed Opus baseline3e95a40; implementation present, release hardening/review and UI/font acceptance in progress; not merged Done. Current source and story evidence supersede older status summaries above, including the historical US-EDIT-027 AC4 gap (its card records8/8 implementation ACs). Release-specific template navigation repair remains separately tracked. See docs/research/2026-11-14-V3-RELEASE-HARDENING.md. No formal milestone closure.

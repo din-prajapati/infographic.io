@@ -1,0 +1,78 @@
+# PR Task List — US-EDIT-033
+
+> **Story:** [STORY.md](./STORY.md)
+> **Branch:** feat/edit/m-11-v3-editor-slice | **PR:** #_____ | **Linear:** Unassigned
+
+## Four Pillars Pre-flight
+
+- [x] **Brain** — approved TOOLBAR_DRAWING_PLAN + normative STORY contracts reviewed; current official harden lock required before coding.
+- [x] **Muscle** — exact file scope below and contract-first scenarios defined. Shared canvasTypes.ts owned by root; coordinate peers.
+- [x] **Map** — EPIC ARCHITECTURE reviewed: protected opt-in V3 → session/Zustand → element rendering/export; preserve legacy route and existing API.
+- [x] **Env** — ENV.yaml reviewed: React/Vite/proxy5000/API3001; isolated browser runner available. Verify service availability before live smoke; no secrets/paid AI calls.
+
+## Three reviewable tasks
+
+- [x] **T1 (45m)** — Establish acceptance-derived failing tests and model/helper contracts for AC1–AC2; reconcile only scoped types and interfaces.
+- [x] **T2 (100m)** — Implement assigned runtime behaviors in normative STORY contract; preserve peer edits and approved shell.
+- [x] **T3 (45m)** — Complete unit/browser/visual and save-reload-export regression evidence, fix scoped failures and report honest AC status. Root runs Gate1 before task commits.
+
+- [x] **T4 (30m)** — Apply approved Nov2 toolbar presentation corrections: dots-only overflow, separate flip icons, direct checkerboard transparency and compact popovers; hide native V3 numeric spinner UI. Verify current actions/history and both themes without adding features.
+
+## Exact file scope
+
+- `e2e/v3-element-toolbars.spec.ts`
+- `Mockups/approved-v3-editor/TOOLBAR_DRAWING_PLAN.md`
+- `Mockups/approved-v3-editor/TOOLBAR_VERIFICATION.md`
+- `client/src/components/editor/v3/V3ElementToolbar.tsx`
+- `client/src/components/editor/v3/V3ImageEditor.tsx`
+- `client/src/lib/v3ElementEditing.ts`
+- `client/src/components/editor/v3/V3Editor.tsx`
+- `client/src/styles/v3-element-toolbar.css`
+- `client/src/lib/__tests__/v3ElementEditing.spec.ts`
+- `client/src/components/editor/v3/__tests__/V3ElementToolbar.spec.tsx`
+- `client/src/components/editor/v3/__tests__/V3ImageEditor.spec.tsx`
+
+Only these production/test/report paths may change; card/TASKS/scaffold/replay/locks are governance scope. Additional path changes require root reconciliation and current harden lock. This card is one M-sized frontend increment with dependent integration, not full milestone closure.
+
+## Verification commands
+
+```bash
+npm run check
+npm run test:unit
+npm run test:unit:client
+npx playwright test --config=e2e/v3-slice.config.ts
+```
+
+Gate1 mandatory. Gate2 themed desktop visuals/focus/edge placement. Gate3 browser lifecycle/export. Gate4 no backend/DI/schema changes; retain authenticated save/reload/export smoke when configured, separately from mocks. No Done/PR/merge claims until actual evidence.
+
+
+## Delivery evidence
+
+Nov2 T4: final type checks and 1,286 unit tests passed (one existing skip); 51 browser cases passed, then four affected cases passed after the final Escape correction. Light/dark and text transparency screenshots inspected and saved. See TOOLBAR_VERIFICATION.md for exact sequence and logs. Merge remains pending.
+
+Acceptance-derived tests, runtime and verification completed. Shared model/dispatch/toolbars are delivered atomically because isolated intermediate union changes fail compilation or omit line rendering. Commit carries T1–T3 and all three story IDs. See TOOLBAR_VERIFICATION.md for logs, review fixes and exclusions. Story stays merge-pending.
+
+- [x] T5 (45m) — Nov4 Canva-inspected toolbar correction per AC3 in existing toolbar/CSS/unit/browser/plan/verification paths. No added capabilities.
+
+Nov4 retained visual evidence scope: Mockups/approved-v3-editor/evidence/nov4-light-corners.png, nov4-light-border.png, nov4-dark-corners.png, nov4-dark-border.png.
+
+- [x] T6 (90m) — Detailed cross-element Canva presentation and safe live style previews, AC4/AC5. Additional exact paths: client/src/hooks/useV3ElementPreview.ts; client/src/hooks/__tests__/useV3ElementPreview.spec.ts; client/src/components/editor/v3/V3Canvas.tsx; existing toolbar/CSS/helper/unit/browser/plan/report paths. Keep all previous uncommitted work intact.
+
+Detailed follow-up evidence scope: Mockups/approved-v3-editor/evidence/details-text-overflow-dark.png, details-line-live-stroke.png, details-image-border-dark.png. Font picker remains within existing fonts; no external font loading.
+
+- [x] T7 (60m) — AC6/7 exact text controls: seamless font-size capsule, screenshot-matched spacing/anchor panel and three-state case toggle. Existing toolbar/CSS/unit/browser, preview validation/tests, plan/report paths and evidence/text-ref-light.png + text-ref-dark.png.
+
+## 2026-11-14 — Browser annotation refinement
+
+- [x] T8 — Comment3: replace horizontal toolbar overflow with measured responsive More controls for text,image,shape,line,icon,multiselection; preserve every action and styling draft behavior, disabled/lock state, keyboard/focus/Escape and viewport-safe nested popovers. Files: V3ElementToolbar.tsx, client/src/styles/v3-element-toolbar.css, existing toolbar unit tests; optional new pure helper if necessary. Never merely hide scrollbar or clip controls. Root owns browser tests.
+
+User explicitly authorized annotations1–4 and6;5 is proposal only. Shared files have explicit root/agent ownership. Do not redesign fonts or implement Assistant/providers/default-editor cutover. Gates required; formal merge remains pending.
+
+Verified 2026-11-14: frontend/API type checks pass; backend 853 and frontend 843 unit tests pass (one existing skip); production build passes; clean V3 browser 178/178 and Listing workflow 9/9 pass. Light/dark desktop, phone and tablet screenshots reviewed. Gate 4 N/A (UI only); physical-device acceptance and merge pending. Evidence: docs/research/2026-11-14-V3-BROWSER-ANNOTATIONS.md.
+
+## 2026-11-14 — Toolbar More follow-up annotations
+
+- [x] T9 (90m) — Keep eligible Link field pinned in the main contextual toolbar at every supported width, reserving its measured width before placing secondary controls. Exactly one More trigger opens the available overflow formatting controls and common element actions directly; no More text/image/shape/line submenu inside More. Preserve complete common Copy/Paste/Duplicate/Delete/stack/Hide/Lock commands and their atomic, stale-selection and disabled guards, and existing property-specific popovers, preview cancellation, keyboard/Escape/focus, resize restoration and viewport bounds. Spacious toolbars retain common context actions through their sole More; constrained toolbars include overflow controls directly in that same visible level. Link field is never in overflow; compact icon treatment is allowed if essential on narrow phones but keeps accessible name. No scrollbar hiding or action removal. User annotation supersedes the earlier nested More presentation only; keep type-specific settings pickers.
+
+Primary ownership: code-agent owns client/src/components/editor/v3/V3ElementToolbar.tsx, client/src/components/editor/v3/V3ElementActionsMenu.tsx, client/src/styles/v3-element-toolbar.css, existing V3ElementToolbar.spec.tsx and V3ElementActionsMenu.spec.tsx under __tests__. Root owns e2e/v3-browser-annotations.spec.ts, existing e2e/v3-element-toolbars.spec.ts, e2e/v3-layers-panel.spec.ts if selector reconciliation is required, this TASKS.md and docs/research/2026-11-14-V3-BROWSER-ANNOTATIONS.md. Four Pillars already present; ac-audit warnings[] and SHA true. Same approved branch codex/v3-listing-responsive-handoff. No backend, Assistant, provider, photo ranking or unrelated shell/font changes. Gate1 plus toolbar/element-menu browser regression and light/dark1242x668 both-inspector screenshots, 375px compact check required. No formal closure/merge claim.
+T9 selector reconciliation also includes root-owned e2e/v3-elements-library.spec.ts, which explicitly opens the currently nested More text options submenu. Preserve all exact element property/history assertions while updating the presentation path.

@@ -2,6 +2,7 @@
 
 import { create } from 'zustand';
 import { CanvasStore, CanvasElement } from '../lib/canvasTypes';
+import { clearChangedLegacyPaints, isValidElementPaints, isValidPaint, paintFallback } from '../lib/paint';
 import { cloneElement, sortByZIndex } from '../lib/canvasUtils';
 
 export const useCanvasStore = create<CanvasStore>((set, get) => ({
@@ -25,6 +26,7 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
 
   // Element operations
   addElement: (element) => {
+    if (!isValidElementPaints(element)) return;
     const state = get();
     const maxZIndex = Math.max(0, ...state.elements.map((el) => el.zIndex));
     const newElement = { ...element, zIndex: maxZIndex + 1 };
@@ -37,11 +39,15 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
 
   updateElement: (id, updates) => {
     const state = get();
+    const original = state.elements.find(element => element.id === id);
+    if (!original) return;
+    const patch = clearChangedLegacyPaints(original, updates);
+    if (!isValidElementPaints({...original, ...patch})) return;
     // Save pre-change state to history before mutating
     get().pushToHistory(state.elements);
     set({
       elements: state.elements.map((el) =>
-        el.id === id ? ({ ...el, ...updates } as CanvasElement) : el
+        el.id === id ? ({ ...el, ...patch } as CanvasElement) : el
       ),
     });
   },
@@ -162,9 +168,13 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
 
     set({
       elements: previous,
+      backgroundColor: state.history.pastBackgrounds?.at(-1)?.color ?? state.backgroundColor,
+      backgroundPaint: state.history.pastBackgrounds ? state.history.pastBackgrounds.at(-1)?.paint : state.backgroundPaint,
       history: {
         past: newPast,
         future: [state.elements, ...state.history.future],
+        pastBackgrounds: state.history.pastBackgrounds?.slice(0,-1),
+        futureBackgrounds: [{color:state.backgroundColor,paint:state.backgroundPaint}, ...(state.history.futureBackgrounds ?? state.history.future.map(()=>({color:state.backgroundColor,paint:state.backgroundPaint})))],
       },
     });
   },
@@ -178,9 +188,13 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
 
     set({
       elements: next,
+      backgroundColor: state.history.futureBackgrounds?.[0]?.color ?? state.backgroundColor,
+      backgroundPaint: state.history.futureBackgrounds ? state.history.futureBackgrounds[0]?.paint : state.backgroundPaint,
       history: {
         past: [...state.history.past, state.elements],
         future: newFuture,
+        pastBackgrounds: [...(state.history.pastBackgrounds ?? state.history.past.map(()=>({color:state.backgroundColor,paint:state.backgroundPaint}))), {color:state.backgroundColor,paint:state.backgroundPaint}],
+        futureBackgrounds: state.history.futureBackgrounds?.slice(1),
       },
     });
   },
@@ -194,6 +208,8 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
     set({
       history: {
         past: newPast,
+        pastBackgrounds: [...(state.history.pastBackgrounds ?? state.history.past.map(()=>({color:state.backgroundColor,paint:state.backgroundPaint}))), {color:state.backgroundColor,paint:state.backgroundPaint}].slice(-50),
+        futureBackgrounds: [],
         future: [], // Clear future when new action is performed
       },
     });
@@ -210,7 +226,15 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
   },
 
   setBackgroundColor: (color) => {
-    set({ backgroundColor: color });
+    set({ backgroundColor: color, backgroundPaint: undefined });
+  },
+
+  setBackgroundPaint: (paint) => {
+    if (!isValidPaint(paint)) return;
+    const state = get();
+    if (JSON.stringify(state.backgroundPaint) === JSON.stringify(paint)) return;
+    state.pushToHistory();
+    set({backgroundPaint:paint,backgroundColor:paintFallback(paint)});
   },
 
   setSelectedThemeColors: (colors) => {
@@ -238,9 +262,11 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
   },
 
   loadCanvas: (state) => {
+    if (state.backgroundPaint !== undefined && !isValidPaint(state.backgroundPaint) || state.elements?.some(element=>!isValidElementPaints(element))) return;
     set((current) => ({
       ...current,
       ...state,
+      ...('backgroundColor' in state && !('backgroundPaint' in state) ? {backgroundPaint:undefined} : {}),
     }));
   },
 

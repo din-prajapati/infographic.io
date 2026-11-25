@@ -5,6 +5,18 @@ import { CreateDesignDto } from '../dto/create-design.dto';
 @Injectable()
 export class DesignsService {
   /**
+   * The Property a saved V3 design is linked to: its *applied* listing (canvasData.v3Listing.appliedListingId), never
+   * the pending selection. Linked only when that Property belongs to the caller's organization; otherwise null.
+   * Stored on Infographic.propertyId (indexed) so property → designs lookups never scan canvas JSON.
+   */
+  private async linkedPropertyId(organizationId: string, canvasData: unknown): Promise<string | null> {
+    const applied = (canvasData as { v3Listing?: { appliedListingId?: unknown } } | null | undefined)?.v3Listing?.appliedListingId;
+    if (typeof applied !== 'string' || !applied || applied.length > 100) return null;
+    const property = await prisma.property.findFirst({ where: { id: applied, organizationId }, select: { id: true } });
+    return property?.id ?? null;
+  }
+
+  /**
    * Create or update a design
    * Uses Infographic model to store canvas designs
    */
@@ -32,9 +44,11 @@ export class DesignsService {
       }
 
       const existingCanvasDesign = (existing.propertyData as any)?.canvasDesign || {};
+      const propertyId = await this.linkedPropertyId(organizationId, designDto.canvasData);
       const updated = await prisma.infographic.update({
         where: { id: designId },
         data: {
+          propertyId,
           propertyData: {
             ...(existing.propertyData as any || {}),
             canvasDesign: {
@@ -66,10 +80,12 @@ export class DesignsService {
       };
     } else {
       // Create new design
+      const propertyId = await this.linkedPropertyId(organizationId, designDto.canvasData);
       const created = await prisma.infographic.create({
         data: {
           userId,
           organizationId,
+          propertyId,
           templateId: defaultTemplate.id,
           propertyData: {
             canvasDesign: {

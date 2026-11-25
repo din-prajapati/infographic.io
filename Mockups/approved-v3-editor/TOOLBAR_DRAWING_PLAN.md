@@ -1,0 +1,74 @@
+# Approved V3 toolbar and drawing implementation plan
+
+Approved by Dinesh on 2026-11-01. This extends the approved Navy/Teal V3 shell without changing its skeleton. Implementation contracts: US-EDIT-032, US-EDIT-033, US-EDIT-034 in EPIC-EDIT-04/M-EDIT-11. Existing saved-document/API flow remains the foundation.
+
+## Contextual toolbar layout
+
+| Element | Visible controls | Secondary controls |
+|---|---|---|
+| Text | Font, size, text-colour icon, bold, italic, alignment, checkerboard transparency, dots-only overflow | Underline, strikethrough, case, lists |
+| Shape | Edit, Fill, Border, supported Corners, Opacity, Effects | Shadow details |
+| Image | Edit, Replace, separate horizontal/vertical flip icons, Corners icon, checkerboard transparency, dots-only overflow | Fit, Border, Reset |
+| Line | Type, Colour, Stroke, Start/end decorations, Opacity | Swap ends |
+
+Keep Duplicate/Delete universal in the vertical strip. Preserve rounded icons, quiet hover surfaces, teal selected/focus states and light/dark/system tokens. Toolbars anchor near selection, measure viewport boundaries, flip/clamp and overflow secondary controls. Locked/mixed selections cannot edit individual properties. Artwork is never recoloured by a UI theme switch.
+
+## Approved presentation refinement — 2026-11-02
+
+Use the supplied Canva screenshots for compact grouping and sub-toolbar presentation only; add no Canva features. Overflow controls show only three dots with accessible names/tooltips. Image flip icons are separate direct actions using the existing old-editor icons. Text colour uses an A/colour underline; fill/stroke controls show their current colour. Transparency uses a checkerboard icon on all four element toolbars and opens a compact slider/value popover, with100 fully opaque. Popovers use the product's existing Navy/Teal light/dark tokens and rounded controls.
+
+Hide native up/down spinner UI for every number field within V3: font, adjustment, radius/border/shadow, rotation and canvas dimensions. Retain typed values, keyboard arrows and explicit font-size minus/plus actions. Numeric sliders use a slim rounded teal track and circular thumb, without changing commit/cancel/history semantics.
+
+## Existing editor parity and image sidebar
+
+Retain all old text controls: existing fonts, size1–500 with ±, colour, bold/weight synchronization, italic/underline/strikethrough, case, alignment, bullet/numbered lists, opacity. Shape picker retains Rectangle/Square, Circle, Triangle, Star; changing shape preserves geometry/style/embedded text. Fill supports transparent, custom and brand colours. Shape/image Border supports none/solid/dashed/dotted, colour and thickness0–20. Rectangle/image corners0–100. Shape Effects is local None/Shadow: colour, opacity0–100%, blur0–100px, offsets−100..100px.
+
+Image Edit opens the approved left sidebar with Back/Close, selected-image preview and Adjust. Brightness/Contrast/Saturation use icons, sliders and numeric inputs displaying−100..100 with0neutral (stored0..200 with100neutral). Adjust Reset affects only filters. Toolbar Reset restores filters/overlay/flips/opacity/radius and removes border, preserving source/geometry/fit. Image Replace uses upload/picker, retains ID/geometry/rotation/style, clears old source metadata and refreshes thumbnail; cancel/failure retains original and errors are visible. Switching images follows selection; non-image selection closes Edit; Back restores prior panel.
+
+## Lines and rotation
+
+Enable straight/curved/elbow pointer-drag drawing with transient preview, release-to-create/select and return to Select. Escape cancels; ignore gestures shorter than4screen pixels. Keyboard Insert creates200design-pixel line at centre. Defaultnavy#153B5B,2px,solid,no decorations. Shift constrains straight angles45°. Edit whole line/endpoints, curve bend and elbow middle segment; elbows remain orthogonal. Stroke styles solid/dashed/dotted and independent none/arrow/circle/bar ends; type changes retain endpoints/style. Existing Layers/visibility/locking/coordinates/clipboard/Duplicate/Delete apply.
+
+Text/image/shape receive a circular outside-bounds rotation handle, centre-based drag/live angle, Shift15°snap and accessible numeric input. Handle size remains constant across zoom. Lines use endpoint orientation. Escape cancels, Preview hides handles, locked elements cannot rotate. Every completed gesture/numeric edit yields one history entry; previews remain transient and only completed changes trigger autosave.
+
+## Model and compatibility
+
+First-class LineElement extends base with lineType,start/end/control local coordinates, elbowAxis/elbowOffset,stroke,width,style and start/end decorations. Add optional image borderColor/borderWidth/borderStyle, shape strokeStyle and shadow{color,opacity,blur,offsetX,offsetY}. Existing records default solid/no new shadow or image border. Shared geometry/style helpers drive DOM, hit testing, thumbnails and Canvas PNG export. Update load/template/recovery validation and legacy dispatch to preserve lines. No DB migration or new backend API.
+
+## Verification and exclusions
+
+Create/harden scoped cards, then implement032geometry/drawing,033toolbars/sidebar,034rotation/styles/export/integration. Gate1frontend/API typechecks plusbackend/clientunit suites; Gate2light/dark/system1191x668/1440visual/focus/edges; Gate3draw/edit/undo/redo/save/reload/export/cancel/errorbrowser journeys. Retain authenticated real-server smoke separately from route mocks. All cards remain Not Started/In Progress until evidence and formal PR merge; independent review remains required.
+
+Explicitly desktop-only: no375pxshell redesign. Exclude Crop, attached connectors, line labels, Animate, Position, Style, AI image modification, BG remover, eraser, Magictools, upscale, generation/video/StyleMatch and automatic segmentation. No inactive AI placeholders. Update IMPLEMENTATION_STATUS with delivered versus outstanding scope.
+
+## Approved browser-feedback corrections — 2026-11-04
+
+Inspected the owner's existing Canva editor tab, including text formatting, Transparency, image Corner rounding, Stroke style and Flip. This is presentation guidance for existing controls only.
+
+- Retain separate direct horizontal/vertical flip buttons; replace the mirrored diamonds with independently oriented curved-arrow icons.
+- Promote image Border to a direct icon with a single visual none/solid/dashed/dotted chooser and weight slider/value. Retain border color in a compact expandable section. More retains Fit and Reset.
+- Corners opens a compact Corner rounding slider/value popover. Keep keyboard/Escape, focus and single-history boundaries; use Navy/Teal tokens and viewport collision sizing.
+- Stabilize saved-line stroke selection, pointer capture/release, repeated clicks and Shift selection for straight/curved/elbow. Preserve locked/Preview behavior.
+- Selection geometry updates during text/image/shape drag/resize and line endpoint/body gestures. Values are design pixels; transient preview stays outside document/history/autosave. Completion retains the existing single write and cancellation clears preview.
+
+Contracts: US-EDIT-032 AC3/T4, US-EDIT-033 AC3/T5, US-EDIT-034 AC3/T4. No default-route change or additional Canva capabilities.
+
+## Detailed Canva-style controls and live style drafts — 2026-11-04 follow-up
+
+The owner requested a second, detailed pass across all element toolbars and authorized straightforward additions, excluding Crop. Inspected the existing Canva text advanced settings and More strip, native image border/corners controls, line stroke/rounded-end flyout, separate endpoint pickers, line-type picker and available vector controls. Preserve the approved V3 shell and Navy/Teal palette rather than adopting Canva's overall page layout.
+
+- Text: searchable existing-font picker, grouped size, color, Bold/Italic, one alignment picker, direct list picker, existing lineHeight under Text spacing, Transparency and a compact Underline/Strike/Case icon strip. No new font assets, letter-spacing engine, copy-style, Animate or Position implementation.
+- Image: keep Edit/Replace, flips, border/corners and opacity; put Fit and Reset directly after a separator. Fit offers Cover/Contain/Stretch and now works for explicit AI-import fits as well as ordinary images. Reset changes documented appearance only and preserves fit/source/geometry/rotation.
+- Shape: retain supported shape editing/fill/border/corners/local shadow and give numeric/color controls the same safe live preview behavior.
+- Line: color, visual stroke patterns, Rounded end points, stroke weight, separate start/end marker pickers, Swap ends, visual type picker and opacity. Retain existing marker and dash vocabulary. Add only optional lineCap butt/round, honoring SVG/PNG and old-record defaults.
+- Numeric/color drafts render immediately through ephemeral V3 UI state. Persisted elements, history, autosave and exporter remain canonical. Completed gestures/numeric confirmation commit once. Cancellation/selection/Preview/lock/visibility/unmount clear unfinished drafts; a rounded percentage display must never round stored fractional opacity on blur or cancellation.
+
+Contracts and exact file scopes: US-EDIT-033 AC4/AC5 T6 and US-EDIT-034 AC4 T5. Existing previous Nov4 selection/geometry changes remain intact. All work remains opt-in and locally reviewable; no push/merge/deploy approval is implied.
+
+## Exact text control references — 2026-11-04
+
+The latest owner screenshots extend the earlier text scope: implement letter tracking and fixed-box vertical anchors, while keeping More Settings excluded. Font minus/value/plus share one continuous rounded outline. The spacing popup has no heading: Letter spacing slider/value, Line spacing slider/value, separator, then the two-line Anchor text box label and three arrow/bar icons. Use neutral tracks and larger circular thumbs with the approved Navy/Teal colors and pressed state.
+
+Text case is one More-strip button cycling AA → aa → Aa, with current/next mode described accessibly. Legacy original-case text enters uppercase on first click; original content stays stored. Title Case formats every word. Letter tracking uses thousandths of an em and anchors operate within the existing box; DOM and PNG honor both. No automatic box resizing or More Settings.
+
+Contracts: US-EDIT-033 AC6/AC7 T7; US-EDIT-034 AC5 T6. Existing preview, Undo, keyboard, saved-design and export behavior remains required.

@@ -1,0 +1,45 @@
+v3-final-check.log
+
+> infographic-editor-unified@1.0.0 check
+> tsc && npm run check:api
+
+
+> infographic-editor-unified@1.0.0 check:api
+> tsc --noEmit -p api/tsconfig.json
+
+v3-final-backend.log
+ ✓ tests/infographics/prompt-extractor.plan-tier.spec.ts > PromptExtractorService.resolvePlanTier — BL-06 > TC-BL06-PT-03: org not found degrades to "" rather than throwing
+ ✓ tests/infographics/prompt-extractor.plan-tier.spec.ts > PromptExtractorService.resolvePlanTier — BL-06 > TC-BL06-PT-04: DB lookup failure degrades to "" rather than throwing (extraction must not break)
+
+ Test Files  60 passed (60)
+      Tests  811 passed (811)
+   Start at  14:38:07
+   Duration  74.91s (transform 2.09s, setup 0ms, collect 41.23s, tests 8.91s, environment 19ms, prepare 8.15s)
+
+v3-final-client.log
+ ✓ src/lib/__tests__/queryClient.spec.ts > ApiError > code is undefined when the backend response has none
+ ✓ src/lib/__tests__/alias-resolution.spec.ts > @/* alias resolution > resolves @/lib/canvasTypes via the vitest alias (matches vite.config.ts)
+
+ Test Files  22 passed (22)
+      Tests  399 passed | 1 skipped (400)
+   Start at  14:39:28
+   Duration  44.93s (transform 1.90s, setup 0ms, collect 7.84s, tests 727ms, environment 25.39s, prepare 3.77s)
+
+v3-final-visual.log
+Running 4 tests using 1 worker
+
+  ok 1 e2e\us-edit-031-v3-slice.spec.ts:376:3 › TC-EDIT-031-05 [P1] 1280px light shell contrast and geometry (7.3s)
+  ok 2 e2e\us-edit-031-v3-slice.spec.ts:376:3 › TC-EDIT-031-05 [P1] 1280px dark shell contrast and geometry (7.0s)
+  ok 3 e2e\us-edit-031-v3-slice.spec.ts:376:3 › TC-EDIT-031-05 [P1] 1440px light shell contrast and geometry (5.9s)
+  ok 4 e2e\us-edit-031-v3-slice.spec.ts:376:3 › TC-EDIT-031-05 [P1] 1440px dark shell contrast and geometry (16.5s)
+
+  4 passed (39.5s)
+v3-build.log
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 32.33s
+
+  dist\index.js  37.3kb
+
+Done in 16ms

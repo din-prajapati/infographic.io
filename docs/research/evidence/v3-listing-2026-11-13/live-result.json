@@ -1,0 +1,212 @@
+{
+  "outcome": "PASS",
+  "origin": "http://127.0.0.1:5000",
+  "checks": [
+    "Real JWT property/profile persistence; cross-organization GET/PUT404; unauth401; property/profile optimistic409; personal profile isolation",
+    "Pending/applied snapshots, manual photo crop and headline customization survive real browser save and fresh session",
+    {
+      "label": "listing-design-a",
+      "id": "cmwezjrnt000pgppcbslqbon1",
+      "artworkSha256": "48494024942ee8c63c15f1ce35e600b4905ecbc10ef4ea441d761273ebf5dfba",
+      "exactDatabaseAndApiDocument": true,
+      "freshContextNoDraftOrQueryCache": true
+    },
+    {
+      "label": "listing-design-b",
+      "id": "cmwezjry6000rgppcp0j3ztu9",
+      "artworkSha256": "2da9799277c0b8ec01e4a28db3fcd61206dfe0e9488a5ec32f8f0588796b3c38",
+      "exactDatabaseAndApiDocument": true,
+      "freshContextNoDraftOrQueryCache": true
+    },
+    "Two independent listing designs retain respective structured prices, mappings, manual photo/layers; reusable template remains unchanged"
+  ],
+  "trace": [
+    {
+      "source": "independent-http",
+      "method": "GET",
+      "path": "/health",
+      "status": 200
+    },
+    {
+      "source": "independent-http",
+      "method": "POST",
+      "path": "/auth/login",
+      "status": 200
+    },
+    {
+      "source": "independent-http",
+      "method": "POST",
+      "path": "/auth/login",
+      "status": 200
+    },
+    {
+      "source": "independent-http",
+      "method": "POST",
+      "path": "/properties",
+      "status": 201
+    },
+    {
+      "source": "independent-http",
+      "method": "POST",
+      "path": "/properties",
+      "status": 201
+    },
+    {
+      "source": "independent-http",
+      "method": "PUT",
+      "path": "/properties/cmwezjmkl000fgppcxxh3elj8",
+      "status": 200
+    },
+    {
+      "source": "independent-http",
+      "method": "PUT",
+      "path": "/listing-profiles",
+      "status": 200
+    },
+    {
+      "source": "independent-http",
+      "method": "POST",
+      "path": "/canvas-templates",
+      "status": 201
+    },
+    {
+      "source": "independent-http",
+      "method": "POST",
+      "path": "/designs",
+      "status": 201
+    },
+    {
+      "source": "independent-http",
+      "method": "POST",
+      "path": "/designs",
+      "status": 201
+    },
+    {
+      "source": "real-browser",
+      "method": "GET",
+      "path": "/api/v1/designs/cmwezjrnt000pgppcbslqbon1",
+      "status": 200
+    },
+    {
+      "source": "real-browser",
+      "method": "PUT",
+      "path": "/api/v1/designs/cmwezjrnt000pgppcbslqbon1",
+      "status": 200
+    },
+    {
+      "source": "independent-http",
+      "method": "GET",
+      "path": "/designs/cmwezjrnt000pgppcbslqbon1",
+      "status": 200
+    },
+    {
+      "source": "real-browser",
+      "method": "GET",
+      "path": "/api/v1/designs/cmwezjrnt000pgppcbslqbon1",
+      "status": 200
+    },
+    {
+      "source": "real-browser",
+      "method": "GET",
+      "path": "/api/v1/designs/cmwezjrnt000pgppcbslqbon1",
+      "status": 200
+    },
+    {
+      "source": "real-browser",
+      "method": "PUT",
+      "path": "/api/v1/designs/cmwezjrnt000pgppcbslqbon1",
+      "status": 200
+    },
+    {
+      "source": "independent-http",
+      "method": "GET",
+      "path": "/designs/cmwezjrnt000pgppcbslqbon1",
+      "status": 200
+    },
+    {
+      "source": "real-browser",
+      "method": "GET",
+      "path": "/api/v1/designs/cmwezjrnt000pgppcbslqbon1",
+      "status": 200
+    },
+    {
+      "source": "real-browser",
+      "method": "GET",
+      "path": "/api/v1/designs/cmwezjry6000rgppcp0j3ztu9",
+      "status": 200
+    },
+    {
+      "source": "real-browser",
+      "method": "PUT",
+      "path": "/api/v1/designs/cmwezjry6000rgppcp0j3ztu9",
+      "status": 200
+    },
+    {
+      "source": "independent-http",
+      "method": "GET",
+      "path": "/designs/cmwezjry6000rgppcp0j3ztu9",
+      "status": 200
+    },
+    {
+      "source": "real-browser",
+      "method": "GET",
+      "path": "/api/v1/designs/cmwezjry6000rgppcp0j3ztu9",
+      "status": 200
+    },
+    {
+      "source": "independent-http",
+      "method": "GET",
+      "path": "/designs/cmwezjrnt000pgppcbslqbon1",
+      "status": 200
+    },
+    {
+      "source": "independent-http",
+      "method": "GET",
+      "path": "/designs/cmwezjry6000rgppcp0j3ztu9",
+      "status": 200
+    },
+    {
+      "source": "independent-http",
+      "method": "GET",
+      "path": "/canvas-templates/cmwezjrdk000ngppclcs9u01d",
+      "status": 200
+    }
+  ],
+  "comparisons": [
+    {
+      "label": "listing-design-a: editor artboard before/reopened",
+      "sameDimensions": true,
+      "width": 800,
+      "height": 600,
+      "differentPixels": 0,
+      "totalPixels": 480000
+    },
+    {
+      "label": "listing-design-a: PNG export before/reopened",
+      "sameDimensions": true,
+      "width": 800,
+      "height": 600,
+      "differentPixels": 0,
+      "totalPixels": 480000
+    },
+    {
+      "label": "listing-design-b: editor artboard before/reopened",
+      "sameDimensions": true,
+      "width": 800,
+      "height": 600,
+      "differentPixels": 0,
+      "totalPixels": 480000
+    },
+    {
+      "label": "listing-design-b: PNG export before/reopened",
+      "sameDimensions": true,
+      "width": 800,
+      "height": 600,
+      "differentPixels": 0,
+      "totalPixels": 480000
+    }
+  ],
+  "browserErrors": [],
+  "cleanup": "Only uniquely marked disposable organizations/users and their cascading designs/properties/profiles removed",
+  "finishedAt": "2026-11-13T13:01:42.077Z"
+}

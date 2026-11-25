@@ -1,8 +1,10 @@
+> **Scope reconciliation — 2026-11-13:** Superseded draft scope for this implementation slice; the historical task list below was NOT implemented as written — V3 delivery verified 2026-11-25, see STORY.md **V3 acceptance**. Reviewed local text parsing/provenance/ambiguity/stale safeguards move to US-PROP-002; production review UI moves to US-EDIT-025. Existing remote extraction/generation changes remain deferred. Do not implement the historical task list below independently; use the reconciled owner cards and integration matrix.
+
 ---
 title: Tasks — US-PROP-003
 type: tasks
 tags: [orion, prop, auto-fill, extraction]
-updated: 2026-10-29
+updated: 2026-11-25
 ---
 
 # Tasks — US-PROP-003

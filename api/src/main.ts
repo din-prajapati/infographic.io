@@ -38,6 +38,7 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { IoAdapter } from '@nestjs/platform-socket.io';
 import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
+import { configureListingBodyParser } from './modules/properties/properties.module';
 
 async function bootstrap() {
   process.on('uncaughtException', (error) => {
@@ -58,6 +59,7 @@ async function bootstrap() {
   });
 
   const app = await NestFactory.create(AppModule, { cors: false });
+  configureListingBodyParser(app);
 
   app.enableCors({
     origin: (origin, callback) => {

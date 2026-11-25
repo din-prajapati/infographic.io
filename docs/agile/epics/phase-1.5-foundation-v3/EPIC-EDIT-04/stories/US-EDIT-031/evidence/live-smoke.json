@@ -1,0 +1,56 @@
+{
+  "outcome": "PASS",
+  "command": "node --env-file=.env .agent-logs/v3-live-smoke.cjs",
+  "recordId": "cmvw6pueg0005gprchu3gu5tf",
+  "checks": [
+    "real authenticated GET loads existing design",
+    "inspector Apply text, Undo and Redo use existing canvas history",
+    "real PUT and independent GET persist text/title/category/tags/shape/listing under same database ID",
+    "full reload restores acknowledged server design",
+    "existing exporter downloads a valid 1600x1200 PNG from 800x600 design",
+    "light/dark screenshots captured for visual review"
+  ],
+  "trace": [
+    {
+      "method": "GET",
+      "path": "/health",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/auth/login",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/designs",
+      "status": 201,
+      "recordId": "cmvw6pueg0005gprchu3gu5tf"
+    },
+    {
+      "source": "browser",
+      "method": "GET",
+      "path": "/api/v1/designs/cmvw6pueg0005gprchu3gu5tf",
+      "status": 200
+    },
+    {
+      "source": "browser",
+      "method": "PUT",
+      "path": "/api/v1/designs/cmvw6pueg0005gprchu3gu5tf",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/designs/cmvw6pueg0005gprchu3gu5tf",
+      "status": 200,
+      "recordId": "cmvw6pueg0005gprchu3gu5tf"
+    },
+    {
+      "source": "browser",
+      "method": "GET",
+      "path": "/api/v1/designs/cmvw6pueg0005gprchu3gu5tf",
+      "status": 200
+    }
+  ],
+  "browserErrors": []
+}

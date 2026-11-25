@@ -755,7 +755,26 @@ export interface OrganizationMember {
   createdAt: string;
 }
 
+/** GET/PATCH /users/me — the signed-in user's own profile (Settings → Account). */
+export interface UserProfile {
+  id: string;
+  email: string;
+  name: string | null;
+  avatarUrl: string | null;
+  /** A local account with a password, so a reset link applies. False for Google-only accounts. */
+  hasPassword: boolean;
+  hasGoogle: boolean;
+  emailVerified: boolean;
+  organizationId: string | null;
+  createdAt: string;
+}
+
 export const usersApi = {
+  getMe: () => apiRequest<{ data: UserProfile }>(getApiUrl('/users/me')),
+
+  updateMe: (patch: { name?: string; avatarUrl?: string | null }) =>
+    apiRequest<{ data: UserProfile }>(getApiUrl('/users/me'), { method: 'PATCH', body: JSON.stringify(patch) }),
+
   getOrganizationInfo: () =>
     apiRequest<{ data: OrganizationInfo | null }>(getApiUrl('/users/organization')),
 

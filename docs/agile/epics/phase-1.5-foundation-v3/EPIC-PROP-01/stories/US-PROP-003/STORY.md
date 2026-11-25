@@ -1,13 +1,15 @@
+> **Scope reconciliation — 2026-11-13:** Superseded draft scope for this implementation slice; the historical task list was NOT implemented as written — V3 delivery verified 2026-11-25 (see **V3 acceptance**). Reviewed local text parsing/provenance/ambiguity/stale safeguards move to US-PROP-002; production review UI moves to US-EDIT-025. Existing remote extraction/generation changes remain deferred. Do not implement the historical task list below independently; use the reconciled owner cards and integration matrix.
+
 ---
 title: Story Card — US-PROP-003
 type: story
 tags: [orion, story, phase-1.5]
-updated: 2026-10-29
+updated: 2026-11-25
 ---
 
 # Story Card — US-PROP-003 — Auto-Fill from a listing message, with review
 
-> **Status:** 🔲 Not Started — hardened 2026-10-29 by /new-story
+> **Status:** 🟡 Delivered in V3 — acceptance verified 2026-11-25 on `feat/edit/m-v3-default-editor` (draft PR #91); closes when PR #91 merges
 > **Feature:** EPIC-PROP-01 — Property & Brand Foundation
 > **Epic:** [EPIC-PROP-01](../../EPIC.md)
 > **Milestone:** [M-PROP-01-property-record](../../milestones/M-PROP-01-property-record.md)
@@ -27,7 +29,21 @@ updated: 2026-10-29
 
 ---
 
-## Acceptance Criteria
+## V3 acceptance (2026-11-25)
+
+> The historical ACs below call for API-backed extraction in the legacy Property tab. The 2026-11-13 reconciliation moved reviewed local parsing to US-PROP-002 and the review UI to US-EDIT-025, and deferred remote extraction. **Decision 2026-11-25 (product owner): local parsing is the scope of this story.** AI-backed extraction moves to the AI assistant planning.
+
+| # | Acceptance (V3 model) | Status | Evidence |
+|---|---|---|---|
+| V1 | Paste a listing or seller message → **Extract & review** parses it locally (no AI call, no credit) and lists each detected fact with the text it came from | ✅ | `reviewListingText` in `shared/listingWorkflow.ts`; `V3ListingPanel.tsx`; `client/src/features/listings/TextReview.tsx`; `e2e/listings/listings.spec.ts` (paste text, review with evidence) |
+| V2 | Only the facts the user selects are staged; unselected facts never change the listing | ✅ | `applyReviewedFacts(current, review, selectedIds)`; listings E2E |
+| V3 | Agent / contact details are offered as **unselected suggestions** and are never applied on their own | ✅ | agent-line parsing in `shared/listingWorkflow.ts`; listings E2E (agent details as unselected suggestions) |
+| V4 | Staged facts reach the artwork only through **Apply to design** (one undoable step) | ✅ | V3 Listing panel apply flow; `v3ListingWorkflow.spec.ts` |
+| V5 | Sale/rent intent, rental period and lakh/crore prices are recognised | ✅ | `parseListingPrice`; `api/tests/listing/listing-workflow.spec.ts` |
+
+**Not carried over:** AC2 / AC6 / AC10 API extraction and its 15 s timeout (out of scope by the decision above; the extractor now returns `rentalPeriod` for poster generation, US-PROP-007 V4); AC8 `fieldOrigins` (replaced by the review's per-fact source evidence); AC9 holds trivially (no API call). **Not verified separately:** AC11 375 px layout of the review list.
+
+## Acceptance Criteria (historical — legacy-editor design, superseded 2026-11-13)
 
 - [ ] **AC1 [happy-path]:** When the Property tab is open, a collapsible "Auto-fill from listing" section is visible at the top of the form; it contains a `<textarea>` with `data-testid="autofill-paste-input"` (placeholder: "Paste a listing or seller message…") and a button with `data-testid="autofill-extract-btn"` and label "Extract & review".
 

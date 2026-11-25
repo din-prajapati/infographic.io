@@ -1,9 +1,13 @@
 // Shape element component
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Rnd } from 'react-rnd';
 import { ShapeElement as ShapeElementType } from '../../lib/canvasTypes';
 import { useCanvasStore } from '../../hooks/useCanvasStore';
+import { finiteClamp, strokeDash } from '../../lib/elementStyles';
+import { shapeEffectFilter, shapeEffectPadding, shapeEffectShadows } from '../../lib/shapeEffects';
+import { getElementPaint } from '../../lib/paint';
+import { PaintSvg, svgPaint } from './PaintSvg';
 import {
   getTrianglePath,
   getStarPath,
@@ -16,11 +20,14 @@ interface ShapeElementProps {
   element: ShapeElementType;
   isSelected: boolean;
   onSelect: (e: React.MouseEvent) => void;
+  onGeometryChange?: (id:string, geometry:Pick<ShapeElementType,'x'|'y'|'width'|'height'>|null)=>void;
 }
 
-export function ShapeElement({ element, isSelected, onSelect }: ShapeElementProps) {
+export function ShapeElement({ element, isSelected, onSelect, onGeometryChange }: ShapeElementProps) {
   const updateElement = useCanvasStore((state) => state.updateElement);
   const zoom = useCanvasStore((state) => state.zoom);
+  useEffect(()=>()=>onGeometryChange?.(element.id,null),[element.id,onGeometryChange]);
+  useEffect(()=>{if(!isSelected||element.locked||!element.visible)onGeometryChange?.(element.id,null);},[isSelected,element.locked,element.visible,element.id,onGeometryChange]);
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -41,99 +48,46 @@ export function ShapeElement({ element, isSelected, onSelect }: ShapeElementProp
   };
 
   const renderShape = () => {
-    // For SVG shapes, we need to render them differently
-    const svgShapes = ['triangle', 'star', 'speechBubble', 'arrowLeft', 'arrowRight'];
-    const isSvgShape = svgShapes.includes(element.shapeType);
-
-    if (isSvgShape) {
-      let path = '';
-      switch (element.shapeType) {
-        case 'triangle':
-          path = getTrianglePath(element.width, element.height);
-          break;
-        case 'star':
-          path = getStarPath(element.width, element.height);
-          break;
-        case 'speechBubble':
-          path = getSpeechBubblePath(element.width, element.height, element.cornerRadius);
-          break;
-        case 'arrowLeft':
-          path = getArrowLeftPath(element.width, element.height);
-          break;
-        case 'arrowRight':
-          path = getArrowRightPath(element.width, element.height);
-          break;
-      }
-
-      return (
-        <div
-          style={{
-            width: '100%',
-            height: '100%',
-            position: 'relative',
-            opacity: element.opacity,
-            transform: `rotate(${element.rotation}deg)`,
-          }}
-        >
-          <svg
-            width="100%"
-            height="100%"
-            viewBox={`0 0 ${element.width} ${element.height}`}
-            style={{ display: 'block' }}
-          >
-            <path
-              d={path}
-              fill={element.fill}
-              stroke={element.stroke}
-              strokeWidth={element.strokeWidth}
-            />
-          </svg>
-        </div>
-      );
-    }
-
-    // For regular shapes (rectangle, circle, ellipse)
-    const commonStyle = {
-      width: '100%',
-      height: '100%',
-      backgroundColor: element.fill,
-      border: `${element.strokeWidth}px solid ${element.stroke}`,
-      opacity: element.opacity,
-      transform: `rotate(${element.rotation}deg)`,
-      position: 'relative' as const,
-    };
-
-    switch (element.shapeType) {
-      case 'rectangle':
-        return (
-          <div
-            style={{
-              ...commonStyle,
-              borderRadius: `${element.cornerRadius}px`,
-            }}
-          />
-        );
-      case 'circle':
-        return (
-          <div
-            style={{
-              ...commonStyle,
-              borderRadius: '50%',
-            }}
-          />
-        );
-      case 'ellipse':
-        return (
-          <div
-            style={{
-              ...commonStyle,
-              borderRadius: '50%',
-            }}
-          />
-        );
-      default:
-        return <div style={commonStyle} />;
-    }
+    const shadows = shapeEffectShadows(element), layered = !!element.shadowLayers?.length;
+    const effectId = `effects-${element.id}`, effectPad = shapeEffectPadding(element);
+    const fillPaint = getElementPaint(element, 'fill'), strokePaint = getElementPaint(element, 'stroke');
+    const fillId = `paint-${element.id}-fill`, strokeId = `paint-${element.id}-stroke`;
+    const w = element.width, h = element.height;
+    const strokeWidth = finiteClamp(element.strokeWidth, 0, 20);
+    const r = Math.min(finiteClamp(element.cornerRadius, 0, 100), w / 2, h / 2);
+    const radiusPath = `M ${r} 0 H ${w-r} Q ${w} 0 ${w} ${r} V ${h-r} Q ${w} ${h} ${w-r} ${h} H ${r} Q 0 ${h} 0 ${h-r} V ${r} Q 0 0 ${r} 0 Z`;
+    const shapePath = element.shapeType === 'triangle' ? getTrianglePath(w,h)
+      : element.shapeType === 'star' ? getStarPath(w,h)
+      : element.shapeType === 'speechBubble' ? getSpeechBubblePath(w,h,element.cornerRadius)
+      : element.shapeType === 'arrowLeft' ? getArrowLeftPath(w,h)
+      : element.shapeType === 'arrowRight' ? getArrowRightPath(w,h) : radiusPath;
+    const textStyle = element.textStyle ?? { fontFamily:'Inter', fontSize:16, fontWeight:400, color:'#000000', align:'center' as const };
+    return <div style={{ width:'100%', height:'100%', position:'relative', opacity:element.opacity,
+      transform:`rotate(var(--element-rotation-preview, ${element.rotation}deg))`, filter:shapeEffectFilter(element) }}>
+      <svg data-artwork-svg="true" width="100%" height="100%" viewBox={`0 0 ${w} ${h}`} style={{display:'block',overflow:'visible'}}>
+        <PaintSvg paint={fillPaint} id={fillId} width={w} height={h}/><PaintSvg paint={strokePaint} id={strokeId} width={w} height={h}/>
+        {layered && <defs><filter id={effectId} filterUnits="userSpaceOnUse" x={-effectPad} y={-effectPad} width={w+2*effectPad} height={h+2*effectPad} colorInterpolationFilters="sRGB">
+          {shadows.map((shadow,index)=><React.Fragment key={index}>
+            <feGaussianBlur in="SourceAlpha" stdDeviation={shadow.blur/2} result={`blur-${index}`}/>
+            <feOffset in={`blur-${index}`} dx={shadow.offsetX} dy={shadow.offsetY} result={`offset-${index}`}/>
+            <feFlood floodColor={shadow.color} floodOpacity={shadow.opacity} result={`color-${index}`}/>
+            <feComposite in={`color-${index}`} in2={`offset-${index}`} operator="in" result={`shadow-${index}`}/>
+          </React.Fragment>)}
+          <feMerge>{shadows.map((_,index)=><feMergeNode key={index} in={`shadow-${index}`}/>)}<feMergeNode in="SourceGraphic"/></feMerge>
+        </filter></defs>}
+        <g fill={svgPaint(fillPaint, fillId)} stroke={svgPaint(strokePaint, strokeId)} strokeWidth={strokeWidth}
+          filter={layered?`url(#${effectId})`:undefined}
+          strokeDasharray={strokeDash(element.strokeStyle,strokeWidth).join(' ')} strokeLinecap={element.strokeStyle === 'dotted'?'round':'butt'}>
+          {element.shapeType === 'circle' || element.shapeType === 'ellipse'
+            ? <ellipse cx={w/2} cy={h/2} rx={w/2} ry={h/2}/>
+            : <path d={shapePath}/>}
+        {element.textContent && <text x={textStyle.align === 'left'?8:textStyle.align === 'right'?w-8:w/2} y={h/2}
+          stroke="none"
+          dominantBaseline="middle" textAnchor={textStyle.align === 'left'?'start':textStyle.align === 'right'?'end':'middle'}
+          fontFamily={textStyle.fontFamily} fontSize={textStyle.fontSize} fontWeight={textStyle.fontWeight} fill={textStyle.color}>{element.textContent}</text>}
+        </g>
+      </svg>
+    </div>;
   };
 
   return (
@@ -141,10 +95,14 @@ export function ShapeElement({ element, isSelected, onSelect }: ShapeElementProp
       scale={zoom}
       size={{ width: element.width, height: element.height }}
       position={{ x: element.x, y: element.y }}
+      onDrag={(e,d)=>onGeometryChange?.(element.id,{x:d.x,y:d.y,width:element.width,height:element.height})}
+      onResize={(e,direction,ref,delta,position)=>onGeometryChange?.(element.id,{width:parseFloat(ref.style.width),height:parseFloat(ref.style.height),...position})}
+      onPointerCancel={()=>onGeometryChange?.(element.id,null)}
       onDragStop={(e, d) => {
         if (d.x !== element.x || d.y !== element.y) {
           updateElement(element.id, { x: d.x, y: d.y });
         }
+        onGeometryChange?.(element.id,null);
       }}
       onResizeStop={(e, direction, ref, delta, position) => {
         updateElement(element.id, {
@@ -152,6 +110,7 @@ export function ShapeElement({ element, isSelected, onSelect }: ShapeElementProp
           height: parseInt(ref.style.height),
           ...position,
         });
+        onGeometryChange?.(element.id,null);
       }}
       disableDragging={element.locked}
       enableResizing={isSelected && !element.locked}

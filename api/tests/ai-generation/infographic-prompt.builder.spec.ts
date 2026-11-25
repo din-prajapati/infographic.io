@@ -461,3 +461,34 @@ describe('buildTextFreeImagePrompt — US-AI-051 AC1 (text-free variant)', () =>
     }
   });
 });
+
+// ---------------------------------------------------------------------------
+// US-PROP-007 — rentals print their intent and period; sale prompts are unchanged.
+// ---------------------------------------------------------------------------
+describe('US-PROP-007 — rent intent and period on generated posters', () => {
+  const rental = { address: '12 Palm Avenue, Pune', price: 50000, beds: 2, baths: 2, locale: 'en-IN', currencyToken: '₹', listingType: 'for_rent', rentalPeriod: 'month' };
+
+  it('asks the image model to render FOR RENT and the price with its period', () => {
+    const prompt = buildImagePrompt(rental, 'Ready to move in');
+    expect(prompt).toContain('- Listing: FOR RENT');
+    expect(prompt).toMatch(/- Price: .+ \/ month$/m);
+  });
+
+  it('verifies the price with its period, so a conversion that drops "/ month" is repaired', () => {
+    const price = buildExpectedTexts(rental, 'Ready to move in').find(t => t.key === 'price');
+    expect(price?.value).toMatch(/ \/ month$/);
+  });
+
+  it('prints FOR RENT without a period suffix when the period is unknown or unsupported', () => {
+    for (const rentalPeriod of [undefined, 'fortnight']) {
+      const prompt = buildImagePrompt({ ...rental, rentalPeriod }, 'Ready to move in');
+      expect(prompt).toContain('- Listing: FOR RENT');
+      expect(prompt).not.toMatch(/- Price: .+ \/ /);
+    }
+  });
+
+  it('leaves sale and sold prompts byte-identical to the proven format', () => {
+    expect(buildImagePrompt({ ...e3PropertyData, listingType: 'for_sale', rentalPeriod: 'month' }, e3Headline)).toBe(loadE3TextPrompt());
+    expect(buildImagePrompt({ ...e3PropertyData, listingType: 'sold' }, e3Headline)).toBe(loadE3TextPrompt());
+  });
+});

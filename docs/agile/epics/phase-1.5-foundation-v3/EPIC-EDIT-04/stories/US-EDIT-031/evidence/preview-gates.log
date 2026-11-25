@@ -1,0 +1,48 @@
+=== Preview final check ===
+
+> infographic-editor-unified@1.0.0 check
+> tsc && npm run check:api
+
+
+> infographic-editor-unified@1.0.0 check:api
+> tsc --noEmit -p api/tsconfig.json
+
+=== Preview final backend ===
+ ✓ tests/payments/pricing.controller.spec.ts > PricingController.getPricing (US-PAY-112) > AC3: calls getEffectivePrice for both monthly and annual per tier — never computes a price itself
+ ✓ tests/payments/pricing.controller.spec.ts > PricingController.getPricing (US-PAY-112) > forwards whatever the resolution service returns, untouched, for both intervals
+ ✓ tests/infographics/prompt-extractor.plan-tier.spec.ts > PromptExtractorService.resolvePlanTier — BL-06 > TC-BL06-PT-01: resolves and lowercases the org planTier
+ ✓ tests/infographics/prompt-extractor.plan-tier.spec.ts > PromptExtractorService.resolvePlanTier — BL-06 > TC-BL06-PT-02: no organizationId short-circuits to "" without querying the DB
+ ✓ tests/infographics/prompt-extractor.plan-tier.spec.ts > PromptExtractorService.resolvePlanTier — BL-06 > TC-BL06-PT-03: org not found degrades to "" rather than throwing
+ ✓ tests/infographics/prompt-extractor.plan-tier.spec.ts > PromptExtractorService.resolvePlanTier — BL-06 > TC-BL06-PT-04: DB lookup failure degrades to "" rather than throwing (extraction must not break)
+
+ Test Files  60 passed (60)
+      Tests  811 passed (811)
+   Start at  15:12:07
+   Duration  80.04s (transform 2.33s, setup 0ms, collect 44.98s, tests 8.12s, environment 19ms, prepare 9.05s)
+
+=== Preview final client ===
+ ✓ src/lib/__tests__/api.spec.ts > COMPOSE_REQUEST_TIMEOUT_MS (AC4 — US-AI-050) > is ≤ 5 minutes (reasonable upper bound)
+ ✓ src/lib/__tests__/queryClient.spec.ts > ApiError > is an instanceof Error — existing .message-only callers are unaffected
+ ✓ src/lib/__tests__/queryClient.spec.ts > ApiError > carries the HTTP status
+ ✓ src/lib/__tests__/queryClient.spec.ts > ApiError > carries the backend error code when present
+ ✓ src/lib/__tests__/queryClient.spec.ts > ApiError > code is undefined when the backend response has none
+ ✓ src/lib/__tests__/alias-resolution.spec.ts > @/* alias resolution > resolves @/lib/canvasTypes via the vitest alias (matches vite.config.ts)
+
+ Test Files  22 passed (22)
+      Tests  399 passed | 1 skipped (400)
+   Start at  15:13:32
+   Duration  42.45s (transform 1.60s, setup 0ms, collect 6.88s, tests 952ms, environment 24.12s, prepare 3.91s)
+
+=== Preview final build ===
+../dist/public/assets/V3Editor-DDKo_25u.js             16.90 kB │ gzip:   5.83 kB │ map:    46.12 kB
+../dist/public/assets/index-B1TRCJ6y.js             1,825.08 kB │ gzip: 520.72 kB │ map: 7,440.65 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 21.31s
+
+  dist\index.js  37.3kb
+
+Done in 14ms

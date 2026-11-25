@@ -1,0 +1,217 @@
+/*
+ * Workspace shell + shared workspace components.
+ * Visual source: Mockups/listing-workflow-v1/design.md §4–§5 and styles.css (the 5194 mockup).
+ * `.ws-tokens` re-points the V3 semantic tokens (and the shadcn HSL variables used by Templates / My designs /
+ * Account / Usage) at the workspace palette, so every page in the shell shares one look in light and dark.
+ */
+/* Layout uses the shared V3 palette; the outer workspace retains the mockup's
+ * softer page background. Do not redefine editor/shadcn colours here. */
+.ws-tokens{
+  --v3-workspace:#f5f7f9;
+  --ws-navy:#123e62;--ws-topbar:var(--v3-header-bg);--ws-topbar-ink:#fff;--ws-topbar-muted:#b3c7d7;--ws-topbar-line:#ffffff24;
+  --ws-brand-mark:#2ab5a0;
+  font-family:var(--v3-font);color:var(--v3-ink);
+}
+.ws-tokens[data-theme=dark]{--v3-workspace:#111318;--ws-topbar:var(--v3-header-bg);--ws-topbar-muted:#c3d9de}
+
+.ws-root{min-height:100vh;display:flex;flex-direction:column;background:var(--v3-workspace);color:var(--v3-ink);font-size:12px}
+.ws-root *,.ws-root *::before,.ws-root *::after{box-sizing:border-box}
+.ws-root :focus-visible{outline:3px solid var(--ws-focus);outline-offset:3px}
+.ws-skip{position:absolute;left:-9999px;top:8px;z-index:60;background:var(--v3-surface);color:var(--v3-ink);padding:8px 12px;border-radius:8px}
+.ws-skip:focus{left:8px}
+
+/* Shared V3 gradient and logo; retain the workspace's 66px navigation frame. */
+.ws-topbar{height:66px;flex:none;background:var(--ws-topbar);color:var(--ws-topbar-ink);display:flex;align-items:center;justify-content:space-between;padding:0 27px;position:sticky;top:0;z-index:30;gap:12px}
+.ws-top-left,.ws-top-right{display:flex;align-items:center;gap:14px;min-width:0}
+.ws-top-right{gap:18px}
+.ws-wordmark{display:flex;align-items:center;gap:8px;color:inherit;text-decoration:none;font-weight:650;font-size:13px;letter-spacing:normal;white-space:nowrap}
+.ws-wordmark img{width:28px;height:28px;flex:none;object-fit:contain;filter:brightness(0) invert(1)}
+.ws-workspace-label{font-size:12px;color:var(--ws-topbar-muted);margin-left:8px;padding-left:20px;border-left:1px solid var(--ws-topbar-line);white-space:nowrap}
+.ws-top-divider{height:25px;width:1px;background:var(--ws-topbar-line)}
+.ws-icon-button{display:inline-flex;align-items:center;justify-content:center;min-width:40px;min-height:40px;border-radius:8px;background:none;border:0;color:inherit;cursor:pointer}
+.ws-icon-button svg{width:19px;height:19px;stroke-width:1.7}
+.ws-topbar .ws-icon-button{color:#c0d1dd}
+.ws-topbar .ws-icon-button:hover{background:#ffffff14;color:var(--ws-topbar-ink)}
+.ws-menu-button{display:none;min-width:44px;min-height:44px;align-items:center;justify-content:center;background:none;border:0;color:var(--ws-topbar-ink);border-radius:8px;cursor:pointer}
+.ws-account-trigger{display:flex;align-items:center;gap:10px;min-height:44px;padding:4px 6px;border-radius:10px;border:0;background:none;color:inherit;cursor:pointer;max-width:280px;text-align:left}
+.ws-account-trigger:hover{background:#ffffff14}
+.ws-avatar{width:34px;height:34px;flex:none;border-radius:50%;display:grid;place-items:center;background:var(--ws-brand-mark);color:#fff;font-size:12px;font-weight:700;border:2px solid #fff}
+.ws-account-text{display:flex;flex-direction:column;min-width:0;line-height:1.35}
+.ws-account-name{font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ws-account-sub{font-size:11px;color:var(--ws-topbar-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ws-account-chevron{width:16px;height:16px;color:var(--ws-topbar-muted);flex:none}
+.ws-account-menu{min-width:230px}
+.ws-account-menu [role=menuitem]{min-height:40px;gap:10px}
+.ws-account-menu [role=menuitem] svg{width:16px;height:16px}
+.ws-account-label{display:flex;flex-direction:column;gap:2px}
+.ws-account-label small{font-weight:400;color:var(--v3-muted);font-size:12px}
+.ws-avatar-photo{object-fit:cover;padding:0;background:var(--v3-surface)}
+.ws-account-menu .ws-menu-shortcut{font-size:11px;letter-spacing:0;color:var(--v3-muted);opacity:1}
+.ws-account-menu .ws-menu-subtrigger{min-height:40px;gap:10px}
+.ws-account-menu .ws-menu-subtrigger svg{width:16px;height:16px}
+
+/* Left navigation — design.md §5: 204px, padding 27px 13px 18px, WORKSPACE / CONFIGURE ONCE */
+.ws-body{display:flex;flex:1;min-height:0}
+.ws-sidebar{width:204px;flex:none;background:var(--ws-sidebar);border-right:1px solid var(--v3-border);padding:27px 13px 18px;position:sticky;top:66px;height:calc(100vh - 66px);overflow-y:auto;display:flex;flex-direction:column}
+.ws-nav{display:flex;flex-direction:column}
+.ws-nav-section+.ws-nav-section{margin-top:27px}
+.ws-nav-label-group{font-size:9px;font-weight:750;color:#98a8b4;letter-spacing:1.6px;line-height:normal;margin:0 13px 12px;text-transform:uppercase}
+.ws-nav ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:3px}
+.ws-nav-item{display:flex;align-items:center;gap:11px;min-height:44px;padding:0 13px;border-radius:8px;color:#6a7c8c;font-size:12px;font-weight:550;line-height:normal;text-decoration:none}
+.ws-tokens[data-theme=dark] .ws-nav-item{color:var(--v3-muted)}
+.ws-nav-item svg{width:18px;height:18px;flex:none;stroke-width:1.7}
+.ws-nav-item:hover{background:var(--v3-hover);color:var(--v3-ink)}
+.ws-nav-item[data-active],.ws-tokens[data-theme=dark] .ws-nav-item[data-active]{background:var(--v3-selected);color:var(--v3-accent);font-weight:700}
+.ws-setup-note{margin:auto 4px 0;background:var(--v3-workspace);padding:15px 12px;border-radius:10px;font-size:11px;line-height:1.65;color:var(--v3-muted)}
+.ws-setup-note svg{width:19px;height:19px;color:var(--v3-accent);margin-bottom:8px;display:block}
+.ws-setup-note strong{display:block;color:var(--v3-ink);font-size:11px;margin-bottom:4px}
+.ws-main{flex:1;min-width:0;padding:27px 34px 40px;max-width:1600px;margin:0 auto;width:100%}
+.ws-main:focus{outline:none}
+
+/* Drawer (<768px) */
+.ws-drawer-backdrop{position:fixed;inset:0;background:#0c243a80;z-index:50;display:flex}
+.ws-drawer{width:min(280px,85vw);background:var(--ws-sidebar);height:100%;padding:16px 13px;box-shadow:0 10px 40px #0004;overflow-y:auto}
+.ws-drawer-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-left:8px;font-weight:700;color:var(--v3-ink)}
+
+/* Dialog */
+.ws-dialog-backdrop{position:fixed;inset:0;background:#0c243a80;backdrop-filter:blur(4px);z-index:70;display:flex;align-items:center;justify-content:center;padding:16px}
+.ws-dialog{background:var(--v3-surface);color:var(--v3-ink);border-radius:15px;box-shadow:0 25px 80px #071a3a35;max-width:440px;width:100%;padding:24px}
+.ws-dialog h2{font-size:19px;margin:0 0 8px}
+.ws-dialog p{margin:0 0 12px;color:var(--v3-muted);font-size:14px;line-height:1.6}
+.ws-dialog-actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-top:16px}
+
+/* Page heading — breadcrumb → eyebrow → heading → description; actions right (design.md §4.4) */
+.ws-breadcrumb{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--v3-muted);margin:0 0 19px;flex-wrap:wrap}
+.ws-breadcrumb a{color:inherit;text-decoration:none}
+.ws-breadcrumb a:hover{color:var(--v3-accent);text-decoration:underline}
+.ws-breadcrumb svg{width:13px;height:13px}
+.ws-breadcrumb [aria-current]{color:var(--v3-ink)}
+.ws-page-head{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:22px;flex-wrap:wrap}
+.ws-page-head>div:first-child{min-width:0;flex:1 1 420px}
+.ws-eyebrow{text-transform:uppercase;letter-spacing:1.7px;font-size:9px;font-weight:750;color:var(--v3-accent);margin:0 0 7px}
+.ws-root h1.ws-title,.ws-main h1{font-size:28px;letter-spacing:-1px;line-height:1.2;margin:0 0 8px;font-weight:650;color:var(--v3-ink)}
+.ws-subtitle{color:var(--v3-muted);font-size:12px;line-height:1.7;margin:0;max-width:720px}
+.ws-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+
+/* Buttons — teal primary, surface secondary; ~40px desktop height */
+.ws-btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:40px;padding:9px 14px;border-radius:8px;border:1px solid #d8e2e9;background:var(--v3-surface);color:var(--v3-ink);font:inherit;font-size:11px;font-weight:650;cursor:pointer;text-decoration:none;white-space:nowrap}
+.ws-tokens[data-theme=dark] .ws-btn{border-color:var(--v3-border)}
+.ws-btn svg{width:16px;height:16px;stroke-width:1.8}
+.ws-btn:hover:not(:disabled){filter:brightness(.96)}
+.ws-btn:disabled{opacity:.48;cursor:not-allowed}
+.ws-btn-primary,.ws-tokens[data-theme=dark] .ws-btn-primary{background:var(--ws-primary);border-color:var(--ws-primary-border);color:var(--v3-on-accent);box-shadow:none}
+.ws-btn-small{min-height:32px;padding:6px 10px;font-size:11px}
+.ws-btn-block{width:100%}
+.ws-btn-danger{color:#b23d40}
+.ws-tokens[data-theme=dark] .ws-btn-danger{color:#f19a9c}
+.ws-btn-subtle,.ws-tokens[data-theme=dark] .ws-btn-subtle{border-color:transparent;background:transparent;color:var(--v3-muted)}
+.ws-text-button{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:650;color:var(--v3-accent);background:none;border:0;padding:4px;cursor:pointer;text-decoration:none}
+.ws-text-button svg{width:15px;height:15px}
+
+/* Panels, pills, alerts */
+.ws-panel{background:var(--v3-surface);border:1px solid var(--v3-border);border-radius:var(--ws-radius)}
+.ws-panel-body{padding:20px}
+.ws-panel-head{padding:18px 20px;border-bottom:1px solid var(--v3-border);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.ws-panel-head h2{font-size:16px;margin:0;letter-spacing:-.3px}
+.ws-panel-head p{font-size:12px;color:var(--v3-muted);margin:5px 0 0}
+.ws-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 8px;border-radius:5px;font-size:11px;font-weight:650;background:var(--v3-tint);color:var(--v3-chip-ink);white-space:nowrap}
+.ws-pill svg{width:12px;height:12px}
+.ws-pill-green{background:var(--v3-pass-bg);color:var(--v3-pass-ink)}
+.ws-pill-amber{background:var(--v3-warn-bg);color:var(--v3-warn-ink)}
+.ws-field-error{color:#b23d40;font-size:12px;margin:0}
+.ws-tokens[data-theme=dark] .ws-field-error{color:#f19a9c}
+.ws-alert{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:13px 15px;border-radius:9px;font-size:13px;line-height:1.65;margin-bottom:18px;flex-wrap:wrap}
+.ws-alert-error{background:#fdecec;color:#8a2c2f;border:1px solid #f1c6c7}
+.ws-alert-warn{background:#fff5e8;color:#855a1c;border:1px solid #edd8b9}
+.ws-alert-ok{background:var(--v3-pass-bg);color:var(--v3-pass-ink)}
+.ws-tokens[data-theme=dark] .ws-alert-error{background:#3d2022;color:#f6c2c3;border-color:#5c2d30}
+.ws-tokens[data-theme=dark] .ws-alert-warn{background:#423425;color:#f0c481;border-color:#6e5430}
+.ws-empty{display:flex;flex-direction:column;align-items:center;text-align:center;padding:40px 24px;border:1px dashed #c9d6df;border-radius:var(--ws-radius);background:var(--v3-surface)}
+.ws-tokens[data-theme=dark] .ws-empty{border-color:var(--v3-border)}
+.ws-empty>svg{width:32px;height:32px;color:var(--v3-accent);margin-bottom:16px}
+.ws-empty h2{font-size:20px;margin:0 0 10px}
+.ws-empty p{color:var(--v3-muted);margin:0 0 20px;font-size:14px}
+.ws-skeleton{background:linear-gradient(90deg,var(--v3-hover),var(--v3-border),var(--v3-hover));background-size:200% 100%;animation:ws-shimmer 1.3s infinite;border-radius:8px}
+@keyframes ws-shimmer{to{background-position:-200% 0}}
+@media (prefers-reduced-motion:reduce){.ws-skeleton{animation:none}}
+.ws-sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.ws-section-heading{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:17px;flex-wrap:wrap}
+.ws-section-heading h2{font-size:17px;letter-spacing:-.5px;margin:0 0 5px}
+.ws-section-heading .ws-subtitle{font-size:12px}
+.ws-help-panel{padding:17px;background:var(--v3-selected);border:1px solid #cfe5de;border-radius:10px;color:#426f66;font-size:13px;line-height:1.7;margin-bottom:20px}
+.ws-help-panel strong{display:flex;align-items:center;gap:6px;color:#175c51;margin-bottom:4px}
+.ws-help-panel svg{width:16px;height:16px;color:var(--v3-accent)}
+.ws-tokens[data-theme=dark] .ws-help-panel{border-color:#2d5d54;color:#bedad2}
+.ws-tokens[data-theme=dark] .ws-help-panel strong{color:#8dd5c0}
+
+/* Forms — persistent label, input, helper/counter, inline error */
+.ws-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.ws-field{display:flex;flex-direction:column;gap:7px;font-size:11px;font-weight:600;min-width:0}
+.ws-field-full{grid-column:1/-1}
+.ws-field-row{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.ws-counter{font-size:11px;font-weight:400;color:var(--v3-muted);font-variant-numeric:tabular-nums}
+.ws-counter[data-over]{color:var(--v3-warn-ink);font-weight:650}
+.ws-hint{font-size:12px;font-weight:400;color:var(--v3-muted);line-height:1.5}
+/* Workspace form fields only (legacy pages keep their shadcn inputs). :where() keeps specificity low so module rules win. */
+.ws-root :where(.ws-field,.lst-search) :where(input:not([type=checkbox]):not([type=radio]):not([type=color]),select,textarea){font:inherit;font-size:12px;font-weight:400;color:var(--v3-ink);background:var(--v3-surface);border:1px solid var(--ws-input-border);border-radius:8px;padding:11px 12px;min-height:44px;width:100%;min-width:0}
+.ws-root :where(.ws-field,.lst-search) :where(input,select,textarea):focus{outline:2px solid #1da69d;outline-offset:1px}
+.ws-root :where(.ws-field) :where(textarea){resize:vertical;line-height:1.6;min-height:110px}
+.ws-root input[aria-invalid=true],.ws-root textarea[aria-invalid=true],.ws-root select[aria-invalid=true]{border-color:#c2474a}
+.ws-form-section{margin:0 0 22px}
+.ws-form-section:last-child{margin-bottom:0}
+.ws-form-section h3{font-size:12px;margin:0 0 14px;text-transform:uppercase;letter-spacing:1.2px;color:var(--v3-muted);font-weight:700}
+.ws-form-footer{display:flex;justify-content:flex-end;align-items:center;gap:10px;padding:16px 20px;border-top:1px solid var(--v3-border);flex-wrap:wrap}
+
+/* Tabs — design.md §8 */
+.ws-tabs{display:flex;gap:25px;border-bottom:1px solid var(--v3-border);margin-bottom:23px;overflow-x:auto}
+.ws-tab{font:inherit;font-size:11px;font-weight:600;color:var(--v3-muted);padding:0 1px 13px;min-height:44px;display:flex;align-items:flex-end;gap:7px;background:none;border:0;cursor:pointer;position:relative;white-space:nowrap}
+.ws-tab[aria-selected=true]{color:var(--v3-accent)}
+.ws-tab[aria-selected=true]::after{content:"";position:absolute;bottom:-1px;left:0;right:0;height:2px;background:var(--v3-accent)}
+.ws-tab-count{background:#e9edf1;color:#687d8d;font-size:11px;padding:2px 6px;border-radius:4px;font-weight:650}
+.ws-tab[aria-selected=true] .ws-tab-count{background:#dfeee8;color:var(--v3-accent)}
+.ws-tokens[data-theme=dark] .ws-tab-count{background:#2d4252;color:#b7c8d4}
+
+/* How it works — vertical numbered workflow (design.md §15) */
+.ws-steps{list-style:none;margin:0;padding:0;max-width:930px}
+.ws-step{display:flex;gap:20px;position:relative;margin-bottom:16px}
+.ws-step::before{content:"";position:absolute;left:20px;top:45px;bottom:-18px;width:1px;background:#cbded9}
+.ws-step:last-child::before{display:none}
+.ws-tokens[data-theme=dark] .ws-step::before{background:var(--v3-border)}
+.ws-step-num{flex:none;width:42px;height:42px;border-radius:50%;background:var(--v3-selected);color:var(--v3-accent);border:1px solid #d2e7df;display:grid;place-items:center;font-size:13px;font-weight:700;position:relative}
+.ws-tokens[data-theme=dark] .ws-step-num{border-color:#2d5d54}
+.ws-step .ws-panel{flex:1;padding:20px 23px}
+.ws-step .ws-pill{margin-bottom:9px}
+.ws-step h2{font-size:16px;margin:0 0 7px}
+.ws-step p{color:var(--v3-muted);line-height:1.8;margin:0;font-size:14px;max-width:670px}
+.ws-flow-tags{display:flex;gap:7px;margin-top:12px;flex-wrap:wrap}
+.ws-flow-tag{padding:5px 8px;background:var(--v3-workspace);font-size:12px;border-radius:5px;color:var(--v3-muted)}
+.ws-step .ws-btn{margin-top:13px}
+.ws-review-tip{margin:19px 0 0;display:flex;align-items:center;gap:7px;color:var(--v3-muted);font-size:13px}
+.ws-review-tip svg{width:15px;height:15px;color:var(--v3-accent)}
+
+/* Responsive — design.md §16 (production: drawer below 768px) */
+@media (max-width:1200px){
+  .ws-sidebar{width:180px}
+  .ws-main{padding:24px 24px 36px}
+}
+@media (max-width:1023px){
+  .ws-sidebar{width:68px;padding:20px 10px}
+  .ws-nav-item{justify-content:center;padding:0}
+  .ws-sidebar .ws-nav-label,.ws-sidebar .ws-nav-label-group,.ws-sidebar .ws-setup-note{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;padding:0;margin:0}
+  .ws-workspace-label{display:none}
+}
+@media (max-width:767px){
+  .ws-sidebar{display:none}
+  .ws-menu-button{display:inline-flex}
+  .ws-topbar{height:59px;padding:0 12px}
+  .ws-account-text,.ws-account-chevron,.ws-top-divider{display:none}
+  .ws-wordmark{font-size:13px}
+  .ws-main{padding:20px 16px 32px}
+  .ws-root h1.ws-title,.ws-main h1{font-size:24px}
+  .ws-form-grid{grid-template-columns:1fr}
+  .ws-page-head>div:first-child{flex-basis:100%}
+}
+
+.ws-main h2{letter-spacing:-.3px;font-weight:700}
+/* Tailwind base sets headings to font-weight:inherit; restore the mockup's 650 weight inside the shell. */
+.ws-root :where(h1,h2,h3,h4){font-weight:650}

@@ -1,5 +1,8 @@
 # ROADMAP — Path to First Revenue and Beyond
 
+> **Current candidate update — 2026-11-14:** Phase 1.5 has 42 cards (EDIT 25 / PROP 12 / OBS 5); 1 formally Done, 23 additional locally implemented candidates. M-EDIT-11 has 14/14 implemented cards; M-EDIT-06/07/09 and M-PROP-01/03 now reflect the reconciled Listing scope. Release repairs, final review and user UI/font acceptance remain open. Candidate branch: `codex/v3-listing-responsive-handoff`. See [current release record](../research/2026-11-14-V3-RELEASE-HARDENING.md). Older dated summaries below are historical; no phase/milestone merge closure is implied.
+
+
 > **Status refreshed:** 2026-10-29 — **Phase 0 and Phase 1 are closed.** Next is Phase 1.5 (Property foundation + V3 editor), then Phase 2 (kits on proven templates + asset quality) — [ADR-003](decisions/ADR-003-phase-1-close-and-phase-1.5.md). Earlier: 2026-10-26, beta live and revenue on.
 > **Created:** 2026-07-07, from the launch-readiness assessment (code done, operations not; charging irresponsible until real-photo pipeline ships).
 > **Governing principle:** Two launch moments, not one. **Beta live** (free, disclosed limitations) comes as fast as possible; **revenue on** waits for EPIC-AI-06 — you cannot sell real-estate marketing that can't depict the real estate.

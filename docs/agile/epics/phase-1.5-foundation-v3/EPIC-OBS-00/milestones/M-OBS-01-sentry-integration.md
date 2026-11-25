@@ -1,7 +1,7 @@
 # M-OBS-01-sentry-integration — TelemetryService + Sentry Backend + Sentry Frontend
 
 > **Epic:** [EPIC-OBS-00](../EPIC.md)
-> **Status:** 🔲 Not Started
+> **Status:** 🟡 In Progress — US-OBS-005 code merged; operator T5 and US-OBS-001–003 reconciliation remain open (status audited 2026-11-14)
 > **Target date:** 2026-07-31
 
 ---
@@ -19,6 +19,7 @@ Install Sentry in both NestJS and React. Wire the existing `logGen()` pipeline t
 | [US-OBS-001](../stories/US-OBS-001/STORY.md) | TelemetryService abstraction interface | 🔲 | — |
 | [US-OBS-002](../stories/US-OBS-002/STORY.md) | Sentry NestJS backend integration | 🔲 | — |
 | [US-OBS-003](../stories/US-OBS-003/STORY.md) | Sentry React frontend integration | 🔲 | — |
+| [US-OBS-005](../stories/US-OBS-005/STORY.md) | External availability monitoring | 🟡 Code merged; alert-email proof and billing alerts pending | #57 |
 
 ---
 

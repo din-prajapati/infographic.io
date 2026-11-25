@@ -1,0 +1,16 @@
+flowchart LR
+  Agent[Authenticated agent] --> Listing[V3 Listing UI]
+  Listing --> Shared[Shared global listing validation and reviewed paste]
+  Listing --> API[Nest properties and personal listing profiles]
+  API --> Auth[JWT boundary and organization/user scope]
+  Auth --> DB[(Prisma Property JSON + version / ListingProfile)]
+  Listing --> Pending[Pending facts]
+  Pending --> Apply[Explicit atomic Apply and Undo last apply]
+  Apply --> Applied[Applied artwork snapshot with bindings and customizations]
+  Applied --> Save[Existing authenticated Design and Template persistence]
+  Applied --> Review[Human export review]
+  Review --> PNG[Existing actual V3 PNG renderer]
+  Pending -. isolated on reload .-> Save
+
+%% Existing DB compatibility: legacy Property scalar columns and Infographic.propertyId remain. Canonical nullable record JSON is added; null records serialize read-only from legacy columns. Historical migrations restored before additive migration.
+

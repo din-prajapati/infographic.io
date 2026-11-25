@@ -19,6 +19,7 @@ import { HealthModule } from './modules/health/health.module';
 import { EmailModule } from './modules/email/email.module';
 import { ProxyAwareThrottlerGuard } from './common/guards/proxy-aware-throttler.guard';
 import { validate } from './config/env.validation';
+import { PropertiesModule } from './modules/properties/properties.module';
 
 
 @Module({
@@ -50,6 +51,7 @@ import { validate } from './config/env.validation';
     TemplatesModule,
     AiGenerationModule,
     DesignsModule,
+    PropertiesModule,
     ConversationsModule,
     PaymentsModule,
     UsersModule,

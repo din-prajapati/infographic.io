@@ -1,0 +1,50 @@
+{
+  "story_id": "US-EDIT-038",
+  "title": "Annotated Effects, opacity, text-anchor and image-Fit refinements",
+  "domain": "EDIT",
+  "touches": {
+    "layers": [
+      "frontend",
+      "testing"
+    ],
+    "techs": {
+      "frontend": [
+        "react",
+        "tailwind"
+      ],
+      "testing": [
+        "vitest",
+        "playwright"
+      ]
+    },
+    "modules": [
+      "editor",
+      "canvas",
+      "v3"
+    ]
+  },
+  "rules_loaded": [
+    ".orion/rules/PROJECT.md",
+    ".orion/rules/AGILE.md",
+    ".orion/rules/DOMAIN.md",
+    ".orion/rules/SECURITY.md",
+    ".orion/rules/OBSERVABILITY.md",
+    ".orion/rules/frontend/RULES.md",
+    ".orion/rules/frontend/react/RULES.md",
+    ".orion/rules/frontend/tailwind/RULES.md",
+    ".orion/rules/testing/RULES.md",
+    ".orion/rules/testing/vitest/RULES.md",
+    ".orion/rules/testing/playwright/RULES.md"
+  ],
+  "ac_coverage": {
+    "required": [
+      "happy-path",
+      "error-path"
+    ],
+    "present": [
+      "happy-path",
+      "error-path"
+    ],
+    "verified": false
+  }
+}

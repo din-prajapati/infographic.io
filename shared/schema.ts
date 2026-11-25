@@ -439,6 +439,8 @@ export interface LegacyUser {
    * must therefore be treated as "verified" by the UI, never as "unverified".
    */
   emailVerified?: boolean;
+  /** Profile photo (https). Cached from GET/PATCH /users/me; absent on older stored sessions. */
+  avatarUrl?: string | null;
 }
 
 export interface AuthResponse {

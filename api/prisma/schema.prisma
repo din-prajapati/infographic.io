@@ -43,6 +43,7 @@ model User {
   invoices            Invoice[]
   passwordResetTokens PasswordResetToken[]
   emailVerificationTokens EmailVerificationToken[]
+  listingProfile ListingProfile?
 
   @@index([email])
   @@index([organizationId])
@@ -68,9 +69,53 @@ model Organization {
   infographics         Infographic[]
   usageRecords         UsageRecord[]
   subscriptions        Subscription[]
+  properties           Property[]
 
   @@index([planTier])
   @@index([activeSubscriptionId])
+}
+
+model Property {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  name           String       @default("")
+  address        String       @default("")
+  record         Json?
+  type           String       @default("residential")
+  headline       String       @default("")
+  price          String       @default("")
+  amount         Float?
+  currency       String?      @default("INR")
+  transaction    String?
+  rentalPeriod   String?
+  beds           Int          @default(0)
+  baths          Int          @default(0)
+  sqft           String       @default("")
+  description    String       @default("")
+  features       String[]     @default([])
+  locale         String       @default("")
+  photoRefs      String[]     @default([])
+  status         String       @default("active")
+  infographics   Infographic[]
+  version        Int          @default(1)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([organizationId, updatedAt])
+  @@index([organizationId])
+  @@index([organizationId, name])
+  @@index([organizationId, address])
+}
+
+model ListingProfile {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  record    Json
+  version   Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model ApiKey {
@@ -123,11 +168,14 @@ model Infographic {
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @default(now()) @updatedAt
   usageRecord     UsageRecord?
+  propertyId      String?
+  property        Property?    @relation(fields: [propertyId], references: [id], onDelete: SetNull)
 
   @@index([userId])
   @@index([organizationId])
   @@index([status])
   @@index([createdAt])
+  @@index([propertyId])
 }
 
 model UsageRecord {

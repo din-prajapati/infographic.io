@@ -18,7 +18,7 @@
  * anywhere (US-AI-038 AC8).
  */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -111,7 +111,7 @@ function FormatTile({
       type="button"
       onClick={onClick}
       className={[
-        "group flex flex-col items-center gap-2.5 rounded-xl border p-3 transition-all",
+        "format-picker-tile group flex flex-col items-center gap-2.5 rounded-xl border p-3 transition-all",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
         active
           ? "border-primary/50 bg-primary/5 ring-2 ring-primary shadow-sm"
@@ -153,6 +153,7 @@ export function FormatPickerDialog({
   const [customWidth, setCustomWidth] = useState("");
   const [customHeight, setCustomHeight] = useState("");
   const [customError, setCustomError] = useState("");
+  const opener = useRef<HTMLElement | null>(null);
 
   // On open: pre-select the rail category (and highlight the tile) for the
   // last-used format, so a repeat user lands on the group they always use.
@@ -214,8 +215,17 @@ export function FormatPickerDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
+        onOpenAutoFocus={() => {
+          opener.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+        }}
+        onCloseAutoFocus={(event) => {
+          if (opener.current?.isConnected) {
+            event.preventDefault();
+            opener.current.focus();
+          }
+        }}
         className="
-          w-[92vw] max-w-[1040px] sm:max-w-[1040px]
+          format-picker w-[92vw] max-w-[1040px] sm:max-w-[1040px]
           h-[82vh] max-h-[580px]
           flex flex-col gap-0
           overflow-hidden
@@ -229,10 +239,10 @@ export function FormatPickerDialog({
           </DialogTitle>
         </DialogHeader>
 
-        <div className="flex flex-1 overflow-hidden min-h-0">
+        <div className="format-picker-body flex flex-1 overflow-hidden min-h-0">
           {/* ── Left category rail ── */}
           <nav
-            className="w-60 flex-shrink-0 border-r border-border overflow-y-auto py-3 px-3"
+            className="format-picker-categories w-60 flex-shrink-0 border-r border-border overflow-y-auto py-3 px-3"
             aria-label="Format categories"
           >
             {FORMAT_TAXONOMY.map((group) => (
@@ -274,7 +284,7 @@ export function FormatPickerDialog({
           </nav>
 
           {/* ── Content area ── */}
-          <div className="flex-1 overflow-y-auto px-7 py-6">
+          <div className="format-picker-options flex-1 overflow-y-auto px-7 py-6">
             {activeCategory !== CUSTOM_FORMAT_ID && activeCategoryGroup && (
               <>
                 <h3 className="text-lg font-semibold text-foreground">
@@ -285,7 +295,7 @@ export function FormatPickerDialog({
                     "Select a format to start designing"}
                 </p>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                <div className="format-picker-tiles grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                   {activeCategoryGroup.formats.map((fmt) => (
                     <FormatTile
                       key={fmt.id}
@@ -308,7 +318,7 @@ export function FormatPickerDialog({
                   Enter any dimensions between 100 and 10 000 px
                 </p>
 
-                <div className="flex items-end gap-3">
+                <div className="format-picker-custom flex items-end gap-3">
                   <div className="space-y-1.5 text-left">
                     <Label htmlFor="custom-width" className="text-xs">
                       Width (px)
