@@ -10,6 +10,7 @@ import { createEmptyListing } from '@shared/listingWorkflow';
 vi.mock('../../src/database/prisma.client', () => ({ prisma: {} }));
 import { PropertiesController } from '../../src/modules/properties/properties.controller';
 import { ListingProfilesController } from '../../src/modules/properties/listing-profiles.controller';
+import { StorageService } from '../../src/modules/storage/services/storage.service';
 import { PropertiesService } from '../../src/modules/properties/properties.service';
 import { configureListingBodyParser } from '../../src/modules/properties/properties.module';
 const create = vi.fn(async (_organization, record) => ({ id: 'saved', version: 1, record }));
@@ -17,7 +18,7 @@ const create = vi.fn(async (_organization, record) => ({ id: 'saved', version: 1
 class NonListingController { @Post() echo(@Req() req: { body: unknown }) { return req.body; } }
 @Controller('designs')
 class DesignBodyController { @Post() echo(@Req() req: { body: { canvasData?: { thumbnail?: string } } }) { return { size: JSON.stringify(req.body).length }; } }
-@Module({ imports: [PassportModule], controllers: [PropertiesController, ListingProfilesController, NonListingController, DesignBodyController], providers: [{ provide: PropertiesService, useValue: { create } }] })
+@Module({ imports: [PassportModule], controllers: [PropertiesController, ListingProfilesController, NonListingController, DesignBodyController], providers: [{ provide: StorageService, useValue: {} }, { provide: PropertiesService, useValue: { create } }] })
 class HttpTestModule {}
 describe('real listing HTTP parsing and authentication', () => {
   let app: INestApplication;

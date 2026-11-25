@@ -1,14 +1,31 @@
-import { Controller, Get, Post, Delete, Param, Req, UseGuards, BadRequestException, Inject } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Param, Req, UseGuards, BadRequestException, Inject } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { InviteMemberDto } from './dto/invite-member.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 import { ValidatedBody } from '../../common/validated-body.decorator';
 
 @ApiTags('users')
 @Controller('users')
 export class UsersController {
   constructor(@Inject(UsersService) private readonly usersService: UsersService) {}
+
+  @Get('me')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @ApiOperation({ summary: "Get the signed-in user's profile (Settings → Account)" })
+  async getMe(@Req() req: any) {
+    return { data: await this.usersService.getProfile(req.user.id) };
+  }
+
+  @Patch('me')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @ApiOperation({ summary: "Update the signed-in user's name and/or profile photo" })
+  async updateMe(@Req() req: any, @ValidatedBody(UpdateProfileDto) dto: UpdateProfileDto) {
+    return { data: await this.usersService.updateProfile(req.user.id, dto) };
+  }
 
   @Get('organization')
   @UseGuards(AuthGuard('jwt'))

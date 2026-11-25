@@ -110,3 +110,14 @@ describe('saved listing ownership and versions', () => {
     expect(db.listingProfile.updateMany.mock.calls[0][0].where).toEqual({ userId: 'user-a', version: 1 });
   });
 });
+
+describe('identity validation at the API business boundary', () => {
+  it.each([['email', 'invalid@'], ['accent', 'not-a-colour']])('rejects invalid %s in a profile and listing', async (field, value) => {
+    const record = createEmptyListing();
+    if (field === 'email') record.agent.email = value; else record.brand.accent = value;
+    const service = new PropertiesService();
+    await expect(service.saveProfile('user-a', { agent: record.agent, brand: record.brand }, 0)).rejects.toMatchObject({ status: 400 });
+    await expect(service.create('org-a', record)).rejects.toMatchObject({ status: 400 });
+    await expect(service.update('org-a', 'p1', record, 1)).rejects.toMatchObject({ status: 400 });
+  });
+});

@@ -277,4 +277,72 @@ export class UsersService {
       planLimits: planConfig,
     };
   }
+
+  /** Settings → Account (GET /users/me). Never returns the password hash or provider customer ids. */
+  async getProfile(userId: string): Promise<UserProfile> {
+    const user = await prisma.user.findUnique({ where: { id: userId }, select: PROFILE_SELECT });
+    if (!user) throw new NotFoundException('User not found');
+    return toProfile(user);
+  }
+
+  /**
+   * Settings → Account (PATCH /users/me). Writes only the signed-in user's own row — the id comes from the JWT,
+   * never the body. `name` is trimmed and must not be blank; `avatarUrl` must be an https URL (the R2 media store
+   * returns one), or `null` to remove the photo. Omitted fields are left unchanged.
+   */
+  async updateProfile(userId: string, input: { name?: string; avatarUrl?: string | null }): Promise<UserProfile> {
+    const data: { name?: string; avatarUrl?: string | null } = {};
+    if (input.name !== undefined) {
+      const name = input.name.trim();
+      if (!name) throw new BadRequestException('Enter your name.');
+      if (name.length > 100) throw new BadRequestException('Use 100 characters or fewer for your name.');
+      data.name = name;
+    }
+    if (input.avatarUrl !== undefined) {
+      if (input.avatarUrl !== null && !/^https:\/\/[^\s]+$/.test(input.avatarUrl)) {
+        throw new BadRequestException('Upload the photo again — it must be stored before it can be saved.');
+      }
+      data.avatarUrl = input.avatarUrl;
+    }
+    if (Object.keys(data).length === 0) return this.getProfile(userId);
+    const user = await prisma.user.update({ where: { id: userId }, data, select: PROFILE_SELECT });
+    return toProfile(user);
+  }
+}
+
+/** Columns read for the profile. `password` is read only to derive `hasPassword` — toProfile never returns it. */
+const PROFILE_SELECT = {
+  id: true, email: true, password: true, name: true, avatarUrl: true, provider: true, googleId: true,
+  emailVerified: true, organizationId: true, createdAt: true,
+} as const;
+
+export interface UserProfile {
+  id: string;
+  email: string;
+  name: string | null;
+  avatarUrl: string | null;
+  /** Same rule as AuthService.forgotPassword: a local account with a password set (a reset link makes sense). */
+  hasPassword: boolean;
+  /** True when Google sign-in is linked. */
+  hasGoogle: boolean;
+  emailVerified: boolean;
+  organizationId: string | null;
+  createdAt: string;
+}
+
+function toProfile(user: {
+  id: string; email: string; password: string; name: string | null; avatarUrl: string | null; provider: string; googleId: string | null;
+  emailVerified: boolean; organizationId: string | null; createdAt: Date;
+}): UserProfile {
+  return {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    avatarUrl: user.avatarUrl,
+    hasPassword: user.provider === 'local' && Boolean(user.password),
+    hasGoogle: Boolean(user.googleId),
+    emailVerified: user.emailVerified,
+    organizationId: user.organizationId,
+    createdAt: user.createdAt.toISOString(),
+  };
 }

@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 
 /**
  * US-INFRA-001 — the single place this codebase talks to object storage.
@@ -8,13 +8,8 @@ import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3
  * parts are the endpoint (derived from the account id) and `region: 'auto'`, which R2 requires
  * because it has no regions in the AWS sense.
  *
- * ## Deliberately two methods
- *
- * `upload()` and `getPublicUrl()`. No `delete()`, no `list()` — both explicitly out of scope in
- * the story. That is not minimalism for its own sake: the R2 API tokens are scoped **Object Read
- * & Write**, so a `delete()` here would be a method that always throws in production. If a
- * reclaim job ever needs deletion it needs a differently-scoped token, and that is a decision to
- * take then rather than a capability to leave lying around.
+ * Workspace saves can roll back objects created by that same request when persistence is rejected.
+ * remove() is internal: there is no public delete route and saved/shared media is never collected here.
  *
  * ## Why the client is lazy
  *
@@ -127,6 +122,13 @@ export class StorageService {
     const bytes = await (res.Body as { transformToByteArray: () => Promise<Uint8Array> })
       .transformToByteArray();
     return Buffer.from(bytes);
+  }
+
+  /** Internal rollback only; callers must own the just-created key. */
+  async remove(key: string): Promise<void> {
+    const bucket = process.env.R2_BUCKET_NAME;
+    if (!bucket) throw new Error('StorageService cannot remove: R2_BUCKET_NAME is not set.');
+    await this.getClient().send(new DeleteObjectCommand({ Bucket: bucket, Key: key }));
   }
 
   /**
