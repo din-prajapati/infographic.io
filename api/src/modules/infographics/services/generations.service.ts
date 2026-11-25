@@ -148,6 +148,7 @@ export class GenerationsService {
     const propertyData = {
       propertyType: extractedData.propertyType || 'residential',
       listingType: extractedData.listingType || 'for_sale',
+      rentalPeriod: extractedData.rentalPeriod,
       address: extractedData.address,
       price: extractedData.price,
       beds: extractedData.beds || 0,

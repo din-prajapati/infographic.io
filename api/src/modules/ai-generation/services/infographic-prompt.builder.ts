@@ -125,6 +125,8 @@ export interface ExpectedText {
 /** Everything derived from property data that both prompt paths need. */
 interface PromptParts {
   headline: string;
+  /** "FOR RENT" for rentals; empty otherwise, so sale prompts stay byte-identical to the proven format. */
+  intent: string;
   address: string;
   price: string;
   stats: string;
@@ -132,6 +134,8 @@ interface PromptParts {
   brokerage: string;
   colors: string;
 }
+
+const RENTAL_PERIODS = ['month', 'week', 'year', 'day'];
 
 function derivePromptParts(propertyData: any, headline: string): PromptParts {
   const rawColors: string[] = propertyData.agent?.brandColors || [];
@@ -145,11 +149,17 @@ function derivePromptParts(propertyData: any, headline: string): PromptParts {
   const statParts: string[] = [];
   if (rooms) statParts.push(rooms);
   if (propertyData.sqft) statParts.push(formatSqft(propertyData.sqft, locale));
+  // US-PROP-007: a rental prints its period with the price ("₹50K / month"), the same form the editor's
+  // formatListingPrice uses, so the price check (buildExpectedTexts) covers the period too.
+  const isRent = propertyData.listingType === 'for_rent';
+  const basePrice = formatPriceShort(propertyData.price, locale, currencyToken);
+  const period = isRent && RENTAL_PERIODS.includes(propertyData.rentalPeriod) ? propertyData.rentalPeriod : '';
   return {
     // Truncate — short headlines render more reliably in image models
     headline: headline.length > 32 ? headline.slice(0, 32).trimEnd() + '…' : headline,
+    intent: isRent ? 'FOR RENT' : '',
     address: propertyData.address || '',
-    price: formatPriceShort(propertyData.price, locale, currencyToken),
+    price: basePrice && period ? `${basePrice} / ${period}` : basePrice,
     stats: statParts.join(' | '),
     agentName: realAgentName(propertyData.agent?.name),
     brokerage: (propertyData.agent?.brokerage || '').trim(),
@@ -170,6 +180,7 @@ export function buildImagePrompt(propertyData: any, headline: string): string {
 
   const lines = [`Professional real estate listing infographic:`];
   lines.push(`- Headline: "${p.headline}"`);
+  if (p.intent) lines.push(`- Listing: ${p.intent}`);
   if (p.address) lines.push(`- Address: ${p.address}`);
   if (p.price) lines.push(`- Price: ${p.price}`);
   if (p.stats) lines.push(`- Details: ${p.stats}`);

@@ -6,6 +6,8 @@ import { prisma } from '../../../database/prisma.client';
 export interface ExtractedPropertyData {
   propertyType?: 'residential' | 'commercial' | 'land';
   listingType?: 'for_sale' | 'for_rent' | 'sold';
+  /** Rentals only (US-PROP-007): the period the price is quoted for. */
+  rentalPeriod?: 'month' | 'week' | 'year' | 'day';
   address?: string;
   price?: number;
   beds?: number;
@@ -18,6 +20,29 @@ export interface ExtractedPropertyData {
     brandColors?: string[];
     logoUrl?: string;
   };
+}
+
+const RENTAL_PERIODS = ['month', 'week', 'year', 'day'] as const;
+type RentalPeriod = typeof RENTAL_PERIODS[number];
+
+/** Accepts only the four supported periods from the model's JSON; anything else is dropped. */
+export function normalizeRentalPeriod(value: unknown): RentalPeriod | undefined {
+  const text = typeof value === 'string' ? value.trim().toLowerCase() : '';
+  return (RENTAL_PERIODS as readonly string[]).includes(text) ? text as RentalPeriod : undefined;
+}
+
+/**
+ * Fallback when the model omits the period: "per month", "a month", "/mo", "monthly" and the like. Deliberately
+ * leaves out ambiguous shorthand such as "pm" (also a time of day).
+ */
+export function rentalPeriodFromText(text: string): RentalPeriod | undefined {
+  const t = text.toLowerCase();
+  const per = (units: string) => new RegExp(String.raw`(?:\bper|\ba|/)\s*(?:${units})\b`);
+  if (per('months?|mo').test(t) || /\bmonthly\b/.test(t)) return 'month';
+  if (per('weeks?|wk').test(t) || /\bweekly\b/.test(t)) return 'week';
+  if (per('years?|yr|annum').test(t) || /\b(?:yearly|annually)\b/.test(t)) return 'year';
+  if (per('days?|night').test(t) || /\bdaily\b/.test(t)) return 'day';
+  return undefined;
 }
 
 export interface ExtractionResult {
@@ -60,6 +85,7 @@ export class PromptExtractorService {
 Extract the following fields if mentioned:
 - propertyType: residential, commercial, or land
 - listingType: for_sale, for_rent, or sold
+- rentalPeriod: for rentals only, the period the price is quoted for: month, week, year, or day
 - address: full property address
 - price: numeric price value
 - beds: number of bedrooms
@@ -72,6 +98,7 @@ Return ONLY valid JSON in this exact format:
 {
   "propertyType": "residential" | "commercial" | "land" | null,
   "listingType": "for_sale" | "for_rent" | "sold" | null,
+  "rentalPeriod": "month" | "week" | "year" | "day" | null,
   "address": "string" | null,
   "price": number | null,
   "beds": number | null,
@@ -106,6 +133,9 @@ Return the extracted data as JSON.`;
       const extractedData: ExtractedPropertyData = {
         propertyType: extractedJson.propertyType || undefined,
         listingType: extractedJson.listingType || undefined,
+        rentalPeriod: extractedJson.listingType === 'for_rent'
+          ? normalizeRentalPeriod(extractedJson.rentalPeriod) ?? rentalPeriodFromText(prompt)
+          : undefined,
         address: extractedJson.address || undefined,
         price: extractedJson.price || undefined,
         beds: extractedJson.beds || undefined,
@@ -241,6 +271,7 @@ Return the extracted data as JSON.`;
                     lowerPrompt.includes('land') ? 'land' : 'residential',
       listingType: lowerPrompt.includes('rent') ? 'for_rent' :
                    lowerPrompt.includes('sold') ? 'sold' : 'for_sale',
+      rentalPeriod: lowerPrompt.includes('rent') ? rentalPeriodFromText(prompt) : undefined,
       address: this.extractAddressFromPrompt(prompt),
       price: this.extractPriceFromPrompt(prompt),
       beds: this.extractNumberFromPrompt(prompt, ['bed', 'bedroom', 'br']),
