@@ -192,7 +192,7 @@ test.describe('listing detail', () => {
     await page.goto(`/listings/${linked.id}`);
     const card = page.getByTestId('property-design');
     await expect(card).toContainText('Open house story');
-    await expect(card.getByRole('link', { name: 'Open in V3' })).toHaveAttribute('href', `/editor?editor=v3&designId=${cuid(700)}`);
+    await expect(card.getByRole('link', { name: 'Open in editor' })).toHaveAttribute('href', `/editor?designId=${cuid(700)}`);
     await page.goto(`/listings/${empty.id}`);
     await expect(page.getByRole('heading', { name: 'No designs yet' })).toBeVisible();
   });
@@ -233,7 +233,7 @@ test.describe('listing detail', () => {
     const picker = page.getByRole('dialog');
     await expect(picker).toBeVisible();
     await picker.getByRole('button', { name: 'Just Listed', exact: true }).click();
-    await expect(page).toHaveURL(new RegExp(`/editor\\?editor=v3&(width=\\d+&height=\\d+|templateId=[^&]+)&propertyId=${saved.id}$`));
+    await expect(page).toHaveURL(new RegExp(`/editor\\?(width=\\d+&height=\\d+|templateId=[^&]+)&propertyId=${saved.id}$`));
   });
 
   test('an unknown or foreign property shows Not found', async ({ page }) => {

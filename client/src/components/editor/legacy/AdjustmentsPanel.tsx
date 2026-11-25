@@ -2,9 +2,9 @@
 
 import React, { useEffect, useState } from "react";
 import { ChevronLeft, RotateCcw, Sun, Contrast, Droplet, Sliders } from "lucide-react";
-import { usePanelState } from "../../lib/panelState";
-import { useCanvasStore } from "../../hooks/useCanvasStore";
-import { ImageElement } from "../../lib/canvasTypes";
+import { usePanelState } from "../../../lib/panelState";
+import { useCanvasStore } from "../../../hooks/useCanvasStore";
+import { ImageElement } from "../../../lib/canvasTypes";
 
 interface AdjustmentsPanelProps {
   element: ImageElement | null;

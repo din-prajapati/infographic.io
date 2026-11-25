@@ -1,7 +1,7 @@
 // Dimensions display — fixed to bottom-left of the canvas viewport.
 // Rendered outside the artboard so it never overlaps canvas elements.
 
-import { CanvasElement } from "../../lib/canvasTypes";
+import { CanvasElement } from "../../../lib/canvasTypes";
 
 interface DimensionsDisplayProps {
   element: CanvasElement;

@@ -2,14 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { Minus, Plus, ChevronDown } from "lucide-react";
-import { Button } from "../ui/button";
+import { Button } from "../../ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
-import { useCanvasStore } from "../../hooks/useCanvasStore";
+} from "../../ui/dropdown-menu";
+import { useCanvasStore } from "../../../hooks/useCanvasStore";
 
 export function ZoomControls() {
   const zoom = useCanvasStore((state) => state.zoom);

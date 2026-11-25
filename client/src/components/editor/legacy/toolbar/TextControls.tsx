@@ -12,20 +12,20 @@ import {
   List,
   ListOrdered,
 } from "lucide-react";
-import { Input } from "../../ui/input";
+import { Input } from "../../../ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../../ui/select";
+} from "../../../ui/select";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "../../ui/tooltip";
-import { TextAlign, TextTransform, ListStyle } from "../../../lib/canvasTypes";
+} from "../../../ui/tooltip";
+import { TextAlign, TextTransform, ListStyle } from "../../../../lib/canvasTypes";
 
 export interface TextStyles {
   fontFamily: string;

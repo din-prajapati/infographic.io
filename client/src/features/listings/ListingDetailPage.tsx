@@ -232,7 +232,7 @@ function MarketingAssets({ propertyId, onCreate }: { propertyId: string; onCreat
             <div className="lst-asset-info">
               <h3>{design.name}</h3>
               <span className="lst-small">Updated {new Date(design.updatedAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}</span>
-              <Link href={buildV3EditorUrl({ designId: design.id })} className="ws-btn ws-btn-block"><PenSquare aria-hidden="true" />Open in V3</Link>
+              <Link href={buildV3EditorUrl({ designId: design.id })} className="ws-btn ws-btn-block"><PenSquare aria-hidden="true" />Open in editor</Link>
               <span className="lst-asset-foot"><Link2 aria-hidden="true" />Property linked</span>
             </div>
           </li>

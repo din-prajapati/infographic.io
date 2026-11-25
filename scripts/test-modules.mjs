@@ -44,8 +44,8 @@ export const MODULES = {
   },
   editor: {
     description: 'V3 editor (canvas, panels, save, listing panel, deep links)',
-    sources: ['client/src/components/editor/v3/', 'client/src/components/canvas/', 'client/src/lib/v3', 'client/src/hooks/useV3', 'client/src/hooks/useCanvasStore', 'client/src/lib/canvas', 'client/src/lib/paint', 'client/src/lib/shape', 'client/src/lib/lineGeometry', 'client/src/lib/textLayout', 'client/src/lib/layout/'],
-    clientUnit: ['components/editor/v3/', 'components/canvas/', 'hooks/__tests__/useV3', 'hooks/__tests__/useCanvasStore', 'lib/__tests__/v3', 'lib/__tests__/canvas', 'lib/__tests__/paint', 'lib/__tests__/shape', 'lib/__tests__/lineGeometry', 'lib/__tests__/textLayout', 'lib/__tests__/elementStyles', 'lib/__tests__/fontMap', 'lib/layout/'],
+    sources: ['client/src/components/editor/v3/', 'client/src/components/editor/PropertyDetailsForm.tsx', 'client/src/components/editor/AgentInfoForm.tsx', 'client/src/components/editor/TemplateSlotSection.tsx', 'client/src/components/editor/BrandPaletteDialog.tsx', 'client/src/components/canvas/', 'client/src/lib/v3', 'client/src/hooks/useV3', 'client/src/hooks/useCanvasStore', 'client/src/lib/canvas', 'client/src/lib/paint', 'client/src/lib/shape', 'client/src/lib/lineGeometry', 'client/src/lib/textLayout', 'client/src/lib/layout/'],
+    clientUnit: ['components/editor/v3/', 'components/editor/__tests__/', 'components/canvas/', 'hooks/__tests__/useV3', 'hooks/__tests__/useCanvasStore', 'lib/__tests__/v3', 'lib/__tests__/canvas', 'lib/__tests__/paint', 'lib/__tests__/shape', 'lib/__tests__/lineGeometry', 'lib/__tests__/textLayout', 'lib/__tests__/elementStyles', 'lib/__tests__/fontMap', 'lib/layout/'],
     apiUnit: ['tests/canvas/', 'tests/designs/'],
     e2e: 'editor',
     e2eConfig: 'e2e/editor/playwright.config.ts',
@@ -59,9 +59,9 @@ export const MODULES = {
     e2eConfig: 'e2e/editor/real-backend/playwright.config.ts',
   },
   'editor-legacy': {
-    description: 'Retired legacy editor, reachable via /editor?editor=legacy (delete with EditorLayout)',
-    sources: ['client/src/components/editor/EditorLayout.tsx', 'client/src/components/editor/RightSidebar.tsx', 'client/src/components/editor/CenterCanvas.tsx', 'client/src/components/editor/CanvasEditToolbar.tsx', 'e2e/fixtures/legacy-editor.ts'],
-    clientUnit: ['components/editor/__tests__/'],
+    description: 'Legacy editor, side by side with V3 via /editor?editor=legacy (delete with components/editor/legacy/)',
+    sources: ['client/src/components/editor/legacy/', 'e2e/fixtures/legacy-editor.ts'],
+    clientUnit: [],
     apiUnit: [],
     e2e: 'editor-legacy',
   },

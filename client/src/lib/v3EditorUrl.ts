@@ -3,8 +3,8 @@ import { getGalleryCanvasTemplateById, isAiGenerationId } from './galleryTemplat
 import type { DesignMetadata } from './storage';
 
 /**
- * URL contract for the V3 editor (`/editor?editor=v3&…`). It mirrors the legacy editor's deep links so callers can
- * move to V3 without changing their URLs:
+ * URL contract for the default (V3) editor (`/editor?…`). `editor=v3` is still accepted for older links but is no
+ * longer emitted; `editor=legacy` opens the legacy editor instead. The deep links mirror the legacy editor's:
  *   designId=<cuid>              open a saved design (handled by useV3DesignSession)
  *   templateId=<id>              start a separate design from a template: a saved or curated canvas template (API) or
  *                                a built-in starter template (client catalog). AI variation ids are not templates.
@@ -41,22 +41,21 @@ export function parseV3EditorParams(search: string): V3EditorParams {
 
 /** Builds a V3 editor URL. Same precedence as parseV3EditorParams: designId, then templateId, then canvas size. */
 export function buildV3EditorUrl(params: V3EditorParams = {}): string {
-  const query = new URLSearchParams({ editor: 'v3' });
+  const query = new URLSearchParams();
   if (params.designId) query.set('designId', params.designId);
   else if (params.templateId) query.set('templateId', params.templateId);
   else if (params.canvasSize) { query.set('width', String(params.canvasSize.width)); query.set('height', String(params.canvasSize.height)); }
   if (params.propertyId && !params.designId) query.set('propertyId', params.propertyId);
-  return `/editor?${query.toString()}`;
+  const search = query.toString();
+  return search ? `/editor?${search}` : '/editor';
 }
 
 /**
- * The legacy editor is retired. Any /editor URL without `editor=v3` is sent to V3, keeping its deep-link parameters.
- * `editor=legacy` is a temporary escape hatch for designs V3 cannot open yet; it returns null (no redirect).
+ * The V3 editor is the default for every /editor URL. Only `editor=legacy` opens the legacy editor, which stays
+ * reachable side by side until it is deleted.
  */
-export function legacyEditorRedirect(search: string): string | null {
-  const editor = new URLSearchParams(search).get('editor');
-  if (editor === 'v3' || editor === 'legacy') return null;
-  return buildV3EditorUrl(parseV3EditorParams(search));
+export function isLegacyEditorRequest(search: string): boolean {
+  return new URLSearchParams(search).get('editor') === 'legacy';
 }
 
 /** Structural check for a template canvas before it reaches the store (shared with the Templates panel). */

@@ -1,18 +1,18 @@
 // Text element toolbar
 
 import { Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight, Minus, Plus } from "lucide-react";
-import { TextElement } from "../../../lib/canvasTypes";
-import { useCanvasStore } from "../../../hooks/useCanvasStore";
-import { Button } from "../../ui/button";
-import { Input } from "../../ui/input";
+import { TextElement } from "../../../../lib/canvasTypes";
+import { useCanvasStore } from "../../../../hooks/useCanvasStore";
+import { Button } from "../../../ui/button";
+import { Input } from "../../../ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../../ui/select";
-import { Separator } from "../../ui/separator";
+} from "../../../ui/select";
+import { Separator } from "../../../ui/separator";
 
 interface TextToolbarProps {
   element: TextElement;

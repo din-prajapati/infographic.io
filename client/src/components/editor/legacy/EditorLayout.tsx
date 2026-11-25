@@ -8,7 +8,7 @@ import { TemplatesPanel } from "./TemplatesPanel";
 import { AdjustmentsPanel } from "./AdjustmentsPanel";
 import { SaveDialog, SaveDialogData } from "./SaveDialog";
 import { toast } from "sonner";
-import { ImageElement as ImageElementType } from "../../lib/canvasTypes";
+import { ImageElement as ImageElementType } from "../../../lib/canvasTypes";
 import {
   saveDesign,
   saveTemplate,
@@ -16,22 +16,22 @@ import {
   loadTemplateById,
   generateId,
   type DesignMetadata,
-} from "../../lib/storage";
-import { canvasTemplatesApi } from "../../lib/api";
+} from "../../../lib/storage";
+import { canvasTemplatesApi } from "../../../lib/api";
 import {
   getGalleryCanvasTemplateById,
   isGalleryTemplateId,
   isAiGenerationId,
-} from "../../lib/galleryTemplateCatalog";
+} from "../../../lib/galleryTemplateCatalog";
 import {
   captureCanvasData,
   generateThumbnail,
   restoreCanvasData,
   scheduleFitCanvasZoomToViewport,
-} from "../../lib/canvasState";
-import { downloadCanvas } from "../../lib/canvasExport";
-import { useCanvasStore } from "../../hooks/useCanvasStore";
-import { PanelStateProvider } from "../../lib/panelState";
+} from "../../../lib/canvasState";
+import { downloadCanvas } from "../../../lib/canvasExport";
+import { useCanvasStore } from "../../../hooks/useCanvasStore";
+import { PanelStateProvider } from "../../../lib/panelState";
 
 interface EditorLayoutProps {
   onBackClick?: () => void;

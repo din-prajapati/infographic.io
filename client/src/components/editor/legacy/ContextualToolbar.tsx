@@ -2,12 +2,12 @@
 
 import React, { useRef, useEffect, useState } from "react";
 import { Layers } from "lucide-react";
-import { useCanvasStore } from "../../hooks/useCanvasStore";
+import { useCanvasStore } from "../../../hooks/useCanvasStore";
 import { ShapeToolbar } from "./toolbar/ShapeToolbar";
 import { ImageToolbar } from "./toolbar/ImageToolbar";
 import { TextControls, TextStyles } from "./toolbar/TextControls";
-import { CanvasElement, TextElement } from "../../lib/canvasTypes";
-import { usePanelState } from "../../lib/panelState";
+import { CanvasElement, TextElement } from "../../../lib/canvasTypes";
+import { usePanelState } from "../../../lib/panelState";
 import { TransparencyPanel } from "./TransparencyPanel";
 
 interface ContextualToolbarProps {

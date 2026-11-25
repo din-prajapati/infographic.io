@@ -107,7 +107,6 @@ export function useV3DesignSession(designId?: string, userId?: string) {
       adoptedId.current = id;
       requestedId.current = id;
       const url = new URL(window.location.href);
-      url.searchParams.set('editor', 'v3');
       url.searchParams.set('designId', id);
       initializeV3NavigationGuard().allowInternal(() =>
         window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}`));

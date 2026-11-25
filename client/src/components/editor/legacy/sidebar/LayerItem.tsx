@@ -1,8 +1,8 @@
 // Layer item component
 
 import { Type, Square, Circle, Image as ImageIcon, Eye, EyeOff, Lock, Unlock, Slash } from "lucide-react";
-import { CanvasElement } from "../../../lib/canvasTypes";
-import { useCanvasStore } from "../../../hooks/useCanvasStore";
+import { CanvasElement } from "../../../../lib/canvasTypes";
+import { useCanvasStore } from "../../../../hooks/useCanvasStore";
 
 interface LayerItemProps {
   element: CanvasElement;

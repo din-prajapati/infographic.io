@@ -1,9 +1,9 @@
 // Layers tab component
 
-import { ScrollArea } from "../../ui/scroll-area";
-import { useCanvasStore } from "../../../hooks/useCanvasStore";
+import { ScrollArea } from "../../../ui/scroll-area";
+import { useCanvasStore } from "../../../../hooks/useCanvasStore";
 import { LayerItem } from "./LayerItem";
-import { sortByZIndex } from "../../../lib/canvasUtils";
+import { sortByZIndex } from "../../../../lib/canvasUtils";
 
 export function LayersTab({allowLockedSelection=false}:{allowLockedSelection?:boolean}) {
   const elements = useCanvasStore((state) => state.elements);

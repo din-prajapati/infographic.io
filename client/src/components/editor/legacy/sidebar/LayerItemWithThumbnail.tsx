@@ -1,8 +1,8 @@
 // Layer item component with Canva-style thumbnail preview and controls
 
 import { Type, Square, Circle, Image as ImageIcon, Eye, EyeOff, Lock, Unlock, GripVertical } from "lucide-react";
-import { CanvasElement, TextElement, ShapeElement, ImageElement } from "../../../lib/canvasTypes";
-import { useCanvasStore } from "../../../hooks/useCanvasStore";
+import { CanvasElement, TextElement, ShapeElement, ImageElement } from "../../../../lib/canvasTypes";
+import { useCanvasStore } from "../../../../hooks/useCanvasStore";
 
 interface LayerItemWithThumbnailProps {
   element: CanvasElement;

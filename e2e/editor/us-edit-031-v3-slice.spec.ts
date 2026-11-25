@@ -453,8 +453,8 @@ test.describe('US-EDIT-031 — mocked browser integration', () => {
   });
 
   // AC7: first POST ID is carried in the opt-in URL and next save uses PUT.
-  test('TC-EDIT-031-08 [P1] first blank save retains editor=v3 and server identity', async ({ page }) => {
-    const model = await mockedSession(page); await page.goto('/editor?editor=v3', { waitUntil: 'domcontentloaded' });
+  test('TC-EDIT-031-08 [P1] first blank save puts the server identity in the URL', async ({ page }) => {
+    const model = await mockedSession(page); await page.goto('/editor', { waitUntil: 'domcontentloaded' });
     await expect(page.getByRole('button', { name: /^Save$/ })).toBeEnabled();
     expect(model.reads).toBe(0);
     await page.getByRole('textbox', { name: 'Design title', exact: true }).fill('Blank session');
@@ -462,7 +462,7 @@ test.describe('US-EDIT-031 — mocked browser integration', () => {
     const creation = page.getByRole('dialog', { name: 'Save design', exact: true });
     await expect(creation.getByRole('textbox', { name: 'Design name', exact: true })).toHaveValue('Blank session');
     await creation.getByRole('button', { name: 'Save design', exact: true }).click();
-    await expect(page).toHaveURL(new RegExp(`editor=v3.*designId=${ID}|designId=${ID}.*editor=v3`));
+    await expect(page).toHaveURL(new RegExp(`/editor\\?designId=${ID}$`));
     expect(model.reads, 'Adopting create ID must not trigger another GET').toBe(0);
     await page.getByRole('textbox', { name: 'Design title', exact: true }).fill('Second save');
     await page.getByRole('button', { name: /^Save$/ }).click();
@@ -524,9 +524,9 @@ test.describe('US-EDIT-031 — mocked browser integration', () => {
   });
 });
 
-// AC11 (revised 2026-11-17, legacy editor retired): every /editor URL without editor=v3 replace-redirects to V3 and
-// keeps its deep-link parameters; editor=legacy is the temporary escape hatch to the old canvas.
-for (const [route, expected] of [['/editor', /\/editor\?editor=v3$/], [`/editor?designId=${ID}`, new RegExp(`/editor\\?editor=v3&designId=${ID}$`)]] as const) test(`TC-EDIT-031-07 [P1] ${route} redirects to V3`, async ({ page }) => {
+// AC11 (revised 2026-11-25, V3 is the default editor): every /editor URL opens V3 in place, with no redirect; older
+// editor=v3 links keep working, and editor=legacy opens the legacy editor side by side.
+for (const [route, expected] of [['/editor', /\/editor$/], [`/editor?designId=${ID}`, new RegExp(`/editor\\?designId=${ID}$`)], [`/editor?editor=v3&designId=${ID}`, new RegExp(`/editor\\?editor=v3&designId=${ID}$`)]] as const) test(`TC-EDIT-031-07 [P1] ${route} opens V3 without a redirect`, async ({ page }) => {
   await mockedSession(page); await page.goto(route, { waitUntil: 'domcontentloaded' });
   await expect(page).toHaveURL(expected);
   await expect(page.locator('.v3-editor')).toBeVisible();

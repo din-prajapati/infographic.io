@@ -1,24 +1,24 @@
 // Image element toolbar - Canva style with pill buttons and tooltips
 
 import React from "react";
-import { ImageElement } from "../../../lib/canvasTypes";
-import { useCanvasStore } from "../../../hooks/useCanvasStore";
-import { Slider } from "../../ui/slider";
-import { useTransparencyGrid } from "../../../lib/transparencyGridState";
-import { usePanelState } from "../../../lib/panelState";
+import { ImageElement } from "../../../../lib/canvasTypes";
+import { useCanvasStore } from "../../../../hooks/useCanvasStore";
+import { Slider } from "../../../ui/slider";
+import { useTransparencyGrid } from "../../../../lib/transparencyGridState";
+import { usePanelState } from "../../../../lib/panelState";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "../../ui/tooltip";
+} from "../../../ui/tooltip";
 import { 
   RotateCcw, 
   Grid3x3,
   Sliders,
   CircleDot,
 } from "lucide-react";
-import { FlipHorizontalIcon } from "../../ui/icons/FlipHorizontalIcon";
-import { FlipVerticalIcon } from "../../ui/icons/FlipVerticalIcon";
+import { FlipHorizontalIcon } from "../../../ui/icons/FlipHorizontalIcon";
+import { FlipVerticalIcon } from "../../../ui/icons/FlipVerticalIcon";
 
 interface ImageToolbarProps {
   element: ImageElement;

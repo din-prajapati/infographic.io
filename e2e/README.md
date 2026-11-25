@@ -10,7 +10,7 @@ Specs are grouped by **product module**. When you change a module, run only that
 | `listings/` | Library, New property, detail, photos, marketing assets, Create design | Vite only, mocked | `e2e/mocked.config.ts` |
 | `agent-brand/` | Saved Agent & Brand profile | Vite only, mocked | `e2e/mocked.config.ts` |
 | `settings/` | Settings dialog (`#settings/<tab>`): open/close/history, search, Account, Billing, Usage, Team, Appearance, Privacy, account menu | Vite only, mocked | `e2e/mocked.config.ts` |
-| `editor-legacy/` | Retired legacy editor (`/editor?editor=legacy`) | full stack | `playwright.config.ts` |
+| `editor-legacy/` | Legacy editor, side by side with V3 (`/editor?editor=legacy`; code in `client/src/components/editor/legacy/`) | full stack | `playwright.config.ts` |
 | `ai-generation/` | AI chat / compose / generation (still hosted in the legacy editor) | full stack | `playwright.config.ts` |
 | `templates/` | Templates page, format picker, save as template | full stack | `playwright.config.ts` |
 | `designs/` | My designs page | full stack | `playwright.config.ts` |

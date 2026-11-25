@@ -2,16 +2,16 @@
 
 import React, { useRef, useEffect } from "react";
 import { Grid3x3 } from "lucide-react";
-import { useCanvasStore } from "../../hooks/useCanvasStore";
-import { CanvasElement } from "../../lib/canvasTypes";
-import { useTransparencyGrid } from "../../lib/transparencyGridState";
-import { Slider } from "../ui/slider";
-import { Input } from "../ui/input";
+import { useCanvasStore } from "../../../hooks/useCanvasStore";
+import { CanvasElement } from "../../../lib/canvasTypes";
+import { useTransparencyGrid } from "../../../lib/transparencyGridState";
+import { Slider } from "../../ui/slider";
+import { Input } from "../../ui/input";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "../ui/tooltip";
+} from "../../ui/tooltip";
 
 interface TransparencyPanelProps {
   element: CanvasElement;

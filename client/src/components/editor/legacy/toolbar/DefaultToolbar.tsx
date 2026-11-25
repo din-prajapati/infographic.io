@@ -1,7 +1,7 @@
 // Default toolbar (no element selected)
 
 import { Sparkles } from "lucide-react";
-import { Button } from "../../ui/button";
+import { Button } from "../../../ui/button";
 
 interface DefaultToolbarProps {
   onPropertyDetailsClick?: () => void;

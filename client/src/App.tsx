@@ -8,7 +8,7 @@ import { TooltipProvider } from "./components/ui/tooltip";
 import { Toaster } from "./components/ui/sonner";
 import { TemplatesPage } from "./components/pages/TemplatesPage";
 import { MyDesignsPage } from "./components/pages/MyDesignsPage";
-import { EditorLayout } from "./components/editor/EditorLayout";
+import { EditorLayout as LegacyEditorLayout } from "./components/editor/legacy/EditorLayout";
 import { WorkspaceLayout } from "./features/workspace/WorkspaceLayout";
 import HowItWorksPage from "./features/workspace/HowItWorksPage";
 import ListingsPage from "./features/listings/ListingsPage";
@@ -33,7 +33,7 @@ import { VersionBadge } from "./components/VersionBadge";
 import { FormatPickerDialog } from "./components/pages/FormatPickerDialog";
 import { useCanvasStore } from "./hooks/useCanvasStore";
 import { initializeV3NavigationGuard } from './lib/v3NavigationGuard';
-import { buildV3EditorUrl, legacyEditorRedirect, parseV3EditorParams } from './lib/v3EditorUrl';
+import { buildV3EditorUrl, isLegacyEditorRequest, parseV3EditorParams } from './lib/v3EditorUrl';
 
 initializeV3NavigationGuard();
 
@@ -67,16 +67,13 @@ function EditorInner() {
     navigate('/templates');
   };
 
-  // Legacy editor retired: any /editor URL without editor=v3 goes to V3 (editor=legacy is a temporary escape hatch).
-  const v3Redirect = legacyEditorRedirect(search);
-  if (v3Redirect) return <Redirect to={v3Redirect} replace />;
-
-  if (params.get('editor') === 'v3') {
+  // V3 is the default editor for every /editor URL; `editor=legacy` opens the legacy editor side by side.
+  if (!isLegacyEditorRequest(search)) {
     return <Suspense fallback={<div role="status" className="p-6">Opening design…</div>}><V3Editor {...parseV3EditorParams(search)} /></Suspense>;
   }
 
   return (
-    <EditorLayout
+    <LegacyEditorLayout
       onBackClick={handleBackFromEditor}
       designId={designId}
       templateId={templateId}

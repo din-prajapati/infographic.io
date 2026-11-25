@@ -19,9 +19,9 @@ import {
   Triangle,
   Star,
 } from "lucide-react";
-import { useCanvasStore } from "../../hooks/useCanvasStore";
-import { createTextElement, createShapeElement, createImageElement } from "../../lib/canvasUtils";
-import { usePanelState } from "../../lib/panelState";
+import { useCanvasStore } from "../../../hooks/useCanvasStore";
+import { createTextElement, createShapeElement, createImageElement } from "../../../lib/canvasUtils";
+import { usePanelState } from "../../../lib/panelState";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,12 +29,12 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
   DropdownMenuLabel,
-} from "../ui/dropdown-menu";
+} from "../../ui/dropdown-menu";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "../ui/tooltip";
+} from "../../ui/tooltip";
 
 interface FloatingToolbarProps {
   onUndo?: () => void;

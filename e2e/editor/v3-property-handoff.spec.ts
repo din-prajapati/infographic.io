@@ -2,7 +2,7 @@ import { test, expect, type Page } from '@playwright/test';
 import { cuid, mockWorkspace, property, type WorkspaceState } from '../fixtures/workspace-api';
 
 /**
- * V3 property handoff (rev-2 spec §9): /editor?editor=v3[&templateId|&width&height]&propertyId=<id>.
+ * V3 property handoff (rev-2 spec §9): /editor?[templateId|width&height]&propertyId=<id>.
  * The editor settles its session first, then stages the property as the Listing panel's pending source; artwork
  * changes only on Apply to design. A saved design (designId) restores its own snapshot and ignores propertyId.
  */
@@ -64,9 +64,9 @@ test('an unknown property shows an error and leaves the canvas empty', async ({ 
   await expect(page.getByRole('alert').filter({ hasText: 'This property could not be opened' })).toBeVisible();
 });
 
-test('legacy /editor links with propertyId land in V3 and keep the handoff', async ({ page }) => {
+test('plain /editor links with propertyId open V3 and keep the handoff', async ({ page }) => {
   await mockWorkspace(page, { properties: [saved] });
   await page.goto(`/editor?width=1080&height=1080&propertyId=${saved.id}`);
-  await expect(page).toHaveURL(new RegExp(`/editor\\?editor=v3&width=1080&height=1080&propertyId=${saved.id}$`));
+  await expect(page).toHaveURL(new RegExp(`/editor\\?width=1080&height=1080&propertyId=${saved.id}$`));
   await expect(listingPanel(page)).toContainText('21 Handoff Road, Pune');
 });

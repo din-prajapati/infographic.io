@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { ScrollArea } from "../ui/scroll-area";
+import { ScrollArea } from "../../ui/scroll-area";
 import {
   Palette,
   Type,
@@ -19,39 +19,39 @@ import {
   RefreshCw,
   Check,
 } from "lucide-react";
-import { Button } from "../ui/button";
-import { Separator } from "../ui/separator";
-import { PropertyDetailsForm } from "./PropertyDetailsForm";
-import { AgentInfoForm } from "./AgentInfoForm";
+import { Button } from "../../ui/button";
+import { Separator } from "../../ui/separator";
+import { PropertyDetailsForm } from "../PropertyDetailsForm";
+import { AgentInfoForm } from "../AgentInfoForm";
 import {
   TemplateSection,
   BRAND_SLOT_FIELDS,
   PROPERTY_SLOT_FIELDS,
   AGENT_SLOT_FIELDS,
-} from "./TemplateSlotSection";
-import { useCanvasStore } from "../../hooks/useCanvasStore";
-import { createTextElement } from "../../lib/canvasUtils";
-import { TextElement } from "../../lib/canvasTypes";
-import { BrandPaletteDialog, BrandPalette } from "./BrandPaletteDialog";
+} from "../TemplateSlotSection";
+import { useCanvasStore } from "../../../hooks/useCanvasStore";
+import { createTextElement } from "../../../lib/canvasUtils";
+import { TextElement } from "../../../lib/canvasTypes";
+import { BrandPaletteDialog, BrandPalette } from "../BrandPaletteDialog";
 import {
   resolveActivePalette,
   pickLightestSwatch,
   pickCanvasBackground,
   DEFAULT_CANVAS_BACKGROUND,
-} from "../../lib/brandPalette";
+} from "../../../lib/brandPalette";
 import { toast } from "sonner";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
-import { usePropertyStore } from "../../hooks/usePropertyStore";
+} from "../../ui/dropdown-menu";
+import { usePropertyStore } from "../../../hooks/usePropertyStore";
 import { resolveLocale } from "@shared/locale";
-import { useAgentStore } from "../../hooks/useAgentStore";
-import { generationsApi, ResultVariation } from "../../lib/api";
-import { useGenerationWebSocket, GenerationProgress } from "../../hooks/useGenerationWebSocket";
-import { loadAiVariationToCanvas, deriveOrientationFromCanvas } from "../../lib/canvasState";
+import { useAgentStore } from "../../../hooks/useAgentStore";
+import { generationsApi, ResultVariation } from "../../../lib/api";
+import { useGenerationWebSocket, GenerationProgress } from "../../../hooks/useGenerationWebSocket";
+import { loadAiVariationToCanvas, deriveOrientationFromCanvas } from "../../../lib/canvasState";
 import { useGenerationPrefs } from "@/hooks/useGenerationPrefs";
 
 type TabType = "design" | "property-details" | "agent-info";

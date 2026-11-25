@@ -1,18 +1,18 @@
 // Layers Panel - Canva-style slide-out panel from LEFT side
 
 import { useEffect, useState } from "react";
-import { ScrollArea } from "../ui/scroll-area";
+import { ScrollArea } from "../../ui/scroll-area";
 import { X, Layers, Plus, ChevronDown, FolderPlus, ChevronLeft } from "lucide-react";
-import { useCanvasStore } from "../../hooks/useCanvasStore";
-import { sortByZIndex } from "../../lib/canvasUtils";
-import { usePanelState } from "../../lib/panelState";
+import { useCanvasStore } from "../../../hooks/useCanvasStore";
+import { sortByZIndex } from "../../../lib/canvasUtils";
+import { usePanelState } from "../../../lib/panelState";
 import { LayerItemWithThumbnail } from "./sidebar/LayerItemWithThumbnail";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
+} from "../../ui/dropdown-menu";
 
 export function LayersPanel() {
   const { activePanel, closePanel } = usePanelState();

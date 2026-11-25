@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import { Pipette } from "lucide-react";
-import { Input } from "../ui/input";
-import { Label } from "../ui/label";
-import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { Input } from "../../ui/input";
+import { Label } from "../../ui/label";
+import { Popover, PopoverContent, PopoverTrigger } from "../../ui/popover";
 
 interface ColorPickerFieldProps {
   label: string;

@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { Layers, Loader2, Check } from 'lucide-react';
-import { Button } from '../ui/button';
+import { Button } from '../../ui/button';
 import {
   Dialog,
   DialogContent,
@@ -8,13 +8,13 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '../ui/dialog';
-import { useGenerationPrefs } from '../../hooks/useGenerationPrefs';
-import { useComposeProgress } from '../../hooks/useComposeProgress';
-import { useCanvasStore } from '../../hooks/useCanvasStore';
-import { loadComposedDesignToCanvas, deriveOrientationFromCanvas } from '../../lib/canvasState';
-import { planVariationLoad, EDITABLE_REQUIRES_UPGRADE_REASON } from '../../lib/layout/loadVariation';
-import { ImageElement as ImageElementType } from '../../lib/canvasTypes';
+} from '../../ui/dialog';
+import { useGenerationPrefs } from '../../../hooks/useGenerationPrefs';
+import { useComposeProgress } from '../../../hooks/useComposeProgress';
+import { useCanvasStore } from '../../../hooks/useCanvasStore';
+import { loadComposedDesignToCanvas, deriveOrientationFromCanvas } from '../../../lib/canvasState';
+import { planVariationLoad, EDITABLE_REQUIRES_UPGRADE_REASON } from '../../../lib/layout/loadVariation';
+import { ImageElement as ImageElementType } from '../../../lib/canvasTypes';
 import { toast } from 'sonner';
 import { useLocation } from 'wouter';
 

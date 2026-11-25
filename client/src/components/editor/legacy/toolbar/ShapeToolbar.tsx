@@ -1,15 +1,15 @@
 // Shape element toolbar - Canva style with tooltips
 
 import React from "react";
-import { ShapeElement } from "../../../lib/canvasTypes";
-import { useCanvasStore } from "../../../hooks/useCanvasStore";
-import { Slider } from "../../ui/slider";
+import { ShapeElement } from "../../../../lib/canvasTypes";
+import { useCanvasStore } from "../../../../hooks/useCanvasStore";
+import { Slider } from "../../../ui/slider";
 import { CircleDot } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "../../ui/tooltip";
+} from "../../../ui/tooltip";
 
 interface ShapeToolbarProps {
   element: ShapeElement;

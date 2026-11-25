@@ -18,7 +18,7 @@ import { V3TemplateFields } from './V3TemplateFields';
 import type { DesignMetadata } from '../../../lib/storage';
 import { queryClient } from '../../../lib/queryClient';
 import { loadTemplateById } from '../../../lib/storage';
-import { resolveUrlTemplate, type V3EditorParams } from '../../../lib/v3EditorUrl';
+import { buildV3EditorUrl, resolveUrlTemplate, type V3EditorParams } from '../../../lib/v3EditorUrl';
 import { propertiesApi } from '../../../lib/listingApi';
 import type { SavedProperty } from '@shared/listingWorkflow';
 import { AIChatBox } from '../../ai-chat/AIChatBox';
@@ -195,7 +195,7 @@ export default function V3Editor({designId,templateId,canvasSize,propertyId}:V3E
     // A deep link that finished after the user left or opened something else must not pull them back.
     if(session.getNavigationRevision()!==sourceRevision){setWorkflowNotice('A separate Design was created. Your newer edits remain open in this Design. Find the new Design in Projects.');return false;}
     if(options.stillWanted&&!options.stillWanted())return false;
-    initializeV3NavigationGuard().allowInternal(()=>navigate(`/editor?editor=v3&designId=${saved.id}`,{replace:!!options.replace}));
+    initializeV3NavigationGuard().allowInternal(()=>navigate(buildV3EditorUrl({designId:saved.id}),{replace:!!options.replace}));
     setWorkflowNotice('A separate Design was created from the template.');
     return true;
   }
@@ -221,7 +221,7 @@ export default function V3Editor({designId,templateId,canvasSize,propertyId}:V3E
     })();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   },[designId,templateId,canvasSize?.width,canvasSize?.height,ready,session.id]);
-  // Property handoff (rev-2 spec §9): /editor?editor=v3[&templateId|&width&height]&propertyId=<id>. The editor first
+  // Property handoff (rev-2 spec §9): /editor?[templateId|width&height]&propertyId=<id>. The editor first
   // settles its session — a template start creates and opens a new Design — then stages the authorized Property as the
   // Listing panel's pending source. Artwork changes only on Apply to design. A saved design (designId) never takes it.
   const handoff=useRef<{propertyId:string;waitForDesign:boolean;done:boolean}|null>(propertyId&&!designId?{propertyId,waitForDesign:!!templateId,done:false}:null);
@@ -290,7 +290,7 @@ export default function V3Editor({designId,templateId,canvasSize,propertyId}:V3E
       {exportStatus==='error'&&<div role="alert" className="v3-alert">Export failed. Your design is unchanged.<button onClick={()=>void exportDesign()}>Retry export</button></div>}
       {exportStatus==='exported'&&<p role="status" className="v3-alert">PNG exported</p>}
       {workflowError&&<p role="alert" className="v3-alert">{workflowError}</p>}
-      {workflowNotice&&<p role="status" className="v3-alert">{workflowNotice}{templateCreated&&<Link href="/templates">View in Templates</Link>}{createdCopy&&<Link href={`/editor?editor=v3&designId=${createdCopy}`}>Open created Design</Link>}</p>}
+      {workflowNotice&&<p role="status" className="v3-alert">{workflowNotice}{templateCreated&&<Link href="/templates">View in Templates</Link>}{createdCopy&&<Link href={buildV3EditorUrl({designId:createdCopy})}>Open created Design</Link>}</p>}
     </div>
     {saveAction&&ready&&<V3SaveDialog key={`${saveAction}:${session.id??'new'}`} action={saveAction} initialName={saveAction==='copy'?`${session.title||'Untitled design'} - Copy`:session.title||'Untitled design'} initialTags={Array.isArray(session.metadata?.tags)?session.metadata.tags.filter((value):value is string=>typeof value==='string'):[]} initialCategory={typeof session.metadata?.category==='string'?session.metadata.category:'real-estate'} hasSourceId={!!session.id} sourceHasChanges={session.hasUnsavedChanges} pendingUpdates={listing.pendingChanges} onClose={closeSaveDialog} onSubmit={submitSave}/>}
     {reviewOpen&&ready&&<V3ExportReview key={designId??'new'} title={session.title} onClose={()=>setReviewOpen(false)}/>}

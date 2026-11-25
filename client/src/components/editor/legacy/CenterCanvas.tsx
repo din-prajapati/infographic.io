@@ -1,23 +1,23 @@
 import React, { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { Plus, Sparkles, Building2, Home, TrendingUp, BarChart3, PieChart, ArrowRight, CheckCircle2, DollarSign, Users, MapPin, Target, TrendingDown } from "lucide-react";
-import { Button } from "../ui/button";
-import { AIChatBox } from "../ai-chat/AIChatBox";
-import { Template } from "../ai-chat/types";
-import { AIButtonIcon } from "../ai-chat/AIButtonIcon";
-import { useCanvasStore } from "../../hooks/useCanvasStore";
-import { TextElement } from "../canvas/TextElement";
-import { ShapeElement } from "../canvas/ShapeElement";
-import { ImageElement } from "../canvas/ImageElement";
-import { LineElement } from "../canvas/LineElement";
-import { sortByZIndex } from "../../lib/canvasUtils";
-import {paintToCss} from '../../lib/paint';
+import { Button } from "../../ui/button";
+import { AIChatBox } from "../../ai-chat/AIChatBox";
+import { Template } from "../../ai-chat/types";
+import { AIButtonIcon } from "../../ai-chat/AIButtonIcon";
+import { useCanvasStore } from "../../../hooks/useCanvasStore";
+import { TextElement } from "../../canvas/TextElement";
+import { ShapeElement } from "../../canvas/ShapeElement";
+import { ImageElement } from "../../canvas/ImageElement";
+import { LineElement } from "../../canvas/LineElement";
+import { sortByZIndex } from "../../../lib/canvasUtils";
+import {paintToCss} from '../../../lib/paint';
 import { DimensionsDisplay } from "./DimensionsDisplay";
 import { ContextualToolbar } from "./ContextualToolbar";
 import { CanvasEditToolbar } from "./CanvasEditToolbar";
-import { usePanelState } from "../../lib/panelState";
-import { loadTemplateById } from "../../lib/storage";
-import { ImageElement as ImageElementType } from "../../lib/canvasTypes";
-import { restoreCanvasData, loadAiVariationToCanvas, loadComposedDesignToCanvas, scheduleFitCanvasZoomToViewport, fitCanvasZoomToViewport } from "../../lib/canvasState";
+import { usePanelState } from "../../../lib/panelState";
+import { loadTemplateById } from "../../../lib/storage";
+import { ImageElement as ImageElementType } from "../../../lib/canvasTypes";
+import { restoreCanvasData, loadAiVariationToCanvas, loadComposedDesignToCanvas, scheduleFitCanvasZoomToViewport, fitCanvasZoomToViewport } from "../../../lib/canvasState";
 import { toast } from "sonner";
 
 interface CenterCanvasProps {

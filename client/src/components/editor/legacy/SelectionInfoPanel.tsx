@@ -1,9 +1,9 @@
 // Selection info panel component for displaying selected element details
 
 import { useEffect, useRef, useState } from "react";
-import { CanvasElement } from "../../lib/canvasTypes";
-import { calculateSafePosition, getFloatingToolbarObstacle } from "../../lib/collisionUtils";
-import { useCanvasStore } from "../../hooks/useCanvasStore";
+import { CanvasElement } from "../../../lib/canvasTypes";
+import { calculateSafePosition, getFloatingToolbarObstacle } from "../../../lib/collisionUtils";
+import { useCanvasStore } from "../../../hooks/useCanvasStore";
 
 interface SelectionInfoPanelProps {
   element: CanvasElement;

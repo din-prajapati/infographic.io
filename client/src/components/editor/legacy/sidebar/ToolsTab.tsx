@@ -1,8 +1,8 @@
 // Tools tab component
 
 import { MousePointer2, Type, Image, Square, Circle, Trash2 } from "lucide-react";
-import { useCanvasStore } from "../../../hooks/useCanvasStore";
-import { createTextElement, createShapeElement } from "../../../lib/canvasUtils";
+import { useCanvasStore } from "../../../../hooks/useCanvasStore";
+import { createTextElement, createShapeElement } from "../../../../lib/canvasUtils";
 
 interface ToolButtonProps {
   icon: React.ElementType;

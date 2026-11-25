@@ -19,14 +19,14 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { ChevronLeft, Search, AlertCircle, LayoutTemplate } from "lucide-react";
 import { toast } from "sonner";
-import { usePanelState } from "../../lib/panelState";
-import { canvasTemplatesApi, type AdminCuratedTemplate } from "../../lib/api";
-import type { DesignMetadata } from "../../lib/storage";
+import { usePanelState } from "../../../lib/panelState";
+import { canvasTemplatesApi, type AdminCuratedTemplate } from "../../../lib/api";
+import type { DesignMetadata } from "../../../lib/storage";
 import {
   restoreCanvasData,
   scheduleFitCanvasZoomToViewport,
-} from "../../lib/canvasState";
-import { useCanvasStore } from "../../hooks/useCanvasStore";
+} from "../../../lib/canvasState";
+import { useCanvasStore } from "../../../hooks/useCanvasStore";
 
 type LoadStatus = "idle" | "loading" | "success" | "error";
 
