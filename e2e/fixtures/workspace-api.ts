@@ -89,10 +89,17 @@ export async function mockWorkspace(page: Page, options: { properties?: SavedPro
     if (request.headers()['content-type']?.startsWith('multipart/form-data')) {
       const envelope = new Request('http://workspace.test', { method: 'POST', headers: { 'Content-Type': request.headers()['content-type'] }, body: request.postDataBuffer()! });
       const form = await envelope.formData();
-      body = JSON.parse(String(form.get('payload')));
-      const replace = (src: string) => { if (!src.startsWith('draft:')) return src; if (!form.has(src.slice(6))) throw new Error('Missing draft upload'); state.uploads++; return `${CDN}/upload-${state.uploads}.png`; };
-      body.record.agent.photo = replace(body.record.agent.photo); body.record.brand.logo = replace(body.record.brand.logo);
-      if (body.record.photos) body.record.photos = body.record.photos.map((photo: any) => ({ ...photo, src: replace(photo.src) }));
+      if (form.has('payload')) {
+        // Property save with draft photos: a JSON `payload` part plus one file part per `draft:<field>` reference.
+        body = JSON.parse(String(form.get('payload')));
+        const replace = (src: string) => { if (!src.startsWith('draft:')) return src; if (!form.has(src.slice(6))) throw new Error('Missing draft upload'); state.uploads++; return `${CDN}/upload-${state.uploads}.png`; };
+        body.record.agent.photo = replace(body.record.agent.photo); body.record.brand.logo = replace(body.record.brand.logo);
+        if (body.record.photos) body.record.photos = body.record.photos.map((photo: any) => ({ ...photo, src: replace(photo.src) }));
+      } else {
+        // Plain media upload (POST /media): a single `file` part, answered by the /media handler below.
+        const file = form.get('file');
+        body = { file: file instanceof File ? file.name : null };
+      }
     }
     state.requests.push({ method, path: pathname, search: url.search, body });
     const json = (value: unknown, status = 200) => route.fulfill({ status, contentType: 'application/json', body: JSON.stringify(value) });
